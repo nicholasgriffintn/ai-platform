@@ -575,6 +575,21 @@ final class APIClient: ObservableObject {
         return try await send(path: "/conversations", method: "GET", queryItems: queryItems)
     }
 
+    func fetchConversations(
+        about subject: ConversationSubject,
+        limit: Int
+    ) async throws -> ConversationListResponse {
+        try await send(
+            path: "/conversations",
+            method: "GET",
+            queryItems: [
+                URLQueryItem(name: "subject_type", value: subject.type),
+                URLQueryItem(name: "subject_id", value: subject.id),
+                URLQueryItem(name: "limit", value: String(limit))
+            ]
+        )
+    }
+
     func fetchConversation(
         id: String,
         refreshPending: Bool = true

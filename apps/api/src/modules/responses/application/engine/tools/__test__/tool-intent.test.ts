@@ -23,47 +23,24 @@ function answers(overrides: Partial<Record<keyof typeof TOOL_INTENT_POLICY.quest
 }
 
 describe("requiresToolIntentVerification", () => {
-  it("verifies sends, spends and deletes whatever their permissions say", () => {
-    expect(
-      requiresToolIntentVerification({
-        permissions: ["network"],
-        alreadyApproved: false,
-        effectClass: "external_send",
-      }),
-    ).toBe(true);
-    expect(
-      requiresToolIntentVerification({
-        permissions: ["read"],
-        alreadyApproved: false,
-        effectClass: "spend",
-      }),
-    ).toBe(true);
+  it("verifies writes, sends, spends and deletes", () => {
+    for (const effectClass of ["write", "external_send", "spend", "destructive"] as const) {
+      expect(requiresToolIntentVerification({ alreadyApproved: false, effectClass })).toBe(true);
+    }
   });
 
-  it("still verifies write-permission tools and skips reads", () => {
-    expect(
-      requiresToolIntentVerification({
-        permissions: ["write"],
-        alreadyApproved: false,
-        effectClass: "write",
-      }),
-    ).toBe(true);
-    expect(
-      requiresToolIntentVerification({
-        permissions: ["read", "network"],
-        alreadyApproved: false,
-        effectClass: "read",
-      }),
-    ).toBe(false);
+  it("skips reads and drafts that stay in the person's own space", () => {
+    expect(requiresToolIntentVerification({ alreadyApproved: false, effectClass: "read" })).toBe(
+      false,
+    );
+    expect(requiresToolIntentVerification({ alreadyApproved: false, effectClass: "draft" })).toBe(
+      false,
+    );
   });
 
   it("skips a call the person approved themselves", () => {
     expect(
-      requiresToolIntentVerification({
-        permissions: ["write"],
-        alreadyApproved: true,
-        effectClass: "external_send",
-      }),
+      requiresToolIntentVerification({ alreadyApproved: true, effectClass: "external_send" }),
     ).toBe(false);
   });
 });

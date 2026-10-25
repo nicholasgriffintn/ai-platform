@@ -1,4 +1,5 @@
 import { ConversationThread } from "@ngriffin_uk/polychat-component-conversation";
+import { discoverCardSubject } from "@ngriffin_uk/polychat-library-chat";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   ArtifactWorkbenchProvider,
@@ -6,6 +7,7 @@ import {
   ConversationScopeProvider,
   useLocalComposerDraft,
   useLocalConversationScope,
+  useSubjectConversations,
 } from "@ngriffin_uk/polychat-library-react";
 import {
   DEFAULT_MODEL_TIER,
@@ -13,16 +15,36 @@ import {
   type DiscoverCard,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { useSubjectConversationSync } from "../../Files/Viewer/useSubjectConversationSync.js";
 import { discoverCardSuggestions } from "./discover-card-drafts.js";
 
 export function DiscoverAskPanel({ editionId, card }: { editionId: string; card: DiscoverCard }) {
-  const scope = useLocalConversationScope(undefined);
+  const subject = discoverCardSubject(editionId, card);
+  const conversations = useSubjectConversations(subject);
+
+  if (conversations.isPending) {
+    return <div className="relative min-h-0 flex-1" />;
+  }
+
+  return (
+    <DiscoverAskThread card={card} subject={subject} conversationId={conversations.data?.[0]?.id} />
+  );
+}
+
+function DiscoverAskThread({
+  card,
+  subject,
+  conversationId,
+}: {
+  card: DiscoverCard;
+  subject: ConversationSubject;
+  conversationId: string | undefined;
+}) {
+  const scope = useLocalConversationScope(conversationId);
   const modelTier = useChatStore((state) => state.modelTier);
   const draft = useLocalComposerDraft();
-  const subject: ConversationSubject =
-    card.kind === "read" && card.sourceId
-      ? { type: "source", id: card.sourceId }
-      : { type: "output", id: editionId };
+
+  useSubjectConversationSync(scope.currentConversationId, subject);
 
   return (
     <ConversationScopeProvider scope={scope}>

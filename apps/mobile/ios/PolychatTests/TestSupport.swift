@@ -343,6 +343,10 @@ final class ConversationAPIClientStub: ConversationAPIClient {
         throw TestFailure.unexpectedCall
     }
 
+    func fetchConversations(about subject: ConversationSubject, limit: Int) async throws -> ConversationListResponse {
+        throw TestFailure.unexpectedCall
+    }
+
     func fetchConversation(
         id: String,
         refreshPending: Bool

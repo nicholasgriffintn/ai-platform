@@ -7,7 +7,6 @@ import { extractTextFromMessageContent } from "@ngriffin_uk/polychat-ai-provider
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   decisionNoulConfidence,
-  isNeverStandingEffectClass,
   type ChatRunTrigger,
   type DecisionEntry,
   type DecisionNoulAnswer,
@@ -27,12 +26,7 @@ const TOOL_INTENT_MAX_EVIDENCE_STRING_CHARS = 1_000;
 const TOOL_INTENT_MAX_ARGUMENT_ENTRIES = 32;
 const TOOL_INTENT_MAX_ARGUMENT_DEPTH = 4;
 const TRUNCATION_SUFFIX = "\n... (truncated)";
-const SIDE_EFFECT_PERMISSIONS = new Set<ToolPermission>([
-  "write",
-  "sandbox",
-  "orchestration",
-  "delegate",
-]);
+const OWN_SPACE_EFFECT_CLASSES = new Set<ToolEffectClass>(["read", "draft"]);
 
 const RUN_STARTERS: Record<ChatRunTrigger, string> = {
   user: "the person who owns this conversation, in this turn",
@@ -145,18 +139,10 @@ export const TOOL_INTENT_POLICY = defineDecisionPolicy({
 });
 
 export function requiresToolIntentVerification(params: {
-  permissions: readonly ToolPermission[];
   alreadyApproved: boolean;
-  effectClass?: ToolEffectClass;
+  effectClass: ToolEffectClass;
 }): boolean {
-  if (params.alreadyApproved) {
-    return false;
-  }
-
-  return (
-    (params.effectClass !== undefined && isNeverStandingEffectClass(params.effectClass)) ||
-    params.permissions.some((permission) => SIDE_EFFECT_PERMISSIONS.has(permission))
-  );
+  return !params.alreadyApproved && !OWN_SPACE_EFFECT_CLASSES.has(params.effectClass);
 }
 
 export function resolveToolIntentRequest(

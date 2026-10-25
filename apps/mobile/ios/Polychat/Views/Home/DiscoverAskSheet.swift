@@ -30,9 +30,12 @@ struct DiscoverAskSheet: View {
         .task {
             guard !started else { return }
             started = true
-            _ = conversationManager.startNewConversation(
-                subject: request.card.subject(editionId: request.editionId)
-            )
+            let subject = request.card.subject(editionId: request.editionId)
+            if let conversationId = await conversationManager.latestConversationId(about: subject) {
+                await conversationManager.loadConversationMessages(id: conversationId)
+                return
+            }
+            _ = conversationManager.startNewConversation(subject: subject)
             guard await ageGateStore.ensureConfirmed() else { return }
             try? await conversationManager.addMessage(ChatMessage(role: "user", content: request.card.chatPrompt))
         }

@@ -342,7 +342,6 @@ export const handleToolCalls = async (
 
       if (
         requiresToolIntentVerification({
-          permissions: permissionResult.permissions,
           alreadyApproved: permissionResult.approved,
           effectClass: callEffectClass,
         })

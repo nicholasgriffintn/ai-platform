@@ -91,7 +91,7 @@ struct DiscoverCard: Decodable, Equatable, Identifiable {
         if kind == "read", let sourceId {
             return ConversationSubject(type: "source", id: sourceId)
         }
-        return ConversationSubject(type: "output", id: editionId)
+        return ConversationSubject(type: "discover_card", id: "\(editionId):\(id)")
     }
 
     var chatPrompt: String {

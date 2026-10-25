@@ -1,4 +1,5 @@
 export * from "./device-models.js";
+export * from "./discover-subject.js";
 export * from "./desktop-execution.js";
 export * from "./conversation-list-filters.js";
 export * from "./theme.js";

@@ -174,6 +174,15 @@ class ConversationManager: ObservableObject {
         }
     }
 
+    func latestConversationId(about subject: ConversationSubject) async -> String? {
+        do {
+            return try await apiClient?.fetchConversations(about: subject, limit: 1).conversations.first?.id
+        } catch {
+            self.error = "Failed to load conversations: \(error.localizedDescription)"
+            return nil
+        }
+    }
+
     func refreshConversations() async {
         await loadConversations()
     }

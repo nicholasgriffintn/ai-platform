@@ -12,6 +12,7 @@ extension ModelsAPIClient {
 
 protocol ConversationAPIClient {
     func fetchConversations(limit: Int, after: String?, includeArchived: Bool) async throws -> ConversationListResponse
+    func fetchConversations(about subject: ConversationSubject, limit: Int) async throws -> ConversationListResponse
     func fetchConversation(
         id: String,
         refreshPending: Bool

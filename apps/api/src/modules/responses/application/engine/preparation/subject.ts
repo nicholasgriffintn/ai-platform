@@ -14,6 +14,7 @@ import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { readStoredSubject } from "~/modules/conversations/domain/subject";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { requireDiscoverCardSubject } from "~/modules/discover/application/card-subject";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { formatOutput } from "~/modules/outputs/application";
 import { requireOutputAccess } from "~/modules/outputs/application/access";
@@ -217,6 +218,16 @@ async function loadMemorySubject(
   };
 }
 
+async function loadDiscoverCardSubject(
+  context: ServiceContext,
+  userId: number,
+  subject: ConversationSubject,
+): Promise<LoadedSubject> {
+  const card = await requireDiscoverCardSubject(context, userId, subject);
+
+  return { subject, ...card, projectId: null, linkedSourceIds: [] };
+}
+
 export async function requireSubject(
   context: ServiceContext,
   subject: ConversationSubject,
@@ -230,6 +241,8 @@ export async function requireSubject(
       return loadSourceSubject(context, user.id, subject);
     case "memory":
       return loadMemorySubject(context, user.id, subject);
+    case "discover_card":
+      return loadDiscoverCardSubject(context, user.id, subject);
   }
 }
 
