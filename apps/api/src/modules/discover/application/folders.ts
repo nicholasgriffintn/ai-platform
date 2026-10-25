@@ -10,7 +10,6 @@ import {
 } from "~/modules/discover/domain/folders";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { ensureFolder } from "~/modules/sources/application/folders";
-import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 export async function fileDiscoverEpisode(
   context: ServiceContext,
@@ -36,15 +35,12 @@ export async function fileDiscoverEpisode(
   ]);
 }
 
-export async function fileDiscoverDocument(
-  context: ServiceContext,
-  sourceId: string,
-): Promise<void> {
+export async function ensureDiscoverResearchFolder(context: ServiceContext): Promise<string> {
   const folder = await ensureFolder(context, context.requireUser().id, {
     projectId: null,
     title: DISCOVER_RESEARCH_FOLDER,
     kind: "general",
   });
 
-  await context.repositories.get(SourceRepository).addCollectionSources(folder.id, [sourceId]);
+  return folder.id;
 }

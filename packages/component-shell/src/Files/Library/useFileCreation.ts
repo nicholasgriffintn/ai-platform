@@ -4,7 +4,7 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export type CreateDialog = "note" | "memory" | "folder" | "podcast";
+export type CreateDialog = "note" | "memory" | "folder" | "podcast" | "follow";
 
 export const UPLOAD_ACCEPT = "image/*,audio/*,video/*,.pdf,.md,.csv,.txt,.docx,.xlsx,.html,.json";
 

@@ -1,7 +1,17 @@
+function readFtsTerms(query: string): string[] {
+  return [...new Set(query.match(/[\p{L}\p{N}_]+/gu) ?? [])].slice(0, 32);
+}
+
 export function toFtsQuery(query: string): string | null {
-  const terms = [...new Set(query.match(/[\p{L}\p{N}_]+/gu) ?? [])].slice(0, 32);
+  const terms = readFtsTerms(query);
 
   return terms.length > 0 ? terms.map((term) => `"${term}"`).join(" OR ") : null;
+}
+
+export function toFtsAllTermsQuery(query: string): string | null {
+  const terms = readFtsTerms(query);
+
+  return terms.length > 0 ? terms.map((term) => `"${term}"`).join(" AND ") : null;
 }
 
 export function fuseRankedResults<T extends { id: string }>(

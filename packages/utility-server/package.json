@@ -72,6 +72,11 @@
       "types": "./dist/search-ranking.d.ts",
       "import": "./dist/search-ranking.js"
     },
+    "./feeds": {
+      "polychat-source": "./src/feeds.ts",
+      "types": "./dist/feeds.d.ts",
+      "import": "./dist/feeds.js"
+    },
     "./html-text": {
       "polychat-source": "./src/html-text.ts",
       "types": "./dist/html-text.d.ts",

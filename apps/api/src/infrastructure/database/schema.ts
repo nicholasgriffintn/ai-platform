@@ -1892,13 +1892,15 @@ export const sourceKnowledgeSync = sqliteTable(
       .references(() => user.id, { onDelete: "cascade" }),
     project_id: text().references(() => project.id, { onDelete: "cascade" }),
     collection_id: text().references(() => resourceCollection.id, { onDelete: "cascade" }),
-    connection_id: text()
+    kind: text({ enum: ["connector", "rss", "news", "web"] })
       .notNull()
-      .references(() => providerConnection.id, { onDelete: "cascade" }),
-    recipe_id: text().notNull(),
-    integration_id: text().notNull(),
+      .default("connector"),
+    connection_id: text().references(() => providerConnection.id, { onDelete: "cascade" }),
+    recipe_id: text(),
+    integration_id: text(),
     title: text().notNull(),
-    resources: text().notNull(),
+    resources: text(),
+    feed: text(),
     status: text({ enum: ["active", "paused"] })
       .notNull()
       .default("active"),
@@ -1919,6 +1921,9 @@ export const sourceKnowledgeSync = sqliteTable(
     collectionIdx: index("source_knowledge_sync_collection_idx")
       .on(table.collection_id)
       .where(sql`collection_id IS NOT NULL`),
+    libraryIdx: index("source_knowledge_sync_library_idx")
+      .on(table.user_id)
+      .where(sql`project_id IS NULL AND collection_id IS NULL`),
   }),
 );
 

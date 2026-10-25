@@ -11,6 +11,7 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { NewEpisodeDialog } from "../Sources/NewEpisodeDialog.js";
+import { FollowDialog } from "./FollowDialog.js";
 import type { FileCreation } from "./useFileCreation.js";
 
 interface DialogProps {
@@ -179,6 +180,9 @@ export function CreateDialogs({
       {creation.dialog === "note" ? <NoteDialog {...props} /> : null}
       {creation.dialog === "memory" ? <MemoryDialog {...props} /> : null}
       {creation.dialog === "folder" ? <FolderDialog {...props} /> : null}
+      {creation.dialog === "follow" ? (
+        <FollowDialog projectId={projectId} onClose={creation.closeDialog} />
+      ) : null}
       <NewEpisodeDialog
         open={creation.dialog === "podcast"}
         onOpenChange={(open) => !open && creation.closeDialog()}

@@ -111,14 +111,16 @@ export async function disablePodcastFeed(collectionId: string): Promise<void> {
 }
 
 export async function listKnowledgeSyncs(
-  target: { projectId: string } | { notebookId: string },
+  target: { projectId: string } | { notebookId: string } | { library: true },
 ): Promise<KnowledgeSync[]> {
   const query =
     "projectId" in target
-      ? `project_id=${encodeURIComponent(target.projectId)}`
-      : `notebook_id=${encodeURIComponent(target.notebookId)}`;
+      ? `?project_id=${encodeURIComponent(target.projectId)}`
+      : "notebookId" in target
+        ? `?notebook_id=${encodeURIComponent(target.notebookId)}`
+        : "";
 
-  return (await request<ListPage<KnowledgeSync>>(`/sources/knowledge_syncs?${query}`)).data;
+  return (await request<ListPage<KnowledgeSync>>(`/sources/knowledge_syncs${query}`)).data;
 }
 
 export async function createKnowledgeSync(input: CreateKnowledgeSync): Promise<KnowledgeSync> {
@@ -133,6 +135,10 @@ export async function controlKnowledgeSync(
     method: "PATCH",
     body: input,
   });
+}
+
+export async function deleteKnowledgeSync(id: string): Promise<void> {
+  await request(`/sources/knowledge_syncs/${encodeURIComponent(id)}`, { method: "DELETE" });
 }
 
 export async function searchProjectKnowledge(

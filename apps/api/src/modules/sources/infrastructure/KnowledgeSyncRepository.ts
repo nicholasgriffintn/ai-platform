@@ -1,5 +1,9 @@
 import type { ConnectorKnowledgeDocument } from "@ngriffin_uk/polychat-ai-integrations";
-import type { KnowledgeSyncResource } from "@ngriffin_uk/polychat-schemas";
+import type {
+  KnowledgeFeed,
+  KnowledgeSyncKind,
+  KnowledgeSyncResource,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { sourceResourceSql } from "~/infrastructure/database/resource-storage";
@@ -10,11 +14,13 @@ export interface KnowledgeSyncRecord {
   user_id: number;
   project_id: string | null;
   collection_id: string | null;
-  connection_id: string;
-  recipe_id: string;
-  integration_id: string;
+  kind: KnowledgeSyncKind;
+  connection_id: string | null;
+  recipe_id: string | null;
+  integration_id: string | null;
   title: string;
-  resources: string;
+  resources: string | null;
+  feed: string | null;
   status: "active" | "paused";
   interval_minutes: number;
   cursor: number;
@@ -25,6 +31,14 @@ export interface KnowledgeSyncRecord {
   lease_token: string | null;
   lease_expires_at: string | null;
 }
+
+export type ConnectorKnowledgeSyncRecord = KnowledgeSyncRecord & {
+  kind: "connector";
+  connection_id: string;
+  recipe_id: string;
+  integration_id: string;
+  resources: string;
+};
 
 type SyncedResource = ConnectorKnowledgeDocument & {
   sourceId: string;
@@ -45,6 +59,13 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
     );
   }
 
+  listForLibrary(userId: number): Promise<KnowledgeSyncRecord[]> {
+    return this.runQuery(
+      "SELECT * FROM source_knowledge_sync WHERE user_id = ? AND project_id IS NULL AND collection_id IS NULL ORDER BY title",
+      [userId],
+    );
+  }
+
   listForCollection(collectionId: string): Promise<KnowledgeSyncRecord[]> {
     return this.runQuery(
       "SELECT * FROM source_knowledge_sync WHERE collection_id = ? ORDER BY title",
@@ -52,33 +73,70 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
     );
   }
 
-  async create(input: {
-    id: string;
-    userId: number;
-    projectId: string | null;
-    collectionId: string | null;
-    connectionId: string;
-    recipeId: string;
-    integrationId: string;
-    title: string;
-    resources: KnowledgeSyncResource[];
-    intervalMinutes: number;
-  }): Promise<void> {
+  async create(
+    input: {
+      id: string;
+      userId: number;
+      projectId: string | null;
+      collectionId: string | null;
+      title: string;
+      intervalMinutes: number;
+    } & (
+      | {
+          kind: "connector";
+          connectionId: string;
+          recipeId: string;
+          integrationId: string;
+          resources: KnowledgeSyncResource[];
+        }
+      | { kind: KnowledgeFeed["kind"]; feed: KnowledgeFeed }
+    ),
+  ): Promise<void> {
+    const connector = input.kind === "connector" ? input : null;
+    const feed = "feed" in input ? input.feed : null;
+
     await this.executeRun(
-      `INSERT INTO source_knowledge_sync (id, user_id, project_id, collection_id, connection_id, recipe_id, integration_id, title, resources, interval_minutes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO source_knowledge_sync (id, user_id, project_id, collection_id, kind, connection_id, recipe_id, integration_id, title, resources, feed, interval_minutes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         input.id,
         input.userId,
         input.projectId,
         input.collectionId,
-        input.connectionId,
-        input.recipeId,
-        input.integrationId,
+        input.kind,
+        connector?.connectionId ?? null,
+        connector?.recipeId ?? null,
+        connector?.integrationId ?? null,
         input.title,
-        JSON.stringify(input.resources),
+        connector ? JSON.stringify(connector.resources) : null,
+        feed ? JSON.stringify(feed) : null,
         input.intervalMinutes,
       ],
+    );
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.executeRun("DELETE FROM source_knowledge_sync WHERE id = ?", [id]);
+  }
+
+  async completeFeedRun(sync: KnowledgeSyncRecord, token: string): Promise<boolean> {
+    const result = await this.executeRun(
+      `UPDATE source_knowledge_sync SET generation = generation + 1, cursor = 0,
+         next_sync_at = datetime('now', '+' || interval_minutes || ' minutes'),
+         last_successful_at = CURRENT_TIMESTAMP, last_error = NULL
+       WHERE id = ? AND generation = ? AND kind != 'connector' AND status = 'active'
+         AND lease_token = ? AND lease_expires_at >= CURRENT_TIMESTAMP`,
+      [sync.id, sync.generation, token],
+    );
+
+    return result.meta.changes === 1;
+  }
+
+  async deferFeedRun(sync: KnowledgeSyncRecord, token: string): Promise<void> {
+    await this.executeRun(
+      `UPDATE source_knowledge_sync SET next_sync_at = datetime('now', '+' || interval_minutes || ' minutes')
+       WHERE id = ? AND kind != 'connector' AND lease_token = ?`,
+      [sync.id, token],
     );
   }
 
@@ -120,7 +178,7 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
   }
 
   async commitResource(
-    sync: KnowledgeSyncRecord,
+    sync: ConnectorKnowledgeSyncRecord,
     token: string,
     resource: SyncedResource,
   ): Promise<boolean> {
@@ -198,7 +256,11 @@ export class KnowledgeSyncRepository extends BaseRepository<Pick<IEnv, "DB">> {
     return results[2]?.meta.changes === 1;
   }
 
-  async markUnavailable(sync: KnowledgeSyncRecord, token: string, sourceId: string): Promise<void> {
+  async markUnavailable(
+    sync: ConnectorKnowledgeSyncRecord,
+    token: string,
+    sourceId: string,
+  ): Promise<void> {
     await this.executeRun(
       `UPDATE resource SET status = 'archived', updated_at = CURRENT_TIMESTAMP
        WHERE resource_type = 'source' AND id = ? AND project_id IS ? AND created_by_user_id = ? AND connection_id = ?

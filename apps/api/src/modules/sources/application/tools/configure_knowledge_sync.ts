@@ -1,9 +1,9 @@
-import { createKnowledgeSyncSchema } from "@ngriffin_uk/polychat-schemas";
+import { createConnectorKnowledgeSyncSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { getActiveRecipeSetup } from "~/modules/recipes/application/toolContext";
-import { createKnowledgeSync } from "~/modules/sources/application/knowledge-sync";
+import { createKnowledgeSync } from "~/modules/sources/application/knowledge/syncs";
 import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
 import type { ApiToolDefinition } from "~/types/functions";
 
@@ -20,7 +20,7 @@ export const configure_knowledge_sync: ApiToolDefinition = {
       );
     }
 
-    const input = createKnowledgeSyncSchema.parse(args);
+    const input = createConnectorKnowledgeSyncSchema.parse(args);
     const conversation = completionId
       ? await request.context.repositories.get(ConversationRepository).getConversation(completionId)
       : null;

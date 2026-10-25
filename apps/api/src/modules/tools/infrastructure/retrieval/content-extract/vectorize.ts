@@ -1,9 +1,12 @@
-import { createSourceSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
-import { createSource } from "~/modules/sources/application/sources";
-import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
+import {
+  commitKnowledgeDocument,
+  knowledgeSourceId,
+} from "~/modules/sources/application/knowledge/documents";
+import { requireKnowledgeTarget } from "~/modules/sources/application/knowledge/targets";
+import { knowledgeArticleKey } from "~/modules/sources/domain/knowledge/item";
 import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
 import type {
   ContentExtractParams,
@@ -41,39 +44,29 @@ export async function maybeVectorizeExtractedContent({
       );
     }
 
-    const requests = extracted.results.map((entry) =>
-      createSourceSchema.parse({
+    const context = resolveServiceContext(req);
+    const target = await requireKnowledgeTarget(
+      context,
+      { projectId: resolveRequestProjectId(req) ?? null, notebookId: null },
+      { manage: false },
+    );
+
+    for (const entry of extracted.results) {
+      const key = knowledgeArticleKey(entry.url);
+
+      if (!key || !entry.raw_content?.trim()) {
+        continue;
+      }
+
+      await commitKnowledgeDocument(context, target, {
+        id: await knowledgeSourceId(target, key),
         kind: "url",
         title: entry.url.slice(0, 200),
-        content: entry.raw_content,
-        externalUri: entry.url,
         provider,
+        externalUri: entry.url,
+        content: entry.raw_content,
         metadata: { url: entry.url },
-      }),
-    );
-    const context = resolveServiceContext(req);
-    const user = context.requireUser();
-    const projectId = resolveRequestProjectId(req);
-    const insertedIds: string[] = [];
-
-    try {
-      for (const request of requests) {
-        const response = await createSource(context, user.id, { ...request, projectId });
-
-        insertedIds.push(response.id);
-      }
-    } catch (error) {
-      if (insertedIds.length > 0) {
-        try {
-          await context.repositories
-            .get(SourceRepository)
-            .removeCreatedSources(user.id, projectId, insertedIds);
-        } catch {
-          context.getLogger().warn("Extracted source rollback deferred");
-        }
-      }
-
-      throw error;
+      });
     }
 
     result.data.vectorized = {

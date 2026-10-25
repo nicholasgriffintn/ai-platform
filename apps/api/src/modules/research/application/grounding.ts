@@ -2,7 +2,7 @@ import type { ProjectKnowledgeSearchResponse } from "@ngriffin_uk/polychat-schem
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { searchProjectKnowledge } from "~/modules/sources/application/knowledge-search";
+import { searchProjectKnowledge } from "~/modules/sources/application/knowledge/search";
 
 const OWN_SOURCE_PASSAGES = 5;
 const OWN_SOURCE_QUERY_CHARS = 1_000;

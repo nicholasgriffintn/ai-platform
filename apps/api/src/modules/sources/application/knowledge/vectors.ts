@@ -11,13 +11,12 @@ import {
 } from "~/infrastructure/providers/capabilities/embedding/utils/scope";
 import type { PendingEmbeddingDocument } from "~/modules/sources/application/embeddings/document";
 import { generateEmbeddingVectors } from "~/modules/sources/application/embeddings/lifecycle";
+import { requireSourceAccess } from "~/modules/sources/application/sources";
 import type { SearchableSource } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { EmbeddingRuntimeTarget } from "~/types";
-
-import { requireSourceAccess } from "./sources";
 
 export async function cleanupStaleIndexes(
   context: Pick<ServiceContext, "env" | "repositories">,

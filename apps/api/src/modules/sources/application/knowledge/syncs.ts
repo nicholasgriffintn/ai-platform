@@ -8,9 +8,12 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { ownsResource, operationIsGranted } from "@ngriffin_uk/polychat-library-policy";
 import {
   SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
-  createKnowledgeSyncSchema,
+  createConnectorKnowledgeSyncSchema,
+  createFeedKnowledgeSyncSchema,
   listPageOf,
   recipeConnectorProviderSchema,
+  type CreateConnectorKnowledgeSync,
+  type CreateFeedKnowledgeSync,
   type CreateKnowledgeSync,
   type KnowledgeSyncResource,
   type UpdateKnowledgeSync,
@@ -26,29 +29,55 @@ import { requireNotebookAccess } from "~/modules/notebooks/application/access";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { getRecipeById } from "~/modules/recipes/application/catalog";
-import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
-import { publishResourceEvent } from "~/modules/sync/application/resource-events";
+import type { KnowledgeTarget } from "~/modules/sources/domain/knowledge/item";
 import {
-  requireProjectAccess,
-  requireProjectCapabilityAccess,
-} from "~/modules/workspaces/application/access";
+  KnowledgeSyncRepository,
+  type ConnectorKnowledgeSyncRecord,
+  type KnowledgeSyncRecord,
+} from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
+import { publishResourceEvent } from "~/modules/sync/application/resource-events";
+import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IEnv } from "~/types";
 
-import type { KnowledgeSyncRecord } from "../infrastructure/KnowledgeSyncRepository";
-import { formatKnowledgeSync, parseKnowledgeSyncResources } from "./knowledge-sync-record";
+import { requirePublicFeedUrl } from "./feeds";
+import {
+  formatKnowledgeSync,
+  isConnectorKnowledgeSync,
+  parseKnowledgeSyncResources,
+} from "./sync-record";
+import { requireKnowledgeTarget } from "./targets";
+
+type ConnectorSyncAuthority = Pick<
+  ConnectorKnowledgeSyncRecord,
+  "user_id" | "project_id" | "collection_id" | "recipe_id" | "integration_id" | "connection_id"
+>;
+
+function notFound(): AssistantError {
+  return new AssistantError("Knowledge sync not found", ErrorType.NOT_FOUND, 404);
+}
+
+export function requireKnowledgeSyncTarget(
+  context: ServiceContext,
+  sync: Pick<KnowledgeSyncRecord, "project_id" | "collection_id"> & {
+    recipe_id: string | null;
+  },
+): Promise<KnowledgeTarget> {
+  return requireKnowledgeTarget(
+    context,
+    { projectId: sync.project_id, notebookId: sync.collection_id },
+    { manage: true, ...(sync.recipe_id ? { connectorRecipeId: sync.recipe_id } : {}) },
+  );
+}
 
 export async function requireKnowledgeSyncAuthority(
   context: ServiceContext,
-  sync: Pick<
-    KnowledgeSyncRecord,
-    "user_id" | "project_id" | "collection_id" | "recipe_id" | "integration_id" | "connection_id"
-  >,
+  sync: ConnectorSyncAuthority,
   resources: readonly KnowledgeSyncResource[],
 ) {
   const userId = context.requireUser().id;
 
   if (!ownsResource(userId, sync.user_id)) {
-    throw new AssistantError("Knowledge sync not found", ErrorType.NOT_FOUND, 404);
+    throw notFound();
   }
 
   const recipe = getRecipeById(sync.recipe_id);
@@ -78,7 +107,7 @@ export async function requireKnowledgeSyncAuthority(
     }
   }
 
-  await requireSyncTargetAccess(context, sync, recipe.id);
+  await requireKnowledgeSyncTarget(context, sync);
   const connection = await context.repositories
     .get(ProviderConnectionRepository)
     .getConnectionById(sync.connection_id);
@@ -103,31 +132,22 @@ export async function requireKnowledgeSyncAuthority(
   return { connection, provider };
 }
 
-async function requireSyncTargetAccess(
-  context: ServiceContext,
-  sync: Pick<KnowledgeSyncRecord, "project_id" | "collection_id">,
-  recipeId: string,
-): Promise<void> {
-  if (sync.project_id) {
-    await requireProjectAccess(context, sync.project_id, ["owner", "admin"]);
-    await requireProjectCapabilityAccess(context, sync.project_id, "recipe", recipeId);
-
-    return;
-  }
-
-  const notebook = sync.collection_id
-    ? await requireNotebookAccess(context, sync.collection_id, { manage: true })
-    : null;
-
-  if (!notebook || notebook.notebook.project_id) {
-    throw new AssistantError("Knowledge sync not found", ErrorType.NOT_FOUND, 404);
-  }
-}
-
-function syncEventScope(sync: KnowledgeSyncRecord) {
+export function knowledgeSyncEventScope(sync: KnowledgeSyncRecord) {
   return sync.project_id
     ? { kind: "project" as const, projectId: sync.project_id }
     : { kind: "personal" as const, userId: sync.user_id };
+}
+
+export async function publishKnowledgeSyncChanged(
+  context: ServiceContext,
+  sync: KnowledgeSyncRecord,
+): Promise<void> {
+  await publishResourceEvent(
+    context,
+    knowledgeSyncEventScope(sync),
+    "knowledge_sync.changed",
+    sync.collection_id ? { notebookId: sync.collection_id } : {},
+  );
 }
 
 export async function enqueueKnowledgeSync(
@@ -161,7 +181,7 @@ export async function listKnowledgeSyncs(
     : target.notebookId
       ? (await requireNotebookAccess(context, target.notebookId),
         await repository.listForCollection(target.notebookId))
-      : [];
+      : await repository.listForLibrary(context.requireUser().id);
 
   return listPageOf(
     records.map((record) => formatKnowledgeSync(record, context.requireUser().id)),
@@ -169,24 +189,26 @@ export async function listKnowledgeSyncs(
   );
 }
 
-export async function createKnowledgeSync(context: ServiceContext, input: CreateKnowledgeSync) {
-  const parsed = createKnowledgeSyncSchema.parse(input);
+async function saveConnectorSync(
+  context: ServiceContext,
+  id: string,
+  input: CreateConnectorKnowledgeSync,
+): Promise<void> {
   const userId = context.requireUser().id;
-
   const { connection } = await requireKnowledgeSyncAuthority(
     context,
     {
       user_id: userId,
-      project_id: parsed.projectId ?? null,
-      collection_id: parsed.notebookId ?? null,
-      recipe_id: parsed.recipeId,
-      integration_id: parsed.integrationId,
-      connection_id: parsed.connectionId,
+      project_id: input.projectId ?? null,
+      collection_id: input.notebookId ?? null,
+      recipe_id: input.recipeId,
+      integration_id: input.integrationId,
+      connection_id: input.connectionId,
     },
-    parsed.resources,
+    input.resources,
   );
 
-  for (const resource of parsed.resources) {
+  for (const resource of input.resources) {
     if (
       JSON.stringify(redactSensitiveTokens(resource.readParameters)) !==
       JSON.stringify(resource.readParameters)
@@ -199,20 +221,68 @@ export async function createKnowledgeSync(context: ServiceContext, input: Create
     }
   }
 
-  const id = generateId();
-
   await context.repositories.get(KnowledgeSyncRepository).create({
     id,
     userId,
-    projectId: parsed.projectId ?? null,
-    collectionId: parsed.notebookId ?? null,
+    projectId: input.projectId ?? null,
+    collectionId: input.notebookId ?? null,
+    kind: "connector",
     connectionId: connection.id,
-    recipeId: parsed.recipeId,
-    integrationId: parsed.integrationId,
-    title: parsed.title,
-    resources: parsed.resources,
-    intervalMinutes: parsed.intervalMinutes,
+    recipeId: input.recipeId,
+    integrationId: input.integrationId,
+    title: input.title,
+    resources: input.resources,
+    intervalMinutes: input.intervalMinutes,
   });
+}
+
+async function saveFeedSync(
+  context: ServiceContext,
+  id: string,
+  input: CreateFeedKnowledgeSync,
+): Promise<void> {
+  await requireKnowledgeSyncTarget(context, {
+    project_id: input.projectId ?? null,
+    collection_id: input.notebookId ?? null,
+    recipe_id: null,
+  });
+
+  if (input.feed.kind === "rss") {
+    requirePublicFeedUrl(input.feed.url);
+  }
+
+  await context.repositories.get(KnowledgeSyncRepository).create({
+    id,
+    userId: context.requireUser().id,
+    projectId: input.projectId ?? null,
+    collectionId: input.notebookId ?? null,
+    kind: input.feed.kind,
+    feed: input.feed,
+    title: input.title,
+    intervalMinutes: input.intervalMinutes,
+  });
+}
+
+async function requireOwnedSync(context: ServiceContext, id: string): Promise<KnowledgeSyncRecord> {
+  const sync = await context.repositories.get(KnowledgeSyncRepository).get(id);
+
+  if (!sync || !ownsResource(context.requireUser().id, sync.user_id)) {
+    throw notFound();
+  }
+
+  await requireKnowledgeSyncTarget(context, sync);
+
+  return sync;
+}
+
+export async function createKnowledgeSync(context: ServiceContext, input: CreateKnowledgeSync) {
+  const feed = createFeedKnowledgeSyncSchema.safeParse(input);
+  const id = generateId();
+
+  await (feed.success
+    ? saveFeedSync(context, id, feed.data)
+    : saveConnectorSync(context, id, createConnectorKnowledgeSyncSchema.parse(input)));
+
   const saved = await context.repositories.get(KnowledgeSyncRepository).get(id);
 
   if (!saved) {
@@ -220,15 +290,9 @@ export async function createKnowledgeSync(context: ServiceContext, input: Create
   }
 
   await enqueueKnowledgeSync(context.env, context.repositories, saved);
+  await publishKnowledgeSyncChanged(context, saved);
 
-  await publishResourceEvent(
-    context,
-    syncEventScope(saved),
-    "knowledge_sync.changed",
-    saved.collection_id ? { notebookId: saved.collection_id } : {},
-  );
-
-  return formatKnowledgeSync(saved, userId);
+  return formatKnowledgeSync(saved, context.requireUser().id);
 }
 
 export async function controlKnowledgeSync(
@@ -236,14 +300,9 @@ export async function controlKnowledgeSync(
   id: string,
   input: UpdateKnowledgeSync,
 ) {
-  const sync = await context.repositories.get(KnowledgeSyncRepository).get(id);
+  const sync = await requireOwnedSync(context, id);
 
-  if (!sync || !ownsResource(context.requireUser().id, sync.user_id)) {
-    throw new AssistantError("Knowledge sync not found", ErrorType.NOT_FOUND, 404);
-  }
-
-  await requireSyncTargetAccess(context, sync, sync.recipe_id);
-  if (input.action !== "pause") {
+  if (input.action !== "pause" && isConnectorKnowledgeSync(sync)) {
     await requireKnowledgeSyncAuthority(context, sync, parseKnowledgeSyncResources(sync));
   }
 
@@ -251,19 +310,21 @@ export async function controlKnowledgeSync(
   const saved = await context.repositories.get(KnowledgeSyncRepository).get(id);
 
   if (!saved) {
-    throw new AssistantError("Knowledge sync not found", ErrorType.NOT_FOUND, 404);
+    throw notFound();
   }
 
   if (input.action !== "pause") {
     await enqueueKnowledgeSync(context.env, context.repositories, saved);
   }
 
-  await publishResourceEvent(
-    context,
-    syncEventScope(saved),
-    "knowledge_sync.changed",
-    saved.collection_id ? { notebookId: saved.collection_id } : {},
-  );
+  await publishKnowledgeSyncChanged(context, saved);
 
   return formatKnowledgeSync(saved, context.requireUser().id);
+}
+
+export async function deleteKnowledgeSync(context: ServiceContext, id: string): Promise<void> {
+  const sync = await requireOwnedSync(context, id);
+
+  await context.repositories.get(KnowledgeSyncRepository).delete(id);
+  await publishKnowledgeSyncChanged(context, sync);
 }

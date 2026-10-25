@@ -8,8 +8,8 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { defineSchedule, type AppWorkflows } from "~/modules/queue/application/workflows";
-import { scheduleKnowledgeIndexes } from "~/modules/sources/application/knowledge-index";
-import { scheduleKnowledgeSyncs } from "~/modules/sources/application/knowledge-sync-run";
+import { scheduleKnowledgeIndexes } from "~/modules/sources/application/knowledge/indexing";
+import { scheduleKnowledgeSyncs } from "~/modules/sources/application/knowledge/sync-run";
 
 import { sourceGenerationPolling } from "./source-generation-polling";
 import { sourceKnowledgeIndex } from "./source-knowledge";

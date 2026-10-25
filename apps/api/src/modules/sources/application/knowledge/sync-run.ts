@@ -7,16 +7,32 @@ import { createServiceContext, type ServiceContext } from "~/infrastructure/cont
 import { createRepositories } from "~/infrastructure/database/repositories";
 import { closeComposioConnectorRun } from "~/modules/connectors/application/composio-run";
 import { executeRecipeConnectorOperation } from "~/modules/connectors/application/operations";
-import { KnowledgeSyncRepository } from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
-import { publishResourceEvent } from "~/modules/sync/application/resource-events";
+import {
+  KnowledgeSyncRepository,
+  type ConnectorKnowledgeSyncRecord,
+  type KnowledgeSyncRecord,
+} from "~/modules/sources/infrastructure/KnowledgeSyncRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
-import type { KnowledgeSyncRecord } from "../infrastructure/KnowledgeSyncRepository";
-import { requireKnowledgeSyncAuthority, enqueueKnowledgeSync } from "./knowledge-sync";
-import { parseKnowledgeSyncResources } from "./knowledge-sync-record";
+import { gatherFeed } from "./feeds";
+import {
+  isConnectorKnowledgeSync,
+  parseKnowledgeFeed,
+  parseKnowledgeSyncResources,
+} from "./sync-record";
+import {
+  enqueueKnowledgeSync,
+  publishKnowledgeSyncChanged,
+  requireKnowledgeSyncAuthority,
+  requireKnowledgeSyncTarget,
+} from "./syncs";
 
-async function syncResources(context: ServiceContext, initial: KnowledgeSyncRecord, token: string) {
+async function syncResources(
+  context: ServiceContext,
+  initial: ConnectorKnowledgeSyncRecord,
+  token: string,
+) {
   const resources = parseKnowledgeSyncResources(initial);
   let sync = initial;
 
@@ -78,22 +94,43 @@ async function syncResources(context: ServiceContext, initial: KnowledgeSyncReco
       return;
     }
 
-    await publishResourceEvent(
-      context,
-      sync.project_id
-        ? { kind: "project", projectId: sync.project_id }
-        : { kind: "personal", userId: sync.user_id },
-      "knowledge_sync.changed",
-      sync.collection_id ? { notebookId: sync.collection_id } : {},
-    );
+    await publishKnowledgeSyncChanged(context, sync);
     const latest = await context.repositories.get(KnowledgeSyncRepository).get(sync.id);
 
-    if (!latest || latest.generation !== initial.generation) {
+    if (!latest || latest.generation !== initial.generation || !isConnectorKnowledgeSync(latest)) {
       return;
     }
 
     sync = latest;
   }
+}
+
+async function syncFeed(context: ServiceContext, sync: KnowledgeSyncRecord, token: string) {
+  const repository = context.repositories.get(KnowledgeSyncRepository);
+
+  try {
+    await gatherFeed(context, await requireKnowledgeSyncTarget(context, sync), {
+      syncId: sync.id,
+      feed: parseKnowledgeFeed(sync),
+    });
+    await requireKnowledgeSyncTarget(context, sync);
+    await repository.completeFeedRun(sync, token);
+  } catch (error) {
+    await repository.deferFeedRun(sync, token);
+    throw error;
+  }
+}
+
+function describeFailure(sync: KnowledgeSyncRecord, pause: boolean): string {
+  if (isConnectorKnowledgeSync(sync)) {
+    return pause
+      ? "Sync paused. Check project access and reconnect the source account. The checkpoint was retained."
+      : "Sync failed. The checkpoint was retained for retry.";
+  }
+
+  return pause
+    ? "Sync paused. Check the feed address and your access to where it files, then resume it."
+    : "Sync failed. It will try again at the next interval.";
 }
 
 export async function runKnowledgeSync(env: IEnv, id: string, userId: number, generation: number) {
@@ -126,24 +163,17 @@ export async function runKnowledgeSync(env: IEnv, id: string, userId: number, ge
   const context = createServiceContext({ env, user });
 
   try {
-    await syncResources(context, sync, token);
+    await (isConnectorKnowledgeSync(sync)
+      ? syncResources(context, sync, token)
+      : syncFeed(context, sync, token));
   } catch (error) {
     pause = error instanceof AssistantError && [401, 403, 404].includes(error.statusCode);
-    errorMessage = pause
-      ? "Sync paused. Check project access and reconnect the source account. The checkpoint was retained."
-      : "Sync failed. The checkpoint was retained for retry.";
+    errorMessage = describeFailure(sync, pause);
     throw new AssistantError(errorMessage, ErrorType.PROVIDER_ERROR, 502);
   } finally {
     try {
       await knowledgeSyncs.release(id, token, errorMessage, pause);
-      await publishResourceEvent(
-        context,
-        sync.project_id
-          ? { kind: "project", projectId: sync.project_id }
-          : { kind: "personal", userId: sync.user_id },
-        "knowledge_sync.changed",
-        sync.collection_id ? { notebookId: sync.collection_id } : {},
-      );
+      await publishKnowledgeSyncChanged(context, sync);
     } finally {
       await closeComposioConnectorRun(context);
     }

@@ -12,7 +12,6 @@ import {
   getPersonalEmbeddingScopeTag,
   getProjectEmbeddingScopeTag,
 } from "~/infrastructure/providers/capabilities/embedding/utils/scope";
-import { rerankAuthorisedDocuments } from "~/modules/sources/application/document-reranking";
 import { queryEmbeddingRuntime } from "~/modules/sources/application/embeddings/provider-query";
 import type {
   KnowledgeScope,
@@ -22,6 +21,8 @@ import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceS
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+
+import { rerankAuthorisedDocuments } from "./reranking";
 
 export async function requireKnowledgeScope(
   context: ServiceContext,

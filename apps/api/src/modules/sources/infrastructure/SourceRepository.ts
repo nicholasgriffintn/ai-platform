@@ -1,4 +1,5 @@
 import {
+  KNOWLEDGE_FEED_METADATA_KEY,
   SOURCE_SUMMARY_METADATA_KEY,
   type SourceCollectionKind,
   type SourceGenerationType,
@@ -141,21 +142,6 @@ export class SourceRepository extends BaseRepository {
     }
   }
 
-  async removeCreatedSources(
-    userId: number,
-    projectId: string | null,
-    ids: string[],
-  ): Promise<void> {
-    await this.selectInChunks(ids, async (page) => {
-      await this.executeRun(
-        `DELETE FROM resource WHERE resource_type = 'source' AND created_by_user_id = ? AND project_id IS ? AND id IN (${page.map(() => "?").join(", ")})`,
-        [userId, projectId, ...page],
-      );
-
-      return [];
-    });
-  }
-
   async createSource(input: CreateSourceRecord): Promise<SourceRecord> {
     const { source, created } = await this.createSourceWithOutcome(input);
 
@@ -266,6 +252,23 @@ export class SourceRepository extends BaseRepository {
     return this.selectSummaries(
       { created_by_user_id: userId, project_id: null, kind: filters.kind },
       filters.generation,
+    );
+  }
+
+  listFeedArticleIds(
+    scope: { userId: number; projectId: string | null },
+    publishedSince: string,
+  ): Promise<{ id: string }[]> {
+    return this.runQuery<{ id: string }>(
+      `SELECT id FROM ${sourceResourceSql} s
+       WHERE s.kind = 'url' AND s.status = 'available'
+         AND (CASE WHEN ? IS NULL THEN s.project_id IS NULL AND s.created_by_user_id = ? ELSE s.project_id = ? END)
+         AND json_type(s.metadata, '$.${KNOWLEDGE_FEED_METADATA_KEY}.publishedAt') = 'text'
+         AND json_extract(s.metadata, '$.${KNOWLEDGE_FEED_METADATA_KEY}.publishedAt') >= ?
+         AND ${sourceVisibilitySql("s")}
+       ORDER BY json_extract(s.metadata, '$.${KNOWLEDGE_FEED_METADATA_KEY}.publishedAt') DESC
+       LIMIT 500`,
+      [scope.projectId, scope.userId, scope.projectId, publishedSince],
     );
   }
 

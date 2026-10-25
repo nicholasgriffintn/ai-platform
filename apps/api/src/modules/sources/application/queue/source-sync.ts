@@ -1,7 +1,7 @@
 import z from "zod/v4";
 
 import { defineTask } from "~/modules/queue/application/workflows";
-import { runKnowledgeSync } from "~/modules/sources/application/knowledge-sync-run";
+import { runKnowledgeSync } from "~/modules/sources/application/knowledge/sync-run";
 
 export const sourceKnowledgeSync = defineTask({
   payload: z.object({ syncId: z.string().min(1), generation: z.number().int().positive() }),

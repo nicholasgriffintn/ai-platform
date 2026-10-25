@@ -40,12 +40,13 @@ import { paintDrawing } from "~/modules/sources/application/generation/drawing/c
 import { guessDrawingFromImage } from "~/modules/sources/application/generation/drawing/guess";
 import { listReplicateModels } from "~/modules/sources/application/generation/replicate-models";
 import { listCanvasModels } from "~/modules/sources/application/generation/studio/list-models";
-import { searchProjectKnowledge } from "~/modules/sources/application/knowledge-search";
+import { searchProjectKnowledge } from "~/modules/sources/application/knowledge/search";
 import {
   controlKnowledgeSync,
+  deleteKnowledgeSync,
   createKnowledgeSync,
   listKnowledgeSyncs,
-} from "~/modules/sources/application/knowledge-sync";
+} from "~/modules/sources/application/knowledge/syncs";
 import {
   createSourceCover,
   readSourceCoverObject,
@@ -508,6 +509,16 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
       responses: { 200: { description: "The sync", schema: knowledgeSyncSchema } },
       handler: ({ params, body, serviceContext }) =>
         controlKnowledgeSync(serviceContext, params.sync_id, body),
+    })
+    .delete({
+      auth: true,
+      summary: "Remove a knowledge sync",
+      paramSchema: syncParamsSchema,
+      handler: async ({ params, serviceContext }) => {
+        await deleteKnowledgeSync(serviceContext, params.sync_id);
+
+        return { deleted: true };
+      },
     });
 });
 

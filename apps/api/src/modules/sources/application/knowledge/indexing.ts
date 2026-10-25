@@ -18,14 +18,14 @@ import {
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type { PendingEmbeddingDocument } from "~/modules/sources/application/embeddings/document";
+import { requireSourceAccess } from "~/modules/sources/application/sources";
+import { summariseStoredSource } from "~/modules/sources/application/summary";
 import { SourceSearchRepository } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import type { SearchableSource } from "~/modules/sources/infrastructure/SourceSearchRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
-import { cleanupStaleIndexes, insertSourceVectors } from "./knowledge-vectors";
-import { requireSourceAccess } from "./sources";
-import { summariseStoredSource } from "./summary";
+import { cleanupStaleIndexes, insertSourceVectors } from "./vectors";
 
 const logger = getLogger({ prefix: "sources/knowledge-index" });
 
@@ -49,11 +49,11 @@ async function prepareSourceSearchDocument(
     logicalId: source.id,
     content,
     title: source.title,
-    chunks: chunks.map((content, index) => ({
+    chunks: chunks.map((chunk, index) => ({
       id: `srcv_${digest.slice(0, 50)}_${index}`,
       vectorId: `srcv_${digest.slice(0, 50)}_${index}`,
       index,
-      content,
+      content: chunk,
     })),
   };
 }

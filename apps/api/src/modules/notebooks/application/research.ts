@@ -4,15 +4,16 @@ import type {
   NotebookDetail,
   NotebookResearchResponse,
 } from "@ngriffin_uk/polychat-schemas";
-import { resolveHttpUrl, truncateForModel } from "@ngriffin_uk/polychat-utility-core";
+import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { runResearchReport } from "~/modules/research/application/report";
 import { findWebResults } from "~/modules/search/application/results";
+import { gatherKnowledgeArticles } from "~/modules/sources/application/knowledge/articles";
+import { requireKnowledgeTarget } from "~/modules/sources/application/knowledge/targets";
 import { createSource, toSourceSummary, updateSource } from "~/modules/sources/application/sources";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
-import { readPageContents } from "~/modules/tools/application/retrieval/page-contents";
 
 import { requireNotebookAccess } from "./access";
 import { enqueueNotebookJob } from "./jobs";
@@ -52,69 +53,22 @@ export async function researchForNotebook(
   return { depth: "deep", report: toSourceSummary(report) };
 }
 
-async function createWebSources(
-  context: ServiceContext,
-  projectId: string | null,
-  results: ImportNotebookResearchInput["results"],
-  metadata: Record<string, unknown>,
-): Promise<string[]> {
-  const user = context.requireUser();
-  const contentByUrl = await readPageContents(
-    context,
-    results.map((result) => result.url),
-  );
-  const sourceIds: string[] = [];
-
-  for (const result of results) {
-    const url = resolveHttpUrl(result.url);
-    const content = url ? contentByUrl.get(url) : undefined;
-
-    if (!content?.trim()) {
-      continue;
-    }
-
-    const source = await createSource(context, user.id, {
-      projectId,
-      kind: "url",
-      title: result.title,
-      status: "available",
-      content: truncateForModel(content, MAX_SOURCE_CHARACTERS),
-      externalUri: result.url,
-      provider: "web",
-      metadata,
-    });
-
-    sourceIds.push(source.id);
-  }
-
-  return sourceIds;
-}
-
 export async function importNotebookResearch(
   context: ServiceContext,
   notebookId: string,
   input: ImportNotebookResearchInput,
   metadata: Record<string, unknown> = {},
 ): Promise<NotebookDetail> {
-  const access = await requireNotebookAccess(context, notebookId);
-  const sourceIds: string[] = [];
+  const gathered = await gatherKnowledgeArticles(
+    context,
+    await requireKnowledgeTarget(context, { projectId: null, notebookId }, { manage: false }),
+    input.results.map((result) => ({ title: result.title, url: result.url, snippet: "" })),
+    { readLimit: input.results.length, summarise: false, metadata: () => metadata },
+  );
 
-  for (let start = 0; start < input.results.length; start += 10) {
-    sourceIds.push(
-      ...(await createWebSources(
-        context,
-        access.notebook.project_id,
-        input.results.slice(start, start + 10),
-        metadata,
-      )),
-    );
-  }
-
-  if (sourceIds.length === 0) {
+  if (!gathered.some((article) => article.sourceId)) {
     throw new AssistantError("None of those pages had readable text", ErrorType.PARAMS_ERROR, 400);
   }
-
-  await context.repositories.get(SourceRepository).addCollectionSources(notebookId, sourceIds);
 
   return getNotebookDetail(context, notebookId);
 }

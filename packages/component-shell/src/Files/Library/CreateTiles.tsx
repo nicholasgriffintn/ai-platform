@@ -8,6 +8,7 @@ import {
   Loader2,
   type LucideIcon,
   Radio,
+  Rss,
   StickyNote,
   Upload,
 } from "lucide-react";
@@ -70,6 +71,7 @@ const DIALOG_TILES: Array<{ dialog: CreateDialog; label: string; Icon: LucideIco
   { dialog: "memory", label: "Memory", Icon: BookOpenText },
   { dialog: "folder", label: "Folder", Icon: FolderPlus },
   { dialog: "podcast", label: "Podcast", Icon: Radio },
+  { dialog: "follow", label: "Follow", Icon: Rss },
 ];
 
 export function CreateTiles({ basePath, creation }: { basePath: string; creation: FileCreation }) {

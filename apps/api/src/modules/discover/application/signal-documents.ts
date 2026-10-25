@@ -1,59 +1,40 @@
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { createSource, updateSource } from "~/modules/sources/application/sources";
-import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
+import { commitKnowledgeDocument } from "~/modules/sources/application/knowledge/documents";
+import { requireKnowledgeTarget } from "~/modules/sources/application/knowledge/targets";
+import type { KnowledgeDocument, KnowledgeTarget } from "~/modules/sources/domain/knowledge/item";
 
-import { fileDiscoverDocument } from "./folders";
-
-export interface DiscoverDocumentInput {
-  id: string;
-  kind: "connector" | "text" | "url";
-  title: string;
-  provider: string | null;
-  externalUri?: string;
-  content: string | undefined;
-  metadata: Record<string, unknown>;
-}
+import { ensureDiscoverResearchFolder } from "./folders";
 
 export async function discoverSignalSourceId(userId: number, signalId: string): Promise<string> {
   return `discover_signal_${(await sha256Hex(`${userId}:${signalId}`)).slice(0, 24)}`;
 }
 
+export async function discoverKnowledgeTarget(
+  context: ServiceContext,
+  notebookId: string,
+): Promise<KnowledgeTarget> {
+  const target = await requireKnowledgeTarget(
+    context,
+    { projectId: null, notebookId },
+    { manage: true },
+  );
+
+  return {
+    ...target,
+    collectionIds: [...target.collectionIds, await ensureDiscoverResearchFolder(context)],
+  };
+}
+
 export async function writeDiscoverDocument(
   context: ServiceContext,
   notebookId: string,
-  input: DiscoverDocumentInput,
+  document: KnowledgeDocument,
 ): Promise<void> {
-  const user = context.requireUser();
-  const sources = context.repositories.get(SourceRepository);
-  const existing = await sources.getSource(input.id);
-
-  if (existing && existing.created_by_user_id === user.id) {
-    await updateSource(context, user.id, input.id, {
-      title: input.title,
-      status: "available",
-      metadata: input.metadata,
-      ...(input.content === undefined ? {} : { content: input.content }),
-    });
-  } else {
-    await createSource(
-      context,
-      user.id,
-      {
-        projectId: null,
-        kind: input.kind,
-        title: input.title,
-        status: "available",
-        content: input.content ?? "",
-        provider: input.provider,
-        ...(input.externalUri ? { externalUri: input.externalUri } : {}),
-        metadata: input.metadata,
-      },
-      { id: input.id },
-    );
-  }
-
-  await sources.addCollectionSources(notebookId, [input.id]);
-  await fileDiscoverDocument(context, input.id);
+  await commitKnowledgeDocument(
+    context,
+    await discoverKnowledgeTarget(context, notebookId),
+    document,
+  );
 }

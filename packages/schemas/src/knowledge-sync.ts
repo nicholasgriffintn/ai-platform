@@ -2,6 +2,9 @@ import z from "zod/v4";
 
 import { listSchema } from "./platform/list.js";
 
+export const KNOWLEDGE_FEED_METADATA_KEY = "knowledgeFeed";
+export const KNOWLEDGE_FEED_INTERVAL_MINUTES = 360;
+
 const fieldPathSchema = z
   .array(z.union([z.string().min(1).max(200), z.number().int().nonnegative()]))
   .min(1)
@@ -49,7 +52,7 @@ export const knowledgeSyncResourceSchema = z
   })
   .strict();
 
-export const createKnowledgeSyncSchema = z
+export const createConnectorKnowledgeSyncSchema = z
   .object({
     projectId: z.string().min(1).optional(),
     notebookId: z.string().min(1).optional(),
@@ -75,13 +78,55 @@ export const createKnowledgeSyncSchema = z
     error: "Sync into either a project or a notebook",
   });
 
+export const knowledgeSyncKindSchema = z.enum(["connector", "rss", "news", "web"]);
+
+export const knowledgeFeedSchema = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("rss"),
+      url: z.url({ protocol: /^https?$/ }).max(2048),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("news"),
+      query: z.string().trim().min(2).max(200),
+      country: z.string().trim().length(2).optional(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("web"),
+      query: z.string().trim().min(2).max(200),
+    })
+    .strict(),
+]);
+
+export const createFeedKnowledgeSyncSchema = z
+  .object({
+    projectId: z.string().min(1).optional(),
+    notebookId: z.string().min(1).optional(),
+    title: z.string().trim().min(1).max(200),
+    feed: knowledgeFeedSchema,
+    intervalMinutes: z.number().int().min(60).max(1440).default(KNOWLEDGE_FEED_INTERVAL_MINUTES),
+  })
+  .strict()
+  .refine((value) => !(value.projectId && value.notebookId), {
+    error: "Follow into your library, a project or a notebook",
+  });
+
+export const createKnowledgeSyncSchema = z.union([
+  createConnectorKnowledgeSyncSchema,
+  createFeedKnowledgeSyncSchema,
+]);
+
 export const knowledgeSyncListQuerySchema = z
   .object({
     project_id: z.string().min(1).optional(),
     notebook_id: z.string().min(1).optional(),
   })
-  .refine((value) => Boolean(value.project_id) !== Boolean(value.notebook_id), {
-    error: "List a project's or a notebook's syncs",
+  .refine((value) => !(value.project_id && value.notebook_id), {
+    error: "List your library's, a project's or a notebook's syncs",
   });
 
 export const knowledgeSyncSchema = z
@@ -90,6 +135,8 @@ export const knowledgeSyncSchema = z
     projectId: z.string().nullable(),
     notebookId: z.string().nullable(),
     title: z.string(),
+    kind: knowledgeSyncKindSchema,
+    feed: knowledgeFeedSchema.nullable(),
     status: z.enum(["active", "paused"]),
     resourceCount: z.number().int().nonnegative(),
     cursor: z.number().int().nonnegative(),
@@ -109,5 +156,9 @@ export const updateKnowledgeSyncSchema = z
 export type KnowledgeSyncResource = z.infer<typeof knowledgeSyncResourceSchema>;
 export type KnowledgeDocumentMapping = z.infer<typeof knowledgeDocumentMappingSchema>;
 export type CreateKnowledgeSync = z.infer<typeof createKnowledgeSyncSchema>;
+export type CreateConnectorKnowledgeSync = z.infer<typeof createConnectorKnowledgeSyncSchema>;
+export type CreateFeedKnowledgeSync = z.infer<typeof createFeedKnowledgeSyncSchema>;
+export type KnowledgeSyncKind = z.infer<typeof knowledgeSyncKindSchema>;
+export type KnowledgeFeed = z.infer<typeof knowledgeFeedSchema>;
 export type KnowledgeSync = z.infer<typeof knowledgeSyncSchema>;
 export type UpdateKnowledgeSync = z.infer<typeof updateKnowledgeSyncSchema>;

@@ -9,7 +9,6 @@ import { CreateTiles } from "./CreateTiles.js";
 import { FileActionDialogs } from "./FileActionDialogs.js";
 import { FileDropZone } from "./FileDropZone.js";
 import { FilesBrowser } from "./FilesBrowser.js";
-import { KnowledgeSyncPanel } from "./KnowledgeSyncPanel.js";
 import { UploadInput } from "./UploadInput.js";
 import { useFileActions } from "./useFileActions.js";
 import { useFileCreation } from "./useFileCreation.js";
@@ -59,9 +58,6 @@ export function FilesLibrary({
     >
       <div className="space-y-8">
         <CreateTiles basePath={basePath} creation={creation} />
-        {projectId && (filter === "all" || filter === "sources") ? (
-          <KnowledgeSyncPanel target={{ projectId }} />
-        ) : null}
         <FilesBrowser
           basePath={basePath}
           projectId={projectId}

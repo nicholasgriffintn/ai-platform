@@ -1,7 +1,7 @@
 import { z } from "zod/v4";
 
 import { defineTask } from "~/modules/queue/application/workflows";
-import { indexSourceForUser } from "~/modules/sources/application/knowledge-index";
+import { indexSourceForUser } from "~/modules/sources/application/knowledge/indexing";
 
 export const sourceKnowledgeIndex = defineTask({
   payload: z.object({ sourceId: z.string().min(1) }),

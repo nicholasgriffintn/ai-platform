@@ -26,6 +26,7 @@ import { toast } from "sonner";
 
 import { sourceToFileItem } from "../Files/Library/file-items.js";
 import { FileTypeIcon } from "../Files/Library/FilePreview.js";
+import { KnowledgeFeedForm } from "../Files/Library/KnowledgeFeedForm.js";
 import { UploadInput } from "../Files/Library/UploadInput.js";
 import { useFileCreation } from "../Files/Library/useFileCreation.js";
 
@@ -266,6 +267,7 @@ export function NotebookAddSourcesDialog({
             <TabsTrigger value="upload">Upload</TabsTrigger>
             <TabsTrigger value="website">Website</TabsTrigger>
             <TabsTrigger value="text">Paste text</TabsTrigger>
+            <TabsTrigger value="follow">Follow</TabsTrigger>
           </TabsList>
           <TabsContent value="files" className="pt-3">
             <FromFiles notebook={notebook} projectId={projectId} actions={actions} onDone={close} />
@@ -278,6 +280,9 @@ export function NotebookAddSourcesDialog({
           </TabsContent>
           <TabsContent value="text" className="pt-3">
             <FromText projectId={projectId} actions={actions} onDone={close} />
+          </TabsContent>
+          <TabsContent value="follow" className="pt-3">
+            <KnowledgeFeedForm target={{ notebookId: notebook.id }} onDone={close} />
           </TabsContent>
         </Tabs>
       </DialogContent>
