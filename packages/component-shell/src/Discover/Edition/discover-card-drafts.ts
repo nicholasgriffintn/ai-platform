@@ -1,5 +1,6 @@
 import type { ChatSuggestion } from "@ngriffin_uk/polychat-library-react";
 import type { DiscoverCard } from "@ngriffin_uk/polychat-schemas";
+import { normaliseComparableText } from "@ngriffin_uk/polychat-utility-core";
 
 export function discoverCardEyebrow(card: DiscoverCard): string {
   switch (card.kind) {
@@ -30,8 +31,62 @@ export function discoverCardHeadline(card: DiscoverCard): string {
   return card.kind === "check_in" ? card.question : card.title;
 }
 
+export function discoverCardBody(card: DiscoverCard): string | null {
+  switch (card.kind) {
+    case "topic":
+      return card.angle;
+    case "read":
+    case "watch":
+    case "listen":
+    case "inbox":
+      return card.summary;
+    case "event":
+    case "action":
+    case "resurface":
+      return card.detail;
+    case "wind_down":
+      return card.premise;
+    case "check_in":
+      return null;
+  }
+}
+
+export interface DiscoverCardLink {
+  href: string;
+  label: string;
+}
+
+export function discoverCardLink(card: DiscoverCard): DiscoverCardLink | null {
+  switch (card.kind) {
+    case "read":
+      return { href: card.url, label: `Open on ${card.source}` };
+    case "watch":
+    case "listen":
+    case "inbox":
+      return card.url ? { href: card.url, label: `Open on ${card.source}` } : null;
+    case "event":
+      return card.url ? { href: card.url, label: "Open it" } : null;
+    case "resurface":
+      return { href: card.href, label: "Open it" };
+    case "topic":
+    case "action":
+    case "check_in":
+    case "wind_down":
+      return null;
+  }
+}
+
 export function hasDiscoverTopic(card: DiscoverCard): boolean {
   return "topic" in card;
+}
+
+export function countTopicArticles(cards: readonly DiscoverCard[], topic: string): number {
+  const key = normaliseComparableText(topic);
+
+  return cards.filter(
+    (card) =>
+      card.kind === "read" && Boolean(card.sourceId) && normaliseComparableText(card.topic) === key,
+  ).length;
 }
 
 export function cardTopic(card: DiscoverCard): string {

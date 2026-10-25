@@ -5,6 +5,7 @@ import { AudioLines, Settings2 } from "lucide-react";
 import { useState } from "react";
 
 import { PageShell } from "../../Shell/PageShell.js";
+import { cardTopic, countTopicArticles } from "./discover-card-drafts.js";
 import { DiscoverDetailPane } from "./DiscoverDetailPane.js";
 import { DiscoverFeed } from "./DiscoverFeed.js";
 import { DiscoverIntro } from "./DiscoverIntro.js";
@@ -254,6 +255,7 @@ export function DiscoverEditionView() {
                 <DiscoverDetailPane
                   editionId={edition.id}
                   card={selectedCard}
+                  topicArticleCount={countTopicArticles(edition.cards, cardTopic(selectedCard))}
                   signals={edition.feedback[selectedCard.id] ?? []}
                   isSending={controller.isSendingFeedback}
                   follow={controller.followFor(selectedCard)}

@@ -15,6 +15,7 @@ import type {
   DiscoverRefreshResponse,
   DiscoverResponse,
   DiscoverSettings,
+  Source,
   UpdateDiscoverSettings,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -67,6 +68,18 @@ export function requestDiscoverListen(editionId: string): Promise<DiscoverListen
 
 export function requestDiscoverWeek(editionId: string): Promise<{ queued: true }> {
   return requestJson(`/discover/editions/${encodeURIComponent(editionId)}/week`, "POST", {});
+}
+
+function cardPath(editionId: string, cardId: string, action: string): string {
+  return `/discover/editions/${encodeURIComponent(editionId)}/cards/${encodeURIComponent(cardId)}/${action}`;
+}
+
+export function requestDiscoverFraming(editionId: string, cardId: string): Promise<Source> {
+  return requestJson(cardPath(editionId, cardId, "framing"), "POST", {});
+}
+
+export function requestDiscoverCoverage(editionId: string, cardId: string): Promise<Source> {
+  return requestJson(cardPath(editionId, cardId, "coverage"), "POST", {});
 }
 
 function episodePath(episodeId: string, suffix = ""): string {

@@ -51,7 +51,7 @@ export function SourceListen({ source, className }: { source: Source; className?
   return (
     <div
       className={cn(
-        "flex flex-col gap-2 rounded-2xl border border-border bg-surface p-3",
+        "flex w-full flex-col gap-2 rounded-2xl border border-border bg-surface p-3",
         className,
       )}
     >

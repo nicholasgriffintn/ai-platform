@@ -27,8 +27,6 @@ export const analyse_article: ApiToolDefinition = {
 
     const projectId = resolveRequestProjectId(request);
     const result = await analyseArticle({
-      completion_id: request.request?.completion_id ?? "",
-      app_url: request.app_url,
       ...(request.context ? { context: request.context } : {}),
       ...(request.env ? { env: request.env } : {}),
       args: { itemId: args.itemId, article: args.article },

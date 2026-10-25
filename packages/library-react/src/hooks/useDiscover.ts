@@ -9,8 +9,10 @@ import {
   startDiscoverWindDown,
   unfollowDiscoverTopic,
   refreshDiscover,
+  requestDiscoverCoverage,
   requestDiscoverEpisode,
   recordDiscoverEpisodeProgress,
+  requestDiscoverFraming,
   requestDiscoverListen,
   requestDiscoverWeek,
   retryDiscoverEpisodeChapter,
@@ -24,12 +26,14 @@ import type {
   DiscoverFeedbackRequest,
   DiscoverResponse,
   DiscoverWindDown,
+  Source,
   UpdateDiscoverSettings,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useLiveOrPoll } from "../sync/live-or-poll.js";
 import { NOTEBOOKS_QUERY_KEY } from "./useNotebooks.js";
+import { SOURCE_QUERY_KEYS } from "./useSources.js";
 
 export const DISCOVER_QUERY_KEY = ["discover"] as const;
 
@@ -164,6 +168,28 @@ export function useRequestDiscoverListen() {
   return useMutation({
     mutationFn: (editionId: string) => requestDiscoverListen(editionId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: DISCOVER_QUERY_KEY }),
+  });
+}
+
+export function useDiscoverFraming(editionId: string, cardId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => requestDiscoverFraming(editionId, cardId),
+    onSuccess: (source: Source) =>
+      queryClient.setQueryData(SOURCE_QUERY_KEYS.detail(source.id), source),
+  });
+}
+
+export function useDiscoverCoverage(editionId: string, cardId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => requestDiscoverCoverage(editionId, cardId),
+    onSuccess: (source: Source) => {
+      queryClient.setQueryData(SOURCE_QUERY_KEYS.detail(source.id), source);
+      void queryClient.invalidateQueries({ queryKey: DISCOVER_QUERY_KEY });
+    },
   });
 }
 

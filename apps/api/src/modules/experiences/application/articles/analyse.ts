@@ -2,20 +2,16 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
-import { ai } from "~/infrastructure/ai";
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
-import { gradeEditorialQuality } from "~/modules/documents/application/editorial-quality";
-import { extractQuotes } from "~/modules/experiences/application/articles/extract";
-import { verifyQuotes } from "~/modules/experiences/application/articles/verify";
 import {
-  findModelConfig,
-  getAuxiliaryModelForRetrieval,
-} from "~/modules/models/application/resolve";
+  ARTICLE_FRAMING_TIER,
+  analyseArticleFraming,
+} from "~/modules/experiences/application/articles/framing";
+import { renderArticleFraming } from "~/modules/experiences/domain/framing";
+import { getTierModel } from "~/modules/models/application/resolve";
 import { createExecutionOutputProvenance } from "~/modules/outputs/application/provenance";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { IEnv, IUser } from "~/types";
-
-import { analyseArticlePrompt } from "./prompts";
 
 const logger = getLogger({ prefix: "services/apps/articles/analyse" });
 
@@ -33,16 +29,12 @@ export interface AnalyseSuccessResponse {
 }
 
 export async function analyseArticle({
-  completion_id,
-  app_url,
   context,
   env,
   args,
   user,
   projectId,
 }: {
-  completion_id: string;
-  app_url: string | undefined;
   context?: ServiceContext;
   env?: IEnv;
   args: Params;
@@ -76,48 +68,14 @@ export async function analyseArticle({
     }
 
     const sanitisedArticle = sanitiseInput(args.article);
-
-    const {
-      model: modelToUse,
-      provider: providerToUse,
-      effort,
-    } = await getAuxiliaryModelForRetrieval(serviceContext.env, user);
-    const modelConfig = await findModelConfig(modelToUse, serviceContext.env, providerToUse);
-    const analysisData = await ai.complete({
-      env: serviceContext.env,
-      user,
-      model: modelToUse,
-      provider: providerToUse,
-      completion_id,
-      app_url,
-      reasoning_effort: effort,
-      disable_functions: true,
-      prompt: analyseArticlePrompt(sanitisedArticle, {
-        modelId: modelToUse,
-        modelConfig,
-      }),
-    });
-
-    if (!analysisData.text) {
-      throw new AssistantError("Analysis content was empty", ErrorType.PARAMS_ERROR);
-    }
-
-    const quotes = extractQuotes(analysisData.text);
-    const verifiedQuotes = verifyQuotes(sanitisedArticle, quotes);
-    const editorial = await gradeEditorialQuality({
-      env: serviceContext.env,
-      user,
-      completionId: completion_id,
-      text: sanitisedArticle,
-    });
-
+    const [{ framing, missingQuotes, editorial }, tierModel] = await Promise.all([
+      analyseArticleFraming(serviceContext, sanitisedArticle),
+      getTierModel(serviceContext.env, user, ARTICLE_FRAMING_TIER),
+    ]);
     const analysisResult = {
-      content: analysisData.text,
-      model: modelToUse,
-      id: analysisData.id,
-      citations: analysisData.citations,
-      log_id: analysisData.logId,
-      verifiedQuotes,
+      content: renderArticleFraming(framing),
+      framing,
+      verifiedQuotes: { verified: missingQuotes.length === 0, missingQuotes },
       ...(editorial ? { editorial } : {}),
     };
 
@@ -137,8 +95,8 @@ export async function analyseArticle({
       title: outputContent.title,
       content: outputContent,
       provenance: await createExecutionOutputProvenance(serviceContext, {
-        modelId: modelToUse,
-        provider: providerToUse,
+        modelId: tierModel.model,
+        provider: tierModel.provider,
       }),
     });
 
@@ -149,7 +107,7 @@ export async function analyseArticle({
       itemId: args.itemId,
       analysis: {
         content: analysisResult.content,
-        data: { ...analysisResult, verifiedQuotes },
+        data: analysisResult,
       },
     };
   } catch (error) {

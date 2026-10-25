@@ -14,7 +14,7 @@ const formatters = listCataloguePromptEntries({ task: "chat-section" });
 const title = getCataloguePromptEntryByTask("conversation-title");
 ```
 
-Entries live in `src/data`, grouped by domain. An entry has an `id` (`chat/safety`, `apps/articles/analyse`), a `task` from the shared taxonomy, a human-readable `title` and `description`, the prompt `text`, and any `variables` it declares.
+Entries live in `src/data`, grouped by domain. An entry has an `id` (`chat/safety`, `apps/articles/framing`), a `task` from the shared taxonomy, a human-readable `title` and `description`, the prompt `text`, and any `variables` it declares.
 
 ## Templates
 

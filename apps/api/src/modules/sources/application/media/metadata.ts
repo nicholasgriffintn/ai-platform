@@ -1,8 +1,10 @@
 import {
+  SOURCE_FRAMING_METADATA_KEY,
   SOURCE_LISTEN_METADATA_KEY,
   readSourceGeneration,
   readSourceListen,
   readSourceMedia,
+  type SourceFraming,
   type SourceGeneration,
   type SourceListen,
   type SourceMediaMetadata,
@@ -43,6 +45,7 @@ export interface SourceMetadataPatch {
   generation?: Partial<SourceGeneration>;
   pending?: SourcePendingInvocation | null;
   listen?: SourceListen;
+  framing?: SourceFraming;
 }
 
 export function readSourceRecordListen(source: SourceRecord): SourceListen | null {
@@ -65,6 +68,10 @@ export function mergeSourceMetadata(
 
   if (patch.listen) {
     next[SOURCE_LISTEN_METADATA_KEY] = patch.listen;
+  }
+
+  if (patch.framing) {
+    next[SOURCE_FRAMING_METADATA_KEY] = patch.framing;
   }
 
   if (patch.pending === null) {
@@ -99,7 +106,7 @@ export async function updateSourceRecord(
     content?: string | null;
   },
 ): Promise<SourceRecord> {
-  const { media, generation, pending, listen, ...fields } = patch;
+  const { media, generation, pending, listen, framing, ...fields } = patch;
   const repository = context.repositories.get(SourceRepository);
 
   await repository.updateSource(source.id, {
@@ -109,6 +116,7 @@ export async function updateSourceRecord(
       generation,
       pending,
       listen,
+      framing,
     }),
   });
 

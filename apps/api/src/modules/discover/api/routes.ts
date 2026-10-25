@@ -6,6 +6,7 @@ import {
   discoverWindDownSchema,
   discoverWindDownTonightSchema,
   discoverWindDownStepParamsSchema,
+  discoverCardParamsSchema,
   discoverEpisodeChapterParamsSchema,
   discoverHealthSummarySchema,
   discoverEpisodeProgressResponseSchema,
@@ -38,6 +39,7 @@ import { readCountryCode } from "@ngriffin_uk/polychat-utility-core";
 import { Hono } from "hono";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
+import { compareDiscoverCoverage } from "~/modules/discover/application/coverage";
 import { readDiscoverCover } from "~/modules/discover/application/covers";
 import { readDiscover, readDiscoverEditionByDate } from "~/modules/discover/application/editions";
 import {
@@ -52,6 +54,7 @@ import {
 } from "~/modules/discover/application/episodes";
 import { recordDiscoverFeedback } from "~/modules/discover/application/feedback";
 import { followDiscoverTopic, unfollowDiscoverTopic } from "~/modules/discover/application/follows";
+import { frameDiscoverArticle } from "~/modules/discover/application/framing";
 import {
   clearDiscoverHealthSummary,
   saveDiscoverHealthSummary,
@@ -151,6 +154,40 @@ addRoute(app, "post", "/feedback", {
     404: { description: "Not one of your cards", schema: errorResponseSchema },
   },
   handler: async ({ serviceContext, body }) => recordDiscoverFeedback(serviceContext, body),
+});
+
+addRoute(app, "post", "/editions/:edition_id/cards/:card_id/framing", {
+  tags: ["discover"],
+  summary: "Check how a read card's article is framed",
+  description:
+    "Reads the filed copy of the article for its slant, tone, sourcing, loaded wording and missing perspectives. The result is kept on the source and reused.",
+  auth: true,
+  paramSchema: discoverCardParamsSchema,
+  responses: {
+    200: { description: "The article's source, with its framing", schema: sourceSchema },
+    402: { description: "This month's Discover budget is spent", schema: errorResponseSchema },
+    404: { description: "Not one of your read cards", schema: errorResponseSchema },
+    409: { description: "The article was not kept", schema: errorResponseSchema },
+  },
+  handler: async ({ serviceContext, params }) =>
+    frameDiscoverArticle(serviceContext, params.edition_id, params.card_id),
+});
+
+addRoute(app, "post", "/editions/:edition_id/cards/:card_id/coverage", {
+  tags: ["discover"],
+  summary: "Compare how outlets covered a topic",
+  description:
+    "Compares the topic's articles in the edition: what they agree on, each outlet's angle, where they differ and what they leave out. Filed in the Discover notebook and reused.",
+  auth: true,
+  paramSchema: discoverCardParamsSchema,
+  responses: {
+    200: { description: "The comparison", schema: sourceSchema },
+    402: { description: "This month's Discover budget is spent", schema: errorResponseSchema },
+    404: { description: "Not one of your topic cards", schema: errorResponseSchema },
+    409: { description: "Fewer than two articles on the topic", schema: errorResponseSchema },
+  },
+  handler: async ({ serviceContext, params }) =>
+    compareDiscoverCoverage(serviceContext, params.edition_id, params.card_id),
 });
 
 addRoute(app, "post", "/editions/:edition_id/listen", {

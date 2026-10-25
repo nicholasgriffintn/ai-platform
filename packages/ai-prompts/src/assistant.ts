@@ -117,13 +117,6 @@ export interface ArticlePromptOptions {
   article: string;
 }
 
-export function buildArticleAnalysisPrompt({
-  metadataSection,
-  article,
-}: ArticlePromptOptions): string {
-  return renderPrompt("apps/articles/analyse", { metadataSection, article });
-}
-
 export function buildArticleSummaryPrompt({
   metadataSection,
   article,

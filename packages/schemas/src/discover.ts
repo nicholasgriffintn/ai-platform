@@ -29,6 +29,8 @@ export const DISCOVER_NOTEBOOK_NAME = "Discover";
 export const DISCOVER_SIGNAL_METADATA_KEY = "discoverSignal";
 export const DISCOVER_RESEARCH_METADATA_KEY = "discoverResearch";
 export const DISCOVER_ARTICLE_METADATA_KEY = "discoverArticle";
+export const DISCOVER_COVERAGE_METADATA_KEY = "discoverCoverage";
+export const DISCOVER_COVERAGE_MIN_ARTICLES = 2;
 export const DISCOVER_GATHER_HOUR = 5;
 export const DISCOVER_FRESH_HOURS = 20;
 export const DISCOVER_RESEARCH_DAYS_KEPT = 7;
@@ -223,7 +225,15 @@ export const discoverCoverIdSchema = z
   .regex(/^[a-z0-9-]{1,120}$/u, "A cover id is lowercase letters, digits and dashes");
 
 export const discoverCardSchema = z.discriminatedUnion("kind", [
-  topicCardDraftSchema.extend({ ...cardIdentity, coverId: discoverCoverIdSchema.optional() }),
+  topicCardDraftSchema.extend({
+    ...cardIdentity,
+    coverId: discoverCoverIdSchema.optional(),
+    coverageSourceId: z
+      .string()
+      .min(1)
+      .optional()
+      .describe("The comparison of how outlets covered this topic, once one was asked for."),
+  }),
   readCardDraftSchema.extend({
     ...cardIdentity,
     sourceId: z
@@ -435,6 +445,52 @@ export const discoverFeedbackResponseSchema = z.object({
 
 export const discoverCoverParamsSchema = z.object({ cover_id: discoverCoverIdSchema });
 
+export const discoverCardParamsSchema = z.object({
+  edition_id: z.string().min(1),
+  card_id: z.string().min(1).max(80),
+});
+
+export const discoverCoverageDraftSchema = z
+  .object({
+    overview: text().describe("Two sentences on how coverage of the story differs across outlets."),
+    agreed: z
+      .array(text())
+      .max(5)
+      .describe("Facts every outlet reports. Leave it empty when they share none."),
+    outlets: z
+      .array(
+        z
+          .object({
+            source: text().describe("The outlet, named exactly as given."),
+            angle: text().describe("How this outlet frames the story, in one sentence."),
+          })
+          .strict(),
+      )
+      .describe("One entry per outlet, in the order given."),
+    disputed: z
+      .array(text())
+      .max(5)
+      .describe("Points where the outlets disagree or contradict each other."),
+    gaps: z
+      .array(text())
+      .max(4)
+      .describe("What only one outlet mentions, or what none of them address."),
+  })
+  .strict();
+
+export const discoverCoverageSchema = discoverCoverageDraftSchema.extend({
+  sourceIds: z.array(z.string().min(1)),
+  generatedAt: z.string().min(1),
+});
+
+export function readDiscoverCoverage(
+  metadata: Record<string, unknown> | null | undefined,
+): DiscoverCoverage | null {
+  const parsed = discoverCoverageSchema.safeParse(metadata?.[DISCOVER_COVERAGE_METADATA_KEY]);
+
+  return parsed.success ? parsed.data : null;
+}
+
 const discoverJobRun = { runId: z.string().min(1).optional() };
 
 export const discoverJobTaskDataSchema = z.discriminatedUnion("job", [
@@ -500,6 +556,8 @@ export type DiscoverBriefKind = z.infer<typeof discoverBriefKindSchema>;
 export type DiscoverBriefLine = z.infer<typeof discoverBriefLineSchema>;
 export type DiscoverCardDraft = z.infer<typeof discoverCardDraftSchema>;
 export type DiscoverCard = z.infer<typeof discoverCardSchema>;
+export type DiscoverCoverageDraft = z.infer<typeof discoverCoverageDraftSchema>;
+export type DiscoverCoverage = z.infer<typeof discoverCoverageSchema>;
 export type DiscoverCardKind = DiscoverCard["kind"];
 export type ComposeDiscoverEditionInput = z.infer<typeof composeDiscoverEditionInputSchema>;
 export type ReadDiscoverContextInput = z.infer<typeof readDiscoverContextInputSchema>;

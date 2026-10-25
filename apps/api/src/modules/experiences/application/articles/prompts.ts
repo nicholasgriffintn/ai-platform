@@ -1,5 +1,4 @@
 import {
-  buildArticleAnalysisPrompt,
   buildArticleReportPrompt,
   buildArticleSummaryPrompt,
   buildAssistantMetadataSection,
@@ -20,13 +19,6 @@ function buildArticlePromptMetadata(metadata: PromptModelMetadata | undefined): 
       modelConfig: metadata?.modelConfig,
       fallbackModelId: metadata?.modelId,
     }),
-  });
-}
-
-export function analyseArticlePrompt(article: string, metadata?: PromptModelMetadata): string {
-  return buildArticleAnalysisPrompt({
-    metadataSection: buildArticlePromptMetadata(metadata),
-    article,
   });
 }
 

@@ -175,6 +175,19 @@ export function describeDiscoverCard(card: DiscoverCard): string {
   return card.kind === "check_in" ? card.question : card.title;
 }
 
+export function findDiscoverCard<TKind extends DiscoverCard["kind"]>(
+  cards: readonly DiscoverCard[],
+  cardId: string,
+  kind: TKind,
+): Extract<DiscoverCard, { kind: TKind }> | null {
+  return (
+    cards.find(
+      (card): card is Extract<DiscoverCard, { kind: TKind }> =>
+        card.id === cardId && card.kind === kind,
+    ) ?? null
+  );
+}
+
 export function discoverCardTopic(card: DiscoverCard): string | null {
   return "topic" in card ? card.topic : null;
 }

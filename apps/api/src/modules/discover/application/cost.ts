@@ -6,6 +6,7 @@ import {
   type SpendLedger,
   type UsageUnit,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
@@ -110,6 +111,21 @@ export async function canAffordDiscoverListen(
   const remaining = remainingCreditMicros(await readDiscoverSpend(context, installationId));
 
   return remaining === null || (await estimateDiscoverCosts(context)).listen <= remaining;
+}
+
+export async function requireDiscoverBudgetLeft(
+  context: ServiceContext,
+  installationId: string | null,
+): Promise<void> {
+  const remaining = remainingCreditMicros(await readDiscoverSpend(context, installationId));
+
+  if (remaining !== null && remaining <= 0) {
+    throw new AssistantError(
+      "This month's Discover budget is spent. Raise it in Discover settings.",
+      ErrorType.PARAMS_ERROR,
+      402,
+    );
+  }
 }
 
 export async function readDiscoverSpend(

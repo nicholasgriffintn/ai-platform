@@ -33,10 +33,8 @@ export const articleAnalysisJobs: JobKindDefinition<"article_analysis"> = {
   requiredPlan: "pro",
   async start(scope, input) {
     const analysed = await analyseArticle({
-      completion_id: generateId(),
       context: scope.context,
       args: input,
-      app_url: undefined,
       user: scope.user,
       projectId: scope.projectId,
     });

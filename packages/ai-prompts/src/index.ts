@@ -1,6 +1,5 @@
 export { buildAgentSystemPrompt, type AgentSystemPromptOptions } from "./agents.js";
 export {
-  buildArticleAnalysisPrompt,
   buildArticleReportPrompt,
   buildArticleSummaryPrompt,
   buildContentExtractionPrompt,
