@@ -13,5 +13,6 @@ export function useSubjectConversations(subject: ConversationSubject | null) {
         ? apiService.listSubjectConversations(subject)
         : Promise.reject(new Error("No subject")),
     enabled: Boolean(subject),
+    refetchOnMount: "always",
   });
 }
