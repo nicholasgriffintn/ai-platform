@@ -29,14 +29,14 @@ export function listenStatus(
 
 export function windDownStatus(windDown: DiscoverWindDown | undefined): MediaStatus {
   if (!windDown) {
-    return { state: "idle", label: "5, 10 or 20 min" };
+    return { state: "idle", label: "5 to 30 min" };
   }
 
   if (windDown.status === "failed") {
     return { state: "failed", label: "Didn't take" };
   }
 
-  return windDown.steps[0]?.audio
+  return windDown.kind === "sound" || windDown.steps[0]?.audio
     ? { state: "ready", label: `${windDown.minutes} min` }
     : { state: "making", label: "Settling in" };
 }

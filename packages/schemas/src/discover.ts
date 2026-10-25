@@ -190,6 +190,19 @@ const inboxCardDraftSchema = z
   })
   .strict();
 
+const windDownCardDraftSchema = z
+  .object({
+    kind: z.literal("wind_down"),
+    topic: topicSchema,
+    title: text().describe("Tonight's slow story, as a gentle title."),
+    premise: text().describe(
+      "Two sentences on where the story wanders: unhurried, low stakes, nothing alarming.",
+    ),
+    reason: reasonSchema,
+    sensitive: sensitiveSchema,
+  })
+  .strict();
+
 export const discoverCardDraftSchema = z.discriminatedUnion("kind", [
   topicCardDraftSchema,
   readCardDraftSchema,
@@ -200,6 +213,7 @@ export const discoverCardDraftSchema = z.discriminatedUnion("kind", [
   actionCardDraftSchema,
   checkInCardDraftSchema,
   resurfaceCardDraftSchema,
+  windDownCardDraftSchema,
 ]);
 
 const cardIdentity = { id: z.string().min(1).max(80) };
@@ -225,6 +239,7 @@ export const discoverCardSchema = z.discriminatedUnion("kind", [
   actionCardDraftSchema.extend(cardIdentity),
   checkInCardDraftSchema.extend(cardIdentity),
   resurfaceCardDraftSchema.extend(cardIdentity),
+  windDownCardDraftSchema.extend(cardIdentity),
 ]);
 
 export const DISCOVER_CARD_KINDS = [
@@ -237,6 +252,7 @@ export const DISCOVER_CARD_KINDS = [
   "action",
   "check_in",
   "resurface",
+  "wind_down",
 ] as const;
 
 export const discoverInterestInferenceSchema = z
@@ -435,7 +451,14 @@ export const discoverJobTaskDataSchema = z.discriminatedUnion("job", [
   z.object({ ...discoverJobRun, job: z.literal("listen"), editionId: z.string().min(1) }).strict(),
   z.object({ ...discoverJobRun, job: z.literal("episode"), editionId: z.string().min(1) }).strict(),
   z
-    .object({ ...discoverJobRun, job: z.literal("wind_down"), windDownId: z.string().min(1) })
+    .object({
+      ...discoverJobRun,
+      job: z.literal("wind_down"),
+      windDownId: z.string().min(1),
+      aboutToday: z.boolean().optional(),
+      premise: z.string().min(1).optional(),
+      notes: z.string().min(1).optional(),
+    })
     .strict(),
   z
     .object({ ...discoverJobRun, job: z.literal("season_listen"), seasonId: z.string().min(1) })

@@ -1,29 +1,28 @@
-import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   DISCOVER_CAPABILITY_ID,
   DISCOVER_WIND_DOWN_KIND,
   discoverWindDownContentSchema,
-  discoverWindDownDraftSchema,
   type CreateDiscoverWindDown,
   type DiscoverWindDown,
   type DiscoverWindDownContent,
 } from "@ngriffin_uk/polychat-schemas";
-import { humaniseIdentifier, isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { humaniseIdentifier } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
   ErrorType,
   getErrorMessage,
 } from "@ngriffin_uk/polychat-utility-server/errors";
-import { fetchFollowingSafeRedirects } from "@ngriffin_uk/polychat-utility-server/http";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
 import { getPrivateObjectResponse } from "~/infrastructure/storage/read-resource";
 import { narratePassages } from "~/modules/audio/application/narration";
-import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
-import { generateMusic } from "~/modules/generate/application/music";
-import { generateTierObject } from "~/modules/models/application/tier-object";
+import {
+  chooseStoryTopic,
+  chooseWindDownBed,
+  planWindDownStory,
+} from "~/modules/discover/domain/wind-down";
 import { readOutputContent } from "~/modules/outputs/application/content";
 import {
   OutputRepository,
@@ -31,7 +30,12 @@ import {
 } from "~/modules/outputs/infrastructure/OutputRepository";
 
 import { publishDiscoverChanged } from "./events";
+import { listDiscoverFollows } from "./follows";
 import { enqueueDiscoverJob } from "./jobs";
+import { ensureWindDownBed, hasWindDownBed } from "./wind-down-beds";
+import { readWindDownHighlights } from "./wind-down-context";
+import { listRecentWindDowns } from "./wind-down-history";
+import { writeWindDownScript, type WindDownScriptRequest } from "./wind-down-script";
 
 const logger = getLogger({ prefix: "discover/wind-down" });
 
@@ -39,55 +43,10 @@ function stepAudioKey(windDownId: string, step: number): string {
   return `outputs/${windDownId}/steps/${step}.mp3`;
 }
 
-function ambientKey(windDownId: string): string {
-  return `outputs/${windDownId}/ambient`;
-}
-
-const AMBIENT_SECONDS = 90;
-
-const AMBIENT_PROMPTS: Record<DiscoverWindDownContent["kind"], string> = {
-  breathing:
-    "Slow ambient pad for a breathing exercise at night, soft warm synth swells rising and falling every ten seconds, no drums, no vocals, no melody, seamless loop",
-  body_scan:
-    "Gentle spacious ambient drone for a body scan meditation, soft low strings and distant chimes, no drums, no vocals, very slow, seamless loop",
-  unwind:
-    "Calm late-evening ambient music, soft felt piano notes over a warm pad, no drums, no vocals, unhurried, seamless loop",
-};
-
-async function makeAmbientBed(
-  context: ServiceContext,
-  windDownId: string,
-  kind: DiscoverWindDownContent["kind"],
-): Promise<boolean> {
-  const user = context.requireUser();
-  const result = await generateMusic({
-    completion_id: `wind_down_${windDownId}`,
-    app_url: context.env.APP_BASE_URL,
-    context,
-    user,
-    args: { prompt: AMBIENT_PROMPTS[kind], duration: AMBIENT_SECONDS },
-  });
-  const url = isRecord(result.data) && typeof result.data.url === "string" ? result.data.url : null;
-
-  if (result.status !== "success" || !url) {
-    logger.warn("Wind down music could not be made", { windDownId, reason: result.content });
-
-    return false;
-  }
-
-  const response = await fetchFollowingSafeRedirects(url);
-
-  if (!response.ok) {
-    return false;
-  }
-
-  await StorageService.forPrivateAssets(context).uploadObject(
-    ambientKey(windDownId),
-    new Uint8Array(await response.arrayBuffer()),
-    { httpMetadata: { contentType: response.headers.get("content-type") ?? "audio/mpeg" } },
-  );
-
-  return true;
+function describeTitle(content: Pick<DiscoverWindDownContent, "kind" | "minutes" | "bed">) {
+  return content.kind === "sound"
+    ? `${humaniseIdentifier(content.bed)}, ${content.minutes} minutes`
+    : `${humaniseIdentifier(content.kind)}, ${content.minutes} minutes`;
 }
 
 async function requireWindDown(context: ServiceContext, windDownId: string) {
@@ -118,31 +77,73 @@ export async function latestDiscoverWindDownId(
   return latest?.id ?? null;
 }
 
+async function planStory(
+  context: ServiceContext,
+  userId: number,
+  input: CreateDiscoverWindDown,
+  recent: Awaited<ReturnType<typeof listRecentWindDowns>>,
+): Promise<Pick<DiscoverWindDownContent, "topic" | "part">> {
+  if (input.kind !== "story") {
+    return {};
+  }
+
+  const topic =
+    input.topic ??
+    chooseStoryTopic(
+      (await listDiscoverFollows(context, userId)).map((follow) => follow.topic),
+      recent,
+    );
+  const plan = planWindDownStory(topic, recent);
+
+  return plan.topic ? { topic: plan.topic, part: plan.part } : {};
+}
+
 export async function startDiscoverWindDown(
   context: ServiceContext,
   input: CreateDiscoverWindDown,
 ): Promise<DiscoverWindDown> {
   const user = context.requireUser();
+
+  if (input.kind === "read_back" && (await readWindDownHighlights(context, user.id)).length === 0) {
+    throw new AssistantError(
+      "There are no highlights to read back yet. Use Readwise for Discover in Discover settings.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  const recent = await listRecentWindDowns(context, user.id);
+  const bed = input.bed ?? chooseWindDownBed(input.kind, recent);
   const content: DiscoverWindDownContent = {
     format: "wind_down",
     kind: input.kind,
     minutes: input.minutes,
-    title: `${humaniseIdentifier(input.kind)}, ${input.minutes} minutes`,
+    title: describeTitle({ kind: input.kind, minutes: input.minutes, bed }),
     steps: [],
-    status: "pending",
-    ambient: false,
+    status: input.kind === "sound" ? "ready" : "pending",
+    bed,
+    ambient: await hasWindDownBed(context, bed),
+    ...(await planStory(context, user.id, input, recent)),
   };
   const record = await context.repositories.get(OutputRepository).createOutput({
     createdByUserId: user.id,
     capabilityId: DISCOVER_CAPABILITY_ID,
     kind: DISCOVER_WIND_DOWN_KIND,
     title: content.title,
-    status: "pending",
+    status: content.status === "ready" ? "ready" : "pending",
     sensitivity: "personal",
     content,
   });
 
-  await enqueueDiscoverJob(context, { job: "wind_down", windDownId: record.id });
+  if (input.kind !== "sound" || !content.ambient) {
+    await enqueueDiscoverJob(context, {
+      job: "wind_down",
+      windDownId: record.id,
+      aboutToday: input.aboutToday,
+      premise: input.premise,
+      notes: input.notes,
+    });
+  }
 
   return { ...content, id: record.id };
 }
@@ -166,54 +167,69 @@ async function saveWindDown(
   return updated;
 }
 
+function prepareBed(context: ServiceContext, content: DiscoverWindDownContent): Promise<boolean> {
+  if (content.ambient) {
+    return Promise.resolve(true);
+  }
+
+  return ensureWindDownBed(context, content.bed).catch((error: unknown) => {
+    logger.warn("Wind down sound failed", {
+      bed: content.bed,
+      error_message: getErrorMessage(error),
+    });
+
+    return false;
+  });
+}
+
+async function recordSound(context: ServiceContext, windDownId: string): Promise<void> {
+  const { content } = await requireWindDown(context, windDownId);
+
+  if (!(await prepareBed(context, content))) {
+    return;
+  }
+
+  const latest = await requireWindDown(context, windDownId);
+
+  await saveWindDown(context, latest.record, { ...latest.content, ambient: true });
+}
+
 export async function renderDiscoverWindDown(
   context: ServiceContext,
   windDownId: string,
+  request: WindDownScriptRequest,
 ): Promise<void> {
   const { record, content } = await requireWindDown(context, windDownId);
+
+  if (content.kind === "sound") {
+    await recordSound(context, windDownId);
+
+    return;
+  }
 
   if (content.status !== "pending") {
     return;
   }
 
+  let bedMade = false;
+  const bedReady = prepareBed(context, content).then((made) => {
+    bedMade = made;
+
+    return made;
+  });
+
   try {
-    const script = await generateTierObject(context, {
-      tier: DISCOVER_MODEL_TIER,
-      name: "discover_wind_down",
-      schema: discoverWindDownDraftSchema,
-      system: renderPrompt("discover/wind-down/script", {
-        kind: humaniseIdentifier(content.kind).toLowerCase(),
-        minutes: String(content.minutes),
-      }),
-      material: `Write a ${content.minutes}-minute ${humaniseIdentifier(content.kind).toLowerCase()} session.`,
-    });
+    const script = await writeWindDownScript(context, windDownId, content, request);
     const storage = StorageService.forPrivateAssets(context);
-    let ambient = false;
-    let savedAmbient = false;
-    const ambientReady = makeAmbientBed(context, windDownId, content.kind)
-      .then((made) => {
-        ambient = made;
-
-        return made;
-      })
-      .catch((error: unknown) => {
-        logger.warn("Wind down music failed", {
-          windDownId,
-          error_message: getErrorMessage(error),
-        });
-
-        return false;
-      });
-    let steps: DiscoverWindDownContent["steps"] = script.steps.map((step) => ({
-      ...step,
-      audio: false,
-    }));
-    let saved = await saveWindDown(context, record, {
+    const written: DiscoverWindDownContent = {
       ...content,
       title: script.title,
-      steps,
-      status: "speaking",
-    });
+      summary: script.summary,
+      ...(script.parked ? { parked: script.parked } : {}),
+      steps: script.steps.map((step) => ({ ...step, audio: false })),
+    };
+    let saved = await saveWindDown(context, record, { ...written, status: "speaking" });
+    let current: DiscoverWindDownContent = { ...written, status: "speaking" };
 
     await narratePassages(
       context,
@@ -224,29 +240,21 @@ export async function renderDiscoverWindDown(
           await storage.uploadObject(stepAudioKey(windDownId, index), audio, {
             httpMetadata: { contentType: "audio/mpeg" },
           });
-          steps = steps.map((entry, position) =>
-            position === index ? { ...entry, audio: true } : entry,
-          );
-          saved = await saveWindDown(context, saved, {
-            ...content,
-            title: script.title,
-            steps,
-            ambient,
+          current = {
+            ...current,
+            steps: current.steps.map((entry, position) =>
+              position === index ? { ...entry, audio: true } : entry,
+            ),
             status: index === script.steps.length - 1 ? "ready" : "speaking",
-          });
-          savedAmbient = ambient;
+            ambient: current.ambient || bedMade,
+          };
+          saved = await saveWindDown(context, saved, current);
         },
       },
     );
 
-    if ((await ambientReady) && !savedAmbient) {
-      await saveWindDown(context, saved, {
-        ...content,
-        title: script.title,
-        steps,
-        ambient: true,
-        status: "ready",
-      });
+    if ((await bedReady) && !current.ambient) {
+      await saveWindDown(context, saved, { ...current, ambient: true });
     }
   } catch (error) {
     logger.error("Wind down failed", { windDownId, error_message: getErrorMessage(error) });
@@ -263,21 +271,6 @@ export async function readDiscoverWindDown(
   const { record, content } = await requireWindDown(context, windDownId);
 
   return { ...content, id: record.id };
-}
-
-export async function readWindDownAmbient(
-  context: ServiceContext,
-  windDownId: string,
-  rangeHeader?: string | null,
-): Promise<Response> {
-  await requireWindDown(context, windDownId);
-
-  return getPrivateObjectResponse(
-    context,
-    ambientKey(windDownId),
-    { filename: "ambient", mimeType: "audio/mpeg" },
-    rangeHeader,
-  );
 }
 
 export async function readWindDownStepAudio(

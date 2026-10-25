@@ -209,3 +209,16 @@ const NUMBER_TOKEN_PATTERN = /\d+(?:,\d{3})*(?:\.\d+)?/g;
 export function extractNumberTokens(text: string): string[] {
   return (text.match(NUMBER_TOKEN_PATTERN) ?? []).map((token) => token.replaceAll(",", ""));
 }
+
+export function formatHoursAndMinutes(totalMinutes: number): string {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes} min`;
+}
+
+export function balanceGains(balance: number): { left: number; right: number } {
+  const value = clampNumber(balance, 0, 1);
+
+  return { left: Math.min(1, 2 * (1 - value)), right: Math.min(1, 2 * value) };
+}

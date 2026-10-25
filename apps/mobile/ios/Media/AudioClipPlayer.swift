@@ -8,6 +8,9 @@ final class AudioClipPlayer: NSObject, ObservableObject, AVAudioPlayerDelegate {
     @Published private(set) var duration: TimeInterval = 0
 
     var onFinish: (() -> Void)?
+    var volume: Float = 1 {
+        didSet { player?.volume = volume }
+    }
 
     private var player: AVAudioPlayer?
     private var ticker: Task<Void, Never>?
@@ -17,6 +20,7 @@ final class AudioClipPlayer: NSObject, ObservableObject, AVAudioPlayerDelegate {
         try await PlaybackSession.activate()
         let player = try AVAudioPlayer(data: data)
         player.delegate = self
+        player.volume = volume
         player.prepareToPlay()
         self.player = player
         duration = player.duration

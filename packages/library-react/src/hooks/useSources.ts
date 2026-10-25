@@ -17,10 +17,12 @@ import {
   setProjectContextSources,
   searchProjectKnowledge,
   transcribeSource,
+  listenToSource,
   updateSource,
   writeSourceNotes,
 } from "@ngriffin_uk/polychat-library-client";
 import {
+  readSourceListen,
   readSourceMedia,
   type CreateSourceCollectionInput,
   type CreateSourceInput,
@@ -41,7 +43,8 @@ const PROCESSING_POLL_INTERVAL = 10_000;
 export function isSourceProcessing(source: Pick<SourceSummary, "status" | "metadata">): boolean {
   return (
     source.status === "processing" ||
-    readSourceMedia(source.metadata).transcript?.status === "processing"
+    readSourceMedia(source.metadata).transcript?.status === "processing" ||
+    readSourceListen(source.metadata)?.status === "making"
   );
 }
 
@@ -206,6 +209,7 @@ export function useSourceMediaActions(sourceId: string) {
 
   return {
     transcribe: useMutation({ mutationFn: () => transcribeSource(sourceId), onSuccess }),
+    listen: useMutation({ mutationFn: () => listenToSource(sourceId), onSuccess }),
     writeNotes: useMutation({
       mutationFn: (speakers?: Record<string, string>) => writeSourceNotes(sourceId, speakers),
       onSuccess,

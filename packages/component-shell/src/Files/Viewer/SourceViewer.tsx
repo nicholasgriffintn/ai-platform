@@ -23,6 +23,7 @@ import {
   readSourceGeneration,
   readSourceMedia,
   type Source,
+  type SourceKind,
 } from "@ngriffin_uk/polychat-schemas";
 import { formatRelativeTime, humaniseIdentifier } from "@ngriffin_uk/polychat-utility-core";
 import { downloadTextFile } from "@ngriffin_uk/polychat-utility-react";
@@ -45,7 +46,10 @@ import { FileSourcesList } from "./FileSourcesList.js";
 import { FileViewerCloseButton } from "./FileViewerCloseButton.js";
 import { type FileViewerChrome, FileViewerFrame } from "./FileViewerFrame.js";
 import { MarkdownStage } from "./MarkdownStage.js";
+import { SourceListen } from "./SourceListen.js";
 import { useFileViewerPanels } from "./useFileViewerPanels.js";
+
+const LISTENABLE_KINDS: ReadonlySet<SourceKind> = new Set(["text", "url", "file", "connector"]);
 
 function sourceFilename(source: Source, suffix: string): string {
   return `${source.title.replace(/\s+/g, "-")}-${suffix}`;
@@ -214,17 +218,20 @@ function SourceStage({ source, downloadUrl }: { source: Source; downloadUrl?: st
       <MarkdownStage
         markdown={source.content}
         header={
-          source.externalUri ? (
-            <a
-              href={source.externalUri}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-            >
-              <ExternalLink size={14} className="shrink-0" aria-hidden="true" />
-              <span className="truncate">{source.externalUri}</span>
-            </a>
-          ) : undefined
+          <div className="flex flex-col gap-3">
+            {source.externalUri ? (
+              <a
+                href={source.externalUri}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+              >
+                <ExternalLink size={14} className="shrink-0" aria-hidden="true" />
+                <span className="truncate">{source.externalUri}</span>
+              </a>
+            ) : null}
+            {LISTENABLE_KINDS.has(source.kind) ? <SourceListen source={source} /> : null}
+          </div>
         }
       />
     );

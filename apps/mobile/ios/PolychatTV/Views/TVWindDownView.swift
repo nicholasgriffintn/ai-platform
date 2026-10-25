@@ -4,20 +4,33 @@ struct TVWindDownView: View {
     @EnvironmentObject private var store: DiscoverStore
     @StateObject private var controller = WindDownPlaybackController()
     @State private var kind = DiscoverWindDown.kinds[0].id
-    @State private var minutes = DiscoverWindDown.lengths[0]
+    @State private var minutes = DiscoverWindDown.lengths[1]
+
+    private static let mixStops: [(label: String, value: Double)] = [
+        ("Sound only", 0),
+        ("More sound", 0.25),
+        ("Even", 0.5),
+        ("More voice", 0.75),
+        ("Voice only", 1)
+    ]
+
+    private var kinds: [DiscoverWindDown.Kind] {
+        DiscoverWindDown.kinds.filter { option in
+            option.id != "park" && (option.id != "read_back" || controller.tonight?.readBack == true)
+        }
+    }
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: DiscoverMediaItem.windDown.colours + [.black], startPoint: .topLeading, endPoint: .bottom)
-                .ignoresSafeArea()
+            WindDownSceneView(
+                bed: controller.windDown?.sceneBed ?? controller.tonight?.bed ?? "night",
+                seed: controller.windDown?.id ?? "wind-down",
+                moving: controller.isPlaying
+            )
+            .ignoresSafeArea()
+            Color.black.opacity(0.25).ignoresSafeArea()
 
             VStack(spacing: 48) {
-                Image(systemName: DiscoverMediaItem.windDown.systemImage)
-                    .font(.system(size: 96))
-                    .foregroundStyle(.white.opacity(0.9))
-                    .scaleEffect(controller.isPlaying ? 1.08 : 1)
-                    .animation(controller.isPlaying ? .easeInOut(duration: 4).repeatForever(autoreverses: true) : .default, value: controller.isPlaying)
-
                 if let windDown = controller.windDown, windDown.isReady {
                     ready(windDown)
                 } else if let windDown = controller.windDown, windDown.status != "failed" {
@@ -51,6 +64,7 @@ struct TVWindDownView: View {
                 await controller.waitUntilReady()
             }
         }
+        .task { await controller.loadTonight() }
         .onDisappear { controller.stop() }
     }
 
@@ -77,6 +91,12 @@ struct TVWindDownView: View {
             }
             Button("Choose another") { controller.reset() }
         }
+
+        Picker("Mix", selection: $controller.balance) {
+            ForEach(Self.mixStops, id: \.value) { Text($0.label).tag($0.value) }
+        }
+        .pickerStyle(.segmented)
+        .frame(maxWidth: 1000)
     }
 
     private var chooser: some View {
@@ -84,16 +104,25 @@ struct TVWindDownView: View {
             VStack(spacing: 16) {
                 Text("Wind down")
                     .font(.polychatDisplay(.largeTitle))
-                Text("Poly records a guided session for tonight.")
+                Text(controller.tonight?.reason ?? "Poly records a session for tonight.")
                     .font(.title3)
                     .opacity(0.8)
             }
 
+            if let tonight = controller.tonight, tonight.kind != "park" {
+                Button {
+                    Task { await controller.start(tonight.request(aboutToday: false)) }
+                } label: {
+                    Label("Tonight: \(DiscoverWindDown.title(forKind: tonight.kind)), \(tonight.minutes) minutes", systemImage: "moon.stars")
+                }
+                .disabled(controller.isWorking)
+            }
+
             Picker("Kind", selection: $kind) {
-                ForEach(DiscoverWindDown.kinds) { Text($0.title).tag($0.id) }
+                ForEach(kinds) { Text($0.title).tag($0.id) }
             }
             .pickerStyle(.segmented)
-            .frame(maxWidth: 1000)
+            .frame(maxWidth: 1300)
 
             Picker("Length", selection: $minutes) {
                 ForEach(DiscoverWindDown.lengths, id: \.self) { Text("\($0) minutes").tag($0) }
@@ -102,9 +131,11 @@ struct TVWindDownView: View {
             .frame(maxWidth: 1000)
 
             Button {
-                Task { await controller.start(kind: kind, minutes: minutes) }
+                Task {
+                    await controller.start(DiscoverWindDownRequest(kind: kind, minutes: minutes, aboutToday: false))
+                }
             } label: {
-                if controller.isWorking { ProgressView() } else { Label("Start", systemImage: "moon.stars") }
+                if controller.isWorking { ProgressView() } else { Label("Start", systemImage: "play.fill") }
             }
             .disabled(controller.isWorking)
         }

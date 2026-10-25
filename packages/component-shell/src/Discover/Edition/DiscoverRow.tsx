@@ -4,7 +4,7 @@ import type { DiscoverCard } from "@ngriffin_uk/polychat-schemas";
 import { readUrlHost } from "@ngriffin_uk/polychat-utility-core";
 import { CalendarDays, ChevronRight, Headphones, History, Mail, Play, Repeat } from "lucide-react";
 
-type RowCard = Exclude<DiscoverCard, { kind: "topic" }>;
+export type DiscoverRowCard = Exclude<DiscoverCard, { kind: "topic" | "wind_down" }>;
 
 function describeReadSource(source: string, url: string): string {
   const host = readUrlHost(url);
@@ -14,7 +14,7 @@ function describeReadSource(source: string, url: string): string {
   return sameHost || !host ? source : `${source} · ${host}`;
 }
 
-function RowLead({ card }: { card: RowCard }) {
+function RowLead({ card }: { card: DiscoverRowCard }) {
   switch (card.kind) {
     case "action":
       return (
@@ -68,7 +68,7 @@ function RowLead({ card }: { card: RowCard }) {
   }
 }
 
-function rowText(card: RowCard): { kicker: string; title: string; detail: string | null } {
+function rowText(card: DiscoverRowCard): { kicker: string; title: string; detail: string | null } {
   switch (card.kind) {
     case "action":
       return {
@@ -107,7 +107,7 @@ export function DiscoverRow({
   hidden,
   onSelect,
 }: {
-  card: RowCard;
+  card: DiscoverRowCard;
   selected: boolean;
   hidden: boolean;
   onSelect: (card: DiscoverCard) => void;

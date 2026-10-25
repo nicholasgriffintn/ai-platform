@@ -185,3 +185,11 @@ export function removeMarkdownBlock(markdown: string, block: Pick<MarkdownBlock,
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
+
+export function markdownBullets(values: readonly string[]): string[] {
+  return values.map((value) => `- ${value}`);
+}
+
+export function markdownSection(title: string, lines: readonly string[], empty: string): string {
+  return [`## ${title}`, ...(lines.length > 0 ? lines : [empty])].join("\n");
+}

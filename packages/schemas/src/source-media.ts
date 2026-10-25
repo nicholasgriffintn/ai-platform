@@ -58,6 +58,19 @@ export const sourceMediaMetadataSchema = z.object({
   durationSeconds: z.number().nonnegative().optional(),
 });
 
+export const SOURCE_LISTEN_METADATA_KEY = "listen";
+
+export const sourceListenSchema = z.object({
+  status: z.enum(["making", "ready", "failed"]),
+  contentHash: z.string().min(1),
+  passages: z.array(z.object({ text: z.string().min(1), audio: z.boolean() })),
+});
+
+export const sourceListenPassageParamsSchema = z.object({
+  source_id: z.string().min(1),
+  passage: z.coerce.number().int().min(0),
+});
+
 export const sourceGenerationTypeSchema = z.enum(["podcast", "studio", "model", "drawing"]);
 
 export const sourceGenerationSchema = z.object({
@@ -87,6 +100,12 @@ export function readSourceMedia(
   metadata: Record<string, unknown> | null | undefined,
 ): SourceMediaMetadata {
   return readMetadataField(metadata, "media", sourceMediaMetadataSchema) ?? {};
+}
+
+export function readSourceListen(
+  metadata: Record<string, unknown> | null | undefined,
+): SourceListen | null {
+  return readMetadataField(metadata, SOURCE_LISTEN_METADATA_KEY, sourceListenSchema);
 }
 
 export function readSourceGeneration(
@@ -191,6 +210,7 @@ export type SourceActionItem = z.infer<typeof sourceActionItemSchema>;
 export type SourceNotes = z.infer<typeof sourceNotesSchema>;
 export type SourceCover = z.infer<typeof sourceCoverSchema>;
 export type SourceMediaMetadata = z.infer<typeof sourceMediaMetadataSchema>;
+export type SourceListen = z.infer<typeof sourceListenSchema>;
 export type SourceGenerationType = z.infer<typeof sourceGenerationTypeSchema>;
 export type SourceGeneration = z.infer<typeof sourceGenerationSchema>;
 export type SummariseSourceInput = z.infer<typeof summariseSourceSchema>;

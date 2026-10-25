@@ -194,7 +194,7 @@ private struct PlaybackBar: View {
     }
 }
 
-private struct MediaNotice: View {
+struct MediaNotice: View {
     let message: String
     var actionTitle: String?
     var isWorking = false
@@ -365,82 +365,5 @@ private struct SourceListenView: View {
 
     private func record() {
         Task { await controller.record(onRefresh: onRefresh) }
-    }
-}
-
-private struct WindDownView: View {
-    @ObservedObject var controller: WindDownPlaybackController
-    @State private var kind = "breathing"
-    @State private var minutes = 5
-    let windDownId: String?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            MediaArtwork(item: .windDown)
-
-            if let windDown = controller.windDown, windDown.isReady {
-                Text(windDown.title).font(.polychatDisplay(.title3))
-                if let text = controller.currentText, controller.isPlaying {
-                    Text(text)
-                        .font(.body)
-                        .foregroundStyle(Color.polychat.textMuted)
-                        .transition(.opacity)
-                }
-                HStack(spacing: 12) {
-                    Button {
-                        controller.togglePlayback()
-                    } label: {
-                        Label(controller.isPlaying ? "Pause" : "Begin", systemImage: controller.isPlaying ? "pause.fill" : "play.fill")
-                            .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .tint(Color.polychat.primary)
-                    AirPlayButton()
-                        .frame(width: 36, height: 36)
-                        .accessibilityLabel("Play on Apple TV or speakers")
-                }
-                Button("Choose another") {
-                    controller.stop()
-                    Task { await controller.start(kind: kind, minutes: minutes) }
-                }
-                .font(.footnote)
-            } else if let windDown = controller.windDown, windDown.status != "failed" {
-                MediaNotice(message: "Settling in. Poly is recording your wind down.")
-            } else {
-                Picker("Kind", selection: $kind) {
-                    ForEach(DiscoverWindDown.kinds) { Text($0.title).tag($0.id) }
-                }
-                .pickerStyle(.segmented)
-                Picker("Length", selection: $minutes) {
-                    ForEach(DiscoverWindDown.lengths, id: \.self) { Text("\($0) min").tag($0) }
-                }
-                .pickerStyle(.segmented)
-                Button {
-                    Task { await controller.start(kind: kind, minutes: minutes) }
-                } label: {
-                    Group {
-                        if controller.isWorking { ProgressView() } else { Text("Start") }
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .tint(Color.polychat.primary)
-                .disabled(controller.isWorking)
-            }
-
-            if let error = controller.error {
-                InlineErrorBanner(message: error)
-            }
-        }
-        .padding(16)
-        .animation(.easeInOut, value: controller.stepIndex)
-        .task(id: windDownId) {
-            if let windDownId, controller.windDown?.id != windDownId {
-                await controller.load(id: windDownId)
-            }
-            await controller.waitUntilReady()
-        }
     }
 }

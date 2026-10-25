@@ -4,6 +4,7 @@ import {
   getDiscoverCover,
   getDiscoverEpisode,
   getDiscoverWindDown,
+  getDiscoverWindDownTonight,
   queueDiscoverSeasonListen,
   startDiscoverWindDown,
   unfollowDiscoverTopic,
@@ -237,6 +238,14 @@ export function useDiscoverWindDown(windDownId: string | null | undefined) {
   });
 }
 
+export function useDiscoverWindDownTonight(enabled: boolean) {
+  return useQuery({
+    queryKey: [...DISCOVER_QUERY_KEY, "wind-down", "tonight"],
+    queryFn: getDiscoverWindDownTonight,
+    enabled,
+  });
+}
+
 export function useStartDiscoverWindDown() {
   const queryClient = useQueryClient();
 
@@ -246,6 +255,9 @@ export function useStartDiscoverWindDown() {
       queryClient.setQueryData<DiscoverResponse>(DISCOVER_QUERY_KEY, (current) =>
         current ? { ...current, windDownId: windDown.id } : current,
       );
+      void queryClient.invalidateQueries({
+        queryKey: [...DISCOVER_QUERY_KEY, "wind-down", "tonight"],
+      });
     },
   });
 }

@@ -27,6 +27,7 @@ import {
   knowledgeSearchQuerySchema,
   updateKnowledgeSyncSchema,
   updateSourceSchema,
+  sourceListenPassageParamsSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
@@ -49,6 +50,10 @@ import {
   createSourceCover,
   readSourceCoverObject,
 } from "~/modules/sources/application/media/cover";
+import {
+  readSourceListenAudio,
+  startSourceListen,
+} from "~/modules/sources/application/media/listen";
 import { summariseSource } from "~/modules/sources/application/media/notes";
 import { startSourceTranscription } from "~/modules/sources/application/media/transcribe";
 import {
@@ -195,6 +200,16 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
       handler: ({ body, params, serviceContext }) =>
         summariseSource(serviceContext, params.source_id, body),
     })
+    .action("listen", {
+      auth: true,
+      summary: "Read a source aloud",
+      description:
+        "Narrates the source's text passage by passage. Its listen metadata reports which passages are ready, so playback can start with the first.",
+      paramSchema: sourceParamsSchema,
+      responses: { 200: { description: "The source", schema: sourceSchema } },
+      handler: ({ params, serviceContext, user }) =>
+        startSourceListen(serviceContext, user.id, params.source_id),
+    })
     .action("cover", {
       auth: true,
       summary: "Generate cover art for a source",
@@ -213,6 +228,21 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
       responses: { 200: { description: "The episode", schema: sourceSchema } },
       handler: ({ body, serviceContext }) => startPodcastGeneration(serviceContext, body),
     });
+
+  sources.sub("listen", "passage").read({
+    auth: true,
+    summary: "Stream one read-aloud passage of a source",
+    paramSchema: sourceListenPassageParamsSchema,
+    responses: { 200: { description: "Passage audio" } },
+    handler: ({ params, raw, serviceContext, user }) =>
+      readSourceListenAudio(
+        serviceContext,
+        user.id,
+        params.source_id,
+        params.passage,
+        raw.req.header("range"),
+      ),
+  });
 
   sources.singleton("cover").read({
     auth: true,

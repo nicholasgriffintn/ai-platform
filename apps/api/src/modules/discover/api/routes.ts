@@ -1,8 +1,10 @@
 import {
   createDiscoverWindDownSchema,
   discoverSeasonParamsSchema,
+  discoverWindDownBedParamsSchema,
   discoverWindDownParamsSchema,
   discoverWindDownSchema,
+  discoverWindDownTonightSchema,
   discoverWindDownStepParamsSchema,
   discoverEpisodeChapterParamsSchema,
   discoverHealthSummarySchema,
@@ -67,10 +69,11 @@ import {
 import { queueYourWeek } from "~/modules/discover/application/week";
 import {
   readDiscoverWindDown,
-  readWindDownAmbient,
   readWindDownStepAudio,
   startDiscoverWindDown,
 } from "~/modules/discover/application/wind-down";
+import { readWindDownBed } from "~/modules/discover/application/wind-down-beds";
+import { readWindDownTonight } from "~/modules/discover/application/wind-down-context";
 
 const app = new Hono();
 
@@ -338,14 +341,41 @@ addRoute(app, "post", "/seasons/:season_id/listen", {
 addRoute(app, "post", "/wind-down", {
   tags: ["discover"],
   summary: "Make a wind-down session",
-  description: "A guided breathing, body-scan or unwind session, narrated with quiet pauses.",
+  description:
+    "A narrated session with quiet pauses over a sound bed: breathing, body scan, unwind, a slow story, your highlights read back, parking tomorrow, or just the sound.",
   auth: true,
   bodySchema: createDiscoverWindDownSchema,
   responses: {
     200: { description: "The session being made", schema: discoverWindDownSchema },
     401: { description: "Authentication required", schema: errorResponseSchema },
+    409: { description: "Nothing to read back yet", schema: errorResponseSchema },
   },
   handler: async ({ serviceContext, body }) => startDiscoverWindDown(serviceContext, body),
+});
+
+addRoute(app, "get", "/wind-down/tonight", {
+  tags: ["discover"],
+  summary: "Suggest tonight's wind down",
+  description: "One session picked from your day, your sleep and what you played recently.",
+  auth: true,
+  responses: {
+    200: { description: "Tonight's pick", schema: discoverWindDownTonightSchema },
+    401: { description: "Authentication required", schema: errorResponseSchema },
+  },
+  handler: async ({ serviceContext }) => readWindDownTonight(serviceContext),
+});
+
+addRoute(app, "get", "/wind-down/beds/:bed", {
+  tags: ["discover"],
+  summary: "Stream a wind-down sound bed",
+  auth: true,
+  paramSchema: discoverWindDownBedParamsSchema,
+  responses: {
+    200: { description: "The sound bed" },
+    404: { description: "Not made yet", schema: errorResponseSchema },
+  },
+  handler: async ({ serviceContext, params, raw }) =>
+    readWindDownBed(serviceContext, params.bed, raw.req.header("range")),
 });
 
 addRoute(app, "get", "/wind-down/:wind_down_id", {
@@ -359,16 +389,6 @@ addRoute(app, "get", "/wind-down/:wind_down_id", {
   },
   handler: async ({ serviceContext, params }) =>
     readDiscoverWindDown(serviceContext, params.wind_down_id),
-});
-
-addRoute(app, "get", "/wind-down/:wind_down_id/ambient", {
-  tags: ["discover"],
-  summary: "Stream the music under a wind-down session",
-  auth: true,
-  paramSchema: discoverWindDownParamsSchema,
-  responses: { 200: { description: "Ambient music" } },
-  handler: async ({ serviceContext, params, raw }) =>
-    readWindDownAmbient(serviceContext, params.wind_down_id, raw.req.header("range")),
 });
 
 addRoute(app, "get", "/wind-down/:wind_down_id/steps/:step/audio", {

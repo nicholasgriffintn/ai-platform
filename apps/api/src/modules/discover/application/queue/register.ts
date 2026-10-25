@@ -41,7 +41,11 @@ const discoverJob = defineTask<DiscoverJobTaskData>({
     }
 
     if (job.job === "wind_down") {
-      await renderDiscoverWindDown(context, job.windDownId);
+      await renderDiscoverWindDown(context, job.windDownId, {
+        aboutToday: job.aboutToday,
+        premise: job.premise,
+        notes: job.notes,
+      });
 
       return { status: "success", message: "Wind down recorded" };
     }

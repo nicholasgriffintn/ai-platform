@@ -2,10 +2,9 @@ import type { DiscoverCard, DiscoverEdition } from "@ngriffin_uk/polychat-schema
 import type { ReactNode } from "react";
 
 import { DiscoverBrief } from "./DiscoverBrief.js";
-import { DiscoverRow } from "./DiscoverRow.js";
+import { DiscoverRow, type DiscoverRowCard } from "./DiscoverRow.js";
+import { DiscoverStoryTile, type DiscoverStoryCard } from "./DiscoverStoryTile.js";
 import { DiscoverTopicTile } from "./DiscoverTopicTile.js";
-
-type RowCard = Exclude<DiscoverCard, { kind: "topic" }>;
 
 export interface DiscoverFeedProps {
   edition: DiscoverEdition;
@@ -13,6 +12,9 @@ export interface DiscoverFeedProps {
   isTopicHidden: (card: DiscoverCard) => boolean;
   isFollowing: (card: DiscoverCard) => boolean;
   onSelect: (card: DiscoverCard) => void;
+  startingStoryId: string | null;
+  failedStoryId: string | null;
+  onStartStory: (card: DiscoverStoryCard) => void;
   media: ReactNode;
 }
 
@@ -31,7 +33,7 @@ function RowList({
   isTopicHidden,
   onSelect,
 }: {
-  cards: readonly RowCard[];
+  cards: readonly DiscoverRowCard[];
   selectedId: string | null;
   isTopicHidden: (card: DiscoverCard) => boolean;
   onSelect: (card: DiscoverCard) => void;
@@ -57,12 +59,20 @@ export function DiscoverFeed({
   isTopicHidden,
   isFollowing,
   onSelect,
+  startingStoryId,
+  failedStoryId,
+  onStartStory,
   media,
 }: DiscoverFeedProps) {
   const topics = edition.cards.filter(
     (card): card is Extract<DiscoverCard, { kind: "topic" }> => card.kind === "topic",
   );
-  const rows = edition.cards.filter((card): card is RowCard => card.kind !== "topic");
+  const stories = edition.cards.filter(
+    (card): card is DiscoverStoryCard => card.kind === "wind_down",
+  );
+  const rows = edition.cards.filter(
+    (card): card is DiscoverRowCard => card.kind !== "topic" && card.kind !== "wind_down",
+  );
   const forYou = rows.filter(
     (card) => card.kind === "action" || card.kind === "check_in" || card.kind === "resurface",
   );
@@ -74,7 +84,7 @@ export function DiscoverFeed({
     <div className="flex flex-col gap-8">
       <DiscoverBrief lines={edition.brief} />
       {media}
-      {topics.length > 0 && (
+      {topics.length + stories.length > 0 && (
         <FeedSection title="Worth a look">
           <div className="grid grid-cols-2 gap-3">
             {topics.map((card) => (
@@ -85,6 +95,15 @@ export function DiscoverFeed({
                 hidden={isTopicHidden(card)}
                 following={isFollowing(card)}
                 onSelect={onSelect}
+              />
+            ))}
+            {stories.map((card) => (
+              <DiscoverStoryTile
+                key={card.id}
+                card={card}
+                starting={card.id === startingStoryId}
+                failed={card.id === failedStoryId}
+                onStart={onStartStory}
               />
             ))}
           </div>

@@ -66,6 +66,14 @@ export async function transcribeSource(sourceId: string): Promise<Source> {
   return request(sourcePath(sourceId, "/transcribe"), { method: "POST", body: {} });
 }
 
+export async function listenToSource(sourceId: string): Promise<Source> {
+  return request(sourcePath(sourceId, "/listen"), { method: "POST", body: {} });
+}
+
+export function getSourceListenPassageUrl(sourceId: string, passage: number): string {
+  return apiMediaUrl(sourcePath(sourceId, `/listen/${passage}`));
+}
+
 export async function writeSourceNotes(
   sourceId: string,
   speakers?: Record<string, string>,

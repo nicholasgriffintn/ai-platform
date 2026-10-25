@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { calendarDateFromParts, isDeadlinePassed, wholeYearsSince, isoWeekKey } from "./dates.js";
+import { calendarDateFromParts, isDeadlinePassed, isoWeekKey, wholeYearsSince } from "./dates.js";
 
 const now = new Date("2026-06-07T12:00:00.000Z");
 

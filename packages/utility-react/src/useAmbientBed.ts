@@ -49,7 +49,7 @@ function createAmbientBed(): AmbientBed {
   return { context, output };
 }
 
-export function useAmbientBed(active: boolean): void {
+export function useAmbientBed(active: boolean, level = 1): void {
   const bedRef = useRef<AmbientBed | null>(null);
 
   useEffect(() => {
@@ -72,8 +72,8 @@ export function useAmbientBed(active: boolean): void {
 
     output.gain.cancelScheduledValues(now);
     output.gain.setValueAtTime(output.gain.value, now);
-    output.gain.linearRampToValueAtTime(active ? BED_LEVEL : 0, now + FADE_SECONDS);
-  }, [active]);
+    output.gain.linearRampToValueAtTime(active ? BED_LEVEL * level : 0, now + FADE_SECONDS);
+  }, [active, level]);
 
   useEffect(
     () => () => {

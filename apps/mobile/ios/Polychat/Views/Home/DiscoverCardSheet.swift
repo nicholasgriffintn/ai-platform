@@ -47,13 +47,26 @@ struct DiscoverCardSheet: View {
                     .controlSize(.large)
                     .tint(Color.polychat.primary)
 
-                    if card.externalURL != nil {
+                    if card.kind == "read", let sourceId = card.sourceId {
+                        ReadAloudView(sourceId: sourceId)
+                    }
+
+                    if let url = card.externalURL {
                         Button(action: onOpenLink) {
                             Label("Open \(card.source ?? "link")", systemImage: "arrow.up.right")
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.bordered)
                         .controlSize(.large)
+
+                        if card.kind == "read" {
+                            ShareLink(item: url, subject: Text(card.headline)) {
+                                Label("Share", systemImage: "square.and.arrow.up")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                            .controlSize(.large)
+                        }
                     }
 
                     HStack(spacing: 10) {

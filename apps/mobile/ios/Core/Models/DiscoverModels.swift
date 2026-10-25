@@ -50,6 +50,7 @@ struct DiscoverCard: Decodable, Equatable, Identifiable {
     let when: String?
     let `where`: String?
     let question: String?
+    let premise: String?
     let href: String?
     let reason: String
     let coverId: String?
@@ -59,7 +60,7 @@ struct DiscoverCard: Decodable, Equatable, Identifiable {
 
     var section: DiscoverSection {
         switch kind {
-        case "topic": return .topics
+        case "topic", "wind_down": return .topics
         case "event": return .comingUp
         case "read", "inbox": return .reading
         case "watch", "listen": return .watching
@@ -77,6 +78,7 @@ struct DiscoverCard: Decodable, Equatable, Identifiable {
         case "action": return "bolt"
         case "check_in": return "bubble.left.and.text.bubble.right"
         case "resurface": return "arrow.uturn.backward"
+        case "wind_down": return "moon.stars"
         default: return "sparkles"
         }
     }
@@ -85,7 +87,17 @@ struct DiscoverCard: Decodable, Equatable, Identifiable {
         (url ?? href).flatMap(URL.init(string:)).flatMap { $0.scheme?.hasPrefix("http") == true ? $0 : nil }
     }
 
-    var body: String? { angle ?? summary ?? detail }
+    var body: String? { angle ?? summary ?? detail ?? premise }
+
+    var storyRequest: DiscoverWindDownRequest? {
+        guard kind == "wind_down" else { return nil }
+        return DiscoverWindDownRequest(
+            kind: "story",
+            minutes: DiscoverWindDown.storyMinutes,
+            topic: topic,
+            premise: premise
+        )
+    }
 
     func subject(editionId: String) -> ConversationSubject {
         if kind == "read", let sourceId {
@@ -328,14 +340,26 @@ struct DiscoverWindDown: Decodable, Equatable {
     struct Kind: Identifiable {
         let id: String
         let title: String
+        let detail: String
     }
 
     static let kinds = [
-        Kind(id: "breathing", title: "Breathing"),
-        Kind(id: "body_scan", title: "Body scan"),
-        Kind(id: "unwind", title: "Unwind")
+        Kind(id: "breathing", title: "Breathing", detail: "Slow, counted breaths"),
+        Kind(id: "body_scan", title: "Body scan", detail: "Attention moves from head to toe"),
+        Kind(id: "unwind", title: "Unwind", detail: "Set today down, one thing at a time"),
+        Kind(id: "story", title: "Slow story", detail: "Nothing much happens, on purpose"),
+        Kind(id: "read_back", title: "Read back", detail: "Your own highlights, read slowly"),
+        Kind(id: "park", title: "Park tomorrow", detail: "Say what's on your mind, find it in the morning"),
+        Kind(id: "sound", title: "Just the sound", detail: "No voice, only the sound and the scene")
     ]
-    static let lengths = [5, 10, 20]
+    static let lengths = [5, 10, 20, 30]
+    static let beds = ["night", "rain", "sea", "embers", "aurora"]
+    static let afterVoiceMinutes = [0, 15, 30, 60]
+    static let storyMinutes = 20
+
+    static func title(forKind id: String) -> String {
+        kinds.first { $0.id == id }?.title ?? id
+    }
 
     struct Step: Decodable, Equatable {
         let text: String
@@ -349,14 +373,44 @@ struct DiscoverWindDown: Decodable, Equatable {
     let title: String
     let steps: [Step]
     let status: String
+    let bed: String?
     let ambient: Bool?
+    let topic: String?
+    let part: Int?
+    let parked: [String]?
 
-    var isReady: Bool { steps.first?.audio == true }
+    var isSoundOnly: Bool { kind == "sound" }
+    var sceneBed: String { bed ?? "night" }
+    var isReady: Bool { isSoundOnly ? ambient == true : steps.first?.audio == true }
 }
 
 struct DiscoverWindDownRequest: Encodable {
+    var kind: String
+    var minutes: Int
+    var bed: String?
+    var aboutToday: Bool?
+    var topic: String?
+    var premise: String?
+    var notes: String?
+}
+
+struct DiscoverWindDownTonight: Decodable, Equatable {
     let kind: String
     let minutes: Int
+    let bed: String
+    let topic: String?
+    let reason: String
+    let readBack: Bool
+
+    func request(aboutToday: Bool) -> DiscoverWindDownRequest {
+        DiscoverWindDownRequest(
+            kind: kind,
+            minutes: minutes,
+            bed: bed,
+            aboutToday: aboutToday ? nil : false,
+            topic: topic
+        )
+    }
 }
 
 struct DiscoverListenResponse: Decodable {
@@ -368,12 +422,33 @@ struct MediaSource: Decodable, Equatable {
         let mimeType: String?
     }
 
+    struct Metadata: Decodable, Equatable {
+        let listen: SourceListen?
+    }
+
     let id: String
     let title: String
     let status: String
     let file: File?
+    let metadata: Metadata?
 
     var isPlayable: Bool { status == "available" && file != nil }
+    var listen: SourceListen? { metadata?.listen }
+}
+
+struct SourceListen: Decodable, Equatable {
+    struct Passage: Decodable, Equatable {
+        let text: String
+        let audio: Bool
+    }
+
+    let status: String
+    let contentHash: String
+    let passages: [Passage]
+
+    var isMaking: Bool { status == "making" }
+    var isFailed: Bool { status == "failed" }
+    var isPlayable: Bool { passages.first?.audio == true }
 }
 
 struct DiscoverHealthSummary: Codable, Equatable {

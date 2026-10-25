@@ -17,20 +17,34 @@ export function hashSeed(seed: string): number {
   return hash >>> 0;
 }
 
+export function createSeededGenerator(seed: string): () => number {
+  let state = hashSeed(seed) || 1;
+
+  return () => {
+    state ^= state << 13;
+    state ^= state >>> 17;
+    state ^= state << 5;
+
+    return state >>> 0;
+  };
+}
+
+export function createSeededRandom(seed: string): () => number {
+  const next = createSeededGenerator(seed);
+
+  return () => next() / 4_294_967_296;
+}
+
 export function sampleDeterministic<T>(values: readonly T[], count: number, seed: string): T[] {
   if (count >= values.length) {
     return [...values];
   }
 
-  let state = hashSeed(seed) || 1;
+  const next = createSeededGenerator(seed);
   const pool = [...values];
 
   for (let index = pool.length - 1; index > 0; index -= 1) {
-    state ^= state << 13;
-    state ^= state >>> 17;
-    state ^= state << 5;
-
-    const swap = (state >>> 0) % (index + 1);
+    const swap = next() % (index + 1);
 
     [pool[index], pool[swap]] = [pool[swap], pool[index]];
   }

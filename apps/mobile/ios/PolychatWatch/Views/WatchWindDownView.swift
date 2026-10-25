@@ -4,7 +4,7 @@ import WatchKit
 struct WatchWindDownView: View {
     @StateObject private var controller = WindDownPlaybackController()
     @State private var kind = DiscoverWindDown.kinds[0].id
-    @State private var minutes = DiscoverWindDown.lengths[0]
+    @State private var minutes = DiscoverWindDown.lengths[1]
     @State private var listeningSince: Date?
     @State private var healthMessage: String?
     @State private var isLoading = true
@@ -38,14 +38,27 @@ struct WatchWindDownView: View {
                 } else if isLoading {
                     ProgressView()
                 } else {
+                    if let tonight = controller.tonight {
+                        Button {
+                            Task { await start(tonight.request(aboutToday: true)) }
+                        } label: {
+                            VStack(alignment: .leading) {
+                                Text("Tonight: \(DiscoverWindDown.title(forKind: tonight.kind))")
+                                Text(tonight.reason).font(.footnote).foregroundStyle(.secondary)
+                            }
+                        }
+                        .disabled(controller.isWorking)
+                    }
                     Picker("Kind", selection: $kind) {
-                        ForEach(DiscoverWindDown.kinds) { Text($0.title).tag($0.id) }
+                        ForEach(DiscoverWindDown.kinds.filter { $0.id != "read_back" || controller.tonight?.readBack == true }) {
+                            Text($0.title).tag($0.id)
+                        }
                     }
                     Picker("Length", selection: $minutes) {
                         ForEach(DiscoverWindDown.lengths, id: \.self) { Text("\($0) min").tag($0) }
                     }
                     Button {
-                        Task { await start() }
+                        Task { await start(DiscoverWindDownRequest(kind: kind, minutes: minutes)) }
                     } label: {
                         if controller.isWorking { ProgressView() } else { Text("Start") }
                     }
@@ -84,14 +97,15 @@ struct WatchWindDownView: View {
 
     private func loadToday() async {
         defer { isLoading = false }
+        await controller.loadTonight()
         guard let id = try? await apiClient.fetchDiscover().windDownId else { return }
         await controller.load(id: id)
         await controller.waitUntilReady()
     }
 
-    private func start() async {
+    private func start(_ request: DiscoverWindDownRequest) async {
         healthMessage = nil
-        await controller.start(kind: kind, minutes: minutes)
+        await controller.start(request)
     }
 
     private func recordListening() {

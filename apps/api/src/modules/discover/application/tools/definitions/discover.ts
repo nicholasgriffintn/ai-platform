@@ -24,7 +24,7 @@ export const read_discover_context: FunctionToolDescriptor = {
 export const prepare_wind_down: FunctionToolDescriptor = {
   name: WIND_DOWN_TOOL_NAME,
   description:
-    "Prepare a guided wind-down session for the person in Discover: breathing, body scan or unwind, five, ten or twenty minutes. It starts recording straight away and is ready to play within a minute.",
+    "Prepare a wind-down session for the person in Discover: breathing, body scan, unwind (about their day), a slow story (story, with an optional topic and premise), their highlights read back (read_back), park (what is on their mind, set aside for the morning, from notes) or just the sound; five, ten, twenty or thirty minutes. It starts recording straight away and is ready to play within a minute.",
   type: "normal",
   permissions: ["read"],
   effects: { effectClass: "draft" },

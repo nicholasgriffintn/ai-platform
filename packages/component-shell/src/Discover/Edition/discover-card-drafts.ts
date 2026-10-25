@@ -21,6 +21,8 @@ export function discoverCardEyebrow(card: DiscoverCard): string {
       return card.where ? `${card.when} · ${card.where}` : card.when;
     case "inbox":
       return `From ${card.source}`;
+    case "wind_down":
+      return `Wind down · ${card.topic}`;
   }
 }
 
@@ -170,5 +172,7 @@ export function discoverCardSuggestions(card: DiscoverCard): ChatSuggestion[] {
           `Save "${card.title}" from ${card.source}${card.url ? ` (${card.url})` : ""} to my reading list.`,
         ),
       ];
+    case "wind_down":
+      return [];
   }
 }

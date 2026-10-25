@@ -10,8 +10,9 @@ import { readSourceMedia, type DiscoverEdition } from "@ngriffin_uk/polychat-sch
 import { episodeCoverUrl } from "../Episode/episode-cover.js";
 import { episodeStatus } from "../Episode/episode-status.js";
 import { discoverTopicGradient } from "./DiscoverTopicTile.js";
-import { PERCH_GRADIENT, WEEK_GRADIENT, WIND_DOWN_GRADIENT } from "./media/discover-art.js";
+import { PERCH_GRADIENT, WEEK_GRADIENT } from "./media/discover-art.js";
 import { listenStatus, windDownStatus, type DiscoverMedia } from "./media/media-status.js";
+import { WindDownScene } from "./media/WindDownScene.js";
 
 function Art({ background, image }: { background: string; image?: string | null }) {
   return (
@@ -106,7 +107,13 @@ export function DiscoverMediaShelf({
           onSelect={() => onOpen("perch")}
         />
         <MediaTile
-          art={<Art background={WIND_DOWN_GRADIENT} />}
+          art={
+            <WindDownScene
+              bed={windDown?.bed ?? "night"}
+              seed={windDown?.id ?? "wind-down"}
+              moving={false}
+            />
+          }
           eyebrow="Wind down"
           title={windDown?.title ?? "Something quieter"}
           status={windDownStatus(windDown)}

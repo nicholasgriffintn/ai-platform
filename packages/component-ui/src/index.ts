@@ -29,6 +29,7 @@ export * from "./input";
 export * from "./label";
 export * from "./Link";
 export * from "./Media/media-status";
+export * from "./Media/MediaBalance";
 export * from "./Media/MediaNotice";
 export * from "./Media/MediaPlayer";
 export * from "./Media/MediaStage";

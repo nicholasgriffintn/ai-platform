@@ -225,6 +225,9 @@ export function DiscoverEditionView() {
                 isTopicHidden={controller.isTopicHidden}
                 isFollowing={(card) => Boolean(controller.followFor(card))}
                 onSelect={controller.select}
+                startingStoryId={controller.startingStoryId}
+                failedStoryId={controller.failedStoryId}
+                onStartStory={controller.startStory}
                 media={
                   <DiscoverMediaShelf
                     edition={edition}

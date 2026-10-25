@@ -21,6 +21,7 @@ import {
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 
+import { SourceListenById } from "../../Files/Viewer/SourceListen.js";
 import {
   discoverCardEyebrow,
   discoverCardHeadline,
@@ -82,6 +83,7 @@ function CardSummary({ card }: { card: DiscoverCard }) {
       return (
         <div className="flex flex-col gap-2">
           <p className="text-[0.95rem] leading-relaxed text-foreground">{card.summary}</p>
+          {card.sourceId ? <SourceListenById sourceId={card.sourceId} /> : null}
           <a
             href={card.url}
             target="_blank"

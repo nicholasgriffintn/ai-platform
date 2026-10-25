@@ -184,6 +184,7 @@ export * from "./lib/work-attention.js";
 export * from "./state/stores/themeStore.js";
 export * from "./state/stores/uiStore.js";
 export * from "./state/stores/webLLMConsentStore.js";
+export * from "./state/stores/windDownMixStore.js";
 export * from "./chat/useWebLLMInitialization.js";
 export * from "./chat/useBrowserModelConsent.js";
 export * from "./chat/useWebLLMModels.js";

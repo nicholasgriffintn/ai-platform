@@ -6,9 +6,10 @@ export const wellbeingRecipes: CatalogRecipe[] = [
   {
     id: "evening-wind-down",
     title: "Evening Wind Down",
-    summary: "Have a guided breathing, body scan or unwind session ready each evening.",
+    summary:
+      "Have a wind-down session ready each evening: a guided session, a slow story or just the sound.",
     description:
-      "Each evening Poly records a calm guided session with quiet music underneath and leaves it in Discover, ready to play. It makes no medical claims.",
+      "Each evening Poly records a calm session over a quiet sound bed and leaves it in Discover, ready to play. It makes no medical claims.",
     kind: "automate",
     category: "Health",
     featured: false,
@@ -24,23 +25,23 @@ export const wellbeingRecipes: CatalogRecipe[] = [
       },
     ],
     actions: [
-      `Call ${WIND_DOWN_TOOL_NAME} once with the session kind and length from the configuration, or breathing for ten minutes when none is set`,
+      `Call ${WIND_DOWN_TOOL_NAME} once with the session kind and length from the configuration. When none is set, use unwind for ten minutes`,
       "Finish with one short sentence saying tonight's session is ready in Discover",
     ],
     setupPrompt:
-      "Set up the Evening Wind Down recipe. Ask what time in the evening suits, which kind of session (breathing, body scan or unwind) and how long (five, ten or twenty minutes).",
+      "Set up the Evening Wind Down recipe. Ask what time in the evening suits, which kind of session (breathing, body scan, unwind, story, read back or just the sound) and how long (five, ten, twenty or thirty minutes).",
     configurationFields: [
       {
         key: "kind",
         label: "Session",
         type: "text",
-        placeholder: "breathing, body_scan or unwind",
+        placeholder: "breathing, body_scan, unwind, story, read_back or sound",
       },
       {
         key: "minutes",
         label: "Length in minutes",
         type: "text",
-        placeholder: "5, 10 or 20",
+        placeholder: "5, 10, 20 or 30",
       },
     ],
   },

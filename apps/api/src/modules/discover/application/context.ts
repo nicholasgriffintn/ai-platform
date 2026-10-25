@@ -35,6 +35,7 @@ import { isActiveDiscoverReader } from "~/modules/discover/domain/listen";
 import { latestResearchSection } from "~/modules/discover/domain/research";
 import { findDiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
 import { selectRecentChatTitles } from "~/modules/discover/domain/signals";
+import { collectParkedSince, describeRunningStory } from "~/modules/discover/domain/wind-down";
 import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
 import { loadPolyAgenda } from "~/modules/poly/application/read-agenda";
 
@@ -47,6 +48,7 @@ import { readDiscoverHealthSummary } from "./health";
 import type { DiscoverDocuments } from "./notebook";
 import { loadResurfaceCandidates } from "./resurface";
 import { readDiscoverRoutine } from "./settings";
+import { listRecentWindDowns } from "./wind-down-history";
 
 const RECENT_EDITION_COUNT = 7;
 const CHAT_SCAN_LIMIT = 80;
@@ -55,14 +57,18 @@ const CHAT_MAX_AGE_DAYS = 30;
 const MEMORY_SUMMARY_LIMIT = 2_000;
 const WAITING_LIMIT = 3;
 
-function selectChatTitles(rows: readonly Record<string, unknown>[], now: number): string[] {
+function selectChatTitles(
+  rows: readonly Record<string, unknown>[],
+  now: number,
+  maxAgeDays = CHAT_MAX_AGE_DAYS,
+): string[] {
   return selectRecentChatTitles(
     rows.map((row) => ({
       title: readStringField(row, "title") ?? "",
       type: readStringField(row, "type") ?? "",
       updatedAt: readStringField(row, "updated_at") || (readStringField(row, "created_at") ?? ""),
     })),
-    { now, maxAgeDays: CHAT_MAX_AGE_DAYS, limit: CHAT_TITLE_LIMIT },
+    { now, maxAgeDays, limit: CHAT_TITLE_LIMIT },
   );
 }
 
@@ -89,12 +95,13 @@ export async function listRecentDiscoverChatTitles(
   context: ServiceContext,
   userId: number,
   now: number,
+  maxAgeDays = CHAT_MAX_AGE_DAYS,
 ): Promise<string[]> {
   const conversations = await context.repositories
     .get(ConversationRepository)
     .listUserConversations(userId, { limit: CHAT_SCAN_LIMIT, teammateThreads: "exclude" });
 
-  return selectChatTitles(conversations.data, now);
+  return selectChatTitles(conversations.data, now, maxAgeDays);
 }
 
 export interface DiscoverEditionBasis {
@@ -218,7 +225,7 @@ export async function buildDiscoverContextSnapshot(
   const basis = await loadDiscoverBasis(context, now);
   const userId = basis.user.id;
   const documents = describeDocuments(await ensureDiscoverGathered(context, now), now.getTime());
-  const [conversations, memorySummary, agenda, resurface, health] = await Promise.all([
+  const [conversations, memorySummary, agenda, resurface, health, windDowns] = await Promise.all([
     context.repositories
       .get(ConversationRepository)
       .listUserConversations(userId, { limit: CHAT_SCAN_LIMIT, teammateThreads: "exclude" }),
@@ -231,6 +238,7 @@ export async function buildDiscoverContextSnapshot(
       now: now.getTime(),
     }),
     readDiscoverHealthSummary(context, userId, basis.zoned.date),
+    listRecentWindDowns(context, userId),
   ]);
 
   return {
@@ -254,5 +262,7 @@ export async function buildDiscoverContextSnapshot(
     health,
     signals: documents.signals,
     research: documents.research,
+    parked: collectParkedSince(windDowns, basis.recentEditions[0]?.generatedAt ?? null),
+    story: describeRunningStory(windDowns),
   };
 }

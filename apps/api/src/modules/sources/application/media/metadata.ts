@@ -1,7 +1,10 @@
 import {
+  SOURCE_LISTEN_METADATA_KEY,
   readSourceGeneration,
+  readSourceListen,
   readSourceMedia,
   type SourceGeneration,
+  type SourceListen,
   type SourceMediaMetadata,
   type SourceStatus,
 } from "@ngriffin_uk/polychat-schemas";
@@ -39,6 +42,11 @@ export interface SourceMetadataPatch {
   media?: Partial<SourceMediaMetadata>;
   generation?: Partial<SourceGeneration>;
   pending?: SourcePendingInvocation | null;
+  listen?: SourceListen;
+}
+
+export function readSourceRecordListen(source: SourceRecord): SourceListen | null {
+  return readSourceListen(parseJsonRecord(source.metadata));
 }
 
 export function mergeSourceMetadata(
@@ -53,6 +61,10 @@ export function mergeSourceMetadata(
 
   if (patch.generation) {
     next.generation = { ...readSourceGeneration(metadata), ...patch.generation };
+  }
+
+  if (patch.listen) {
+    next[SOURCE_LISTEN_METADATA_KEY] = patch.listen;
   }
 
   if (patch.pending === null) {
@@ -87,7 +99,7 @@ export async function updateSourceRecord(
     content?: string | null;
   },
 ): Promise<SourceRecord> {
-  const { media, generation, pending, ...fields } = patch;
+  const { media, generation, pending, listen, ...fields } = patch;
   const repository = context.repositories.get(SourceRepository);
 
   await repository.updateSource(source.id, {
@@ -96,6 +108,7 @@ export async function updateSourceRecord(
       media,
       generation,
       pending,
+      listen,
     }),
   });
 

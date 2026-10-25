@@ -237,23 +237,56 @@ final class EpisodePlaybackController: ObservableObject {
 @MainActor
 final class WindDownPlaybackController: ObservableObject {
     @Published private(set) var windDown: DiscoverWindDown?
+    @Published private(set) var tonight: DiscoverWindDownTonight?
     @Published private(set) var stepIndex = 0
+    @Published private(set) var soundElapsed = 0
     @Published private(set) var isPlaying = false
     @Published private(set) var isWorking = false
     @Published var error: String?
+    @Published var balance: Double {
+        didSet {
+            defaults.set(balance, forKey: Self.balanceKey)
+            applyLevels()
+        }
+    }
+    @Published var afterVoiceMinutes: Int {
+        didSet { defaults.set(afterVoiceMinutes, forKey: Self.afterVoiceKey) }
+    }
 
     let player = AudioClipPlayer()
     private let apiClient: APIClient
+    private let defaults: UserDefaults
     private var sequence: Task<Void, Never>?
-    private var music: AVAudioPlayer?
-    private static let musicVolume: Float = 0.28
+    private var music: CrossfadeLooper?
+    private static let musicVolume: Float = 0.35
+    private static let tailFadeSeconds = 45
+    private static let endFadeSeconds = 4
+    private static let balanceKey = "windDown.balance"
+    private static let afterVoiceKey = "windDown.afterVoiceMinutes"
 
-    init(apiClient: APIClient = .shared) {
+    init(apiClient: APIClient = .shared, defaults: UserDefaults = .standard) {
         self.apiClient = apiClient
+        self.defaults = defaults
+        balance = defaults.object(forKey: Self.balanceKey) as? Double ?? 0.5
+        afterVoiceMinutes = defaults.integer(forKey: Self.afterVoiceKey)
+        player.volume = Self.levels(balance: balance).voice
+    }
+
+    static func levels(balance: Double) -> (voice: Float, sound: Float) {
+        let clamped = min(1, max(0, balance))
+        return (Float(min(1, 2 * clamped)), Float(min(1, 2 * (1 - clamped))))
     }
 
     var currentText: String? {
         windDown.flatMap { $0.steps.indices.contains(stepIndex) ? $0.steps[stepIndex].text : nil }
+    }
+
+    var progress: Double {
+        guard let windDown else { return 0 }
+        if windDown.isSoundOnly {
+            return Double(soundElapsed) / Double(max(1, windDown.minutes * 60))
+        }
+        return Double(stepIndex) / Double(max(1, windDown.steps.count))
     }
 
     func load(id: String) async {
@@ -265,11 +298,18 @@ final class WindDownPlaybackController: ObservableObject {
         }
     }
 
-    func start(kind: String, minutes: Int) async {
+    func loadTonight() async {
+        tonight = try? await apiClient.fetchDiscoverWindDownTonight()
+    }
+
+    func start(_ request: DiscoverWindDownRequest) async {
+        stop()
+        stepIndex = 0
+        soundElapsed = 0
         isWorking = true
         defer { isWorking = false }
         do {
-            windDown = try await apiClient.startDiscoverWindDown(kind: kind, minutes: minutes)
+            windDown = try await apiClient.startDiscoverWindDown(request)
             error = nil
             await waitUntilReady()
         } catch {
@@ -295,6 +335,7 @@ final class WindDownPlaybackController: ObservableObject {
         }
 
         guard let windDown, windDown.isReady else { return }
+        sequence?.cancel()
         isPlaying = true
         NowPlayingCenter.shared.bind(
             isPlaying: { [weak self] in self?.isPlaying ?? false },
@@ -315,7 +356,7 @@ final class WindDownPlaybackController: ObservableObject {
                 return
             }
             await self.startMusic(for: windDown)
-            await self.playSteps(windDown, from: self.stepIndex)
+            await self.play(windDown)
         }
     }
 
@@ -332,7 +373,14 @@ final class WindDownPlaybackController: ObservableObject {
         stop()
         windDown = nil
         stepIndex = 0
+        soundElapsed = 0
         error = nil
+    }
+
+    private func applyLevels() {
+        let levels = Self.levels(balance: balance)
+        player.volume = levels.voice
+        music?.setVolume(Self.musicVolume * levels.sound)
     }
 
     private func publishNowPlaying() {
@@ -349,48 +397,67 @@ final class WindDownPlaybackController: ObservableObject {
 
     private func startMusic(for windDown: DiscoverWindDown) async {
         if let music {
+            applyLevels()
             music.play()
             return
         }
 
         guard windDown.ambient == true,
-              let data = try? await apiClient.fetchDiscoverWindDownAmbient(id: windDown.id),
-              let music = try? AVAudioPlayer(data: data) else {
+              let data = try? await apiClient.fetchDiscoverWindDownBed(windDown.sceneBed),
+              let music = CrossfadeLooper(data: data, volume: Self.musicVolume * Self.levels(balance: balance).sound) else {
             return
         }
 
-        music.numberOfLoops = -1
-        music.volume = Self.musicVolume
-        music.prepareToPlay()
-        music.play()
         self.music = music
+        music.play()
     }
 
-    private func playSteps(_ windDown: DiscoverWindDown, from start: Int) async {
-        for index in start..<windDown.steps.count {
-            guard !Task.isCancelled else { return }
-            stepIndex = index
-            publishNowPlaying()
-            let step = windDown.steps[index]
-
-            if step.audio, let data = try? await apiClient.fetchDiscoverWindDownStepAudio(id: windDown.id, step: index) {
-                try? await player.load(data, autoplay: true)
-                while player.isPlaying, !Task.isCancelled {
-                    try? await Task.sleep(for: .milliseconds(200))
-                }
+    private func play(_ windDown: DiscoverWindDown) async {
+        if windDown.isSoundOnly {
+            while soundElapsed < windDown.minutes * 60 {
+                try? await Task.sleep(for: .seconds(1))
+                guard !Task.isCancelled else { return }
+                soundElapsed += 1
             }
+        } else {
+            for index in min(stepIndex, windDown.steps.count)..<windDown.steps.count {
+                guard !Task.isCancelled else { return }
+                stepIndex = index
+                publishNowPlaying()
+                let step = windDown.steps[index]
 
-            try? await Task.sleep(for: .seconds(step.pauseSeconds))
+                if step.audio, let data = try? await apiClient.fetchDiscoverWindDownStepAudio(id: windDown.id, step: index) {
+                    try? await player.load(data, autoplay: true)
+                    while player.isPlaying, !Task.isCancelled {
+                        try? await Task.sleep(for: .milliseconds(200))
+                    }
+                }
+
+                try? await Task.sleep(for: .seconds(step.pauseSeconds))
+            }
         }
 
-        if !Task.isCancelled {
-            isPlaying = false
-            stepIndex = 0
-            publishNowPlaying()
-            music?.setVolume(0, fadeDuration: 4)
-            try? await Task.sleep(for: .seconds(4))
-            music?.stop()
-            music = nil
+        guard !Task.isCancelled else { return }
+        await finish()
+    }
+
+    private func finish() async {
+        isPlaying = false
+        stepIndex = 0
+        soundElapsed = 0
+        publishNowPlaying()
+
+        let tail = afterVoiceMinutes * 60
+        if tail > Self.tailFadeSeconds {
+            try? await Task.sleep(for: .seconds(tail - Self.tailFadeSeconds))
+            guard !Task.isCancelled else { return }
         }
+
+        let fade = tail > 0 ? Self.tailFadeSeconds : Self.endFadeSeconds
+        music?.fadeOut(over: TimeInterval(fade))
+        try? await Task.sleep(for: .seconds(fade))
+        guard !Task.isCancelled else { return }
+        music?.stop()
+        music = nil
     }
 }

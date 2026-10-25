@@ -160,8 +160,12 @@ final class APIClient: ObservableObject {
         try await fetchData(path: "/sources/\(id)/cover")
     }
 
-    func fetchDiscoverWindDownAmbient(id: String) async throws -> Data {
-        try await fetchData(path: "/discover/wind-down/\(id)/ambient")
+    func fetchDiscoverWindDownBed(_ bed: String) async throws -> Data {
+        try await fetchData(path: "/discover/wind-down/beds/\(bed)")
+    }
+
+    func fetchDiscoverWindDownTonight() async throws -> DiscoverWindDownTonight {
+        try await send(path: "/discover/wind-down/tonight", method: "GET")
     }
 
     func shareDiscoverHealth(_ summary: DiscoverHealthSummary) async throws {
@@ -224,16 +228,20 @@ final class APIClient: ObservableObject {
         try await send(path: "/sources/\(id)", method: "GET")
     }
 
+    func startSourceListen(id: String) async throws -> MediaSource {
+        try await send(path: "/sources/\(id)/listen", method: "POST", emptyBody: true)
+    }
+
+    func fetchSourceListenPassage(id: String, passage: Int) async throws -> Data {
+        try await fetchData(path: "/sources/\(id)/listen/\(passage)")
+    }
+
     func fetchSourceContent(id: String) async throws -> Data {
         try await fetchData(path: "/sources/\(id)/content")
     }
 
-    func startDiscoverWindDown(kind: String, minutes: Int) async throws -> DiscoverWindDown {
-        try await send(
-            path: "/discover/wind-down",
-            method: "POST",
-            body: DiscoverWindDownRequest(kind: kind, minutes: minutes)
-        )
+    func startDiscoverWindDown(_ request: DiscoverWindDownRequest) async throws -> DiscoverWindDown {
+        try await send(path: "/discover/wind-down", method: "POST", body: request)
     }
 
     func fetchDiscoverWindDown(id: String) async throws -> DiscoverWindDown {

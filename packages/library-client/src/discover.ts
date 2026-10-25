@@ -1,6 +1,8 @@
 import type {
   CreateDiscoverWindDown,
   DiscoverWindDown,
+  DiscoverWindDownBed,
+  DiscoverWindDownTonight,
   DiscoverEpisode,
   DiscoverEpisodeProgress,
   DiscoverEpisodeViewerProgress,
@@ -117,8 +119,12 @@ export function getDiscoverWindDown(windDownId: string): Promise<DiscoverWindDow
   return requestJson(`/discover/wind-down/${encodeURIComponent(windDownId)}`, "GET");
 }
 
-export function getDiscoverWindDownAmbientUrl(windDownId: string): string {
-  return apiMediaUrl(`/discover/wind-down/${encodeURIComponent(windDownId)}/ambient`);
+export function getDiscoverWindDownTonight(): Promise<DiscoverWindDownTonight> {
+  return requestJson("/discover/wind-down/tonight", "GET");
+}
+
+export function getDiscoverWindDownBedUrl(bed: DiscoverWindDownBed): string {
+  return apiMediaUrl(`/discover/wind-down/beds/${encodeURIComponent(bed)}`);
 }
 
 export function getDiscoverWindDownStepUrl(windDownId: string, step: number): string {

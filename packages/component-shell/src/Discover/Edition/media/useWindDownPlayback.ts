@@ -1,76 +1,43 @@
 import type { DiscoverWindDown } from "@ngriffin_uk/polychat-schemas";
-import { useMediaTrack } from "@ngriffin_uk/polychat-utility-react";
-import { useEffect, useState } from "react";
+import {
+  usePassagePlayback,
+  useRunningSeconds,
+  type PassagePhase,
+} from "@ngriffin_uk/polychat-utility-react";
 
-export type WindDownPhase = "idle" | "waiting" | "speaking" | "resting" | "finished";
+export type WindDownPhase = PassagePhase;
 
 export function useWindDownPlayback(windDown: DiscoverWindDown | undefined) {
-  const [sessionId, setSessionId] = useState(windDown?.id ?? null);
-  const [step, setStep] = useState(0);
-  const [resting, setResting] = useState(false);
-  const [wantsPlay, setWantsPlay] = useState(false);
-  const track = useMediaTrack(() => setResting(true));
   const steps = windDown?.steps ?? [];
-  const current = steps[step];
-  const finished = windDown?.status === "ready" && step >= steps.length;
+  const voiced = usePassagePlayback(windDown?.id ?? null, steps, windDown?.status === "ready");
+  const soundOnly = windDown?.kind === "sound";
+  const soundTotal = (windDown?.minutes ?? 0) * 60;
+  const soundSeconds = useRunningSeconds(
+    voiced.wantsPlay && soundOnly,
+    `${windDown?.id ?? ""}:${voiced.run}`,
+  );
+  const soundFinished = soundTotal > 0 && soundSeconds >= soundTotal;
 
-  if ((windDown?.id ?? null) !== sessionId) {
-    setSessionId(windDown?.id ?? null);
-    setStep(0);
-    setResting(false);
+  if (!soundOnly) {
+    return {
+      ...voiced,
+      current: steps[voiced.step],
+      wantsPlay: voiced.playing,
+      position: { value: Math.min(voiced.step, steps.length), max: steps.length },
+    };
   }
 
-  useEffect(() => {
-    if (!resting || !wantsPlay) {
-      return undefined;
-    }
-
-    const timer = window.setTimeout(
-      () => {
-        setResting(false);
-        setStep((index) => index + 1);
-      },
-      (current?.pauseSeconds ?? 0) * 1000,
-    );
-
-    return () => window.clearTimeout(timer);
-  }, [current?.pauseSeconds, resting, wantsPlay]);
-
-  const playing = wantsPlay && !finished;
-  const phase: WindDownPhase = finished
-    ? "finished"
-    : !playing
-      ? "idle"
-      : resting
-        ? "resting"
-        : current?.audio
-          ? "speaking"
-          : "waiting";
+  const playing = voiced.wantsPlay && !soundFinished;
+  const phase: WindDownPhase = soundFinished ? "finished" : playing ? "resting" : "idle";
 
   return {
-    track,
-    step,
-    current,
-    phase,
+    ...voiced,
+    current: undefined,
     wantsPlay: playing,
-    audible: (current?.audio ?? false) && !resting && !finished,
-    begin: () => {
-      setStep(0);
-      setResting(false);
-      setWantsPlay(true);
-    },
-    toggle: () => {
-      if (playing) {
-        track.pause();
-        setWantsPlay(false);
-      } else {
-        setWantsPlay(true);
-        track.play();
-      }
-    },
-    seekStep: (index: number) => {
-      setStep(index);
-      setResting(false);
-    },
+    ended: voiced.wantsPlay && soundFinished,
+    audible: false,
+    phase,
+    position: { value: Math.min(soundSeconds, soundTotal), max: soundTotal },
+    toggle: playing ? voiced.stop : soundFinished ? voiced.begin : voiced.resume,
   };
 }

@@ -157,10 +157,14 @@ struct HomeView: View {
                 EyebrowLabel(DiscoverSection.topics.title)
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(topics) { card in
-                        DiscoverTopicTile(card: card, cover: card.coverId.flatMap { store.covers[$0] }) {
-                            selectedCard = card
+                        if card.storyRequest != nil {
+                            DiscoverStoryTile(card: card) { startStory(card) }
+                        } else {
+                            DiscoverTopicTile(card: card, cover: card.coverId.flatMap { store.covers[$0] }) {
+                                selectedCard = card
+                            }
+                            .contextMenu { feedbackMenu(card) }
                         }
-                        .contextMenu { feedbackMenu(card) }
                     }
                 }
             }
@@ -220,6 +224,16 @@ struct HomeView: View {
             Task { await store.send("hide", for: card) }
         } label: {
             Label("Hide", systemImage: "eye.slash")
+        }
+    }
+
+    private func startStory(_ card: DiscoverCard) {
+        guard let request = card.storyRequest else { return }
+        mediaItem = .windDown
+        Task {
+            await store.send("opened", for: card)
+            await playback.windDown.start(request)
+            await store.refresh()
         }
     }
 
@@ -336,6 +350,38 @@ private struct DiscoverTopicTile: View {
             .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).stroke(Color.polychat.border, lineWidth: 1))
         }
         .buttonStyle(.plain)
+    }
+}
+
+private struct DiscoverStoryTile: View {
+    let card: DiscoverCard
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            ZStack(alignment: .bottomLeading) {
+                WindDownSceneView(bed: "rain", seed: card.id, moving: false)
+                LinearGradient(colors: [.clear, .black.opacity(0.7)], startPoint: .center, endPoint: .bottom)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("TONIGHT'S STORY")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.white.opacity(0.75))
+                    Text(card.headline)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .lineLimit(3)
+                        .multilineTextAlignment(.leading)
+                    Label("\(DiscoverWindDown.storyMinutes) min", systemImage: "play.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.white.opacity(0.8))
+                }
+                .padding(10)
+            }
+            .frame(height: 180)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Play tonight's story: \(card.headline)")
     }
 }
 

@@ -42,6 +42,7 @@ export const SOURCE_KNOWLEDGE_SYNC_TASK_TYPE = "source_knowledge_sync";
 export const SOURCE_GENERATION_POLLING_TASK_TYPE = "source_generation_polling";
 export const SOURCE_MEDIA_TRANSCRIPTION_TASK_TYPE = "source_media_transcription";
 export const SOURCE_PODCAST_GENERATION_TASK_TYPE = "source_podcast_generation";
+export const SOURCE_LISTEN_TASK_TYPE = "source_listen";
 export const WEBHOOK_DELIVERY_TASK_TYPE = "webhook_delivery";
 
 export const TASK_TYPES = [
@@ -76,6 +77,7 @@ export const TASK_TYPES = [
   SOURCE_GENERATION_POLLING_TASK_TYPE,
   SOURCE_MEDIA_TRANSCRIPTION_TASK_TYPE,
   SOURCE_PODCAST_GENERATION_TASK_TYPE,
+  SOURCE_LISTEN_TASK_TYPE,
   MODEL_REGISTRY_INSPECT_TASK_TYPE,
   MODEL_REGISTRY_EVAL_TASK_TYPE,
   MODEL_DATASET_PROCESS_TASK_TYPE,
