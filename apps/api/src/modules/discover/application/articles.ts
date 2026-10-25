@@ -35,8 +35,16 @@ function normaliseUrl(url: string): string | null {
   }
 }
 
-export function excerptArticle(content: string): string {
-  return leadParagraphs(markdownToPlainText(content), ARTICLE_EXCERPT_CHARACTERS);
+export function excerptArticle(content: string, title: string): string {
+  const text = markdownToPlainText(content);
+  const anchor = title.replace(/\s+/gu, " ").trim().slice(0, 40).toLowerCase();
+  const titleAt = anchor.length >= 12 ? text.toLowerCase().indexOf(anchor) : -1;
+  const afterTitle = titleAt >= 0 ? text.slice(titleAt + anchor.length) : "";
+
+  return (
+    leadParagraphs(afterTitle, ARTICLE_EXCERPT_CHARACTERS) ||
+    leadParagraphs(text, ARTICLE_EXCERPT_CHARACTERS)
+  );
 }
 
 export async function listDiscoverArticleSources(
@@ -134,7 +142,7 @@ export async function readDiscoverArticles(
       });
     }
 
-    const excerpt = excerptArticle(content);
+    const excerpt = excerptArticle(content, result.title);
 
     read.push(excerpt ? { ...result, snippet: excerpt } : result);
   }

@@ -1,5 +1,5 @@
 import { DISCOVER_RESEARCH_DAYS_KEPT } from "@ngriffin_uk/polychat-schemas";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, leadParagraphs, markdownToPlainText } from "@ngriffin_uk/polychat-utility-core";
 
 export const DISCOVER_HEADLINES_TOPIC = "Today's headlines";
 
@@ -19,6 +19,12 @@ export interface DiscoverResearchSection {
 const SECTION_HEADING = /^## (\d{4}-\d{2}-\d{2})$/u;
 const RESULT_LINE =
   /^- \[(.+?)\]\((https?:\/\/\S+?)\)(?: _\((.+?)(?: · (\d{4}-\d{2}-\d{2}))?\)_)?(?: — (.*))?$/u;
+
+function cleanSnippet(value: string): string {
+  const text = markdownToPlainText(value).replace(/\s+/gu, " ").trim();
+
+  return leadParagraphs(text, 1_000) || text;
+}
 
 function describeOrigin(result: DiscoverResearchResult): string {
   const source =
@@ -84,7 +90,7 @@ export function parseResearchDocument(content: string): DiscoverResearchSection[
       current.results.push({
         title: result[1] ?? "",
         url: result[2] ?? "",
-        snippet: result[5] ?? "",
+        snippet: cleanSnippet(result[5] ?? ""),
         ...(result[3] ? { source: result[3] } : {}),
         ...(result[4] ? { date: result[4] } : {}),
       });

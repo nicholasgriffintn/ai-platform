@@ -37,6 +37,15 @@ describe("leadParagraphs", () => {
     expect(lead.length).toBeLessThanOrEqual(400);
   });
 
+  it("skips an author biography that sits above the article", () => {
+    const lead = leadParagraphs(
+      "Diego Pineda has been a devout storyteller his whole life. He has self-published a fantasy novel and is actively working on his second, and he writes reviews on his Instagram page dedicated to cinema.\nAction cinema has rarely been as inventive as it is right now, and the films on this list prove that the R rating still buys directors real freedom to stage violence with consequence.",
+      400,
+    );
+
+    expect(lead.startsWith("Action cinema has rarely been")).toBe(true);
+  });
+
   it("returns nothing when a page is only chrome", () => {
     expect(
       leadParagraphs("Log In · Sign Up\nNever miss a post. Sign up for Instagram.\nMenu", 400),
