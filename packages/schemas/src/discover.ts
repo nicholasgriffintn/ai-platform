@@ -19,7 +19,7 @@ export const DISCOVER_LINK_METADATA_KEY = "discoverLink";
 export const DISCOVER_CONTEXT_TOOL_NAME = "read_discover_context";
 export const DISCOVER_COMPOSE_TOOL_NAME = "compose_discover_edition";
 export const DISCOVER_MAX_CARDS = 12;
-export const DISCOVER_MAX_EDITION_CARDS = 36;
+export const DISCOVER_MAX_EDITION_CARDS = 160;
 export const DISCOVER_MAX_BRIEF_LINES = 5;
 export const DISCOVER_MAX_INTERESTS = 8;
 export const DISCOVER_CURATE_MAX_LENGTH = 500;
@@ -31,9 +31,11 @@ export const DISCOVER_RESEARCH_METADATA_KEY = "discoverResearch";
 export const DISCOVER_ARTICLE_METADATA_KEY = "discoverArticle";
 export const DISCOVER_COVERAGE_METADATA_KEY = "discoverCoverage";
 export const DISCOVER_COVERAGE_MIN_ARTICLES = 2;
+export const DISCOVER_BRIEFING_METADATA_KEY = "discoverBriefing";
 export const DISCOVER_GATHER_HOUR = 5;
 export const DISCOVER_FRESH_HOURS = 20;
 export const DISCOVER_RESEARCH_DAYS_KEPT = 7;
+export const DISCOVER_LISTEN_RESEARCH_MINUTES = 30;
 
 function text() {
   return z.string().trim().min(1);
@@ -309,6 +311,10 @@ export const discoverEditionContentSchema = z
     brief: z.array(discoverBriefLineSchema).max(DISCOVER_MAX_BRIEF_LINES),
     cards: z.array(discoverCardSchema).max(DISCOVER_MAX_EDITION_CARDS),
     listenSourceId: z.string().min(1).optional(),
+    listenRequestedAt: z.iso
+      .datetime()
+      .optional()
+      .describe("When The Perch was queued behind today's research, until it starts recording."),
     episodeId: z.string().min(1).optional(),
     episodeOverBudget: z.boolean().optional(),
     runId: z.string().min(1).optional(),
@@ -322,6 +328,19 @@ export const discoverEditionContentSchema = z
     generatedAt: z.iso.datetime(),
   })
   .strict();
+
+export function isDiscoverListenResearching(
+  edition: { listenRequestedAt?: string },
+  now: number,
+): boolean {
+  const requestedAt = edition.listenRequestedAt
+    ? Date.parse(edition.listenRequestedAt)
+    : Number.NaN;
+
+  return (
+    Number.isFinite(requestedAt) && now - requestedAt < DISCOVER_LISTEN_RESEARCH_MINUTES * 60_000
+  );
+}
 
 export const DISCOVER_FEEDBACK_SIGNALS = ["more", "less", "hide", "saved", "opened"] as const;
 
@@ -491,6 +510,47 @@ export function readDiscoverCoverage(
   return parsed.success ? parsed.data : null;
 }
 
+export const discoverBriefingDraftSchema = z
+  .object({
+    overview: text().describe(
+      "Two or three sentences on what is actually going on in this topic right now and why it matters.",
+    ),
+    stories: z
+      .array(
+        z
+          .object({
+            headline: text().describe("The development itself, in plain words, not a headline."),
+            happened: text().describe(
+              "What happened: who did what, with the names, numbers, dates and quotes the reporting gives.",
+            ),
+            background: text().describe(
+              "How it got here: the history, earlier events or how the thing works, so a newcomer can follow.",
+            ),
+            stakes: text().describe("Why it matters: the consequences and who is affected."),
+            views: z
+              .array(text())
+              .max(4)
+              .describe(
+                "Different views, arguments or disagreements about it, each saying whose view it is.",
+              ),
+            next: text().describe("What happens next, the open question or what to watch for."),
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(4)
+      .describe("The stories worth talking about, most substantial first."),
+    threads: z
+      .array(text())
+      .max(5)
+      .describe(
+        "Questions or connections worth talking through: what ties the stories together, what is surprising, what to make of it.",
+      ),
+  })
+  .strict();
+
+export type DiscoverBriefingDraft = z.infer<typeof discoverBriefingDraftSchema>;
+
 const discoverJobRun = { runId: z.string().min(1).optional() };
 
 export const discoverJobTaskDataSchema = z.discriminatedUnion("job", [
@@ -505,6 +565,14 @@ export const discoverJobTaskDataSchema = z.discriminatedUnion("job", [
     .object({ ...discoverJobRun, job: z.literal("episode_extras"), episodeId: z.string().min(1) })
     .strict(),
   z.object({ ...discoverJobRun, job: z.literal("listen"), editionId: z.string().min(1) }).strict(),
+  z
+    .object({
+      ...discoverJobRun,
+      job: z.literal("research"),
+      editionId: z.string().min(1),
+      next: z.array(z.enum(["listen", "episode"])).max(2),
+    })
+    .strict(),
   z.object({ ...discoverJobRun, job: z.literal("episode"), editionId: z.string().min(1) }).strict(),
   z
     .object({
@@ -544,7 +612,13 @@ export const discoverEditionRecordingParamsSchema = z.object({
 
 export type DiscoverEditionRecording = z.infer<typeof discoverEditionRecordingSchema>;
 
-export const discoverListenResponseSchema = z.object({ sourceId: z.string().min(1) });
+export const discoverListenResponseSchema = z.object({
+  sourceId: z
+    .string()
+    .min(1)
+    .nullable()
+    .describe("The recording, or null while today's topics are still being researched."),
+});
 
 export const discoverRefreshResponseSchema = z.object({
   status: z.enum(["queued", "blocked", "paused", "not_enabled"]),

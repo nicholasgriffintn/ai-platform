@@ -59,7 +59,7 @@ import {
   clearDiscoverHealthSummary,
   saveDiscoverHealthSummary,
 } from "~/modules/discover/application/health";
-import { produceDiscoverListen } from "~/modules/discover/application/listen";
+import { requestDiscoverListen } from "~/modules/discover/application/listen";
 import {
   readEditionRecording,
   readEditionRecordingAudio,
@@ -194,15 +194,18 @@ addRoute(app, "post", "/editions/:edition_id/listen", {
   tags: ["discover"],
   summary: "Record the edition's listen",
   description:
-    "Queues The Perch, a short two-host episode of the edition, in your podcast show of the same name.",
+    "Queues The Perch, a two-host conversation on the edition's topics, in your podcast show of the same name. It researches the topics first, so the recording starts a few minutes later.",
   auth: true,
   paramSchema: discoverEditionIdParamsSchema,
   responses: {
-    200: { description: "The episode being recorded", schema: discoverListenResponseSchema },
+    200: {
+      description: "The episode being recorded, or null while the topics are researched",
+      schema: discoverListenResponseSchema,
+    },
     404: { description: "Not one of your editions", schema: errorResponseSchema },
   },
   handler: async ({ serviceContext, params }) =>
-    produceDiscoverListen(serviceContext, params.edition_id),
+    requestDiscoverListen(serviceContext, params.edition_id),
 });
 
 addRoute(app, "put", "/health", {

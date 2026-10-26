@@ -145,11 +145,12 @@ describe("buildDiscoverEdition", () => {
     ]);
   });
 
-  it("caps Reading at six links, two per topic, counting Poly's own picks", () => {
+  it("keeps every fresh link for the day after Poly's own picks", () => {
     const edition = build([], [], {
       feed: ["Sourdough", "Formula 1", "Rust", "Cycling"].map((topic) => ({
         topic,
         lead: `You follow ${topic}`,
+        spoken: true,
         items: [1, 2, 3].map((index) => ({
           title: `${topic} story number ${index}`,
           url: `https://example.com/${encodeURIComponent(topic)}/${index}`,
@@ -159,7 +160,15 @@ describe("buildDiscoverEdition", () => {
     });
     const reads = edition.cards.flatMap((card) => (card.kind === "read" ? [card.topic] : []));
 
-    expect(reads).toEqual(["Formula 1", "Sourdough", "Sourdough", "Formula 1", "Rust", "Cycling"]);
+    expect(reads).toHaveLength(14);
+    expect(reads.slice(0, 6)).toEqual([
+      "Formula 1",
+      "Sourdough",
+      "Sourdough",
+      "Formula 1",
+      "Rust",
+      "Cycling",
+    ]);
   });
 
   it("leaves out links shown recently or repeated within the edition", () => {

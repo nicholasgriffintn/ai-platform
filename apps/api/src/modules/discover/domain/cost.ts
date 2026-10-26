@@ -3,6 +3,7 @@ import {
   type DiscoverEpisodeLength,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { DISCOVER_BRIEFING_TOPIC_LIMIT } from "./briefing";
 import { wordsForMinutes } from "./episodes";
 
 const MATERIAL_TOKENS_PER_CALL = 7_000;
@@ -12,8 +13,10 @@ const SCRIPT_TOKENS_PER_WORD = 1.6;
 const CHARACTERS_PER_WORD = 6;
 const NEW_PICTURES_PER_MINUTE = 3.3;
 const SEASON_PLAN_SHARE = 0.2;
-const LISTEN_MINUTES = 4;
+const LISTEN_MINUTES = 10;
 const LISTEN_MODEL_CALLS = 2;
+const BRIEFING_INPUT_TOKENS = 18_000;
+const BRIEFING_OUTPUT_TOKENS = 1_200;
 
 export type PaidEpisodeLength = Exclude<DiscoverEpisodeLength, "off">;
 
@@ -37,9 +40,12 @@ export function episodeUsagePlan(length: PaidEpisodeLength): MediaUsagePlan {
   const modelCalls = 1 + chapters * 2.5 + SEASON_PLAN_SHARE;
 
   return {
-    inputTokens: Math.round(modelCalls * MATERIAL_TOKENS_PER_CALL),
+    inputTokens: Math.round(modelCalls * MATERIAL_TOKENS_PER_CALL) + BRIEFING_INPUT_TOKENS,
     outputTokens: Math.round(
-      words * SCRIPT_TOKENS_PER_WORD + OUTLINE_OUTPUT_TOKENS + chapters * CHECK_OUTPUT_TOKENS,
+      words * SCRIPT_TOKENS_PER_WORD +
+        OUTLINE_OUTPUT_TOKENS +
+        chapters * CHECK_OUTPUT_TOKENS +
+        BRIEFING_OUTPUT_TOKENS,
     ),
     characters: words * CHARACTERS_PER_WORD,
     images: Math.ceil(minutes * NEW_PICTURES_PER_MINUTE),
@@ -50,8 +56,12 @@ export function listenUsagePlan(): MediaUsagePlan {
   const words = wordsForMinutes(LISTEN_MINUTES);
 
   return {
-    inputTokens: LISTEN_MODEL_CALLS * MATERIAL_TOKENS_PER_CALL,
-    outputTokens: Math.round(words * SCRIPT_TOKENS_PER_WORD),
+    inputTokens:
+      LISTEN_MODEL_CALLS * MATERIAL_TOKENS_PER_CALL +
+      DISCOVER_BRIEFING_TOPIC_LIMIT * BRIEFING_INPUT_TOKENS,
+    outputTokens: Math.round(
+      words * SCRIPT_TOKENS_PER_WORD + DISCOVER_BRIEFING_TOPIC_LIMIT * BRIEFING_OUTPUT_TOKENS,
+    ),
     characters: words * CHARACTERS_PER_WORD,
     images: 1,
   };

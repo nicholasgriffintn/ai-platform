@@ -7,7 +7,12 @@ export type DiscoverMedia = "episode" | "perch" | "week" | "wind_down";
 export function listenStatus(
   sourceId: string | undefined,
   source: Source | undefined,
+  researching = false,
 ): MediaStatus {
+  if (researching && (!sourceId || source?.status === "failed")) {
+    return { state: "making", label: "Researching" };
+  }
+
   if (!sourceId) {
     return { state: "idle", label: "Not recorded yet" };
   }

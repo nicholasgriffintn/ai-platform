@@ -414,7 +414,7 @@ struct DiscoverWindDownTonight: Decodable, Equatable {
 }
 
 struct DiscoverListenResponse: Decodable {
-    let sourceId: String
+    let sourceId: String?
 }
 
 struct MediaSource: Decodable, Equatable {
