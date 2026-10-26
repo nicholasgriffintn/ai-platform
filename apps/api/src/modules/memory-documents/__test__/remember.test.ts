@@ -5,11 +5,22 @@ import { fakeRepositories } from "~/infrastructure/database/__test__/fake-reposi
 import type { MemoryDocumentRow } from "~/infrastructure/database/schema";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 
-import { rememberInScope } from "../application/remember";
+import { rememberInDocument, rememberInScope } from "../application/remember";
 
 const generateTierObject = vi.hoisted(() => vi.fn());
+const enqueueTask = vi.hoisted(() => vi.fn());
 
 vi.mock("~/modules/models/application/tier-object", () => ({ generateTierObject }));
+vi.mock("~/modules/queue/infrastructure/TaskRepository", () => ({
+  TaskRepository: vi.fn(function TaskRepository() {
+    return {};
+  }),
+}));
+vi.mock("~/modules/queue/application/TaskService", () => ({
+  TaskService: vi.fn(function TaskService() {
+    return { enqueueTask };
+  }),
+}));
 
 const SCOPE = { scopeType: "personal" as const, scopeId: "7" };
 const DRAFT = {
@@ -117,5 +128,36 @@ describe("rememberInScope", () => {
       expect.objectContaining({ expectedRevision: 5 }),
     );
     expect(generateTierObject.mock.calls.at(-1)?.[1].material).toContain("Uses Oxford commas.");
+  });
+});
+
+describe("rememberInDocument", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("schedules consolidation again when a document is still waiting on earlier notes", async () => {
+    const pending = row({
+      content: "Likes short replies.\n\n## Recently noted\n\n- 2026-10-25: Uses Oxford commas",
+    });
+    const { context, repository } = setup([pending], "writing-style");
+
+    repository.appendRevision.mockResolvedValueOnce(row({ ...pending, revision: 3 }));
+
+    await rememberInDocument(context, pending, 7, { text: "Prefers British English" });
+
+    expect(generateTierObject).not.toHaveBeenCalled();
+    expect(repository.appendRevision).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: expect.stringContaining("Prefers British English"),
+        expectedRevision: 2,
+      }),
+    );
+    expect(enqueueTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        task_type: "memory_consolidation",
+        task_data: { documentId: "document-1" },
+      }),
+    );
   });
 });

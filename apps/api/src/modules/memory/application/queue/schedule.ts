@@ -52,7 +52,7 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
         await taskService.enqueueTask({
           task_type: "memory_synthesis",
           user_id: user.id,
-          task_data: { namespace: "global" },
+          task_data: {},
           priority: 5,
         });
 

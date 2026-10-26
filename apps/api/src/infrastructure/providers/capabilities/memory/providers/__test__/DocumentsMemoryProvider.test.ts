@@ -103,7 +103,7 @@ describe("DocumentsMemoryProvider", () => {
     );
   });
 
-  it("recalls passages from the shared index with where they sit in the document", async () => {
+  it("recalls passages from the shared index with the document they came from", async () => {
     searchMemoryKnowledge.mockResolvedValue([
       {
         documentId: "document-1",
@@ -124,10 +124,10 @@ describe("DocumentsMemoryProvider", () => {
     );
     expect(results).toHaveLength(1);
     expect(results[0]?.text).toContain("Prefers British English");
-    expect(results[0]?.metadata).toMatchObject({
-      documentId: "document-1",
+    expect(results[0]?.metadata).toEqual({
+      name: "british-english",
       revision: 3,
-      offset: 9,
+      documentId: "document-1",
     });
   });
 

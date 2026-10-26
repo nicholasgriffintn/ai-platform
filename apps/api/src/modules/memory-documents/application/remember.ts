@@ -136,7 +136,6 @@ async function appendIntoDocument(
   userId: number,
   note: MemoryNote,
 ): Promise<MemoryDocumentRow | null> {
-  const consolidationPending = hasRecentNotes(document.content);
   const written = await context.repositories.get(MemoryDocumentRepository).appendRevision({
     documentId: document.id,
     content: appendRecentNote(document.content, note.text, new Date().toISOString().slice(0, 10)),
@@ -146,7 +145,7 @@ async function appendIntoDocument(
     operationId: note.operationId,
   });
 
-  if (written && !consolidationPending) {
+  if (written) {
     await scheduleMemoryConsolidation(context, written, userId);
   }
 
@@ -158,8 +157,10 @@ async function scheduleMemoryConsolidation(
   document: MemoryDocumentRow,
   userId: number,
 ): Promise<void> {
+  const window = Math.floor(Date.now() / MEMORY_CONSOLIDATION_DELAY_MS);
+
   await new TaskService(context.env, new TaskRepository(context.env)).enqueueTask({
-    id: `memory_consolidation_${document.id}_${document.revision}`,
+    id: `memory_consolidation_${document.id}_${window}`,
     task_type: MEMORY_CONSOLIDATION_TASK_TYPE,
     user_id: userId,
     task_data: { documentId: document.id },

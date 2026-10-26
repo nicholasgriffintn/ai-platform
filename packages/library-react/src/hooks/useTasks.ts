@@ -14,8 +14,8 @@ import { liveOrPoll } from "../sync/live-or-poll.js";
 export const TASK_QUERY_KEYS = {
   tasks: ["tasks"],
   task: (taskId: string) => ["tasks", taskId],
-  synthesis: (namespace?: string) => ["memory-synthesis", namespace ?? "global"],
-  synthesisHistory: (namespace?: string) => ["memory-synthesis-history", namespace ?? "global"],
+  synthesis: () => ["memory-synthesis"],
+  synthesisHistory: () => ["memory-synthesis-history"],
 };
 
 const ACTIVE_TASK_STATUSES = new Set(["pending", "queued", "running"]);
@@ -91,20 +91,20 @@ export function useTasks({ shouldRefetch = true }) {
   };
 }
 
-export function useMemorySynthesis(namespace = "global") {
+export function useMemorySynthesis() {
   const queryClient = useQueryClient();
 
   const { data: synthesisData, isLoading: isLoadingSynthesis } =
     useQuery<GetMemorySynthesisResponse>({
-      queryKey: TASK_QUERY_KEYS.synthesis(namespace),
-      queryFn: () => taskService.getActiveSynthesis(namespace),
+      queryKey: TASK_QUERY_KEYS.synthesis(),
+      queryFn: () => taskService.getActiveSynthesis(),
       staleTime: 1000 * 60 * 5, // 5 minutes
       refetchInterval: (query) => liveOrPoll(query, 1000 * 30, "task.changed"),
     });
 
   const { data: historyData, isLoading: isLoadingHistory } = useQuery<ListPage<MemorySynthesis>>({
-    queryKey: TASK_QUERY_KEYS.synthesisHistory(namespace),
-    queryFn: () => taskService.getSynthesisHistory(namespace, 10),
+    queryKey: TASK_QUERY_KEYS.synthesisHistory(),
+    queryFn: () => taskService.getSynthesisHistory(10),
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchInterval: (query) => liveOrPoll(query, 1000 * 30, "task.changed"),
   });
@@ -118,10 +118,10 @@ export function useMemorySynthesis(namespace = "global") {
 
     refresh: () => {
       void queryClient.invalidateQueries({
-        queryKey: TASK_QUERY_KEYS.synthesis(namespace),
+        queryKey: TASK_QUERY_KEYS.synthesis(),
       });
       void queryClient.invalidateQueries({
-        queryKey: TASK_QUERY_KEYS.synthesisHistory(namespace),
+        queryKey: TASK_QUERY_KEYS.synthesisHistory(),
       });
     },
   };

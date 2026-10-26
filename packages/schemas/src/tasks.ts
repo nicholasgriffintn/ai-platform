@@ -218,9 +218,9 @@ export const getMemorySynthesisResponseSchema = z.object({
   synthesis: memorySynthesisSchema.optional(),
 });
 
-export const triggerMemorySynthesisRequestSchema = z.object({
-  namespace: z.string().optional(),
-});
+export const MEMORY_SYNTHESIS_NAMESPACE = "global";
+
+export const triggerMemorySynthesisRequestSchema = z.object({}).strict();
 
 export type TaskType = z.infer<typeof taskTypeSchema>;
 export type TaskStatus = z.infer<typeof taskStatusSchema>;

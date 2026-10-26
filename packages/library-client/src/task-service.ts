@@ -99,14 +99,9 @@ class TaskService {
     }
   }
 
-  public async getActiveSynthesis(namespace = "global"): Promise<GetMemorySynthesisResponse> {
+  public async getActiveSynthesis(): Promise<GetMemorySynthesisResponse> {
     try {
-      const response = await fetchApi(
-        `/memory/syntheses?active=true&namespace=${encodeURIComponent(namespace)}`,
-        {
-          method: "GET",
-        },
-      );
+      const response = await fetchApi("/memory/syntheses?active=true", { method: "GET" });
 
       if (!response.ok) {
         throw new Error("Failed to fetch memory synthesis");
@@ -121,17 +116,9 @@ class TaskService {
     }
   }
 
-  public async getSynthesisHistory(
-    namespace = "global",
-    limit = 10,
-  ): Promise<ListPage<MemorySynthesis>> {
+  public async getSynthesisHistory(limit = 10): Promise<ListPage<MemorySynthesis>> {
     try {
-      const response = await fetchApi(
-        `/memory/syntheses?namespace=${encodeURIComponent(namespace)}&limit=${limit}`,
-        {
-          method: "GET",
-        },
-      );
+      const response = await fetchApi(`/memory/syntheses?limit=${limit}`, { method: "GET" });
 
       if (!response.ok) {
         throw new Error("Failed to fetch synthesis history");

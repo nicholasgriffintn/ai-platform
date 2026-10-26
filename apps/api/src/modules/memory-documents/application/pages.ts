@@ -71,22 +71,12 @@ export function memoryPassageResult(
   document: MemoryDocumentRow,
   passage: { content: string; score: number },
 ) {
-  const located = document.content.indexOf(passage.content.slice(0, 120).trim());
-  const page = memoryDocumentPage(document, Math.max(0, located), 1500);
-
   return {
     id: document.id,
     text: [document.name, readMemoryDocumentDetails(document).description, passage.content]
       .filter(Boolean)
       .join("\n"),
     score: passage.score,
-    metadata: {
-      name: document.name,
-      revision: document.revision,
-      offset: page.offset,
-      nextOffset: page.nextOffset,
-      totalCharacters: page.totalCharacters,
-      documentId: document.id,
-    },
+    metadata: { name: document.name, revision: document.revision, documentId: document.id },
   };
 }

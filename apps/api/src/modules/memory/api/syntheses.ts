@@ -15,7 +15,6 @@ import {
 
 const app = new Hono();
 const synthesesQuerySchema = z.object({
-  namespace: z.string().optional(),
   active: queryBooleanSchema.optional(),
   limit: z.coerce.number().int().min(1).max(50).default(10),
 });
@@ -25,7 +24,7 @@ defineResource(app, { idParam: "synthesis_id", tags: ["memory"] }, (syntheses) =
     .list({
       auth: true,
       summary: "List memory syntheses",
-      description: "Pass active=true for the synthesis currently in use for the namespace.",
+      description: "Pass active=true for the synthesis currently in use.",
       querySchema: synthesesQuerySchema,
       responses: { 200: { description: "Syntheses", schema: memorySynthesisListSchema } },
       handler: ({ query, serviceContext, user }) =>
@@ -36,8 +35,7 @@ defineResource(app, { idParam: "synthesis_id", tags: ["memory"] }, (syntheses) =
       summary: "Queue a memory synthesis",
       bodySchema: triggerMemorySynthesisRequestSchema,
       responses: { 200: { description: "Queued task", schema: createTaskResponseSchema } },
-      handler: ({ body, serviceContext, user }) =>
-        createMemorySynthesisTask(serviceContext, user.id, body),
+      handler: ({ serviceContext, user }) => createMemorySynthesisTask(serviceContext, user.id),
     });
 });
 

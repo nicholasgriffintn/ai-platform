@@ -1,6 +1,9 @@
 import { buildMemorySynthesisPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { memoryReflectionTaskDataSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  MEMORY_SYNTHESIS_NAMESPACE,
+  memoryReflectionTaskDataSchema,
+} from "@ngriffin_uk/polychat-schemas";
 import { z } from "zod/v4";
 
 import { ai } from "~/infrastructure/ai";
@@ -19,8 +22,8 @@ const logger = getLogger({ prefix: "services/tasks/memory-synthesis" });
 type CategorizedMemories = Record<string, Array<{ id: string; text: string; category: string }>>;
 
 export const memorySynthesis = defineTask({
-  payload: z.object({ namespace: z.string().default("global") }),
-  handle: async ({ namespace }, { env, message }) => {
+  payload: z.object({}),
+  handle: async (_input, { env, message }) => {
     if (!message.user_id) {
       return {
         status: "error",
@@ -29,13 +32,10 @@ export const memorySynthesis = defineTask({
     }
 
     const memorySynthesisRepository = new MemorySynthesisRepository(env);
-    const activeMemories =
-      namespace === "global"
-        ? await new MemoryDocumentRepository(env).listDocuments({
-            scopeType: "personal",
-            scopeId: String(message.user_id),
-          })
-        : [];
+    const activeMemories = await new MemoryDocumentRepository(env).listDocuments({
+      scopeType: "personal",
+      scopeId: String(message.user_id),
+    });
 
     if (activeMemories.length === 0) {
       return {
@@ -46,7 +46,7 @@ export const memorySynthesis = defineTask({
 
     const existingSynthesis = await memorySynthesisRepository.getActiveSynthesis(
       message.user_id,
-      namespace,
+      MEMORY_SYNTHESIS_NAMESPACE,
     );
 
     const categorized: CategorizedMemories = Object.fromEntries(
@@ -72,7 +72,7 @@ export const memorySynthesis = defineTask({
 
     const synthesisRecord = await memorySynthesisRepository.createSynthesis({
       user_id: message.user_id,
-      namespace,
+      namespace: MEMORY_SYNTHESIS_NAMESPACE,
       synthesis_text: synthesis,
       memory_ids: activeMemories.map((m) => m.id),
       memory_count: activeMemories.length,

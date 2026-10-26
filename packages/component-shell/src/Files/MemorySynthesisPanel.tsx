@@ -3,12 +3,12 @@ import { useMemorySynthesis, useTasks } from "@ngriffin_uk/polychat-library-reac
 import { toast } from "sonner";
 
 export function MemorySynthesisPanel() {
-  const { synthesis, history, isLoadingSynthesis, isLoadingHistory } = useMemorySynthesis("global");
+  const { synthesis, history, isLoadingSynthesis, isLoadingHistory } = useMemorySynthesis();
   const { triggerSynthesisAsync, isTriggeringSynthesis } = useTasks({ shouldRefetch: false });
 
   const generateSynthesis = async () => {
     try {
-      await triggerSynthesisAsync({ namespace: "global" });
+      await triggerSynthesisAsync({});
       toast.success("Memory synthesis queued");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not queue memory synthesis");
