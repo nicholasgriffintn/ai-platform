@@ -67,6 +67,7 @@ const COMMON_CSP = {
     "https://hcaptcha.com",
     "https://*.hcaptcha.com",
     "https://strudel.cc",
+    "https://www.youtube-nocookie.com",
     ...(PREVIEW_FRAME_SOURCE ? [PREVIEW_FRAME_SOURCE] : []),
     ...(COMPUTER_SCREEN_FRAME_SOURCE ? [COMPUTER_SCREEN_FRAME_SOURCE] : []),
   ],

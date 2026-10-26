@@ -13,6 +13,7 @@ export * from "./TableView";
 export * from "./TextView";
 export * from "./ToolErrorView";
 export * from "./Views/ApprovalRequestView";
+export * from "./Views/ContentExtractView";
 export * from "./Views/CouncilMemberPickerView";
 export * from "./Views/CouncilReviewCard";
 export * from "./Views/PanelConclusionView";

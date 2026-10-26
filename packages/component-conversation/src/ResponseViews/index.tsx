@@ -1,5 +1,6 @@
 import {
   ApprovalRequestView,
+  ContentExtractView,
   CouncilMemberPickerView,
   CouncilReviewView,
   type CustomResponseViewRegistry,
@@ -46,6 +47,7 @@ export const sharedResponseViews: CustomResponseViewRegistry = {
   computer_takeover: ({ data, onToolInteraction }) => (
     <ComputerTakeoverView data={data} onToolInteraction={onToolInteraction} />
   ),
+  content_extract: ({ data }) => <ContentExtractView data={data} />,
   conversation_search: ({ data }) => <ConversationSearchView data={data} />,
   approval_request: ({ data, embedded, onToolInteraction }) => (
     <ApprovalRequestView data={data} embedded={embedded} onToolInteraction={onToolInteraction} />

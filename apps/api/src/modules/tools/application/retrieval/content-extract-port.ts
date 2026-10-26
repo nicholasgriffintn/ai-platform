@@ -1,3 +1,5 @@
+import type { YouTubeVideo } from "@ngriffin_uk/polychat-schemas";
+
 export interface ContentExtractParams {
   urls: string | string[];
   extract_depth?: "basic" | "advanced";
@@ -51,6 +53,7 @@ export interface ContentExtractResult {
   error?: string;
   data?: {
     extracted: ExtractedContentPayload;
+    videos?: YouTubeVideo[];
     knowledge?: {
       success: boolean;
       error?: string;

@@ -54,6 +54,20 @@ export const extract_content: ApiToolDefinition = {
       };
     }
 
+    const extracted = result.data?.extracted;
+
+    if (!extracted?.results.length) {
+      return {
+        status: result.data?.videos?.length ? "success" : "error",
+        name: "extract_content",
+        content:
+          extracted?.failed_results
+            .map((failure) => `${failure.url}: ${failure.error}`)
+            .join("\n") || "No content could be extracted",
+        data: result.data ?? {},
+      };
+    }
+
     const {
       model: modelToUse,
       provider: providerToUse,
@@ -69,7 +83,7 @@ export const extract_content: ApiToolDefinition = {
       system: buildContentExtractionPrompt(),
       reasoning_effort: effort,
       disable_functions: true,
-      prompt: `Please summarize the content from the following URLs:\n\nExtracted Content:\n${result.data?.extracted.results
+      prompt: `Please summarize the content from the following URLs:\n\nExtracted Content:\n${extracted.results
         .map((r, i) => `[${i + 1}] URL: ${r.url}\n${r.raw_content}\n`)
         .join("\n\n")}`,
     });

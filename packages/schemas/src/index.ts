@@ -196,6 +196,7 @@ export * from "./teammate-roles.js";
 export * from "./shared.js";
 export * from "./sources.js";
 export * from "./source-media.js";
+export * from "./video-embeds.js";
 export * from "./source-content-summary.js";
 export * from "./knowledge-sync.js";
 export * from "./knowledge.js";

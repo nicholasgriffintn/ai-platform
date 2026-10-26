@@ -54,7 +54,7 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   create_qr_code: { icon: "qr-code" },
   create_note: { renderer: "saved_note", icon: "note" },
   get_note: { icon: "note" },
-  extract_content: { icon: "file-text" },
+  extract_content: { renderer: "content_extract", icon: "file-text" },
   extract_text_from_document: { icon: "file-text" },
   get_hacker_news_stories: { icon: "globe" },
   get_on_this_day: { icon: "globe" },

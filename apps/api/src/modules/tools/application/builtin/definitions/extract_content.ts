@@ -5,7 +5,7 @@ import type { FunctionToolDescriptor } from "~/types/functions";
 export const extract_content: FunctionToolDescriptor = {
   name: "extract_content",
   description:
-    "Extracts and analyzes web content from provided URLs. Supports Tavily extraction and Cloudflare Browser Rendering endpoints (including crawl). Can process multiple URLs and optionally save it to the knowledge base.",
+    "Extracts and analyzes web content from provided URLs. Supports Tavily extraction and Cloudflare Browser Rendering endpoints (including crawl). YouTube links are read from the video's timestamped transcript rather than the page, and the video is embedded in the chat for the user to watch. Can process multiple URLs and optionally save it to the knowledge base.",
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {

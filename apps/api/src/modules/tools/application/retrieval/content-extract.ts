@@ -1,4 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import type { YouTubeVideo } from "@ngriffin_uk/polychat-schemas";
 import { readYouTubeVideoId } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parsePublicHttpUrl } from "@ngriffin_uk/polychat-utility-server/http";
@@ -8,7 +9,10 @@ import { extractWithGreenPt } from "~/modules/tools/infrastructure/retrieval/con
 import { saveExtractedContentToKnowledge } from "~/modules/tools/infrastructure/retrieval/content-extract/knowledge";
 import { resolveContentExtractProvider } from "~/modules/tools/infrastructure/retrieval/content-extract/provider";
 import { extractWithTavily } from "~/modules/tools/infrastructure/retrieval/content-extract/tavily";
-import { readYouTubeTranscript } from "~/modules/tools/infrastructure/retrieval/content-extract/youtube";
+import {
+  readYouTubeVideo,
+  type YouTubeVideoContent,
+} from "~/modules/tools/infrastructure/retrieval/content-extract/youtube";
 import type { IRequest } from "~/types";
 
 import type {
@@ -41,43 +45,71 @@ function normalisePublicUrls(input: string | string[]): string[] {
   return values.map((value) => parsePublicHttpUrl(value).toString());
 }
 
-async function extractYouTubeTranscripts(urls: readonly string[]) {
-  const transcripts = await Promise.all(
+function describeVideo({ video, transcript }: YouTubeVideoContent): string {
+  return [
+    video.title ? `Title: ${video.title}` : null,
+    video.author ? `Channel: ${video.author}` : null,
+    `Video: ${video.url}`,
+    "",
+    "Transcript:",
+    transcript,
+  ]
+    .filter((line) => line !== null)
+    .join("\n");
+}
+
+async function extractYouTubeVideos(urls: readonly string[]) {
+  const videos = await Promise.all(
     urls.map(async (url) => ({
       url,
-      raw_content: await readYouTubeTranscript(url).catch((error: unknown) => {
-        logger.warn("YouTube captions could not be read", { url, error });
+      content: await readYouTubeVideo(url).catch((error: unknown) => {
+        logger.warn("YouTube video could not be read", { url, error });
 
         return null;
       }),
     })),
   );
 
-  return transcripts.flatMap((transcript) =>
-    transcript.raw_content ? [{ url: transcript.url, raw_content: transcript.raw_content }] : [],
-  );
+  return {
+    videos: videos.flatMap(({ content }) => (content ? [content.video] : [])),
+    extracted: {
+      results: videos.flatMap(({ url, content }) =>
+        content?.transcript ? [{ url, raw_content: describeVideo(content) }] : [],
+      ),
+      failed_results: videos.flatMap(({ url, content }) =>
+        content?.transcript ? [] : [{ url, error: "This video has no captions to read" }],
+      ),
+      response_time: 0,
+    },
+  };
 }
 
 async function extractPages(
   params: ContentExtractParams & { urls: string[] },
   req: IRequest,
-): Promise<{ provider: ContentExtractProvider; extracted: ExtractedContentPayload }> {
+): Promise<{
+  provider: ContentExtractProvider;
+  extracted: ExtractedContentPayload;
+  videos: YouTubeVideo[];
+}> {
   const provider = resolveContentExtractProvider(params, req);
-  const transcripts = await extractYouTubeTranscripts(
-    params.urls.filter((url) => readYouTubeVideoId(url)),
-  );
-  const transcribed = new Set(transcripts.map((transcript) => transcript.url));
-  const remaining = params.urls.filter((url) => !transcribed.has(url));
+  const youTube = await extractYouTubeVideos(params.urls.filter((url) => readYouTubeVideoId(url)));
+  const pages = params.urls.filter((url) => !readYouTubeVideoId(url));
 
-  if (remaining.length === 0) {
-    return { provider, extracted: { results: transcripts, failed_results: [], response_time: 0 } };
+  if (pages.length === 0) {
+    return { provider, extracted: youTube.extracted, videos: youTube.videos };
   }
 
-  const extracted = await extractors[provider]({ ...params, urls: remaining }, req);
+  const extracted = await extractors[provider]({ ...params, urls: pages }, req);
 
   return {
     provider,
-    extracted: { ...extracted, results: [...transcripts, ...extracted.results] },
+    videos: youTube.videos,
+    extracted: {
+      ...extracted,
+      results: [...youTube.extracted.results, ...extracted.results],
+      failed_results: [...youTube.extracted.failed_results, ...extracted.failed_results],
+    },
   };
 }
 
@@ -87,12 +119,13 @@ export const extractContent = async (
 ): Promise<ContentExtractResult> => {
   try {
     const safeParams = { ...params, urls: normalisePublicUrls(params.urls) };
-    const { provider, extracted } = await extractPages(safeParams, req);
+    const { provider, extracted, videos } = await extractPages(safeParams, req);
 
     const result: ContentExtractResult = {
       status: "success",
       data: {
         extracted,
+        ...(videos.length > 0 ? { videos } : {}),
       },
     };
 

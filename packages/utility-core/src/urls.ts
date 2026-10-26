@@ -178,7 +178,15 @@ export function toQueryString(
   return text ? `?${text}` : "";
 }
 
-const YOUTUBE_VIDEO_ID_PATTERN = /^[\w-]{11}$/;
+export const YOUTUBE_VIDEO_ID_PATTERN = /^[\w-]{11}$/;
+
+export function youTubeWatchUrl(videoId: string): string {
+  return `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`;
+}
+
+export function youTubeEmbedUrl(videoId: string): string {
+  return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}`;
+}
 
 export function readYouTubeVideoId(value: string): string | null {
   if (!URL.canParse(value)) {
