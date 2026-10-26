@@ -10,6 +10,7 @@ import {
   useInitiativeActions,
   useInitiatives,
   useMyTasks,
+  useRecipeConnectors,
   useSetupActions,
   useUpdateWorkspaceOrganisation,
   useWorkCosts,
@@ -171,6 +172,7 @@ export function WorkSetupPage({ workspaceId }: { workspaceId: string }) {
   const setup = useWorkspaceSetup(workspaceId);
   const workspace = useWorkspace(workspaceId);
   const actions = useSetupActions(workspaceId);
+  const connectors = useRecipeConnectors();
   const canManage = workspace.data?.role === "owner" || workspace.data?.role === "admin";
   const state = setup.data;
 
@@ -201,6 +203,11 @@ export function WorkSetupPage({ workspaceId }: { workspaceId: string }) {
           <SetupPlanView
             setup={state.setup}
             canApprove={canManage}
+            connectorName={(provider) =>
+              connectors.data?.connectors.find((connector) => connector.id === provider)?.name ??
+              provider
+            }
+            connectHref="/chat/plugins"
             isBusy={actions.approve.isPending || actions.archive.isPending}
             onApprove={(revision) =>
               void actions.approve

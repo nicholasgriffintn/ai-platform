@@ -94,6 +94,7 @@ struct WorkDecisionRow: View {
         case "escalation": return "Escalation"
         case "budget": return "Budget"
         case "paused": return "Paused"
+        case "waiting": return "Waiting"
         default: return "Inbox"
         }
     }

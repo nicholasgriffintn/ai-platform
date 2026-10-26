@@ -80,6 +80,10 @@ export function escalateTask(projectId: string, taskId: string, reason: string):
   return requestJson(`${taskPath(projectId, taskId)}/escalate`, "POST", { reason });
 }
 
+export function sendTaskAgain(projectId: string, taskId: string): TaskResult {
+  return requestJson(`${taskPath(projectId, taskId)}/send_again`, "POST");
+}
+
 export function clearTaskEscalation(projectId: string, taskId: string): TaskResult {
   return requestJson(`${taskPath(projectId, taskId)}/clear_escalation`, "POST");
 }

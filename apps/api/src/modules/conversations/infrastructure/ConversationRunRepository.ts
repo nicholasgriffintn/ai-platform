@@ -331,6 +331,24 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     return row ? formatRun(row) : null;
   }
 
+  async listWaitingForTeammateContexts(teammateContextIds: readonly string[]): Promise<ChatRun[]> {
+    if (teammateContextIds.length === 0) {
+      return [];
+    }
+
+    const rows = await this.runQuery<ConversationRunRow>(
+      `SELECT * FROM conversation_run
+       WHERE teammate_context_id IN (${teammateContextIds.map(() => "?").join(", ")})
+         AND project_task_id IS NULL
+         AND status IN ('awaiting_input', 'awaiting_approval', 'awaiting_takeover')
+       ORDER BY updated_at DESC
+       LIMIT 50`,
+      [...teammateContextIds],
+    );
+
+    return rows.map(formatRun);
+  }
+
   async listForProjectTask(projectId: string, projectTaskId: string): Promise<ChatRun[]> {
     const rows = await this.runQuery<ConversationRunRow>(
       `SELECT * FROM conversation_run

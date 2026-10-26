@@ -138,6 +138,8 @@ export function ProjectTaskDetail({
     onResolveCase: (resolution) =>
       void runAction(() => actions.resolve.mutateAsync(resolution), "Case resolved"),
     onSendCaseReply: (body) => runAction(() => actions.sendReply.mutateAsync(body), "Reply sent"),
+    onSendAgain: () =>
+      void runAction(() => actions.sendAgain.mutateAsync(), "Sent to the queue again"),
     onClearEscalation: () =>
       void runAction(() => actions.clearEscalation.mutateAsync(), "Escalation handled"),
     onAnswerStandup: (input) =>

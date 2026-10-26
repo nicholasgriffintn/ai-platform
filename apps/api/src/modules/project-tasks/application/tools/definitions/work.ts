@@ -220,7 +220,7 @@ export const summarise_standup: FunctionToolDescriptor = {
 export const propose_setup_plan: FunctionToolDescriptor = {
   name: "propose_setup_plan",
   description:
-    "Propose the workspace setup plan for a person to approve: mission, initiatives, projects, team, budgets, wake rules, routines, first tasks and the connections people need to make. Nothing is created until the plan is approved. Each call replaces the previous revision. Keys are short labels you choose so items can refer to each other: a project names its initiative key, a teammate names the projects it works on and the teammate key it reports to ('lead' for you), and a task names its project and owner keys. Task prefixes are 2-5 capital letters. Budgets are in credit micros.",
+    "Propose the workspace setup plan for a person to approve: mission, initiatives, projects, team, budgets, wake rules, routines, first tasks, the already-connected services each project uses, and suggestions for other services. Connectors may only name services your brief lists as connected; anything else goes in suggestions, which are shown to the person and never become tasks. Nothing is created until the plan is approved. Each call replaces the previous revision. Keys are short labels you choose so items can refer to each other: a project names its initiative key, a teammate names the projects it works on and the teammate key it reports to ('lead' for you), and a task names its project and owner keys. Task prefixes are 2-5 capital letters. Budgets are in credit micros.",
   type: "normal",
   permissions: ["write"],
   effects: { effectClass: "draft" },

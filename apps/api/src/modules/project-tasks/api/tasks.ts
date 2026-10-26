@@ -28,6 +28,7 @@ import {
   deleteProjectTask,
   getProjectTask,
   listProjectTasks,
+  sendProjectTaskAgain,
   startProjectTask,
   updateProjectTask,
 } from "~/modules/project-tasks/application";
@@ -263,6 +264,19 @@ export function defineProjectTasks(projects: ResourceBuilder): void {
         body.reason,
         personCaller(serviceContext),
       ),
+    }),
+  });
+
+  tasks.action("send_again", {
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Send a stuck task to the queue again",
+    description:
+      "Redelivers the task's current run when its message was lost or its worker stopped. A run that is still going is left alone.",
+    paramSchema: taskParamsSchema,
+    responses: { 200: { description: "The task", schema: projectTaskResponseSchema } },
+    handler: async ({ serviceContext, params }) => ({
+      task: await sendProjectTaskAgain(serviceContext, params.project_id, params.task_id),
     }),
   });
 

@@ -3,10 +3,7 @@ import { describe, expect, it } from "vitest";
 import { parseDailyLog } from "../daily-log";
 import {
   DEVICE_ACTIVITY_DAYS_KEPT,
-  describeDeviceActivityItems,
   listDeviceActivityProviders,
-  mergeDeviceActivityPages,
-  readDeviceActivityPages,
   readDeviceActivitySource,
   renderDeviceActivityHistory,
 } from "../device-activity";
@@ -52,34 +49,5 @@ describe("device activity providers", () => {
       lines: ["Searched “lisbon” ## 2026-01-01"],
     });
     expect(days.at(-1)?.date).toBe("2026-10-02");
-  });
-
-  it("reads only pages it has not read or tried before, keeping earlier excerpts", () => {
-    const items = [
-      { title: "Known", url: "https://known.example/a" },
-      { title: "Tried", url: "https://tried.example/sign-in" },
-      { title: "New", url: "https://new.example/b" },
-      { title: "site · Sitemap work", detail: "Asked: Add a sitemap" },
-    ];
-    const { pages, unread } = readDeviceActivityPages(
-      items,
-      [{ title: "Known", url: "https://known.example/a", snippet: "What it said" }],
-      new Set(["https://tried.example/sign-in"]),
-      "2026-10-25",
-    );
-
-    expect(unread.map((page) => page.url)).toEqual(["https://new.example/b"]);
-
-    const read = mergeDeviceActivityPages(
-      pages,
-      unread.map((page) => ({ ...page, snippet: "Fresh excerpt" })),
-    );
-
-    expect(describeDeviceActivityItems(items, read)).toEqual([
-      "Read “Known” (https://known.example/a): What it said",
-      "Read “Tried” (https://tried.example/sign-in)",
-      "Read “New” (https://new.example/b): Fresh excerpt",
-      "site · Sitemap work: Asked: Add a sitemap",
-    ]);
   });
 });

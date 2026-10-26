@@ -25,6 +25,7 @@ import {
   raiseCase,
   requestTaskReview,
   resolveCase,
+  sendTaskAgain,
   sendCaseReply,
   reviewTask,
   reviseSetupPlan,
@@ -251,6 +252,10 @@ export function useWorkTaskActions(projectId: string, taskId: string) {
     }),
     clearEscalation: useMutation({
       mutationFn: () => clearTaskEscalation(projectId, taskId),
+      onSuccess: settle,
+    }),
+    sendAgain: useMutation({
+      mutationFn: () => sendTaskAgain(projectId, taskId),
       onSuccess: settle,
     }),
     resolve: useMutation({

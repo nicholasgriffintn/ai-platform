@@ -1,10 +1,17 @@
-import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
+import type { ProjectTask, ProjectTaskBlockedReason } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
-import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
+import {
+  TaskNotificationRepository,
+  type TaskInboxRow,
+} from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
+import {
+  WorkspaceTeammateRepository,
+  type WorkspaceTeammateRecord,
+} from "~/modules/teammates/infrastructure/WorkspaceTeammateRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import {
@@ -13,6 +20,101 @@ import {
   resolveTaskNotificationDeepLink,
   updateTaskInboxReceipts,
 } from "../attention";
+
+function projectTask(overrides: Partial<ProjectTask> = {}): ProjectTask {
+  return {
+    id: "task-1",
+    projectId: "project-1",
+    workspaceId: "workspace-1",
+    key: null,
+    number: null,
+    kind: "task",
+    description: null,
+    priority: "none",
+    parentTaskId: null,
+    startAt: null,
+    dueAt: null,
+    owner: null,
+    reviewer: null,
+    details: {},
+    objective: "Approve release",
+    acceptanceCriteria: [],
+    assumptions: [],
+    killConditions: [],
+    retrospective: null,
+    expectedOutput: null,
+    context: null,
+    constraints: null,
+    dependsOnTaskIds: [],
+    requireApprovalFor: [],
+    status: "running",
+    source: "user",
+    blockedReason: null,
+    blockedDetail: null,
+    stageId: null,
+    runner: null,
+    createdByUserId: 7,
+    assigneeUserId: null,
+    runnerIdentityUserId: null,
+    conversationId: null,
+    goalId: null,
+    dispatchTaskId: null,
+    runId: null,
+    completions: [],
+    position: 1,
+    tokenBudget: null,
+    tokensSpent: 0,
+    createdAt: "2026-09-05T11:00:00.000Z",
+    updatedAt: "2026-09-05T12:00:00.000Z",
+    startedAt: "2026-09-05T11:01:00.000Z",
+    completedAt: null,
+    attentionVersion: 4,
+    ...overrides,
+  };
+}
+
+function employment(
+  teammateId: string,
+  reportsToTeammateId: string | null,
+): WorkspaceTeammateRecord {
+  return {
+    workspaceId: "workspace-1",
+    teammateId,
+    title: teammateId,
+    reportsToTeammateId,
+    status: "active",
+    pausedReason: null,
+    responsibleUserId: 7,
+    heartbeatMinutes: null,
+    lastHeartbeatAt: null,
+    lastWake: null,
+    monthlyCreditCapMicros: null,
+    budgetWarnedPeriod: null,
+    projectIds: [],
+    proposal: null,
+    createdAt: "2026-09-05T11:00:00.000Z",
+  };
+}
+
+function inboxRow(taskId: string, blockedReason: ProjectTaskBlockedReason): TaskInboxRow {
+  return {
+    task_id: taskId,
+    task_version: 1,
+    project_id: "project-1",
+    workspace_id: "workspace-1",
+    project_name: "Launch",
+    objective: taskId,
+    status: "blocked",
+    blocked_reason: blockedReason,
+    blocked_detail: null,
+    assignee_user_id: null,
+    created_by_user_id: 7,
+    conversation_id: null,
+    updated_at: "2026-09-05T12:00:00.000Z",
+    completed_at: null,
+    read_at: null,
+  };
+}
 
 function context(overrides: Record<string, unknown> = {}): ServiceContext {
   const serviceContext: ServiceContext = Object.assign(Object.create(null), {
@@ -23,7 +125,6 @@ function context(overrides: Record<string, unknown> = {}): ServiceContext {
         TaskNotificationRepository,
         {
           listInbox: vi.fn().mockResolvedValue([]),
-          countUnreadInbox: vi.fn().mockResolvedValue(0),
           updateInboxReceipts: vi.fn().mockResolvedValue(1),
           upsertRegistration: vi.fn().mockResolvedValue({
             id: "registration-1",
@@ -35,7 +136,14 @@ function context(overrides: Record<string, unknown> = {}): ServiceContext {
           }),
         },
       ],
-      [ProjectTaskRepository, { getTaskById: vi.fn().mockResolvedValue(null) }],
+      [
+        ProjectTaskRepository,
+        {
+          getTaskById: vi.fn().mockResolvedValue(null),
+          listTasksByIds: vi.fn().mockResolvedValue([]),
+        },
+      ],
+      [WorkspaceTeammateRepository, { listForWorkspaces: vi.fn().mockResolvedValue([]) }],
       [
         WorkspaceRepository,
         {
@@ -97,17 +205,56 @@ describe("task attention inbox", () => {
       },
     ]);
 
-    vi.mocked(
-      serviceContext.repositories.get(TaskNotificationRepository).countUnreadInbox,
-    ).mockResolvedValue(64);
-
     const response = await listProjectTaskAttention(serviceContext);
 
-    expect(response).toMatchObject({ has_more: false, unread: 64 });
+    expect(response).toMatchObject({ has_more: false, unread: 1 });
     expect(response.data.map((item) => [item.id, item.kind, item.requiresAction])).toEqual([
       ["failed-task:v3", "blocked", true],
       ["done-task:v2", "completion", false],
     ]);
+  });
+
+  it("leaves a report's stuck work to its manager and cases to Triage", async () => {
+    const serviceContext = context();
+    const coordinator = { type: "teammate" as const, id: "coordinator" };
+
+    vi.mocked(
+      serviceContext.repositories.get(TaskNotificationRepository).listInbox,
+    ).mockResolvedValue([
+      inboxRow("report-task", "awaiting_input"),
+      inboxRow("case-task", "run_failed"),
+      inboxRow("approval-task", "awaiting_approval"),
+    ]);
+    vi.mocked(
+      serviceContext.repositories.get(ProjectTaskRepository).listTasksByIds,
+    ).mockResolvedValue([
+      projectTask({
+        id: "report-task",
+        status: "blocked",
+        blockedReason: "awaiting_input",
+        owner: coordinator,
+      }),
+      projectTask({
+        id: "case-task",
+        kind: "case",
+        status: "blocked",
+        blockedReason: "run_failed",
+      }),
+      projectTask({
+        id: "approval-task",
+        status: "blocked",
+        blockedReason: "awaiting_approval",
+        owner: coordinator,
+      }),
+    ]);
+    vi.mocked(
+      serviceContext.repositories.get(WorkspaceTeammateRepository).listForWorkspaces,
+    ).mockResolvedValue([employment("coordinator", "lead"), employment("lead", null)]);
+
+    const response = await listProjectTaskAttention(serviceContext);
+
+    expect(response.data.map((item) => item.taskId)).toEqual(["approval-task"]);
+    expect(response.unread).toBe(1);
   });
 
   it("stores read and dismiss receipts separately from project tasks", async () => {
@@ -146,54 +293,7 @@ describe("task attention inbox", () => {
 
   it("makes a superseded deep link non-actionable after rechecking membership", async () => {
     const serviceContext = context();
-    const task: ProjectTask = {
-      id: "task-1",
-      projectId: "project-1",
-      workspaceId: "workspace-1",
-      key: null,
-      number: null,
-      kind: "task",
-      description: null,
-      priority: "none",
-      parentTaskId: null,
-      startAt: null,
-      dueAt: null,
-      owner: null,
-      reviewer: null,
-      details: {},
-      objective: "Approve release",
-      acceptanceCriteria: [],
-      assumptions: [],
-      killConditions: [],
-      retrospective: null,
-      expectedOutput: null,
-      context: null,
-      constraints: null,
-      dependsOnTaskIds: [],
-      requireApprovalFor: [],
-      status: "running",
-      source: "user",
-      blockedReason: null,
-      blockedDetail: null,
-      stageId: null,
-      runner: null,
-      createdByUserId: 7,
-      assigneeUserId: null,
-      runnerIdentityUserId: null,
-      conversationId: null,
-      goalId: null,
-      dispatchTaskId: null,
-      runId: null,
-      completions: [],
-      position: 1,
-      tokenBudget: null,
-      tokensSpent: 0,
-      createdAt: "2026-09-05T11:00:00.000Z",
-      updatedAt: "2026-09-05T12:00:00.000Z",
-      startedAt: "2026-09-05T11:01:00.000Z",
-      completedAt: null,
-      attentionVersion: 4,
-    };
+    const task = projectTask();
 
     vi.mocked(serviceContext.repositories.get(ProjectTaskRepository).getTaskById).mockResolvedValue(
       task,

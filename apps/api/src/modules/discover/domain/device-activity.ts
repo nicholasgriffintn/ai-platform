@@ -13,7 +13,6 @@ import type { DiscoverSignalGroup } from "./signal-catalogue";
 
 export const DEVICE_ACTIVITY_MACHINE_METADATA_KEY = "deviceMachineId";
 export const DEVICE_ACTIVITY_DAYS_KEPT = 7;
-export const DEVICE_ACTIVITY_ATTEMPTED_PAGES_KEY = "attemptedPages";
 
 const DEVICE_SOURCE_DETAILS: Record<
   DeviceActivitySource,
@@ -125,53 +124,19 @@ export function listDeviceActivityProviders(
 
 export function readDeviceActivityPages(
   items: readonly MachineActivityItem[],
-  previous: readonly DiscoverResearchResult[],
-  attempted: ReadonlySet<string>,
   date: string,
-): { pages: DiscoverResearchResult[]; unread: DiscoverResearchResult[] } {
-  const known = new Map(previous.map((page) => [page.url, page.snippet]));
-  const pages = items.flatMap((item) =>
+): DiscoverResearchResult[] {
+  return items.flatMap((item) =>
     item.url
-      ? [
-          {
-            title: item.title,
-            url: item.url,
-            snippet: known.get(item.url) ?? "",
-            source: readUrlHost(item.url),
-            date,
-          },
-        ]
+      ? [{ title: item.title, url: item.url, snippet: "", source: readUrlHost(item.url), date }]
       : [],
   );
-
-  return {
-    pages,
-    unread: pages.filter((page) => !page.snippet && !attempted.has(page.url)),
-  };
 }
 
-export function mergeDeviceActivityPages(
-  pages: readonly DiscoverResearchResult[],
-  read: readonly DiscoverResearchResult[],
-): DiscoverResearchResult[] {
-  const excerpts = new Map(read.map((page) => [page.url, page.snippet]));
-
-  return pages.map((page) => ({ ...page, snippet: excerpts.get(page.url) || page.snippet }));
-}
-
-export function describeDeviceActivityItems(
-  items: readonly MachineActivityItem[],
-  pages: readonly DiscoverResearchResult[],
-): string[] {
-  const excerpts = new Map(pages.map((page) => [page.url, page.snippet]));
-
+export function describeDeviceActivityItems(items: readonly MachineActivityItem[]): string[] {
   return items.map((item) => {
     if (item.url) {
-      const excerpt = excerpts.get(item.url);
-
-      return excerpt
-        ? `Read “${item.title}” (${item.url}): ${excerpt}`
-        : `Read “${item.title}” (${item.url})`;
+      return `Read “${item.title}” (${item.url})`;
     }
 
     return item.detail ? `${item.title}: ${item.detail}` : item.title;

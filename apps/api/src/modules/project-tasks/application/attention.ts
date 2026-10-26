@@ -26,12 +26,14 @@ import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { publishUserEvent } from "~/modules/sync/application/conversation-events";
 import type { TaskInboxRow } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
 import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
+import { WorkspaceTeammateRepository } from "~/modules/teammates/infrastructure/WorkspaceTeammateRepository";
 import { requireProjectAccess, requireWorkAccess } from "~/modules/workspaces/application/access";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
-import { handBlockedTaskToManager } from "./report-handoff";
+import { findHandlingManager, handBlockedTaskToManager } from "./report-handoff";
 
 const DEFAULT_ATTENTION_LIMIT = 50;
+const INBOX_SCAN_LIMIT = 200;
 
 interface TaskAttentionState {
   kind: ProjectTaskAttentionKind;
@@ -149,15 +151,36 @@ export async function listProjectTaskAttention(
 ) {
   const user = requireWorkAccess(context);
   const limit = Math.min(options.limit ?? DEFAULT_ATTENTION_LIMIT, 100);
-  const [rows, unread] = await Promise.all([
-    context.repositories.get(TaskNotificationRepository).listInbox(user.id, limit + 1),
-    context.repositories.get(TaskNotificationRepository).countUnreadInbox(user.id),
-  ]);
+  const rows = await context.repositories
+    .get(TaskNotificationRepository)
+    .listInbox(user.id, INBOX_SCAN_LIMIT);
+  const tasks = await context.repositories
+    .get(ProjectTaskRepository)
+    .listTasksByIds([...new Set(rows.map((row) => row.task_id))]);
+  const team = await context.repositories
+    .get(WorkspaceTeammateRepository)
+    .listForWorkspaces([...new Set(tasks.map((task) => task.workspaceId))]);
+  const hidden = new Set(
+    tasks
+      .filter(
+        (task) =>
+          task.kind !== "task" ||
+          findHandlingManager(
+            task,
+            team.filter((member) => member.workspaceId === task.workspaceId),
+          ) !== null,
+      )
+      .map((task) => task.id),
+  );
   const items = rows
+    .filter((row) => !hidden.has(row.task_id))
     .map(formatInboxItem)
     .filter((item): item is ProjectTaskAttentionItem => item !== null);
 
-  return { ...toListPage(items, limit, (item) => item.id), unread };
+  return {
+    ...toListPage(items, limit, (item) => item.id),
+    unread: items.filter((item) => !item.isRead).length,
+  };
 }
 
 export async function getTaskNotificationSettings(context: ServiceContext) {
@@ -297,7 +320,7 @@ export async function reconcileTaskNotifications(
 ): Promise<void> {
   const state = attentionState(task);
 
-  if (!state || !task.attentionVersion) {
+  if (!state || !task.attentionVersion || task.kind !== "task") {
     return;
   }
 

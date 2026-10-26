@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AttentionPage } from "./AttentionPage.js";
 
-const { tasks, inbox, backgroundQuery, auth } = vi.hoisted(() => {
+const { inbox, auth } = vi.hoisted(() => {
   const items: ProjectTaskAttentionItem[] = [];
   const inboxState: {
     items: ProjectTaskAttentionItem[];
@@ -25,13 +25,7 @@ const { tasks, inbox, backgroundQuery, auth } = vi.hoisted(() => {
   };
 
   return {
-    tasks: {
-      tasks: [],
-      isLoadingTasks: false,
-      tasksError: new Error("Background tasks unavailable"),
-    },
     inbox: inboxState,
-    backgroundQuery: vi.fn(),
     auth: { isAuthenticated: true, isAuthenticationLoading: false, isPro: true },
   };
 });
@@ -56,12 +50,9 @@ vi.mock("@ngriffin_uk/polychat-library-client", async (importOriginal) => ({
 vi.mock("@ngriffin_uk/polychat-library-react", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@ngriffin_uk/polychat-library-react")>()),
   useTaskAttention: () => inbox,
-  useTasks: () => {
-    backgroundQuery();
-
-    return tasks;
-  },
-  useWorkAttention: () => ({ data: undefined, isLoading: false, error: null }),
+  useWorkInbox: () => ({ data: { data: [] }, isLoading: false, error: null }),
+  useWorkspaces: () => ({ data: [] }),
+  useDecideInboxHire: () => ({ isPending: false, mutateAsync: vi.fn() }),
 }));
 
 beforeEach(() => {
@@ -73,33 +64,14 @@ beforeEach(() => {
 });
 
 describe("Attention task loading", () => {
-  it("reports failed inbox and background queries instead of empty success states", () => {
+  it("reports a failed inbox instead of an empty one", () => {
     render(
       <MemoryRouter>
         <AttentionPage />
       </MemoryRouter>,
     );
     expect(screen.getByText("Inbox unavailable")).toBeVisible();
-    expect(screen.getByText("Background tasks unavailable")).toBeVisible();
-    expect(screen.queryByText("Nothing waiting on you")).toBeNull();
-  });
-  it("does not request account background tasks before sign-in finishes", () => {
-    auth.isAuthenticationLoading = true;
-    const { rerender } = render(
-      <MemoryRouter>
-        <AttentionPage />
-      </MemoryRouter>,
-    );
-
-    expect(backgroundQuery).not.toHaveBeenCalled();
-    auth.isAuthenticationLoading = false;
-    auth.isAuthenticated = false;
-    rerender(
-      <MemoryRouter>
-        <AttentionPage />
-      </MemoryRouter>,
-    );
-    expect(backgroundQuery).not.toHaveBeenCalled();
+    expect(screen.queryByText("Nothing needs you")).toBeNull();
   });
 
   it("reports receipt failures and leaves the notification available to retry", async () => {

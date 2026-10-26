@@ -38,6 +38,7 @@ import {
   Flag,
   MessageSquareText,
   Play,
+  RefreshCw,
   RotateCcw,
   Trash2,
   XCircle,
@@ -80,6 +81,7 @@ export interface TaskWorkProps {
   onResolveCase: (resolution: string) => void;
   onSendCaseReply: (body: string) => Promise<unknown>;
   onClearEscalation: () => void;
+  onSendAgain: () => void;
   onAnswerStandup: (input: AnswerStandupInput) => void;
   onUnlink: (linkId: string) => void;
 }
@@ -283,6 +285,11 @@ export function TaskDetail({
                 {!isFinished ? (
                   <DropdownMenuItem icon={<Flag size={15} />} onClick={() => setDialog("escalate")}>
                     Escalate
+                  </DropdownMenuItem>
+                ) : null}
+                {task.status === "queued" || task.status === "running" ? (
+                  <DropdownMenuItem icon={<RefreshCw size={15} />} onClick={work.onSendAgain}>
+                    Send to the queue again
                   </DropdownMenuItem>
                 ) : null}
                 {canReopen ? (

@@ -276,18 +276,6 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
   }
 
   /** Unread inbox items across the whole inbox, not only the page listInbox returns. */
-  async countUnreadInbox(userId: number): Promise<number> {
-    const row = await this.runQuery<{ unread: number }>(
-      `SELECT COUNT(*) AS unread
-       ${INBOX_SOURCE}
-         AND receipt.read_at IS NULL`,
-      [userId, userId, userId, userId, userId],
-      true,
-    );
-
-    return row?.unread ?? 0;
-  }
-
   async updateInboxReceipts(
     userId: number,
     itemIds: string[],

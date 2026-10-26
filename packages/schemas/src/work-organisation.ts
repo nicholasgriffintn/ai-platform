@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { recipeConnectorProviderSchema } from "./apps.js";
 import { listSchema } from "./platform/list.js";
 import {
   projectTaskPrioritySchema,
@@ -213,6 +214,22 @@ export const setupPlanTaskSchema = z.object({
   priority: projectTaskPrioritySchema.default("medium"),
 });
 
+export const SETUP_PLAN_CONNECTOR_ACCESS = ["read", "write"] as const;
+
+export const setupPlanConnectorSchema = z.object({
+  provider: recipeConnectorProviderSchema,
+  access: z.enum(SETUP_PLAN_CONNECTOR_ACCESS).default("read"),
+  projects: z.array(z.string().trim().min(1).max(40)).min(1).max(8),
+  reason: z.string().trim().max(300).default(""),
+});
+export type SetupPlanConnector = z.infer<typeof setupPlanConnectorSchema>;
+
+export const setupPlanSuggestionSchema = z.object({
+  provider: recipeConnectorProviderSchema,
+  reason: z.string().trim().min(1).max(300),
+});
+export type SetupPlanSuggestion = z.infer<typeof setupPlanSuggestionSchema>;
+
 export const setupPlanSchema = z.object({
   mission: z.string().trim().min(1).max(1000),
   monthlyCreditCapMicros: z.number().int().positive().nullable().default(null),
@@ -229,7 +246,8 @@ export const setupPlanSchema = z.object({
   projects: z.array(setupPlanProjectSchema).min(1).max(8),
   teammates: z.array(setupPlanTeammateSchema).max(12).default([]),
   tasks: z.array(setupPlanTaskSchema).max(30).default([]),
-  connections: z.array(z.string().trim().min(1).max(80)).max(20).default([]),
+  connectors: z.array(setupPlanConnectorSchema).max(20).default([]),
+  suggestions: z.array(setupPlanSuggestionSchema).max(10).default([]),
 });
 export type SetupPlan = z.infer<typeof setupPlanSchema>;
 
@@ -290,6 +308,7 @@ export const WORK_INBOX_KINDS = [
   "escalation",
   "setup",
   "paused",
+  "waiting",
 ] as const;
 export const workInboxKindSchema = z.enum(WORK_INBOX_KINDS);
 export type WorkInboxKind = z.infer<typeof workInboxKindSchema>;

@@ -9,7 +9,9 @@ import {
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import { WorkspaceTeammateRepository } from "~/modules/teammates/infrastructure/WorkspaceTeammateRepository";
 import { requireWorkAccess } from "~/modules/workspaces/application/access";
@@ -129,6 +131,48 @@ export async function getWorkInbox(context: ServiceContext): Promise<WorkInboxRe
         deepLink: taskLink(task.workspaceId, task.projectId, task.id),
       });
     }
+  }
+
+  const contexts = (
+    await context.repositories
+      .get(TeammateContextRepository)
+      .listAllForTeammates([...new Set(employments.map((employment) => employment.teammateId))])
+  ).filter(
+    (candidate) =>
+      candidate.actorUserId === user.id &&
+      candidate.scope.type === "workspace" &&
+      workspaceIds.includes(candidate.scope.id),
+  );
+  const waitingRuns = await context.repositories
+    .get(ConversationRunRepository)
+    .listWaitingForTeammateContexts(contexts.map((candidate) => candidate.id));
+
+  for (const run of waitingRuns) {
+    const teammateContext = contexts.find((candidate) => candidate.id === run.teammateContextId);
+
+    if (!teammateContext || !run.projectId) {
+      continue;
+    }
+
+    const name = names.get(teammateContext.teammateId) ?? "A teammate";
+
+    items.push({
+      id: `waiting:${run.id}:${run.attempt}`,
+      kind: "waiting",
+      workspaceId: teammateContext.scope.id,
+      projectId: run.projectId,
+      taskId: null,
+      teammateId: teammateContext.teammateId,
+      title:
+        run.status === "awaiting_approval"
+          ? `${name} is waiting for your approval`
+          : run.status === "awaiting_input"
+            ? `${name} has a question for you`
+            : `${name} needs you to take over its computer`,
+      detail: run.terminalReason,
+      since: run.updatedAt,
+      deepLink: `/work/${encodeURIComponent(teammateContext.scope.id)}/projects/${encodeURIComponent(run.projectId)}/chat/${encodeURIComponent(run.conversationId)}`,
+    });
   }
 
   for (const workspace of workspaces.filter((candidate) => managed.has(candidate.id))) {

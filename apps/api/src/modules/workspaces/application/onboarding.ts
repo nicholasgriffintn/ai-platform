@@ -15,6 +15,11 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import {
+  connectorOperationsForAccess,
+  listConnectedConnectors,
+  type ConnectedConnector,
+} from "~/modules/connectors/application/connected";
 import { createProjectTask, startProjectTask } from "~/modules/project-tasks/application";
 import { postToTaskThread } from "~/modules/project-tasks/application/thread";
 import type { WorkCaller } from "~/modules/project-tasks/application/work";
@@ -27,7 +32,7 @@ import { InitiativeRepository } from "~/modules/workspaces/infrastructure/Initia
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { requireWorkspaceAccess } from "./access";
-import { createProject, createWorkspace } from "./index";
+import { addProjectCapability, createProject, createWorkspace } from "./index";
 import { rollBackSetupCreation } from "./setup-rollback";
 
 const LEAD_HEARTBEAT_MINUTES = 240;
@@ -142,6 +147,7 @@ async function setUpWorkspaceLead(
     projectIds: [project.id, ...existingProjects.map((existing) => existing.id)],
   });
 
+  const connected = await listConnectedConnectors(context, params.userId);
   const existingNote = existingProjects.length
     ? `\n\nThe workspace already has these projects, which the plan should keep: ${existingProjects
         .map((existing) => existing.name)
@@ -149,7 +155,7 @@ async function setUpWorkspaceLead(
     : "";
   const { task } = await createProjectTask(context, project.id, {
     objective: "Set up the workspace",
-    description: `Mission: ${params.mission}${existingNote}\n\nRead the sources you were given, then call propose_setup_plan with the mission, initiatives, projects, team, budgets, wake rules, routines and first tasks. Do not hire, assign or schedule anything yourself: the plan starts only after a person approves it.`,
+    description: `Mission: ${params.mission}${existingNote}\n\n${describeConnectedServices(connected)}\n\nRead the sources you were given, then call propose_setup_plan with the mission, initiatives, projects, team, budgets, wake rules, routines, first tasks and the connected services each project uses. Do not hire, assign or schedule anything yourself: the plan starts only after a person approves it.`,
     priority: "high",
     owner: { type: "teammate", id: lead.id },
     context: {
@@ -180,6 +186,37 @@ async function setUpWorkspaceLead(
   return getOnboarding(context, workspaceId);
 }
 
+function describeConnectedServices(connected: readonly ConnectedConnector[]): string {
+  return connected.length
+    ? `Connected services the plan may use: ${connected.map((connector) => `${connector.name} (${connector.id})`).join(", ")}. Use only these in the plan's connectors, and only the access each project needs. Put any other service you think would help in suggestions; nothing is connected for the person.`
+    : "Nothing is connected yet, so the plan uses no services. Put any service you think would help in suggestions; nothing is connected for the person.";
+}
+
+async function assertPlanConnectors(context: ServiceContext, plan: SetupPlan): Promise<void> {
+  if (plan.connectors.length === 0) {
+    return;
+  }
+
+  const connected = new Set(
+    (await listConnectedConnectors(context, context.requireUser().id)).map(
+      (connector) => connector.id,
+    ),
+  );
+  const projectKeys = new Set(plan.projects.map((project) => project.key));
+  const problems = plan.connectors.flatMap((connector) => [
+    ...(connected.has(connector.provider)
+      ? []
+      : [`${connector.provider} is not connected; move it to suggestions`]),
+    ...connector.projects
+      .filter((key) => !projectKeys.has(key))
+      .map((key) => `${connector.provider} names a project key that is not in the plan: ${key}`),
+  ]);
+
+  if (problems.length > 0) {
+    throw new AssistantError(problems.join(". "), ErrorType.PARAMS_ERROR, 400);
+  }
+}
+
 export async function proposeSetupPlan(
   context: ServiceContext,
   workspaceId: string,
@@ -196,6 +233,8 @@ export async function proposeSetupPlan(
       409,
     );
   }
+
+  await assertPlanConnectors(context, plan);
 
   const next: SetupPlanState = {
     revision: (current?.revision ?? 0) + 1,
@@ -257,13 +296,15 @@ async function createSetupPlan(
     plan: SetupPlan;
     leadId: string | null;
     userId: number;
-    setupProjectId: string | null;
     created: SetupPlanCreated;
     toStart: { projectId: string; taskId: string }[];
   },
 ): Promise<void> {
   const { workspaceId, plan, leadId, created } = input;
   const workspaces = context.repositories.get(WorkspaceRepository);
+
+  await assertPlanConnectors(context, plan);
+
   const initiativeIds = new Map<string, string>();
 
   for (const initiative of plan.initiatives) {
@@ -366,16 +407,19 @@ async function createSetupPlan(
     }
   }
 
-  if (input.setupProjectId) {
-    for (const connection of plan.connections) {
-      const { task } = await createProjectTask(context, input.setupProjectId, {
-        objective: `Connect ${connection}`,
-        description: "The team needs this connection. Teammates never connect accounts themselves.",
-        owner: { type: "person", userId: input.userId },
-        priority: "high",
-      });
+  for (const connector of plan.connectors) {
+    const operations = connectorOperationsForAccess(connector.provider, connector.access);
 
-      created.taskIds.push(task.id);
+    for (const key of connector.projects) {
+      const projectId = projectIds.get(key);
+
+      if (projectId && operations.length > 0) {
+        await addProjectCapability(context, projectId, {
+          kind: "connector",
+          capabilityId: connector.provider,
+          configuration: { operations },
+        });
+      }
     }
   }
 }
@@ -418,7 +462,6 @@ export async function approveSetupPlan(
       plan,
       leadId,
       userId: user.id,
-      setupProjectId: workspace.setup_project_id ?? null,
       created,
       toStart,
     });

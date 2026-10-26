@@ -4,26 +4,21 @@ import {
   type MachineActivity,
   type MachineActivityResponse,
 } from "@ngriffin_uk/polychat-schemas";
-import { describeZonedInstant, readStringArray } from "@ngriffin_uk/polychat-utility-core";
-import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
+import { describeZonedInstant } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
-  DEVICE_ACTIVITY_ATTEMPTED_PAGES_KEY,
   DEVICE_ACTIVITY_MACHINE_METADATA_KEY,
   deviceActivityDocumentTitle,
   deviceActivityProviderId,
   deviceActivitySignalId,
   describeDeviceActivityItems,
-  mergeDeviceActivityPages,
   readDeviceActivityPages,
   renderDeviceActivityHistory,
 } from "~/modules/discover/domain/device-activity";
-import { readResearchResults } from "~/modules/discover/domain/research";
 import { readKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
-import { readDiscoverArticles } from "./articles";
 import { deleteDeviceDocuments, listDeviceDocuments } from "./device-documents";
 import { ensureDiscoverNotebook } from "./notebook";
 import { readDiscoverRoutine } from "./settings";
@@ -56,21 +51,7 @@ export async function recordDeviceActivity(
     const id = await discoverSignalSourceId(user.id, signalId);
     const existing = await sources.getSource(id);
     const owned = existing?.created_by_user_id === user.id ? existing : null;
-    const previous = parseJsonRecord(owned?.metadata);
-    const attempted = new Set(readStringArray(previous[DEVICE_ACTIVITY_ATTEMPTED_PAGES_KEY]));
-    const { pages, unread } = readDeviceActivityPages(
-      items,
-      readResearchResults(previous.items),
-      attempted,
-      date,
-    );
-    const read = mergeDeviceActivityPages(
-      pages,
-      unread.length > 0
-        ? await readDiscoverArticles(context, notebook.id, { topic: title, date, results: unread })
-        : [],
-    );
-    const shared = [...describeDeviceActivityItems(items, read), ...lines];
+    const shared = [...describeDeviceActivityItems(items), ...lines];
     const content = renderDeviceActivityHistory(
       title,
       owned ? await readKnowledgeText(context, owned) : "",
@@ -96,10 +77,7 @@ export async function recordDeviceActivity(
         periodEnd: activity.periodEnd,
         error: null,
         lines: shared,
-        items: read,
-        [DEVICE_ACTIVITY_ATTEMPTED_PAGES_KEY]: pages
-          .map((page) => page.url)
-          .filter((url) => attempted.has(url) || unread.some((page) => page.url === url)),
+        items: readDeviceActivityPages(items, date),
       },
     });
 

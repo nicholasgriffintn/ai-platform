@@ -14,21 +14,10 @@ import type {
   CreateInitiativeInput,
   Initiative,
   StandupSettings,
-  WorkInboxItem,
 } from "@ngriffin_uk/polychat-schemas";
 import { SHORT_WEEKDAY_LABELS } from "@ngriffin_uk/polychat-utility-core";
 import { Pencil, Target, Users } from "lucide-react";
 import { useState } from "react";
-
-const INBOX_LABELS: Record<WorkInboxItem["kind"], string> = {
-  task: "Task",
-  hire: "Hire",
-  budget: "Budget",
-  standup: "Standup",
-  escalation: "Escalation",
-  setup: "Setup plan",
-  paused: "Paused",
-};
 
 export function WorkQuickAdd({
   placeholder = "Ask for something, or describe a task…",
@@ -63,72 +52,6 @@ export function WorkQuickAdd({
         Add
       </Button>
     </form>
-  );
-}
-
-export function WorkInboxDecisions({
-  items,
-  canDecideHire,
-  isBusy,
-  onDecideHire,
-}: {
-  items: readonly WorkInboxItem[];
-  canDecideHire: (workspaceId: string) => boolean;
-  isBusy: boolean;
-  onDecideHire: (item: WorkInboxItem, decision: "approve" | "reject") => void;
-}) {
-  if (items.length === 0) {
-    return null;
-  }
-
-  return (
-    <section aria-label="Decisions" className="space-y-2">
-      <h2 className="text-sm font-semibold">Waiting on you</h2>
-      <ul className="divide-y divide-border rounded-lg border border-border bg-surface">
-        {items.map((item) => (
-          <li key={item.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
-            <span
-              className={cn(
-                "rounded px-1.5 py-0.5 font-mono text-[10px]",
-                item.kind === "escalation" || item.kind === "paused"
-                  ? "bg-failure/10 text-failure"
-                  : item.kind === "budget"
-                    ? "bg-attention/10 text-attention"
-                    : "bg-active-work/10 text-active-work",
-              )}
-            >
-              {INBOX_LABELS[item.kind]}
-            </span>
-            <Link href={item.deepLink} className="min-w-0 flex-1">
-              <span className="block truncate text-sm font-medium">{item.title}</span>
-              {item.detail ? (
-                <span className="block truncate text-xs text-muted-foreground">{item.detail}</span>
-              ) : null}
-            </Link>
-            {item.kind === "hire" && item.teammateId && canDecideHire(item.workspaceId) ? (
-              <span className="flex gap-2">
-                <Button
-                  size="xs"
-                  variant="primary"
-                  disabled={isBusy}
-                  onClick={() => onDecideHire(item, "approve")}
-                >
-                  Approve
-                </Button>
-                <Button
-                  size="xs"
-                  variant="secondary"
-                  disabled={isBusy}
-                  onClick={() => onDecideHire(item, "reject")}
-                >
-                  Reject
-                </Button>
-              </span>
-            ) : null}
-          </li>
-        ))}
-      </ul>
-    </section>
   );
 }
 

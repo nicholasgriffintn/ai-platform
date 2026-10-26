@@ -408,6 +408,7 @@ describe("TaskDetail", () => {
           onResolveCase: vi.fn(),
           onSendCaseReply: vi.fn(),
           onClearEscalation: vi.fn(),
+          onSendAgain: vi.fn(),
           onAnswerStandup: vi.fn(),
           onUnlink: vi.fn(),
         }}

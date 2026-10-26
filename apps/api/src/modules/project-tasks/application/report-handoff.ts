@@ -6,10 +6,12 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { resolveManager } from "~/modules/teammates/application/organisation";
 import { enqueueTeammateWake } from "~/modules/teammates/application/wakes";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
-import { WorkspaceTeammateRepository } from "~/modules/teammates/infrastructure/WorkspaceTeammateRepository";
+import {
+  WorkspaceTeammateRepository,
+  type WorkspaceTeammateRecord,
+} from "~/modules/teammates/infrastructure/WorkspaceTeammateRepository";
 
 import { getPendingProjectTaskQuestions } from "./questions";
 
@@ -56,10 +58,10 @@ function buildHandoffDetail(params: {
   ].join("\n");
 }
 
-export async function handBlockedTaskToManager(
-  context: ServiceContext,
+export function findHandlingManager(
   task: ProjectTask,
-): Promise<boolean> {
+  team: readonly WorkspaceTeammateRecord[],
+): string | null {
   if (
     task.kind !== "task" ||
     task.status !== "blocked" ||
@@ -68,20 +70,28 @@ export async function handBlockedTaskToManager(
     task.owner?.type !== "teammate" ||
     task.details.escalation?.to.type === "person"
   ) {
-    return false;
+    return null;
   }
 
-  const manager = await resolveManager(context, task.workspaceId, task.owner.id);
+  const ownerId = task.owner.id;
+  const managerId = team.find((member) => member.teammateId === ownerId)?.reportsToTeammateId;
+  const manager = team.find((member) => member.teammateId === managerId);
 
-  if (manager.type !== "teammate" || manager.id === task.owner.id) {
-    return false;
-  }
+  return manager && manager.status === "active" && manager.teammateId !== ownerId
+    ? manager.teammateId
+    : null;
+}
 
-  const employment = await context.repositories
+export async function handBlockedTaskToManager(
+  context: ServiceContext,
+  task: ProjectTask,
+): Promise<boolean> {
+  const team = await context.repositories
     .get(WorkspaceTeammateRepository)
-    .get(task.workspaceId, manager.id);
+    .listForWorkspace(task.workspaceId);
+  const managerId = findHandlingManager(task, team);
 
-  if (employment?.status !== "active") {
+  if (!managerId || task.owner?.type !== "teammate") {
     return false;
   }
 
@@ -94,7 +104,7 @@ export async function handBlockedTaskToManager(
 
   await enqueueTeammateWake(context, {
     workspaceId: task.workspaceId,
-    teammateId: manager.id,
+    teammateId: managerId,
     projectId: task.projectId,
     reason: "report_blocked",
     taskId: task.id,

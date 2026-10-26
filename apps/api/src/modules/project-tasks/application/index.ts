@@ -409,6 +409,49 @@ export async function getProjectTask(context: ServiceContext, projectId: string,
   };
 }
 
+export async function sendProjectTaskAgain(
+  context: ServiceContext,
+  projectId: string,
+  taskId: string,
+): Promise<ProjectTask> {
+  await requireProjectAccess(context, projectId);
+  const task = await requireTask(context, projectId, taskId);
+
+  if ((task.status !== "queued" && task.status !== "running") || !task.dispatchTaskId) {
+    throw new AssistantError(
+      "Only a queued or running task can be sent again",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  const tasks = context.repositories.get(TaskRepository);
+
+  await tasks.releaseAbandonedTasks(new Date(), task.dispatchTaskId);
+
+  const dispatch = await tasks.getTaskById(task.dispatchTaskId);
+
+  if (dispatch?.status === "running") {
+    throw new AssistantError(
+      "This task is still running. It can be sent again once its worker stops.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  if (dispatch?.status !== "pending" && dispatch?.status !== "queued") {
+    throw new AssistantError(
+      "This task's run has already ended. Cancel it and run it again.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  await new TaskService(context.env, tasks).dispatchTask(dispatch);
+
+  return task;
+}
+
 export async function respondToProjectTaskQuestions(
   context: ServiceContext,
   projectId: string,

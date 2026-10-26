@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
-import { resolveManager } from "~/modules/teammates/application/organisation";
 import { enqueueTeammateWake } from "~/modules/teammates/application/wakes";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import { WorkspaceTeammateRepository } from "~/modules/teammates/infrastructure/WorkspaceTeammateRepository";
@@ -11,7 +10,6 @@ import { WorkspaceTeammateRepository } from "~/modules/teammates/infrastructure/
 import { getPendingProjectTaskQuestions } from "../questions";
 import { handBlockedTaskToManager } from "../report-handoff";
 
-vi.mock("~/modules/teammates/application/organisation", () => ({ resolveManager: vi.fn() }));
 vi.mock("~/modules/teammates/application/wakes", () => ({ enqueueTeammateWake: vi.fn() }));
 vi.mock("../questions", () => ({ getPendingProjectTaskQuestions: vi.fn() }));
 
@@ -66,15 +64,17 @@ function blockedTask(overrides: Partial<ProjectTask> = {}): ProjectTask {
   };
 }
 
-function context(managerStatus = "active"): ServiceContext {
+function context(
+  team: { teammateId: string; reportsToTeammateId: string | null; status: string }[] = [
+    { teammateId: "coordinator", reportsToTeammateId: "lead", status: "active" },
+    { teammateId: "lead", reportsToTeammateId: null, status: "active" },
+  ],
+): ServiceContext {
   return Object.assign(Object.create(null), {
     env: {},
     requireUser: vi.fn().mockReturnValue({ id: 7 }),
     repositories: fakeRepositories([
-      [
-        WorkspaceTeammateRepository,
-        { get: vi.fn().mockResolvedValue({ teammateId: "lead", status: managerStatus }) },
-      ],
+      [WorkspaceTeammateRepository, { listForWorkspace: vi.fn().mockResolvedValue(team) }],
       [
         TeammateRepository,
         { getTeammateById: vi.fn().mockResolvedValue({ id: "coordinator", name: "Coordinator" }) },
@@ -85,7 +85,6 @@ function context(managerStatus = "active"): ServiceContext {
 
 describe("handing a report's blocked task to its manager", () => {
   beforeEach(() => {
-    vi.mocked(resolveManager).mockReset().mockResolvedValue({ type: "teammate", id: "lead" });
     vi.mocked(enqueueTeammateWake).mockReset().mockResolvedValue(true);
     vi.mocked(getPendingProjectTaskQuestions)
       .mockReset()
@@ -140,11 +139,21 @@ describe("handing a report's blocked task to its manager", () => {
   });
 
   it("asks people when the owner has no active teammate manager", async () => {
-    await expect(handBlockedTaskToManager(context("paused"), blockedTask())).resolves.toBe(false);
-
-    vi.mocked(resolveManager).mockResolvedValue({ type: "person", userId: 7 });
-
-    await expect(handBlockedTaskToManager(context(), blockedTask())).resolves.toBe(false);
+    await expect(
+      handBlockedTaskToManager(
+        context([
+          { teammateId: "coordinator", reportsToTeammateId: "lead", status: "active" },
+          { teammateId: "lead", reportsToTeammateId: null, status: "paused" },
+        ]),
+        blockedTask(),
+      ),
+    ).resolves.toBe(false);
+    await expect(
+      handBlockedTaskToManager(
+        context([{ teammateId: "coordinator", reportsToTeammateId: null, status: "active" }]),
+        blockedTask(),
+      ),
+    ).resolves.toBe(false);
     expect(enqueueTeammateWake).not.toHaveBeenCalled();
   });
 });

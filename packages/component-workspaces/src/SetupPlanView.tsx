@@ -1,4 +1,4 @@
-import { Badge, Button } from "@ngriffin_uk/polychat-component-ui";
+import { Badge, Button, Link } from "@ngriffin_uk/polychat-component-ui";
 import {
   creditsFromCreditMicros,
   projectTaskPriorityLabels,
@@ -202,12 +202,16 @@ export function SetupPlanView({
   setup,
   canApprove,
   isBusy,
+  connectorName,
+  connectHref,
   onApprove,
   onArchive,
 }: {
   setup: SetupPlanState | null;
   canApprove: boolean;
   isBusy: boolean;
+  connectorName: (provider: string) => string;
+  connectHref: string;
   onApprove: (revision: number) => void;
   onArchive: () => void;
 }) {
@@ -261,24 +265,53 @@ export function SetupPlanView({
           </dl>
           <div className="space-y-2 border-t border-border pt-4">
             <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-              You'll connect
+              Uses
             </p>
-            {plan.connections.length ? (
+            {plan.connectors.length ? (
               <ul className="space-y-1.5 text-sm">
-                {plan.connections.map((connection) => (
-                  <li key={connection} className="flex gap-2">
+                {plan.connectors.map((connector) => (
+                  <li key={connector.provider} className="flex gap-2">
                     <Plug size={14} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
-                    <span>{connection}</span>
+                    <span className="min-w-0">
+                      {connectorName(connector.provider)}
+                      <span className="text-muted-foreground">
+                        {" "}
+                        · {connector.access === "read" ? "read only" : "read and write"} in{" "}
+                        {connector.projects
+                          .map((key) => plan.projects.find((project) => project.key === key)?.name)
+                          .filter(Boolean)
+                          .join(", ")}
+                      </span>
+                    </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-muted-foreground">Nothing yet</p>
+              <p className="text-sm text-muted-foreground">No connected services</p>
             )}
-            <p className="text-xs text-muted-foreground">
-              Each one becomes a task for you. Teammates never connect accounts themselves.
-            </p>
           </div>
+          {plan.suggestions.length ? (
+            <div className="space-y-2 border-t border-border pt-4">
+              <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                Worth connecting
+              </p>
+              <ul className="space-y-2 text-sm">
+                {plan.suggestions.map((suggestion) => (
+                  <li key={suggestion.provider}>
+                    <span className="font-medium">{connectorName(suggestion.provider)}</span>
+                    <span className="block text-xs text-muted-foreground">{suggestion.reason}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-muted-foreground">
+                Only suggestions. Connect any of them in{" "}
+                <Link href={connectHref} className="underline">
+                  Plugins
+                </Link>{" "}
+                and the lead can use them from then on.
+              </p>
+            </div>
+          ) : null}
           <div className="space-y-2 border-t border-border pt-4">
             {setup.appliedAt ? (
               <>

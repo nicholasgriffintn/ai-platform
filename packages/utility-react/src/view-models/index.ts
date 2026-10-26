@@ -6,4 +6,3 @@ export * from "./pets.js";
 export * from "./project-workbench.js";
 export * from "./search.js";
 export * from "./teammates.js";
-export * from "./work-attention.js";

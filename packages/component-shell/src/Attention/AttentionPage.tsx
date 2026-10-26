@@ -1,43 +1,25 @@
 import { ButtonLink, EmptyState } from "@ngriffin_uk/polychat-component-ui";
-import {
-  WorkAttentionView,
-  WorkInboxDecisions,
-  type WorkAttentionFilters,
-} from "@ngriffin_uk/polychat-component-workspaces";
+import { WorkInbox } from "@ngriffin_uk/polychat-component-workspaces";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
-  useCursorPages,
   useDecideInboxHire,
-  useWorkAttention,
+  useTaskAttention,
   useWorkInbox,
   useWorkspaces,
-  readWorkAttentionQuery,
-  workAttentionFiltersOf,
-  workAttentionItemHref,
-  writeWorkAttentionFilters,
 } from "@ngriffin_uk/polychat-library-react";
-import { nextPageCursor } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { BriefcaseBusiness } from "lucide-react";
-import { useMemo } from "react";
-import { useSearchParams } from "react-router";
+import { toast } from "sonner";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
-import { AttentionBackgroundTasks } from "./AttentionBackgroundTasks.js";
-import { AttentionInbox } from "./AttentionInbox.js";
 
 export function AttentionPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const query = useMemo(() => readWorkAttentionQuery(searchParams), [searchParams]);
-  const pages = useCursorPages();
-  const attention = useWorkAttention({ ...query, after: pages.cursor });
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
   const isPro = useChatStore((state) => state.isPro);
-  const filters: WorkAttentionFilters = workAttentionFiltersOf(query);
-  const nextCursor = attention.data ? nextPageCursor(attention.data) : undefined;
-  const inbox = useWorkInbox();
+  const decisions = useWorkInbox();
+  const tasks = useTaskAttention();
   const workspaces = useWorkspaces();
   const decideHire = useDecideInboxHire();
   const managedWorkspaceIds = new Set(
@@ -45,83 +27,61 @@ export function AttentionPage() {
       .filter((workspace) => workspace.role === "owner" || workspace.role === "admin")
       .map((workspace) => workspace.id),
   );
+  const loadError = tasks.error ?? decisions.error;
+  const updateReceipt = async (id: string, action: "read" | "dismiss") => {
+    try {
+      if (action === "read") {
+        await tasks.markRead([id]);
+      } else {
+        await tasks.dismiss([id]);
+      }
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Unable to update this notification. Please try again."));
+    }
+  };
 
   return (
-    <PageShell.Content className="max-w-6xl">
+    <PageShell.Content className="max-w-4xl">
       <PageShell.Header title="Inbox" />
 
       {isAuthenticationLoading ? null : !isAuthenticated ? (
         <SignInEmptyState
           title="Sign in to review your work"
-          message="Attention only includes workspaces you can currently access."
+          message="Your inbox only includes workspaces you can currently access."
         />
-      ) : !isPro ? null : (
-        <div className="space-y-8">
-          <WorkInboxDecisions
-            items={inbox.data?.data ?? []}
-            canDecideHire={(workspaceId) => managedWorkspaceIds.has(workspaceId)}
-            isBusy={decideHire.isPending}
-            onDecideHire={(item, decision) => {
-              if (item.teammateId) {
-                void decideHire.mutateAsync({
-                  workspaceId: item.workspaceId,
-                  teammateId: item.teammateId,
-                  decision,
-                });
-              }
-            }}
-          />
-          <WorkAttentionView
-            items={attention.data?.data ?? []}
-            facets={attention.data?.facets}
-            filters={filters}
-            total={attention.data?.total ?? 0}
-            page={pages.page}
-            limit={query.limit}
-            hasPrevious={pages.hasPrevious}
-            hasNext={Boolean(nextCursor)}
-            isLoading={attention.isLoading}
-            errorMessage={
-              attention.error
-                ? getErrorMessage(attention.error, "Attention could not be loaded")
-                : undefined
-            }
-            itemHref={workAttentionItemHref}
-            onFiltersChange={(nextFilters) => {
-              pages.reset();
-              setSearchParams(writeWorkAttentionFilters(nextFilters, query.limit));
-            }}
-            onPrevious={pages.previous}
-            onNext={() => pages.next(nextCursor)}
-          />
-        </div>
-      )}
-
-      {!isAuthenticationLoading && isAuthenticated && isPro ? (
-        <div className="mt-10">
-          <AttentionInbox />
-        </div>
-      ) : null}
-
-      {!isAuthenticationLoading && isAuthenticated ? (
-        <div className={isPro ? "mt-10" : undefined}>
-          <AttentionBackgroundTasks />
-        </div>
-      ) : null}
-
-      {isAuthenticated && !isPro ? (
+      ) : !isPro ? (
         <EmptyState
           icon={<BriefcaseBusiness className="text-muted-foreground" size={22} />}
           title="Shared project work lives in Work"
-          message="Upgrade to see blocked tasks, reviews and approvals from every workspace you belong to here."
+          message="Upgrade to see approvals, hires and escalations from every workspace you belong to here."
           action={
             <ButtonLink href="/work" variant="outline" size="sm">
               See what Work includes
             </ButtonLink>
           }
-          className="mt-10 min-h-[200px]"
+          className="min-h-[200px]"
         />
-      ) : null}
+      ) : (
+        <WorkInbox
+          decisions={decisions.data?.data ?? []}
+          tasks={tasks.items}
+          isLoading={tasks.isLoading || decisions.isLoading}
+          errorMessage={loadError ? getErrorMessage(loadError, "Inbox unavailable") : undefined}
+          canDecideHire={(workspaceId) => managedWorkspaceIds.has(workspaceId)}
+          isBusy={decideHire.isPending}
+          onDecideHire={(item, decision) => {
+            if (item.teammateId) {
+              void decideHire.mutateAsync({
+                workspaceId: item.workspaceId,
+                teammateId: item.teammateId,
+                decision,
+              });
+            }
+          }}
+          onRead={(item) => void updateReceipt(item.id, "read")}
+          onDismiss={(item) => void updateReceipt(item.id, "dismiss")}
+        />
+      )}
     </PageShell.Content>
   );
 }
