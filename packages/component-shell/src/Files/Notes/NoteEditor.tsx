@@ -16,10 +16,6 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { getFirstReadyRealtimeTranscriptionProviderOption } from "@ngriffin_uk/polychat-library-realtime/live-providers";
 import {
-  formatRealtimeSpeakerLabel,
-  type RealtimeTranscriptResult,
-} from "@ngriffin_uk/polychat-library-realtime/messages";
-import {
   formatTextWithSpacing,
   getCharCount,
   getWordCount,
@@ -28,6 +24,8 @@ import { type ReactNode, useCallback, useEffect, useRef, useState } from "react"
 import { toast } from "sonner";
 
 import { useAutoSave } from "./hooks/useAutoSave.js";
+import { useDictationPauses } from "./hooks/useDictationPauses.js";
+import { useDictationWriter } from "./hooks/useDictationWriter.js";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts.js";
 import { useNoteAssist } from "./hooks/useNoteAssist.js";
 
@@ -49,7 +47,6 @@ export function NoteEditor({
   renderMetadata,
 }: NoteEditorProps) {
   const [text, setText] = useState<string>(initialText);
-  const [partialTranscript, setPartialTranscript] = useState<string>("");
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
   const reading = useUIStore((state) => state.noteReading);
   const setReading = useUIStore((state) => state.setNoteReading);
@@ -76,70 +73,31 @@ export function NoteEditor({
     onTextChange?.(text);
   }, [onTextChange, text]);
 
-  const partialTranscriptRef = useRef("");
-  const lastSpeakerRef = useRef<string | undefined>(undefined);
-
-  const updatePartialTranscript = useCallback((value: string) => {
-    partialTranscriptRef.current = value;
-    setPartialTranscript(value);
-  }, []);
-
-  const handleTranscript = useCallback(
-    (transcript: RealtimeTranscriptResult) => {
-      if (transcript.source === "output") {
-        return;
-      }
-
-      const merged = transcript.isDelta
-        ? formatTextWithSpacing(partialTranscriptRef.current, transcript.text)
-        : transcript.text;
-
-      if (!transcript.isFinal) {
-        updatePartialTranscript(merged);
-
-        return;
-      }
-
-      updatePartialTranscript("");
-      const finalText = merged.trim();
-
-      if (!finalText) {
-        return;
-      }
-
-      const speaker = transcript.speaker;
-
-      if (speaker === undefined && lastSpeakerRef.current !== undefined) {
-        return;
-      }
-
-      const speakerChanged = speaker !== undefined && speaker !== lastSpeakerRef.current;
-
-      if (!speakerChanged) {
-        setText((current) => formatTextWithSpacing(current, finalText));
-
-        return;
-      }
-
-      lastSpeakerRef.current = speaker;
-      const entry = `${formatRealtimeSpeakerLabel(speaker)}: ${finalText}`;
-
-      setText((current) => (current.trim() ? `${current.trimEnd()}\n\n${entry}` : entry));
-    },
-    [updatePartialTranscript],
-  );
+  const takeParagraphBreakRef = useRef<() => boolean>(() => false);
+  const takeParagraphBreakNow = useCallback(() => takeParagraphBreakRef.current(), []);
+  const dictation = useDictationWriter({ setText, takeParagraphBreak: takeParagraphBreakNow });
+  const { finish: finishDictation, reset: resetDictation } = dictation;
 
   const { data: realtimeProviders = [], isLoading: isLoadingProviders } = useRealtimeProviders();
   const transcription = useRealtimeLiveSession({
     providers: realtimeProviders,
     sessionType: "transcription",
-    onTranscript: handleTranscript,
+    onTranscript: dictation.handleTranscript,
   });
   const isTranscribing = transcription.status !== "idle";
   const { isSpeechDetected, lastSilenceAt } = useSpeechActivity(
     transcription.inputAudioLevel,
     transcription.isActive,
   );
+  const takeParagraphBreak = useDictationPauses({
+    isActive: transcription.isActive,
+    isSpeechDetected,
+    lastSilenceAt,
+  });
+
+  useEffect(() => {
+    takeParagraphBreakRef.current = takeParagraphBreak;
+  }, [takeParagraphBreak]);
 
   useKeyboardShortcuts({ onSave: () => void forceSave() });
 
@@ -168,19 +126,18 @@ export function NoteEditor({
         return false;
       }
 
-      updatePartialTranscript("");
-      lastSpeakerRef.current = undefined;
+      resetDictation();
       void transcription.start(provider.id, undefined, { inputStream });
 
       return true;
     },
-    [isLoadingProviders, realtimeProviders, transcription, updatePartialTranscript],
+    [isLoadingProviders, realtimeProviders, resetDictation, transcription],
   );
 
   const stopTranscription = useCallback(() => {
     transcription.stop();
-    updatePartialTranscript("");
-  }, [transcription, updatePartialTranscript]);
+    finishDictation();
+  }, [finishDictation, transcription]);
 
   const handleTranscriptionToggle = useCallback(() => {
     if (isTranscribing) {
@@ -224,7 +181,7 @@ export function NoteEditor({
         transcriptionStatus={transcription.status}
         isSpeechDetected={isSpeechDetected}
         lastSilenceTime={lastSilenceAt}
-        partialTranscript={partialTranscript}
+        partialTranscript={dictation.pending}
       />
 
       <NoteEditorToolbar

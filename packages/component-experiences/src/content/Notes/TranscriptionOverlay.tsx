@@ -39,7 +39,7 @@ export const TranscriptionOverlay = memo(function TranscriptionOverlay({
 
   return (
     <div
-      className="absolute right-4 bottom-16 left-4 max-h-32 overflow-y-auto rounded border border-border bg-surface-elevated p-3 shadow-[var(--polychat-elevated-shadow)]"
+      className="mx-2 mb-2 max-h-32 shrink-0 overflow-y-auto rounded-md border border-border bg-surface-elevated px-3 py-2 sm:mx-3"
       aria-live="polite"
     >
       <div className="mb-1 flex items-center text-xs text-muted-foreground">
