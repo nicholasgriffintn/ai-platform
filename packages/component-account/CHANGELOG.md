@@ -1,5 +1,29 @@
 # @ngriffin_uk/polychat-component-account
 
+## 1.1.0
+
+### Minor Changes
+
+- 8f480ac: Memories are now always kept as documents you can read and edit, and Poly finds them the way it finds your files.
+
+  - **One kind of memory.** Polychat's own memory keeps what it learns about you, and about each project, as documents under Files › Memory. The old one-line memories are gone, so Poly starts these documents fresh.
+  - **Better recall.** Memories are searched by meaning and by exact words, and Poly gets back the passage that matters rather than a whole document.
+  - **Quick notes, tidied later.** When a memory document is long or has just changed, new memories are added under Recently noted straight away and folded into the document a few minutes later.
+  - **Your search index, your storage.** If you keep your search index in S3 Vectors or DynamoDB Vectors, it now holds your own files as well as your memories. Choose it under Settings › Knowledge.
+
+### Patch Changes
+
+- Updated dependencies [5d70d5d]
+- Updated dependencies [8f480ac]
+  - @ngriffin_uk/polychat-schemas@1.9.0
+  - @ngriffin_uk/polychat-library-client@0.8.0
+  - @ngriffin_uk/polychat-library-react@0.9.0
+  - @ngriffin_uk/polychat-utility-core@0.8.0
+  - @ngriffin_uk/polychat-utility-react@0.6.0
+  - @ngriffin_uk/polychat-component-ui@0.6.1
+  - @ngriffin_uk/polychat-component-capabilities@1.0.3
+  - @ngriffin_uk/polychat-component-models@1.2.4
+
 ## 1.0.2
 
 ### Patch Changes

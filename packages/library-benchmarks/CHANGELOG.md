@@ -1,5 +1,16 @@
 # @ngriffin_uk/polychat-library-benchmarks
 
+## 0.2.4
+
+### Patch Changes
+
+- Updated dependencies [5d70d5d]
+- Updated dependencies [8f480ac]
+  - @ngriffin_uk/polychat-schemas@1.9.0
+  - @ngriffin_uk/polychat-utility-core@0.8.0
+  - @ngriffin_uk/polychat-utility-server@0.6.0
+  - @ngriffin_uk/polychat-library-model-registry@0.3.4
+
 ## 0.2.3
 
 ### Patch Changes
