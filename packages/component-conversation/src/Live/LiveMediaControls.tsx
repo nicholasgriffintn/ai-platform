@@ -1,5 +1,11 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
-import { Mic, MicOff, Video, VideoOff } from "lucide-react";
+import { Video, VideoOff } from "lucide-react";
+
+import {
+  LiveMicrophoneButton,
+  LivePushToTalkToggle,
+  type LivePushToTalkControls,
+} from "./LiveMicrophoneButton.js";
 
 const AUDIO_LEVEL_BAR_WEIGHTS = [0.42, 0.72, 1, 0.62, 0.9, 1.18, 0.76, 1.04, 0.58, 0.82, 0.46];
 const ASSISTANT_AUDIO_LEVEL_THRESHOLD = 0.025;
@@ -8,6 +14,7 @@ export interface LiveMediaControlsProps {
   microphoneEnabled: boolean;
   onMicrophoneEnabledChange: (enabled: boolean) => void;
   onVideoButtonClick: () => void;
+  pushToTalk?: LivePushToTalkControls;
   videoEnabled: boolean;
   videoSupported: boolean;
 }
@@ -16,30 +23,19 @@ export function LiveMediaControls({
   microphoneEnabled,
   onMicrophoneEnabledChange,
   onVideoButtonClick,
+  pushToTalk,
   videoEnabled,
   videoSupported,
 }: LiveMediaControlsProps) {
   return (
     <div className="flex min-w-0 shrink-0 items-center gap-1">
-      <button
-        type="button"
-        aria-label={microphoneEnabled ? "Turn microphone off" : "Turn microphone on"}
-        aria-pressed={microphoneEnabled}
-        title={microphoneEnabled ? "Turn microphone off" : "Turn microphone on"}
-        onClick={() => onMicrophoneEnabledChange(!microphoneEnabled)}
-        className={cn(
-          "flex h-8 w-8 items-center justify-center rounded-md transition-colors",
-          microphoneEnabled
-            ? "bg-success/12 text-success hover:bg-success/20"
-            : "bg-surface-elevated text-muted-foreground hover:bg-selection hover:text-foreground",
-        )}
-      >
-        {microphoneEnabled ? (
-          <Mic className="h-4 w-4" aria-hidden="true" />
-        ) : (
-          <MicOff className="h-4 w-4" aria-hidden="true" />
-        )}
-      </button>
+      <LiveMicrophoneButton
+        microphoneEnabled={microphoneEnabled}
+        onMicrophoneEnabledChange={onMicrophoneEnabledChange}
+        pushToTalk={pushToTalk}
+        size="sm"
+      />
+      {pushToTalk && <LivePushToTalkToggle pushToTalk={pushToTalk} size="sm" />}
       <button
         type="button"
         aria-label={videoEnabled ? "Turn camera off" : "Turn camera on"}

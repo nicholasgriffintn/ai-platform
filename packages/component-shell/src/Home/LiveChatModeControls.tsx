@@ -7,6 +7,7 @@ import {
   LiveSessionDetail,
   LiveStatusHeader,
   getStatusCopy,
+  type LivePushToTalkControls,
 } from "@ngriffin_uk/polychat-component-conversation";
 import type { RealtimeCameraDevice, RealtimeLiveStatus } from "@ngriffin_uk/polychat-library-react";
 import {
@@ -14,6 +15,7 @@ import {
   type RealtimeLiveProviderOption,
   supportsRealtimeLiveVideoInput,
 } from "@ngriffin_uk/polychat-library-realtime/live-providers";
+import { useKeyHold } from "@ngriffin_uk/polychat-utility-react";
 import { useState } from "react";
 
 interface LiveChatModeControlsProps {
@@ -31,6 +33,7 @@ interface LiveChatModeControlsProps {
   onVideoEnabledChange: (enabled: boolean) => void;
   options: RealtimeLiveProviderOption[];
   provider: string;
+  pushToTalk: LivePushToTalkControls;
   showHeader?: boolean;
   showSessionControls?: boolean;
   status: RealtimeLiveStatus;
@@ -52,6 +55,7 @@ interface LiveSessionControlsProps {
   onStop: () => void;
   onVideoEnabledChange: (enabled: boolean) => void;
   outputAudioLevel?: number;
+  pushToTalk: LivePushToTalkControls;
   status: RealtimeLiveStatus;
   selectedCameraDeviceId: string;
   variant?: "panel" | "composer";
@@ -73,6 +77,7 @@ function LiveSessionControls({
   onStop,
   onVideoEnabledChange,
   outputAudioLevel,
+  pushToTalk,
   selectedCameraDeviceId,
   status,
   variant = "panel",
@@ -82,6 +87,13 @@ function LiveSessionControls({
 }: LiveSessionControlsProps) {
   const detail = error ?? lastTranscript ?? lastEvent;
   const [cameraDialogOpen, setCameraDialogOpen] = useState(false);
+
+  useKeyHold({
+    code: "Space",
+    enabled: pushToTalk.enabled && status === "active",
+    onPress: pushToTalk.onTalkStart,
+    onRelease: pushToTalk.onTalkEnd,
+  });
 
   const handleVideoButtonClick = () => {
     if (videoEnabled) {
@@ -106,6 +118,7 @@ function LiveSessionControls({
           onStop={onStop}
           onVideoButtonClick={handleVideoButtonClick}
           outputAudioLevel={outputAudioLevel}
+          pushToTalk={pushToTalk}
           status={status}
           videoEnabled={videoEnabled}
           videoSupported={videoSupported}
@@ -130,6 +143,7 @@ function LiveSessionControls({
           microphoneEnabled={microphoneEnabled}
           onMicrophoneEnabledChange={onMicrophoneEnabledChange}
           onVideoButtonClick={handleVideoButtonClick}
+          pushToTalk={pushToTalk}
           videoEnabled={videoEnabled}
           videoSupported={videoSupported}
         />
@@ -166,6 +180,7 @@ export function LiveChatModeControls({
   onVideoEnabledChange,
   options,
   provider,
+  pushToTalk,
   showHeader = true,
   showSessionControls = true,
   status,
@@ -199,6 +214,7 @@ export function LiveChatModeControls({
           onStart={onStart}
           onStop={onStop}
           onVideoEnabledChange={onVideoEnabledChange}
+          pushToTalk={pushToTalk}
           selectedCameraDeviceId={selectedCameraDeviceId}
           status={status}
           videoEnabled={videoEnabled}

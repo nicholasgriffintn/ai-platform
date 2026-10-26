@@ -9,6 +9,7 @@ export * from "./useCrossfadeLoop.js";
 export * from "./useDebouncedValue.js";
 export * from "./useElementWidth.js";
 export * from "./useFileUpload.js";
+export * from "./useKeyHold.js";
 export * from "./useHeaderScrollEdge.js";
 export * from "./useLoadMoreOnIntersect.js";
 export * from "./useMediaQuery.js";

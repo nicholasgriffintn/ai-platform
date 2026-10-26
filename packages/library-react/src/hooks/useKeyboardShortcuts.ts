@@ -1,4 +1,5 @@
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { isTextEntryTarget } from "@ngriffin_uk/polychat-utility-react";
 import { useEffect } from "react";
 
 import {
@@ -66,12 +67,7 @@ export function useKeyboardShortcuts() {
         return;
       }
 
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement ||
-        e.target instanceof HTMLSelectElement ||
-        (e.target as HTMLElement).isContentEditable
-      ) {
+      if (isTextEntryTarget(e.target)) {
         return;
       }
 

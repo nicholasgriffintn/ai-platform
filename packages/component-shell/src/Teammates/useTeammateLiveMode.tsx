@@ -20,6 +20,8 @@ import { LiveSessionComposerControls } from "../Home/LiveChatModeControls.js";
 
 export function useTeammateLiveMode(teammateName: string): Partial<ThreadModeConfig> {
   const isPro = useChatStore((state) => state.isPro);
+  const livePushToTalk = useChatStore((state) => state.livePushToTalk);
+  const setLivePushToTalk = useChatStore((state) => state.setLivePushToTalk);
   const { data: providerOptions = [] } = useRealtimeProviders(isPro);
   const composedOptions = useMemo(
     () =>
@@ -43,6 +45,7 @@ export function useTeammateLiveMode(teammateName: string): Partial<ThreadModeCon
     onEvent: handleRealtimeEvent,
     onTranscript: handleTranscript,
     providers: composedOptions,
+    pushToTalk: livePushToTalk,
   });
 
   if (!provider) {
@@ -114,6 +117,13 @@ export function useTeammateLiveMode(teammateName: string): Partial<ThreadModeCon
         onStop={stop}
         onVideoEnabledChange={session.setVideoEnabled}
         outputAudioLevel={session.outputAudioLevel}
+        pushToTalk={{
+          enabled: livePushToTalk,
+          talking: session.isTalking,
+          onEnabledChange: setLivePushToTalk,
+          onTalkStart: session.startTalking,
+          onTalkEnd: session.stopTalking,
+        }}
         selectedCameraDeviceId={session.selectedCameraDeviceId}
         status={session.status}
         videoEnabled={session.isVideoEnabled}

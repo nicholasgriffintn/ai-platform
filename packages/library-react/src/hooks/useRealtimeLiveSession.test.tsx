@@ -475,6 +475,45 @@ describe("useRealtimeLiveSession lifecycle", () => {
     expect(result.current.status).toBe("active");
   });
 
+  it("only streams the microphone while push to talk is held", async () => {
+    const audio = fakeAudioStream();
+    const mediaController = { stop: vi.fn() };
+
+    mocks.startPcm16MicrophoneStream.mockResolvedValue(mediaController);
+    mocks.requestAudioStream.mockResolvedValue(audio.stream);
+    mocks.createRealtimeSession.mockResolvedValue({
+      provider: "mistral",
+      transport: "websocket",
+      url: "wss://api.polychat.test/realtime",
+    });
+    const providers = [provider("mistral", "websocket")];
+    const { result } = renderHook(() => useRealtimeLiveSession({ providers, pushToTalk: true }));
+
+    await act(async () => result.current.start("mistral"));
+    await act(async () => {
+      mocks.webSocketConnections[0].options.onOpen?.(new Event("open"));
+      await flushMicrotasks();
+    });
+
+    expect(result.current.status).toBe("active");
+    expect(result.current.isMicrophoneEnabled).toBe(false);
+    expect(mocks.startPcm16MicrophoneStream).not.toHaveBeenCalled();
+
+    await act(async () => {
+      result.current.startTalking();
+      await flushMicrotasks();
+    });
+
+    expect(result.current.isTalking).toBe(true);
+    expect(mocks.startPcm16MicrophoneStream).toHaveBeenCalledOnce();
+
+    act(() => result.current.stopTalking());
+
+    expect(result.current.isTalking).toBe(false);
+    expect(result.current.isMicrophoneEnabled).toBe(false);
+    expect(mediaController.stop).toHaveBeenCalledOnce();
+  });
+
   it("resumes Gemini Live after GoAway without reacquiring microphone media", async () => {
     const audio = fakeAudioStream();
 

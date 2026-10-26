@@ -10,11 +10,11 @@ import type {
   RetentionReason,
 } from "@ngriffin_uk/polychat-schemas";
 import { MODEL_TIER_DEFINITIONS } from "@ngriffin_uk/polychat-schemas";
+import { isTextEntryTarget } from "@ngriffin_uk/polychat-utility-react";
 import { CircleHelp, Search } from "lucide-react";
 import { useState, type KeyboardEvent, type RefObject } from "react";
 import { createPortal } from "react-dom";
 
-import { isTextEntryTarget } from "../lib/event-target";
 import { ModelsList } from "./ModelsList";
 import { ModelTierPicker, type ModelTierSelection } from "./ModelTierPicker";
 import { RuntimeRail, type RuntimeRailOption } from "./RuntimeRail";

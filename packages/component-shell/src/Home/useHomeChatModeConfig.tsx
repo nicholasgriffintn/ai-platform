@@ -50,6 +50,8 @@ export function useHomeChatModeConfig(): {
     model: selectedModel,
     setModel,
     isPro,
+    livePushToTalk,
+    setLivePushToTalk,
   } = useChatStore();
   const { data: currentConversation } = useChat(currentConversationId);
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
@@ -124,12 +126,14 @@ export function useHomeChatModeConfig(): {
     onEvent: handleLiveRealtimeEvent,
     onTranscript: handleLiveTranscript,
     providers: realtimeProviderOptions,
+    pushToTalk: livePushToTalk,
   });
   const {
     error: liveError,
     cameraDevices: liveCameraDevices,
     inputAudioLevel: liveInputAudioLevel,
     isMicrophoneEnabled: liveMicrophoneEnabled,
+    isTalking: liveTalking,
     isVideoEnabled: liveVideoEnabled,
     lastEvent: liveLastEvent,
     lastTranscript: liveLastTranscript,
@@ -141,8 +145,10 @@ export function useHomeChatModeConfig(): {
     setProvider: setLiveProvider,
     setVideoEnabled: setLiveVideoEnabled,
     start: startLiveSession,
+    startTalking: startLiveTalking,
     status: liveStatus,
     stop: stopLiveSession,
+    stopTalking: stopLiveTalking,
     videoPreviewStream: liveVideoPreviewStream,
   } = liveSession;
   const stopLiveSessionAndFlush = useCallback(() => {
@@ -280,6 +286,7 @@ export function useHomeChatModeConfig(): {
       if (modeId === "live") {
         if (selectedModelLiveProvider) {
           setLiveProvider(selectedModelLiveProvider);
+          void startLiveSession(selectedModelLiveProvider, selectedModel);
         } else {
           const currentProvider = getRealtimeLiveProviderOption(
             liveProvider ?? "",
@@ -290,8 +297,8 @@ export function useHomeChatModeConfig(): {
               ? currentProvider
               : getFirstReadyRealtimeLiveProviderOption(realtimeProviderOptions);
 
-          if (nextProvider) {
-            selectLiveProviderAndModel(nextProvider.id);
+          if (nextProvider && selectLiveProviderAndModel(nextProvider.id)) {
+            void startLiveSession(nextProvider.id, nextProvider.defaultModelId);
           }
         }
       } else if (effectiveActiveModeId === "live") {
@@ -306,12 +313,14 @@ export function useHomeChatModeConfig(): {
       realtimeProviderOptions,
       selectLiveProviderAndModel,
       searchParams,
+      selectedModel,
       selectedModelLiveProvider,
       setChatMode,
       setHomeChatMode,
       setLiveProvider,
       setSearchParams,
       setSelectedTeammateId,
+      startLiveSession,
       stopLiveSessionAndFlush,
     ],
   );
@@ -373,6 +382,13 @@ export function useHomeChatModeConfig(): {
     activeModeId: HomeChatModeId;
     modeConfig: ThreadModeConfig;
   }>(() => {
+    const livePushToTalkControls = {
+      enabled: livePushToTalk,
+      talking: liveTalking,
+      onEnabledChange: setLivePushToTalk,
+      onTalkStart: startLiveTalking,
+      onTalkEnd: stopLiveTalking,
+    };
     const liveControls = (
       <LiveChatModeControls
         cameraDevices={liveCameraDevices}
@@ -389,6 +405,7 @@ export function useHomeChatModeConfig(): {
         options={realtimeProviderOptions}
         isLoadingProviders={isLoadingRealtimeProviders}
         provider={effectiveLiveProvider ?? ""}
+        pushToTalk={livePushToTalkControls}
         showHeader={effectiveActiveModeId !== "live"}
         showSessionControls={effectiveActiveModeId !== "live"}
         status={liveStatus}
@@ -411,6 +428,7 @@ export function useHomeChatModeConfig(): {
         onStop={stopLiveSessionAndFlush}
         onVideoEnabledChange={setLiveVideoEnabled}
         outputAudioLevel={liveOutputAudioLevel}
+        pushToTalk={livePushToTalkControls}
         selectedCameraDeviceId={liveSelectedCameraDeviceId}
         status={liveStatus}
         videoEnabled={liveVideoEnabled}
@@ -494,6 +512,8 @@ export function useHomeChatModeConfig(): {
     liveError,
     liveInputAudioLevel,
     liveMicrophoneEnabled,
+    livePushToTalk,
+    liveTalking,
     liveVideoEnabled,
     liveLastEvent,
     liveLastTranscript,
@@ -508,8 +528,11 @@ export function useHomeChatModeConfig(): {
     liveConversationMode,
     setLiveCameraDeviceId,
     setLiveMicrophoneEnabled,
+    setLivePushToTalk,
     setLiveVideoEnabled,
     startLiveSession,
+    startLiveTalking,
     stopLiveSessionAndFlush,
+    stopLiveTalking,
   ]);
 }

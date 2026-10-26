@@ -64,3 +64,16 @@ export function runWhenIdle(callback: () => void, timeoutMs = 8000): () => void 
 
   return () => clearTimeout(handle);
 }
+
+export function isTextEntryTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  return (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement ||
+    target.isContentEditable
+  );
+}

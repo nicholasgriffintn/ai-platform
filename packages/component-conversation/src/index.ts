@@ -65,6 +65,7 @@ export * from "./ConversationTitleContext.js";
 export * from "./Live/LiveCameraDialog.js";
 export * from "./Live/LiveProviderPicker.js";
 export * from "./Live/LiveMediaControls.js";
+export * from "./Live/LiveMicrophoneButton.js";
 export * from "./Live/LiveComposerTransport.js";
 export * from "./Live/LiveSessionButton.js";
 export * from "./ConversationSurfaceLayout.js";

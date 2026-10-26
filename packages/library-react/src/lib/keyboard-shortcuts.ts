@@ -101,6 +101,11 @@ export const APP_KEYBOARD_SHORTCUT_SECTIONS: AppKeyboardShortcutSection[] = [
     shortcuts: [
       actionableShortcuts.dictate,
       actionableShortcuts.live,
+      {
+        id: "push-to-talk",
+        description: "Hold to talk in Live with push to talk on",
+        keys: ["Space"],
+      },
       { id: "send", description: "Send message", keys: ["Enter"] },
       { id: "new-line", description: "Insert new line", keys: ["⇧", "Enter"] },
       { id: "open-actions", description: "Show actions", keys: ["/"] },

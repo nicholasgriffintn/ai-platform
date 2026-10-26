@@ -1,8 +1,13 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { RealtimeLiveStatus } from "@ngriffin_uk/polychat-library-realtime/live-providers";
-import { AudioLines, Loader2, Mic, MicOff, Pause, Video, VideoOff } from "lucide-react";
+import { AudioLines, Loader2, Pause, Video, VideoOff } from "lucide-react";
 
 import { LiveAudioLevelMeter } from "./LiveMediaControls.js";
+import {
+  LiveMicrophoneButton,
+  LivePushToTalkToggle,
+  type LivePushToTalkControls,
+} from "./LiveMicrophoneButton.js";
 
 export interface LiveComposerTransportProps {
   inputAudioLevel?: number;
@@ -12,6 +17,7 @@ export interface LiveComposerTransportProps {
   onStop: () => void;
   onVideoButtonClick: () => void;
   outputAudioLevel?: number;
+  pushToTalk?: LivePushToTalkControls;
   status: RealtimeLiveStatus;
   videoEnabled: boolean;
   videoSupported: boolean;
@@ -39,6 +45,7 @@ export function LiveComposerTransport({
   onStop,
   onVideoButtonClick,
   outputAudioLevel,
+  pushToTalk,
   status,
   videoEnabled,
   videoSupported,
@@ -69,31 +76,19 @@ export function LiveComposerTransport({
           <AudioLines className="h-5 w-5 fill-current" aria-hidden="true" />
         )}
       </button>
-      <button
-        type="button"
-        aria-label={microphoneEnabled ? "Turn microphone off" : "Turn microphone on"}
-        aria-pressed={microphoneEnabled}
-        title={microphoneEnabled ? "Turn microphone off" : "Turn microphone on"}
-        onClick={() => onMicrophoneEnabledChange(!microphoneEnabled)}
-        className={cn(
-          "flex h-10 w-10 shrink-0 items-center justify-center rounded-md transition-colors",
-          microphoneEnabled
-            ? "bg-success text-canvas hover:bg-success/88"
-            : "bg-failure text-canvas hover:bg-failure/88",
-        )}
-      >
-        {microphoneEnabled ? (
-          <Mic className="h-5 w-5" aria-hidden="true" />
-        ) : (
-          <MicOff className="h-5 w-5" aria-hidden="true" />
-        )}
-      </button>
+      <LiveMicrophoneButton
+        microphoneEnabled={microphoneEnabled}
+        onMicrophoneEnabledChange={onMicrophoneEnabledChange}
+        pushToTalk={pushToTalk}
+        size="md"
+      />
       <LiveAudioLevelMeter
         inputAudioLevel={inputAudioLevel}
         isActive={isActive}
         microphoneEnabled={microphoneEnabled}
         outputAudioLevel={outputAudioLevel}
       />
+      {pushToTalk && <LivePushToTalkToggle pushToTalk={pushToTalk} size="md" />}
       <button
         type="button"
         aria-label={videoEnabled ? "Turn camera off" : "Turn camera on"}

@@ -76,6 +76,8 @@ export interface ChatStore {
   setPermissionMode: (mode: PermissionMode) => void;
   useMultiModel: boolean;
   setUseMultiModel: (useMultiModel: boolean) => void;
+  livePushToTalk: boolean;
+  setLivePushToTalk: (livePushToTalk: boolean) => void;
   selectedTeammateId: string | null;
   setSelectedTeammateId: (teammateId: string | null) => void;
   selectedTeammateTokenPosition: number | null;
@@ -184,6 +186,8 @@ export const useChatStore = create<ChatStore>()(
       setPermissionMode: (permissionMode) => set({ permissionMode }),
       useMultiModel: false,
       setUseMultiModel: (useMultiModel) => set({ useMultiModel }),
+      livePushToTalk: false,
+      setLivePushToTalk: (livePushToTalk) => set({ livePushToTalk }),
       selectedTeammateId: null,
       setSelectedTeammateId: (teammateId) => set({ selectedTeammateId: teammateId }),
       selectedTeammateTokenPosition: null,
@@ -278,6 +282,7 @@ export const useChatStore = create<ChatStore>()(
         modelTier: state.modelTier,
         permissionMode: state.permissionMode,
         useMultiModel: state.useMultiModel,
+        livePushToTalk: state.livePushToTalk,
         chatSettings: state.chatSettings,
         selectedTeammateId: state.selectedTeammateId,
         modelSelectionOrigin: state.modelSelectionOrigin,

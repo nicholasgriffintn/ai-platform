@@ -77,6 +77,7 @@ interface UseRealtimeLiveSessionOptions {
   onEvent?: (event: RealtimeEventResult) => void;
   onTranscript?: (transcript: RealtimeTranscriptResult) => void;
   providers?: RealtimeLiveProviderOption[];
+  pushToTalk?: boolean;
   sessionType?: RealtimeLiveSessionType;
 }
 
@@ -167,6 +168,7 @@ export function useRealtimeLiveSession({
   onEvent,
   onTranscript,
   providers = [],
+  pushToTalk = false,
   sessionType,
 }: UseRealtimeLiveSessionOptions = {}) {
   const providerOptions = providers;
@@ -198,12 +200,15 @@ export function useRealtimeLiveSession({
   const externalAudioStreamRef = useRef<MediaStream | null>(null);
   const sessionLimitTimeoutRef = useRef<number | null>(null);
   const stopRef = useRef<() => void>(() => {});
+  const setMicrophoneEnabledRef = useRef<(enabled: boolean) => void>(() => {});
   const webrtcCommitChannelRef = useRef<RTCDataChannel | null>(null);
   const mediaGenerationRef = useRef(0);
   const outputAudioLevelResetRef = useRef<number | null>(null);
   const outputAudioMeterRef = useRef<MediaStreamAudioLevelMeter | null>(null);
   const videoStreamRef = useRef<MediaStream | null>(null);
-  const microphoneEnabledRef = useRef(true);
+  const microphoneEnabledRef = useRef(!pushToTalk);
+  const pushToTalkRef = useRef(pushToTalk);
+  const talkingRef = useRef(false);
   const videoEnabledRef = useRef(false);
   const selectedCameraDeviceIdRef = useRef("");
   const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -216,7 +221,8 @@ export function useRealtimeLiveSession({
   const sessionController = sessionControllerRef.current;
   const providerOptionsRef = useRef(providerOptions);
   const stoppingRef = useRef(false);
-  const [isMicrophoneEnabled, setIsMicrophoneEnabledState] = useState(true);
+  const [isMicrophoneEnabled, setIsMicrophoneEnabledState] = useState(!pushToTalk);
+  const [isTalking, setIsTalking] = useState(false);
   const [isVideoEnabled, setIsVideoEnabledState] = useState(false);
 
   const setLiveStatus = useCallback((nextStatus: RealtimeLiveStatus) => {
@@ -328,6 +334,17 @@ export function useRealtimeLiveSession({
     },
     [clearSilenceCommitTimer],
   );
+
+  const commitWebRTCAudioNow = useCallback(() => {
+    const channel = webrtcCommitChannelRef.current;
+
+    if (!channel || channel.readyState !== "open" || !audioCommitGateRef.current.turnHasSpeech) {
+      return;
+    }
+
+    resetAudioTurnDetection();
+    channel.send(WEBRTC_COMMIT_MESSAGE);
+  }, [resetAudioTurnDetection]);
 
   const startInputAudioMeter = useCallback(
     (stream: MediaStream) => {
@@ -1362,6 +1379,42 @@ export function useRealtimeLiveSession({
     ],
   );
 
+  useEffect(() => {
+    setMicrophoneEnabledRef.current = setMicrophoneEnabled;
+  }, [setMicrophoneEnabled]);
+
+  const startTalking = useCallback(() => {
+    if (!pushToTalkRef.current || talkingRef.current) {
+      return;
+    }
+
+    talkingRef.current = true;
+    setIsTalking(true);
+    setMicrophoneEnabled(true);
+  }, [setMicrophoneEnabled]);
+
+  const stopTalking = useCallback(() => {
+    if (!talkingRef.current) {
+      return;
+    }
+
+    talkingRef.current = false;
+    setIsTalking(false);
+    setMicrophoneEnabled(false);
+    commitWebRTCAudioNow();
+  }, [commitWebRTCAudioNow, setMicrophoneEnabled]);
+
+  useEffect(() => {
+    if (pushToTalkRef.current === pushToTalk) {
+      return;
+    }
+
+    pushToTalkRef.current = pushToTalk;
+    talkingRef.current = false;
+    setIsTalking(false);
+    setMicrophoneEnabledRef.current(!pushToTalk);
+  }, [pushToTalk]);
+
   const setVideoEnabled = useCallback(
     (enabled: boolean) => {
       const nextEnabled =
@@ -1475,6 +1528,7 @@ export function useRealtimeLiveSession({
     isActive: status === "active",
     isConnecting: status === "connecting",
     isMicrophoneEnabled,
+    isTalking,
     isVideoEnabled,
     lastEvent,
     lastTranscript,
@@ -1486,8 +1540,10 @@ export function useRealtimeLiveSession({
     setProvider: changeProvider,
     setVideoEnabled,
     start,
+    startTalking,
     status,
     stop,
+    stopTalking,
     videoPreviewStream,
   };
 }
