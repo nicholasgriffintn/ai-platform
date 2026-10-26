@@ -16,7 +16,7 @@ Settling a delegation always stores its summary, outputs, citations and outstand
 
 Conversation briefs and any additional memory bindings are explicit revisioned document references. A child run receives only the resolved bindings recorded on its delegation. It never gains ambient access to other personal or project memory.
 
-Every invocation resolves through the same teammate execution boundary. A teammate context supplies its personal or project home conversation, exact connector account-and-operation grants, assigned routines and optional hosted computer. Colleague and bot remain behaviour choices; they do not grant or remove authority.
+Every invocation resolves through the same teammate execution boundary. A teammate context supplies its personal, project or workspace home conversation, exact connector account-and-operation grants, assigned routines and optional hosted computer. Colleague and bot remain behaviour choices; they do not grant or remove authority.
 
 Hosted computer use is a separate graphical workload from the coding sandbox. It uses short-lived control leases with monotonically increasing fences, durable profile checkpoints and an explicit user-takeover state. Connector grants and computer leases are revalidated at each I/O boundary rather than trusted from the model prompt or an earlier run snapshot.
 
@@ -25,3 +25,7 @@ The delegate tool and queue path must use the same authorisation, tool intersect
 ## Consequences
 
 There is one run engine and one event protocol to operate, while parent, child and teammate-home histories remain separately addressable. Delegation adds join, grant and workload records, but avoids a second execution runtime or a compatibility path for the retired runtime. Increasing depth or fan-out, broadening connector grants, or allowing unattended graphical writes is a deliberate contract change with new security and recovery review.
+
+## Amendment: sub-tasks replace delegation in Work
+
+Work runs do not get the `delegate` tool. A teammate in Work hands work on by creating or assigning tasks, which are durable, visible and reviewable, inherit the parent task's responsible person, and are bounded by task depth, project concurrency and budgets. `delegate` remains for Chat, where bounded fan-out within one turn still fits.

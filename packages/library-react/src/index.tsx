@@ -61,6 +61,7 @@ export * from "./hooks/usePolyAgenda.js";
 export * from "./hooks/useProjectCapabilityCatalog.js";
 export * from "./hooks/useProjectConversationSources.js";
 export * from "./hooks/useProjectTasks.js";
+export * from "./hooks/useWork.js";
 export * from "./hooks/useProjectTaskIntegrations.js";
 export * from "./hooks/useProjectWorkbenchControls.js";
 export * from "./hooks/useProjectWorkbenchEvidence.js";

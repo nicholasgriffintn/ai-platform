@@ -4,6 +4,8 @@ import { operationIsGranted } from "@ngriffin_uk/polychat-library-policy";
 import {
   isPolyTeammateId,
   PROJECT_TASK_INTERACTION_TOOL_IDS,
+  PROJECT_TASK_TOOL_IDS,
+  WORK_TASK_TOOL_IDS,
   teammateRunConfigurationSchema,
   readToolIds,
   type ChatRun,
@@ -209,6 +211,9 @@ export async function enqueueTeammateRun({
     ...new Set([
       ...(readToolIds(teammate.enabled_tools) ?? []),
       ...(resolvedInvocation?.source === "project_task" ? PROJECT_TASK_INTERACTION_TOOL_IDS : []),
+      ...(preparedInvocation?.resolution.context?.scope.type === "workspace"
+        ? [...PROJECT_TASK_TOOL_IDS, ...WORK_TASK_TOOL_IDS]
+        : []),
     ]),
   ];
   const isPolyTeammate = isPolyTeammateId(teammate.id);

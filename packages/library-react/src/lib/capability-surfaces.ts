@@ -78,7 +78,7 @@ export function getSkillEditorPath(surface: CapabilitySurface, skillId: string):
 }
 
 export function getConversationPath(surface: CapabilitySurface): string {
-  return surface.projectId ? `${surface.basePath}/chat` : surface.basePath;
+  return surface.basePath;
 }
 
 export function getPluginsPath(surface: CapabilitySurface): string {

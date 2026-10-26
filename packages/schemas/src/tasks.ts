@@ -45,6 +45,7 @@ export const SOURCE_MEDIA_TRANSCRIPTION_TASK_TYPE = "source_media_transcription"
 export const SOURCE_PODCAST_GENERATION_TASK_TYPE = "source_podcast_generation";
 export const SOURCE_LISTEN_TASK_TYPE = "source_listen";
 export const WEBHOOK_DELIVERY_TASK_TYPE = "webhook_delivery";
+export const WORK_TEAMMATE_WAKE_TASK_TYPE = "work_teammate_wake";
 
 export const TASK_TYPES = [
   "memory_synthesis",
@@ -90,9 +91,35 @@ export const TASK_TYPES = [
   MODEL_PLATFORM_RECONCILE_TASK_TYPE,
   BENCHMARK_RUN_TASK_TYPE,
   WEBHOOK_DELIVERY_TASK_TYPE,
+  WORK_TEAMMATE_WAKE_TASK_TYPE,
   NOTEBOOK_JOB_TASK_TYPE,
   DISCOVER_JOB_TASK_TYPE,
 ] as const;
+
+export const WORK_WAKE_REASONS = [
+  "assigned",
+  "mentioned",
+  "review",
+  "heartbeat",
+  "standup",
+  "standup_summary",
+  "escalation",
+  "setup",
+  "blocker_cleared",
+  "report_blocked",
+] as const;
+export const workWakeReasonSchema = z.enum(WORK_WAKE_REASONS);
+export type WorkWakeReason = z.infer<typeof workWakeReasonSchema>;
+
+export const workTeammateWakeTaskDataSchema = z.object({
+  workspaceId: z.string().min(1),
+  teammateId: z.string().min(1),
+  projectId: z.string().min(1),
+  reason: workWakeReasonSchema,
+  taskId: z.string().min(1).nullable(),
+  detail: z.string().max(4000).nullable(),
+});
+export type WorkTeammateWakeTaskData = z.infer<typeof workTeammateWakeTaskDataSchema>;
 
 export const teammateRunReconciliationTaskDataSchema = z.object({
   runId: z.string().min(1),

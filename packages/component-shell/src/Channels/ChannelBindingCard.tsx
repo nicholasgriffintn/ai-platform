@@ -10,6 +10,12 @@ import { useState } from "react";
 
 import { CopyButton } from "../Content/CopyButton.js";
 
+const INTERACTION_MODE_LABELS: Record<ChannelBinding["interactionMode"], string> = {
+  automated: "Replies when needed",
+  direct: "Replies to each message",
+  cases: "Opens cases in Triage",
+};
+
 const CHANNEL_LABELS: Record<ChannelBinding["channel"], string> = {
   slack: "Slack",
   telegram: "Telegram",
@@ -50,10 +56,7 @@ export function ChannelBindingCard({
               {binding.label ?? binding.externalId}
             </h3>
             <p className="text-xs text-muted-foreground">
-              {CHANNEL_LABELS[binding.channel]} ·{" "}
-              {binding.interactionMode === "automated"
-                ? "Replies when needed"
-                : "Replies to each message"}
+              {CHANNEL_LABELS[binding.channel]} · {INTERACTION_MODE_LABELS[binding.interactionMode]}
             </p>
             <p className="text-xs break-all text-muted-foreground">{binding.externalId}</p>
             {binding.contactAddress && (

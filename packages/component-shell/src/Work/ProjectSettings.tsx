@@ -13,6 +13,7 @@ import { ProjectHomeTabs } from "./ProjectHomeTabs.js";
 import { ProjectKnowledgeCard } from "./ProjectKnowledgeCard.js";
 import { ProjectRoutingCard } from "./ProjectRoutingCard.js";
 import { ProjectSchedulesCard } from "./ProjectSchedulesCard.js";
+import { ProjectStandupCard } from "./ProjectStandupCard.js";
 import { useWorkData } from "./WorkDataContext.js";
 import { WorkPageFailure } from "./WorkPageFailure.js";
 
@@ -50,8 +51,8 @@ export function ProjectSettings({
     <PageShell.Content className="max-w-4xl">
       <PageShell.Header title={`${project.name} settings`} />
       <p className="mb-6 max-w-2xl text-sm text-muted-foreground">
-        How this project briefs its teammates, which model tier it runs on, what it knows, and what
-        runs on a schedule.
+        How this project briefs its teammates, which model tier it runs on, what it knows, its
+        standup, and what runs on a schedule.
       </p>
       <ProjectHomeTabs workspaceId={workspaceId} projectId={projectId} />
 
@@ -76,6 +77,7 @@ export function ProjectSettings({
           capabilities={project.capabilities}
           members={workspace?.members ?? []}
         />
+        <ProjectStandupCard projectId={projectId} canManage={canManage} />
         <ProjectCodingEnvironmentCard embedded canManage={canManage} project={project} />
         <ChannelConnections projectId={projectId} canManage={canManage} />
         <ProjectTeammatesCard

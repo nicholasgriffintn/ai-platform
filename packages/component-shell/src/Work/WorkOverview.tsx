@@ -88,8 +88,8 @@ export function WorkOverview() {
           <EmptyState
             icon={<BriefcaseBusiness className="text-muted-foreground" size={24} />}
             title="No workspaces yet"
-            message="Create a workspace to organise projects and invite other people."
-            action={<Button onClick={() => setIsCreateOpen(true)}>Create workspace</Button>}
+            message="Describe your organisation and a lead teammate proposes projects, a team and first tasks for you to approve."
+            action={<Button onClick={() => setIsCreateOpen(true)}>New workspace</Button>}
             className="min-h-[260px]"
           />
         )}
@@ -110,7 +110,7 @@ export function WorkOverview() {
               {unread === 1 ? "1 unread notification" : `${unread} unread notifications`}
             </p>
             <ButtonLink href={getPlacePaths("work").attention} variant="outline" size="sm">
-              Open Attention
+              Open Inbox
             </ButtonLink>
           </div>
         ) : null}

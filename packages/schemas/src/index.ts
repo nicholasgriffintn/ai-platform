@@ -162,6 +162,7 @@ export * from "./pets.js";
 export * from "./platform-teammates.js";
 export * from "./project-starters.js";
 export * from "./project-tasks.js";
+export * from "./work-organisation.js";
 export * from "./project-workflows.js";
 export * from "./provenance.js";
 export * from "./run-provenance.js";

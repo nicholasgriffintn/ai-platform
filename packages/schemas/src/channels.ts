@@ -14,6 +14,9 @@ export const channelReactionLevelSchema = z
 
 export type ChannelReactionLevel = z.infer<typeof channelReactionLevelSchema>;
 
+export const channelInteractionModeSchema = z.enum(["direct", "automated", "cases"]);
+export type ChannelInteractionMode = z.infer<typeof channelInteractionModeSchema>;
+
 export const channelBindingScopeSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("personal") }),
   z.object({ type: z.literal("project"), projectId: z.string().min(1) }),
@@ -27,7 +30,7 @@ export const channelBindingSchema = z.object({
   externalId: z.string(),
   label: z.string().nullable(),
   teammateId: z.string().nullable(),
-  interactionMode: z.enum(["direct", "automated"]),
+  interactionMode: channelInteractionModeSchema,
   reactionLevel: channelReactionLevelSchema,
   enabled: z.boolean(),
   createdAt: z.string(),
@@ -49,7 +52,7 @@ export const createChannelBindingSchema = z
     projectId: z.string().min(1).optional(),
     label: z.string().trim().min(1).max(120).optional(),
     teammateId: z.string().min(1).optional(),
-    interactionMode: z.enum(["direct", "automated"]).default("automated"),
+    interactionMode: channelInteractionModeSchema.default("automated"),
     reactionLevel: channelReactionLevelSchema.default("ack"),
   })
   .refine(
@@ -61,6 +64,10 @@ export const createChannelBindingSchema = z
       path: ["externalId"],
     },
   )
+  .refine((binding) => binding.interactionMode !== "cases" || Boolean(binding.projectId), {
+    message: "Only a project channel can open cases",
+    path: ["interactionMode"],
+  })
   .refine(
     (binding) =>
       binding.channel !== "email" ||

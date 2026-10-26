@@ -10,10 +10,11 @@ import { humaniseIdentifier, humaniseUsageSource } from "./usage-display";
 
 export interface UsageSummaryCardProps {
   summary: UsageSummaryResponse;
-  projectRows?: SummaryRow[];
+  projectRows?: UsageSummaryRow[];
+  groups?: { title: string; rows: UsageSummaryRow[] }[];
 }
 
-interface SummaryRow {
+export interface UsageSummaryRow {
   key: string;
   label: string;
   credits: number;
@@ -27,7 +28,7 @@ function SummaryGroup({
   totalCredits,
 }: {
   title: string;
-  rows: SummaryRow[];
+  rows: UsageSummaryRow[];
   totalCredits: number;
 }) {
   if (rows.length === 0) {
@@ -61,7 +62,7 @@ function SummaryGroup({
   );
 }
 
-export function UsageSummaryCard({ summary, projectRows }: UsageSummaryCardProps) {
+export function UsageSummaryCard({ summary, projectRows, groups = [] }: UsageSummaryCardProps) {
   const totalCredits = summary.totals.credits;
 
   const sourceRows = summary.by_source.map((group) => ({
@@ -95,6 +96,14 @@ export function UsageSummaryCard({ summary, projectRows }: UsageSummaryCardProps
           {projectRows && (
             <SummaryGroup title="By project" rows={projectRows} totalCredits={totalCredits} />
           )}
+          {groups.map((group) => (
+            <SummaryGroup
+              key={group.title}
+              title={group.title}
+              rows={group.rows}
+              totalCredits={totalCredits}
+            />
+          ))}
         </div>
       )}
     </SettingsSection>

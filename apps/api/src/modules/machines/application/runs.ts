@@ -57,7 +57,14 @@ export async function callMachineRun(
       );
     });
 
-    if (!isMachineOnline(machine) || !runtimeAvailable) {
+    if (!isMachineOnline(machine)) {
+      throw new AssistantError(
+        `Waiting for ${user.name ?? "its owner"} to bring ${machine.label} back online. Open Polychat on that machine to carry on.`,
+        ErrorType.PARAMS_ERROR,
+      );
+    }
+
+    if (!runtimeAvailable) {
       throw new AssistantError(
         "kind" in input && input.kind === "tool"
           ? "That folder is not available on this machine right now."

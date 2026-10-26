@@ -9,6 +9,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { forgetDeviceActivity } from "~/modules/discover/application/device-documents";
 import type { StoredMachine } from "~/modules/machines/infrastructure/MachineRepository";
 import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
+import { releaseMachineWaitingTasks } from "~/modules/project-tasks/application/runner";
 import { publishMachineEvent } from "~/modules/sync/application/conversation-events";
 import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 
@@ -47,6 +48,7 @@ export async function heartbeatMachine(
 
   await context.repositories.get(MachineRepository).upsert(id, heartbeat);
   publishMachineEvent(context, id, heartbeat.machineId);
+  await releaseMachineWaitingTasks(context, id);
 
   const machine = (await context.repositories.get(MachineRepository).listForUser(id)).find(
     (candidate) => candidate.machineId === heartbeat.machineId,

@@ -29,6 +29,8 @@ import { TaskNotificationRepository } from "~/modules/task-notifications/infrast
 import { requireProjectAccess, requireWorkAccess } from "~/modules/workspaces/application/access";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
+import { handBlockedTaskToManager } from "./report-handoff";
+
 const DEFAULT_ATTENTION_LIMIT = 50;
 
 interface TaskAttentionState {
@@ -300,6 +302,10 @@ export async function reconcileTaskNotifications(
   }
 
   try {
+    if (await handBlockedTaskToManager(context, task)) {
+      return;
+    }
+
     const mobileKind =
       state.kind === "completion" ? "completed" : state.kind === "blocked" ? "failed" : state.kind;
 

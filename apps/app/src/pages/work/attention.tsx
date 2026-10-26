@@ -2,10 +2,10 @@ import { AttentionPage } from "@ngriffin_uk/polychat-component-shell";
 
 export function meta() {
   return [
-    { title: "Attention - Polychat" },
+    { title: "Inbox - Polychat" },
     {
       name: "description",
-      content: "Everything waiting on you across every workspace you can access.",
+      content: "Decisions, approvals and updates waiting on you across your workspaces.",
     },
   ];
 }

@@ -33,6 +33,7 @@ import {
   requireOwnedTeammateContext,
   requireTeammateContext,
 } from "./contexts";
+import { resolveProjectTeammateScope } from "./work-scope";
 
 export interface ResolvedTeammateInvocation {
   invocation: TeammateInvocation;
@@ -189,7 +190,7 @@ export async function resolveTeammateInvocation(
               context,
               options.expectedTeammateId,
               projectId
-                ? { type: "project", id: projectId }
+                ? await resolveProjectTeammateScope(context, options.expectedTeammateId, projectId)
                 : { type: "personal", id: String(user.id) },
             );
 
@@ -267,7 +268,9 @@ export async function resolveTeammateInvocation(
       const teammateContext = await ensureActiveTeammateContext(
         context,
         binding.teammate_id,
-        projectId ? { type: "project", id: projectId } : { type: "personal", id: String(user.id) },
+        projectId
+          ? await resolveProjectTeammateScope(context, binding.teammate_id, projectId)
+          : { type: "personal", id: String(user.id) },
       );
 
       return {
@@ -321,7 +324,11 @@ export async function resolveTeammateInvocation(
       const teammateContext = await ensureActiveTeammateContext(
         context,
         options.expectedTeammateId,
-        { type: "project", id: invocation.projectId },
+        await resolveProjectTeammateScope(
+          context,
+          options.expectedTeammateId,
+          invocation.projectId,
+        ),
       );
 
       return {

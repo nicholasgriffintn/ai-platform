@@ -280,3 +280,51 @@ export function partOfDay(hour: number): PartOfDay {
 
   return hour < 18 ? "afternoon" : "evening";
 }
+
+const WEEKDAY_INDEX: Record<string, number> = {
+  Sun: 0,
+  Mon: 1,
+  Tue: 2,
+  Wed: 3,
+  Thu: 4,
+  Fri: 5,
+  Sat: 6,
+};
+
+export function readZonedClock(
+  date: Date,
+  timeZone: string,
+): { weekday: number; time: string; date: string } {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone,
+      weekday: "short",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    })
+      .formatToParts(date)
+      .map((part) => [part.type, part.value]),
+  );
+
+  return {
+    weekday: WEEKDAY_INDEX[parts.weekday ?? "Mon"] ?? 1,
+    time: `${parts.hour}:${parts.minute}`,
+    date: `${parts.year}-${parts.month}-${parts.day}`,
+  };
+}
+
+export function parseStoredTimestamp(value: string | null | undefined): number {
+  if (!value) {
+    return 0;
+  }
+
+  const parsed = Date.parse(value.includes("T") ? value : `${value.replace(" ", "T")}Z`);
+
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+export const SHORT_WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;

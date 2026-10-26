@@ -115,6 +115,11 @@ export async function getWorkspace(
     name: workspace.name,
     description: workspace.description,
     colour: workspace.colour,
+    mission: workspace.mission ?? "",
+    monthlyCreditCapMicros: workspace.monthly_credit_cap_micros ?? null,
+    leadTeammateId: workspace.lead_teammate_id ?? null,
+    setupProjectId: workspace.setup_project_id ?? null,
+    setupTaskId: workspace.setup_task_id ?? null,
     role,
     memberCount: members.length,
     projectCount: projects.length,
@@ -313,7 +318,15 @@ export async function updateWorkspace(
   const user = context.requireUser();
 
   await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
-  await context.repositories.get(WorkspaceRepository).updateWorkspace(workspaceId, input);
+  const { mission, monthlyCreditCapMicros, ...workspaceFields } = input;
+
+  await context.repositories.get(WorkspaceRepository).updateWorkspace(workspaceId, {
+    ...workspaceFields,
+    ...(mission !== undefined ? { mission } : {}),
+    ...(monthlyCreditCapMicros !== undefined
+      ? { monthly_credit_cap_micros: monthlyCreditCapMicros }
+      : {}),
+  });
   await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
     actorUserId: user.id,
@@ -525,6 +538,7 @@ export async function createProject(
     defaultModelTier: input.defaultModelTier,
     codingEnvironment: input.codingEnvironment,
     createdBy: user.id,
+    taskPrefix: input.taskPrefix,
   });
   await context.repositories.get(AuditRepository).createRecord({
     workspaceId,
@@ -556,7 +570,7 @@ export async function updateProject(
 ) {
   const user = context.requireUser();
   const { project } = await requireProjectAccess(context, projectId, ["owner", "admin"]);
-  const { codingEnvironment, defaultModelTier, ...projectFields } = input;
+  const { codingEnvironment, defaultModelTier, taskPrefix, ...projectFields } = input;
 
   if (codingEnvironment !== undefined) {
     await validateProjectCodingEnvironment(context, user.id, codingEnvironment);
@@ -598,6 +612,7 @@ export async function updateProject(
 
   await context.repositories.get(WorkspaceRepository).updateProject(projectId, {
     ...projectFields,
+    ...(taskPrefix !== undefined ? { task_prefix: taskPrefix } : {}),
     ...(defaultModelTier === undefined ? {} : { default_model_tier: defaultModelTier }),
     ...codingUpdates,
   });

@@ -471,6 +471,41 @@ final class APIClient: ObservableObject {
         )
     }
 
+    func fetchWorkInbox() async throws -> [WorkInboxItem] {
+        let response: WorkInboxResponse = try await send(path: "/attention/inbox", method: "GET")
+        return response.items
+    }
+
+    func decideHire(workspaceId: String, teammateId: String, approve: Bool) async throws {
+        let _: WorkAcknowledgement = try await send(
+            path: "/workspaces/\(workspaceId)/team/\(teammateId)/decision",
+            method: "POST",
+            body: HireDecisionRequest(decision: approve ? "approve" : "reject")
+        )
+    }
+
+    func approveCurrentSetupPlan(workspaceId: String) async throws {
+        let state: WorkSetupState = try await send(path: "/workspaces/\(workspaceId)/setup", method: "GET")
+        guard let setup = state.setup, setup.appliedAt == nil else { return }
+        let _: WorkAcknowledgement = try await send(
+            path: "/workspaces/\(workspaceId)/setup/approve",
+            method: "POST",
+            body: SetupApprovalRequest(revision: setup.revision)
+        )
+    }
+
+    func fetchStandupDraft(projectId: String, taskId: String) async throws -> StandupAnswers {
+        try await send(path: "/projects/\(projectId)/tasks/\(taskId)/standup_draft", method: "GET")
+    }
+
+    func answerStandup(projectId: String, taskId: String, answers: StandupAnswers) async throws {
+        let _: WorkAcknowledgement = try await send(
+            path: "/projects/\(projectId)/tasks/\(taskId)/answer_standup",
+            method: "POST",
+            body: answers
+        )
+    }
+
     func fetchBackgroundTasks() async throws -> [BackgroundTask] {
         let response: BackgroundTaskListResponse = try await send(path: "/tasks", method: "GET")
         return response.tasks

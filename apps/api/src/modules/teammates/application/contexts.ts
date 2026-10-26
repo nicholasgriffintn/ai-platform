@@ -20,9 +20,13 @@ import { ProviderConnectionRepository } from "~/modules/connectors/infrastructur
 import { formatMemoryDocument } from "~/modules/memory-documents/application/memory-documents";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
-import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import {
+  requireProjectAccess,
+  requireWorkspaceAccess,
+} from "~/modules/workspaces/application/access";
 
 import { requireScopedTeammateAccess, requireTeammateAccess } from "./access";
+import { carryProjectContextsIntoWorkspace } from "./work-scope";
 
 async function requireContextScope(
   context: ServiceContext,
@@ -33,6 +37,12 @@ async function requireContextScope(
     if (scope.id !== String(userId)) {
       throw new AssistantError("Personal teammate scope is unavailable", ErrorType.FORBIDDEN, 403);
     }
+
+    return;
+  }
+
+  if (scope.type === "workspace") {
+    await requireWorkspaceAccess(context, scope.id);
 
     return;
   }
@@ -88,7 +98,7 @@ export async function ensureTeammateContext(
   const memoryDocumentId = generateId();
 
   try {
-    return await context.repositories.get(TeammateContextRepository).createWithResources({
+    const created = await context.repositories.get(TeammateContextRepository).createWithResources({
       id: contextId,
       teammateId,
       actorUserId: user.id,
@@ -99,6 +109,12 @@ export async function ensureTeammateContext(
       memoryDocumentId,
       memoryDocumentName: `teammate-${generateId().toLowerCase()}`,
     });
+
+    if (scope.type === "workspace") {
+      await carryProjectContextsIntoWorkspace(context, created);
+    }
+
+    return created;
   } catch (error) {
     const raced = await context.repositories.get(TeammateContextRepository).getByIdentity({
       teammateId,

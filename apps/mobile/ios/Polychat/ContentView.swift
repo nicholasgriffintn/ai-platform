@@ -54,7 +54,7 @@ private struct RootTabView: View {
                 ChatsView(path: $chatsPath, mode: $chatsMode)
             }
 
-            Tab("Attention", systemImage: "bell", value: AppTab.attention) {
+            Tab("Inbox", systemImage: "tray", value: AppTab.attention) {
                 AttentionView(selectedTarget: $workTarget, onOpenConversation: openConversation)
             }
             .badge(attentionStore.badgeCount(inboxUnread: notificationManager.unread))

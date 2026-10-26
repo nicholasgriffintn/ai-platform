@@ -101,6 +101,8 @@ export const projectSummarySchema = z.object({
   defaultModelTier: modelTierSchema.nullable().optional(),
   codingEnvironment: projectCodingEnvironmentSchema.nullable(),
   environmentCache: sandboxEnvironmentCacheSummarySchema.nullable().optional(),
+  taskPrefix: z.string().nullable().default(null),
+  initiativeId: z.string().nullable().default(null),
 });
 
 export const workspaceSummarySchema = z.object({
@@ -108,6 +110,11 @@ export const workspaceSummarySchema = z.object({
   name: z.string(),
   description: z.string(),
   colour: z.string(),
+  mission: z.string().default(""),
+  monthlyCreditCapMicros: z.number().int().positive().nullable().default(null),
+  leadTeammateId: z.string().nullable().default(null),
+  setupProjectId: z.string().nullable().default(null),
+  setupTaskId: z.string().nullable().default(null),
   role: workspaceRoleSchema,
   memberCount: z.number().int().nonnegative(),
   projectCount: z.number().int().nonnegative(),
@@ -136,13 +143,22 @@ export const createWorkspaceSchema = z.object({
 });
 
 export const updateWorkspaceSchema = z
-  .object(workspaceFields)
+  .object({
+    ...workspaceFields,
+    mission: z.string().trim().max(1000),
+    monthlyCreditCapMicros: z.number().int().positive().nullable(),
+  })
   .partial()
   .refine((value) => Object.keys(value).length > 0, {
     error: "At least one workspace field must be provided",
   });
 
 const projectFields = {
+  taskPrefix: z
+    .string()
+    .trim()
+    .regex(/^[A-Z]{2,5}$/)
+    .optional(),
   defaultModelTier: modelTierSchema.nullable().optional(),
   name: z.string().trim().min(2).max(100),
   description: z.string().trim().max(1000),

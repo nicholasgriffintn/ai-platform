@@ -3,7 +3,6 @@ import {
   addProjectCapability,
   archiveProject,
   createProject,
-  createWorkspace,
   deleteWorkspace,
   getProject,
   getWorkspace,
@@ -18,7 +17,6 @@ import {
 import type {
   AddProjectCapabilityInput,
   CreateProjectInput,
-  CreateWorkspaceInput,
   CreateWorkspaceInvitationInput,
   ProjectDetail,
   ProjectSummary,
@@ -55,6 +53,8 @@ function projectSummaryFromDetail(project: ProjectDetail): ProjectSummary {
     capabilityCount: project.capabilityCount,
     codingEnvironment: project.codingEnvironment,
     environmentCache: project.environmentCache,
+    taskPrefix: project.taskPrefix,
+    initiativeId: project.initiativeId,
   };
 }
 
@@ -64,6 +64,11 @@ function workspaceSummaryFromDetail(workspace: WorkspaceDetail): WorkspaceSummar
     name: workspace.name,
     description: workspace.description,
     colour: workspace.colour,
+    mission: workspace.mission,
+    monthlyCreditCapMicros: workspace.monthlyCreditCapMicros,
+    leadTeammateId: workspace.leadTeammateId,
+    setupProjectId: workspace.setupProjectId,
+    setupTaskId: workspace.setupTaskId,
     role: workspace.role,
     memberCount: workspace.memberCount,
     projectCount: workspace.projectCount,
@@ -115,16 +120,6 @@ function addProjectToWorkspaceCaches(queryClient: QueryClient, project: ProjectD
         ? { ...workspace, projectCount: workspace.projectCount + 1 }
         : workspace,
     );
-  });
-}
-
-function addWorkspaceToListCache(queryClient: QueryClient, workspace: WorkspaceDetail) {
-  queryClient.setQueryData<WorkspaceListData>(WORKSPACES_QUERY_KEY, (data) => {
-    if (!data || data.some((item) => item.id === workspace.id)) {
-      return data;
-    }
-
-    return [workspaceSummaryFromDetail(workspace), ...data];
   });
 }
 
@@ -213,18 +208,6 @@ export function useProject(projectId?: string, workspaceId?: string) {
     enabled: Boolean(projectId) && isAuthenticated && isPro,
     staleTime: WORK_QUERY_STALE_TIME,
     gcTime: WORK_QUERY_GC_TIME,
-  });
-}
-
-export function useCreateWorkspace() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (input: CreateWorkspaceInput) => createWorkspace(input),
-    onSuccess: (workspace) => {
-      queryClient.setQueryData(workspaceQueryKey(workspace.id), workspace);
-      addWorkspaceToListCache(queryClient, workspace);
-    },
   });
 }
 

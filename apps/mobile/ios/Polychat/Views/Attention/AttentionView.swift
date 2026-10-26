@@ -5,9 +5,13 @@ struct AttentionView: View {
     @EnvironmentObject private var inbox: TaskNotificationManager
     @Binding var selectedTarget: MobileWorkTarget?
     let onOpenConversation: (String) -> Void
+    @State private var standupItem: WorkInboxItem?
+    @State private var standupAnswers: StandupAnswers?
+    @State private var decidingItemId: String?
 
     private var isEmpty: Bool {
-        store.workItems.isEmpty && inbox.items.isEmpty && store.visibleBackgroundTasks.isEmpty
+        store.workItems.isEmpty && store.decisions.isEmpty && inbox.items.isEmpty
+            && store.visibleBackgroundTasks.isEmpty
     }
 
     var body: some View {
@@ -19,6 +23,29 @@ struct AttentionView: View {
                     }
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
+                }
+
+                if !store.decisions.isEmpty {
+                    Section {
+                        ForEach(store.decisions) { item in
+                            WorkDecisionRow(
+                                item: item,
+                                isBusy: decidingItemId == item.id,
+                                onApproveHire: { decide(item) { await store.decideHire(item, approve: true) } },
+                                onRejectHire: { decide(item) { await store.decideHire(item, approve: false) } },
+                                onApproveSetup: { decide(item) { await store.approveSetup(item) } },
+                                onAnswerStandup: { openStandup(item) }
+                            )
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                if let target = item.target, item.kind == "escalation" {
+                                    selectedTarget = target
+                                }
+                            }
+                        }
+                    } header: {
+                        sectionHeader("Waiting on you", count: store.decisions.count)
+                    }
                 }
 
                 if !store.actionableItems.isEmpty {
@@ -99,7 +126,16 @@ struct AttentionView: View {
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
             .background(Color.polychat.background)
-            .navigationTitle("Attention")
+            .navigationTitle("Inbox")
+            .sheet(item: $standupItem) { item in
+                if let answers = standupAnswers {
+                    StandupAnswerSheet(item: item, answers: answers) { sent in
+                        let ok = await store.answerStandup(item, answers: sent)
+                        await publish()
+                        return ok
+                    }
+                }
+            }
             .refreshable { await refresh() }
             .task { await refresh() }
             .overlay {
@@ -131,6 +167,24 @@ struct AttentionView: View {
 
     private func publish() async {
         await store.publish(inboxUnread: inbox.unread)
+    }
+
+    private func decide(_ item: WorkInboxItem, action: @escaping () async -> Void) {
+        decidingItemId = item.id
+        Task {
+            await action()
+            decidingItemId = nil
+            await publish()
+        }
+    }
+
+    private func openStandup(_ item: WorkInboxItem) {
+        Task {
+            standupAnswers = await store.standupDraft(for: item)
+            if standupAnswers != nil {
+                standupItem = item
+            }
+        }
     }
 
     private func open(_ item: TaskInboxItem) {

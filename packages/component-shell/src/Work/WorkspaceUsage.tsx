@@ -1,11 +1,18 @@
 import { UsageSummaryCard } from "@ngriffin_uk/polychat-component-account";
 import { Button, Card, Input } from "@ngriffin_uk/polychat-component-ui";
-import { useWorkspaceUsage, workspaceProjectUsageRows } from "@ngriffin_uk/polychat-library-react";
 import {
+  useWorkCosts,
+  useWorkspaceUsage,
+  workspaceProjectUsageRows,
+} from "@ngriffin_uk/polychat-library-react";
+import {
+  creditsFromCreditMicros,
   usagePeriodFromDate,
   usagePeriodSchema,
   type ProjectSummary,
+  type WorkSpendRow,
 } from "@ngriffin_uk/polychat-schemas";
+import { formatCredits } from "@ngriffin_uk/polychat-utility-core";
 import { useId, useState } from "react";
 
 export function WorkspaceUsage({
@@ -18,15 +25,34 @@ export function WorkspaceUsage({
   const [period, setPeriod] = useState(usagePeriodFromDate);
   const inputId = useId();
   const query = useWorkspaceUsage(workspaceId, period, true);
+  const costs = useWorkCosts(workspaceId, period);
+  const toRows = (rows: readonly WorkSpendRow[], withCap = false) =>
+    rows.map((row) => ({
+      key: row.id,
+      label:
+        withCap && row.capCreditMicros
+          ? `${row.name} · cap ${formatCredits(creditsFromCreditMicros(row.capCreditMicros))}`
+          : row.name,
+      credits: creditsFromCreditMicros(row.creditMicros),
+      cost_micros: row.costMicros,
+      event_count: row.runCount,
+    }));
+  const groups = costs.data
+    ? [
+        { title: "By teammate", rows: toRows(costs.data.teammates, true) },
+        { title: "By initiative", rows: toRows(costs.data.initiatives) },
+        { title: "Most expensive tasks", rows: toRows(costs.data.tasks.slice(0, 10)) },
+      ]
+    : [];
 
   return (
     <section className="mb-8 space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold">Workspace usage</h2>
           <p className="max-w-2xl text-sm text-muted-foreground">
-            Recorded spend for this workspace. Each person pays from their own account. Usage may be
-            delayed or estimated; provider costs include BYOK usage.
+            Recorded spend for this workspace, including every teammate run. Each person pays from
+            their own account. Usage may be delayed or estimated, and provider costs include your
+            own keys.
           </p>
         </div>
         <div className="flex items-end gap-2">
@@ -69,6 +95,7 @@ export function WorkspaceUsage({
         <UsageSummaryCard
           summary={query.data}
           projectRows={workspaceProjectUsageRows(query.data, projects)}
+          groups={groups}
         />
       ) : null}
     </section>

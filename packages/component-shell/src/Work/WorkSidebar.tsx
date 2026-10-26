@@ -1,38 +1,18 @@
-import {
-  ConversationList,
-  ConversationListControls,
-  ConversationListSection,
-  DEFAULT_WORK_CONVERSATION_LIST_FILTERS,
-} from "@ngriffin_uk/polychat-component-navigation";
-import { ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
+import { SidebarShell } from "@ngriffin_uk/polychat-component-ui";
 import { WorkSidebarNav } from "@ngriffin_uk/polychat-component-workspaces";
-import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
 import {
-  useTaskAttention,
-  useStartNewChat,
-  getProjectBasePath,
-  getProjectChatPath,
-  getProjectConversationPath,
-  isProjectConversationPath,
-  buildConversationSections,
-  getNotebookPath,
   getPlacePaths,
-  getProjectSurface,
-  matchNotebookId,
-  useNotebooks,
+  getProjectBasePath,
+  useProjectTasks,
+  useTaskAttention,
   useUIStore,
+  useWorkInbox,
 } from "@ngriffin_uk/polychat-library-react";
-import { useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router";
-import { useShallow } from "zustand/react/shallow";
+import { useLocation, useNavigate } from "react-router";
 
-import { ConversationGroupsDialog } from "../Conversations/ConversationGroupsDialog.js";
-import { ConversationItemActions } from "../Conversations/ConversationItemActions.js";
-import { RenameConversationDialog } from "../Conversations/RenameConversationDialog.js";
 import { SidebarFooter } from "../Sidebar/SidebarFooter.js";
 import { SidebarHeader } from "../Sidebar/SidebarHeader.js";
 import { useSidebarPeekPanel } from "../Sidebar/SidebarPeekContext.js";
-import { useProjectConversationActions } from "./useProjectConversationActions.js";
 import { useWorkData } from "./WorkDataContext.js";
 
 interface WorkSidebarProps {
@@ -40,100 +20,28 @@ interface WorkSidebarProps {
   projectId?: string;
 }
 
-const EMPTY_CONVERSATIONS: NonNullable<
-  ReturnType<typeof useWorkData>["projectQuery"]["data"]
->["conversations"] = [];
-
 export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
-  const {
-    sidebarVisible,
-    setSidebarVisible,
-    isMobile,
-    workConversationListFilters,
-    setWorkConversationListFilters,
-    resetWorkConversationListFilters,
-  } = useUIStore();
+  const { sidebarVisible, setSidebarVisible, isMobile } = useUIStore();
   const { peeking, panelProps } = useSidebarPeekPanel();
-  const { workspacesQuery, workspaceQuery, projectQuery } = useWorkData();
+  const { workspacesQuery, workspaceQuery } = useWorkData();
   const { data } = workspacesQuery;
   const { data: workspace } = workspaceQuery;
-  const { data: project } = projectQuery;
-  const [conversationForGroups, setConversationForGroups] = useState<string | null>(null);
-  const { pathname } = useLocation();
-  const { conversationId: pathConversationId } = useParams<"conversationId">();
   const navigate = useNavigate();
-  const startNewChat = useStartNewChat();
-  const { clearCurrentConversation, currentConversationId, setCurrentConversationId } =
-    useChatStore();
-  const activeConversationId =
-    pathConversationId ??
-    project?.conversations.find((conversation) => conversation.id === currentConversationId)?.id;
+  const { pathname, search } = useLocation();
   const { items: attentionItems, unread: unreadAttention } = useTaskAttention();
-  const projectConversations = project?.conversations ?? EMPTY_CONVERSATIONS;
-  const conversationStreams = useStreamActivityStore(
-    useShallow((state) =>
-      projectConversations.map((conversation) => state.streams[conversation.id]?.status),
-    ),
-  );
+  const inbox = useWorkInbox();
+  const projectTasks = useProjectTasks(projectId ?? "");
+  const workPlaces = getPlacePaths("work");
+  const projectBasePath = getProjectBasePath(workspaceId ?? "", projectId ?? "");
   const projectAttentionCount = projectId
     ? attentionItems.filter((item) => item.projectId === projectId).length
     : 0;
-  const canManageGroups = workspace?.role === "owner" || workspace?.role === "admin";
-  const { data: notebooks } = useNotebooks(projectId, Boolean(projectId));
-  const activeNotebookId = matchNotebookId(pathname);
-  const workPlaces = getPlacePaths("work");
-  const projectBasePath = getProjectBasePath(workspaceId ?? "", projectId ?? "");
-  const projectChatPath = getProjectChatPath(workspaceId ?? "", projectId ?? "");
-  const isConversationRoute = isProjectConversationPath(pathname);
-  const {
-    confirmDeleteConversation,
-    conversationToDelete,
-    deletePending,
-    conversationToRename,
-    renameConversation,
-    renamePending,
-    requestRenameConversation,
-    setConversationToRename,
-    requestDeleteConversation,
-    setConversationToDelete,
-  } = useProjectConversationActions({
-    activeConversationId,
-    projectChatPath,
-    refreshProject: projectQuery.refetch,
-  });
-  const conversationSections = buildConversationSections(
-    projectConversations.map((conversation, index) => ({
-      id: conversation.id,
-      type: conversation.type,
-      title: conversation.title,
-      createdAt: conversation.createdAt,
-      updatedAt: conversation.updatedAt,
-      lastMessageAt: conversation.lastMessageAt,
-      isStreaming: conversationStreams[index] === "streaming",
-      needsInput:
-        attentionItems.some(
-          (item) => item.kind === "input" && item.conversationId === conversation.id,
-        ) || conversationStreams[index] === "action-required",
-      isPinned: conversation.isPinned,
-      isUnread: conversation.isUnread,
-      group: conversation.group,
-    })),
-    {
-      groupBy: workConversationListFilters.groupBy,
-      sortBy: workConversationListFilters.sortBy,
-      notebooks: notebooks ?? [],
-    },
-  );
-
-  const selectConversation = (conversationId: string | undefined) => {
-    if (!conversationId) {
-      return;
-    }
-
-    setCurrentConversationId(conversationId);
-    void navigate(getProjectConversationPath(workspaceId ?? "", projectId ?? "", conversationId));
-    closeOnMobile();
-  };
+  const isTriageView = new URLSearchParams(search).get("view") === "triage";
+  const isProjectTasksPath =
+    pathname === projectBasePath || pathname.startsWith(`${projectBasePath}/tasks`);
+  const triageCount = projectTasks.tasks.filter(
+    (task) => task.kind === "case" && task.status === "backlog",
+  ).length;
 
   const closeOnMobile = () => {
     if (isMobile) {
@@ -153,11 +61,10 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
       footer={<SidebarFooter />}
     >
       <WorkSidebarNav
+        inboxHref={workPlaces.attention}
+        inboxCount={unreadAttention + (inbox.data?.data.length ?? 0)}
+        myTasksHref={`${workPlaces.conversations}/tasks`}
         workspacesHref={workPlaces.conversations}
-        attentionHref={
-          projectId ? `${workPlaces.attention}?projectId=${projectId}` : workPlaces.attention
-        }
-        attentionCount={unreadAttention}
         workspace={
           workspace
             ? {
@@ -165,6 +72,10 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
                 name: workspace.name,
                 role: workspace.role,
                 projectsHref: `/work/${workspace.id}`,
+                initiativesHref: `/work/${workspace.id}/initiatives`,
+                teamHref: `/work/${workspace.id}/team`,
+                costsHref: `/work/${workspace.id}/costs`,
+                activityHref: `/work/${workspace.id}/activity`,
                 membersHref: `/work/${workspace.id}/members`,
                 governanceHref: `/work/${workspace.id}/governance`,
                 modelsHref: `/work/${workspace.id}/models`,
@@ -172,6 +83,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
                   id: item.id,
                   name: item.name,
                   colour: item.colour,
+                  prefix: item.taskPrefix,
                   href: `/work/${workspace.id}/projects/${item.id}`,
                 })),
               }
@@ -181,65 +93,15 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
         project={
           projectId && workspaceId
             ? {
-                newConversationHref: projectChatPath,
+                tasksHref: projectBasePath,
+                tasksActive: isProjectTasksPath && !isTriageView,
+                triageHref: `${projectBasePath}?view=triage`,
+                triageActive: isProjectTasksPath && isTriageView,
+                triageCount,
                 sitesHref: `${projectBasePath}/apps/sites`,
                 filesHref: `${projectBasePath}/files`,
-                tasksHref: `${projectBasePath}/tasks`,
+                settingsHref: `${projectBasePath}/settings`,
                 attentionCount: projectAttentionCount,
-                activityHref: `${projectBasePath}/activity`,
-                teammatesHref: `${projectBasePath}/teammates`,
-                pluginsHref: `${projectBasePath}/plugins`,
-                scheduledHref: `${projectBasePath}/scheduled`,
-                modelsHref: `${projectBasePath}/models`,
-                conversationList: (
-                  <div className="-mx-2 pt-3">
-                    <ConversationListSection
-                      isEmpty={(project?.conversations.length ?? 0) === 0}
-                      controls={
-                        <ConversationListControls
-                          defaults={DEFAULT_WORK_CONVERSATION_LIST_FILTERS}
-                          filters={workConversationListFilters}
-                          showListFilters={false}
-                          onFiltersChange={setWorkConversationListFilters}
-                          onReset={resetWorkConversationListFilters}
-                        />
-                      }
-                    >
-                      <ConversationList
-                        sections={conversationSections}
-                        activeConversationId={activeConversationId}
-                        isConversationRoute={isConversationRoute}
-                        onSelect={selectConversation}
-                        activeNotebookId={activeNotebookId}
-                        onOpenNotebook={(notebookId) => {
-                          if (workspaceId && projectId) {
-                            void navigate(
-                              getNotebookPath(
-                                getProjectSurface(workspaceId, projectId),
-                                notebookId,
-                              ),
-                            );
-                          }
-
-                          closeOnMobile();
-                        }}
-                        renderItemActions={(conversation) => (
-                          <ConversationItemActions
-                            conversation={conversation}
-                            projectId={projectId}
-                            canOrganise
-                            canManageGroups={canManageGroups}
-                            onEditTitle={requestRenameConversation}
-                            onDelete={requestDeleteConversation}
-                            onManageGroups={setConversationForGroups}
-                          />
-                        )}
-                      />
-                    </ConversationListSection>
-                  </div>
-                ),
-                isConversationRoute,
-                activeConversationId,
               }
             : undefined
         }
@@ -253,34 +115,16 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
             : undefined
         }
         onNavigate={closeOnMobile}
-        onNewChat={() => {
-          startNewChat();
+        onNewTask={() => {
+          void navigate(
+            projectId && workspaceId
+              ? `${projectBasePath}?new=1`
+              : workspaceId
+                ? `/work/${workspaceId}`
+                : `${workPlaces.conversations}/tasks`,
+          );
           closeOnMobile();
         }}
-        onNewConversation={clearCurrentConversation}
-      />
-
-      <ConfirmationDialog
-        open={conversationToDelete !== null}
-        onOpenChange={(open) => !open && setConversationToDelete(null)}
-        title="Delete conversation"
-        description="Are you sure you want to delete this conversation? This action cannot be undone."
-        confirmText="Delete"
-        variant="destructive"
-        onConfirm={confirmDeleteConversation}
-        isLoading={deletePending}
-      />
-      <RenameConversationDialog
-        target={conversationToRename}
-        isSaving={renamePending}
-        onOpenChange={(open) => !open && setConversationToRename(null)}
-        onRename={renameConversation}
-      />
-      <ConversationGroupsDialog
-        conversationId={conversationForGroups}
-        projectId={projectId}
-        canManageGroups={canManageGroups}
-        onOpenChange={(open) => !open && setConversationForGroups(null)}
       />
     </SidebarShell>
   );

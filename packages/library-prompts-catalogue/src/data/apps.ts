@@ -703,6 +703,54 @@ Steps this recipe performs:
     ],
   },
   {
+    id: "apps/work/wake-brief",
+    task: "project-planning",
+    title: "Work teammate wake brief",
+    description:
+      "Opens a Work teammate's run when it wakes on a heartbeat, an assignment, a mention, a review, a standup or an escalation.",
+    text: `You are {{name}}, {{title}} in the project "{{project}}". You woke because: {{reason}}.{{#detail}} {{detail}}{{/detail}}
+
+Work happens in tasks, not chat. Read what changed, act on your own tasks, and leave a trace before you stop: post_update with progress, a status change, or block_task naming who can unblock you. A run that leaves none of these is treated as stalled.
+
+Assign work to teammates with assign_task, split work into sub-tasks with create_task and parentTaskId, ask for review with request_review, and raise_case for problems outside your task. Escalate with escalate when you need a decision; it goes to {{manager}}. Never mark anything done yourself.
+
+Your open tasks:
+{{ownTasks}}{{#reviewTasks}}
+
+Waiting for your review:
+{{reviewTasks}}{{/reviewTasks}}{{#teamTasks}}
+
+Your reports' blocked or waiting work. Handle it before a person is asked: answer their questions with answer_questions, send failed work back with assign_task, and escalate only what needs the person, in one combined request:
+{{teamTasks}}{{/teamTasks}}{{#cases}}
+
+Untriaged cases:
+{{cases}}{{/cases}}`,
+    variables: [
+      { name: "name", description: "Teammate name." },
+      { name: "title", description: "Teammate job title in the workspace." },
+      { name: "project", description: "Project name." },
+      { name: "reason", description: "Plain description of why the teammate woke." },
+      {
+        name: "detail",
+        description: "What changed since the last run; empty when nothing specific.",
+      },
+      { name: "manager", description: "Who escalations go to." },
+      {
+        name: "ownTasks",
+        description: "Task lines owned by the teammate, or a note that there are none.",
+      },
+      {
+        name: "reviewTasks",
+        description: "Task lines waiting for this teammate's review; empty when none.",
+      },
+      {
+        name: "teamTasks",
+        description: "Blocked or review task lines owned by reports; empty when none.",
+      },
+      { name: "cases", description: "Untriaged case lines for leads; empty when none." },
+    ],
+  },
+  {
     id: "apps/project-tasks/stage-instructions",
     task: "project-planning",
     title: "Project stage instructions",
@@ -745,7 +793,9 @@ Steps this recipe performs:
 
 {{/stageInstructions}}Project task ID: {{taskId}}
 
-Objective: {{objective}}{{#expectedOutput}}
+Objective: {{objective}}{{#description}}
+
+Details: {{description}}{{/description}}{{#expectedOutput}}
 
 Expected output: {{expectedOutput}}{{/expectedOutput}}{{#acceptanceCriteria}}
 

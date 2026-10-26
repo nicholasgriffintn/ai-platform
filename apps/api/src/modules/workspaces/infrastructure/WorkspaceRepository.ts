@@ -10,6 +10,7 @@ import {
   LISTED_CONVERSATION_TYPES,
   sandboxDeliveryPolicyCreatesCommit,
 } from "@ngriffin_uk/polychat-schemas";
+import { deriveTaskPrefix } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { escapeSqlLikePattern } from "@ngriffin_uk/polychat-utility-server/sql";
 
@@ -21,6 +22,12 @@ export interface WorkspaceRow {
   name: string;
   description: string;
   colour: string;
+  mission?: string;
+  monthly_credit_cap_micros?: number | null;
+  lead_teammate_id?: string | null;
+  setup_project_id?: string | null;
+  setup_task_id?: string | null;
+  setup_plan?: string | null;
   created_by: number;
   created_at: string;
   updated_at: string | null;
@@ -89,6 +96,11 @@ export interface ProjectRow {
   coding_timeout_seconds?: number;
   coding_inspection_window_seconds?: number;
   flow?: string | null;
+  task_prefix?: string | null;
+  task_sequence?: number;
+  initiative_id?: string | null;
+  standup?: string | null;
+  standup_last_run_at?: string | null;
   created_by: number;
   archived_at: string | null;
   created_at: string;
@@ -218,6 +230,16 @@ export class WorkspaceRepository extends BaseRepository {
     );
   }
 
+  async listProjectsWithStandup(): Promise<ProjectRow[]> {
+    return this.runQuery<ProjectRow>(
+      `SELECT p.*, 0 AS conversation_count, 0 AS capability_count
+       FROM project p
+       WHERE p.archived_at IS NULL AND p.standup IS NOT NULL
+         AND json_extract(p.standup, '$.enabled') = 1`,
+      [],
+    );
+  }
+
   async getWorkspace(workspaceId: string): Promise<WorkspaceRow | null> {
     return this.runQuery<WorkspaceRow>("SELECT * FROM workspace WHERE id = ?", [workspaceId], true);
   }
@@ -298,7 +320,17 @@ export class WorkspaceRepository extends BaseRepository {
     const result = this.buildUpdateQuery(
       "workspace",
       updates,
-      ["name", "description", "colour"],
+      [
+        "name",
+        "description",
+        "colour",
+        "mission",
+        "monthly_credit_cap_micros",
+        "lead_teammate_id",
+        "setup_project_id",
+        "setup_task_id",
+        "setup_plan",
+      ],
       "id = ?",
       [workspaceId],
     );
@@ -487,6 +519,7 @@ export class WorkspaceRepository extends BaseRepository {
     defaultModelTier?: ModelTier | null;
     codingEnvironment?: ProjectCodingEnvironment | null;
     createdBy: number;
+    taskPrefix?: string;
   }): Promise<void> {
     await this.executeRun(
       `INSERT INTO project
@@ -495,8 +528,8 @@ export class WorkspaceRepository extends BaseRepository {
 				 coding_execution_provider,
 				 coding_prompt_strategy, coding_should_commit, coding_delivery_policy,
 				 coding_environment_setup, coding_environment_cache, coding_cache_generation,
-				 coding_timeout_seconds, coding_inspection_window_seconds, created_by, default_model_tier)
-				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				 coding_timeout_seconds, coding_inspection_window_seconds, created_by, default_model_tier, task_prefix)
+				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         params.id,
         params.workspaceId,
@@ -522,6 +555,7 @@ export class WorkspaceRepository extends BaseRepository {
         params.codingEnvironment?.inspectionWindowSeconds ?? 0,
         params.createdBy,
         params.defaultModelTier ?? null,
+        params.taskPrefix ?? deriveTaskPrefix(params.name),
       ],
     );
   }
@@ -550,8 +584,8 @@ export class WorkspaceRepository extends BaseRepository {
 					  coding_execution_provider,
 					  coding_prompt_strategy, coding_should_commit, coding_delivery_policy,
 					  coding_environment_setup, coding_environment_cache, coding_cache_generation,
-					  coding_timeout_seconds, coding_inspection_window_seconds, created_by, default_model_tier)
-					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+					  coding_timeout_seconds, coding_inspection_window_seconds, created_by, default_model_tier, task_prefix)
+					 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           params.id,
@@ -578,6 +612,7 @@ export class WorkspaceRepository extends BaseRepository {
           params.codingEnvironment?.inspectionWindowSeconds ?? 0,
           params.createdBy,
           params.defaultModelTier ?? null,
+          params.taskPrefix ?? deriveTaskPrefix(params.name),
         ),
       ...capabilities.map((capability) =>
         database
@@ -652,6 +687,10 @@ export class WorkspaceRepository extends BaseRepository {
         "coding_inspection_window_seconds",
         "flow",
         "archived_at",
+        "task_prefix",
+        "initiative_id",
+        "standup",
+        "standup_last_run_at",
       ],
       "id = ?",
       [projectId],

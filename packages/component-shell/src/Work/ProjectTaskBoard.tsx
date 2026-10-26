@@ -1,15 +1,20 @@
-import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { Button, cn, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import {
   CreateTaskDialog,
   FlowEditorDialog,
+  ProjectHomeActions,
   TaskBoard,
+  WorkQuickAdd,
+  WorkTaskList,
+  WorkTaskTimeline,
+  WorkTaskTree,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
+  useArchiveProject,
   useCapabilityCatalog,
   getTeammateSettingsPath,
   getProjectSurface,
-  getProjectConversationPath,
   NEW_TEAMMATE_ID,
   projectTaskSkills,
 } from "@ngriffin_uk/polychat-library-react";
@@ -17,14 +22,32 @@ import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
+import { toast } from "sonner";
 
 import { PageShell } from "../Shell/PageShell.js";
 import { useQueryDialog } from "../utils/useQueryDialog.js";
 import { ProjectHomeHeader } from "./ProjectHomeHeader.js";
 import { ProjectTaskIntegrationsControl } from "./ProjectTaskIntegrationsControl.js";
 import { useProjectTaskBoardActions } from "./useProjectTaskBoardActions.js";
+import { useProjectTemplateSave } from "./useProjectTemplateSave.js";
+import { useWorkDirectory } from "./useWorkDirectory.js";
 import { useWorkData } from "./WorkDataContext.js";
 import { WorkPageFailure } from "./WorkPageFailure.js";
+
+const VIEWS = [
+  { id: "list", label: "List" },
+  { id: "board", label: "Board" },
+  { id: "tree", label: "Tree" },
+  { id: "timeline", label: "Timeline" },
+  { id: "triage", label: "Triage" },
+] as const;
+
+type TaskView = (typeof VIEWS)[number]["id"];
+
+function readView(value: string | null): TaskView {
+  return VIEWS.find((view) => view.id === value)?.id ?? "list";
+}
 
 export function ProjectTaskBoard({
   workspaceId,
@@ -33,9 +56,16 @@ export function ProjectTaskBoard({
   workspaceId: string;
   projectId: string;
 }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = readView(searchParams.get("view"));
   const [isCreateOpen, setIsCreateOpen] = useQueryDialog("new");
   const [isFlowOpen, setIsFlowOpen] = useState(false);
+  const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+  const navigate = useNavigate();
+  const archiveProject = useArchiveProject();
   const { projectQuery, workspaceQuery } = useWorkData();
+  const { directory, team } = useWorkDirectory(workspaceId);
+  const saveTemplate = useProjectTemplateSave(workspaceId, projectQuery.data ?? null);
   const capabilityCatalog = useCapabilityCatalog(projectId);
   const teammates = capabilityCatalog.data?.teammates ?? [];
   const skills = projectTaskSkills(projectQuery.data?.capabilities, capabilityCatalog.data?.skills);
@@ -70,23 +100,44 @@ export function ProjectTaskBoard({
     );
   }
 
-  const members = (workspaceQuery.data?.members ?? []).map((member) => ({
-    userId: member.userId,
-    name: member.name,
-  }));
+  const members = [...directory.people];
   const pendingTaskIds = [
     ...(start.isPending && typeof start.variables === "string" ? [start.variables] : []),
     ...(accept.isPending && typeof accept.variables === "string" ? [accept.variables] : []),
   ];
-  const canManageFlow =
-    workspaceQuery.data?.role === "owner" || workspaceQuery.data?.role === "admin";
+  const canManage = workspaceQuery.data?.role === "owner" || workspaceQuery.data?.role === "admin";
   const basePath = `/work/${workspaceId}/projects/${projectId}`;
+  const taskHref = (task: Pick<ProjectTask, "id">) => `${basePath}/tasks/${task.id}`;
+  const visibleTasks = tasks.filter((task) => task.kind !== "standup" || task.status !== "done");
+  const workTasks = visibleTasks.filter((task) => task.kind !== "case");
+  const cases = visibleTasks.filter((task) => task.kind === "case");
+  const lead = team.find(
+    (teammate) =>
+      teammate.isLead && teammate.status === "active" && teammate.projectIds.includes(projectId),
+  );
+  const quickAdd = async (text: string) => {
+    try {
+      await create.mutateAsync({
+        objective: text,
+        ...(lead ? { owner: { type: "teammate" as const, id: lead.teammateId } } : {}),
+      });
+      toast.success(lead ? `Added and handed to ${lead.name}` : "Added to the backlog");
+    } catch (mutationError) {
+      toast.error(getErrorMessage(mutationError, "Unable to add that task"));
+    }
+  };
 
-  const taskHref = (task: ProjectTask) => `${basePath}/tasks/${task.id}`;
-  const conversationHref = (task: ProjectTask) =>
-    task.conversationId
-      ? getProjectConversationPath(workspaceId, projectId, task.conversationId)
-      : null;
+  const setView = (next: TaskView) => {
+    const params = new URLSearchParams(searchParams);
+
+    if (next === "list") {
+      params.delete("view");
+    } else {
+      params.set("view", next);
+    }
+
+    setSearchParams(params, { replace: true });
+  };
 
   return (
     <>
@@ -95,30 +146,76 @@ export function ProjectTaskBoard({
           workspaceId={workspaceId}
           projectId={projectId}
           actions={
-            <Button
-              variant="primary"
-              size="sm"
-              collapseLabel
-              className="shrink-0"
-              aria-label="Add a task"
-              title="Add a task"
-              icon={<Plus size={16} />}
-              onClick={() => setIsCreateOpen(true)}
-            >
-              Add a task
-            </Button>
+            <div className="flex items-center gap-1">
+              <ProjectHomeActions
+                canManage={canManage}
+                settingsPath={`${basePath}/settings`}
+                isSavingTemplate={saveTemplate.isSaving}
+                onArchive={() => setIsArchiveOpen(true)}
+                onSaveTemplate={() => void saveTemplate.save()}
+              />
+              <Button
+                variant="primary"
+                size="sm"
+                collapseLabel
+                className="shrink-0"
+                aria-label="Add a task"
+                title="Add a task"
+                icon={<Plus size={16} />}
+                onClick={() => setIsCreateOpen(true)}
+              >
+                Add a task
+              </Button>
+            </div>
           }
         />
-        <p className="mb-6 max-w-3xl text-sm text-muted-foreground">
-          Route outcomes through specialist teammates, watch live work, and step in only when a
-          stage needs review or approval.
-        </p>
+
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <div
+            role="tablist"
+            aria-label="Task views"
+            className="flex gap-0.5 rounded-md bg-selection/60 p-0.5"
+          >
+            {VIEWS.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                role="tab"
+                aria-selected={view === option.id}
+                className={cn(
+                  "rounded px-3 py-1 text-xs",
+                  view === option.id
+                    ? "bg-surface text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+                onClick={() => setView(option.id)}
+              >
+                {option.label}
+                {option.id === "triage" && cases.some((task) => task.status === "backlog")
+                  ? ` · ${cases.filter((task) => task.status === "backlog").length}`
+                  : ""}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <WorkQuickAdd
+            placeholder={
+              lead
+                ? `Ask for something and ${lead.name} will route it…`
+                : "Describe a task and press Enter…"
+            }
+            isSubmitting={create.isPending}
+            onSubmit={quickAdd}
+          />
+        </div>
 
         <ProjectTaskIntegrationsControl
           key={projectId}
           projectId={projectId}
           taskBasePath={`${basePath}/tasks`}
-          canManage={canManageFlow}
+          canManage={canManage}
         />
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Loading project tasks…</p>
@@ -126,21 +223,39 @@ export function ProjectTaskBoard({
           <p role="alert" className="text-sm text-failure">
             {error.message}
           </p>
-        ) : (
+        ) : view === "board" ? (
           <TaskBoard
-            tasks={tasks}
+            tasks={workTasks}
             flow={flow}
             members={members}
             teammates={teammates}
             pendingTaskIds={pendingTaskIds}
             taskHref={taskHref}
-            conversationHref={conversationHref}
+            conversationHref={() => null}
             onStartTask={(task) => void runTask(task)}
             onAcceptTask={(task) => void acceptTask(task)}
             onCreateTask={() => setIsCreateOpen(true)}
             onConfigureFlow={() => setIsFlowOpen(true)}
             canCreateTask
-            canManageFlow={canManageFlow}
+            canManageFlow={canManage}
+          />
+        ) : view === "tree" ? (
+          <WorkTaskTree tasks={workTasks} directory={directory} taskHref={taskHref} />
+        ) : view === "timeline" ? (
+          <WorkTaskTimeline tasks={workTasks} directory={directory} taskHref={taskHref} />
+        ) : view === "triage" ? (
+          <WorkTaskList
+            tasks={cases}
+            directory={directory}
+            taskHref={taskHref}
+            emptyMessage="No cases. Problems raised by people, teammates or outside requests land here."
+          />
+        ) : (
+          <WorkTaskList
+            tasks={workTasks}
+            directory={directory}
+            taskHref={taskHref}
+            emptyMessage="No tasks yet. Ask for something above to get started."
           />
         )}
       </PageShell.Content>
@@ -162,7 +277,7 @@ export function ProjectTaskBoard({
         flow={flow}
         teammates={teammates}
         skills={skills}
-        capabilitiesHref={`${basePath}/teammates`}
+        capabilitiesHref={`/work/${workspaceId}/team`}
         createTeammateHref={getTeammateSettingsPath(
           getProjectSurface(workspaceId, projectId),
           NEW_TEAMMATE_ID,
@@ -172,6 +287,26 @@ export function ProjectTaskBoard({
         onOpenChange={setIsFlowOpen}
         onSave={saveProjectFlow}
       />
+
+      <ConfirmationDialog
+        open={isArchiveOpen}
+        onOpenChange={setIsArchiveOpen}
+        title="Archive project"
+        description={`Archive ${projectQuery.data?.name ?? "this project"}. Its tasks will no longer appear in this workspace.`}
+        confirmText="Archive project"
+        variant="destructive"
+        isLoading={archiveProject.isPending}
+        onConfirm={async () => {
+          await archiveProject.mutateAsync({ workspaceId, projectId });
+          void navigate(`/work/${workspaceId}`, { replace: true });
+        }}
+      >
+        {archiveProject.error && (
+          <p role="alert" className="text-sm text-failure">
+            {archiveProject.error.message}
+          </p>
+        )}
+      </ConfirmationDialog>
     </>
   );
 }

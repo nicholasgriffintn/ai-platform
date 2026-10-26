@@ -1,10 +1,13 @@
 import {
+  projectTaskPrioritySchema,
   projectTaskStatusLabels,
   type Goal,
   type ProjectTask,
   type ProjectTaskStatus,
+  type ProjectTaskThreadPost,
+  type UserQuestionSet,
 } from "@ngriffin_uk/polychat-schemas";
-import { readTrimmedStringArray } from "@ngriffin_uk/polychat-utility-core";
+import { readTrimmedStringArray, truncateText } from "@ngriffin_uk/polychat-utility-core";
 
 import {
   createProjectTask,
@@ -12,8 +15,8 @@ import {
   listProjectTasks,
   updateProjectTask,
 } from "~/modules/project-tasks/application";
-import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
-import type { IRequest } from "~/types";
+import { assignTask } from "~/modules/project-tasks/application/work";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import {
@@ -23,8 +26,11 @@ import {
   update_task as update_taskDescriptor,
   MODEL_SETTABLE_STATUSES,
 } from "./definitions/projectTasks";
+import { readText, requireProjectId, resolveWorkActor, resolveWorkToolScope } from "./scope";
 
 const MAX_LISTED_TASKS = 25;
+const THREAD_EXCERPT_POSTS = 8;
+const THREAD_EXCERPT_CHARS = 600;
 
 function formatTask(task: ProjectTask): string {
   const stage = task.stageId ? ` [${task.stageId}]` : "";
@@ -33,11 +39,21 @@ function formatTask(task: ProjectTask): string {
     : "";
   const blocked = task.blockedDetail ? ` — ${task.blockedDetail}` : "";
 
-  return `${task.id}${stage}: ${task.objective}${criteria} (${projectTaskStatusLabels[task.status]})${blocked}`;
+  return `${task.key ?? task.id}${stage}: ${task.objective}${criteria} (${projectTaskStatusLabels[task.status]})${blocked}`;
 }
 
-function formatTaskDetail(task: ProjectTask, goal: Goal | null): string {
+function formatTaskDetail(params: {
+  task: ProjectTask;
+  goal: Goal | null;
+  pendingQuestions: UserQuestionSet | null;
+  thread: readonly ProjectTaskThreadPost[];
+}): string {
+  const { task, goal, pendingQuestions, thread } = params;
   const lines = [formatTask(task)];
+
+  if (task.description) {
+    lines.push(`Details: ${task.description}`);
+  }
 
   if (task.expectedOutput) {
     lines.push(`Expected output: ${task.expectedOutput}`);
@@ -87,36 +103,58 @@ function formatTaskDetail(task: ProjectTask, goal: Goal | null): string {
     }
   }
 
-  return lines.join("\n");
-}
+  if (pendingQuestions) {
+    lines.push(
+      `Waiting on answers (interaction ${pendingQuestions.interactionId}):`,
+      ...pendingQuestions.questions.map((question) => {
+        const options = question.options.map((option) => option.label).join(" / ");
 
-function requireProjectId(request: IRequest): string {
-  const projectId = resolveRequestProjectId(request);
-
-  if (!projectId) {
-    throw new Error(
-      "Project task tools are only available in a project conversation. Ask the person to open the project first.",
+        return `- [${question.id}] ${question.prompt}${options ? ` (options: ${options})` : ""}`;
+      }),
     );
   }
 
-  return projectId;
+  const recent = thread.filter((post) => post.kind !== "event").slice(-THREAD_EXCERPT_POSTS);
+
+  if (recent.length > 0) {
+    lines.push(
+      "Recent thread:",
+      ...recent.map(
+        (post) =>
+          `- ${post.author.name}: ${truncateText(post.body.replaceAll("\n", " "), THREAD_EXCERPT_CHARS)}`,
+      ),
+    );
+  }
+
+  return lines.join("\n");
+}
+
+function readDueAt(value: unknown): string | null {
+  const text = readText(value);
+
+  return text && !Number.isNaN(Date.parse(text)) ? new Date(text).toISOString() : null;
 }
 
 export const create_task: ApiToolDefinition = {
   ...create_taskDescriptor,
   execute: async (args, toolContext) => {
-    const request = toolContext.request;
-    const projectId = requireProjectId(request);
+    const scope = await resolveWorkToolScope(toolContext.request);
+    const parentReference = readText(args.parentTaskId);
+    const parent = parentReference
+      ? await scope.context.repositories
+          .get(ProjectTaskRepository)
+          .getTaskByReference(scope.projectId, parentReference)
+      : null;
 
-    if (!request.context) {
-      throw new Error("Signed-in project context is required for project task tools");
+    if (parentReference && !parent) {
+      throw new Error(`There is no task ${parentReference} on this board.`);
     }
 
     const { task } = await createProjectTask(
-      request.context,
-      projectId,
+      scope.context,
+      scope.projectId,
       {
-        objective: String(args.objective ?? "").trim(),
+        objective: readText(args.objective),
         acceptanceCriteria: Array.isArray(args.acceptanceCriteria)
           ? args.acceptanceCriteria
               .filter((entry): entry is string => typeof entry === "string" && entry.trim() !== "")
@@ -126,17 +164,30 @@ export const create_task: ApiToolDefinition = {
         killConditions: readTrimmedStringArray(args.killConditions).map((condition) => ({
           condition,
         })),
-        expectedOutput: typeof args.expectedOutput === "string" ? args.expectedOutput.trim() : null,
-        stageId: typeof args.stageId === "string" ? args.stageId : null,
+        expectedOutput: readText(args.expectedOutput) || null,
+        stageId: readText(args.stageId) || null,
+        description: readText(args.description) || null,
+        parentTaskId: parent?.id ?? null,
+        priority: projectTaskPrioritySchema.safeParse(args.priority).data ?? "none",
+        dueAt: readDueAt(args.dueAt),
       },
-      { source: "model" },
+      { source: scope.caller.actor.type === "teammate" ? "model" : "user" },
     );
+    const owned = readText(args.owner)
+      ? await assignTask(
+          scope.context,
+          scope.projectId,
+          task.id,
+          await resolveWorkActor(scope, args.owner),
+          scope.caller,
+        )
+      : task;
 
     return {
       status: "success",
       name: "create_task",
-      content: `Added to the work queue: ${formatTask(task)}`,
-      data: { task },
+      content: `Added to the work queue: ${formatTask(owned)}`,
+      data: { task: owned },
     };
   },
 };
@@ -181,12 +232,19 @@ export const get_task: ApiToolDefinition = {
       throw new Error("Signed-in project context is required for project task tools");
     }
 
-    const result = await getProjectTask(request.context, projectId, String(args.taskId ?? ""));
+    const reference = await request.context.repositories
+      .get(ProjectTaskRepository)
+      .getTaskByReference(projectId, readText(args.taskId));
+    const result = await getProjectTask(
+      request.context,
+      projectId,
+      reference?.id ?? readText(args.taskId),
+    );
 
     return {
       status: "success",
       name: "get_task",
-      content: formatTaskDetail(result.task, result.goal),
+      content: formatTaskDetail(result),
       data: result,
     };
   },
@@ -207,10 +265,13 @@ export const update_task: ApiToolDefinition = {
       MODEL_SETTABLE_STATUSES.includes(args.status as ProjectTaskStatus)
         ? (args.status as ProjectTaskStatus)
         : undefined;
+    const reference = await request.context.repositories
+      .get(ProjectTaskRepository)
+      .getTaskByReference(projectId, readText(args.taskId));
     const { task } = await updateProjectTask(
       request.context,
       projectId,
-      String(args.taskId ?? ""),
+      reference?.id ?? readText(args.taskId),
       {
         ...(typeof args.objective === "string" ? { objective: args.objective.trim() } : {}),
         ...(Array.isArray(args.acceptanceCriteria)
@@ -237,6 +298,13 @@ export const update_task: ApiToolDefinition = {
             }
           : {}),
         ...(status ? { status } : {}),
+        ...(typeof args.description === "string"
+          ? { description: args.description.trim() || null }
+          : {}),
+        ...(projectTaskPrioritySchema.safeParse(args.priority).success
+          ? { priority: projectTaskPrioritySchema.parse(args.priority) }
+          : {}),
+        ...(readDueAt(args.dueAt) ? { dueAt: readDueAt(args.dueAt) } : {}),
       },
       { actor: "model" },
     );

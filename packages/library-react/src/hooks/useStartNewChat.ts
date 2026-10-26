@@ -2,7 +2,7 @@ import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useCallback } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
-import { getProjectChatPath } from "../lib/conversation-route.js";
+import { getProjectNewTaskPath } from "../lib/conversation-route.js";
 import { getProductMode, MODE_BASE_PATHS } from "../lib/navigation/places.js";
 import { useUIStore } from "../state/stores/uiStore.js";
 import { useTrackEvent } from "./use-track-event.js";
@@ -27,7 +27,7 @@ export function useStartNewChat() {
 
     if (mode === "work" && workspaceId && projectId) {
       clearCurrentConversation();
-      void navigate(getProjectChatPath(workspaceId, projectId));
+      void navigate(getProjectNewTaskPath(workspaceId, projectId));
 
       return;
     }

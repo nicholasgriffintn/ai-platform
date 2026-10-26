@@ -329,3 +329,64 @@ struct ProjectConversation: Decodable, Identifiable, Equatable {
         return conversation
     }
 }
+
+struct WorkInboxItem: Decodable, Identifiable, Hashable {
+    let id: String
+    let kind: String
+    let workspaceId: String
+    let projectId: String?
+    let taskId: String?
+    let teammateId: String?
+    let title: String
+    let detail: String?
+    let since: String
+    let deepLink: String
+
+    var target: MobileWorkTarget? {
+        guard let projectId, let taskId else { return nil }
+        return MobileWorkTarget(
+            workspaceId: workspaceId,
+            projectId: projectId,
+            conversationId: nil,
+            taskId: taskId,
+            runId: nil,
+            interactionId: nil
+        )
+    }
+}
+
+struct WorkInboxResponse: Decodable {
+    let items: [WorkInboxItem]
+
+    enum CodingKeys: String, CodingKey {
+        case items = "data"
+    }
+}
+
+struct WorkAcknowledgement: Decodable {}
+
+struct WorkSetupState: Decodable {
+    struct Setup: Decodable {
+        let revision: Int
+        let appliedAt: String?
+    }
+
+    let setup: Setup?
+}
+
+struct StandupAnswer: Codable, Hashable {
+    let question: String
+    var answer: String
+}
+
+struct StandupAnswers: Codable {
+    var answers: [StandupAnswer]
+}
+
+struct HireDecisionRequest: Encodable {
+    let decision: String
+}
+
+struct SetupApprovalRequest: Encodable {
+    let revision: Int
+}

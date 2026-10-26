@@ -4,6 +4,7 @@ import UserNotifications
 @MainActor
 final class AttentionStore: ObservableObject {
     @Published private(set) var workItems: [WorkAttentionItem] = []
+    @Published private(set) var decisions: [WorkInboxItem] = []
     @Published private(set) var backgroundTasks: [BackgroundTask] = []
     @Published private(set) var isLoading = false
     @Published private(set) var workUnavailable = false
@@ -29,7 +30,7 @@ final class AttentionStore: ObservableObject {
     }
 
     func badgeCount(inboxUnread: Int) -> Int {
-        actionableItems.count + inboxUnread
+        actionableItems.count + decisions.count + inboxUnread
     }
 
     func refresh(inboxUnread: Int) async {
@@ -38,7 +39,8 @@ final class AttentionStore: ObservableObject {
 
         async let work = loadWork()
         async let tasks = loadBackgroundTasks()
-        _ = await (work, tasks)
+        async let inbox = loadDecisions()
+        _ = await (work, tasks, inbox)
 
         await publish(inboxUnread: inboxUnread)
     }
@@ -55,7 +57,61 @@ final class AttentionStore: ObservableObject {
         )
     }
 
+    func decideHire(_ item: WorkInboxItem, approve: Bool) async {
+        guard let teammateId = item.teammateId else { return }
+        do {
+            try await apiClient.decideHire(workspaceId: item.workspaceId, teammateId: teammateId, approve: approve)
+            decisions.removeAll { $0.id == item.id }
+        } catch {
+            self.error = "That hire could not be decided: \(error.localizedDescription)"
+        }
+    }
+
+    func approveSetup(_ item: WorkInboxItem) async {
+        do {
+            try await apiClient.approveCurrentSetupPlan(workspaceId: item.workspaceId)
+            decisions.removeAll { $0.id == item.id }
+        } catch {
+            self.error = "The setup plan could not be approved: \(error.localizedDescription)"
+        }
+    }
+
+    func standupDraft(for item: WorkInboxItem) async -> StandupAnswers? {
+        guard let projectId = item.projectId, let taskId = item.taskId else { return nil }
+        do {
+            return try await apiClient.fetchStandupDraft(projectId: projectId, taskId: taskId)
+        } catch {
+            self.error = "Standup could not be loaded: \(error.localizedDescription)"
+            return nil
+        }
+    }
+
+    func answerStandup(_ item: WorkInboxItem, answers: StandupAnswers) async -> Bool {
+        guard let projectId = item.projectId, let taskId = item.taskId else { return false }
+        do {
+            try await apiClient.answerStandup(projectId: projectId, taskId: taskId, answers: answers)
+            decisions.removeAll { $0.id == item.id }
+            return true
+        } catch {
+            self.error = "Your answers could not be sent: \(error.localizedDescription)"
+            return false
+        }
+    }
+
+    private func loadDecisions() async {
+        do {
+            decisions = try await apiClient.fetchWorkInbox()
+        } catch APIClientError.httpStatus(let status, _) where status == 402 || status == 403 {
+            decisions = []
+        } catch is CancellationError {
+            return
+        } catch {
+            self.error = "Inbox could not be loaded: \(error.localizedDescription)"
+        }
+    }
+
     func reset() async {
+        decisions = []
         workItems = []
         backgroundTasks = []
         error = nil

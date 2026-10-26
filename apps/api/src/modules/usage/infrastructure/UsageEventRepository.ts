@@ -359,6 +359,35 @@ export class UsageEventRepository extends BaseRepository {
     return rows[0] ?? { credit_micros: 0, cost_micros: 0, run_count: 0 };
   }
 
+  async summariseWorkspaceSpend(params: {
+    workspaceId: string;
+    period: string;
+    groupBy: "teammate" | "project" | "task";
+  }): Promise<(RunSpendSummaryRow & { group_id: string })[]> {
+    const groupColumn =
+      params.groupBy === "teammate"
+        ? "tc.teammate_id"
+        : params.groupBy === "project"
+          ? "r.project_id"
+          : "r.project_task_id";
+
+    return this.runQuery<RunSpendSummaryRow & { group_id: string }>(
+      `SELECT ${groupColumn} AS group_id,
+              COALESCE(SUM(ue.credit_micros), 0) AS credit_micros,
+              COALESCE(SUM(ue.cost_micros), 0) AS cost_micros,
+              COUNT(DISTINCT ue.run_id) AS run_count
+       FROM usage_event ue
+       JOIN conversation_run r ON r.id = ue.run_id
+       JOIN project p ON p.id = r.project_id
+       LEFT JOIN teammate_context tc ON tc.id = r.teammate_context_id
+       WHERE ue.period = ? AND p.workspace_id = ? AND ${groupColumn} IS NOT NULL
+       GROUP BY ${groupColumn}
+       ORDER BY credit_micros DESC
+       LIMIT 200`,
+      [params.period, params.workspaceId],
+    );
+  }
+
   async summariseChatRuns(runIds: readonly string[]): Promise<ChatRunUsageEventSummaryRow[]> {
     if (runIds.length === 0) {
       return [];

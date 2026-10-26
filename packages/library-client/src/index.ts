@@ -33,6 +33,7 @@ export * from "./outputs.js";
 export * from "./pets.js";
 export * from "./preview-origin.js";
 export * from "./project-tasks.js";
+export * from "./work.js";
 export * from "./project-task-integrations.js";
 export * from "./realtime-service.js";
 export * from "./recipe-triggers.js";

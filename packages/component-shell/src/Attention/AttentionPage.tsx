@@ -1,12 +1,16 @@
 import { ButtonLink, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
   WorkAttentionView,
+  WorkInboxDecisions,
   type WorkAttentionFilters,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   useCursorPages,
+  useDecideInboxHire,
   useWorkAttention,
+  useWorkInbox,
+  useWorkspaces,
   readWorkAttentionQuery,
   workAttentionFiltersOf,
   workAttentionItemHref,
@@ -33,10 +37,18 @@ export function AttentionPage() {
   const isPro = useChatStore((state) => state.isPro);
   const filters: WorkAttentionFilters = workAttentionFiltersOf(query);
   const nextCursor = attention.data ? nextPageCursor(attention.data) : undefined;
+  const inbox = useWorkInbox();
+  const workspaces = useWorkspaces();
+  const decideHire = useDecideInboxHire();
+  const managedWorkspaceIds = new Set(
+    (workspaces.data ?? [])
+      .filter((workspace) => workspace.role === "owner" || workspace.role === "admin")
+      .map((workspace) => workspace.id),
+  );
 
   return (
     <PageShell.Content className="max-w-6xl">
-      <PageShell.Header title="Attention" />
+      <PageShell.Header title="Inbox" />
 
       {isAuthenticationLoading ? null : !isAuthenticated ? (
         <SignInEmptyState
@@ -44,29 +56,45 @@ export function AttentionPage() {
           message="Attention only includes workspaces you can currently access."
         />
       ) : !isPro ? null : (
-        <WorkAttentionView
-          items={attention.data?.data ?? []}
-          facets={attention.data?.facets}
-          filters={filters}
-          total={attention.data?.total ?? 0}
-          page={pages.page}
-          limit={query.limit}
-          hasPrevious={pages.hasPrevious}
-          hasNext={Boolean(nextCursor)}
-          isLoading={attention.isLoading}
-          errorMessage={
-            attention.error
-              ? getErrorMessage(attention.error, "Attention could not be loaded")
-              : undefined
-          }
-          itemHref={workAttentionItemHref}
-          onFiltersChange={(nextFilters) => {
-            pages.reset();
-            setSearchParams(writeWorkAttentionFilters(nextFilters, query.limit));
-          }}
-          onPrevious={pages.previous}
-          onNext={() => pages.next(nextCursor)}
-        />
+        <div className="space-y-8">
+          <WorkInboxDecisions
+            items={inbox.data?.data ?? []}
+            canDecideHire={(workspaceId) => managedWorkspaceIds.has(workspaceId)}
+            isBusy={decideHire.isPending}
+            onDecideHire={(item, decision) => {
+              if (item.teammateId) {
+                void decideHire.mutateAsync({
+                  workspaceId: item.workspaceId,
+                  teammateId: item.teammateId,
+                  decision,
+                });
+              }
+            }}
+          />
+          <WorkAttentionView
+            items={attention.data?.data ?? []}
+            facets={attention.data?.facets}
+            filters={filters}
+            total={attention.data?.total ?? 0}
+            page={pages.page}
+            limit={query.limit}
+            hasPrevious={pages.hasPrevious}
+            hasNext={Boolean(nextCursor)}
+            isLoading={attention.isLoading}
+            errorMessage={
+              attention.error
+                ? getErrorMessage(attention.error, "Attention could not be loaded")
+                : undefined
+            }
+            itemHref={workAttentionItemHref}
+            onFiltersChange={(nextFilters) => {
+              pages.reset();
+              setSearchParams(writeWorkAttentionFilters(nextFilters, query.limit));
+            }}
+            onPrevious={pages.previous}
+            onNext={() => pages.next(nextCursor)}
+          />
+        </div>
       )}
 
       {!isAuthenticationLoading && isAuthenticated && isPro ? (

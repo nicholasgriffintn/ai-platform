@@ -93,6 +93,7 @@ export async function importProjectIssue(
   const sourceId = `issue_${identity}_${issue.revision}`;
   const taskInput = createProjectTaskSchema.parse({
     ...input.task,
+    kind: "case",
     context: {
       notes: input.task.context?.notes ?? null,
       links: [
@@ -122,6 +123,21 @@ export async function importProjectIssue(
   });
   const { task } = await createProjectTask(context, projectId, taskInput, {
     id: `issue_task_${identity}`,
+    details: {
+      case: {
+        source: issue.provider === "github" ? "github" : "integration",
+        requester: {
+          name: `${issue.provider} ${issue.identifier}`.slice(0, 200),
+          userId: null,
+          teammateId: null,
+          address: issue.url.slice(0, 320),
+        },
+        resolution: null,
+        resolvedAt: null,
+        channel: null,
+        draftReply: null,
+      },
+    },
   });
   const capturedSourceId = task.context?.sourceIds?.[0];
 

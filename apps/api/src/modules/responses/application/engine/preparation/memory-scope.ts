@@ -6,6 +6,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { Repositories } from "~/infrastructure/database/repositories";
 import type { MemoryDocumentRow } from "~/infrastructure/database/schema";
 import { requireRunMemoryDocument } from "~/modules/memory-documents/application/run-access";
+import { teammateContextCoversRun } from "~/modules/teammates/domain/context-scope";
 import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import type { ProjectChatContext } from "~/modules/workspaces/application/chatContext";
 import type { CoreChatOptions, MemoryScope } from "~/types";
@@ -47,8 +48,11 @@ export async function resolveRunMemoryScope(params: {
       !teammateContext ||
       !ownsResource(userId, teammateContext.actorUserId) ||
       teammateContext.status !== "active" ||
-      teammateContext.scope.type !== scopeType ||
-      teammateContext.scope.id !== scopeId)
+      !teammateContextCoversRun(teammateContext.scope, {
+        type: scopeType,
+        id: scopeId,
+        workspaceId: params.projectContext?.workspaceId ?? null,
+      }))
   ) {
     throw new AssistantError(
       "The teammate working context is no longer available for this run",

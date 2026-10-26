@@ -1,5 +1,11 @@
 import type {
   ProjectTask,
+  ProjectTaskDetails,
+  ProjectTaskKind,
+  ProjectTaskLink,
+  ProjectTaskLinkKind,
+  ProjectTaskPriority,
+  WorkActor,
   ProjectTaskAssumption,
   ProjectTaskBlockedReason,
   ProjectTaskCompletion,
@@ -19,7 +25,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { parseJsonColumn } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import type { ProjectTaskRow } from "~/infrastructure/database/schema";
+import type { ProjectTaskLinkRow, ProjectTaskRow } from "~/infrastructure/database/schema";
 import { publishProjectEvent } from "~/modules/sync/application/conversation-events";
 
 export interface CreateProjectTaskParams {
@@ -45,6 +51,16 @@ export interface CreateProjectTaskParams {
   tokenBudget?: number | null;
   originConversationId?: string | null;
   position: number;
+  number?: number | null;
+  key?: string | null;
+  kind?: ProjectTaskKind;
+  description?: string | null;
+  priority?: ProjectTaskPriority;
+  parentTaskId?: string | null;
+  startAt?: string | null;
+  dueAt?: string | null;
+  reviewer?: WorkActor | null;
+  details?: ProjectTaskDetails | null;
 }
 
 export interface UpdateProjectTaskParams {
@@ -75,19 +91,66 @@ export interface UpdateProjectTaskParams {
   tokensSpent?: number;
   startedAt?: string | null;
   completedAt?: string | null;
+  description?: string | null;
+  priority?: ProjectTaskPriority;
+  parentTaskId?: string | null;
+  startAt?: string | null;
+  dueAt?: string | null;
+  reviewer?: WorkActor | null;
+  details?: ProjectTaskDetails | null;
 }
 
 export interface ListProjectTaskFilters {
   status?: ProjectTaskStatus;
   assigneeUserId?: number;
   includeDone?: boolean;
+  kind?: ProjectTaskKind;
+}
+
+export interface ListWorkspaceTaskFilters {
+  ownerTeammateId?: string;
+  ownerOrResponsibleUserId?: number;
+  reviewerTeammateId?: string;
+  includeDone?: boolean;
+  kind?: ProjectTaskKind;
+}
+
+function readOwner(row: ProjectTaskRow, runner: ProjectTaskRunner | null): WorkActor | null {
+  if (runner?.teammateId) {
+    return { type: "teammate", id: runner.teammateId };
+  }
+
+  return row.assignee_user_id ? { type: "person", userId: row.assignee_user_id } : null;
+}
+
+function formatProjectTaskLink(row: ProjectTaskLinkRow): ProjectTaskLink {
+  return {
+    id: row.id,
+    fromTaskId: row.from_task_id,
+    toTaskId: row.to_task_id,
+    kind: row.kind,
+    createdAt: row.created_at,
+  };
 }
 
 function formatProjectTask(row: ProjectTaskRow): ProjectTask {
+  const runner = parseJsonColumn<ProjectTaskRunner | null>(row.runner, null);
+
   return {
     id: row.id,
     projectId: row.project_id,
     workspaceId: row.workspace_id,
+    key: row.key,
+    number: row.number,
+    kind: row.kind,
+    description: row.description,
+    priority: row.priority,
+    parentTaskId: row.parent_task_id,
+    startAt: row.start_at,
+    dueAt: row.due_at,
+    owner: readOwner(row, runner),
+    reviewer: parseJsonColumn<WorkActor | null>(row.reviewer, null),
+    details: parseJsonColumn<ProjectTaskDetails>(row.details, {}),
     objective: row.objective,
     executionProfile: row.execution_profile,
     status: row.status,
@@ -96,7 +159,7 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
     blockedDetail: row.blocked_detail,
     stageId: row.stage_id,
     flowSnapshot: parseJsonColumn<ProjectFlow | null>(row.flow_snapshot, null),
-    runner: parseJsonColumn<ProjectTaskRunner | null>(row.runner, null),
+    runner,
     acceptanceCriteria: parseJsonColumn<ProjectTaskCriterion[]>(row.acceptance_criteria, []),
     assumptions: parseJsonColumn<ProjectTaskAssumption[]>(row.assumptions, []),
     killConditions: parseJsonColumn<ProjectTaskKillCondition[]>(row.kill_conditions, []),
@@ -155,9 +218,21 @@ export class ProjectTaskRepository extends BaseRepository {
         token_budget: params.tokenBudget ?? null,
         origin_conversation_id: params.originConversationId ?? null,
         position: params.position,
+        number: params.number ?? null,
+        key: params.key ?? null,
+        kind: params.kind ?? "task",
+        description: params.description ?? null,
+        priority: params.priority ?? "none",
+        parent_task_id: params.parentTaskId ?? null,
+        start_at: params.startAt ?? null,
+        due_at: params.dueAt ?? null,
+        reviewer: params.reviewer ?? null,
+        details: params.details ?? null,
       },
       {
         jsonFields: [
+          "reviewer",
+          "details",
           "acceptance_criteria",
           "assumptions",
           "kill_conditions",
@@ -225,6 +300,22 @@ export class ProjectTaskRepository extends BaseRepository {
     return row ? formatProjectTask(row) : null;
   }
 
+  async getTaskByReference(projectId: string, reference: string): Promise<ProjectTask | null> {
+    const row = await this.runQuery<ProjectTaskRow>(
+      "SELECT * FROM project_task WHERE project_id = ? AND (id = ? OR key = ?) LIMIT 1",
+      [projectId, reference, reference.toUpperCase()],
+      true,
+    );
+
+    return row ? formatProjectTask(row) : null;
+  }
+
+  async touchTask(taskId: string): Promise<void> {
+    await this.executeRun("UPDATE project_task SET updated_at = CURRENT_TIMESTAMP WHERE id = ?", [
+      taskId,
+    ]);
+  }
+
   async getTaskByConversation(conversationId: string): Promise<ProjectTask | null> {
     const row = await this.runQuery<ProjectTaskRow>(
       "SELECT * FROM project_task WHERE conversation_id = ?",
@@ -254,6 +345,11 @@ export class ProjectTaskRepository extends BaseRepository {
       values.push(filters.assigneeUserId);
     }
 
+    if (filters.kind) {
+      conditions.push("kind = ?");
+      values.push(filters.kind);
+    }
+
     const rows = await this.runQuery<ProjectTaskRow>(
       `SELECT * FROM project_task
        WHERE ${conditions.join(" AND ")}
@@ -262,6 +358,178 @@ export class ProjectTaskRepository extends BaseRepository {
     );
 
     return rows.map(formatProjectTask);
+  }
+
+  async allocateTaskNumber(projectId: string): Promise<{ number: number; key: string }> {
+    const row = await this.runQuery<{ task_sequence: number; task_prefix: string | null }>(
+      `UPDATE project SET task_sequence = task_sequence + 1
+       WHERE id = ?
+       RETURNING task_sequence, task_prefix`,
+      [projectId],
+      true,
+    );
+
+    if (!row) {
+      throw new AssistantError("Project not found", ErrorType.NOT_FOUND, 404);
+    }
+
+    return { number: row.task_sequence, key: `${row.task_prefix || "TSK"}-${row.task_sequence}` };
+  }
+
+  async listWorkspaceTasks(
+    workspaceIds: readonly string[],
+    filters: ListWorkspaceTaskFilters = {},
+  ): Promise<ProjectTask[]> {
+    if (workspaceIds.length === 0) {
+      return [];
+    }
+
+    const conditions = [`workspace_id IN (${workspaceIds.map(() => "?").join(", ")})`];
+    const values: unknown[] = [...workspaceIds];
+    const ownership: string[] = [];
+
+    if (!filters.includeDone) {
+      conditions.push("status NOT IN ('done', 'cancelled')");
+    }
+
+    if (filters.kind) {
+      conditions.push("kind = ?");
+      values.push(filters.kind);
+    }
+
+    if (filters.ownerTeammateId) {
+      ownership.push("json_extract(runner, '$.teammateId') = ?");
+      values.push(filters.ownerTeammateId);
+    }
+
+    if (filters.reviewerTeammateId) {
+      ownership.push(
+        "(json_extract(reviewer, '$.type') = 'teammate' AND json_extract(reviewer, '$.id') = ? AND status = 'review')",
+      );
+      values.push(filters.reviewerTeammateId);
+    }
+
+    if (filters.ownerOrResponsibleUserId) {
+      ownership.push(
+        "(assignee_user_id = ? OR (runner_identity_user_id = ? AND json_extract(runner, '$.teammateId') IS NOT NULL))",
+      );
+      values.push(filters.ownerOrResponsibleUserId, filters.ownerOrResponsibleUserId);
+    }
+
+    if (ownership.length > 0) {
+      conditions.push(`(${ownership.join(" OR ")})`);
+    }
+
+    const rows = await this.runQuery<ProjectTaskRow>(
+      `SELECT * FROM project_task
+       WHERE ${conditions.join(" AND ")}
+       ORDER BY updated_at DESC, created_at DESC
+       LIMIT 500`,
+      values,
+    );
+
+    return rows.map(formatProjectTask);
+  }
+
+  async findOpenChannelCase(
+    bindingId: string,
+    threadKey: string | null,
+  ): Promise<ProjectTask | null> {
+    if (!threadKey) {
+      return null;
+    }
+
+    const row = await this.runQuery<ProjectTaskRow>(
+      `SELECT * FROM project_task
+       WHERE kind = 'case'
+         AND status NOT IN ('done', 'cancelled')
+         AND json_extract(details, '$.case.channel.bindingId') = ?
+         AND json_extract(details, '$.case.channel.threadId') = ?
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [bindingId, threadKey],
+      true,
+    );
+
+    return row ? formatProjectTask(row) : null;
+  }
+
+  async listBlockedForRunner(
+    runnerIdentityUserId: number,
+    reason: ProjectTaskBlockedReason,
+  ): Promise<ProjectTask[]> {
+    const rows = await this.runQuery<ProjectTaskRow>(
+      `SELECT * FROM project_task
+       WHERE status = 'blocked' AND blocked_reason = ? AND runner_identity_user_id = ?
+       ORDER BY position ASC
+       LIMIT 50`,
+      [reason, runnerIdentityUserId],
+    );
+
+    return rows.map(formatProjectTask);
+  }
+
+  async listTasksByIds(taskIds: readonly string[]): Promise<ProjectTask[]> {
+    if (taskIds.length === 0) {
+      return [];
+    }
+
+    const rows = await this.runQuery<ProjectTaskRow>(
+      `SELECT * FROM project_task WHERE id IN (${taskIds.map(() => "?").join(", ")})`,
+      [...taskIds],
+    );
+
+    return rows.map(formatProjectTask);
+  }
+
+  async listChildren(taskId: string): Promise<ProjectTask[]> {
+    const rows = await this.runQuery<ProjectTaskRow>(
+      `SELECT * FROM project_task WHERE parent_task_id = ? ORDER BY position ASC, created_at ASC`,
+      [taskId],
+    );
+
+    return rows.map(formatProjectTask);
+  }
+
+  async createLink(params: {
+    workspaceId: string;
+    fromTaskId: string;
+    toTaskId: string;
+    kind: ProjectTaskLinkKind;
+  }): Promise<ProjectTaskLink> {
+    const row = await this.runQuery<ProjectTaskLinkRow>(
+      `INSERT INTO project_task_link (id, workspace_id, from_task_id, to_task_id, kind)
+       VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(from_task_id, to_task_id, kind) DO UPDATE SET kind = excluded.kind
+       RETURNING *`,
+      [generateId(), params.workspaceId, params.fromTaskId, params.toTaskId, params.kind],
+      true,
+    );
+
+    if (!row) {
+      throw new AssistantError("Could not link those tasks", ErrorType.DATABASE_ERROR);
+    }
+
+    return formatProjectTaskLink(row);
+  }
+
+  async listLinks(taskId: string): Promise<ProjectTaskLink[]> {
+    const rows = await this.runQuery<ProjectTaskLinkRow>(
+      `SELECT * FROM project_task_link WHERE from_task_id = ? OR to_task_id = ? ORDER BY created_at ASC`,
+      [taskId, taskId],
+    );
+
+    return rows.map(formatProjectTaskLink);
+  }
+
+  async deleteLink(linkId: string, taskId: string): Promise<boolean> {
+    const row = await this.runQuery<{ id: string }>(
+      `DELETE FROM project_task_link WHERE id = ? AND (from_task_id = ? OR to_task_id = ?) RETURNING id`,
+      [linkId, taskId, taskId],
+      true,
+    );
+
+    return Boolean(row);
   }
 
   async listAttentionTasks(
@@ -417,6 +685,34 @@ export class ProjectTaskRepository extends BaseRepository {
 
     if (updates.tokenBudget !== undefined) {
       set("token_budget", updates.tokenBudget);
+    }
+
+    if (updates.description !== undefined) {
+      set("description", updates.description);
+    }
+
+    if (updates.priority !== undefined) {
+      set("priority", updates.priority);
+    }
+
+    if (updates.parentTaskId !== undefined) {
+      set("parent_task_id", updates.parentTaskId);
+    }
+
+    if (updates.startAt !== undefined) {
+      set("start_at", updates.startAt);
+    }
+
+    if (updates.dueAt !== undefined) {
+      set("due_at", updates.dueAt);
+    }
+
+    if (updates.reviewer !== undefined) {
+      set("reviewer", updates.reviewer ? JSON.stringify(updates.reviewer) : null);
+    }
+
+    if (updates.details !== undefined) {
+      set("details", updates.details ? JSON.stringify(updates.details) : null);
     }
 
     if (updates.tokensSpent !== undefined) {

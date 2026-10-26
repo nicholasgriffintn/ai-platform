@@ -2,6 +2,7 @@ import {
   PROJECT_TASK_INTERACTION_TOOL_IDS,
   PROJECT_TASK_TOOL_IDS,
   sandboxDeliveryPolicyCreatesCommit,
+  WORK_TASK_TOOL_IDS,
   type ChatHostedToolSettings,
   type RecipeConnectorProvider,
   type SandboxRequestOptions,
@@ -27,6 +28,7 @@ import { resolveProjectTools } from "./projectTools";
 
 export interface ProjectChatContext {
   projectId: string;
+  workspaceId: string;
   instructions: string;
   enabledTools: string[];
   enabledSkillIds: string[];
@@ -81,6 +83,7 @@ export async function resolveProjectChatContext(
   const toolIds = [
     ...projectTools.enabledTools,
     ...PROJECT_TASK_TOOL_IDS,
+    ...WORK_TASK_TOOL_IDS,
     ...(options.conversation_type === "task" ? PROJECT_TASK_INTERACTION_TOOL_IDS : []),
     ...(codingEnvironment ? PROJECT_CODING_TOOL_IDS : []),
   ];
@@ -107,6 +110,7 @@ export async function resolveProjectChatContext(
 
   return {
     projectId,
+    workspaceId: project.workspace_id,
     instructions: project.instructions,
     enabledTools: [...new Set(toolIds)],
     enabledSkillIds: resolveProjectSkillGrants(capabilities),

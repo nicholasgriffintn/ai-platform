@@ -6,22 +6,24 @@ import {
 import { cn, Link, NavLink } from "@ngriffin_uk/polychat-component-ui";
 import {
   Activity,
-  BellRing,
   Boxes,
-  CalendarClock,
   ChevronRight,
+  CircleDot,
   ClipboardList,
+  Coins,
   FolderKanban,
   FolderOpen,
+  Inbox,
   LayoutDashboard,
-  ListChecks,
   LayoutTemplate,
-  Plug,
-  SquarePen,
+  ListChecks,
+  ListTodo,
+  Network,
+  Plus,
+  Settings,
+  Target,
   Users,
-  UsersRound,
 } from "lucide-react";
-import type { ReactNode } from "react";
 
 import type { WorkspaceRole } from "./WorkspaceMemberList";
 
@@ -29,6 +31,7 @@ export interface WorkSidebarProjectLink {
   id: string;
   name: string;
   colour?: string;
+  prefix?: string | null;
   href: string;
 }
 
@@ -37,6 +40,10 @@ export interface WorkSidebarWorkspace {
   name: string;
   role: WorkspaceRole;
   projectsHref: string;
+  initiativesHref: string;
+  teamHref: string;
+  costsHref: string;
+  activityHref: string;
   membersHref: string;
   governanceHref: string;
   modelsHref: string;
@@ -44,61 +51,57 @@ export interface WorkSidebarWorkspace {
 }
 
 export interface WorkSidebarProject {
-  newConversationHref: string;
+  tasksHref: string;
+  tasksActive: boolean;
+  triageHref: string;
+  triageActive: boolean;
+  triageCount?: number;
   sitesHref: string;
   filesHref: string;
-  tasksHref: string;
-  activityHref: string;
-  teammatesHref: string;
-  pluginsHref: string;
-  scheduledHref: string;
-  modelsHref: string;
-  conversationList?: ReactNode;
+  settingsHref: string;
   attentionCount?: number;
-  isConversationRoute: boolean;
-  activeConversationId?: string;
 }
 
 export interface WorkSidebarNavProps {
+  inboxHref: string;
+  inboxCount?: number;
+  myTasksHref: string;
   workspacesHref: string;
-  attentionHref: string;
-  /** Unread notifications waiting in Attention. */
-  attentionCount?: number;
   workspace?: WorkSidebarWorkspace;
   activeProjectId?: string;
   project?: WorkSidebarProject;
   workspaceShortcuts?: Array<{ id: string; name: string; href: string }>;
   onNavigate: () => void;
-  onNewChat: () => void;
-  onNewConversation: () => void;
+  onNewTask: () => void;
 }
 
 export function WorkSidebarNav({
+  inboxHref,
+  inboxCount = 0,
+  myTasksHref,
   workspacesHref,
-  attentionHref,
-  attentionCount = 0,
   workspace,
   activeProjectId,
   project,
   workspaceShortcuts,
   onNavigate,
-  onNewChat,
-  onNewConversation,
+  onNewTask,
 }: WorkSidebarNavProps) {
   const linkClass = sidebarNavLinkClass;
+  const canManage = workspace?.role === "owner" || workspace?.role === "admin";
 
   return (
     <nav aria-label="Workspace" className="space-y-5 p-2 pb-8">
       <div className="space-y-1">
-        <SidebarNavButton icon={<SquarePen size={17} />} onClick={onNewChat}>
-          New chat
+        <SidebarNavButton icon={<Plus size={17} />} onClick={onNewTask}>
+          New task
         </SidebarNavButton>
-        <NavLink href={attentionHref} className={linkClass} onClick={onNavigate}>
-          <BellRing size={17} /> Attention
-          <SidebarCountBadge
-            count={attentionCount}
-            label={`${attentionCount} unread notifications`}
-          />
+        <NavLink href={inboxHref} className={linkClass} onClick={onNavigate}>
+          <Inbox size={17} /> Inbox
+          <SidebarCountBadge count={inboxCount} label={`${inboxCount} items waiting on you`} />
+        </NavLink>
+        <NavLink href={myTasksHref} className={linkClass} onClick={onNavigate}>
+          <ListTodo size={17} /> My tasks
         </NavLink>
       </div>
 
@@ -109,14 +112,24 @@ export function WorkSidebarNav({
       </div>
 
       {workspace && (
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 px-2">
-            <p className="min-w-0 flex-1 truncate text-xs font-bold tracking-wider text-sidebar-foreground uppercase">
-              {workspace.name}
-            </p>
-          </div>
+        <div className="space-y-1">
+          <p className="truncate px-2 pb-1 text-xs font-bold tracking-wider text-sidebar-foreground uppercase">
+            {workspace.name}
+          </p>
           <NavLink href={workspace.projectsHref} end className={linkClass} onClick={onNavigate}>
             <FolderKanban size={16} /> Projects
+          </NavLink>
+          <NavLink href={workspace.initiativesHref} className={linkClass} onClick={onNavigate}>
+            <Target size={16} /> Initiatives
+          </NavLink>
+          <NavLink href={workspace.teamHref} className={linkClass} onClick={onNavigate}>
+            <Network size={16} /> Team
+          </NavLink>
+          <NavLink href={workspace.costsHref} className={linkClass} onClick={onNavigate}>
+            <Coins size={16} /> Costs
+          </NavLink>
+          <NavLink href={workspace.activityHref} className={linkClass} onClick={onNavigate}>
+            <Activity size={16} /> Activity
           </NavLink>
           <NavLink href={workspace.membersHref} className={linkClass} onClick={onNavigate}>
             <Users size={16} /> People
@@ -124,7 +137,7 @@ export function WorkSidebarNav({
           <NavLink href={workspace.modelsHref} className={linkClass} onClick={onNavigate}>
             <Boxes size={16} /> Models
           </NavLink>
-          {(workspace.role === "owner" || workspace.role === "admin") && (
+          {canManage && (
             <NavLink href={workspace.governanceHref} className={linkClass} onClick={onNavigate}>
               <ClipboardList size={16} /> Governance
             </NavLink>
@@ -152,60 +165,54 @@ export function WorkSidebarNav({
                     style={{ backgroundColor: item.colour }}
                   />
                   <span className="min-w-0 flex-1 truncate">{item.name}</span>
-                  <ChevronRight size={14} className="opacity-0 group-hover:opacity-100" />
+                  {item.prefix ? (
+                    <span className="font-mono text-[10px] text-muted-foreground">
+                      {item.prefix}
+                    </span>
+                  ) : (
+                    <ChevronRight size={14} className="opacity-0 group-hover:opacity-100" />
+                  )}
                 </NavLink>
+                {project && item.id === activeProjectId && (
+                  <div className="mt-1 space-y-1 pl-4">
+                    <Link
+                      href={project.tasksHref}
+                      aria-current={project.tasksActive ? "page" : undefined}
+                      className={linkClass({ isActive: project.tasksActive })}
+                      onClick={onNavigate}
+                    >
+                      <ListChecks size={15} /> Tasks
+                      <SidebarCountBadge
+                        count={project.attentionCount ?? 0}
+                        label={`${project.attentionCount} tasks need attention`}
+                      />
+                    </Link>
+                    <Link
+                      href={project.triageHref}
+                      aria-current={project.triageActive ? "page" : undefined}
+                      className={linkClass({ isActive: project.triageActive })}
+                      onClick={onNavigate}
+                    >
+                      <CircleDot size={15} /> Triage
+                      <SidebarCountBadge
+                        count={project.triageCount ?? 0}
+                        label={`${project.triageCount} cases to triage`}
+                      />
+                    </Link>
+                    <NavLink href={project.filesHref} className={linkClass} onClick={onNavigate}>
+                      <FolderOpen size={15} /> Files
+                    </NavLink>
+                    <NavLink href={project.sitesHref} className={linkClass} onClick={onNavigate}>
+                      <LayoutTemplate size={15} /> Sites
+                    </NavLink>
+                    <NavLink href={project.settingsHref} className={linkClass} onClick={onNavigate}>
+                      <Settings size={15} /> Settings
+                    </NavLink>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
-        </div>
-      )}
-
-      {project && (
-        <div className="space-y-1">
-          <Link
-            href={project.newConversationHref}
-            aria-current={
-              project.isConversationRoute && !project.activeConversationId ? "page" : undefined
-            }
-            className={linkClass({
-              isActive: project.isConversationRoute && !project.activeConversationId,
-            })}
-            onClick={() => {
-              onNewConversation();
-              onNavigate();
-            }}
-          >
-            <SquarePen size={16} /> New conversation
-          </Link>
-          <NavLink href={project.tasksHref} className={linkClass} onClick={onNavigate}>
-            <ListChecks size={16} /> Tasks
-            <SidebarCountBadge
-              count={project.attentionCount ?? 0}
-              label={`${project.attentionCount} tasks need attention`}
-            />
-          </NavLink>
-          <NavLink href={project.sitesHref} className={linkClass} onClick={onNavigate}>
-            <LayoutTemplate size={16} /> Sites
-          </NavLink>
-          <NavLink href={project.filesHref} className={linkClass} onClick={onNavigate}>
-            <FolderOpen size={16} /> Files
-          </NavLink>
-          <NavLink href={project.activityHref} className={linkClass} onClick={onNavigate}>
-            <Activity size={16} /> Activity
-          </NavLink>
-          <NavLink href={project.teammatesHref} className={linkClass} onClick={onNavigate}>
-            <UsersRound size={16} /> Teammates
-          </NavLink>
-          <NavLink href={project.scheduledHref} className={linkClass} onClick={onNavigate}>
-            <CalendarClock size={16} /> Scheduled
-          </NavLink>
-          <NavLink href={project.pluginsHref} className={linkClass} onClick={onNavigate}>
-            <Plug size={16} /> Plugins
-          </NavLink>
-          <NavLink href={project.modelsHref} className={linkClass} onClick={onNavigate}>
-            <Boxes size={16} /> Models
-          </NavLink>
-          {project.conversationList}
         </div>
       )}
 

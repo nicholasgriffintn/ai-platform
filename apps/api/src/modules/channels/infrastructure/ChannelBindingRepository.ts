@@ -13,7 +13,7 @@ export interface CreateChannelBindingRecord {
   externalId: string;
   label?: string | null;
   teammateId?: string | null;
-  interactionMode: "direct" | "automated";
+  interactionMode: "direct" | "automated" | "cases";
   reactionLevel: ChannelReactionLevel;
   createdByUserId: number;
 }

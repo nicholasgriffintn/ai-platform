@@ -1,13 +1,11 @@
 import { Card, ConfirmationDialog, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import {
   ProjectStarterList,
-  WorkspaceAuditList,
   WorkspaceTemplateList,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import {
   useProjectStarters,
   useTemplateMutations,
-  useWorkspaceAudit,
   useWorkspaceTemplates,
 } from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
@@ -16,7 +14,6 @@ import { toast } from "sonner";
 
 import { PageShell } from "../Shell/PageShell.js";
 import { useWorkData } from "./WorkDataContext.js";
-import { WorkspaceUsage } from "./WorkspaceUsage.js";
 
 export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
   const navigate = useNavigate();
@@ -24,7 +21,6 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
   const { workspaceQuery } = useWorkData();
   const canManage = workspaceQuery.data?.role === "owner" || workspaceQuery.data?.role === "admin";
   const templates = useWorkspaceTemplates(workspaceId, canManage);
-  const audit = useWorkspaceAudit(workspaceId, canManage);
   const starters = useProjectStarters(canManage);
   const mutations = useTemplateMutations(workspaceId);
   const projectTemplates = templates.data?.filter((template) => template.kind === "project") ?? [];
@@ -52,16 +48,11 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
       ) : !canManage ? (
         <EmptyState
           title="Governance unavailable"
-          message="Workspace administrators manage templates and audit history."
+          message="Workspace administrators manage project templates and starters."
           className="min-h-[240px]"
         />
       ) : (
         <>
-          <WorkspaceUsage
-            key={workspaceId}
-            workspaceId={workspaceId}
-            projects={workspaceQuery.data?.projects ?? []}
-          />
           <div className="grid gap-8 lg:grid-cols-2">
             <div className="flex w-full flex-col gap-4">
               <ProjectStarterList
@@ -85,12 +76,6 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
                 onDelete={setTemplateIdToDelete}
               />
             </div>
-
-            <WorkspaceAuditList
-              records={audit.data ?? []}
-              isLoading={audit.isLoading}
-              errorMessage={audit.error?.message}
-            />
           </div>
         </>
       )}

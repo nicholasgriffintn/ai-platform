@@ -31,6 +31,10 @@ export function resolveRequestProjectId(request: IRequest): string | null {
     return request.memoryScope.projectId;
   }
 
+  if (request.memoryScope?.type === "bound" && request.memoryScope.scopeType === "project") {
+    return request.memoryScope.scopeId;
+  }
+
   const projectId = request.request?.metadata?.project_id;
 
   return typeof projectId === "string" && projectId ? projectId : null;

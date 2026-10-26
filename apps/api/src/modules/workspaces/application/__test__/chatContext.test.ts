@@ -1,3 +1,4 @@
+import { WORK_TASK_TOOL_IDS } from "@ngriffin_uk/polychat-schemas";
 import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
@@ -146,6 +147,7 @@ describe("project chat context", () => {
       },
       {
         projectId: "project-1",
+        workspaceId: "workspace-1",
         instructions: "",
         enabledTools: [],
         enabledSkillIds: [],
@@ -181,6 +183,7 @@ describe("project chat context", () => {
       }),
     ).resolves.toEqual({
       projectId: "project-1",
+      workspaceId: "workspace-1",
       instructions: "Use the approved launch brief.",
       enabledTools: [
         "web_search",
@@ -194,6 +197,7 @@ describe("project chat context", () => {
         "get_task",
         "list_tasks",
         "update_task",
+        ...WORK_TASK_TOOL_IDS,
       ],
       enabledSkillIds: ["artifacts"],
       connectorProviders: [],
@@ -273,6 +277,7 @@ describe("project chat context", () => {
       "get_task",
       "list_tasks",
       "update_task",
+      ...WORK_TASK_TOOL_IDS,
       "get_weather",
     ]);
   });

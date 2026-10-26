@@ -50,6 +50,7 @@ import {
   list_tasks,
   update_task,
 } from "~/modules/project-tasks/application/tools/projectTasks";
+import { WORK_TOOLS } from "~/modules/project-tasks/application/tools/work";
 import { get_task_status } from "~/modules/queue/application/tools/tasks";
 import { configure_recipe } from "~/modules/recipes/application/tools/configure_recipe";
 import { create_automation } from "~/modules/recipes/application/tools/create_automation";
@@ -139,6 +140,7 @@ registerTools([
   get_task,
   list_tasks,
   update_task,
+  ...WORK_TOOLS,
   capture_screenshot,
   create_speech,
   discover_capabilities,

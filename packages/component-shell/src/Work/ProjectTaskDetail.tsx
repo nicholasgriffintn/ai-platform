@@ -1,14 +1,17 @@
 import { MemoizedMarkdown } from "@ngriffin_uk/polychat-component-content";
 import { BackLink, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
-import { TaskDetail } from "@ngriffin_uk/polychat-component-workspaces";
+import { TaskDetail, type TaskWorkProps } from "@ngriffin_uk/polychat-component-workspaces";
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   useProjectTask,
   useProjectTasks,
-  useCapabilityCatalog,
+  useRaiseCase,
+  useStandupDraft,
+  useWorkTaskActions,
   getProjectConversationPath,
   getProjectFilesPath,
 } from "@ngriffin_uk/polychat-library-react";
-import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
+import type { ProjectTask, UpdateProjectTaskInput } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 import { useNavigate } from "react-router";
@@ -16,7 +19,7 @@ import { toast } from "sonner";
 
 import { PageShell } from "../Shell/PageShell.js";
 import { ProjectReviewPublicationControl } from "./ProjectReviewPublicationControl.js";
-import { useWorkData } from "./WorkDataContext.js";
+import { useWorkDirectory } from "./useWorkDirectory.js";
 
 export function ProjectTaskDetail({
   workspaceId,
@@ -29,17 +32,33 @@ export function ProjectTaskDetail({
 }) {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const navigate = useNavigate();
-  const { workspaceQuery } = useWorkData();
-  const capabilityCatalog = useCapabilityCatalog(projectId);
-  const teammates = capabilityCatalog.data?.teammates ?? [];
-  const { tasks, flow, isLoading, error, start, accept, update, remove } =
-    useProjectTasks(projectId);
+  const {
+    tasks,
+    flow,
+    isLoading,
+    error,
+    start,
+    accept,
+    update,
+    remove,
+    create: createSubTask,
+  } = useProjectTasks(projectId);
   const detailQuery = useProjectTask(projectId, taskId);
   const task = detailQuery.data?.task ?? tasks.find((candidate) => candidate.id === taskId);
   const goal = detailQuery.data?.goal ?? null;
   const activity = detailQuery.data?.activity;
   const plan = detailQuery.data?.plan;
   const basePath = `/work/${workspaceId}/projects/${projectId}`;
+  const currentUserId = useChatStore((state) => state.user?.id ?? null);
+  const { directory } = useWorkDirectory(workspaceId);
+  const actions = useWorkTaskActions(projectId, taskId);
+  const raiseCase = useRaiseCase(projectId);
+  const standup = task?.details.standup;
+  const standupDraft = useStandupDraft(
+    projectId,
+    taskId,
+    Boolean(standup && !standup.summary && currentUserId),
+  );
 
   if (isLoading || detailQuery.isLoading) {
     return (
@@ -61,7 +80,71 @@ export function ProjectTaskDetail({
     );
   }
 
-  const isBusy = start.isPending || accept.isPending || update.isPending || remove.isPending;
+  const isBusy =
+    start.isPending ||
+    accept.isPending ||
+    update.isPending ||
+    remove.isPending ||
+    actions.assign.isPending ||
+    actions.answerStandup.isPending;
+  const runAction = async (action: () => Promise<unknown>, message: string) => {
+    try {
+      await action();
+      toast.success(message);
+    } catch (mutationError) {
+      toast.error(getErrorMessage(mutationError, "That did not work"));
+    }
+  };
+
+  const patch = (input: UpdateProjectTaskInput, message: string) =>
+    runAction(() => update.mutateAsync({ taskId: task.id, input }), message);
+
+  const work: TaskWorkProps = {
+    directory,
+    subTasks: detailQuery.data?.children ?? [],
+    links: detailQuery.data?.links ?? [],
+    thread: detailQuery.data?.thread ?? [],
+    currentUserId,
+    standupDraft: standupDraft.data ?? null,
+    onAssign: (owner) =>
+      owner
+        ? void runAction(() => actions.assign.mutateAsync(owner), "Task handed over")
+        : void patch({ owner: null }, "Owner cleared"),
+    onSetReviewer: (reviewer) =>
+      void runAction(
+        () => actions.requestReview.mutateAsync({ reviewer, note: null }),
+        "Sent for review",
+      ),
+    onSetPriority: (priority) => void patch({ priority }, "Priority updated"),
+    onSetDueAt: (dueAt) => void patch({ dueAt }, "Due date updated"),
+    onComment: (body) => actions.comment.mutateAsync(body),
+    onAddSubTask: (objective) =>
+      runAction(
+        () => createSubTask.mutateAsync({ objective, parentTaskId: task.id }),
+        "Sub-task added",
+      ),
+    onRaiseCase: (title) =>
+      runAction(
+        () =>
+          raiseCase.mutateAsync({
+            title,
+            description: null,
+            priority: "none",
+            raisedFromTaskId: task.id,
+          }),
+        "Case raised and sent to Triage",
+      ),
+    onEscalate: (reason) => runAction(() => actions.escalate.mutateAsync(reason), "Escalated"),
+    onResolveCase: (resolution) =>
+      void runAction(() => actions.resolve.mutateAsync(resolution), "Case resolved"),
+    onSendCaseReply: (body) => runAction(() => actions.sendReply.mutateAsync(body), "Reply sent"),
+    onClearEscalation: () =>
+      void runAction(() => actions.clearEscalation.mutateAsync(), "Escalation handled"),
+    onAnswerStandup: (input) =>
+      void runAction(() => actions.answerStandup.mutateAsync(input), "Answers sent"),
+    onUnlink: (linkId) => void runAction(() => actions.unlink.mutateAsync(linkId), "Link removed"),
+  };
+
   const run = async () => {
     try {
       await start.mutateAsync(task.id);
@@ -104,7 +187,7 @@ export function ProjectTaskDetail({
     <>
       <PageShell.Content className="max-w-6xl">
         <BackLink href={`${basePath}/tasks`} label="Back to tasks" />
-        <PageShell.Header title={task.objective} />
+        <PageShell.Header title={task.key ?? "Task"} />
         {task.executionProfile === "diff_review" ? (
           <ProjectReviewPublicationControl key={task.id} projectId={projectId} task={task} />
         ) : null}
@@ -114,8 +197,6 @@ export function ProjectTaskDetail({
           activity={activity}
           plan={plan}
           flow={flow}
-          members={workspaceQuery.data?.members ?? []}
-          teammates={teammates}
           blockedBy={tasks.filter((candidate) => task.dependsOnTaskIds.includes(candidate.id))}
           conversationHref={
             task.conversationId
@@ -127,14 +208,17 @@ export function ProjectTaskDetail({
               ? getProjectConversationPath(workspaceId, projectId, task.originConversationId)
               : null
           }
-          taskHref={(candidate) => `${basePath}/tasks/${candidate.id}`}
+          taskHref={(candidate) =>
+            `/work/${workspaceId}/projects/${candidate.projectId}/tasks/${candidate.id}`
+          }
           runHref={(conversationId, runId) =>
-            `${basePath}/chat?completion_id=${encodeURIComponent(conversationId)}&run_id=${encodeURIComponent(runId)}`
+            `${getProjectConversationPath(workspaceId, projectId, conversationId)}?run_id=${encodeURIComponent(runId)}`
           }
           outputHref={(outputId) =>
             getProjectFilesPath(workspaceId, projectId, "made", encodeURIComponent(outputId))
           }
           isBusy={isBusy}
+          work={work}
           onRun={() => void run()}
           onAccept={() => void acceptTask()}
           onCancel={() => void setStatus("cancelled", "Task cancelled")}

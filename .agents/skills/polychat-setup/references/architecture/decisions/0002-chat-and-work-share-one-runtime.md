@@ -19,3 +19,7 @@ Authorise project conversations through current workspace membership, not creato
 ## Consequences
 
 Workspace members share a broad collaboration boundary. Personal and project navigation differ, but finer project ACLs or workspace-owned credentials would need a separate ownership decision.
+
+## Amendment: Work runs on tasks
+
+Work has no free conversations. A project opens on its task list, and a request made in Work becomes a task with a key, an owner and a thread. The thread is the task's own conversation, so Chat and Work still share one runtime. A project conversation route remains only as the run view of a task conversation, which keeps the coding Workbench from [0023](0023-present-coding-work-in-project-conversations.md). Existing project conversations were migrated into done tasks with their conversations attached. Teammate groups and free conversation stay in Chat.

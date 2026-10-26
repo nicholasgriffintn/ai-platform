@@ -29,3 +29,9 @@ Use project flows for durable multi-agent sequencing. Team-agent fields remain r
 One flow per project is deliberately limited, and former team groupings cannot be migrated automatically into ordered stages. Concurrency caps, token budgets and usage admission must bound unattended work.
 
 Task detail reads all runs for that task with their bounded event journals and messages, which costs more than a final-status read but keeps history coherent across reopening and devices without dual writes. Active project tasks perform an additional authorised detail read at the run polling cadence rather than encoding task authority into the event journal. Existing tasks without a flow snapshot or run-stage identity remain readable under an unattributed task stage rather than being guessed from the current flow.
+
+## Amendment: owners, sub-tasks, cases and reviewers
+
+A task's owner is a teammate (stored as the runner's teammate) or a person (the assignee). The runner identity is the responsible person: the human whose membership, grants and budget the run borrows. When a teammate assigns or creates work, the new task inherits that responsible person, so handing work on never widens authority. Assigning a teammate wakes it through the ordinary start path, and the execution service still decides whether anything is queued.
+
+Tasks carry a project key (`BIL-41`), priority, dates and a parent. Sub-tasks go at most three levels deep. Cases are tasks of kind `case` with a requester and source, linked to the tasks that resolve them (`raised_from`, `resolved_by`, `duplicate_of`, `relates_to`). A case settles when every task it is resolved by is done. A teammate reviewer can accept work only when the task has a completed run, and after three rounds of changes between teammates the review passes to the responsible person. Models still cannot set `queued` or `done` directly.

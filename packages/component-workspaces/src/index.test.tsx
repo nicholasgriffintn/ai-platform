@@ -58,6 +58,17 @@ const task: ProjectTask = {
   originConversationId: null,
   projectId: "project-1",
   workspaceId: "workspace-1",
+  key: null,
+  number: null,
+  kind: "task",
+  description: null,
+  priority: "none",
+  parentTaskId: null,
+  startAt: null,
+  dueAt: null,
+  owner: null,
+  reviewer: null,
+  details: {},
   objective: "Prepare the release note",
   acceptanceCriteria: [],
   assumptions: [],
@@ -379,8 +390,27 @@ describe("TaskDetail", () => {
         activity={emptyActivity}
         plan={{ ...emptyPlan, status: "completed" }}
         flow={flow}
-        members={[]}
-        teammates={[]}
+        work={{
+          directory: { people: [], teammates: [] },
+          subTasks: [],
+          links: [],
+          thread: [],
+          currentUserId: null,
+          standupDraft: null,
+          onAssign: vi.fn(),
+          onSetReviewer: vi.fn(),
+          onSetPriority: vi.fn(),
+          onSetDueAt: vi.fn(),
+          onComment: vi.fn(),
+          onAddSubTask: vi.fn(),
+          onRaiseCase: vi.fn(),
+          onEscalate: vi.fn(),
+          onResolveCase: vi.fn(),
+          onSendCaseReply: vi.fn(),
+          onClearEscalation: vi.fn(),
+          onAnswerStandup: vi.fn(),
+          onUnlink: vi.fn(),
+        }}
         blockedBy={[]}
         conversationHref="/chat?completion_id=conversation-2"
         originConversationHref={null}
@@ -395,9 +425,7 @@ describe("TaskDetail", () => {
       />,
     );
 
-    expect(screen.getByRole("link", { name: "View result" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Reopen" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Reopen task" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Open run" })).toBeTruthy();
     expect(
       screen.getByText(
         "Executed plans keep their evidence. Create a new task to run the work again.",

@@ -6,7 +6,12 @@ import {
   updateProjectTaskSchema,
   nextFlowStageId,
   PROJECT_TASK_DEFAULT_CONCURRENCY,
+  PROJECT_TASK_MAX_DEPTH,
   type CreateProjectTaskInput,
+  type ProjectTaskDetails,
+  type ProjectTaskRunner,
+  type ProjectTaskSummary,
+  type WorkActor,
   type AnswerUserQuestionsInput,
   type ProjectFlow,
   type ProjectTask,
@@ -51,6 +56,7 @@ import { getProjectTaskPlanEvidence, getProjectTaskResumeCapability } from "./pl
 import { answerProjectTaskQuestions, getPendingProjectTaskQuestions } from "./questions";
 import { queueProjectTaskRun, releaseReadyDependentTasks } from "./runner";
 import { assertTaskSourcesAvailable } from "./source-context";
+import { listTaskThread } from "./thread";
 import { assertProjectTaskTransition } from "./transitions";
 
 const POSITION_STEP = 1000;
@@ -210,6 +216,112 @@ async function assertDependenciesExist(
   }
 }
 
+const DEFAULT_RUNNER: ProjectTaskRunner = {
+  kind: "conversation",
+  teammateId: null,
+  model: null,
+  mode: null,
+};
+
+async function assertTeammateAvailableInProject(
+  context: ServiceContext,
+  projectId: string,
+  workspaceId: string,
+  teammateId: string,
+): Promise<void> {
+  const [capabilities, defaultTeammateIds] = await Promise.all([
+    context.repositories.get(WorkspaceRepository).listProjectCapabilities(projectId),
+    listProjectDefaultTeammateIds(context, workspaceId),
+  ]);
+
+  if (!resolveProjectTeammateIds({ capabilities, defaultTeammateIds }).includes(teammateId)) {
+    throw new AssistantError(
+      "That teammate is not available in this project. Add it to the project on the Team page first.",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+}
+
+async function resolveOwnerFields(
+  context: ServiceContext,
+  task: { projectId: string; workspaceId: string; runner: ProjectTaskRunner | null },
+  owner: WorkActor | null,
+): Promise<{ runner: ProjectTaskRunner | null; assigneeUserId: number | null }> {
+  if (!owner) {
+    return {
+      runner: task.runner ? { ...task.runner, teammateId: null } : null,
+      assigneeUserId: null,
+    };
+  }
+
+  if (owner.type === "teammate") {
+    await assertTeammateAvailableInProject(context, task.projectId, task.workspaceId, owner.id);
+
+    return {
+      runner: { ...(task.runner ?? DEFAULT_RUNNER), teammateId: owner.id },
+      assigneeUserId: null,
+    };
+  }
+
+  await assertAssigneeIsMember(context, task.workspaceId, owner.userId);
+
+  return {
+    runner: task.runner ? { ...task.runner, teammateId: null } : null,
+    assigneeUserId: owner.userId,
+  };
+}
+
+async function assertParentAllowed(
+  context: ServiceContext,
+  projectId: string,
+  taskId: string | null,
+  parentTaskId: string | null | undefined,
+): Promise<void> {
+  if (!parentTaskId) {
+    return;
+  }
+
+  let depth = 1;
+  let current: string | null = parentTaskId;
+
+  while (current) {
+    if (current === taskId) {
+      throw new AssistantError("A task cannot sit under itself", ErrorType.PARAMS_ERROR, 400);
+    }
+
+    const ancestor = await context.repositories.get(ProjectTaskRepository).getTaskById(current);
+
+    if (!ancestor || ancestor.projectId !== projectId) {
+      throw new AssistantError("The parent task is not on this board", ErrorType.PARAMS_ERROR, 400);
+    }
+
+    depth += 1;
+    current = ancestor.parentTaskId;
+  }
+
+  if (depth > PROJECT_TASK_MAX_DEPTH) {
+    throw new AssistantError(
+      `Sub-tasks can go ${PROJECT_TASK_MAX_DEPTH} levels deep. Split this into a sibling task instead.`,
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+}
+
+export function summariseTask(task: ProjectTask): ProjectTaskSummary {
+  return {
+    id: task.id,
+    key: task.key,
+    kind: task.kind,
+    objective: task.objective,
+    status: task.status,
+    priority: task.priority,
+    owner: task.owner,
+    projectId: task.projectId,
+  };
+}
+
 export async function resolveUnmetDependencies(
   context: ServiceContext,
   task: ProjectTask,
@@ -254,10 +366,47 @@ export async function getProjectTask(context: ServiceContext, projectId: string,
     getPendingProjectTaskToolApproval(context, task),
     getProjectTaskInteraction(context, task),
   ]);
-  const activity = await getProjectTaskActivity(context, task, goal, interaction);
-  const plan = await getProjectTaskPlanEvidence(context, task, parseProjectFlow(project.flow));
+  const [activity, plan, children, links, thread] = await Promise.all([
+    getProjectTaskActivity(context, task, goal, interaction),
+    getProjectTaskPlanEvidence(context, task, parseProjectFlow(project.flow)),
+    context.repositories.get(ProjectTaskRepository).listChildren(task.id),
+    context.repositories.get(ProjectTaskRepository).listLinks(task.id),
+    listTaskThread(context, task),
+  ]);
+  const linkedTasks = await context.repositories
+    .get(ProjectTaskRepository)
+    .listTasksByIds([
+      ...new Set(
+        links.map((link) => (link.fromTaskId === task.id ? link.toTaskId : link.fromTaskId)),
+      ),
+    ]);
+  const linkedById = new Map(linkedTasks.map((linked) => [linked.id, linked]));
 
-  return { task, goal, pendingQuestions, pendingApproval, interaction, activity, plan };
+  return {
+    task,
+    goal,
+    pendingQuestions,
+    pendingApproval,
+    interaction,
+    activity,
+    plan,
+    children: children.map(summariseTask),
+    links: links.flatMap((link) => {
+      const outgoing = link.fromTaskId === task.id;
+      const other = linkedById.get(outgoing ? link.toTaskId : link.fromTaskId);
+
+      return other && other.workspaceId === task.workspaceId
+        ? [
+            {
+              ...link,
+              direction: outgoing ? ("outgoing" as const) : ("incoming" as const),
+              task: summariseTask(other),
+            },
+          ]
+        : [];
+    }),
+    thread,
+  };
 }
 
 export async function respondToProjectTaskQuestions(
@@ -363,6 +512,7 @@ export async function createProjectTask(
     id?: string;
     flowSnapshot?: ProjectFlow;
     executionProfile?: "diff_review";
+    details?: ProjectTaskDetails;
   } = {},
 ) {
   const user = context.requireUser();
@@ -392,11 +542,33 @@ export async function createProjectTask(
   await assertAssigneeIsMember(context, project.workspace_id, input.assigneeUserId);
   assertStageExists(flow, input.stageId);
   await assertDependenciesExist(context, projectId, null, input.dependsOnTaskIds);
+  await assertParentAllowed(context, projectId, null, input.parentTaskId);
 
+  const ownership =
+    input.owner !== undefined
+      ? await resolveOwnerFields(
+          context,
+          { projectId, workspaceId: project.workspace_id, runner: input.runner ?? null },
+          input.owner,
+        )
+      : { runner: input.runner ?? null, assigneeUserId: input.assigneeUserId ?? null };
   const maxPosition = await context.repositories
     .get(ProjectTaskRepository)
     .getMaxPosition(projectId);
+  const numbering = await context.repositories
+    .get(ProjectTaskRepository)
+    .allocateTaskNumber(projectId);
   const { task, created } = await context.repositories.get(ProjectTaskRepository).createTask({
+    number: numbering.number,
+    key: numbering.key,
+    kind: input.kind ?? "task",
+    description: input.description ?? null,
+    priority: input.priority ?? "none",
+    parentTaskId: input.parentTaskId ?? null,
+    startAt: input.startAt ?? null,
+    dueAt: input.dueAt ?? null,
+    reviewer: input.reviewer ?? null,
+    details: options.details ?? null,
     id: options.id,
     executionProfile: options.executionProfile,
     projectId,
@@ -413,8 +585,8 @@ export async function createProjectTask(
     originConversationId: input.originConversationId ?? null,
     source: options.source ?? "user",
     createdByUserId: user.id,
-    assigneeUserId: input.assigneeUserId ?? null,
-    runner: input.runner ?? null,
+    assigneeUserId: ownership.assigneeUserId,
+    runner: ownership.runner,
     stageId: input.stageId ?? flow?.stages[0]?.id ?? null,
     flowSnapshot: flow,
     tokenBudget: input.tokenBudget ?? null,
@@ -448,9 +620,26 @@ export async function updateProjectTask(
 ) {
   const user = context.requireUser();
 
-  const input = updateProjectTaskSchema.parse(unvalidatedInput);
+  const { owner, ...input } = updateProjectTaskSchema.parse(unvalidatedInput);
   const { project } = await requireProjectAccess(context, projectId);
   const task = await requireTask(context, projectId, taskId);
+
+  if (owner !== undefined && (task.status === "running" || task.status === "queued")) {
+    throw new AssistantError(
+      "Wait for the current run to finish before handing this task to someone else.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  const ownership =
+    owner !== undefined
+      ? await resolveOwnerFields(
+          context,
+          { projectId, workspaceId: project.workspace_id, runner: task.runner },
+          owner,
+        )
+      : {};
   const flow = task.flowSnapshot ?? parseProjectFlow(project.flow);
   const actor = options.actor ?? "user";
 
@@ -513,6 +702,7 @@ export async function updateProjectTask(
   await assertAssigneeIsMember(context, project.workspace_id, input.assigneeUserId);
   assertStageExists(flow, input.stageId);
   await assertDependenciesExist(context, projectId, taskId, input.dependsOnTaskIds);
+  await assertParentAllowed(context, projectId, taskId, input.parentTaskId);
 
   await assertTaskSourcesAvailable(context, projectId, input.context?.sourceIds);
 
@@ -520,6 +710,7 @@ export async function updateProjectTask(
   const isFinishing = isTerminalProjectTaskStatus(nextStatus) && nextStatus !== task.status;
   const updated = await context.repositories.get(ProjectTaskRepository).updateTask(taskId, {
     ...input,
+    ...ownership,
     acceptanceCriteria: withCriterionIds(input.acceptanceCriteria),
     assumptions: input.assumptions ? withGeneratedIds(input.assumptions) : undefined,
     killConditions: input.killConditions ? withGeneratedIds(input.killConditions) : undefined,
@@ -555,7 +746,7 @@ export async function updateProjectTask(
   await reconcileTaskNotifications(context, updated);
 
   if (input.status === "done" && task.status !== "done") {
-    await releaseReadyDependentTasks(context, projectId);
+    await releaseReadyDependentTasks(context, projectId, taskId);
   }
 
   return { task: updated };
@@ -731,7 +922,7 @@ export async function acceptProjectTask(
 
   if (!nextStage) {
     await recordRetrospectiveQuietly(context, updated, "done");
-    await releaseReadyDependentTasks(context, projectId);
+    await releaseReadyDependentTasks(context, projectId, taskId);
   }
 
   return { task: updated };

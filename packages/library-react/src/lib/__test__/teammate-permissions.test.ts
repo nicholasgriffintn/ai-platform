@@ -35,6 +35,11 @@ function workspace(role: WorkspaceSummary["role"]): WorkspaceSummary {
   return {
     id: "workspace-1",
     name: "Aviary",
+    mission: "",
+    monthlyCreditCapMicros: null,
+    leadTeammateId: null,
+    setupProjectId: null,
+    setupTaskId: null,
     description: "",
     colour: "#111111",
     role,

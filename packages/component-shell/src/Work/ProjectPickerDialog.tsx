@@ -1,7 +1,7 @@
 import { StartConversationDialog } from "@ngriffin_uk/polychat-component-workspaces";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
-  getProjectChatPath,
+  getProjectBasePath,
   useTrackEvent,
   useWorkspace,
   useWorkspaces,
@@ -30,6 +30,8 @@ export function ProjectPickerDialog({
   return (
     <StartConversationDialog
       open={open}
+      description="Pick a workspace, then a project. The task goes on that project's board."
+      projectDescription="Pick the project this task belongs to."
       workspaces={workspaces.map(({ id, name, projectCount }) => ({ id, name, projectCount }))}
       isLoadingWorkspaces={workspacesQuery.isLoading}
       selectedWorkspace={selectedWorkspace}
@@ -64,7 +66,7 @@ export function ProjectPickerDialog({
         setWorkspaceId(null);
 
         clearCurrentConversation();
-        void navigate(getProjectChatPath(workspaceId, projectId));
+        void navigate(`${getProjectBasePath(workspaceId, projectId)}?new=1`);
       }}
     />
   );

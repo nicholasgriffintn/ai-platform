@@ -1,17 +1,7 @@
-import { TeammateHomePage } from "@ngriffin_uk/polychat-component-shell";
-import { getProjectBasePath } from "@ngriffin_uk/polychat-library-react";
-import { useParams } from "react-router";
+import { Navigate, useParams } from "react-router";
 
-export default function DesktopProjectTeammatePage() {
-  const { workspaceId = "", projectId = "", teammateId = "" } = useParams();
-  const teammatesPath = `${getProjectBasePath(workspaceId, projectId)}/teammates`;
+export default function DesktopProjectTeammateRedirect() {
+  const { workspaceId = "", teammateId = "" } = useParams();
 
-  return (
-    <TeammateHomePage
-      teammateId={teammateId}
-      teammatesPath={teammatesPath}
-      backPath={teammatesPath}
-      projectId={projectId}
-    />
-  );
+  return <Navigate to={`/work/${workspaceId}/team/${teammateId}`} replace />;
 }

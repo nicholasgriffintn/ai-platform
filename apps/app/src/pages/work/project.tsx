@@ -1,4 +1,4 @@
-import { ProjectHome } from "@ngriffin_uk/polychat-component-shell";
+import { ProjectTaskBoard } from "@ngriffin_uk/polychat-component-shell";
 import { useParams } from "react-router";
 
 export function meta() {
@@ -8,5 +8,5 @@ export function meta() {
 export default function ProjectPage() {
   const { workspaceId = "", projectId = "" } = useParams();
 
-  return <ProjectHome workspaceId={workspaceId} projectId={projectId} />;
+  return <ProjectTaskBoard workspaceId={workspaceId} projectId={projectId} />;
 }

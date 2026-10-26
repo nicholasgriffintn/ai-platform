@@ -5,7 +5,7 @@ import { recipeConnectorProviderSchema } from "./apps.js";
 import { delegationContinuationSchema, delegationMemoryBindingSchema } from "./delegations.js";
 
 export const teammateContextScopeSchema = z.object({
-  type: z.enum(["personal", "project"]),
+  type: z.enum(["personal", "project", "workspace"]),
   id: z.string().min(1),
 });
 

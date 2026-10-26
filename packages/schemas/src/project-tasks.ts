@@ -32,6 +32,213 @@ export const PROJECT_TASK_TOOL_IDS = [
   "update_task",
 ] as const;
 
+export const WORK_TASK_TOOL_IDS = [
+  "assign_task",
+  "post_update",
+  "block_task",
+  "request_review",
+  "review_task",
+  "escalate",
+  "raise_case",
+  "propose_hire",
+  "answer_standup",
+  "summarise_standup",
+  "propose_setup_plan",
+  "draft_reply",
+  "answer_questions",
+] as const;
+
+export const WORK_RUN_EXCLUDED_TOOL_IDS: readonly string[] = ["delegate"];
+
+export type WorkTaskToolId = (typeof WORK_TASK_TOOL_IDS)[number];
+
+export const PROJECT_TASK_KINDS = ["task", "case", "standup"] as const;
+export const projectTaskKindSchema = z.enum(PROJECT_TASK_KINDS);
+export type ProjectTaskKind = z.infer<typeof projectTaskKindSchema>;
+
+export const PROJECT_TASK_PRIORITIES = ["none", "low", "medium", "high", "urgent"] as const;
+export const projectTaskPrioritySchema = z.enum(PROJECT_TASK_PRIORITIES);
+export type ProjectTaskPriority = z.infer<typeof projectTaskPrioritySchema>;
+
+export const projectTaskPriorityLabels: Record<ProjectTaskPriority, string> = {
+  none: "No priority",
+  low: "Low",
+  medium: "Medium",
+  high: "High",
+  urgent: "Urgent",
+};
+
+export const PROJECT_TASK_MAX_DEPTH = 3;
+export const WORK_MAX_AGENT_REVIEW_ROUNDS = 3;
+export const PROJECT_TASK_MAX_CHILDREN_PER_CALL = 8;
+
+export const workActorSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("teammate"), id: z.string().min(1) }),
+  z.object({ type: z.literal("person"), userId: z.number().int().positive() }),
+]);
+export type WorkActor = z.infer<typeof workActorSchema>;
+
+export const CASE_SOURCES = [
+  "person",
+  "teammate",
+  "channel",
+  "email",
+  "webhook",
+  "github",
+  "integration",
+] as const;
+export const caseSourceSchema = z.enum(CASE_SOURCES);
+export type CaseSource = z.infer<typeof caseSourceSchema>;
+
+export const projectTaskCaseSchema = z.object({
+  source: caseSourceSchema,
+  requester: z.object({
+    name: z.string().trim().min(1).max(200),
+    userId: z.number().int().positive().nullable().default(null),
+    teammateId: z.string().min(1).nullable().default(null),
+    address: z.string().trim().max(320).nullable().default(null),
+  }),
+  resolution: z.string().trim().max(4000).nullable().default(null),
+  resolvedAt: z.string().nullable().default(null),
+  channel: z
+    .object({
+      bindingId: z.string(),
+      threadId: z.string().nullable(),
+      messageId: z.string(),
+      subject: z.string().nullable(),
+    })
+    .nullable()
+    .default(null),
+  draftReply: z
+    .object({
+      body: z.string(),
+      draftedBy: workActorSchema,
+      at: z.string(),
+    })
+    .nullable()
+    .default(null),
+});
+export type ProjectTaskCase = z.infer<typeof projectTaskCaseSchema>;
+
+export const STANDUP_DEFAULT_QUESTIONS = [
+  "What moved since the last standup?",
+  "What's next?",
+  "Anything blocking you?",
+] as const;
+
+export const standupParticipantSchema = z.object({
+  actor: workActorSchema,
+  name: z.string(),
+});
+export type StandupParticipant = z.infer<typeof standupParticipantSchema>;
+
+export const standupAnswerSchema = z.object({
+  actor: workActorSchema,
+  name: z.string(),
+  answers: z.array(z.object({ question: z.string(), answer: z.string() })),
+  answeredAt: z.string(),
+});
+export type StandupAnswer = z.infer<typeof standupAnswerSchema>;
+
+export const projectTaskStandupSchema = z.object({
+  date: z.string(),
+  questions: z.array(z.string().trim().min(1).max(300)).min(1).max(6),
+  participants: z.array(standupParticipantSchema),
+  answers: z.array(standupAnswerSchema).default([]),
+  summary: z.string().nullable().default(null),
+  summarisedAt: z.string().nullable().default(null),
+  closesAt: z.string(),
+});
+export type ProjectTaskStandup = z.infer<typeof projectTaskStandupSchema>;
+
+export const projectTaskDetailsSchema = z.object({
+  case: projectTaskCaseSchema.optional(),
+  standup: projectTaskStandupSchema.optional(),
+  escalation: z
+    .object({
+      to: workActorSchema,
+      reason: z.string(),
+      by: workActorSchema,
+      at: z.string(),
+    })
+    .optional(),
+  unblocker: workActorSchema.optional(),
+  reviewRounds: z.number().int().nonnegative().optional(),
+});
+export type ProjectTaskDetails = z.infer<typeof projectTaskDetailsSchema>;
+
+export const PROJECT_TASK_LINK_KINDS = [
+  "raised_from",
+  "resolved_by",
+  "duplicate_of",
+  "relates_to",
+] as const;
+export const projectTaskLinkKindSchema = z.enum(PROJECT_TASK_LINK_KINDS);
+export type ProjectTaskLinkKind = z.infer<typeof projectTaskLinkKindSchema>;
+
+export const projectTaskLinkSchema = z.object({
+  id: z.string(),
+  fromTaskId: z.string(),
+  toTaskId: z.string(),
+  kind: projectTaskLinkKindSchema,
+  createdAt: z.string(),
+});
+export type ProjectTaskLink = z.infer<typeof projectTaskLinkSchema>;
+
+export const createProjectTaskLinkSchema = z.object({
+  toTaskId: z.string().min(1),
+  kind: projectTaskLinkKindSchema,
+});
+
+export const projectTaskCommentSchema = z.object({
+  body: z.string().trim().min(1).max(8000),
+});
+export type ProjectTaskCommentInput = z.infer<typeof projectTaskCommentSchema>;
+
+export const raiseCaseSchema = z.object({
+  title: z.string().trim().min(1).max(300),
+  description: z.string().trim().max(8000).nullable().default(null),
+  priority: projectTaskPrioritySchema.default("none"),
+  raisedFromTaskId: z.string().min(1).nullable().default(null),
+});
+export type RaiseCaseInput = z.infer<typeof raiseCaseSchema>;
+
+export const sendCaseReplySchema = z.object({
+  body: z.string().trim().min(1).max(8000),
+});
+
+export const resolveCaseSchema = z.object({
+  resolution: z.string().trim().min(1).max(4000),
+});
+
+export const answerStandupSchema = z.object({
+  answers: z.array(z.object({ question: z.string(), answer: z.string().trim().max(4000) })),
+});
+export type AnswerStandupInput = z.infer<typeof answerStandupSchema>;
+
+export const standupSettingsSchema = z.object({
+  enabled: z.boolean(),
+  time: z.string().regex(/^\d{2}:\d{2}$/),
+  days: z.array(z.number().int().min(0).max(6)).min(1).max(7),
+  timeZone: z.string().min(1).max(60),
+  questions: z.array(z.string().trim().min(1).max(300)).min(1).max(6),
+  participants: z.enum(["everyone", "people", "teammates"]),
+  windowMinutes: z.number().int().min(15).max(1440),
+  shareBindingId: z.string().min(1).nullable().default(null),
+});
+export type StandupSettings = z.infer<typeof standupSettingsSchema>;
+
+export const DEFAULT_STANDUP_SETTINGS: StandupSettings = {
+  enabled: false,
+  time: "09:15",
+  days: [1, 2, 3, 4, 5],
+  timeZone: "Europe/London",
+  questions: [...STANDUP_DEFAULT_QUESTIONS],
+  participants: "everyone",
+  windowMinutes: 120,
+  shareBindingId: null,
+};
+
 export const PROJECT_TASK_INTERACTION_TOOL_IDS = ["ask_user", "request_approval"] as const;
 
 export const TERMINAL_PROJECT_TASK_STATUSES: readonly ProjectTaskStatus[] = ["done", "cancelled"];
@@ -58,6 +265,7 @@ export const projectTaskBlockedReasonSchema = z.enum([
   "run_failed",
   "dependencies_unmet",
   "kill_condition_met",
+  "machine_offline",
 ]);
 
 export type ProjectTaskBlockedReason = z.infer<typeof projectTaskBlockedReasonSchema>;
@@ -65,6 +273,15 @@ export type ProjectTaskBlockedReason = z.infer<typeof projectTaskBlockedReasonSc
 export const RETRYABLE_PROJECT_TASK_BLOCKED_REASONS: readonly ProjectTaskBlockedReason[] = [
   "dispatch_failed",
   "run_failed",
+];
+
+export const MANAGER_HANDLED_BLOCKED_REASONS: readonly ProjectTaskBlockedReason[] = [
+  "awaiting_input",
+  "stalled",
+  "missing_capability",
+  "dispatch_failed",
+  "run_failed",
+  "kill_condition_met",
 ];
 
 export const projectTaskBlockedReasonLabels: Record<ProjectTaskBlockedReason, string> = {
@@ -79,6 +296,7 @@ export const projectTaskBlockedReasonLabels: Record<ProjectTaskBlockedReason, st
   run_failed: "The run failed",
   dependencies_unmet: "Waiting on another task",
   kill_condition_met: "Hit a condition that says stop",
+  machine_offline: "Waiting for a machine to come online",
 };
 
 export const projectTaskStatusLabels: Record<ProjectTaskStatus, string> = {
@@ -200,7 +418,18 @@ export const projectTaskSchema = z.object({
   id: z.string(),
   projectId: z.string(),
   workspaceId: z.string(),
+  key: z.string().nullable().default(null),
+  number: z.number().int().positive().nullable().default(null),
+  kind: projectTaskKindSchema.default("task"),
   objective: z.string(),
+  description: z.string().nullable().default(null),
+  priority: projectTaskPrioritySchema.default("none"),
+  parentTaskId: z.string().nullable().default(null),
+  startAt: z.string().nullable().default(null),
+  dueAt: z.string().nullable().default(null),
+  owner: workActorSchema.nullable().default(null),
+  reviewer: workActorSchema.nullable().default(null),
+  details: projectTaskDetailsSchema.default({}),
   acceptanceCriteria: z.array(projectTaskCriterionSchema).default([]),
   assumptions: z.array(projectTaskAssumptionSchema).default([]),
   killConditions: z.array(projectTaskKillConditionSchema).default([]),
@@ -442,10 +671,21 @@ const taskWorkItemFields = {
   stageId: z.string().trim().min(1).max(40).nullable(),
   tokenBudget: z.number().int().positive().max(10_000_000).nullable(),
   originConversationId: z.string().min(1).nullable(),
+  description: z.string().trim().max(8000).nullable(),
+  priority: projectTaskPrioritySchema,
+  parentTaskId: z.string().min(1).nullable(),
+  startAt: z.iso.datetime({ offset: true }).nullable(),
+  dueAt: z.iso.datetime({ offset: true }).nullable(),
+  owner: workActorSchema.nullable(),
+  reviewer: workActorSchema.nullable(),
 };
 
 export const createProjectTaskSchema = z
-  .object({ objective: objectiveField, ...taskWorkItemFields })
+  .object({
+    objective: objectiveField,
+    kind: projectTaskKindSchema.optional(),
+    ...taskWorkItemFields,
+  })
   .partial(
     Object.fromEntries(Object.keys(taskWorkItemFields).map((key) => [key, true])) as Record<
       keyof typeof taskWorkItemFields,
@@ -473,6 +713,7 @@ export const projectTaskListQuerySchema = z.object({
   status: projectTaskStatusSchema.optional(),
   assignee_user_id: z.coerce.number().int().positive().optional(),
   include_done: z.coerce.boolean().optional(),
+  kind: projectTaskKindSchema.optional(),
 });
 
 export const projectTaskResponseSchema = z.object({ task: projectTaskSchema });
@@ -658,6 +899,45 @@ export type ProjectTaskStageEvidence = z.infer<typeof projectTaskStageEvidenceSc
 export type ProjectTaskStageAttempt = z.infer<typeof projectTaskStageAttemptSchema>;
 export type ProjectTaskResumeCapability = z.infer<typeof projectTaskResumeCapabilitySchema>;
 
+export const WORK_POST_KINDS = ["comment", "update", "event"] as const;
+export const workPostKindSchema = z.enum(WORK_POST_KINDS);
+export type WorkPostKind = z.infer<typeof workPostKindSchema>;
+
+export const workPostAuthorSchema = z.object({
+  kind: z.enum(["person", "teammate", "system"]),
+  name: z.string(),
+  userId: z.number().int().positive().nullable().default(null),
+  teammateId: z.string().nullable().default(null),
+});
+export type WorkPostAuthor = z.infer<typeof workPostAuthorSchema>;
+
+export const projectTaskThreadPostSchema = z.object({
+  id: z.string(),
+  kind: workPostKindSchema,
+  author: workPostAuthorSchema,
+  body: z.string(),
+  createdAt: z.string(),
+});
+export type ProjectTaskThreadPost = z.infer<typeof projectTaskThreadPostSchema>;
+
+export const projectTaskSummarySchema = projectTaskSchema.pick({
+  id: true,
+  key: true,
+  kind: true,
+  objective: true,
+  status: true,
+  priority: true,
+  owner: true,
+  projectId: true,
+});
+export type ProjectTaskSummary = z.infer<typeof projectTaskSummarySchema>;
+
+export const projectTaskLinkedSchema = projectTaskLinkSchema.extend({
+  direction: z.enum(["outgoing", "incoming"]),
+  task: projectTaskSummarySchema,
+});
+export type ProjectTaskLinked = z.infer<typeof projectTaskLinkedSchema>;
+
 export const projectTaskDetailResponseSchema = z.object({
   task: projectTaskSchema,
   goal: goalSchema.nullable(),
@@ -666,6 +946,13 @@ export const projectTaskDetailResponseSchema = z.object({
   interaction: projectTaskInteractionSchema.nullable().default(null),
   activity: projectTaskActivityTimelineSchema,
   plan: projectTaskPlanEvidenceSchema,
+  children: z.array(projectTaskSummarySchema).default([]),
+  links: z.array(projectTaskLinkedSchema).default([]),
+  thread: z.array(projectTaskThreadPostSchema).default([]),
+});
+
+export const projectTaskThreadResponseSchema = z.object({
+  thread: z.array(projectTaskThreadPostSchema),
 });
 
 export type ProjectTaskDetailResponse = z.infer<typeof projectTaskDetailResponseSchema>;

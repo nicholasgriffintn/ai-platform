@@ -8,7 +8,7 @@ export const MODEL_SETTABLE_STATUSES: ProjectTaskStatus[] = ["backlog", "review"
 export const create_task: FunctionToolDescriptor = {
   name: "create_task",
   description:
-    "Add work to this project's task system so it is captured outside this conversation. Use it when the person describes work to do later, or when you split an objective into separate pieces. Tasks start in the backlog and nobody runs them until a person says so.",
+    "Add work to this project's task system. Use it when the person describes work to do, or when you split a task into sub-tasks with parentTaskId. Tasks without an owner wait in the backlog. Give a teammate owner to hand the work over at once.",
   type: "normal",
   permissions: ["write"],
   effects: { effectClass: "write" },
@@ -52,6 +52,21 @@ export const create_task: FunctionToolDescriptor = {
         type: "string",
         description: "Optional flow stage id to start the task in.",
       },
+      description: {
+        type: "string",
+        description: "Longer detail for the people and teammates who pick this up.",
+      },
+      owner: {
+        type: "string",
+        description:
+          "Who owns it: a teammate's name, or a person's name or email. A teammate owner wakes and starts straight away.",
+      },
+      parentTaskId: {
+        type: "string",
+        description: "Key or id of the parent task, when this is a sub-task. Three levels at most.",
+      },
+      priority: { type: "string", enum: ["none", "low", "medium", "high", "urgent"] },
+      dueAt: { type: "string", description: "Due date as an ISO 8601 date-time." },
     },
     required: ["objective"],
     additionalProperties: false,
@@ -130,6 +145,9 @@ export const update_task: FunctionToolDescriptor = {
         description: `One of: ${MODEL_SETTABLE_STATUSES.join(", ")}.`,
         enum: MODEL_SETTABLE_STATUSES,
       },
+      description: { type: "string", description: "Replacement detail." },
+      priority: { type: "string", enum: ["none", "low", "medium", "high", "urgent"] },
+      dueAt: { type: "string", description: "Due date as an ISO 8601 date-time." },
     },
     required: ["taskId"],
     additionalProperties: false,

@@ -5,6 +5,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { Teammate } from "~/infrastructure/database/schema";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
+import { WorkspaceTeammateRepository } from "~/modules/teammates/infrastructure/WorkspaceTeammateRepository";
 import {
   requireProjectAccess,
   requireWorkspaceAccess,
@@ -45,11 +46,16 @@ export async function listProjectDefaultTeammateIds(
   context: ServiceContext,
   workspaceId: string,
 ): Promise<string[]> {
-  const workspaceDefaults = await context.repositories
-    .get(TeammateRepository)
-    .listWorkspaceDefaults(workspaceId);
+  const [workspaceDefaults, workspace] = await Promise.all([
+    context.repositories.get(TeammateRepository).listWorkspaceDefaults(workspaceId),
+    context.repositories.get(WorkspaceRepository).getWorkspace(workspaceId),
+  ]);
 
-  return [...workspaceDefaults.map((teammate) => teammate.id), ...listPlatformTeammateIds()];
+  return [
+    ...workspaceDefaults.map((teammate) => teammate.id),
+    ...(workspace?.lead_teammate_id ? [workspace.lead_teammate_id] : []),
+    ...listPlatformTeammateIds(),
+  ];
 }
 
 export function resolveProjectTeammateIds(params: {
@@ -160,14 +166,42 @@ export async function requireProjectTeammate(
   return teammate;
 }
 
+export async function requireWorkspaceTeammate(
+  context: ServiceContext,
+  workspaceId: string,
+  teammateId: string,
+): Promise<Teammate> {
+  await requireWorkspaceAccess(context, workspaceId);
+  const [employment, teammate] = await Promise.all([
+    context.repositories.get(WorkspaceTeammateRepository).get(workspaceId, teammateId),
+    loadTeammate(context, teammateId),
+  ]);
+
+  if (!employment || employment.status === "proposed" || employment.status === "archived") {
+    throw new AssistantError(
+      "That teammate does not work for this workspace",
+      ErrorType.NOT_FOUND,
+      404,
+    );
+  }
+
+  await assertTeammateAvailableToWorkspace(context, teammate, workspaceId);
+
+  return teammate;
+}
+
 export async function requireScopedTeammateAccess(
   context: ServiceContext,
   teammateId: string,
-  scope: { type: "personal"; id: string } | { type: "project"; id: string },
+  scope: { type: "personal" | "project" | "workspace"; id: string },
   userId?: number,
 ): Promise<Teammate> {
   if (scope.type === "project") {
     return requireProjectTeammate(context, scope.id, teammateId);
+  }
+
+  if (scope.type === "workspace") {
+    return requireWorkspaceTeammate(context, scope.id, teammateId);
   }
 
   return requireTeammateAccess(context, teammateId, "read", userId);

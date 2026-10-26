@@ -8,8 +8,8 @@ export function getProjectBasePath(workspaceId: string, projectId: string): stri
   return `/work/${encodeURIComponent(workspaceId)}/projects/${encodeURIComponent(projectId)}`;
 }
 
-export function getProjectChatPath(workspaceId: string, projectId: string): string {
-  return `${getProjectBasePath(workspaceId, projectId)}/chat`;
+export function getProjectNewTaskPath(workspaceId: string, projectId: string): string {
+  return `${getProjectBasePath(workspaceId, projectId)}?new=1`;
 }
 
 export function getProjectConversationPath(
@@ -17,9 +17,9 @@ export function getProjectConversationPath(
   projectId: string,
   conversationId?: string,
 ): string {
-  const chatPath = getProjectChatPath(workspaceId, projectId);
-
-  return conversationId ? `${chatPath}/${encodeURIComponent(conversationId)}` : chatPath;
+  return conversationId
+    ? `${getProjectBasePath(workspaceId, projectId)}/chat/${encodeURIComponent(conversationId)}`
+    : getProjectNewTaskPath(workspaceId, projectId);
 }
 
 export function isProjectConversationPath(pathname: string): boolean {

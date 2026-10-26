@@ -7,4 +7,5 @@ export const SCHEDULES = {
   PROVIDER_QUOTA_SYNC: "*/15 * * * *",
   INFRA_RECONCILIATION: "0 4 * * *", // Daily at 4 AM
   RECIPE_EXECUTION: "*/15 * * * *", // Poll recipe schedules every 15 minutes
+  WORK_RHYTHM: "*/15 * * * *",
 } as const;

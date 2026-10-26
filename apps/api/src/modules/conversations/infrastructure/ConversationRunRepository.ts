@@ -551,7 +551,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
                AND interaction.id = conversation_run.last_message_id
                AND interaction.tool_call_id = ?
                AND interaction.role = 'tool'
-               AND interaction.status = 'pending'
+               AND interaction.status IN ('pending', 'resolved')
            )
           AND (? IS NULL OR EXISTS (
             SELECT 1 FROM delegation WHERE id = ? AND state IN (${LIVE_STATE_SQL})
@@ -588,7 +588,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
               AND interaction.id = conversation_run.last_message_id
               AND interaction.tool_call_id = ?
               AND interaction.role = 'tool'
-              AND interaction.status = 'pending'
+              AND interaction.status IN ('pending', 'resolved')
           )
          AND (? IS NULL OR EXISTS (
            SELECT 1 FROM delegation WHERE id = ? AND state IN (${LIVE_STATE_SQL})

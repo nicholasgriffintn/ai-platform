@@ -3,6 +3,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { requireTeammateContext } from "~/modules/teammates/application/contexts";
+import { teammateContextCoversRun } from "~/modules/teammates/domain/context-scope";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { MemoryScope } from "~/types";
 
@@ -48,8 +49,10 @@ export async function requireRunMemoryDocument(
     throw new AssistantError("This document is not granted to this run", ErrorType.FORBIDDEN, 403);
   }
 
+  let workspaceId: string | null = null;
+
   if (scope.scopeType === "project") {
-    await requireProjectAccess(context, scope.scopeId);
+    workspaceId = (await requireProjectAccess(context, scope.scopeId)).project.workspace_id;
   } else if (scope.scopeId !== String(user.id)) {
     throw new AssistantError("Memory scope is unavailable", ErrorType.FORBIDDEN, 403);
   }
@@ -60,8 +63,11 @@ export async function requireRunMemoryDocument(
 
   if (
     teammate &&
-    (teammate.scope.type !== scope.scopeType ||
-      teammate.scope.id !== scope.scopeId ||
+    (!teammateContextCoversRun(teammate.scope, {
+      type: scope.scopeType,
+      id: scope.scopeId,
+      workspaceId,
+    }) ||
       teammate.memoryDocumentId !== scope.teammateContext?.memoryDocumentId)
   ) {
     throw new AssistantError("The teammate memory grant changed", ErrorType.FORBIDDEN, 403);

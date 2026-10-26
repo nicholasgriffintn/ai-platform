@@ -1,4 +1,5 @@
 import type {
+  ChannelInteractionMode,
   ChannelReactionLevel,
   CreateChannelBindingInput,
 } from "@ngriffin_uk/polychat-schemas";
@@ -12,7 +13,7 @@ export function useChannelConnectionForm(
   const [externalId, setExternalId] = useState("");
   const [label, setLabel] = useState("");
   const [teammateId, setTeammateId] = useState("");
-  const [automated, setAutomated] = useState(true);
+  const [interactionMode, setInteractionMode] = useState<ChannelInteractionMode>("automated");
   const [reactionLevel, setReactionLevel] = useState<ChannelReactionLevel>("ack");
   const submit = async () => {
     await onCreate({
@@ -21,7 +22,7 @@ export function useChannelConnectionForm(
       projectId,
       label: label.trim() || undefined,
       teammateId: teammateId || undefined,
-      interactionMode: automated ? "automated" : "direct",
+      interactionMode,
       reactionLevel,
     });
     setExternalId("");
@@ -37,8 +38,8 @@ export function useChannelConnectionForm(
     setLabel,
     teammateId,
     setTeammateId,
-    automated,
-    setAutomated,
+    interactionMode,
+    setInteractionMode,
     reactionLevel,
     setReactionLevel,
     submit,

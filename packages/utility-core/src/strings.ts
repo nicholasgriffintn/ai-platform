@@ -258,3 +258,35 @@ export function quoteShellArgument(value: string): string {
 export function keepDigits(value: string, maxLength = Number.POSITIVE_INFINITY): string {
   return value.replace(/\D/g, "").slice(0, maxLength);
 }
+
+export function deriveTaskPrefix(name: string): string {
+  const words = name
+    .toUpperCase()
+    .replace(/[^A-Z0-9 ]/g, " ")
+    .split(/\s+/)
+    .filter((word) => /^[A-Z]/.test(word));
+
+  if (words.length === 0) {
+    return "TSK";
+  }
+
+  const initials = words.length > 1 ? words.map((word) => word[0]).join("") : "";
+  const prefix = (initials.length >= 2 ? initials : words[0].replace(/[^A-Z]/g, "")).slice(0, 4);
+
+  return prefix.length >= 2 ? prefix : "TSK";
+}
+
+export function extractMentions(text: string): string[] {
+  const mentions = text.match(/(?:^|[\s(])@([\p{L}\p{N}_-]{2,40})/gu) ?? [];
+
+  return [
+    ...new Set(
+      mentions.map((mention) =>
+        mention
+          .trim()
+          .replace(/^[(@]+/, "")
+          .toLowerCase(),
+      ),
+    ),
+  ];
+}

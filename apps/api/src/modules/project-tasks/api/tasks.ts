@@ -1,5 +1,16 @@
 import {
+  answerStandupSchema,
+  createProjectTaskLinkSchema,
   createProjectTaskSchema,
+  projectTaskCommentSchema,
+  projectTaskLinkSchema,
+  projectTaskThreadPostSchema,
+  raiseCaseSchema,
+  resolveCaseSchema,
+  sendCaseReplySchema,
+  standupSettingsSchema,
+  workActorSchema,
+  workAssignSchema,
   listPageOf,
   projectTaskDetailResponseSchema,
   projectTaskListQuerySchema,
@@ -20,7 +31,28 @@ import {
   startProjectTask,
   updateProjectTask,
 } from "~/modules/project-tasks/application";
+import { sendCaseReply } from "~/modules/project-tasks/application/case-intake";
 import { getProjectTaskReview } from "~/modules/project-tasks/application/pull-request-review";
+import {
+  answerStandup,
+  getStandupDraft,
+  getStandupSettings,
+  setStandupSettings,
+} from "~/modules/project-tasks/application/standups";
+import {
+  assignTask,
+  blockTask,
+  clearEscalation,
+  commentOnTask,
+  escalateTask,
+  linkTasks,
+  personCaller,
+  raiseCase,
+  requestReview,
+  resolveCase,
+  reviewTask,
+  unlinkTasks,
+} from "~/modules/project-tasks/application/work";
 
 const projectParamsSchema = z.object({ project_id: z.string().min(1) });
 const taskParamsSchema = projectParamsSchema.extend({ task_id: z.string().min(1) });
@@ -42,6 +74,7 @@ export function defineProjectTasks(projects: ResourceBuilder): void {
           status: query.status,
           assigneeUserId: query.assignee_user_id,
           includeDone: query.include_done,
+          kind: query.kind,
         });
 
         return { ...listPageOf(rows, (task) => task.id), flow };
@@ -117,4 +150,248 @@ export function defineProjectTasks(projects: ResourceBuilder): void {
     handler: ({ serviceContext, params }) =>
       getProjectTaskReview(serviceContext, params.project_id, params.task_id),
   });
+
+  tasks.action("comment", {
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Comment on a task",
+    description: "Posts to the task thread. Mentioning a teammate with @name wakes it.",
+    paramSchema: taskParamsSchema,
+    bodySchema: projectTaskCommentSchema,
+    responses: {
+      200: { description: "The post", schema: z.object({ post: projectTaskThreadPostSchema }) },
+    },
+    handler: async ({ serviceContext, params, body }) => ({
+      post: await commentOnTask(serviceContext, params.project_id, params.task_id, body.body),
+    }),
+  });
+
+  tasks.action("assign", {
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Hand a task to a teammate or person",
+    description: "A teammate owner wakes and starts straight away under the caller's authority.",
+    paramSchema: taskParamsSchema,
+    bodySchema: workAssignSchema,
+    responses: { 200: { description: "The task", schema: projectTaskResponseSchema } },
+    handler: async ({ serviceContext, params, body }) => ({
+      task: await assignTask(
+        serviceContext,
+        params.project_id,
+        params.task_id,
+        body.owner,
+        personCaller(serviceContext),
+      ),
+    }),
+  });
+
+  tasks.action("request_review", {
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Send a task for review",
+    paramSchema: taskParamsSchema,
+    bodySchema: z.object({
+      reviewer: workActorSchema,
+      note: z.string().trim().max(2000).nullable().default(null),
+    }),
+    responses: { 200: { description: "The task", schema: projectTaskResponseSchema } },
+    handler: async ({ serviceContext, params, body }) => ({
+      task: await requestReview(
+        serviceContext,
+        params.project_id,
+        params.task_id,
+        body.reviewer,
+        body.note,
+        personCaller(serviceContext),
+      ),
+    }),
+  });
+
+  tasks.action("review", {
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Accept a task or ask for changes",
+    paramSchema: taskParamsSchema,
+    bodySchema: z.object({
+      decision: z.enum(["accept", "changes"]),
+      note: z.string().trim().max(4000).default(""),
+    }),
+    responses: { 200: { description: "The task", schema: projectTaskResponseSchema } },
+    handler: async ({ serviceContext, params, body }) => ({
+      task: await reviewTask(
+        serviceContext,
+        params.project_id,
+        params.task_id,
+        body.decision,
+        body.note,
+        personCaller(serviceContext),
+      ),
+    }),
+  });
+
+  tasks.action("block", {
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Block a task on someone",
+    paramSchema: taskParamsSchema,
+    bodySchema: z.object({ reason: z.string().trim().min(1).max(500), unblocker: workActorSchema }),
+    responses: { 200: { description: "The task", schema: projectTaskResponseSchema } },
+    handler: async ({ serviceContext, params, body }) => ({
+      task: await blockTask(
+        serviceContext,
+        params.project_id,
+        params.task_id,
+        body.reason,
+        body.unblocker,
+        personCaller(serviceContext),
+      ),
+    }),
+  });
+
+  tasks.action("escalate", {
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Escalate a task",
+    paramSchema: taskParamsSchema,
+    bodySchema: z.object({ reason: z.string().trim().min(1).max(2000) }),
+    responses: { 200: { description: "The task", schema: projectTaskResponseSchema } },
+    handler: async ({ serviceContext, params, body }) => ({
+      task: await escalateTask(
+        serviceContext,
+        params.project_id,
+        params.task_id,
+        body.reason,
+        personCaller(serviceContext),
+      ),
+    }),
+  });
+
+  tasks.action("clear_escalation", {
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Mark an escalation handled",
+    paramSchema: taskParamsSchema,
+    responses: { 200: { description: "The task", schema: projectTaskResponseSchema } },
+    handler: async ({ serviceContext, params }) => ({
+      task: await clearEscalation(serviceContext, params.project_id, params.task_id),
+    }),
+  });
+
+  tasks.action("resolve", {
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Resolve a case",
+    paramSchema: taskParamsSchema,
+    bodySchema: resolveCaseSchema,
+    responses: { 200: { description: "The case", schema: projectTaskResponseSchema } },
+    handler: async ({ serviceContext, params, body }) => ({
+      task: await resolveCase(serviceContext, params.project_id, params.task_id, body.resolution),
+    }),
+  });
+
+  tasks.action("send_reply", {
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Send a reply to the person who raised a case",
+    description: "Sends through the channel the case arrived on. A person always sends it.",
+    paramSchema: taskParamsSchema,
+    bodySchema: sendCaseReplySchema,
+    responses: { 200: { description: "The case", schema: projectTaskResponseSchema } },
+    handler: async ({ serviceContext, params, body }) => ({
+      task: await sendCaseReply(serviceContext, params.project_id, params.task_id, body.body),
+    }),
+  });
+
+  tasks.action("answer_standup", {
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Answer a standup",
+    paramSchema: taskParamsSchema,
+    bodySchema: answerStandupSchema,
+    responses: { 200: { description: "The standup", schema: projectTaskResponseSchema } },
+    handler: async ({ serviceContext, params, body }) => ({
+      task: await answerStandup(
+        serviceContext,
+        params.project_id,
+        params.task_id,
+        body,
+        personCaller(serviceContext),
+      ),
+    }),
+  });
+
+  tasks.singleton("standup_draft").read({
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Draft standup answers from the caller's activity",
+    paramSchema: taskParamsSchema,
+    responses: { 200: { description: "Draft answers", schema: answerStandupSchema } },
+    handler: ({ serviceContext, params }) =>
+      getStandupDraft(serviceContext, params.project_id, params.task_id),
+  });
+
+  tasks
+    .sub("links", "link_id")
+    .create({
+      auth: true,
+      tags: ["projects", "tasks"],
+      summary: "Link two tasks",
+      paramSchema: taskParamsSchema,
+      bodySchema: createProjectTaskLinkSchema,
+      responses: {
+        200: { description: "The link", schema: z.object({ link: projectTaskLinkSchema }) },
+      },
+      handler: async ({ serviceContext, params, body }) => ({
+        link: await linkTasks(
+          serviceContext,
+          params.project_id,
+          params.task_id,
+          body.toTaskId,
+          body.kind,
+        ),
+      }),
+    })
+    .delete({
+      auth: true,
+      tags: ["projects", "tasks"],
+      summary: "Remove a task link",
+      paramSchema: taskParamsSchema.extend({ link_id: z.string().min(1) }),
+      handler: ({ serviceContext, params }) =>
+        unlinkTasks(serviceContext, params.project_id, params.task_id, params.link_id),
+    });
+
+  projects.sub("cases", "case_id").create({
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Raise a case",
+    description: "Sends a problem or request to the project's Triage, optionally linked to a task.",
+    paramSchema: projectParamsSchema,
+    bodySchema: raiseCaseSchema,
+    responses: { 200: { description: "The case", schema: projectTaskResponseSchema } },
+    handler: async ({ serviceContext, params, body }) => ({
+      task: await raiseCase(serviceContext, params.project_id, body, personCaller(serviceContext)),
+    }),
+  });
+
+  projects
+    .singleton("standup")
+    .read({
+      auth: true,
+      tags: ["projects", "tasks"],
+      summary: "Read the project's standup settings",
+      paramSchema: projectParamsSchema,
+      responses: { 200: { description: "Standup settings", schema: standupSettingsSchema } },
+      handler: ({ serviceContext, params }) =>
+        getStandupSettings(serviceContext, params.project_id),
+    })
+    .update({
+      auth: true,
+      tags: ["projects", "tasks"],
+      summary: "Change the project's standup settings",
+      paramSchema: projectParamsSchema,
+      bodySchema: standupSettingsSchema,
+      responses: { 200: { description: "Standup settings", schema: standupSettingsSchema } },
+      handler: ({ serviceContext, params, body }) =>
+        setStandupSettings(serviceContext, params.project_id, body),
+    });
 }

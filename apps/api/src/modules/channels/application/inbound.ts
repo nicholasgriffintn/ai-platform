@@ -34,6 +34,7 @@ import { ConversationManager } from "~/modules/conversations/application/manager
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { deliverOutboundOperation } from "~/modules/delivery/application/outbound";
+import { receiveCaseFromChannel } from "~/modules/project-tasks/application/case-intake";
 import { toCommandMessages } from "~/modules/responses/application/runs/command-payload";
 import { recoverChatCompletionResponse } from "~/modules/responses/application/runs/completion-recovery";
 import { startResponse } from "~/modules/responses/application/start";
@@ -45,6 +46,7 @@ import {
   requireTeammateContext,
 } from "~/modules/teammates/application/contexts";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
+import { resolveProjectTeammateScope } from "~/modules/teammates/application/work-scope";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IEnv, IUser, Message } from "~/types";
@@ -371,7 +373,7 @@ type ChannelDelivery =
       bindingId?: string;
       teammateContextId?: string;
       poly?: boolean;
-      interactionMode: "direct" | "automated";
+      interactionMode: "direct" | "automated" | "cases";
       validate(): Promise<void>;
       send(reply: ChannelReplyPayload): Promise<void>;
       signal?(signal: ChannelRunSignal): Promise<void>;
@@ -486,15 +488,15 @@ async function resolveBindingDelivery(params: {
     return { status: "channel_unavailable" };
   }
 
-  const teammateContext = binding.teammate_id
-    ? await ensureActiveTeammateContext(
-        params.context,
-        binding.teammate_id,
-        binding.scope_type === "project"
-          ? { type: "project", id: binding.scope_id }
-          : { type: "personal", id: String(params.user.id) },
-      )
+  const teammateScope = binding.teammate_id
+    ? binding.scope_type === "project"
+      ? await resolveProjectTeammateScope(params.context, binding.teammate_id, binding.scope_id)
+      : ({ type: "personal", id: String(params.user.id) } as const)
     : null;
+  const teammateContext =
+    binding.teammate_id && teammateScope
+      ? await ensureActiveTeammateContext(params.context, binding.teammate_id, teammateScope)
+      : null;
   const conversationId =
     isPoly && teammateContext
       ? teammateContext.homeConversationId
@@ -540,10 +542,10 @@ async function resolveBindingDelivery(params: {
 
     if (teammateContext) {
       const activeContext = await requireTeammateContext(params.context, teammateContext.id);
-      const expectedScope =
-        current.scope_type === "project"
-          ? { type: "project" as const, id: current.scope_id }
-          : { type: "personal" as const, id: String(params.user.id) };
+      const expectedScope = teammateScope ?? {
+        type: "personal" as const,
+        id: String(params.user.id),
+      };
 
       if (
         activeContext.teammateId !== current.teammate_id ||
@@ -623,6 +625,31 @@ export async function handleInboundChannelMessage(params: {
 
   if (delivery.status !== "ready") {
     return delivery;
+  }
+
+  if (
+    delivery.interactionMode === "cases" &&
+    delivery.projectId &&
+    delivery.bindingId &&
+    isInboundBindingTaskData(params.data)
+  ) {
+    await delivery.validate();
+    const caseTask = await receiveCaseFromChannel(params.context, {
+      projectId: delivery.projectId,
+      bindingId: delivery.bindingId,
+      channel: params.data.channel,
+      teammateId: delivery.teammateId ?? null,
+      threadId: params.data.messageContext.threadId ?? null,
+      messageId: message.messageId,
+      subject: params.data.messageContext.subject ?? null,
+      body: message.body,
+      senderAddress: message.from,
+    });
+
+    return {
+      status: "ignored",
+      conversationId: caseTask.conversationId ?? delivery.conversationId,
+    };
   }
 
   const { conversationId } = delivery;

@@ -1,15 +1,9 @@
-import {
-  ButtonLink,
-  DropdownMenu,
-  DropdownMenuItem,
-  Link,
-} from "@ngriffin_uk/polychat-component-ui";
-import { Archive, Ellipsis, LayoutTemplate, Settings2, SquarePen } from "lucide-react";
+import { DropdownMenu, DropdownMenuItem, Link } from "@ngriffin_uk/polychat-component-ui";
+import { Archive, Ellipsis, LayoutTemplate, Settings2 } from "lucide-react";
 
 interface ProjectHomeActionsProps {
   canManage: boolean;
   settingsPath: string;
-  conversationPath: string;
   isSavingTemplate: boolean;
   onArchive: () => void;
   onSaveTemplate: () => void;
@@ -18,7 +12,6 @@ interface ProjectHomeActionsProps {
 export function ProjectHomeActions({
   canManage,
   settingsPath,
-  conversationPath,
   isSavingTemplate,
   onArchive,
   onSaveTemplate,
@@ -63,19 +56,6 @@ export function ProjectHomeActions({
       >
         <Settings2 size={16} />
       </Link>
-
-      <ButtonLink
-        variant="primary"
-        size="sm"
-        collapseLabel
-        href={conversationPath}
-        aria-label="New conversation"
-        title="New conversation"
-        className="shrink-0"
-        icon={<SquarePen size={16} />}
-      >
-        New conversation
-      </ButtonLink>
     </fieldset>
   );
 }

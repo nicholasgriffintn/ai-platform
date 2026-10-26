@@ -7,6 +7,10 @@ import type {
   ProjectTaskContext,
   ProjectTaskAssumption,
   ProjectTaskCriterion,
+  ProjectTaskDetails,
+  WorkActor,
+  WorkWakeRecord,
+  HireProposal,
   ProjectTaskKillCondition,
   ProjectTaskRetrospective,
   ProjectFlow,
@@ -584,6 +588,12 @@ export const workspace = sqliteTable(
     model_permissions_updated_by: integer().references(() => user.id, { onDelete: "set null" }),
     description: text().default("").notNull(),
     colour: text().default("#E8643C").notNull(),
+    mission: text().default("").notNull(),
+    monthly_credit_cap_micros: integer(),
+    lead_teammate_id: text(),
+    setup_project_id: text(),
+    setup_task_id: text(),
+    setup_plan: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
     created_by: integer()
       .notNull()
       .references(() => user.id),
@@ -650,6 +660,11 @@ export const project = sqliteTable(
     coding_timeout_seconds: integer().default(900).notNull(),
     coding_inspection_window_seconds: integer().default(0).notNull(),
     flow: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
+    task_prefix: text(),
+    task_sequence: integer().default(0).notNull(),
+    initiative_id: text(),
+    standup: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
+    standup_last_run_at: text(),
     created_by: integer()
       .notNull()
       .references(() => user.id),
@@ -1093,7 +1108,7 @@ export const channelBinding = sqliteTable(
     teammate_id: text().references(() => teammates.id, {
       onDelete: "set null",
     }),
-    interaction_mode: text({ enum: ["direct", "automated"] })
+    interaction_mode: text({ enum: ["direct", "automated", "cases"] })
       .notNull()
       .default("automated"),
     reaction_level: text({ enum: ["off", "ack", "full"] })
@@ -1184,7 +1199,7 @@ export const teammateContext = sqliteTable(
     actor_user_id: integer()
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    scope_type: text({ enum: ["personal", "project"] }).notNull(),
+    scope_type: text({ enum: ["personal", "project", "workspace"] }).notNull(),
     scope_id: text().notNull(),
     home_conversation_id: text()
       .notNull()
@@ -2357,6 +2372,46 @@ export const teammateGroupMember = sqliteTable(
 
 export type TeammateGroupMemberRow = typeof teammateGroupMember.$inferSelect;
 
+export const workspaceTeammate = sqliteTable(
+  "workspace_teammate",
+  {
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    teammate_id: text()
+      .notNull()
+      .references(() => teammates.id, { onDelete: "cascade" }),
+    title: text().notNull(),
+    reports_to_teammate_id: text(),
+    status: text({ enum: ["proposed", "active", "paused", "archived"] })
+      .default("active")
+      .notNull(),
+    paused_reason: text({ enum: ["manual", "budget"] }),
+    responsible_user_id: integer()
+      .notNull()
+      .references(() => user.id),
+    heartbeat_minutes: integer(),
+    last_heartbeat_at: text(),
+    last_wake: text({ mode: "json" }).$type<WorkWakeRecord | null>(),
+    monthly_credit_cap_micros: integer(),
+    budget_warned_period: text(),
+    project_ids: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
+    proposal: text({ mode: "json" }).$type<HireProposal | null>(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.workspace_id, table.teammate_id] }),
+    teammateIdx: index("workspace_teammate_teammate_idx").on(table.teammate_id),
+  }),
+);
+
+export type WorkspaceTeammateRow = typeof workspaceTeammate.$inferSelect;
+
 export const teammates = sqliteTable(
   "teammates",
   {
@@ -2798,6 +2853,20 @@ export const projectTask = sqliteTable(
       .notNull()
       .references(() => workspace.id, { onDelete: "cascade" }),
     objective: text().notNull(),
+    number: integer(),
+    key: text(),
+    kind: text({ enum: ["task", "case", "standup"] })
+      .default("task")
+      .notNull(),
+    description: text(),
+    priority: text({ enum: ["none", "low", "medium", "high", "urgent"] })
+      .default("none")
+      .notNull(),
+    parent_task_id: text(),
+    start_at: text(),
+    due_at: text(),
+    reviewer: text({ mode: "json" }).$type<WorkActor | null>(),
+    details: text({ mode: "json" }).$type<ProjectTaskDetails | null>(),
     execution_profile: text({ enum: ["diff_review"] }),
     acceptance_criteria: text({ mode: "json" }).$type<ProjectTaskCriterion[]>(),
     assumptions: text({ mode: "json" }).$type<ProjectTaskAssumption[]>(),
@@ -2828,6 +2897,7 @@ export const projectTask = sqliteTable(
         "run_failed",
         "dependencies_unmet",
         "kill_condition_met",
+        "machine_offline",
       ],
     }),
     blocked_detail: text(),
@@ -2875,6 +2945,10 @@ export const projectTask = sqliteTable(
       .on(table.conversation_id)
       .where(sql`${table.conversation_id} IS NOT NULL`),
     runIdx: index("project_task_run_idx").on(table.run_id),
+    parentIdx: index("project_task_parent_idx").on(table.parent_task_id),
+    numberIdx: uniqueIndex("project_task_number_idx")
+      .on(table.project_id, table.number)
+      .where(sql`${table.number} IS NOT NULL`),
     originConversationIdx: index("project_task_origin_conversation_idx").on(
       table.origin_conversation_id,
     ),
@@ -2882,6 +2956,65 @@ export const projectTask = sqliteTable(
 );
 
 export type ProjectTaskRow = typeof projectTask.$inferSelect;
+
+export const projectTaskLink = sqliteTable(
+  "project_task_link",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    from_task_id: text()
+      .notNull()
+      .references(() => projectTask.id, { onDelete: "cascade" }),
+    to_task_id: text()
+      .notNull()
+      .references(() => projectTask.id, { onDelete: "cascade" }),
+    kind: text({ enum: ["raised_from", "resolved_by", "duplicate_of", "relates_to"] }).notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+  },
+  (table) => ({
+    pairIdx: uniqueIndex("project_task_link_pair_idx").on(
+      table.from_task_id,
+      table.to_task_id,
+      table.kind,
+    ),
+    toIdx: index("project_task_link_to_idx").on(table.to_task_id),
+  }),
+);
+
+export type ProjectTaskLinkRow = typeof projectTaskLink.$inferSelect;
+
+export const initiative = sqliteTable(
+  "initiative",
+  {
+    id: text().primaryKey(),
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    name: text().notNull(),
+    description: text().default("").notNull(),
+    status: text({ enum: ["active", "completed", "archived"] })
+      .default("active")
+      .notNull(),
+    target_date: text(),
+    owner_teammate_id: text(),
+    position: real().default(0).notNull(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    workspaceIdx: index("initiative_workspace_idx").on(table.workspace_id),
+  }),
+);
+
+export type InitiativeRow = typeof initiative.$inferSelect;
 
 export const projectTaskIntegration = sqliteTable(
   "project_task_integration",

@@ -35,7 +35,7 @@ export function ProjectSchedulesCard({
   const recipes = useAssistantRecipes();
   const installations = useRecipeInstallations(projectId);
   const workflows = useRecipeWorkflows({
-    conversationPath: `/work/${workspaceId}/projects/${projectId}/chat`,
+    conversationPath: `/work/${workspaceId}/projects/${projectId}`,
     projectId,
   });
   const [isRecipePickerOpen, setIsRecipePickerOpen] = useState(false);

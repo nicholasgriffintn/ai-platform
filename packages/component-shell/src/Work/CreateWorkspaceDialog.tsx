@@ -1,5 +1,6 @@
 import { CreateWorkspaceDialog as ControlledCreateWorkspaceDialog } from "@ngriffin_uk/polychat-component-workspaces";
-import { useCreateWorkspace } from "@ngriffin_uk/polychat-library-react";
+import { useStartOnboarding } from "@ngriffin_uk/polychat-library-react";
+import { creditMicrosFromCredits } from "@ngriffin_uk/polychat-schemas";
 import { useNavigate } from "react-router";
 
 export function CreateWorkspaceDialog({
@@ -10,23 +11,25 @@ export function CreateWorkspaceDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const navigate = useNavigate();
-  const createWorkspace = useCreateWorkspace();
+  const startOnboarding = useStartOnboarding();
 
   return (
     <ControlledCreateWorkspaceDialog
       open={open}
-      isSubmitting={createWorkspace.isPending}
-      errorMessage={createWorkspace.error?.message}
+      isSubmitting={startOnboarding.isPending}
+      errorMessage={startOnboarding.error?.message}
       onOpenChange={onOpenChange}
-      onSubmit={async ({ name, description }) => {
-        const workspace = await createWorkspace.mutateAsync({
+      onSubmit={async ({ name, mission, sources, monthlyCredits }) => {
+        const setup = await startOnboarding.mutateAsync({
           name,
-          description,
+          mission,
+          sources,
+          monthlyCreditCapMicros: monthlyCredits ? creditMicrosFromCredits(monthlyCredits) : null,
           colour: "#2563EB",
         });
 
         onOpenChange(false);
-        void navigate(`/work/${workspace.id}`);
+        void navigate(`/work/${setup.workspaceId}/setup`);
       }}
     />
   );

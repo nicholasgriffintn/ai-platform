@@ -47,6 +47,7 @@ import { toProviderMessages } from "~/modules/responses/application/engine/messa
 import { recordChatRunOperationalMetric } from "~/modules/responses/application/runs/operational-metrics";
 import { startResponse } from "~/modules/responses/application/start";
 import type { ResponseAuthority, ResponseCommand } from "~/modules/responses/domain/command";
+import { assertTeammateEmploymentAvailable } from "~/modules/teammates/application/organisation";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
@@ -56,6 +57,7 @@ import type { IEnv, Message } from "~/types";
 
 import { getPendingProjectTaskToolApproval } from "./approvals";
 import { reconcileTaskNotifications } from "./attention";
+import { settleCasesResolvedBy } from "./case-settlement";
 import {
   createProjectTaskCompletion,
   projectTaskStatusAfterCompletedGoal,
@@ -65,7 +67,9 @@ import { reviewStageOutputs } from "./council-gate";
 import { selectReleasableDependents } from "./dependents";
 import { buildStageInstructions, resolveTaskRuntime } from "./flow";
 import { recoverPendingProjectTaskInteraction } from "./interaction-recovery";
+import { describeOfflineMachine } from "./machine-availability";
 import { findMetKillCondition, recordProjectTaskRetrospective } from "./plan-checks";
+import { buildWorkPurpose } from "./purpose";
 import { getPendingProjectTaskQuestions } from "./questions";
 import { retainTaskReviewCompletion } from "./review-output";
 import { assertReviewDispatchAuthority } from "./review-policy";
@@ -124,6 +128,30 @@ export async function queueProjectTaskRun(params: {
       ErrorType.CONFIGURATION_ERROR,
       503,
     );
+  }
+
+  if (task.runner?.teammateId) {
+    await assertTeammateEmploymentAvailable(context, task.workspaceId, task.runner.teammateId);
+  }
+
+  const offlineMachine = await describeOfflineMachine(context, task, runnerIdentityUserId);
+
+  if (offlineMachine) {
+    const waiting = await context.repositories.get(ProjectTaskRepository).updateTask(task.id, {
+      status: "blocked",
+      blockedReason: "machine_offline",
+      blockedDetail: offlineMachine,
+      runnerIdentityUserId,
+      ...(stageId !== undefined ? { stageId } : {}),
+    });
+
+    if (!waiting) {
+      throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
+    }
+
+    await reconcileTaskNotifications(context, waiting);
+
+    return waiting;
   }
 
   const dispatchTaskId = generateId();
@@ -195,7 +223,17 @@ async function loadDependentBoard(context: ServiceContext, projectId: string) {
 export async function releaseReadyDependentTasks(
   context: ServiceContext,
   projectId: string,
+  finishedTaskId: string,
 ): Promise<void> {
+  try {
+    await settleCasesResolvedBy(context, finishedTaskId);
+  } catch (error) {
+    logger.warn("Linked cases were not settled", {
+      taskId: finishedTaskId,
+      error: getErrorMessage(error),
+    });
+  }
+
   let board: Awaited<ReturnType<typeof loadDependentBoard>>;
 
   try {
@@ -298,6 +336,7 @@ export function buildTaskPrompt(params: {
     stageInstructions: params.stageInstructions || undefined,
     taskId: params.task.id,
     objective: params.task.objective,
+    description: params.task.description || undefined,
     expectedOutput: params.task.expectedOutput || undefined,
     acceptanceCriteria: acceptanceCriteria || undefined,
     contextNotes: params.contextNotes || undefined,
@@ -703,13 +742,27 @@ export async function runProjectTaskDispatch(params: {
       store: true,
     });
     const history = await conversationManager.get(conversationId);
+    const previousRunAwaits =
+      previousRun?.status === "awaiting_input" ||
+      previousRun?.status === "awaiting_approval" ||
+      previousRun?.status === "awaiting_takeover";
     const resumableRunId =
       !params.resumeInterrupted &&
-      (previousRun?.status === "awaiting_input" ||
-        previousRun?.status === "awaiting_approval" ||
-        previousRun?.status === "awaiting_takeover")
+      params.interaction &&
+      previousRunAwaits &&
+      previousRun?.conversationId === conversationId
         ? previousRun.id
         : undefined;
+
+    if (previousRun && previousRunAwaits && !resumableRunId && !params.resumeInterrupted) {
+      await context.repositories.get(ConversationRunRepository).transition({
+        runId: previousRun.id,
+        attempt: previousRun.attempt,
+        status: "cancelled",
+        terminalReason: "Superseded by a fresh run of this task",
+      });
+    }
+
     const request: ResponseCommand = {
       conversationId,
       conversationType: "task",
@@ -720,7 +773,13 @@ export async function runProjectTaskDispatch(params: {
         buildTaskPrompt({
           task: claimed,
           stageInstructions: buildStageInstructions(runtime),
-          contextNotes: await buildProjectTaskContext(context, claimed),
+          contextNotes:
+            [
+              await buildProjectTaskContext(context, claimed),
+              await buildWorkPurpose(context, claimed),
+            ]
+              .filter(Boolean)
+              .join("\n\n") || null,
         }),
       ),
       stream: false,
@@ -1071,7 +1130,7 @@ export async function runProjectTaskDispatch(params: {
         error: getErrorMessage(error),
       }),
     );
-    await releaseReadyDependentTasks(context, claimed.projectId);
+    await releaseReadyDependentTasks(context, claimed.projectId, claimed.id);
   }
 
   if (nextStageId) {
@@ -1134,4 +1193,29 @@ export async function settleFailedProjectTaskDispatch(params: {
   await context.repositories
     .get(ActivityRepository)
     .failActiveActivitiesByGroup("project_task", params.taskId, params.detail);
+}
+
+export async function releaseMachineWaitingTasks(
+  context: ServiceContext,
+  runnerIdentityUserId: number,
+): Promise<void> {
+  const waiting = await context.repositories
+    .get(ProjectTaskRepository)
+    .listBlockedForRunner(runnerIdentityUserId, "machine_offline");
+
+  for (const task of waiting) {
+    try {
+      await queueProjectTaskRun({
+        context,
+        task,
+        runnerIdentityUserId,
+        stageId: task.stageId,
+      });
+    } catch (error) {
+      logger.warn("A task waiting for a machine was not released", {
+        taskId: task.id,
+        error: getErrorMessage(error),
+      });
+    }
+  }
 }

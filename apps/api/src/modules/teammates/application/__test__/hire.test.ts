@@ -1,5 +1,5 @@
 import { getTeammateRoleBrief } from "@ngriffin_uk/polychat-ai-prompts";
-import { hireTeammateSchema } from "@ngriffin_uk/polychat-schemas";
+import { hireTeammateSchema, TEAMMATE_ROLES } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -60,6 +60,12 @@ function createContext() {
 }
 
 describe("hireTeammate", () => {
+  it("has a brief for every built-in role", () => {
+    for (const role of TEAMMATE_ROLES) {
+      expect(() => getTeammateRoleBrief(role.slug)).not.toThrow();
+    }
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
   });

@@ -1,5 +1,8 @@
-import { FormDialog, FormInput, FormSelect, Switch } from "@ngriffin_uk/polychat-component-ui";
-import type { CreateChannelBindingInput } from "@ngriffin_uk/polychat-schemas";
+import { FormDialog, FormInput, FormSelect } from "@ngriffin_uk/polychat-component-ui";
+import type {
+  ChannelInteractionMode,
+  CreateChannelBindingInput,
+} from "@ngriffin_uk/polychat-schemas";
 
 import { useChannelConnectionForm } from "./useChannelConnectionForm.js";
 
@@ -120,15 +123,22 @@ export function ChannelConnectionForm({
           ]}
         />
       )}
-      <div className="border-t border-border pt-4">
-        <Switch
-          label="Reply only when needed"
-          description="Turn off to reply to every message."
-          checked={form.automated}
-          disabled={isPending}
-          onChange={(event) => form.setAutomated(event.target.checked)}
-        />
-      </div>
+      <FormSelect<ChannelInteractionMode>
+        label="When a message arrives"
+        description={
+          form.interactionMode === "cases"
+            ? "Each new thread becomes a case in Triage. Replies are drafted for a person to send."
+            : undefined
+        }
+        value={form.interactionMode}
+        disabled={isPending}
+        onValueChange={form.setInteractionMode}
+        options={[
+          { value: "automated", label: "Reply when needed" },
+          { value: "direct", label: "Reply to every message" },
+          ...(projectId ? [{ value: "cases" as const, label: "Open a case in Triage" }] : []),
+        ]}
+      />
       {error?.message && (
         <p role="alert" className="text-sm text-failure">
           {error.message}

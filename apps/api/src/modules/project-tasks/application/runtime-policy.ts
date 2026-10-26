@@ -2,6 +2,8 @@ import {
   readToolIds,
   PROJECT_TASK_INTERACTION_TOOL_IDS,
   PROJECT_TASK_TOOL_IDS,
+  WORK_RUN_EXCLUDED_TOOL_IDS,
+  WORK_TASK_TOOL_IDS,
   type ProjectFlowStage,
   type ProjectTask,
   type ToolPermission,
@@ -69,10 +71,11 @@ export function resolveGrantedTaskRuntime(params: {
     ...new Set([
       ...configuredTools,
       ...PROJECT_TASK_TOOL_IDS,
+      ...WORK_TASK_TOOL_IDS,
       ...PROJECT_TASK_INTERACTION_TOOL_IDS,
       ...codingTools,
     ]),
-  ];
+  ].filter((toolId) => !WORK_RUN_EXCLUDED_TOOL_IDS.includes(toolId));
 
   return {
     stage,

@@ -78,6 +78,11 @@ function workspace(overrides: Partial<WorkspaceSummary>): WorkspaceSummary {
   return {
     id: "workspace-1",
     name: "Research",
+    mission: "",
+    monthlyCreditCapMicros: null,
+    leadTeammateId: null,
+    setupProjectId: null,
+    setupTaskId: null,
     description: "",
     colour: "blue",
     role: "member",

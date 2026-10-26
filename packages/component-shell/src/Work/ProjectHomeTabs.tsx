@@ -12,7 +12,6 @@ import {
   ChevronDown,
   FolderOpen,
   ListChecks,
-  MessagesSquare,
   Plug,
   Settings,
   UsersRound,
@@ -20,7 +19,7 @@ import {
 import type { ReactNode } from "react";
 import { useLocation } from "react-router";
 
-export type ProjectHomeTab = "chat" | "tasks" | "files" | "activity";
+export type ProjectHomeTab = "tasks" | "files" | "settings";
 
 interface ProjectSectionLink {
   label: string;
@@ -49,21 +48,20 @@ export function ProjectHomeTabs({
   const { pathname } = useLocation();
   const basePath = getProjectBasePath(workspaceId, projectId);
   const tabs: Array<ProjectSectionLink & { id: ProjectHomeTab }> = [
-    { id: "chat", label: "Overview", href: basePath, icon: <MessagesSquare size={15} /> },
-    { id: "tasks", label: "Tasks", href: `${basePath}/tasks`, icon: <ListChecks size={15} /> },
+    { id: "tasks", label: "Tasks", href: basePath, icon: <ListChecks size={15} /> },
     { id: "files", label: "Files", href: `${basePath}/files`, icon: <FolderOpen size={15} /> },
     {
-      id: "activity",
-      label: "Activity",
-      href: `${basePath}/activity`,
-      icon: <Activity size={15} />,
+      id: "settings",
+      label: "Settings",
+      href: `${basePath}/settings`,
+      icon: <Settings size={15} />,
     },
   ];
   const moreLinks: ProjectSectionLink[] = [
+    { label: "Activity", href: `${basePath}/activity`, icon: <Activity size={15} /> },
     { label: "Teammates", href: `${basePath}/teammates`, icon: <UsersRound size={15} /> },
-    { label: "Scheduled", href: `${basePath}/scheduled`, icon: <CalendarClock size={15} /> },
+    { label: "Routines", href: `${basePath}/scheduled`, icon: <CalendarClock size={15} /> },
     { label: "Plugins", href: `${basePath}/plugins`, icon: <Plug size={15} /> },
-    { label: "Settings", href: `${basePath}/settings`, icon: <Settings size={15} /> },
   ];
   const activeMoreLink = moreLinks.find(
     (link) => pathname === link.href || pathname.startsWith(`${link.href}/`),
@@ -75,7 +73,7 @@ export function ProjectHomeTabs({
         <ul className="flex flex-wrap items-center gap-1">
           {tabs.map((tab) => (
             <li key={tab.id}>
-              <NavLink href={tab.href} end={tab.id === "chat"} className={tabClass}>
+              <NavLink href={tab.href} end={tab.id === "tasks"} className={tabClass}>
                 {tab.icon}
                 <span>{tab.label}</span>
               </NavLink>
