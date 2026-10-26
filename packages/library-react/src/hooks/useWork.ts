@@ -31,7 +31,9 @@ import {
   reviseSetupPlan,
   sendCaseReply,
   sendTaskAgain,
+  acceptTaskBreakdown,
   setStandupSettings,
+  saveTeamTemplate,
   startOnboarding,
   startWorkspaceSetup,
   unlinkTasks,
@@ -48,6 +50,7 @@ import type {
   RaiseCaseInput,
   SetupPlan,
   StandupSettings,
+  SaveTeamTemplateInput,
   StartOnboardingInput,
   UpdateInitiativeInput,
   UpdateWorkspaceInput,
@@ -302,6 +305,10 @@ export function useWorkTaskActions(projectId: string, taskId: string) {
       mutationFn: () => clearTaskEscalation(projectId, taskId),
       onSuccess: settle,
     }),
+    acceptBreakdown: useMutation({
+      mutationFn: (revision: number) => acceptTaskBreakdown(projectId, taskId, revision),
+      onSuccess: settle,
+    }),
     sendAgain: useMutation({
       mutationFn: () => sendTaskAgain(projectId, taskId),
       onSuccess: settle,
@@ -421,6 +428,15 @@ export function useStartOnboarding() {
       invalidateAllWork(queryClient);
       void queryClient.invalidateQueries({ queryKey: WORKSPACES_QUERY_KEY });
     },
+  });
+}
+
+export function useSaveTeamTemplate(workspaceId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: SaveTeamTemplateInput) => saveTeamTemplate(workspaceId, input),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["team-templates"] }),
   });
 }
 

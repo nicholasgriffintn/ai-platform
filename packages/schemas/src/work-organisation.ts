@@ -287,7 +287,14 @@ export const setupPlanStateSchema = z.object({
 });
 export type SetupPlanState = z.infer<typeof setupPlanStateSchema>;
 
+export const saveTeamTemplateSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  description: z.string().trim().max(500).default(""),
+});
+export type SaveTeamTemplateInput = z.infer<typeof saveTeamTemplateSchema>;
+
 export const startOnboardingSchema = z.object({
+  templateId: z.string().min(1).nullable().default(null),
   name: z.string().trim().min(2).max(80),
   mission: z.string().trim().min(1).max(1000),
   sources: z.array(z.url()).max(10).default([]),
@@ -323,6 +330,7 @@ export const WORK_INBOX_KINDS = [
   "setup",
   "paused",
   "waiting",
+  "breakdown",
 ] as const;
 export const workInboxKindSchema = z.enum(WORK_INBOX_KINDS);
 export type WorkInboxKind = z.infer<typeof workInboxKindSchema>;
@@ -411,3 +419,38 @@ export const workRailsQuerySchema = z.object({
 });
 
 export const workAssignSchema = z.object({ owner: workActorSchema });
+
+export const leadRoutineSchema = z.object({
+  enabled: z.boolean(),
+  time: z.string().regex(/^\d{2}:\d{2}$/),
+  days: z.array(z.number().int().min(0).max(6)).min(1).max(7),
+  timeZone: z.string().min(1).max(60),
+  lastRunAt: z.string().nullable().default(null),
+});
+export type LeadRoutine = z.infer<typeof leadRoutineSchema>;
+
+export const LEAD_ROUTINE_KINDS = ["dailyBrief", "initiativeReview"] as const;
+export type LeadRoutineKind = (typeof LEAD_ROUTINE_KINDS)[number];
+
+export const leadRoutinesSchema = z.object({
+  dailyBrief: leadRoutineSchema,
+  initiativeReview: leadRoutineSchema,
+});
+export type LeadRoutines = z.infer<typeof leadRoutinesSchema>;
+
+export const DEFAULT_LEAD_ROUTINES: LeadRoutines = {
+  dailyBrief: {
+    enabled: false,
+    time: "08:30",
+    days: [1, 2, 3, 4, 5],
+    timeZone: "Europe/London",
+    lastRunAt: null,
+  },
+  initiativeReview: {
+    enabled: true,
+    time: "09:00",
+    days: [1],
+    timeZone: "Europe/London",
+    lastRunAt: null,
+  },
+};

@@ -13,6 +13,8 @@ import {
   DAY_MS,
   MINUTE_MS,
   parseStoredTimestamp,
+  formatZonedDayLabel,
+  isDailyScheduleDue,
   readZonedClock,
   safeParseJson,
 } from "@ngriffin_uk/polychat-utility-core";
@@ -45,15 +47,6 @@ function readSettings(project: Pick<ProjectRow, "standup">): StandupSettings {
   const parsed = standupSettingsSchema.safeParse(stored);
 
   return parsed.success ? parsed.data : DEFAULT_STANDUP_SETTINGS;
-}
-
-function formatStandupTitle(date: Date, timeZone: string): string {
-  return `Standup · ${new Intl.DateTimeFormat("en-GB", {
-    timeZone,
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  }).format(date)}`;
 }
 
 export async function getStandupSettings(
@@ -139,17 +132,6 @@ async function listParticipants(
   ];
 }
 
-function isStandupDue(project: ProjectRow, settings: StandupSettings, now: Date): boolean {
-  const clock = readZonedClock(now, settings.timeZone);
-  const lastRun = project.standup_last_run_at
-    ? readZonedClock(new Date(project.standup_last_run_at), settings.timeZone).date
-    : null;
-
-  return (
-    settings.days.includes(clock.weekday) && clock.time >= settings.time && lastRun !== clock.date
-  );
-}
-
 async function openStandup(env: IEnv, project: ProjectRow, settings: StandupSettings, now: Date) {
   const owner = await createServiceContext({ env })
     .repositories.get(UserRepository)
@@ -182,7 +164,7 @@ async function openStandup(env: IEnv, project: ProjectRow, settings: StandupSett
     context,
     project.id,
     {
-      objective: formatStandupTitle(now, settings.timeZone),
+      objective: `Standup · ${formatZonedDayLabel(now, settings.timeZone)}`,
       kind: "standup",
       ...(workspace?.lead_teammate_id
         ? { owner: { type: "teammate", id: workspace.lead_teammate_id } }
@@ -206,9 +188,13 @@ async function openStandup(env: IEnv, project: ProjectRow, settings: StandupSett
 }
 
 function summariseFromAnswers(standup: ProjectTaskStandup): string {
-  const lines = standup.answers.map(
-    (answer) => `${answer.name}: ${answer.answers.map((entry) => entry.answer || "—").join(" · ")}`,
-  );
+  const lines = standup.answers
+    .filter((answer) => !answer.skipped)
+    .map(
+      (answer) =>
+        `${answer.name}: ${answer.answers.map((entry) => entry.answer || "—").join(" · ")}`,
+    );
+  const skipped = standup.answers.filter((answer) => answer.skipped).map((answer) => answer.name);
   const missing = standup.participants
     .filter(
       (participant) =>
@@ -216,9 +202,11 @@ function summariseFromAnswers(standup: ProjectTaskStandup): string {
     )
     .map((participant) => participant.name);
 
-  return [...lines, ...(missing.length ? [`No answer from ${missing.join(", ")}.`] : [])].join(
-    "\n",
-  );
+  return [
+    ...lines,
+    ...(skipped.length ? [`Skipped today: ${skipped.join(", ")}.`] : []),
+    ...(missing.length ? [`No answer from ${missing.join(", ")}.`] : []),
+  ].join("\n");
 }
 
 async function requestSummary(context: ServiceContext, task: ProjectTask): Promise<void> {
@@ -325,7 +313,7 @@ export async function runDueStandups(env: IEnv, now = new Date()): Promise<void>
   for (const project of projects) {
     const settings = readSettings(project);
 
-    if (settings.enabled && isStandupDue(project, settings, now)) {
+    if (settings.enabled && isDailyScheduleDue(settings, project.standup_last_run_at, now)) {
       await openStandup(env, project, settings, now);
     }
   }
@@ -399,8 +387,9 @@ export async function answerStandup(
     {
       actor: caller.actor,
       name: caller.author.name,
-      answers: input.answers,
+      answers: input.skip ? [] : input.answers,
       answeredAt: new Date().toISOString(),
+      ...(input.skip ? { skipped: true } : {}),
     },
   ];
   const updated = await context.repositories.get(ProjectTaskRepository).updateTask(task.id, {
@@ -411,11 +400,19 @@ export async function answerStandup(
     throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
   }
 
-  await postToTaskThread(context, updated, {
-    kind: caller.actor.type === "person" ? "comment" : "update",
-    author: caller.author,
-    body: input.answers.map((entry) => `${entry.question}\n${entry.answer || "—"}`).join("\n\n"),
-  });
+  await postToTaskThread(
+    context,
+    updated,
+    input.skip
+      ? { kind: "event", author: caller.author, body: `${caller.author.name} skipped today.` }
+      : {
+          kind: caller.actor.type === "person" ? "comment" : "update",
+          author: caller.author,
+          body: input.answers
+            .map((entry) => `${entry.question}\n${entry.answer || "—"}`)
+            .join("\n\n"),
+        },
+  );
 
   if (answers.length >= standup.participants.length) {
     await requestSummary(context, updated);

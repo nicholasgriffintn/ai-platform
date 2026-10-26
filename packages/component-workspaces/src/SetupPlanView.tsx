@@ -1,5 +1,6 @@
-import { Badge, Button, Link } from "@ngriffin_uk/polychat-component-ui";
+import { Badge, Button, FormInput, FormTextarea, Link } from "@ngriffin_uk/polychat-component-ui";
 import {
+  creditMicrosFromCredits,
   creditsFromCreditMicros,
   projectTaskPriorityLabels,
   type SetupPlan,
@@ -11,7 +12,17 @@ import {
   initialsOf,
   SHORT_WEEKDAY_LABELS,
 } from "@ngriffin_uk/polychat-utility-core";
-import { AlertTriangle, Check, Plug } from "lucide-react";
+import { AlertTriangle, Check, Plug, X } from "lucide-react";
+import { useState } from "react";
+
+import {
+  removeSetupConnector,
+  removeSetupInitiative,
+  removeSetupProject,
+  removeSetupSuggestion,
+  removeSetupTask,
+  removeSetupTeammate,
+} from "./setup-plan-edits";
 
 function formatCap(micros: number | null): string {
   return micros ? `${formatCredits(creditsFromCreditMicros(micros))} credits a month` : "No cap";
@@ -47,6 +58,30 @@ function PlanSection({
   );
 }
 
+function RemoveButton({
+  label,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      type="button"
+      size="icon"
+      variant="ghost"
+      aria-label={label}
+      title={label}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <X size={14} />
+    </Button>
+  );
+}
+
 function PlanEmpty({ children }: { children: React.ReactNode }) {
   return (
     <p className="rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
@@ -55,7 +90,7 @@ function PlanEmpty({ children }: { children: React.ReactNode }) {
   );
 }
 
-function PlanBody({ plan }: { plan: SetupPlan }) {
+function PlanBody({ plan, onChange }: { plan: SetupPlan; onChange?: (plan: SetupPlan) => void }) {
   const initiativeName = (key: string | null) =>
     plan.initiatives.find((initiative) => initiative.key === key)?.name ?? null;
   const projectOf = (key: string) => plan.projects.find((project) => project.key === key) ?? null;
@@ -70,7 +105,17 @@ function PlanBody({ plan }: { plan: SetupPlan }) {
         <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
           Mission
         </p>
-        <p className="mt-1 text-lg leading-7 text-balance">{plan.mission}</p>
+        {onChange ? (
+          <FormTextarea
+            aria-label="Mission"
+            className="mt-2"
+            rows={2}
+            value={plan.mission}
+            onChange={(event) => onChange({ ...plan, mission: event.target.value })}
+          />
+        ) : (
+          <p className="mt-1 text-lg leading-7 text-balance">{plan.mission}</p>
+        )}
       </section>
 
       <PlanSection title="Initiatives" count={plan.initiatives.length}>
@@ -81,7 +126,32 @@ function PlanBody({ plan }: { plan: SetupPlan }) {
                 key={initiative.key}
                 className="space-y-1 rounded-lg border border-border bg-surface p-4"
               >
-                <h3 className="text-sm font-semibold text-balance">{initiative.name}</h3>
+                <div className="flex items-start justify-between gap-2">
+                  {onChange ? (
+                    <FormInput
+                      aria-label="Initiative name"
+                      value={initiative.name}
+                      onChange={(event) =>
+                        onChange({
+                          ...plan,
+                          initiatives: plan.initiatives.map((candidate) =>
+                            candidate.key === initiative.key
+                              ? { ...candidate, name: event.target.value }
+                              : candidate,
+                          ),
+                        })
+                      }
+                    />
+                  ) : (
+                    <h3 className="text-sm font-semibold text-balance">{initiative.name}</h3>
+                  )}
+                  {onChange ? (
+                    <RemoveButton
+                      label={`Remove ${initiative.name}`}
+                      onClick={() => onChange(removeSetupInitiative(plan, initiative.key))}
+                    />
+                  ) : null}
+                </div>
                 {initiative.description ? (
                   <p className="line-clamp-4 text-sm text-muted-foreground">
                     {initiative.description}
@@ -107,9 +177,36 @@ function PlanBody({ plan }: { plan: SetupPlan }) {
                 </span>
                 <div className="min-w-0 space-y-1">
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <h3 className="text-sm font-semibold">{project.name}</h3>
+                    {onChange ? (
+                      <FormInput
+                        aria-label="Project name"
+                        className="max-w-xs"
+                        value={project.name}
+                        onChange={(event) =>
+                          onChange({
+                            ...plan,
+                            projects: plan.projects.map((candidate) =>
+                              candidate.key === project.key
+                                ? { ...candidate, name: event.target.value }
+                                : candidate,
+                            ),
+                          })
+                        }
+                      />
+                    ) : (
+                      <h3 className="text-sm font-semibold">{project.name}</h3>
+                    )}
                     {initiative ? (
                       <span className="text-xs text-muted-foreground">{initiative}</span>
+                    ) : null}
+                    {onChange ? (
+                      <span className="ml-auto">
+                        <RemoveButton
+                          label={`Remove ${project.name}`}
+                          disabled={plan.projects.length === 1}
+                          onClick={() => onChange(removeSetupProject(plan, project.key))}
+                        />
+                      </span>
                     ) : null}
                   </div>
                   {project.description ? (
@@ -142,10 +239,47 @@ function PlanBody({ plan }: { plan: SetupPlan }) {
                   {initialsOf(teammate.name)}
                 </span>
                 <div className="min-w-0 space-y-1">
-                  <p className="text-sm">
-                    <span className="font-semibold">{teammate.name}</span>
-                    <span className="text-muted-foreground"> · {teammate.title}</span>
-                  </p>
+                  {onChange ? (
+                    <div className="flex items-center gap-2">
+                      <FormInput
+                        aria-label="Teammate name"
+                        value={teammate.name}
+                        onChange={(event) =>
+                          onChange({
+                            ...plan,
+                            teammates: plan.teammates.map((candidate) =>
+                              candidate.key === teammate.key
+                                ? { ...candidate, name: event.target.value }
+                                : candidate,
+                            ),
+                          })
+                        }
+                      />
+                      <FormInput
+                        aria-label="Job title"
+                        value={teammate.title}
+                        onChange={(event) =>
+                          onChange({
+                            ...plan,
+                            teammates: plan.teammates.map((candidate) =>
+                              candidate.key === teammate.key
+                                ? { ...candidate, title: event.target.value }
+                                : candidate,
+                            ),
+                          })
+                        }
+                      />
+                      <RemoveButton
+                        label={`Remove ${teammate.name}`}
+                        onClick={() => onChange(removeSetupTeammate(plan, teammate.key))}
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-sm">
+                      <span className="font-semibold">{teammate.name}</span>
+                      <span className="text-muted-foreground"> · {teammate.title}</span>
+                    </p>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     Reports to {teammateName(teammate.reportsTo)} ·{" "}
                     {formatWake(teammate.heartbeatMinutes)} ·{" "}
@@ -183,11 +317,35 @@ function PlanBody({ plan }: { plan: SetupPlan }) {
                 <span className="mt-0.5 h-fit w-fit rounded border border-border px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">
                   {projectOf(task.project)?.taskPrefix ?? task.project}
                 </span>
-                <p className="line-clamp-3 text-sm">{task.objective}</p>
+                {onChange ? (
+                  <FormTextarea
+                    aria-label="Task objective"
+                    rows={2}
+                    value={task.objective}
+                    onChange={(event) =>
+                      onChange({
+                        ...plan,
+                        tasks: plan.tasks.map((candidate, position) =>
+                          position === index
+                            ? { ...candidate, objective: event.target.value }
+                            : candidate,
+                        ),
+                      })
+                    }
+                  />
+                ) : (
+                  <p className="line-clamp-3 text-sm">{task.objective}</p>
+                )}
                 <div className="flex flex-col items-end gap-1 text-xs whitespace-nowrap text-muted-foreground">
                   <span>{task.owner ? teammateName(task.owner) : "Unassigned"}</span>
                   {task.priority !== "none" ? (
                     <span>{projectTaskPriorityLabels[task.priority]}</span>
+                  ) : null}
+                  {onChange ? (
+                    <RemoveButton
+                      label="Remove this task"
+                      onClick={() => onChange(removeSetupTask(plan, index))}
+                    />
                   ) : null}
                 </div>
               </li>
@@ -209,6 +367,7 @@ export function SetupPlanView({
   connectHref,
   onApprove,
   onArchive,
+  onRevise,
 }: {
   setup: SetupPlanState | null;
   canApprove: boolean;
@@ -217,7 +376,10 @@ export function SetupPlanView({
   connectHref: string;
   onApprove: (revision: number) => void;
   onArchive: () => void;
+  onRevise: (plan: SetupPlan, expectedRevision: number) => Promise<unknown>;
 }) {
+  const [draft, setDraft] = useState<SetupPlan | null>(null);
+
   if (!setup) {
     return (
       <p className="rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground">
@@ -227,7 +389,8 @@ export function SetupPlanView({
     );
   }
 
-  const { plan } = setup;
+  const plan = draft ?? setup.plan;
+  const editable = canApprove && !setup.appliedAt;
 
   return (
     <div className="space-y-6">
@@ -246,7 +409,7 @@ export function SetupPlanView({
         </div>
       ) : null}
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
-        <PlanBody plan={plan} />
+        <PlanBody plan={plan} onChange={draft ? setDraft : undefined} />
         <aside className="h-fit space-y-5 rounded-xl border border-border bg-surface p-5 lg:sticky lg:top-4">
           <div className="flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold">Revision {setup.revision}</h2>
@@ -258,7 +421,33 @@ export function SetupPlanView({
           </div>
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
             <dt className="text-muted-foreground">Budget</dt>
-            <dd className="text-right tabular-nums">{formatCap(plan.monthlyCreditCapMicros)}</dd>
+            <dd className="text-right tabular-nums">
+              {draft ? (
+                <FormInput
+                  aria-label="Monthly budget in credits"
+                  type="number"
+                  min={0}
+                  className="text-right"
+                  value={
+                    draft.monthlyCreditCapMicros
+                      ? creditsFromCreditMicros(draft.monthlyCreditCapMicros)
+                      : ""
+                  }
+                  placeholder="No cap"
+                  onChange={(event) =>
+                    setDraft({
+                      ...draft,
+                      monthlyCreditCapMicros:
+                        Number(event.target.value) > 0
+                          ? creditMicrosFromCredits(Number(event.target.value))
+                          : null,
+                    })
+                  }
+                />
+              ) : (
+                formatCap(plan.monthlyCreditCapMicros)
+              )}
+            </dd>
             <dt className="text-muted-foreground">Projects</dt>
             <dd className="text-right tabular-nums">{plan.projects.length}</dd>
             <dt className="text-muted-foreground">Hires</dt>
@@ -273,7 +462,7 @@ export function SetupPlanView({
             {plan.connectors.length ? (
               <ul className="space-y-1.5 text-sm">
                 {plan.connectors.map((connector) => (
-                  <li key={connector.provider} className="flex gap-2">
+                  <li key={connector.provider} className="flex items-start gap-2">
                     <Plug size={14} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
                     <span className="min-w-0">
                       {connectorName(connector.provider)}
@@ -286,6 +475,12 @@ export function SetupPlanView({
                           .join(", ")}
                       </span>
                     </span>
+                    {draft ? (
+                      <RemoveButton
+                        label={`Stop using ${connectorName(connector.provider)}`}
+                        onClick={() => setDraft(removeSetupConnector(draft, connector.provider))}
+                      />
+                    ) : null}
                   </li>
                 ))}
               </ul>
@@ -300,9 +495,19 @@ export function SetupPlanView({
               </p>
               <ul className="space-y-2 text-sm">
                 {plan.suggestions.map((suggestion) => (
-                  <li key={suggestion.provider}>
-                    <span className="font-medium">{connectorName(suggestion.provider)}</span>
-                    <span className="block text-xs text-muted-foreground">{suggestion.reason}</span>
+                  <li key={suggestion.provider} className="flex items-start gap-2">
+                    <span className="min-w-0 flex-1">
+                      <span className="font-medium">{connectorName(suggestion.provider)}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {suggestion.reason}
+                      </span>
+                    </span>
+                    {draft ? (
+                      <RemoveButton
+                        label={`Drop the ${connectorName(suggestion.provider)} suggestion`}
+                        onClick={() => setDraft(removeSetupSuggestion(draft, suggestion.provider))}
+                      />
+                    ) : null}
                   </li>
                 ))}
               </ul>
@@ -334,7 +539,34 @@ export function SetupPlanView({
                   </Button>
                 ) : null}
               </>
-            ) : canApprove ? (
+            ) : draft ? (
+              <>
+                <Button
+                  variant="primary"
+                  className="w-full"
+                  disabled={isBusy || !draft.mission.trim()}
+                  onClick={() =>
+                    void onRevise(draft, setup.revision).then(
+                      () => setDraft(null),
+                      () => undefined,
+                    )
+                  }
+                >
+                  Save as revision {setup.revision + 1}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full"
+                  disabled={isBusy}
+                  onClick={() => setDraft(null)}
+                >
+                  Discard changes
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Saving makes a new revision, which then needs approving.
+                </p>
+              </>
+            ) : editable ? (
               <>
                 <Button
                   variant="primary"
@@ -344,8 +576,16 @@ export function SetupPlanView({
                 >
                   Approve and start
                 </Button>
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  disabled={isBusy}
+                  onClick={() => setDraft(setup.plan)}
+                >
+                  Edit plan
+                </Button>
                 <p className="text-xs text-muted-foreground">
-                  To change the plan, reply on the setup task and the lead posts a new revision.
+                  Edit it yourself, or reply on the setup task and the lead posts a new revision.
                 </p>
               </>
             ) : (

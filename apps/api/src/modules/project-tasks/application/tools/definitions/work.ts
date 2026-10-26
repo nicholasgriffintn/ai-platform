@@ -2,6 +2,7 @@ import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 import {
   PROJECT_TASK_PRIORITIES,
   setupPlanSchema,
+  WORK_MAX_BREAKDOWN_ITEMS,
   userQuestionAnswerSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
@@ -258,5 +259,46 @@ export const answer_questions: FunctionToolDescriptor = {
       .array(userQuestionAnswerSchema)
       .min(1)
       .describe("One answer per pending question, using the question ids from the brief."),
+  }),
+};
+
+export const propose_breakdown: FunctionToolDescriptor = {
+  name: "propose_breakdown",
+  description: `Propose splitting a task you own into sub-tasks, up to ${WORK_MAX_BREAKDOWN_ITEMS}. Give each a short key, an objective, an owner (a teammate's name, a person, 'me', or leave it empty), its priority and the keys it waits on. Nothing is created until your manager or a person accepts this revision; proposing again replaces it.`,
+  type: "normal",
+  permissions: ["write"],
+  effects: { effectClass: "draft" },
+  inputSchema: z.object({
+    taskId: z.string().min(1).describe(taskIdProperty.description),
+    items: z
+      .array(
+        z.object({
+          key: z.string().min(1).max(40).describe("Short label, such as 'schema' or 'backfill'."),
+          objective: z.string().min(1).max(2000),
+          owner: z
+            .string()
+            .max(200)
+            .optional()
+            .describe("Who does it. Leave out to leave unassigned."),
+          priority: z.enum(PROJECT_TASK_PRIORITIES).optional(),
+          dependsOn: z.array(z.string().min(1).max(40)).optional(),
+        }),
+      )
+      .min(1)
+      .max(WORK_MAX_BREAKDOWN_ITEMS),
+  }),
+};
+
+export const accept_breakdown: FunctionToolDescriptor = {
+  name: "accept_breakdown",
+  description:
+    "Accept a breakdown one of your reports proposed, at the revision you read. This creates the sub-tasks with their blockers and starts the ones that are ready. Comment instead if anything should change.",
+  type: "normal",
+  permissions: ["write"],
+  effects: { effectClass: "write" },
+  intentEvidence: (input) => ({ operation: "accept_breakdown", ...input }),
+  inputSchema: z.object({
+    taskId: z.string().min(1).describe(taskIdProperty.description),
+    revision: z.number().int().positive(),
   }),
 };

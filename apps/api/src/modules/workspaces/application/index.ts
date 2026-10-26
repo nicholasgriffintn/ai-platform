@@ -34,6 +34,7 @@ import {
 import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
+import { keepRoutineRuns, readLeadRoutines } from "../domain/lead-routines";
 import { requireProjectAccess, requireWorkAccess, requireWorkspaceAccess } from "./access";
 import { invalidateProjectEnvironmentCacheForConfiguration } from "./environment-cache";
 import {
@@ -120,6 +121,7 @@ export async function getWorkspace(
     leadTeammateId: workspace.lead_teammate_id ?? null,
     setupProjectId: workspace.setup_project_id ?? null,
     setupTaskId: workspace.setup_task_id ?? null,
+    leadRoutines: readLeadRoutines(workspace.lead_routines),
     role,
     memberCount: members.length,
     projectCount: projects.length,
@@ -317,11 +319,18 @@ export async function updateWorkspace(
 ) {
   const user = context.requireUser();
 
-  await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
-  const { mission, monthlyCreditCapMicros, ...workspaceFields } = input;
+  const { workspace } = await requireWorkspaceAccess(context, workspaceId, ["owner", "admin"]);
+  const { mission, monthlyCreditCapMicros, leadRoutines, ...workspaceFields } = input;
 
   await context.repositories.get(WorkspaceRepository).updateWorkspace(workspaceId, {
     ...workspaceFields,
+    ...(leadRoutines
+      ? {
+          lead_routines: JSON.stringify(
+            keepRoutineRuns(readLeadRoutines(workspace.lead_routines), leadRoutines),
+          ),
+        }
+      : {}),
     ...(mission !== undefined ? { mission } : {}),
     ...(monthlyCreditCapMicros !== undefined
       ? { monthly_credit_cap_micros: monthlyCreditCapMicros }

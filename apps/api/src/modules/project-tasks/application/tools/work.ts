@@ -11,6 +11,10 @@ import {
 import { readTrimmedString, readTrimmedStringArray } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
+import {
+  acceptTaskBreakdown,
+  proposeTaskBreakdown,
+} from "~/modules/project-tasks/application/breakdown";
 import { answerStandup, summariseStandup } from "~/modules/project-tasks/application/standups";
 import {
   answerReportQuestions,
@@ -30,6 +34,7 @@ import { proposeSetupPlan } from "~/modules/workspaces/application/onboarding";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import {
+  accept_breakdown as acceptBreakdownDescriptor,
   answer_standup as answerStandupDescriptor,
   assign_task as assignTaskDescriptor,
   answer_questions as answerQuestionsDescriptor,
@@ -37,6 +42,7 @@ import {
   draft_reply as draftReplyDescriptor,
   escalate as escalateDescriptor,
   post_update as postUpdateDescriptor,
+  propose_breakdown as proposeBreakdownDescriptor,
   propose_hire as proposeHireDescriptor,
   propose_setup_plan as proposeSetupPlanDescriptor,
   raise_case as raiseCaseDescriptor,
@@ -274,6 +280,61 @@ export const answer_questions = workTool(answerQuestionsDescriptor, async (args,
   };
 });
 
+const breakdownArgsSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        key: z.string().trim().min(1).max(40),
+        objective: z.string().trim().min(1).max(2000),
+        owner: z.string().trim().max(200).optional(),
+        priority: projectTaskPrioritySchema.optional(),
+        dependsOn: z.array(z.string().trim().min(1).max(40)).optional(),
+      }),
+    )
+    .min(1),
+});
+
+export const propose_breakdown = workTool(proposeBreakdownDescriptor, async (args, scope) => {
+  const { items } = breakdownArgsSchema.parse(args);
+  const resolved = await Promise.all(
+    items.map(async (item) => ({
+      key: item.key,
+      objective: item.objective,
+      owner: item.owner ? await resolveWorkActor(scope, item.owner) : null,
+      priority: item.priority ?? "medium",
+      dependsOn: item.dependsOn ?? [],
+    })),
+  );
+  const task = await proposeTaskBreakdown(
+    scope.context,
+    scope.projectId,
+    readTrimmedString(args.taskId),
+    resolved,
+    scope.caller,
+  );
+
+  return {
+    content: `Proposed revision ${task.details.breakdown?.revision ?? 1} of the breakdown of ${taskReference(task)}. It waits for your manager or a person to accept it.`,
+    data: { task },
+  };
+});
+
+export const accept_breakdown = workTool(acceptBreakdownDescriptor, async (args, scope) => {
+  const revision = z.number().int().positive().parse(args.revision);
+  const task = await acceptTaskBreakdown(
+    scope.context,
+    scope.projectId,
+    readTrimmedString(args.taskId),
+    revision,
+    scope.caller,
+  );
+
+  return {
+    content: `Accepted the breakdown of ${taskReference(task)}. Its sub-tasks are created and the ready ones have started.`,
+    data: { task },
+  };
+});
+
 export const WORK_TOOLS = [
   assign_task,
   post_update,
@@ -288,4 +349,6 @@ export const WORK_TOOLS = [
   propose_setup_plan,
   draft_reply,
   answer_questions,
+  propose_breakdown,
+  accept_breakdown,
 ];

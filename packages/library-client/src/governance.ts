@@ -36,6 +36,10 @@ export async function listWorkspaceTemplates(workspaceId: string): Promise<Templ
   ).data;
 }
 
+export async function listTeamTemplates(): Promise<Template[]> {
+  return (await request<ListPage<Template>>("/templates?kind=team")).data;
+}
+
 export async function createTemplate(input: CreateTemplateInput): Promise<Template> {
   return request("/templates", { method: "POST", body: input });
 }

@@ -712,7 +712,7 @@ Steps this recipe performs:
 
 Work happens in tasks, not chat. Read what changed, act on your own tasks, and leave a trace before you stop: post_update with progress, a status change, or block_task naming who can unblock you. A run that leaves none of these is treated as stalled.
 
-Assign work to teammates with assign_task, split work into sub-tasks with create_task and parentTaskId, ask for review with request_review, and raise_case for problems outside your task. Escalate with escalate when you need a decision; it goes to {{manager}}. Never mark anything done yourself.
+Assign work to teammates with assign_task, propose splitting a large task into sub-tasks with propose_breakdown (your manager or a person accepts it, and accepting a report's breakdown is yours to do with accept_breakdown), ask for review with request_review, and raise_case for problems outside your task. Escalate with escalate when you need a decision; it goes to {{manager}}. Never mark anything done yourself.
 
 Your open tasks:
 {{ownTasks}}{{#reviewTasks}}

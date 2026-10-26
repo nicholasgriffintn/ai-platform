@@ -35,6 +35,7 @@ import { createProject, createWorkspace } from "./index";
 import { createSetupPlan } from "./setup-apply";
 import { assertPlanConnectors, describeConnectedServices } from "./setup-connectors";
 import { rollBackSetupCreation } from "./setup-rollback";
+import { readTeamTemplatePlan } from "./team-template";
 
 const LEAD_HEARTBEAT_MINUTES = 240;
 const SETUP_FORBIDDEN_TOOLS = [
@@ -118,6 +119,7 @@ export async function startOnboarding(
   input: StartOnboardingInput,
 ): Promise<OnboardingState> {
   const user = context.requireUser();
+  const template = input.templateId ? await readTeamTemplatePlan(context, input.templateId) : null;
   const workspace = await createWorkspace(context, {
     name: input.name,
     description: input.mission.slice(0, 500),
@@ -129,6 +131,17 @@ export async function startOnboarding(
     sources: input.sources,
     monthlyCreditCapMicros: input.monthlyCreditCapMicros,
     userId: user.id,
+    template: template
+      ? {
+          name: template.name,
+          plan: {
+            ...template.plan,
+            mission: input.mission,
+            monthlyCreditCapMicros:
+              input.monthlyCreditCapMicros ?? template.plan.monthlyCreditCapMicros,
+          },
+        }
+      : null,
   });
 }
 
@@ -159,6 +172,7 @@ async function setUpWorkspaceLead(
     sources: string[];
     monthlyCreditCapMicros: number | null;
     userId: number;
+    template?: { name: string; plan: SetupPlan } | null;
   },
 ): Promise<OnboardingState> {
   const workspaces = context.repositories.get(WorkspaceRepository);
@@ -187,6 +201,9 @@ async function setUpWorkspaceLead(
   });
 
   const connected = await listConnectedConnectors(context, params.userId);
+  const templateNote = params.template
+    ? `\n\nRevision 1 of the plan comes from the team template "${params.template.name}". Check it against the mission and sources, and call propose_setup_plan only to change what does not fit.`
+    : "";
   const existingNote = existingProjects.length
     ? `\n\nThe workspace already has these projects, which the plan should keep: ${existingProjects
         .map((existing) => existing.name)
@@ -194,7 +211,7 @@ async function setUpWorkspaceLead(
     : "";
   const { task } = await createProjectTask(context, project.id, {
     objective: "Set up the workspace",
-    description: `Mission: ${params.mission}${existingNote}\n\n${describeConnectedServices(connected)}\n\nRead the sources you were given, then call propose_setup_plan with the mission, initiatives, projects, team, budgets, wake rules, routines, first tasks and the connected services each project uses. Do not hire, assign or schedule anything yourself: the plan starts only after a person approves it.`,
+    description: `Mission: ${params.mission}${existingNote}${templateNote}\n\n${describeConnectedServices(connected)}\n\nRead the sources you were given, then call propose_setup_plan with the mission, initiatives, projects, team, budgets, wake rules, routines, first tasks and the connected services each project uses. Do not hire, assign or schedule anything yourself: the plan starts only after a person approves it.`,
     priority: "high",
     owner: { type: "teammate", id: lead.id },
     context: {
@@ -211,6 +228,10 @@ async function setUpWorkspaceLead(
     setup_project_id: project.id,
     setup_task_id: task.id,
   });
+
+  if (params.template) {
+    await proposeSetupPlan(context, workspaceId, params.template.plan, personCaller(context));
+  }
 
   try {
     await startProjectTask(context, project.id, task.id);

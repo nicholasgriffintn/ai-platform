@@ -486,9 +486,20 @@ function StandupAnswerForm({
           }
         />
       ))}
-      <Button type="submit" variant="primary" size="sm" disabled={isBusy}>
-        Send answers
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button type="submit" variant="primary" size="sm" disabled={isBusy}>
+          Send answers
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={isBusy}
+          onClick={() => onSubmit({ answers: [], skip: true })}
+        >
+          Skip today
+        </Button>
+      </div>
     </form>
   );
 }
@@ -535,7 +546,12 @@ export function TaskStandupSection({
               key={answer.answeredAt + answer.name}
               className="rounded-lg border border-border p-3 text-sm"
             >
-              <p className="font-medium">{answer.name}</p>
+              <p className="font-medium">
+                {answer.name}
+                {answer.skipped ? (
+                  <span className="font-normal text-muted-foreground"> · skipped today</span>
+                ) : null}
+              </p>
               <dl className="mt-1 space-y-1">
                 {answer.answers.map((entry) => (
                   <div key={entry.question}>

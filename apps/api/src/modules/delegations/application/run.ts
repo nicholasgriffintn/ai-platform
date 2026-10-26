@@ -19,6 +19,10 @@ import { delegationRunCommandId } from "~/modules/delegations/application/run-id
 import { transitionDelegation } from "~/modules/delegations/application/settle";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { findModelConfig } from "~/modules/models/application/resolve";
+import {
+  canRunUnattendedOnMachine,
+  resolveExecutionRoute,
+} from "~/modules/models/domain/execution-route";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import type { TaskMessage, TaskResult } from "~/modules/queue/application/types";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
@@ -32,7 +36,6 @@ import { resolveProjectTools } from "~/modules/workspaces/application/projectToo
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IEnv } from "~/types";
 
-import { canRunDelegationOnMachine, resolveDelegationExecutionRoute } from "./routing";
 import { scheduleDelegationWake } from "./schedule-wake";
 
 export async function runDelegationTask(
@@ -167,7 +170,7 @@ export async function runDelegationTask(
     }
 
     const resolvedModel = teammateModel;
-    const executionRoute = resolveDelegationExecutionRoute(resolvedModel);
+    const executionRoute = resolveExecutionRoute(resolvedModel);
 
     if (
       resolvedModel?.readiness &&
@@ -182,7 +185,7 @@ export async function runDelegationTask(
     }
 
     if (executionRoute === "machine") {
-      const reason = canRunDelegationOnMachine(resolvedModel)
+      const reason = canRunUnattendedOnMachine(resolvedModel)
         ? null
         : "This device provider cannot run unattended with a durable session.";
 

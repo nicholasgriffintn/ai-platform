@@ -21,6 +21,7 @@ import {
 import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
 
+import { TaskBreakdownSection } from "./TaskBreakdown";
 import {
   TaskDoneWhen,
   TaskHeader,
@@ -59,6 +60,7 @@ export interface TaskWorkProps {
   onSendCaseReply: (body: string) => Promise<unknown>;
   onClearEscalation: () => void;
   onSendAgain: () => void;
+  onAcceptBreakdown: (revision: number) => void;
   onAnswerStandup: (input: AnswerStandupInput) => void;
   onUnlink: (linkId: string) => void;
 }
@@ -212,6 +214,15 @@ export function TaskDetail({
 
           {task.kind === "task" ? (
             <TaskDoneWhen task={task} evidence={goal?.evidence ?? []} />
+          ) : null}
+
+          {task.details.breakdown ? (
+            <TaskBreakdownSection
+              breakdown={task.details.breakdown}
+              directory={work.directory}
+              isBusy={isBusy}
+              onAccept={work.onAcceptBreakdown}
+            />
           ) : null}
 
           <TaskSubTasks

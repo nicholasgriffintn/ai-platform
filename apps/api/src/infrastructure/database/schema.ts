@@ -594,6 +594,7 @@ export const workspace = sqliteTable(
     setup_project_id: text(),
     setup_task_id: text(),
     setup_plan: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
+    lead_routines: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
     created_by: integer()
       .notNull()
       .references(() => user.id),
@@ -2109,7 +2110,9 @@ export const template = sqliteTable(
       onDelete: "cascade",
     }),
     project_id: text().references(() => project.id),
-    kind: text({ enum: ["project", "recipe", "capability", "teammate_publication"] }).notNull(),
+    kind: text({
+      enum: ["project", "recipe", "capability", "teammate_publication", "team"],
+    }).notNull(),
     capability_id: text(),
     publication_id: text(),
     source_teammate_id: text().references(() => teammates.id),

@@ -4,6 +4,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { SCHEDULES } from "~/config/schedules";
+import { runLeadRoutines } from "~/modules/project-tasks/application/lead-routines";
 import { ProjectReviewIntakeHandler } from "~/modules/project-tasks/application/review-intake";
 import { runDueStandups } from "~/modules/project-tasks/application/standups";
 import { escalateStalledWakes } from "~/modules/project-tasks/application/watchdog";
@@ -21,6 +22,7 @@ export function registerProjectTasksQueue(workflows: AppWorkflows): void {
       run: async ({ env }) => {
         await escalateStalledWakes(env);
         await runDueStandups(env);
+        await runLeadRoutines(env);
       },
     }),
   );

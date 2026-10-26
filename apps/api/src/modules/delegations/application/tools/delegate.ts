@@ -23,10 +23,6 @@ import { ConversationHandleRepository } from "~/modules/conversations/infrastruc
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { checkDelegationSpawn } from "~/modules/delegations/application/guards";
 import { resolveDelegationMemoryBindings } from "~/modules/delegations/application/memory-bindings";
-import {
-  canRunDelegationOnMachine,
-  resolveDelegationExecutionRoute,
-} from "~/modules/delegations/application/routing";
 import { delegationRunTaskId } from "~/modules/delegations/application/run-identity";
 import { scheduleDelegationExpiry } from "~/modules/delegations/application/schedule-expiry";
 import { transitionDelegation } from "~/modules/delegations/application/settle";
@@ -38,6 +34,10 @@ import {
 } from "~/modules/memory-documents/application/memory-documents";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { findModelConfig } from "~/modules/models/application/resolve";
+import {
+  canRunUnattendedOnMachine,
+  resolveExecutionRoute,
+} from "~/modules/models/domain/execution-route";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import {
@@ -228,8 +228,8 @@ export const delegate: ApiToolDefinition = {
       : "new";
 
     if (
-      resolveDelegationExecutionRoute(teammateModel) === "machine" &&
-      !canRunDelegationOnMachine(teammateModel)
+      resolveExecutionRoute(teammateModel) === "machine" &&
+      !canRunUnattendedOnMachine(teammateModel)
     ) {
       return {
         status: "error",

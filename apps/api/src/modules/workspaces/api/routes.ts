@@ -9,6 +9,7 @@ import {
   initiativeSchema,
   onboardingStateSchema,
   proposeHireSchema,
+  saveTeamTemplateSchema,
   setupPlanStateSchema,
   startOnboardingSchema,
   transferWorkspaceOwnershipSchema,
@@ -73,6 +74,7 @@ import {
   startOnboarding,
   startWorkspaceSetup,
 } from "~/modules/workspaces/application/onboarding";
+import { saveTeamTemplate } from "~/modules/workspaces/application/team-template";
 import { getWorkCosts, getWorkRails } from "~/modules/workspaces/application/work-insights";
 
 const app = new Hono();
@@ -119,6 +121,16 @@ defineResource(app, { idParam: "workspace_id", tags: ["workspaces"] }, (workspac
       summary: "Delete a workspace",
       paramSchema: workspaceParamsSchema,
       handler: ({ serviceContext, params }) => deleteWorkspace(serviceContext, params.workspace_id),
+    })
+    .action("save_team_template", {
+      auth: true,
+      summary: "Save the team as a template",
+      description:
+        "Saves the projects, initiatives, teammates, reporting lines and routines as a personal team template. New workspaces can start from it.",
+      paramSchema: workspaceParamsSchema,
+      bodySchema: saveTeamTemplateSchema,
+      handler: ({ serviceContext, params, body }) =>
+        saveTeamTemplate(serviceContext, params.workspace_id, body),
     })
     .action("leave", {
       auth: true,

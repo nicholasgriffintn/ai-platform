@@ -14,7 +14,9 @@ import type {
   SetupPlan,
   SetupPlanState,
   StandupSettings,
+  SaveTeamTemplateInput,
   StartOnboardingInput,
+  Template,
   UpdateInitiativeInput,
   UpdateWorkspaceTeammateInput,
   WorkActor,
@@ -80,6 +82,14 @@ export function blockTask(
 
 export function escalateTask(projectId: string, taskId: string, reason: string): TaskResult {
   return requestJson(`${taskPath(projectId, taskId)}/escalate`, "POST", { reason });
+}
+
+export function acceptTaskBreakdown(
+  projectId: string,
+  taskId: string,
+  revision: number,
+): TaskResult {
+  return requestJson(`${taskPath(projectId, taskId)}/accept_breakdown`, "POST", { revision });
 }
 
 export function sendTaskAgain(projectId: string, taskId: string): TaskResult {
@@ -240,6 +250,13 @@ export function getWorkCosts(workspaceId: string, period?: string): Promise<Work
 
 export function getWorkRails(workspaceId: string, hours = 24): Promise<WorkRailsResponse> {
   return requestJson(withQuery(`${workspacePath(workspaceId)}/rails`, { hours }), "GET");
+}
+
+export function saveTeamTemplate(
+  workspaceId: string,
+  input: SaveTeamTemplateInput,
+): Promise<Template> {
+  return requestJson(`${workspacePath(workspaceId)}/save_team_template`, "POST", input);
 }
 
 export function startOnboarding(input: StartOnboardingInput): Promise<OnboardingState> {

@@ -314,6 +314,38 @@ export function readZonedClock(
   };
 }
 
+export function formatZonedDayLabel(date: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).format(date);
+}
+
+export interface DailySchedule {
+  days: readonly number[];
+  time: string;
+  timeZone: string;
+  pausedUntil?: string | null;
+}
+
+export function isDailyScheduleDue(
+  schedule: DailySchedule,
+  lastRunAt: string | null,
+  now: Date,
+): boolean {
+  const clock = readZonedClock(now, schedule.timeZone);
+  const lastRun = lastRunAt ? readZonedClock(new Date(lastRunAt), schedule.timeZone).date : null;
+
+  return (
+    !(schedule.pausedUntil && clock.date <= schedule.pausedUntil) &&
+    schedule.days.includes(clock.weekday) &&
+    clock.time >= schedule.time &&
+    lastRun !== clock.date
+  );
+}
+
 export function parseStoredTimestamp(value: string | null | undefined): number {
   const parsed = value ? parseTimestamp(value).getTime() : Number.NaN;
 

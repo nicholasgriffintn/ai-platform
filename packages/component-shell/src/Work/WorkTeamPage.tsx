@@ -4,6 +4,8 @@ import {
   ProposeHireDialog,
   TeamMemberEditor,
   TeamOrgChart,
+  LeadRoutinesForm,
+  SaveTeamTemplateDialog,
   TeammateProfileHeader,
   WorkTaskList,
 } from "@ngriffin_uk/polychat-component-workspaces";
@@ -11,7 +13,9 @@ import {
   canManageWorkspace,
   getProjectTaskPath,
   useSetupActions,
+  useSaveTeamTemplate,
   useTeamActions,
+  useUpdateWorkspaceOrganisation,
   useWorkRails,
   useWorkspace,
   useWorkspaceTasks,
@@ -19,7 +23,7 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import type { WorkRailBeat } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
-import { Plus } from "lucide-react";
+import { Copy, Plus } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -43,6 +47,8 @@ export function WorkTeamPage({ workspaceId }: { workspaceId: string }) {
   const actions = useTeamActions(workspaceId);
   const setup = useSetupActions(workspaceId);
   const [isProposeOpen, setIsProposeOpen] = useState(false);
+  const [isTemplateOpen, setIsTemplateOpen] = useState(false);
+  const saveTemplate = useSaveTeamTemplate(workspaceId);
   const workspace = workspaceQuery.data;
   const hasLead = Boolean(teamQuery.data?.leadTeammateId);
   const canManage = Boolean(workspace && canManageWorkspace(workspace));
@@ -57,6 +63,15 @@ export function WorkTeamPage({ workspaceId }: { workspaceId: string }) {
             icon: <Plus size={17} />,
             onClick: () => setIsProposeOpen(true),
           },
+          ...(canManage && team.length
+            ? [
+                {
+                  label: "Save as template",
+                  icon: <Copy size={17} />,
+                  onClick: () => setIsTemplateOpen(true),
+                },
+              ]
+            : []),
         ]}
       />
 
@@ -129,6 +144,22 @@ export function WorkTeamPage({ workspaceId }: { workspaceId: string }) {
         </>
       )}
 
+      <SaveTeamTemplateDialog
+        key={String(isTemplateOpen)}
+        open={isTemplateOpen}
+        defaultName={`${workspace?.name ?? "Team"} team`}
+        isSaving={saveTemplate.isPending}
+        onOpenChange={setIsTemplateOpen}
+        onSubmit={(input) =>
+          saveTemplate
+            .mutateAsync(input)
+            .then(() => toast.success("Saved. New workspaces can start from it."))
+            .catch((error: unknown) => {
+              toast.error(getErrorMessage(error, "The template could not be saved"));
+              throw error;
+            })
+        }
+      />
       <ProposeHireDialog
         open={isProposeOpen}
         teammates={team}
@@ -160,6 +191,7 @@ export function WorkTeammatePage({
   const tasks = useWorkspaceTasks(workspaceId, teammateId);
   const rails = useWorkRails(workspaceId);
   const actions = useTeamActions(workspaceId);
+  const updateOrganisation = useUpdateWorkspaceOrganisation(workspaceId);
   const teammate = team.find((candidate) => candidate.teammateId === teammateId);
   const workspace = workspaceQuery.data;
   const canManage = Boolean(workspace && canManageWorkspace(workspace));
@@ -263,28 +295,49 @@ export function WorkTeammatePage({
           />
         </section>
         {teammate.status !== "proposed" ? (
-          <section className="space-y-3">
-            <h2 className="text-sm font-semibold">Place on the team</h2>
-            <TeamMemberEditor
-              key={`${teammate.teammateId}-${teammate.status}-${teammate.monthlyCreditCapMicros}`}
-              teammate={teammate}
-              teammates={team}
-              projects={(workspace?.projects ?? []).map((project) => ({
-                id: project.id,
-                name: project.name,
-              }))}
-              canManage={canManage}
-              isSaving={actions.update.isPending}
-              onSave={(changes) =>
-                void actions.update
-                  .mutateAsync({ teammateId, changes })
-                  .then(() => toast.success("Saved"))
-                  .catch((error: unknown) =>
-                    toast.error(getErrorMessage(error, "Could not save those changes")),
-                  )
-              }
-            />
-          </section>
+          <div className="space-y-8">
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold">Place on the team</h2>
+              <TeamMemberEditor
+                key={`${teammate.teammateId}-${teammate.status}-${teammate.monthlyCreditCapMicros}`}
+                teammate={teammate}
+                teammates={team}
+                projects={(workspace?.projects ?? []).map((project) => ({
+                  id: project.id,
+                  name: project.name,
+                }))}
+                canManage={canManage}
+                isSaving={actions.update.isPending}
+                onSave={(changes) =>
+                  void actions.update
+                    .mutateAsync({ teammateId, changes })
+                    .then(() => toast.success("Saved"))
+                    .catch((error: unknown) =>
+                      toast.error(getErrorMessage(error, "Could not save those changes")),
+                    )
+                }
+              />
+            </section>
+            {workspace && workspace.leadTeammateId === teammateId ? (
+              <section className="space-y-3">
+                <h2 className="text-sm font-semibold">Routines</h2>
+                <LeadRoutinesForm
+                  key={JSON.stringify(workspace.leadRoutines)}
+                  routines={workspace.leadRoutines}
+                  canManage={canManage}
+                  isSaving={updateOrganisation.isPending}
+                  onSave={(leadRoutines) =>
+                    void updateOrganisation
+                      .mutateAsync({ leadRoutines })
+                      .then(() => toast.success("Routines saved"))
+                      .catch((error: unknown) =>
+                        toast.error(getErrorMessage(error, "Could not save the routines")),
+                      )
+                  }
+                />
+              </section>
+            ) : null}
+          </div>
         ) : null}
       </div>
     </PageShell.Content>

@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { calendarDateFromParts, isDeadlinePassed, isoWeekKey, wholeYearsSince } from "./dates.js";
+import {
+  calendarDateFromParts,
+  isDailyScheduleDue,
+  isDeadlinePassed,
+  isoWeekKey,
+  wholeYearsSince,
+} from "./dates.js";
 
 const now = new Date("2026-06-07T12:00:00.000Z");
 
@@ -53,5 +59,25 @@ describe("isoWeekKey", () => {
     expect(isoWeekKey("2026-10-24")).toBe("2026-w43");
     expect(isoWeekKey("2027-01-01")).toBe("2026-w53");
     expect(isoWeekKey("2025-12-29")).toBe("2026-w01");
+  });
+});
+
+describe("daily schedules", () => {
+  const weekdays = { days: [1, 2, 3, 4, 5], time: "09:15", timeZone: "Europe/London" };
+  const tuesdayMorning = new Date("2026-10-27T09:30:00.000Z");
+
+  it("runs once on a scheduled day after its time", () => {
+    expect(isDailyScheduleDue(weekdays, null, tuesdayMorning)).toBe(true);
+    expect(isDailyScheduleDue(weekdays, "2026-10-27T09:16:00.000Z", tuesdayMorning)).toBe(false);
+    expect(isDailyScheduleDue(weekdays, null, new Date("2026-10-27T08:00:00.000Z"))).toBe(false);
+  });
+
+  it("stays quiet up to and including the paused-until date", () => {
+    expect(
+      isDailyScheduleDue({ ...weekdays, pausedUntil: "2026-10-27" }, null, tuesdayMorning),
+    ).toBe(false);
+    expect(
+      isDailyScheduleDue({ ...weekdays, pausedUntil: "2026-10-26" }, null, tuesdayMorning),
+    ).toBe(true);
   });
 });

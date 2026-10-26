@@ -1,4 +1,5 @@
 import {
+  acceptTaskBreakdownSchema,
   answerStandupSchema,
   createProjectTaskLinkSchema,
   createProjectTaskSchema,
@@ -34,6 +35,7 @@ import {
   startProjectTask,
   updateProjectTask,
 } from "~/modules/project-tasks/application";
+import { acceptTaskBreakdown } from "~/modules/project-tasks/application/breakdown";
 import { sendCaseReply } from "~/modules/project-tasks/application/case-intake";
 import { getProjectTaskReview } from "~/modules/project-tasks/application/pull-request-review";
 import {
@@ -246,6 +248,26 @@ export function defineProjectTasks(projects: ResourceBuilder): void {
         params.task_id,
         body.reason,
         body.unblocker,
+        personCaller(serviceContext),
+      ),
+    }),
+  });
+
+  tasks.action("accept_breakdown", {
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Accept a proposed breakdown",
+    description:
+      "Creates the sub-tasks of the given breakdown revision with their blockers and starts the ones that are ready.",
+    paramSchema: taskParamsSchema,
+    bodySchema: acceptTaskBreakdownSchema,
+    responses: { 200: { description: "The task", schema: projectTaskResponseSchema } },
+    handler: async ({ serviceContext, params, body }) => ({
+      task: await acceptTaskBreakdown(
+        serviceContext,
+        params.project_id,
+        params.task_id,
+        body.revision,
         personCaller(serviceContext),
       ),
     }),

@@ -102,6 +102,17 @@ export const globalSearchProjectSchema = z.object({
   updatedAt: z.string().nullable(),
 });
 
+export const globalSearchTaskSchema = z.object({
+  id: z.string(),
+  key: z.string().nullable(),
+  objective: z.string(),
+  status: z.string(),
+  projectId: z.string(),
+  projectName: z.string(),
+  workspaceId: z.string(),
+  updatedAt: z.string().nullable(),
+});
+
 export const globalSearchDocumentSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -116,6 +127,7 @@ export const globalSearchResponseSchema = z.object({
   documents: z.array(globalSearchDocumentSchema),
   workspaces: z.array(globalSearchWorkspaceSchema),
   projects: z.array(globalSearchProjectSchema),
+  tasks: z.array(globalSearchTaskSchema).default([]),
 });
 
 export type GlobalSearchQuery = z.infer<typeof globalSearchQuerySchema>;
@@ -123,4 +135,5 @@ export type GlobalSearchConversation = z.infer<typeof globalSearchConversationSc
 export type GlobalSearchWorkspace = z.infer<typeof globalSearchWorkspaceSchema>;
 export type GlobalSearchProject = z.infer<typeof globalSearchProjectSchema>;
 export type GlobalSearchDocument = z.infer<typeof globalSearchDocumentSchema>;
+export type GlobalSearchTask = z.infer<typeof globalSearchTaskSchema>;
 export type GlobalSearchResponse = z.infer<typeof globalSearchResponseSchema>;

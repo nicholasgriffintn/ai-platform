@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   FormInput,
+  FormSelect,
   FormTextarea,
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
@@ -18,10 +19,12 @@ export interface CreateWorkspaceInput {
   mission: string;
   sources: string[];
   monthlyCredits: number | null;
+  templateId: string | null;
 }
 
 export interface CreateWorkspaceDialogProps {
   open: boolean;
+  teamTemplates?: readonly { id: string; name: string }[];
   isSubmitting?: boolean;
   errorMessage?: string;
   onOpenChange: (open: boolean) => void;
@@ -30,12 +33,14 @@ export interface CreateWorkspaceDialogProps {
 
 export function CreateWorkspaceDialog({
   open,
+  teamTemplates = [],
   isSubmitting = false,
   errorMessage,
   onOpenChange,
   onSubmit,
 }: CreateWorkspaceDialogProps) {
   const [name, setName] = useState("");
+  const [templateId, setTemplateId] = useState("");
   const [mission, setMission] = useState("");
   const [sources, setSources] = useState("");
   const [budget, setBudget] = useState("");
@@ -54,11 +59,13 @@ export function CreateWorkspaceDialog({
       mission: mission.trim(),
       sources: sourceList.slice(0, 10),
       monthlyCredits: budget && credits > 0 ? credits : null,
+      templateId: templateId || null,
     });
     setName("");
     setMission("");
     setSources("");
     setBudget("");
+    setTemplateId("");
   };
 
   return (
@@ -92,6 +99,18 @@ export function CreateWorkspaceDialog({
             maxLength={80}
             required
           />
+          {teamTemplates.length ? (
+            <FormSelect
+              label="Start from"
+              description="A team template gives the lead a first plan to check, instead of a blank page."
+              value={templateId}
+              onValueChange={setTemplateId}
+              options={[
+                { value: "", label: "A blank plan" },
+                ...teamTemplates.map((template) => ({ value: template.id, label: template.name })),
+              ]}
+            />
+          ) : null}
           <FormTextarea
             label="What does it do?"
             value={mission}

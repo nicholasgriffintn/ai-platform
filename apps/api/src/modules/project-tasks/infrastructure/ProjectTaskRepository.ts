@@ -23,10 +23,22 @@ import type {
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parseJsonColumn } from "@ngriffin_uk/polychat-utility-server/json";
+import { escapeSqlLikePattern } from "@ngriffin_uk/polychat-utility-server/sql";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { ProjectTaskLinkRow, ProjectTaskRow } from "~/infrastructure/database/schema";
 import { publishProjectEvent } from "~/modules/sync/application/conversation-events";
+
+export interface GlobalTaskSearchRow {
+  id: string;
+  key: string | null;
+  objective: string;
+  status: string;
+  project_id: string;
+  project_name: string;
+  workspace_id: string;
+  updated_at: string | null;
+}
 
 export interface CreateProjectTaskParams {
   id?: string;
@@ -466,7 +478,30 @@ export class ProjectTaskRepository extends BaseRepository {
     return Boolean(row);
   }
 
-  async listOpenStandupsAndEscalations(workspaceIds: readonly string[]): Promise<ProjectTask[]> {
+  async searchTasksForUser(
+    userId: number,
+    query: string,
+    limit: number,
+  ): Promise<GlobalTaskSearchRow[]> {
+    const trimmedQuery = query.trim();
+    const searchTerm = `%${escapeSqlLikePattern(trimmedQuery)}%`;
+
+    return this.runQuery<GlobalTaskSearchRow>(
+      `SELECT t.id, t.key, t.objective, t.status, t.project_id, p.name AS project_name,
+              t.workspace_id, t.updated_at
+       FROM project_task t
+       JOIN project p ON p.id = t.project_id AND p.archived_at IS NULL
+       JOIN resource_grant wm ON wm.kind = 'membership' AND wm.workspace_id = t.workspace_id AND wm.user_id = ?
+       WHERE ? <> ''
+         AND (t.key = upper(?) OR t.objective LIKE ? ESCAPE '\\')
+       ORDER BY CASE WHEN t.key = upper(?) THEN 0 ELSE 1 END,
+                COALESCE(t.updated_at, t.created_at) DESC
+       LIMIT ?`,
+      [userId, trimmedQuery, trimmedQuery, searchTerm, trimmedQuery, limit],
+    );
+  }
+
+  async listOpenTasksForInbox(workspaceIds: readonly string[]): Promise<ProjectTask[]> {
     if (workspaceIds.length === 0) {
       return [];
     }
@@ -475,7 +510,14 @@ export class ProjectTaskRepository extends BaseRepository {
       `SELECT * FROM project_task
        WHERE workspace_id IN (${workspaceIds.map(() => "?").join(", ")})
          AND status NOT IN ('done', 'cancelled')
-         AND (kind = 'standup' OR json_extract(details, '$.escalation') IS NOT NULL)
+         AND (
+           kind = 'standup'
+           OR json_extract(details, '$.escalation') IS NOT NULL
+           OR (
+             json_extract(details, '$.breakdown') IS NOT NULL
+             AND json_extract(details, '$.breakdown.acceptedAt') IS NULL
+           )
+         )
        ORDER BY updated_at DESC
        LIMIT 200`,
       [...workspaceIds],

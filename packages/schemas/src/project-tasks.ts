@@ -46,6 +46,8 @@ export const WORK_TASK_TOOL_IDS = [
   "propose_setup_plan",
   "draft_reply",
   "answer_questions",
+  "propose_breakdown",
+  "accept_breakdown",
 ] as const;
 
 export const WORK_RUN_EXCLUDED_TOOL_IDS: readonly string[] = ["delegate"];
@@ -69,6 +71,7 @@ export const projectTaskPriorityLabels: Record<ProjectTaskPriority, string> = {
 };
 
 export const PROJECT_TASK_MAX_DEPTH = 3;
+export const WORK_MAX_BREAKDOWN_ITEMS = 12;
 export const WORK_MAX_AGENT_REVIEW_ROUNDS = 3;
 export const workActorSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("teammate"), id: z.string().min(1) }),
@@ -135,6 +138,7 @@ export const standupAnswerSchema = z.object({
   name: z.string(),
   answers: z.array(z.object({ question: z.string(), answer: z.string() })),
   answeredAt: z.string(),
+  skipped: z.boolean().optional(),
 });
 export type StandupAnswer = z.infer<typeof standupAnswerSchema>;
 
@@ -149,7 +153,33 @@ export const projectTaskStandupSchema = z.object({
 });
 export type ProjectTaskStandup = z.infer<typeof projectTaskStandupSchema>;
 
+export const taskBreakdownItemSchema = z.object({
+  key: z.string().trim().min(1).max(40),
+  objective: z.string().trim().min(1).max(2000),
+  owner: workActorSchema.nullable().default(null),
+  dependsOn: z.array(z.string().trim().min(1).max(40)).max(WORK_MAX_BREAKDOWN_ITEMS).default([]),
+  priority: projectTaskPrioritySchema.default("medium"),
+});
+export type TaskBreakdownItem = z.infer<typeof taskBreakdownItemSchema>;
+
+export const taskBreakdownSchema = z.object({
+  revision: z.number().int().positive(),
+  items: z.array(taskBreakdownItemSchema).min(1).max(WORK_MAX_BREAKDOWN_ITEMS),
+  proposedBy: workActorSchema,
+  proposedAt: z.string(),
+  acceptedBy: workActorSchema.nullable().default(null),
+  acceptedAt: z.string().nullable().default(null),
+  taskIds: z.record(z.string(), z.string()).default({}),
+});
+export type TaskBreakdown = z.infer<typeof taskBreakdownSchema>;
+
+export const acceptTaskBreakdownSchema = z.object({
+  revision: z.number().int().positive(),
+});
+export type AcceptTaskBreakdownInput = z.infer<typeof acceptTaskBreakdownSchema>;
+
 export const projectTaskDetailsSchema = z.object({
+  breakdown: taskBreakdownSchema.optional(),
   case: projectTaskCaseSchema.optional(),
   standup: projectTaskStandupSchema.optional(),
   escalation: z
@@ -212,6 +242,7 @@ export const resolveCaseSchema = z.object({
 
 export const answerStandupSchema = z.object({
   answers: z.array(z.object({ question: z.string(), answer: z.string().trim().max(4000) })),
+  skip: z.boolean().optional(),
 });
 export type AnswerStandupInput = z.infer<typeof answerStandupSchema>;
 
@@ -224,6 +255,11 @@ export const standupSettingsSchema = z.object({
   participants: z.enum(["everyone", "people", "teammates"]),
   windowMinutes: z.number().int().min(15).max(1440),
   shareBindingId: z.string().min(1).nullable().default(null),
+  pausedUntil: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .default(null),
 });
 export type StandupSettings = z.infer<typeof standupSettingsSchema>;
 
@@ -236,6 +272,7 @@ export const DEFAULT_STANDUP_SETTINGS: StandupSettings = {
   participants: "everyone",
   windowMinutes: 120,
   shareBindingId: null,
+  pausedUntil: null,
 };
 
 export const PROJECT_TASK_INTERACTION_TOOL_IDS = ["ask_user", "request_approval"] as const;

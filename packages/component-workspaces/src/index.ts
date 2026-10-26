@@ -47,6 +47,8 @@ export * from "./work-actors";
 export * from "./WorkTaskViews";
 export * from "./TaskWorkSections";
 export * from "./WorkTeamViews";
+export * from "./LeadRoutinesForm";
+export * from "./SaveTeamTemplateDialog";
 export * from "./SetupPlanView";
 export * from "./TaskViewTabs";
 export * from "./WorkInbox";

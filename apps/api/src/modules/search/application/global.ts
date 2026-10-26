@@ -7,6 +7,10 @@ import { isConversationUnread } from "~/modules/conversations/application/conver
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { findKnowledgeDocuments } from "~/modules/knowledge/application/query/find";
 import {
+  ProjectTaskRepository,
+  type GlobalTaskSearchRow,
+} from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
+import {
   type GlobalProjectSearchRow,
   type GlobalWorkspaceSearchRow,
   WorkspaceRepository,
@@ -23,7 +27,7 @@ export async function searchPolychat(
 ): Promise<GlobalSearchResponse> {
   const user = context.requireUser();
   const canSearchWork = hasProEntitlement(user);
-  const [conversations, documents, workspaces, projects] = await Promise.all([
+  const [conversations, documents, workspaces, projects, tasks] = await Promise.all([
     context.repositories
       .get(ConversationRepository)
       .searchAccessibleConversations(user.id, input.query, input.limit),
@@ -38,6 +42,11 @@ export async function searchPolychat(
           .get(WorkspaceRepository)
           .searchProjects(user.id, input.query, input.limit)
       : Promise.resolve<GlobalProjectSearchRow[]>([]),
+    canSearchWork
+      ? context.repositories
+          .get(ProjectTaskRepository)
+          .searchTasksForUser(user.id, input.query, input.limit)
+      : Promise.resolve<GlobalTaskSearchRow[]>([]),
   ]);
 
   return {
@@ -75,6 +84,16 @@ export async function searchPolychat(
             : null,
       })),
     documents,
+    tasks: tasks.map((task) => ({
+      id: task.id,
+      key: task.key,
+      objective: task.objective,
+      status: task.status,
+      projectId: task.project_id,
+      projectName: task.project_name,
+      workspaceId: task.workspace_id,
+      updatedAt: task.updated_at,
+    })),
     workspaces: workspaces.map((workspace) => ({
       id: workspace.id,
       name: workspace.name,

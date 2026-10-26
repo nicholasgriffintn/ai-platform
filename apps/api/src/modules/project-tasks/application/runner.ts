@@ -65,9 +65,9 @@ import {
 } from "./completions";
 import { reviewStageOutputs } from "./council-gate";
 import { selectReleasableDependents } from "./dependents";
+import { findExecutionRouteBlocker } from "./execution-route";
 import { buildStageInstructions, resolveTaskRuntime } from "./flow";
 import { recoverPendingProjectTaskInteraction } from "./interaction-recovery";
-import { describeOfflineMachine } from "./machine-availability";
 import { findMetKillCondition, recordProjectTaskRetrospective } from "./plan-checks";
 import { buildWorkPurpose } from "./purpose";
 import { getPendingProjectTaskQuestions } from "./questions";
@@ -134,13 +134,13 @@ export async function queueProjectTaskRun(params: {
     await assertTeammateEmploymentAvailable(context, task.workspaceId, task.runner.teammateId);
   }
 
-  const offlineMachine = await describeOfflineMachine(context, task, runnerIdentityUserId);
+  const routeBlocker = await findExecutionRouteBlocker(context, task, runnerIdentityUserId);
 
-  if (offlineMachine) {
+  if (routeBlocker) {
     const waiting = await context.repositories.get(ProjectTaskRepository).updateTask(task.id, {
       status: "blocked",
-      blockedReason: "machine_offline",
-      blockedDetail: offlineMachine,
+      blockedReason: routeBlocker.reason,
+      blockedDetail: routeBlocker.detail,
       runnerIdentityUserId,
       ...(stageId !== undefined ? { stageId } : {}),
     });

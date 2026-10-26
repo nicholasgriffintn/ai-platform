@@ -430,6 +430,17 @@ export function StandupSettingsForm({
               }
             />
           </div>
+          <FormInput
+            label="Paused until"
+            description="No standups run up to and including this date, for holidays or quiet weeks."
+            type="date"
+            className="max-w-xs"
+            value={draft.pausedUntil ?? ""}
+            disabled={!canManage}
+            onChange={(event) =>
+              setDraft((current) => ({ ...current, pausedUntil: event.target.value || null }))
+            }
+          />
           <fieldset className="flex flex-wrap gap-2">
             <legend className="mb-1 text-sm font-medium">Days</legend>
             {SHORT_WEEKDAY_LABELS.map((day, index) => {

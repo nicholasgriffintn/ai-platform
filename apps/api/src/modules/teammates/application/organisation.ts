@@ -15,8 +15,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { Teammate } from "~/infrastructure/database/schema";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
-import { resolveDelegationExecutionRoute } from "~/modules/delegations/application/routing";
 import { findModelConfig } from "~/modules/models/application/resolve";
+import { resolveExecutionRoute } from "~/modules/models/domain/execution-route";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import {
   WorkspaceTeammateRepository,
@@ -35,7 +35,7 @@ async function resolveRunsOn(context: ServiceContext, teammate: Teammate): Promi
   }
 
   const model = await findModelConfig(teammate.model, context.env);
-  const route = resolveDelegationExecutionRoute(model);
+  const route = resolveExecutionRoute(model);
 
   if (
     route === "hosted" &&

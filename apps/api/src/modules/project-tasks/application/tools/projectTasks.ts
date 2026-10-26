@@ -1,6 +1,8 @@
 import {
+  isTerminalProjectTaskStatus,
   projectTaskPrioritySchema,
   projectTaskStatusLabels,
+  WORK_MAX_BREAKDOWN_ITEMS,
   type Goal,
   type ProjectTask,
   type ProjectTaskStatus,
@@ -59,6 +61,18 @@ function formatTaskDetail(params: {
 
   if (task.description) {
     lines.push(`Details: ${task.description}`);
+  }
+
+  const breakdown = task.details.breakdown;
+
+  if (breakdown) {
+    lines.push(
+      `Breakdown revision ${breakdown.revision} (${breakdown.acceptedAt ? "accepted" : "waiting for acceptance"}):`,
+      ...breakdown.items.map(
+        (item) =>
+          `- [${item.key}] ${item.objective}${item.dependsOn.length ? ` (after ${item.dependsOn.join(", ")})` : ""}`,
+      ),
+    );
   }
 
   if (task.expectedOutput) {
@@ -154,6 +168,18 @@ export const create_task: ApiToolDefinition = {
 
     if (parentReference && !parent) {
       throw new Error(`There is no task ${parentReference} on this board.`);
+    }
+
+    if (parent && scope.caller.actor.type === "teammate") {
+      const openChildren = (
+        await scope.context.repositories.get(ProjectTaskRepository).listChildren(parent.id)
+      ).filter((child) => !isTerminalProjectTaskStatus(child.status));
+
+      if (openChildren.length >= WORK_MAX_BREAKDOWN_ITEMS) {
+        throw new Error(
+          `${parent.key ?? parent.id} already has ${openChildren.length} open sub-tasks. Finish some first, or propose a breakdown on a sub-task instead.`,
+        );
+      }
     }
 
     const { task } = await createProjectTask(

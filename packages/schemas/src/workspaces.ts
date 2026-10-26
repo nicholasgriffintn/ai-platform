@@ -15,6 +15,7 @@ import {
   DEFAULT_SANDBOX_EXECUTION_PROVIDER,
   sandboxExecutionProviderSchema,
 } from "./sandbox-provider.js";
+import { leadRoutinesSchema } from "./work-organisation.js";
 
 export const workspaceRoleSchema = z.enum(["owner", "admin", "member"]);
 export const WORKSPACE_MANAGER_ROLES: readonly string[] = ["owner", "admin"];
@@ -124,6 +125,7 @@ export const workspaceSummarySchema = z.object({
 });
 
 export const workspaceDetailSchema = workspaceSummarySchema.extend({
+  leadRoutines: leadRoutinesSchema,
   projects: z.array(projectSummarySchema),
   members: z.array(workspaceMemberSchema),
   invitations: z.array(workspaceInvitationSchema),
@@ -148,6 +150,7 @@ export const updateWorkspaceSchema = z
     ...workspaceFields,
     mission: z.string().trim().max(1000),
     monthlyCreditCapMicros: z.number().int().positive().nullable(),
+    leadRoutines: leadRoutinesSchema,
   })
   .partial()
   .refine((value) => Object.keys(value).length > 0, {

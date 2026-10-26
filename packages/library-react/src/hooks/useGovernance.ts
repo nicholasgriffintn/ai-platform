@@ -6,6 +6,7 @@ import {
   leaveWorkspace,
   listProjectStarters,
   listWorkspaceAudit,
+  listTeamTemplates,
   listWorkspaceTemplates,
   removeWorkspaceMember,
   transferWorkspaceOwnership,
@@ -34,6 +35,10 @@ export function useWorkspaceTemplates(workspaceId: string, enabled = true) {
     queryFn: () => listWorkspaceTemplates(workspaceId),
     enabled,
   });
+}
+
+export function useTeamTemplates(enabled = true) {
+  return useQuery({ queryKey: ["team-templates"], queryFn: listTeamTemplates, enabled });
 }
 
 export function useProjectStarters(enabled = true) {

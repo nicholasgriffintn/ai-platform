@@ -9,7 +9,7 @@ export interface TemplateRecord {
   created_by_user_id: number;
   workspace_id: string | null;
   project_id: string | null;
-  kind: "project" | "recipe" | "capability";
+  kind: "project" | "recipe" | "capability" | "team";
   capability_id: string | null;
   name: string;
   description: string;
@@ -122,7 +122,7 @@ export class TemplateRepository extends BaseRepository {
         created_by_user_id: userId,
         workspace_id: null,
         project_id: null,
-        kind: kind ?? ["project", "recipe", "capability"],
+        kind: kind ?? ["project", "recipe", "capability", "team"],
       },
       { columns: TEMPLATE_COLUMNS.split(/,\s*/), orderBy: "updated_at DESC, created_at DESC" },
     );

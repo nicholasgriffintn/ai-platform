@@ -210,7 +210,9 @@ export function WorkSetupPage({ workspaceId }: { workspaceId: string }) {
               provider
             }
             connectHref="/chat/plugins"
-            isBusy={actions.approve.isPending || actions.archive.isPending}
+            isBusy={
+              actions.approve.isPending || actions.archive.isPending || actions.revise.isPending
+            }
             onApprove={(revision) =>
               void actions.approve
                 .mutateAsync(revision)
@@ -223,6 +225,15 @@ export function WorkSetupPage({ workspaceId }: { workspaceId: string }) {
               void actions.archive
                 .mutateAsync()
                 .then(() => toast.success("Archived what the plan created"))
+            }
+            onRevise={(plan, expectedRevision) =>
+              actions.revise
+                .mutateAsync({ plan, expectedRevision })
+                .then((next) => toast.success(`Saved as revision ${next.revision}`))
+                .catch((error: unknown) => {
+                  toast.error(getErrorMessage(error, "The plan could not be saved"));
+                  throw error;
+                })
             }
           />
         </div>

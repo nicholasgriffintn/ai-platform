@@ -3,7 +3,7 @@ import z from "zod/v4";
 import { listSchema } from "./platform/list.js";
 import { addProjectCapabilitySchema, createProjectSchema } from "./workspaces.js";
 
-export const templateKindSchema = z.enum(["project", "recipe", "capability"]);
+export const templateKindSchema = z.enum(["project", "recipe", "capability", "team"]);
 export const templateStatusSchema = z.enum(["active", "paused", "archived"]);
 
 export const templateSchema = z.object({

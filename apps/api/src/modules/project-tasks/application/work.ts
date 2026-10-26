@@ -67,7 +67,7 @@ export async function teammateCaller(
   };
 }
 
-async function requireTaskInProject(
+export async function requireTaskInProject(
   context: ServiceContext,
   projectId: string,
   taskId: string,
@@ -96,7 +96,7 @@ async function describeActor(context: ServiceContext, actor: WorkActor): Promise
   return person?.name ?? "a person";
 }
 
-async function postEvent(
+export async function postEvent(
   context: ServiceContext,
   task: ProjectTask,
   caller: WorkCaller,

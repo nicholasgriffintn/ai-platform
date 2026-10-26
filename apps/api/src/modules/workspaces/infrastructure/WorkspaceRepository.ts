@@ -28,6 +28,7 @@ export interface WorkspaceRow {
   setup_project_id?: string | null;
   setup_task_id?: string | null;
   setup_plan?: string | null;
+  lead_routines?: string | null;
   created_by: number;
   created_at: string;
   updated_at: string | null;
@@ -240,6 +241,14 @@ export class WorkspaceRepository extends BaseRepository {
     );
   }
 
+  async listWorkspacesWithLead(): Promise<WorkspaceRow[]> {
+    return this.runQuery<WorkspaceRow>(
+      `SELECT * FROM workspace
+       WHERE lead_teammate_id IS NOT NULL AND setup_project_id IS NOT NULL`,
+      [],
+    );
+  }
+
   async getWorkspace(workspaceId: string): Promise<WorkspaceRow | null> {
     return this.runQuery<WorkspaceRow>("SELECT * FROM workspace WHERE id = ?", [workspaceId], true);
   }
@@ -330,6 +339,7 @@ export class WorkspaceRepository extends BaseRepository {
         "setup_project_id",
         "setup_task_id",
         "setup_plan",
+        "lead_routines",
       ],
       "id = ?",
       [workspaceId],

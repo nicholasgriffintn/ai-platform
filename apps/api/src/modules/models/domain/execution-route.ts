@@ -1,10 +1,10 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
-export type DelegationExecutionRoute = "hosted" | "sandbox" | "machine";
+export type ExecutionRoute = "hosted" | "sandbox" | "machine";
 
-export function resolveDelegationExecutionRoute(
+export function resolveExecutionRoute(
   model: Pick<ModelConfigItem, "provider" | "runsOn" | "machineId"> | null | undefined,
-): DelegationExecutionRoute {
+): ExecutionRoute {
   if (model?.provider === "polychat-sandbox") {
     return "sandbox";
   }
@@ -16,7 +16,7 @@ export function resolveDelegationExecutionRoute(
   return "hosted";
 }
 
-export function canRunDelegationOnMachine(
+export function canRunUnattendedOnMachine(
   model: ModelConfigItem | null | undefined,
 ): model is ModelConfigItem & { machineId: string } {
   return (
