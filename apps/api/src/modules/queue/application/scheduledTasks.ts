@@ -16,7 +16,7 @@ const logger = getLogger({ prefix: "services/tasks/scheduled" });
 
 const SETTLED_TASK_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 const SETTLED_TASK_PURGE_LIMIT = 500;
-const DURABLE_DELIVERY_RECOVERY_DELAY_MS = 5 * 60 * 1000;
+const DELIVERY_RECOVERY_DELAY_MS = 5 * 60 * 1000;
 const MAX_DURABLE_TASK_RECOVERIES = 3;
 const DURABLE_TASK_TYPES = [
   SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
@@ -27,7 +27,7 @@ const DURABLE_TASK_TYPES = [
 ] as const;
 
 export async function recoverFailedDurableTasks(env: IEnv, now = new Date()): Promise<number> {
-  const cutoff = new Date(now.getTime() - DURABLE_DELIVERY_RECOVERY_DELAY_MS);
+  const cutoff = new Date(now.getTime() - DELIVERY_RECOVERY_DELAY_MS);
   const recovered = (
     await Promise.all(
       DURABLE_TASK_TYPES.map((taskType) =>
@@ -47,9 +47,11 @@ export async function recoverFailedDurableTasks(env: IEnv, now = new Date()): Pr
   return recovered.length;
 }
 
-export async function redispatchPendingTasks(env: IEnv): Promise<number> {
+export async function redispatchPendingTasks(env: IEnv, now = new Date()): Promise<number> {
   const taskService = new TaskService(env, new TaskRepository(env));
-  const dispatched = await taskService.dispatchPendingTasks();
+  const dispatched = await taskService.dispatchPendingTasks(
+    new Date(now.getTime() - DELIVERY_RECOVERY_DELAY_MS),
+  );
 
   if (dispatched > 0) {
     logger.info("Recovered pending task queue deliveries", { dispatched });

@@ -16,6 +16,7 @@ import {
   formatZonedDayLabel,
   isDailyScheduleDue,
   readZonedClock,
+  runEachSettled,
   safeParseJson,
 } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -310,40 +311,43 @@ export async function runDueStandups(env: IEnv, now = new Date()): Promise<void>
   const repository = new WorkspaceRepository(env);
   const projects = await repository.listProjectsWithStandup();
 
-  for (const project of projects) {
+  const context = createServiceContext({ env });
+
+  await runEachSettled(projects, async (project) => {
     const settings = readSettings(project);
 
     if (settings.enabled && isDailyScheduleDue(settings, project.standup_last_run_at, now)) {
       await openStandup(env, project, settings, now);
     }
-  }
+  });
 
-  const context = createServiceContext({ env });
-
-  for (const project of projects) {
+  await runEachSettled(projects, async (project) => {
     const open = await context.repositories
       .get(ProjectTaskRepository)
       .listProjectTasks(project.id, { kind: "standup" });
-
-    for (const task of open) {
+    const closed = open.filter((task) => {
       const standup = task.details.standup;
 
-      if (
+      return (
         standup &&
         !standup.summary &&
         !isTerminalProjectTaskStatus(task.status) &&
         Date.parse(standup.closesAt) <= now.getTime()
-      ) {
-        const owner = await context.repositories
-          .get(UserRepository)
-          .getUserById(project.created_by);
+      );
+    });
 
-        if (owner) {
-          await requestSummary(createServiceContext({ env, user: owner }), task);
-        }
-      }
+    if (closed.length === 0) {
+      return;
     }
-  }
+
+    const owner = await context.repositories.get(UserRepository).getUserById(project.created_by);
+
+    if (owner) {
+      const ownerContext = createServiceContext({ env, user: owner });
+
+      await runEachSettled(closed, (task) => requestSummary(ownerContext, task));
+    }
+  });
 }
 
 async function requireStandupTask(

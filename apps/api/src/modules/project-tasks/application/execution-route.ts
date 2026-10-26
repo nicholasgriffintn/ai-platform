@@ -5,6 +5,7 @@ import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepo
 import { findModelConfig } from "~/modules/models/application/resolve";
 import {
   canRunUnattendedOnMachine,
+  findModelReadinessProblem,
   resolveExecutionRoute,
 } from "~/modules/models/domain/execution-route";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
@@ -40,14 +41,10 @@ export async function findExecutionRouteBlocker(
     };
   }
 
-  if (
-    model.readiness &&
-    (model.readiness.state !== "ready" || Date.parse(model.readiness.expiresAt) <= Date.now())
-  ) {
-    return {
-      reason: "missing_capability",
-      detail: model.readiness.reason || "The provider this task runs on is not ready.",
-    };
+  const readinessProblem = findModelReadinessProblem(model);
+
+  if (readinessProblem) {
+    return { reason: "missing_capability", detail: readinessProblem };
   }
 
   const route = resolveExecutionRoute(model);

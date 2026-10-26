@@ -23,6 +23,11 @@ export const speechModelListResponseSchema = z.object({ models: z.array(speechMo
 export const SPEECH_VOICE_ROLES = ["narrator", "host", "guest"] as const;
 export type SpeechVoiceRole = (typeof SPEECH_VOICE_ROLES)[number];
 
+export const narrationVoiceSchema = z
+  .object({ model: z.string().min(1), voice: z.string().min(1) })
+  .strict();
+export type NarrationVoice = z.infer<typeof narrationVoiceSchema>;
+
 export interface SpeechVoice {
   id: string;
   label: string;

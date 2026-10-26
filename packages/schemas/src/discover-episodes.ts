@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { narrationVoiceSchema } from "./speech-voices.js";
 import { videoOverviewStyleSchema } from "./study-outputs.js";
 
 export const DISCOVER_EPISODES_CAPABILITY_ID = "discover-episodes";
@@ -159,6 +160,7 @@ export const discoverEpisodeContentSchema = z
     title: text(),
     recap: z.string(),
     chapters: z.array(discoverEpisodeChapterSchema).min(1).max(4),
+    voice: narrationVoiceSchema.optional(),
   })
   .strict();
 

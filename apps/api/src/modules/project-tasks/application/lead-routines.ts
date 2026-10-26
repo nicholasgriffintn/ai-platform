@@ -1,5 +1,9 @@
 import { LEAD_ROUTINE_KINDS, type LeadRoutineKind } from "@ngriffin_uk/polychat-schemas";
-import { formatZonedDayLabel, isDailyScheduleDue } from "@ngriffin_uk/polychat-utility-core";
+import {
+  formatZonedDayLabel,
+  isDailyScheduleDue,
+  runEachSettled,
+} from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -59,49 +63,47 @@ async function openLeadRoutine(
   }
 }
 
-export async function runLeadRoutines(env: IEnv, now = new Date()): Promise<void> {
-  const repository = new WorkspaceRepository(env);
-  const workspaces = await repository.listWorkspacesWithLead();
+async function runWorkspaceRoutines(env: IEnv, workspace: WorkspaceRow, now: Date): Promise<void> {
+  const routines = readLeadRoutines(workspace.lead_routines);
+  const due = LEAD_ROUTINE_KINDS.filter(
+    (kind) =>
+      routines[kind].enabled && isDailyScheduleDue(routines[kind], routines[kind].lastRunAt, now),
+  );
 
-  for (const workspace of workspaces) {
-    const routines = readLeadRoutines(workspace.lead_routines);
-    const due = LEAD_ROUTINE_KINDS.filter(
-      (kind) =>
-        routines[kind].enabled && isDailyScheduleDue(routines[kind], routines[kind].lastRunAt, now),
-    );
+  if (due.length === 0) {
+    return;
+  }
 
-    if (due.length === 0) {
-      continue;
-    }
+  const base = createServiceContext({ env });
+  const owner = await base.repositories.get(UserRepository).getUserById(workspace.created_by);
 
-    const owner = await createServiceContext({ env })
-      .repositories.get(UserRepository)
-      .getUserById(workspace.created_by);
+  if (!owner) {
+    return;
+  }
 
-    if (!owner) {
-      continue;
-    }
+  await base.repositories.get(WorkspaceRepository).updateWorkspace(workspace.id, {
+    lead_routines: JSON.stringify({
+      ...routines,
+      ...Object.fromEntries(
+        due.map((kind) => [kind, { ...routines[kind], lastRunAt: now.toISOString() }]),
+      ),
+    }),
+  });
 
-    await repository.updateWorkspace(workspace.id, {
-      lead_routines: JSON.stringify({
-        ...routines,
-        ...Object.fromEntries(
-          due.map((kind) => [kind, { ...routines[kind], lastRunAt: now.toISOString() }]),
-        ),
-      }),
-    });
+  const context = createServiceContext({ env, user: owner });
+  const hasInitiatives =
+    (await context.repositories.get(InitiativeRepository).listForWorkspace(workspace.id)).length >
+    0;
 
-    const context = createServiceContext({ env, user: owner });
-    const hasInitiatives =
-      (await context.repositories.get(InitiativeRepository).listForWorkspace(workspace.id)).length >
-      0;
-
-    for (const kind of due) {
-      if (kind === "initiativeReview" && !hasInitiatives) {
-        continue;
-      }
-
+  for (const kind of due) {
+    if (kind !== "initiativeReview" || hasInitiatives) {
       await openLeadRoutine(context, workspace, kind, routines[kind].timeZone, now);
     }
   }
+}
+
+export async function runLeadRoutines(env: IEnv, now = new Date()): Promise<void> {
+  const workspaces = await new WorkspaceRepository(env).listWorkspacesWithLead();
+
+  await runEachSettled(workspaces, (workspace) => runWorkspaceRoutines(env, workspace, now));
 }

@@ -1,3 +1,5 @@
+import type { NarrationVoice } from "@ngriffin_uk/polychat-schemas";
+
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { joinAudioSegments, mp3DurationSeconds } from "~/modules/audio/domain/mp3";
 import {
@@ -19,6 +21,8 @@ export interface Narration {
 
 export interface NarrationOptions {
   language: string;
+  voice?: NarrationVoice;
+  onVoice?: (voice: NarrationVoice) => Promise<void>;
   onPassage?: (index: number, audio: Uint8Array) => Promise<void>;
 }
 
@@ -31,10 +35,16 @@ export async function narratePassages(
   const settings = await new UserSettingsRepository(context.env).getUserSettings(user.id);
   const rendered = await renderWithSpeechVoices(
     async () => ({
-      narrator: await resolveSpeechVoice(context.env, user, { role: "narrator", settings }),
+      narrator: await resolveSpeechVoice(context.env, user, {
+        role: "narrator",
+        settings,
+        pinned: options.voice,
+      }),
     }),
     async ({ narrator }) => {
       const segments: Uint8Array[] = [];
+
+      await options.onVoice?.({ model: narrator.id, voice: narrator.voice });
 
       for (const [index, passage] of passages.entries()) {
         const pieces: Uint8Array[] = [];

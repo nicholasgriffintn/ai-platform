@@ -105,14 +105,14 @@ export class TaskService {
     }
   }
 
-  public async dispatchPendingTasks(limit = 100): Promise<number> {
+  public async dispatchPendingTasks(sentBefore: Date, limit = 100): Promise<number> {
     if (!this.env.TASK_QUEUE) {
       throw new Error("TASK_QUEUE binding is not available; pending tasks cannot be recovered");
     }
 
     await this.taskRepository.releaseAbandonedTasks();
 
-    const tasks = await this.taskRepository.getPendingTasks(limit);
+    const tasks = await this.taskRepository.getPendingTasks(limit, sentBefore);
     let dispatched = 0;
 
     for (const task of tasks) {

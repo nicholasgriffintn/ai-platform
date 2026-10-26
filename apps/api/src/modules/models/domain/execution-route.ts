@@ -26,3 +26,16 @@ export function canRunUnattendedOnMachine(
     model.agent.capabilities.runsUnattended === true
   );
 }
+
+export function findModelReadinessProblem(
+  model: Pick<ModelConfigItem, "readiness"> | null | undefined,
+  now = Date.now(),
+): string | null {
+  const readiness = model?.readiness;
+
+  if (!readiness || (readiness.state === "ready" && Date.parse(readiness.expiresAt) > now)) {
+    return null;
+  }
+
+  return readiness.reason || "The provider this runs on is not ready.";
+}

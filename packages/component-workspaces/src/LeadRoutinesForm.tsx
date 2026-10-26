@@ -1,7 +1,8 @@
-import { Button, cn, FormInput, Switch } from "@ngriffin_uk/polychat-component-ui";
+import { Button, FormInput, Switch } from "@ngriffin_uk/polychat-component-ui";
 import type { LeadRoutine, LeadRoutineKind, LeadRoutines } from "@ngriffin_uk/polychat-schemas";
-import { SHORT_WEEKDAY_LABELS } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
+
+import { WeekdayPicker } from "./WeekdayPicker";
 
 const ROUTINE_COPY: Record<LeadRoutineKind, { title: string; description: string }> = {
   dailyBrief: {
@@ -55,37 +56,12 @@ function RoutineFields({
               onChange={(event) => onChange({ ...routine, timeZone: event.target.value })}
             />
           </div>
-          <fieldset className="flex flex-wrap gap-2">
-            <legend className="mb-1 text-sm font-medium">Days</legend>
-            {SHORT_WEEKDAY_LABELS.map((day, index) => {
-              const active = routine.days.includes(index);
-
-              return (
-                <button
-                  key={day}
-                  type="button"
-                  aria-pressed={active}
-                  disabled={disabled || (active && routine.days.length === 1)}
-                  className={cn(
-                    "rounded-full border px-3 py-1 text-xs transition-colors",
-                    active
-                      ? "border-active-work bg-active-work/10 text-active-work"
-                      : "border-border text-muted-foreground hover:border-border-strong",
-                  )}
-                  onClick={() =>
-                    onChange({
-                      ...routine,
-                      days: active
-                        ? routine.days.filter((candidate) => candidate !== index)
-                        : [...routine.days, index].sort((left, right) => left - right),
-                    })
-                  }
-                >
-                  {day}
-                </button>
-              );
-            })}
-          </fieldset>
+          <WeekdayPicker
+            days={routine.days}
+            disabled={disabled}
+            keepOne
+            onChange={(days) => onChange({ ...routine, days })}
+          />
         </div>
       ) : null}
     </div>

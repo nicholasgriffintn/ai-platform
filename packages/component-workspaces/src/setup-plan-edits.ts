@@ -1,5 +1,56 @@
 import type { SetupPlan } from "@ngriffin_uk/polychat-schemas";
 
+type Initiative = SetupPlan["initiatives"][number];
+type Project = SetupPlan["projects"][number];
+type Teammate = SetupPlan["teammates"][number];
+type Task = SetupPlan["tasks"][number];
+
+export function patchSetupInitiative(
+  plan: SetupPlan,
+  key: string,
+  patch: Partial<Initiative>,
+): SetupPlan {
+  return {
+    ...plan,
+    initiatives: plan.initiatives.map((initiative) =>
+      initiative.key === key ? { ...initiative, ...patch } : initiative,
+    ),
+  };
+}
+
+export function patchSetupProject(
+  plan: SetupPlan,
+  key: string,
+  patch: Partial<Project>,
+): SetupPlan {
+  return {
+    ...plan,
+    projects: plan.projects.map((project) =>
+      project.key === key ? { ...project, ...patch } : project,
+    ),
+  };
+}
+
+export function patchSetupTeammate(
+  plan: SetupPlan,
+  key: string,
+  patch: Partial<Teammate>,
+): SetupPlan {
+  return {
+    ...plan,
+    teammates: plan.teammates.map((teammate) =>
+      teammate.key === key ? { ...teammate, ...patch } : teammate,
+    ),
+  };
+}
+
+export function patchSetupTask(plan: SetupPlan, index: number, patch: Partial<Task>): SetupPlan {
+  return {
+    ...plan,
+    tasks: plan.tasks.map((task, position) => (position === index ? { ...task, ...patch } : task)),
+  };
+}
+
 export function removeSetupInitiative(plan: SetupPlan, key: string): SetupPlan {
   return {
     ...plan,

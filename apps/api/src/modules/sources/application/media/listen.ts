@@ -115,6 +115,7 @@ export async function runSourceListen(
 
   const storage = StorageService.forPrivateAssets(context);
   const last = listen.passages.length - 1;
+  let voiced = false;
 
   try {
     await narratePassages(
@@ -122,10 +123,26 @@ export async function runSourceListen(
       listen.passages.map((passage) => passage.text),
       {
         language: "en",
+        onVoice: async () => {
+          if (!voiced) {
+            return;
+          }
+
+          voiced = false;
+          await saveListen(context, sourceId, (current) =>
+            current.contentHash === contentHash
+              ? {
+                  ...current,
+                  passages: current.passages.map((passage) => ({ ...passage, audio: false })),
+                }
+              : current,
+          );
+        },
         onPassage: async (index, audio) => {
           await storage.uploadObject(passageKey(sourceId, index), audio, {
             httpMetadata: { contentType: "audio/mpeg" },
           });
+          voiced = true;
           await saveListen(context, sourceId, (current) =>
             current.contentHash === contentHash
               ? {

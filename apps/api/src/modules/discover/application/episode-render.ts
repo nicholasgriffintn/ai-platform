@@ -5,6 +5,7 @@ import {
   discoverChapterScriptDraftSchema,
   type DiscoverEpisodeChapter,
   type DiscoverEpisodeContent,
+  type NarrationVoice,
 } from "@ngriffin_uk/polychat-schemas";
 import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 import {
@@ -56,11 +57,20 @@ async function narrateChapter(
   episodeId: string,
   chapterIndex: number,
   chapter: DiscoverEpisodeChapter,
+  pinned: NarrationVoice | undefined,
 ) {
   const { audio, timings } = await narratePassages(
     context,
     chapter.scenes.map((scene) => scene.narration),
-    { language: "en" },
+    {
+      language: "en",
+      voice: pinned,
+      onVoice: async (voice) => {
+        if (voice.model !== pinned?.model || voice.voice !== pinned.voice) {
+          await saveEpisode(context, episodeId, (content) => ({ ...content, voice }));
+        }
+      },
+    },
   );
 
   await StorageService.forPrivateAssets(context).uploadObject(
@@ -72,20 +82,32 @@ async function narrateChapter(
   return timings;
 }
 
-async function saveChapter(
+function saveChapter(
   context: ServiceContext,
   episodeId: string,
   chapterIndex: number,
   update: (chapter: DiscoverEpisodeChapter) => DiscoverEpisodeChapter,
+) {
+  return saveEpisode(context, episodeId, (content) => ({
+    ...content,
+    chapters: content.chapters.map((chapter, index) =>
+      index === chapterIndex ? update(chapter) : chapter,
+    ),
+  }));
+}
+
+async function saveEpisode(
+  context: ServiceContext,
+  episodeId: string,
+  update: (content: DiscoverEpisodeContent) => DiscoverEpisodeContent,
 ) {
   const user = context.requireUser();
   const outputs = context.repositories.get(OutputRepository);
 
   for (let attempt = 0; attempt < SAVE_ATTEMPTS; attempt += 1) {
     const { record, content } = await requireDiscoverEpisode(context, episodeId);
-    const chapters = content.chapters.map((chapter, index) =>
-      index === chapterIndex ? update(chapter) : chapter,
-    );
+    const updated = update(content);
+    const { chapters } = updated;
     const finished = chapters.every(
       (chapter) => chapter.status === "ready" || chapter.status === "failed",
     );
@@ -94,7 +116,7 @@ async function saveChapter(
 
     try {
       await outputs.updateOutput(episodeId, {
-        content: { ...content, chapters },
+        content: updated,
         status: finished ? "ready" : "pending",
         expectedRevision: record.revision,
         updatedByUserId: user.id,
@@ -216,7 +238,7 @@ export async function renderEpisodeChapter(
       status: "rendering",
     }));
 
-    const timings = await narrateChapter(context, episodeId, chapterIndex, scripted);
+    const timings = await narrateChapter(context, episodeId, chapterIndex, scripted, content.voice);
 
     await saveChapter(context, episodeId, chapterIndex, (current) => ({
       ...current,

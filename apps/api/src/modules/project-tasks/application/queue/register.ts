@@ -2,6 +2,7 @@ import {
   PROJECT_REVIEW_INTAKE_TASK_TYPE,
   PROJECT_TASK_RUN_TASK_TYPE,
 } from "@ngriffin_uk/polychat-schemas";
+import { runEachSettled } from "@ngriffin_uk/polychat-utility-core";
 
 import { SCHEDULES } from "~/config/schedules";
 import { runLeadRoutines } from "~/modules/project-tasks/application/lead-routines";
@@ -19,11 +20,10 @@ export function registerProjectTasksQueue(workflows: AppWorkflows): void {
     SCHEDULES.WORK_RHYTHM,
     defineSchedule({
       name: "work-task-rhythm",
-      run: async ({ env }) => {
-        await escalateStalledWakes(env);
-        await runDueStandups(env);
-        await runLeadRoutines(env);
-      },
+      run: ({ env }) =>
+        runEachSettled([escalateStalledWakes, runDueStandups, runLeadRoutines], (step) =>
+          step(env),
+        ),
     }),
   );
 }

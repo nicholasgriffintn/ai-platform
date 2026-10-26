@@ -10,7 +10,7 @@ import { acceptTaskBreakdown, proposeTaskBreakdown } from "../breakdown";
 import { createProjectTask } from "../index";
 import { requireTaskInProject, wakeTeammateOnTask } from "../work";
 
-vi.mock("../index", () => ({ createProjectTask: vi.fn() }));
+vi.mock("../index", () => ({ assertParentAllowed: vi.fn(), createProjectTask: vi.fn() }));
 vi.mock("../work", () => ({
   postEvent: vi.fn(),
   requireTaskInProject: vi.fn(),

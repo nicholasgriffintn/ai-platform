@@ -21,6 +21,7 @@ import { DelegationRepository } from "~/modules/delegations/infrastructure/Deleg
 import { findModelConfig } from "~/modules/models/application/resolve";
 import {
   canRunUnattendedOnMachine,
+  findModelReadinessProblem,
   resolveExecutionRoute,
 } from "~/modules/models/domain/execution-route";
 import { TaskService } from "~/modules/queue/application/TaskService";
@@ -172,16 +173,12 @@ export async function runDelegationTask(
     const resolvedModel = teammateModel;
     const executionRoute = resolveExecutionRoute(resolvedModel);
 
-    if (
-      resolvedModel?.readiness &&
-      (resolvedModel.readiness.state !== "ready" ||
-        Date.parse(resolvedModel.readiness.expiresAt) <= Date.now())
-    ) {
-      const reason = resolvedModel.readiness.reason || "The selected provider is not ready.";
+    const readinessProblem = findModelReadinessProblem(resolvedModel);
 
-      await settleDelegation(context, delegation, message.user_id, reason);
+    if (readinessProblem) {
+      await settleDelegation(context, delegation, message.user_id, readinessProblem);
 
-      return { status: "error" as const, detail: reason };
+      return { status: "error" as const, detail: readinessProblem };
     }
 
     if (executionRoute === "machine") {

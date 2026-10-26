@@ -68,6 +68,7 @@ export function WorkTeamPage({ workspaceId }: { workspaceId: string }) {
                 {
                   label: "Save as template",
                   icon: <Copy size={17} />,
+                  variant: "secondary" as const,
                   onClick: () => setIsTemplateOpen(true),
                 },
               ]

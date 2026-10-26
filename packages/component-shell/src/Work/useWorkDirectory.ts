@@ -10,9 +10,11 @@ export function useWorkDirectory(workspaceId: string) {
       userId: member.userId,
       name: member.name,
     })),
-    teammates: team
-      .filter((teammate) => teammate.status === "active")
-      .map((teammate) => ({ id: teammate.teammateId, name: teammate.name })),
+    teammates: team.map((teammate) => ({
+      id: teammate.teammateId,
+      name: teammate.name,
+      assignable: teammate.status === "active",
+    })),
   };
 
   return {

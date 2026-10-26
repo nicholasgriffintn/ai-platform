@@ -15,9 +15,10 @@ import type {
   Initiative,
   StandupSettings,
 } from "@ngriffin_uk/polychat-schemas";
-import { SHORT_WEEKDAY_LABELS } from "@ngriffin_uk/polychat-utility-core";
 import { Pencil, Target, Users } from "lucide-react";
 import { useState } from "react";
+
+import { WeekdayPicker } from "./WeekdayPicker";
 
 export function InitiativeDialog({
   open,
@@ -441,37 +442,11 @@ export function StandupSettingsForm({
               setDraft((current) => ({ ...current, pausedUntil: event.target.value || null }))
             }
           />
-          <fieldset className="flex flex-wrap gap-2">
-            <legend className="mb-1 text-sm font-medium">Days</legend>
-            {SHORT_WEEKDAY_LABELS.map((day, index) => {
-              const active = draft.days.includes(index);
-
-              return (
-                <button
-                  key={day}
-                  type="button"
-                  disabled={!canManage}
-                  aria-pressed={active}
-                  className={cn(
-                    "rounded-full border px-3 py-1 text-xs",
-                    active
-                      ? "border-active-work bg-active-work/10 text-active-work"
-                      : "border-border text-muted-foreground",
-                  )}
-                  onClick={() =>
-                    setDraft((current) => ({
-                      ...current,
-                      days: active
-                        ? current.days.filter((value) => value !== index)
-                        : [...current.days, index].sort((left, right) => left - right),
-                    }))
-                  }
-                >
-                  {day}
-                </button>
-              );
-            })}
-          </fieldset>
+          <WeekdayPicker
+            days={draft.days}
+            disabled={!canManage}
+            onChange={(days) => setDraft((current) => ({ ...current, days }))}
+          />
           <FormSelect
             label="Who takes part"
             options={[

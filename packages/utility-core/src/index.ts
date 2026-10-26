@@ -24,6 +24,7 @@ export * from "./numbers.js";
 export * from "./objects.js";
 export * from "./private-hosts.js";
 export * from "./server-sent-events.js";
+export * from "./settle.js";
 export * from "./streams.js";
 export * from "./strings.js";
 export * from "./text-anchor.js";

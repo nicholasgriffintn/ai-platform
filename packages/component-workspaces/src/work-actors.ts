@@ -8,6 +8,7 @@ export interface WorkPersonSummary {
 export interface WorkTeammateSummary {
   id: string;
   name: string;
+  assignable: boolean;
 }
 
 export interface WorkDirectory {
@@ -55,10 +56,12 @@ export function workActorOptions(
 ): { value: string; label: string }[] {
   return [
     { value: "none", label: noneLabel },
-    ...directory.teammates.map((teammate) => ({
-      value: encodeWorkActor({ type: "teammate", id: teammate.id }),
-      label: teammate.name,
-    })),
+    ...directory.teammates
+      .filter((teammate) => teammate.assignable)
+      .map((teammate) => ({
+        value: encodeWorkActor({ type: "teammate", id: teammate.id }),
+        label: teammate.name,
+      })),
     ...directory.people.map((person) => ({
       value: encodeWorkActor({ type: "person", userId: person.userId }),
       label: person.name ?? "Person",

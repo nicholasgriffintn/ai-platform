@@ -37,3 +37,29 @@ export function groupBy<T, K>(items: Iterable<T>, keyOf: (item: T) => K): Map<K,
 
   return groups;
 }
+
+export function orderByDependencies<T>(
+  items: readonly T[],
+  keyOf: (item: T) => string,
+  dependenciesOf: (item: T) => readonly string[],
+): T[] | null {
+  const ordered: T[] = [];
+  const placed = new Set<string>();
+
+  while (ordered.length < items.length) {
+    const ready = items.filter(
+      (item) => !placed.has(keyOf(item)) && dependenciesOf(item).every((key) => placed.has(key)),
+    );
+
+    if (ready.length === 0) {
+      return null;
+    }
+
+    for (const item of ready) {
+      ordered.push(item);
+      placed.add(keyOf(item));
+    }
+  }
+
+  return ordered;
+}

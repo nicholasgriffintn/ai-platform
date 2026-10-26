@@ -253,6 +253,18 @@ export async function renderDiscoverWindDown(
       script.steps.map((step) => step.text),
       {
         language: "en",
+        onVoice: async () => {
+          if (!current.steps.some((step) => step.audio)) {
+            return;
+          }
+
+          current = {
+            ...current,
+            status: "speaking",
+            steps: current.steps.map((step) => ({ ...step, audio: false })),
+          };
+          saved = await saveWindDown(context, saved, current);
+        },
         onPassage: async (index, audio) => {
           await storage.uploadObject(stepAudioKey(windDownId, index), audio, {
             httpMetadata: { contentType: "audio/mpeg" },

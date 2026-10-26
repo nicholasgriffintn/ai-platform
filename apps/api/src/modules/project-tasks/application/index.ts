@@ -272,7 +272,7 @@ async function resolveOwnerFields(
   };
 }
 
-async function assertParentAllowed(
+export async function assertParentAllowed(
   context: ServiceContext,
   projectId: string,
   taskId: string | null,

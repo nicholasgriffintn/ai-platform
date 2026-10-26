@@ -1,5 +1,6 @@
 import {
   SPEECH_PROVIDER_VOICES,
+  type NarrationVoice,
   type SpeechProvider,
   type SpeechVoiceRole,
 } from "@ngriffin_uk/polychat-schemas";
@@ -19,6 +20,7 @@ export interface SpeechVoiceRequest {
   provider?: SpeechProvider;
   model?: string;
   voice?: string;
+  pinned?: NarrationVoice;
 }
 
 export async function resolveSpeechVoice(
@@ -30,9 +32,12 @@ export async function resolveSpeechVoice(
   const explicit = Boolean(request.provider || request.model);
   const selected = await getSpeechModel(env, user, {
     provider: request.provider ?? settings?.speech_provider,
-    model: request.model ?? (request.provider ? null : settings?.speech_model),
+    model:
+      request.model ?? request.pinned?.model ?? (request.provider ? null : settings?.speech_model),
     required: explicit,
   });
+  const requestedVoice =
+    request.voice ?? (selected.id === request.pinned?.model ? request.pinned.voice : undefined);
   const configuredVoice =
     role === "narrator" && selected.provider === settings?.speech_provider
       ? settings.speech_voice
@@ -43,7 +48,7 @@ export async function resolveSpeechVoice(
     return {
       ...selected,
       voice: resolveMistralSpeechVoice({
-        requestedVoice: request.voice,
+        requestedVoice,
         configuredVoice,
         defaultVoice: roleVoice,
         savedVoices: settings?.speech_voices ?? [],
@@ -51,5 +56,5 @@ export async function resolveSpeechVoice(
     };
   }
 
-  return { ...selected, voice: request.voice ?? configuredVoice ?? roleVoice };
+  return { ...selected, voice: requestedVoice ?? configuredVoice ?? roleVoice };
 }
