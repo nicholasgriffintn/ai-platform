@@ -1,20 +1,16 @@
 import { buildMemorySynthesisPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { memoryReflectionTaskDataSchema } from "@ngriffin_uk/polychat-schemas";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { z } from "zod/v4";
 
 import { ai } from "~/infrastructure/ai";
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { reflectTeammateMemory } from "~/modules/memory-documents/application/reflection";
+import { readMemoryDocumentDetails } from "~/modules/memory-documents/domain/details";
+import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { defineTask } from "~/modules/queue/application/workflows";
-import {
-  SourceRepository,
-  type SourceRecord,
-} from "~/modules/sources/infrastructure/SourceRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv, IUser } from "~/types";
 
@@ -32,23 +28,19 @@ export const memorySynthesis = defineTask({
       };
     }
 
-    const sourceRepository = new SourceRepository(env);
     const memorySynthesisRepository = new MemorySynthesisRepository(env);
-
-    const memories = await sourceRepository.listPersonalSources(message.user_id, "memory");
-
-    const activeMemories = memories.filter((memory) => {
-      const metadata = readMetadata(memory);
-      const sourceNamespace =
-        typeof metadata.namespace === "string" ? metadata.namespace : "global";
-
-      return sourceNamespace === namespace && memory.status !== "archived";
-    });
+    const activeMemories =
+      namespace === "global"
+        ? await new MemoryDocumentRepository(env).listDocuments({
+            scopeType: "personal",
+            scopeId: String(message.user_id),
+          })
+        : [];
 
     if (activeMemories.length === 0) {
       return {
         status: "skipped",
-        message: "No active memories to synthesize",
+        message: "No memory documents to synthesise",
       };
     }
 
@@ -57,15 +49,14 @@ export const memorySynthesis = defineTask({
       namespace,
     );
 
-    const categorized = categorizeMemories(
-      activeMemories.map((memory) => {
-        const metadata = readMetadata(memory);
+    const categorized: CategorizedMemories = Object.fromEntries(
+      activeMemories.map((document) => {
+        const { description } = readMemoryDocumentDetails(document);
 
-        return {
-          id: memory.id,
-          text: memory.content ?? "",
-          category: typeof metadata.category === "string" ? metadata.category : "general",
-        };
+        return [
+          description ? `${document.name}: ${description}` : document.name,
+          [{ id: document.id, text: document.content, category: document.name }],
+        ];
       }),
     );
 
@@ -112,31 +103,6 @@ export const memorySynthesis = defineTask({
   },
 });
 
-function readMetadata(memory: Pick<SourceRecord, "metadata">): Record<string, unknown> {
-  const value =
-    typeof memory.metadata === "string" ? safeParseJson(memory.metadata) : memory.metadata;
-
-  return isRecord(value) ? value : {};
-}
-
-function categorizeMemories(
-  memories: Array<{ id: string; text: string; category: string }>,
-): CategorizedMemories {
-  const categorized: CategorizedMemories = {};
-
-  for (const memory of memories) {
-    const category = memory.category || "general";
-
-    if (!categorized[category]) {
-      categorized[category] = [];
-    }
-
-    categorized[category].push(memory);
-  }
-
-  return categorized;
-}
-
 async function generateSynthesis(
   categorized: CategorizedMemories,
   existing: any,
@@ -147,7 +113,7 @@ async function generateSynthesis(
     .map(
       ([category, mems]) => `
 ## ${category.toUpperCase()}
-${mems.map((m) => `- ${m.text}`).join("\n")}
+${mems.map((m) => m.text).join("\n")}
 `,
     )
     .join("\n");
@@ -178,8 +144,7 @@ ${mems.map((m) => `- ${m.text}`).join("\n")}
 
     return Object.entries(categorized)
       .map(
-        ([category, mems]) =>
-          `## ${category.toUpperCase()}\n${mems.map((m) => `- ${m.text}`).join("\n")}`,
+        ([category, mems]) => `## ${category.toUpperCase()}\n${mems.map((m) => m.text).join("\n")}`,
       )
       .join("\n\n");
   }

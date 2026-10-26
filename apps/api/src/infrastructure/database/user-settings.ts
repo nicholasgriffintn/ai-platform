@@ -33,7 +33,7 @@ export const USER_SETTINGS_DEFAULTS: Record<string, unknown> = {
   temporary_chats_default: 0,
   web_search_enabled: 1,
   source_search_enabled: 1,
-  memory_provider: "built-in",
+  memory_provider: "documents",
   transcription_provider: "workers",
   transcription_model: "whisper",
   transcription_vocabulary: [],

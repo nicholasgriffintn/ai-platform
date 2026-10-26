@@ -457,7 +457,7 @@ export const searchDocument = sqliteTable(
     lease_token: text(),
     lease_expires_at: text(),
     document_type: text({ enum: ["legacy", "embedding", "source"] }).notNull(),
-    resource_type: text({ enum: ["source", "output"] })
+    resource_type: text({ enum: ["source", "output", "memory"] })
       .default("source")
       .notNull(),
     legacy_user_id: integer()

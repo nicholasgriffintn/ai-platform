@@ -1,9 +1,6 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 
-import {
-  sourceResourceSql,
-  synthesisResourceSql,
-} from "~/infrastructure/database/resource-storage";
+import { synthesisResourceSql } from "~/infrastructure/database/resource-storage";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
@@ -24,11 +21,12 @@ export async function scheduleDailySynthesis(env: IEnv): Promise<void> {
          WHERE namespace = 'global' AND is_active = 1
          GROUP BY user_id
        ) ms ON ms.user_id = u.id
-       LEFT JOIN ${sourceResourceSql} s
-         ON s.created_by_user_id = u.id
-        AND s.kind = 'memory'
-        AND s.status != 'archived'
-        AND COALESCE(json_extract(s.metadata, '$.namespace'), 'global') = 'global'
+       LEFT JOIN resource memory_document
+         ON memory_document.resource_type = 'memory' AND memory_document.kind = 'memory'
+        AND memory_document.scope_type = 'personal' AND memory_document.scope_id = CAST(u.id AS TEXT)
+        AND memory_document.deleted_at IS NULL
+       LEFT JOIN resource_revision s
+         ON s.resource_type = 'memory' AND s.document_id = memory_document.id
         AND (ms.created_at IS NULL OR s.created_at > ms.created_at)
        WHERE json_extract(us.payload, '$.memories_save_enabled') = 1
        GROUP BY u.id`,

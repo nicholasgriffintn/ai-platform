@@ -105,7 +105,7 @@ export const updateUserSettingsSchema = z
     temporary_chats_default: z.boolean().optional(),
     web_search_enabled: z.boolean().optional(),
     source_search_enabled: z.boolean().optional(),
-    memory_provider: z.enum(["built-in", "hindsight", "honcho"]).optional(),
+    memory_provider: z.enum(["documents", "hindsight", "honcho"]).optional(),
     transcription_provider: z.string().optional(),
     transcription_model: z.string().optional(),
     transcription_vocabulary: transcriptionVocabularySchema.optional(),

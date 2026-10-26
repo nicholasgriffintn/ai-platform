@@ -115,33 +115,12 @@ describe("source deletion", () => {
     expect(deleteSourceRow).not.toHaveBeenCalled();
   });
 
-  it("uses the built-in provider for migrated memories without provider metadata", async () => {
-    const migratedMemory = { ...memory, metadata: JSON.stringify({ migratedFrom: "memories" }) };
-    const context = {
-      env: {},
-      user: { id: 42 },
-      repositories: fakeRepositories([
-        [
-          SourceRepository,
-          {
-            getSource: vi.fn().mockResolvedValue(migratedMemory),
-            deleteSource: vi.fn(),
-          },
-        ],
-      ]),
-    } as unknown as ServiceContext;
-
-    await deleteSource(context, 42, migratedMemory.id);
-
-    expect(deleteMemoryMock).toHaveBeenCalledWith(migratedMemory.id, "built-in");
-  });
-
   it("deletes project memories through the shared memory provider scope", async () => {
     const projectMemory = {
       ...memory,
       id: "project-memory-1",
       project_id: "project-1",
-      metadata: JSON.stringify({ memory_provider: "built-in" }),
+      metadata: JSON.stringify({ memory_provider: "honcho" }),
     };
     const context = {
       env: {},
@@ -162,7 +141,7 @@ describe("source deletion", () => {
       type: "project",
       projectId: "project-1",
     });
-    expect(deleteMemoryMock).toHaveBeenCalledWith(projectMemory.id, "built-in");
+    expect(deleteMemoryMock).toHaveBeenCalledWith(projectMemory.id, "honcho");
     expect(recordProjectAuditMock).toHaveBeenCalledWith(
       context,
       "project-1",
@@ -196,14 +175,11 @@ describe("memory source updates", () => {
     expect(updateSourceRow).not.toHaveBeenCalled();
   });
 
-  it("keeps memory titles editable without exposing internal target provenance", async () => {
+  it("keeps memory titles editable", async () => {
     const updated = {
       ...memory,
       title: "Concise answers",
-      metadata: JSON.stringify({
-        memory_provider: "built-in",
-        embedding_provider_target: { provider: "vectorize" },
-      }),
+      metadata: JSON.stringify({ memory_provider: "honcho" }),
     };
     const updateSourceRow = vi.fn().mockResolvedValue(undefined);
     const context = {
@@ -221,7 +197,7 @@ describe("memory source updates", () => {
     const result = await updateSource(context, 42, memory.id, { title: "Concise answers" });
 
     expect(updateSourceRow).toHaveBeenCalledWith(memory.id, { title: "Concise answers" });
-    expect(result.metadata).toEqual({ memory_provider: "built-in" });
+    expect(result.metadata).toEqual({ memory_provider: "honcho" });
   });
 });
 

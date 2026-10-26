@@ -52,10 +52,6 @@ function formatFile(record: SourceRecord): Source["file"] {
 export function formatSource(record: SourceRecord): Source {
   const metadata = safeParseJson<Record<string, unknown>>(record.metadata) ?? {};
 
-  if (record.kind === "memory") {
-    delete metadata.embedding_provider_target;
-  }
-
   delete metadata.pending;
   delete metadata[KNOWLEDGE_BODY_METADATA_KEY];
 
@@ -365,10 +361,11 @@ export async function deleteSource(
     );
   }
 
-  if (source.kind === "memory") {
-    const metadata = safeParseJson<Record<string, unknown>>(source.metadata);
-    const recordedProvider = metadata?.memory_provider ?? source.provider;
-    const providerId = isMemoryProviderId(recordedProvider) ? recordedProvider : "built-in";
+  const recordedProvider =
+    safeParseJson<Record<string, unknown>>(source.metadata)?.memory_provider ?? source.provider;
+
+  if (source.kind === "memory" && isMemoryProviderId(recordedProvider)) {
+    const providerId = recordedProvider;
     const memoryManager = MemoryManager.getInstance(
       context.env,
       context.user ?? undefined,

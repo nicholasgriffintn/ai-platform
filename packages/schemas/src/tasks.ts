@@ -9,7 +9,7 @@ import {
   DELEGATION_WAKE_TASK_TYPE,
 } from "./delegations.js";
 import { DISCOVER_JOB_TASK_TYPE } from "./discover.js";
-import { MEMORY_REFLECTION_TASK_TYPE } from "./memory-documents.js";
+import { MEMORY_CONSOLIDATION_TASK_TYPE, MEMORY_REFLECTION_TASK_TYPE } from "./memory-documents.js";
 import {
   MODEL_DATASET_PROCESS_TASK_TYPE,
   MODEL_DEPLOYMENT_SYNC_TASK_TYPE,
@@ -48,6 +48,7 @@ export const WEBHOOK_DELIVERY_TASK_TYPE = "webhook_delivery";
 export const TASK_TYPES = [
   "memory_synthesis",
   MEMORY_REFLECTION_TASK_TYPE,
+  MEMORY_CONSOLIDATION_TASK_TYPE,
   "research_polling",
   "async_message_polling",
   "training_quality_scoring",

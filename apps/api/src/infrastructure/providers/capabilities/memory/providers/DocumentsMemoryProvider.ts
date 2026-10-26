@@ -1,7 +1,10 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { memorySearchPassage } from "~/modules/memory-documents/application/pages";
+import type { MemoryDocumentRow } from "~/infrastructure/database/schema";
+import { enqueueKnowledgeProcessing } from "~/modules/knowledge/application/index/indexing";
+import { searchMemoryKnowledge } from "~/modules/knowledge/application/query/memory";
+import { memoryPassageResult } from "~/modules/memory-documents/application/pages";
 import {
   rememberInDocument,
   rememberInScope,
@@ -42,7 +45,7 @@ export class DocumentsMemoryProvider implements MemoryProvider {
     conversationIngestion: false,
     externalStorage: false,
     deletion: true,
-    semanticSearch: false,
+    semanticSearch: true,
   };
 
   constructor(private readonly config: DocumentsMemoryProviderConfig) {}
@@ -90,6 +93,8 @@ export class DocumentsMemoryProvider implements MemoryProvider {
 
       const written = await rememberInDocument(context, document, userId, note);
 
+      await this.queueIndexing(context, written, userId);
+
       if (memoryScope.conversationId) {
         await publishConversationChanged(context, memoryScope.conversationId);
       }
@@ -100,6 +105,8 @@ export class DocumentsMemoryProvider implements MemoryProvider {
     const { scope } = await this.requireScope();
     const written = await rememberInScope(context, scope, userId, note);
 
+    await this.queueIndexing(context, written, userId);
+
     return { id: written.id, provider: this.name };
   }
 
@@ -108,51 +115,91 @@ export class DocumentsMemoryProvider implements MemoryProvider {
     options?: MemoryRetrieveOptions,
   ): Promise<MemoryRetrieveResult[]> {
     const { context } = this.requireContext();
-    const trimmed = query.trim().toLowerCase();
+    const trimmed = query.trim();
 
     if (!trimmed) {
       return [];
     }
 
     const limit = Math.min(options?.topK ?? DEFAULT_TOP_K, MAX_SEARCH_RESULTS);
+    const searches = await this.searchScopes(context);
+    const passages = (
+      await Promise.all(
+        searches.map((scope) => searchMemoryKnowledge(context, scope, trimmed, limit)),
+      )
+    )
+      .flat()
+      .sort((left, right) => right.score - left.score)
+      .slice(0, limit);
+    const repository = context.repositories.get(MemoryDocumentRepository);
+    const documents = new Map(
+      (
+        await Promise.all(
+          [...new Set(passages.map((passage) => passage.documentId))].map((id) =>
+            repository.getDocumentById(id),
+          ),
+        )
+      )
+        .filter((document) => document !== null)
+        .map((document) => [document.id, document]),
+    );
+
+    return passages.flatMap((passage) => {
+      const document = documents.get(passage.documentId);
+
+      return document ? [memoryPassageResult(document, passage)] : [];
+    });
+  }
+
+  private async queueIndexing(
+    context: ServiceContext,
+    document: MemoryDocumentRow,
+    userId: number,
+  ): Promise<void> {
+    await enqueueKnowledgeProcessing(
+      context.env,
+      { id: document.id, project_id: document.scope_type === "project" ? document.scope_id : null },
+      userId,
+      "memory",
+    );
+  }
+
+  private async searchScopes(
+    context: ServiceContext,
+  ): Promise<{ projectId: string | null; documentIds?: string[] }[]> {
     const memoryScope = this.config.memoryScope;
 
-    if (memoryScope?.type === "bound") {
-      const documents = await Promise.all(
-        memoryScope.documents.map(async (binding) => {
-          try {
-            const { document } = await requireRunMemoryDocument(
-              context,
-              memoryScope,
-              binding.documentId,
-            );
+    if (memoryScope?.type !== "bound") {
+      const { scope } = await this.requireScope();
 
-            return document;
-          } catch (error) {
-            if (error instanceof AssistantError && [403, 404].includes(error.statusCode)) {
-              return null;
-            }
-
-            throw error;
-          }
-        }),
-      );
-
-      return documents
-        .filter((document) => document !== null)
-        .filter((document) =>
-          `${document.name}\n${document.content}`.toLowerCase().includes(trimmed),
-        )
-        .slice(0, limit)
-        .map((document) => memorySearchPassage(document, trimmed));
+      return [{ projectId: scope.scopeType === "project" ? scope.scopeId : null }];
     }
 
-    const { scope } = await this.requireScope();
-    const documents = await context.repositories
-      .get(MemoryDocumentRepository)
-      .searchDocuments(scope, trimmed, limit);
+    const readable = await Promise.all(
+      memoryScope.documents.map(async (binding) => {
+        try {
+          return (await requireRunMemoryDocument(context, memoryScope, binding.documentId))
+            .document;
+        } catch (error) {
+          if (error instanceof AssistantError && [403, 404].includes(error.statusCode)) {
+            return null;
+          }
 
-    return documents.map((document) => memorySearchPassage(document, trimmed));
+          throw error;
+        }
+      }),
+    );
+    const byScope = new Map<string | null, string[]>();
+
+    for (const document of readable) {
+      if (document) {
+        const projectId = document.scope_type === "project" ? document.scope_id : null;
+
+        byScope.set(projectId, [...(byScope.get(projectId) ?? []), document.id]);
+      }
+    }
+
+    return [...byScope].map(([projectId, documentIds]) => ({ projectId, documentIds }));
   }
 
   async deleteMemory(memoryId: string): Promise<boolean> {

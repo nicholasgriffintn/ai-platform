@@ -6,9 +6,7 @@ import { BoundMemoryProvider } from "./providers/BoundMemoryProvider";
 import type { MemoryProvider, MemoryProviderId } from "./types";
 
 export function isMemoryProviderId(value: unknown): value is MemoryProviderId {
-  return (
-    value === "built-in" || value === "documents" || value === "hindsight" || value === "honcho"
-  );
+  return value === "documents" || value === "hindsight" || value === "honcho";
 }
 
 export interface GetMemoryProviderContext {
@@ -36,10 +34,10 @@ export function getMemoryProvider({
     });
     const baselineName: MemoryProviderId | undefined = memoryScope.baseline
       ? memoryScope.baseline.type === "project"
-        ? "built-in"
+        ? "documents"
         : isMemoryProviderId(userSettings?.memory_provider)
           ? userSettings.memory_provider
-          : "built-in"
+          : "documents"
       : undefined;
     const baseline = baselineName
       ? providerLibrary.resolve("memory", baselineName, {
@@ -60,10 +58,10 @@ export function getMemoryProvider({
 
   const providerName: MemoryProviderId =
     memoryScope.type === "project"
-      ? "built-in"
+      ? "documents"
       : isMemoryProviderId(userSettings?.memory_provider)
         ? userSettings.memory_provider
-        : "built-in";
+        : "documents";
 
   return providerLibrary.resolve("memory", providerName, {
     env,

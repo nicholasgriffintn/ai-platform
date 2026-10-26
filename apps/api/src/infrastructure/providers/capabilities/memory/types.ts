@@ -1,7 +1,7 @@
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { IEnv, IUser, IUserSettings } from "~/types";
 
-export type MemoryProviderId = "built-in" | "documents" | "hindsight" | "honcho";
+export type MemoryProviderId = "documents" | "hindsight" | "honcho";
 
 export interface MemoryProviderContext {
   env: IEnv;
@@ -27,7 +27,6 @@ export interface MemoryStoreResult {
 
 export interface MemoryRetrieveOptions {
   topK?: number;
-  scoreThreshold?: number;
   userSettings?: IUserSettings | null;
 }
 

@@ -149,22 +149,6 @@ export class MemoryDocumentRepository extends BaseRepository {
     );
   }
 
-  public async searchDocuments(
-    scope: MemoryDocumentScopeKey,
-    query: string,
-    limit: number,
-  ): Promise<MemoryDocumentRow[]> {
-    return this.runQuery<MemoryDocumentRow>(
-      `SELECT * FROM ${memoryResourceSql} memory_document
-       WHERE scope_type = ? AND scope_id = ? AND kind = 'memory' AND deleted_at IS NULL
-         AND (lower(name) LIKE ? OR lower(content) LIKE ?
-           OR lower(COALESCE(json_extract(metadata, '$.description'), '')) LIKE ?)
-       ORDER BY updated_at DESC
-       LIMIT ?`,
-      [scope.scopeType, scope.scopeId, `%${query}%`, `%${query}%`, `%${query}%`, limit],
-    );
-  }
-
   async reflectionCheckpoint(contextId: string, conversationId: string): Promise<string | null> {
     const row = await this.runQuery<{ message_id: string }>(
       "SELECT through_message_id AS message_id FROM memory_reflection WHERE record_kind = 'checkpoint' AND context_id = ? AND conversation_id = ?",

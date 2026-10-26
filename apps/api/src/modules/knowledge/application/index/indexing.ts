@@ -6,6 +6,7 @@ import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 import { EMBEDDING_VECTOR_SPACE_VERSION, WORKERS_EMBEDDING_MODEL } from "~/config/storage";
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { createRepositories } from "~/infrastructure/database/repositories";
+import { resolveEmbeddingRuntimeTarget } from "~/infrastructure/providers/capabilities/embedding/helpers";
 import {
   decodeEmbeddingRuntimeTarget,
   toEmbeddingRuntimeTarget,
@@ -22,6 +23,8 @@ import {
   type IndexableResource,
   type IndexedResourceType,
 } from "~/modules/knowledge/infrastructure/KnowledgeIndexRepository";
+import { requireMemoryDocumentAccess } from "~/modules/memory-documents/application/memory-documents";
+import { readMemoryDocumentDetails } from "~/modules/memory-documents/domain/details";
 import { requireOutputAccess } from "~/modules/outputs/application/access";
 import { outputKnowledgeText } from "~/modules/outputs/domain/knowledge-text";
 import { TaskService } from "~/modules/queue/application/TaskService";
@@ -29,10 +32,30 @@ import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { requireSourceAccess } from "~/modules/sources/application/sources";
 import { readSourceSummary, renderSourceSummary } from "~/modules/sources/domain/summary";
 import type { SourceRecord } from "~/modules/sources/infrastructure/SourceRepository";
+import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
-import type { IEnv } from "~/types";
+import type { EmbeddingRuntimeTarget, IEnv } from "~/types";
 
 const CHUNK_CHARACTERS = 2048;
+
+const PLATFORM_EMBEDDING_TARGET = toEmbeddingRuntimeTarget({
+  provider: "vectorize",
+  target: "vectorize-binding",
+  model: WORKERS_EMBEDDING_MODEL,
+  vectorSpace: "default",
+  vectorSpaceVersion: EMBEDDING_VECTOR_SPACE_VERSION,
+});
+
+async function chooseEmbeddingTarget(
+  context: ServiceContext,
+  resource: IndexableResource,
+): Promise<EmbeddingRuntimeTarget> {
+  const settings = resource.project_id ? null : await getRequestUserSettings(context);
+
+  return settings
+    ? resolveEmbeddingRuntimeTarget(context.env, context.requireUser(), settings)
+    : PLATFORM_EMBEDDING_TARGET;
+}
 
 async function documentDigest(resource: IndexableResource): Promise<string> {
   return sha256Hex(
@@ -81,6 +104,16 @@ async function readIndexText(
   context: ServiceContext,
   resource: IndexableResource,
 ): Promise<{ text: string; source: SourceRecord | null }> {
+  if (resource.resource_type === "memory") {
+    const document = await requireMemoryDocumentAccess(context, resource.id);
+    const { description } = readMemoryDocumentDetails(document);
+
+    return {
+      text: [`# ${document.name}`, description, document.content].filter(Boolean).join("\n\n"),
+      source: null,
+    };
+  }
+
   if (resource.resource_type === "output") {
     await requireOutputAccess(context, context.requireUser().id, resource.id);
 
@@ -130,13 +163,7 @@ export async function indexKnowledgeResource(
   const document = await prepareSearchDocument(current, text);
   const target = existing
     ? decodeEmbeddingRuntimeTarget(existing.target)
-    : toEmbeddingRuntimeTarget({
-        provider: "vectorize",
-        target: "vectorize-binding",
-        model: WORKERS_EMBEDDING_MODEL,
-        vectorSpace: "default",
-        vectorSpaceVersion: EMBEDDING_VECTOR_SPACE_VERSION,
-      });
+    : await chooseEmbeddingTarget(context, current);
 
   await index.prepare(current, document, target, context.requireUser().id);
 
@@ -160,14 +187,15 @@ export async function indexKnowledgeResource(
 
 export async function enqueueKnowledgeProcessing(
   env: IEnv,
-  source: Pick<SourceRecord, "id" | "project_id">,
+  resource: { id: string; project_id: string | null },
   userId: number,
+  resourceType: IndexedResourceType = "source",
 ): Promise<void> {
   await new TaskService(env, new TaskRepository(env)).enqueueTask({
     task_type: SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
     user_id: userId,
-    project_id: source.project_id ?? undefined,
-    task_data: { sourceId: source.id, resourceType: "source" },
+    project_id: resource.project_id ?? undefined,
+    task_data: { sourceId: resource.id, resourceType },
   });
 }
 

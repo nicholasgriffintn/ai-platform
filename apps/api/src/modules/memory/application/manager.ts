@@ -96,7 +96,7 @@ export class MemoryManager {
       ? await getRequestUserSettings(this.serviceContext)
       : undefined;
 
-    if (providerId && !userSettings && providerId !== "built-in") {
+    if (providerId && !userSettings && providerId !== "documents") {
       throw new AssistantError(
         "User settings are required to delete memory from its recorded provider",
         ErrorType.CONFIGURATION_ERROR,
@@ -128,7 +128,6 @@ export class MemoryManager {
     query: string,
     opts?: {
       topK?: number;
-      scoreThreshold?: number;
       userSettings?: IUserSettings | null;
     },
   ): Promise<Array<{ text: string; score: number }>> {
@@ -145,7 +144,6 @@ export class MemoryManager {
 
     return provider.retrieveMemories(query, {
       topK: opts?.topK,
-      scoreThreshold: opts?.scoreThreshold,
       userSettings,
     });
   }

@@ -60,14 +60,14 @@ export const sourceSummarySchema = sourceSchema.omit({ content: true });
 
 const knowledgeKindSchema = z.string().trim().min(1).max(80);
 
-export const knowledgeResultTypeSchema = z.enum(["source", "output", "external"]);
+export const knowledgeResultTypeSchema = z.enum(["source", "output", "memory", "external"]);
 
 export const knowledgeSearchFiltersSchema = z
   .object({
     kinds: z.array(knowledgeKindSchema).max(12).optional(),
     resourceTypes: z
-      .array(z.enum(["source", "output"]))
-      .max(2)
+      .array(z.enum(["source", "output", "memory"]))
+      .max(3)
       .optional(),
     origins: z.array(knowledgeOriginSchema).max(13).optional(),
     providers: z.array(z.string().trim().min(1).max(100)).max(20).optional(),

@@ -1,5 +1,6 @@
 import { ProjectKnowledgeCard as ControlledProjectKnowledgeCard } from "@ngriffin_uk/polychat-component-workspaces";
 import {
+  useMemoryDocuments,
   useProjectContextSources,
   useSetProjectContextSources,
   useSources,
@@ -20,7 +21,7 @@ export function ProjectKnowledgeCard({
   canManage: boolean;
   embedded?: boolean;
 }) {
-  const memories = useSources({ projectId, kind: "memory" });
+  const memories = useMemoryDocuments(projectId);
   const allSources = useSources({ projectId });
   const context = useProjectContextSources(projectId);
   const setContext = useSetProjectContextSources(projectId);
@@ -29,7 +30,11 @@ export function ProjectKnowledgeCard({
     <ControlledProjectKnowledgeCard
       canManage={canManage}
       embedded={embedded}
-      memories={memories.data ?? []}
+      memories={memories.documents.map((document) => ({
+        id: document.id,
+        title: document.name,
+        kind: "memory",
+      }))}
       contextSources={context.data ?? []}
       contextCandidates={(allSources.data ?? []).filter(
         (source) => source.kind !== "memory" && source.status === "available",

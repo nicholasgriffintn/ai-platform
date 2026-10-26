@@ -1,6 +1,5 @@
 import { estimateTextTokens } from "@ngriffin_uk/polychat-ai-providers";
 import type { MemoryDocumentPage, ReadMemoryDocumentInput } from "@ngriffin_uk/polychat-schemas";
-import { escapeRegExp } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { sliceTextAtCodePointBoundaries } from "@ngriffin_uk/polychat-utility-server/strings";
 
@@ -68,16 +67,19 @@ export async function readRunMemoryDocument(
   return memoryDocumentPage(document, input.offset, input.maxCharacters);
 }
 
-export function memorySearchPassage(document: MemoryDocumentRow, query: string) {
-  const match = document.content.search(new RegExp(escapeRegExp(query), "iu"));
-  const page = memoryDocumentPage(document, Math.max(0, match - 300), 1500);
+export function memoryPassageResult(
+  document: MemoryDocumentRow,
+  passage: { content: string; score: number },
+) {
+  const located = document.content.indexOf(passage.content.slice(0, 120).trim());
+  const page = memoryDocumentPage(document, Math.max(0, located), 1500);
 
   return {
     id: document.id,
-    text: [document.name, readMemoryDocumentDetails(document).description, page.content]
+    text: [document.name, readMemoryDocumentDetails(document).description, passage.content]
       .filter(Boolean)
       .join("\n"),
-    score: 1,
+    score: passage.score,
     metadata: {
       name: document.name,
       revision: document.revision,

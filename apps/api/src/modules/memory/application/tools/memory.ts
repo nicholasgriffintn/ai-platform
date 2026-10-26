@@ -83,7 +83,6 @@ export const search_memories: ApiToolDefinition = {
     );
     const memories = await memoryManager.retrieveMemories(query, {
       topK,
-      scoreThreshold: 0.5,
       userSettings,
     });
 

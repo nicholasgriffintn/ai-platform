@@ -15,6 +15,7 @@ import {
   type IndexableResource,
   type IndexedResourceType,
 } from "~/modules/knowledge/infrastructure/KnowledgeIndexRepository";
+import { requireMemoryDocumentAccess } from "~/modules/memory-documents/application/memory-documents";
 import { requireOutputAccess } from "~/modules/outputs/application/access";
 import { requireSourceAccess } from "~/modules/sources/application/sources";
 import { getRequestUserSettings } from "~/modules/user/application/request-settings";
@@ -74,6 +75,12 @@ async function requireResourceAccess(
   resource: IndexableResource,
 ): Promise<void> {
   const userId = context.requireUser().id;
+
+  if (resource.resource_type === "memory") {
+    await requireMemoryDocumentAccess(context, resource.id);
+
+    return;
+  }
 
   await (resource.resource_type === "source"
     ? requireSourceAccess(context, userId, resource.id)

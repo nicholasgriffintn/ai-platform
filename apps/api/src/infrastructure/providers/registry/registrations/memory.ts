@@ -1,6 +1,5 @@
 import type { MemoryProvider } from "../../capabilities/memory";
 import {
-  BuiltInMemoryProvider,
   DocumentsMemoryProvider,
   HindsightMemoryProvider,
   HonchoMemoryProvider,
@@ -12,24 +11,6 @@ const HINDSIGHT_API_BASE_URL = "https://api.hindsight.vectorize.io";
 const HONCHO_API_BASE_URL = "https://api.honcho.dev";
 
 const memoryProviders: ProviderRegistration<MemoryProvider>[] = [
-  {
-    name: "built-in",
-    aliases: ["builtin", "vectorize"],
-    lifecycle: "transient",
-    create: (context) =>
-      new BuiltInMemoryProvider(
-        ensureEnv(context),
-        ensureUser(context, { optional: true }),
-        context.userSettings,
-        context.serviceContext,
-        context.memoryScope,
-      ),
-    metadata: {
-      vendor: "Polychat",
-      categories: ["memory"],
-      description: "Built-in D1 and Vectorize-backed assistant memories.",
-    },
-  },
   {
     name: "documents",
     aliases: ["files"],

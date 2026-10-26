@@ -47,6 +47,28 @@ async function resolveScope(
   return { scopeType: "project", scopeId: projectId };
 }
 
+export async function requireMemoryDocumentAccess(
+  context: ServiceContext,
+  documentId: string,
+): Promise<MemoryDocumentRow> {
+  const document = await context.repositories
+    .get(MemoryDocumentRepository)
+    .getDocumentById(documentId);
+
+  if (
+    !document ||
+    (document.scope_type === "personal" && document.scope_id !== String(context.requireUser().id))
+  ) {
+    throw new AssistantError("Memory document not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  if (document.scope_type === "project") {
+    await requireProjectAccess(context, document.scope_id);
+  }
+
+  return document;
+}
+
 export function formatMemoryDocument(row: MemoryDocumentRow): MemoryDocument {
   return {
     id: row.id,

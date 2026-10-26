@@ -72,8 +72,7 @@ const S3_VECTORS_REGION_OPTIONS: FormSelectOption[] = [
 ];
 
 const MEMORY_PROVIDER_OPTIONS: FormSelectOption[] = [
-  { value: "built-in", label: "Built-in" },
-  { value: "documents", label: "Documents" },
+  { value: "documents", label: "Polychat" },
   { value: "hindsight", label: "Hindsight" },
   { value: "honcho", label: "Honcho" },
 ];
@@ -658,7 +657,7 @@ export function UserSettingsForm({
               htmlFor="embedding_provider"
               className="mb-1 block text-sm font-medium text-foreground"
             >
-              Embedding Provider
+              Search index storage
             </label>
             <FormSelect
               id="embedding_provider"
@@ -671,6 +670,10 @@ export function UserSettingsForm({
                 })
               }
             />
+            <p className="text-sm text-muted-foreground">
+              Where the search index for your own files and memories is kept. Project files always
+              use Polychat's index.
+            </p>
           </div>
           {formData.embedding_provider === "dynamodb-vectors" && (
             <DynamoDbVectorSettings settings={formData} onChange={updateFormData} />
@@ -760,8 +763,9 @@ export function UserSettingsForm({
               }
             />
             <p className="text-sm text-muted-foreground">
-              Documents keeps memories as files you can read and edit under Files &rsaquo; Memory.
-              Hindsight and Honcho require a connected API key in Providers.
+              Polychat keeps memories as documents you can read and edit under Files &rsaquo;
+              Memory, searched like the rest of your files. Hindsight and Honcho require a connected
+              API key in Providers.
             </p>
           </div>
 

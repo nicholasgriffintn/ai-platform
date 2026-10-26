@@ -7,9 +7,15 @@ import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastruct
 
 import { DocumentsMemoryProvider } from "../DocumentsMemoryProvider";
 
-const rememberInScope = vi.hoisted(() => vi.fn(async () => ({ id: "document-1" })));
+const rememberInScope = vi.hoisted(() =>
+  vi.fn(async () => ({ id: "document-1", scope_type: "personal", scope_id: "7" })),
+);
+const searchMemoryKnowledge = vi.hoisted(() => vi.fn());
+const enqueueKnowledgeProcessing = vi.hoisted(() => vi.fn());
 
 vi.mock("~/modules/workspaces/application/access", () => ({ requireProjectAccess: vi.fn() }));
+vi.mock("~/modules/knowledge/application/query/memory", () => ({ searchMemoryKnowledge }));
+vi.mock("~/modules/knowledge/application/index/indexing", () => ({ enqueueKnowledgeProcessing }));
 vi.mock("~/modules/memory-documents/application/remember", () => ({
   rememberInScope,
   rememberInDocument: vi.fn(),
@@ -18,19 +24,18 @@ vi.mock("~/modules/memory-documents/application/remember", () => ({
 function createContext() {
   const memoryDocuments = {
     softDeleteDocument: vi.fn(async () => undefined),
-    searchDocuments: vi.fn(async () => [
-      {
-        id: "document-1",
-        name: "british-english",
-        content: "Prefers British English",
-        metadata: null,
-        revision: 3,
-      },
-    ]),
+    getDocumentById: vi.fn(async () => ({
+      id: "document-1",
+      name: "british-english",
+      content: "Writing\n\nPrefers British English",
+      metadata: null,
+      revision: 3,
+    })),
   };
 
   return {
     context: {
+      env: {},
       requireUser: () => ({ id: 7 }),
       repositories: fakeRepositories([[MemoryDocumentRepository, memoryDocuments]]),
     } as unknown as ServiceContext,
@@ -66,6 +71,12 @@ describe("DocumentsMemoryProvider", () => {
     });
 
     expect(result).toEqual({ id: "document-1", provider: "documents" });
+    expect(enqueueKnowledgeProcessing).toHaveBeenCalledWith(
+      expect.anything(),
+      { id: "document-1", project_id: null },
+      7,
+      "memory",
+    );
     expect(rememberInScope).toHaveBeenCalledWith(
       expect.anything(),
       { scopeType: "personal", scopeId: "7" },
@@ -92,18 +103,31 @@ describe("DocumentsMemoryProvider", () => {
     );
   });
 
-  it("returns what it found in words rather than as a score", async () => {
+  it("recalls passages from the shared index with where they sit in the document", async () => {
+    searchMemoryKnowledge.mockResolvedValue([
+      {
+        documentId: "document-1",
+        title: "british-english",
+        content: "Prefers British English",
+        score: 0.8,
+      },
+    ]);
     const { provider } = createProvider();
 
-    const results = await provider.retrieveMemories("british");
+    const results = await provider.retrieveMemories("spelling");
 
+    expect(searchMemoryKnowledge).toHaveBeenCalledWith(
+      expect.anything(),
+      { projectId: null },
+      "spelling",
+      5,
+    );
     expect(results).toHaveLength(1);
     expect(results[0]?.text).toContain("Prefers British English");
     expect(results[0]?.metadata).toMatchObject({
       documentId: "document-1",
       revision: 3,
-      offset: 0,
-      nextOffset: null,
+      offset: 9,
     });
   });
 
@@ -111,7 +135,8 @@ describe("DocumentsMemoryProvider", () => {
     const { provider, memoryDocuments } = createProvider();
 
     await expect(provider.retrieveMemories("   ")).resolves.toEqual([]);
-    expect(memoryDocuments.searchDocuments).not.toHaveBeenCalled();
+    expect(memoryDocuments.getDocumentById).not.toHaveBeenCalled();
+    expect(searchMemoryKnowledge).not.toHaveBeenCalled();
   });
 
   it("refuses without a signed-in user", async () => {

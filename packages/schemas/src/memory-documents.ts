@@ -124,6 +124,7 @@ export const memoryDocumentDraftSchema = z.object({
 });
 
 export const MEMORY_REFLECTION_TASK_TYPE = "memory_reflection";
+export const MEMORY_CONSOLIDATION_TASK_TYPE = "memory_consolidation";
 export const memoryReflectionTaskDataSchema = z.object({
   contextId: z.string().min(1),
   conversationId: z.string().min(1),

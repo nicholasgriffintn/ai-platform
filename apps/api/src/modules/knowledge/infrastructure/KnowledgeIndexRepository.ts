@@ -5,7 +5,7 @@ import type { PendingEmbeddingDocument } from "~/modules/knowledge/application/i
 import { sourceVisibilitySql } from "~/modules/sources/infrastructure/source-visibility";
 import type { EmbeddingRuntimeTarget, IEnv } from "~/types";
 
-export type IndexedResourceType = "source" | "output";
+export type IndexedResourceType = "source" | "output" | "memory";
 
 export interface KnowledgeFilters {
   kinds?: readonly string[];
@@ -87,6 +87,7 @@ export interface KnowledgeIndexCandidate {
 }
 
 export const INDEXED_OUTPUT_KINDS = ["document", "deck", "sheet"] as const;
+export const INDEXED_MEMORY_KINDS = ["memory", "teammate_context"] as const;
 
 const CHUNKS_PER_STATEMENT = 50;
 
@@ -97,7 +98,14 @@ const knowledgeResourceSql = `(SELECT 'source' AS resource_type, id, created_by_
   SELECT 'output', id, created_by_user_id, project_id, NULL, kind, title,
     CASE WHEN status = 'ready' AND deleted_at IS NULL THEN 'available' ELSE 'archived' END,
     content, NULL, NULL, '{}', updated_at, search_revision, sensitivity, mime_type
-  FROM resource WHERE resource_type = 'output')`;
+  FROM resource WHERE resource_type = 'output'
+  UNION ALL
+  SELECT 'memory', id,
+    CASE WHEN scope_type = 'personal' THEN CAST(scope_id AS INTEGER) ELSE created_by_user_id END,
+    project_id, NULL, kind, title,
+    CASE WHEN deleted_at IS NULL THEN 'available' ELSE 'archived' END,
+    content, NULL, NULL, COALESCE(metadata, '{}'), updated_at, search_revision, sensitivity, mime_type
+  FROM resource WHERE resource_type = 'memory')`;
 
 const PASSAGE_COLUMNS = `c.id, s.resource_type AS resourceType, s.id AS sourceId, d.source_revision AS sourceRevision,
   c.chunk_index AS chunkIndex, s.title, c.content, s.kind AS type, s.provider, s.external_uri AS externalUri,
@@ -109,7 +117,8 @@ const PASSAGE_COLUMNS = `c.id, s.resource_type AS resourceType, s.id AS sourceId
   CASE WHEN json_type(s.metadata, '$.upstream.syncedAt') = 'text' THEN json_extract(s.metadata, '$.upstream.syncedAt') ELSE NULL END AS lastSyncedAt`;
 
 const CURRENT_RESOURCE = `d.document_type = 'source' AND s.resource_type = d.resource_type AND s.id = d.source_id
-  AND s.search_revision = d.source_revision AND s.status = 'available' AND s.kind != 'memory' AND ${sourceVisibilitySql("s")}`;
+  AND s.search_revision = d.source_revision AND s.status = 'available'
+  AND NOT (s.resource_type = 'source' AND s.kind = 'memory') AND ${sourceVisibilitySql("s")}`;
 
 const RETRIEVABLE = `json_extract(s.metadata, '$.retrieval') IS NOT 'excluded'`;
 
@@ -137,6 +146,8 @@ function scopeFilter(scope: KnowledgeScope): { sql: string; values: unknown[] } 
   if (filters.resourceTypes?.length) {
     clauses.push("s.resource_type IN (SELECT value FROM json_each(?))");
     values.push(jsonList(filters.resourceTypes));
+  } else {
+    clauses.push("s.resource_type != 'memory'");
   }
 
   if (filters.origins?.length) {
@@ -402,8 +413,10 @@ export class KnowledgeIndexRepository extends BaseRepository<Pick<IEnv, "DB">> {
          SELECT s.resource_type, s.id, s.created_by_user_id AS user_id, s.project_id FROM ${knowledgeResourceSql} s
          LEFT JOIN search_document d ON d.document_type = 'source' AND d.resource_type = s.resource_type
            AND d.source_id = s.id AND d.source_revision = s.search_revision
-         WHERE s.kind != 'memory' AND s.status = 'available' AND ${sourceVisibilitySql("s")}
-           AND (s.resource_type = 'source' OR s.kind IN (SELECT value FROM json_each(?)))
+         WHERE s.status = 'available' AND ${sourceVisibilitySql("s")}
+           AND ((s.resource_type = 'source' AND s.kind != 'memory')
+             OR (s.resource_type = 'output' AND s.kind IN (SELECT value FROM json_each(?)))
+             OR (s.resource_type = 'memory' AND s.kind IN (SELECT value FROM json_each(?))))
            AND length(trim(COALESCE(s.content, ''))) > 0 AND (d.id IS NULL OR (? = 1 AND d.status = 'lexical'))
          UNION SELECT resource_type, source_id AS id, user_id, project_id FROM search_document
            WHERE document_type = 'source' AND status = 'stale' AND ? = 1)
@@ -423,7 +436,12 @@ export class KnowledgeIndexRepository extends BaseRepository<Pick<IEnv, "DB">> {
          AND (t.status IN ('pending', 'queued', 'running') OR t.execution_lease_expires_at >= datetime('now', '-1 minute'))
          AND json_extract(t.task_data, '$.sourceId') = c.id)
        LIMIT 100`,
-      [jsonList(INDEXED_OUTPUT_KINDS), includeSemantic ? 1 : 0, includeCleanup ? 1 : 0],
+      [
+        jsonList(INDEXED_OUTPUT_KINDS),
+        jsonList(INDEXED_MEMORY_KINDS),
+        includeSemantic ? 1 : 0,
+        includeCleanup ? 1 : 0,
+      ],
     );
   }
 }

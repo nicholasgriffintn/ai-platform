@@ -6,7 +6,7 @@ import { defineTask } from "~/modules/queue/application/workflows";
 export const knowledgeIndex = defineTask({
   payload: z.object({
     sourceId: z.string().min(1),
-    resourceType: z.enum(["source", "output"]).default("source"),
+    resourceType: z.enum(["source", "output", "memory"]).default("source"),
   }),
   handle: async ({ sourceId, resourceType }, { env, message, execution }) => {
     await indexResourceForUser(env, message.user_id, resourceType, sourceId, () =>

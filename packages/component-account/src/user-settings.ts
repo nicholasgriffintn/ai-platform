@@ -159,7 +159,7 @@ export function buildUserSettingsFormData(userSettings: UserSettings | null): Us
     temporary_chats_default: userSettings?.temporary_chats_default || false,
     web_search_enabled: userSettings?.web_search_enabled ?? true,
     source_search_enabled: userSettings?.source_search_enabled ?? true,
-    memory_provider: userSettings?.memory_provider || "built-in",
+    memory_provider: userSettings?.memory_provider || "documents",
     tracking_enabled: userSettings?.tracking_enabled ?? true,
     advertise_machines: userSettings?.advertise_machines ?? true,
     transcription_provider: transcriptionSettings.transcription_provider,

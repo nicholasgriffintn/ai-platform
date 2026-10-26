@@ -200,7 +200,7 @@ describe("user settings form", () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
 
     render(<UserSettingsForm {...formProps} onSave={onSave} />);
-    fireEvent.click(screen.getByLabelText("Embedding Provider"));
+    fireEvent.click(screen.getByLabelText("Search index storage"));
     fireEvent.click(screen.getByRole("menuitem", { name: "DynamoDB Vectors" }));
     fireEvent.change(screen.getByLabelText("DynamoDB table name"), {
       target: { value: "polychat-vectors" },
@@ -219,7 +219,7 @@ describe("user settings form", () => {
         dynamodb_vectors_region: "eu-west-2",
       }),
     );
-    fireEvent.click(screen.getByLabelText("Embedding Provider"));
+    fireEvent.click(screen.getByLabelText("Search index storage"));
     fireEvent.click(screen.getByRole("menuitem", { name: "Vectorize" }));
     fireEvent.click(screen.getByRole("button", { name: "Save Settings" }));
     await waitFor(() => expect(onSave).toHaveBeenCalledTimes(2));
