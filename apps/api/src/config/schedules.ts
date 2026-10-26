@@ -3,6 +3,7 @@ export const SCHEDULES = {
   TRAINING_QUALITY_SCORING: "0 3 * * *", // Daily at 3 AM
   MODEL_GOVERNANCE: "0 3 * * *",
   BENCHMARK_QUEUE: "0 3 * * *",
+  TEAMMATE_TRUST_CHECK: "0 3 * * *",
   MODEL_PLATFORM_RECONCILE: "*/15 * * * *",
   PROVIDER_QUOTA_SYNC: "*/15 * * * *",
   INFRA_RECONCILIATION: "0 4 * * *", // Daily at 4 AM
