@@ -19,7 +19,6 @@ export const promptTasks = [
   "document-digest",
   "content-extraction",
   "article-analysis",
-  "article-summary",
   "article-report",
   "image-description",
   "drawing-guess",

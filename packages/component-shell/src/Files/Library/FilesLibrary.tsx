@@ -1,6 +1,7 @@
 import { EmptyState } from "@ngriffin_uk/polychat-component-ui";
-import type { FilesFilter } from "@ngriffin_uk/polychat-library-react";
+import { getFilesPath, type FilesFilter } from "@ngriffin_uk/polychat-library-react";
 import { BookOpenText, FolderOpen, Puzzle } from "lucide-react";
+import { useNavigate } from "react-router";
 
 import { MemorySynthesisPanel } from "../MemorySynthesisPanel.js";
 import { RulesLearnedPanel } from "../RulesLearnedPanel.js";
@@ -47,7 +48,12 @@ export function FilesLibrary({
   filter: FilesFilter;
 }) {
   const library = useFilesLibrary({ basePath, projectId, filter });
-  const creation = useFileCreation({ projectId });
+  const navigate = useNavigate();
+  const creation = useFileCreation({
+    projectId,
+    onNoteCreated: (sourceId) =>
+      void navigate(getFilesPath(basePath, "sources", encodeURIComponent(sourceId))),
+  });
   const actions = useFileActions({ projectId });
   const emptyState = EMPTY_STATES[filter];
 

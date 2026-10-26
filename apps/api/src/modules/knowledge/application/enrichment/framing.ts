@@ -1,8 +1,64 @@
-import { SOURCE_FRAMING_METADATA_KEY, readSourceFraming } from "@ngriffin_uk/polychat-schemas";
+import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
+import {
+  articleFramingDraftSchema,
+  readSourceFraming,
+  SOURCE_FRAMING_METADATA_KEY,
+  type ArticleFramingDraft,
+  type ModelTier,
+} from "@ngriffin_uk/polychat-schemas";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
-import { analyseArticleFraming } from "~/modules/experiences/application/articles/framing";
+import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import {
+  gradeEditorialQuality,
+  type EditorialQualityResult,
+} from "~/modules/documents/application/editorial-quality";
+import { verifyQuotes } from "~/modules/knowledge/domain/quotes";
+import { generateTierObject } from "~/modules/models/application/tier-object";
 
 import type { KnowledgeEnricher } from "./types";
+
+const FRAMING_TIER: ModelTier = "medium";
+
+export interface ArticleFramingResult {
+  framing: ArticleFramingDraft;
+  missingQuotes: string[];
+  editorial: EditorialQualityResult | null;
+}
+
+export async function analyseArticleFraming(
+  context: ServiceContext,
+  article: string,
+): Promise<ArticleFramingResult> {
+  const [draft, editorial] = await Promise.all([
+    generateTierObject(context, {
+      tier: FRAMING_TIER,
+      name: "article_framing",
+      schema: articleFramingDraftSchema,
+      system: getPromptText("knowledge/framing"),
+      material: article,
+    }),
+    gradeEditorialQuality({
+      env: context.env,
+      user: context.requireUser(),
+      completionId: `article_framing_${generateId()}`,
+      text: article,
+    }),
+  ]);
+  const { missingQuotes } = verifyQuotes(
+    article,
+    draft.loadedLanguage.map((item) => item.quote),
+  );
+
+  return {
+    framing: {
+      ...draft,
+      loadedLanguage: draft.loadedLanguage.filter((item) => !missingQuotes.includes(item.quote)),
+    },
+    missingQuotes,
+    editorial,
+  };
+}
 
 export const framingEnricher: KnowledgeEnricher = {
   name: "framing",

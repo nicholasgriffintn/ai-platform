@@ -1,5 +1,6 @@
 import {
   addCollectionOutputs,
+  createOutput,
   createOutputShare,
   deleteOutput,
   describeOutputDocument,
@@ -16,7 +17,11 @@ import {
   restoreOutputRevision,
   updateOutput,
 } from "@ngriffin_uk/polychat-library-client";
-import { buildDocumentContent, type DocumentMetadata } from "@ngriffin_uk/polychat-schemas";
+import {
+  buildDocumentContent,
+  type CreateOutputInput,
+  type DocumentMetadata,
+} from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const OUTPUT_QUERY_KEYS = {
@@ -128,6 +133,10 @@ export function useOutputMutations() {
   const invalidate = () => queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.all });
 
   return {
+    create: useMutation({
+      mutationFn: (input: CreateOutputInput) => createOutput(input),
+      onSuccess: invalidate,
+    }),
     rename: useMutation({
       mutationFn: ({
         outputId,

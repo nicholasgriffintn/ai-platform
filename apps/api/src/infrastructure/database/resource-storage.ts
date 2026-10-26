@@ -1,5 +1,5 @@
 export const sourceResourceColumns =
-  "id, created_by_user_id, project_id, conversation_id, connection_id, kind, title, status, content, provider, external_uri, vector_id, metadata, storage_key, mime_type, filename, byte_size, created_at, updated_at, search_revision";
+  "id, created_by_user_id, project_id, conversation_id, connection_id, kind, title, status, content, provider, external_uri, vector_id, metadata, storage_key, mime_type, filename, byte_size, revision, created_at, updated_at, search_revision";
 
 export const sourceResourceSql = `(SELECT ${sourceResourceColumns} FROM resource WHERE resource_type = 'source')`;
 

@@ -31,7 +31,7 @@ export const get_document: ApiToolDefinition = {
     const comment = input.commentId
       ? await context.repositories
           .get(DocumentCommentRepository)
-          .get(output.id, input.commentId, user.id)
+          .get({ type: "output", id: output.id }, input.commentId, user.id)
       : null;
 
     if (input.commentId && !comment) {

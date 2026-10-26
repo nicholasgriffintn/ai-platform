@@ -21,6 +21,7 @@ const folder: SourceCollectionRecord = {
   description: null,
   kind: "general",
   feed_token_hash: null,
+  settings: null,
   created_at: "2026-10-25T10:00:00.000Z",
   updated_at: null,
 };

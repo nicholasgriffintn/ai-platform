@@ -109,10 +109,10 @@ describe("requireProjectCapabilityAccess", () => {
   it("allows members to use an enabled project capability", async () => {
     await expect(
       requireProjectCapabilityAccess(
-        createContext("featured-note-taker"),
+        createContext("featured-verbatim"),
         "project-1",
         "app",
-        "featured-note-taker",
+        "featured-verbatim",
       ),
     ).resolves.toBeUndefined();
   });
@@ -123,7 +123,7 @@ describe("requireProjectCapabilityAccess", () => {
         createContext("featured-strudel"),
         "project-1",
         "app",
-        "featured-note-taker",
+        "featured-verbatim",
       ),
     ).rejects.toMatchObject({ statusCode: 404 });
   });

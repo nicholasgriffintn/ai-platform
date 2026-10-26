@@ -23,6 +23,7 @@ import {
   isTranscribableMediaType,
   readSourceGeneration,
   readSourceMedia,
+  readSourceReading,
   type Source,
   type SourceKind,
 } from "@ngriffin_uk/polychat-schemas";
@@ -34,26 +35,41 @@ import {
   ExternalLink,
   FileText,
   FileWarning,
+  History,
   ImagePlus,
+  MessageSquareText,
   Info,
   Link2,
   Library,
+  Scale,
+  ScanText,
 } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { sourceToFileItem } from "../Library/file-items.js";
 import { useFileActions } from "../Library/useFileActions.js";
+import { canEditNoteText, isNote } from "../Notes/note-text.js";
+import { NoteStage } from "../Notes/NoteStage.js";
+import { useDiscardBlankNote } from "../Notes/useDiscardBlankNote.js";
+import { SourceReadingPanel } from "../Reading/SourceReadingPanel.js";
 import { useSourceActionItemTasks } from "../Sources/useSourceActionItemTasks.js";
+import { EditToggleButton } from "./EditToggleButton.js";
 import { FileNoPreview } from "./FileNoPreview.js";
 import { FileSourcesList } from "./FileSourcesList.js";
 import { FileViewerCloseButton } from "./FileViewerCloseButton.js";
 import { type FileViewerChrome, FileViewerFrame } from "./FileViewerFrame.js";
 import { MarkdownStage } from "./MarkdownStage.js";
+import { SourceComments } from "./SourceComments.js";
+import { SourceFraming } from "./SourceFraming.js";
+import { SourceHistory } from "./SourceHistory.js";
 import { SourceKnowledgePanel } from "./SourceKnowledgePanel.js";
 import { SourceListen } from "./SourceListen.js";
 import { useFileViewerPanels } from "./useFileViewerPanels.js";
 
 const LISTENABLE_KINDS: ReadonlySet<SourceKind> = new Set(["text", "url", "file", "connector"]);
+const FRAMED_KINDS: ReadonlySet<SourceKind> = new Set(["text", "url"]);
+const READABLE_KINDS: ReadonlySet<SourceKind> = new Set(["text", "url", "file", "connector"]);
 
 function sourceFilename(source: Source, suffix: string): string {
   return `${source.title.replace(/\s+/g, "-")}-${suffix}`;
@@ -329,6 +345,8 @@ export function SourceViewer({
   const navigate = useNavigate();
   const actions = useFileActions({ projectId, onDeleted });
   const { data: source, isLoading, error } = useSource(sourceId);
+  const [editing, setEditing] = useState<boolean | null>(null);
+  const trackNoteText = useDiscardBlankNote(source);
 
   if (isLoading) {
     return (
@@ -360,6 +378,15 @@ export function SourceViewer({
     .filter((id) => id !== source.id)
     .map((id) => ({ id, name: null }));
   const sourceAttachment = createSourceAttachment(source, getSourceContentUrl(source.id));
+  const canEdit = canEditNoteText(source) && item.canRename;
+  const isEditing = canEdit && (editing ?? isNote(source));
+  const canFrame = FRAMED_KINDS.has(source.kind) && Boolean(source.content?.trim());
+  const canRead =
+    READABLE_KINDS.has(source.kind) &&
+    source.status === "available" &&
+    (Boolean(source.content?.trim()) ||
+      getSourceMediaType(source.file?.mimeType) === "image" ||
+      source.file?.mimeType === "application/pdf");
 
   return (
     <FileViewerFrame
@@ -370,7 +397,18 @@ export function SourceViewer({
       panels={panels}
       actions={actions}
       chrome={chrome}
-      stage={<SourceStage source={source} downloadUrl={item.downloadUrl} />}
+      stage={
+        isEditing ? (
+          <NoteStage key={source.id} source={source} onTextChange={trackNoteText} />
+        ) : (
+          <SourceStage source={source} downloadUrl={item.downloadUrl} />
+        )
+      }
+      headerActions={
+        canEdit ? (
+          <EditToggleButton isEditing={isEditing} onToggle={() => setEditing(!isEditing)} />
+        ) : undefined
+      }
       toolbar={
         getSourceMediaType(source.file?.mimeType) && source.status !== "failed" ? (
           <MediaActions source={source} />
@@ -384,6 +422,7 @@ export function SourceViewer({
       drawers={[
         {
           key: "info",
+          quick: true,
           label: "File info",
           icon: <Info size={14} aria-hidden="true" />,
           content: <SourceInfo source={source} detail={item.detail} />,
@@ -393,6 +432,7 @@ export function SourceViewer({
           : [
               {
                 key: "knowledge" as const,
+                quick: true,
                 label: "Knowledge",
                 icon: <Brain size={14} aria-hidden="true" />,
                 content: (
@@ -404,6 +444,44 @@ export function SourceViewer({
                 ),
               },
             ]),
+        ...(source.kind === "text"
+          ? [
+              {
+                key: "history" as const,
+                label: "Version history",
+                icon: <History size={14} aria-hidden="true" />,
+                content: <SourceHistory key={source.id} source={source} canRestore={canEdit} />,
+              },
+              {
+                key: "comments" as const,
+                label: "Comments",
+                icon: <MessageSquareText size={14} aria-hidden="true" />,
+                content: <SourceComments key={source.id} source={source} />,
+              },
+            ]
+          : []),
+        ...(canFrame
+          ? [
+              {
+                key: "framing" as const,
+                quick: source.kind === "url",
+                label: "How it's framed",
+                icon: <Scale size={14} aria-hidden="true" />,
+                content: <SourceFraming key={source.id} source={source} />,
+              },
+            ]
+          : []),
+        ...(canRead || readSourceReading(source.metadata)
+          ? [
+              {
+                key: "reading" as const,
+                quick: !isNote(source),
+                label: "Read as receipt or invoice",
+                icon: <ScanText size={14} aria-hidden="true" />,
+                content: <SourceReadingPanel key={source.id} source={source} canRead={canRead} />,
+              },
+            ]
+          : []),
         ...(linkedSources.length > 0
           ? [
               {

@@ -1,13 +1,17 @@
 import { authorise, ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
+  FOLDER_READ_AS_SETTING,
   KNOWLEDGE_BODY_METADATA_KEY,
   listPageOf,
+  SOURCE_DOCUMENT_METADATA_KEY,
+  readFolderReadAs,
   type CreateSourceCollectionInput,
   type ListPage,
   type Source,
   type SourceCollection,
   type SourceGenerationType,
   type SourceSummary,
+  type UpdateSourceCollectionInput,
   type UpdateSourceInput,
   type WorkspaceRole,
 } from "@ngriffin_uk/polychat-schemas";
@@ -16,6 +20,7 @@ import { safeParseJson, parseJsonRecord } from "@ngriffin_uk/polychat-utility-se
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { isMemoryProviderId } from "~/infrastructure/providers/capabilities/memory/helpers";
+import { queueFolderReadings } from "~/modules/knowledge/application/enrichment/folders";
 import { publishKnowledgeChange } from "~/modules/knowledge/application/events";
 import {
   deleteKnowledgeBodies,
@@ -27,6 +32,7 @@ import {
   withReservedKnowledgeMetadata,
 } from "~/modules/knowledge/domain/envelope";
 import { MemoryManager } from "~/modules/memory/application/manager";
+import { writeSourceContent } from "~/modules/sources/application/content";
 import type {
   SourceCollectionRecord,
   SourceRecord,
@@ -70,6 +76,7 @@ export function formatSource(record: SourceRecord): Source {
     vectorId: record.vector_id,
     metadata,
     file: formatFile(record),
+    revision: record.revision,
     createdAt: record.created_at,
     updatedAt: record.updated_at,
   };
@@ -98,6 +105,7 @@ function formatCollection(record: SourceCollectionRecord): SourceCollection {
     sourceCount: record.source_count ?? 0,
     outputCount: record.output_count ?? 0,
     hasFeed: Boolean(record.feed_token_hash),
+    readAs: readFolderReadAs(parseJsonRecord(record.settings)),
     createdAt: record.created_at,
     updatedAt: record.updated_at,
   };
@@ -292,7 +300,10 @@ export async function updateSource(
 
   if (
     existing.kind === "memory" &&
-    (input.status !== undefined || input.content !== undefined || input.metadata !== undefined)
+    (input.status !== undefined ||
+      input.content !== undefined ||
+      input.metadata !== undefined ||
+      input.document !== undefined)
   ) {
     throw new AssistantError(
       "Memory content, lifecycle, and provider metadata are managed by the memory service",
@@ -301,22 +312,39 @@ export async function updateSource(
     );
   }
 
-  const { content, ...fields } = input;
+  const { content, expectedRevision, editSession, document, ...fields } = input;
+  const current = parseJsonRecord(existing.metadata);
+  const supplied =
+    document === undefined
+      ? fields.metadata
+      : { ...(fields.metadata ?? current), [SOURCE_DOCUMENT_METADATA_KEY]: document };
   const metadata =
-    fields.metadata === undefined
-      ? undefined
-      : withReservedKnowledgeMetadata(fields.metadata, parseJsonRecord(existing.metadata));
+    supplied === undefined ? undefined : withReservedKnowledgeMetadata(supplied, current);
 
-  await (content === undefined
-    ? context.repositories
-        .get(SourceRepository)
-        .updateSource(sourceId, { ...fields, ...(metadata ? { metadata } : {}) })
-    : reviseKnowledgeContent(context, existing, {
-        content,
-        ...(fields.title ? { title: fields.title } : {}),
-        ...(fields.status ? { status: fields.status } : {}),
-        ...(metadata ? { metadata } : {}),
-      }));
+  if (typeof content === "string") {
+    await writeSourceContent(context, existing, {
+      userId,
+      content,
+      title: fields.title,
+      status: fields.status,
+      metadata,
+      expectedRevision,
+      editSession,
+      operation: "updated",
+    });
+  } else if (content === null) {
+    await reviseKnowledgeContent(context, existing, {
+      content,
+      ...(fields.title ? { title: fields.title } : {}),
+      ...(fields.status ? { status: fields.status } : {}),
+      ...(metadata ? { metadata } : {}),
+    });
+  } else {
+    await context.repositories
+      .get(SourceRepository)
+      .updateSource(sourceId, { ...fields, ...(metadata ? { metadata } : {}) });
+  }
+
   const updated = await context.repositories.get(SourceRepository).getSource(sourceId);
 
   if (!updated) {
@@ -332,7 +360,7 @@ export async function updateSource(
     });
   }
 
-  return formatSource(updated);
+  return formatSource({ ...updated, content: await readKnowledgeText(context, updated) });
 }
 
 export async function deleteSource(
@@ -566,11 +594,59 @@ export async function addCollectionSources(
     collection.kind === "podcast",
   );
 
-  return {
-    added: await context.repositories
-      .get(SourceRepository)
-      .addCollectionSources(collectionId, sourceIds),
-  };
+  const added = await context.repositories
+    .get(SourceRepository)
+    .addCollectionSources(collectionId, sourceIds);
+
+  await queueFolderReadings(context, collection, sourceIds);
+
+  return { added };
+}
+
+export async function updateSourceCollection(
+  context: ServiceContext,
+  userId: number,
+  collectionId: string,
+  input: UpdateSourceCollectionInput,
+): Promise<SourceCollection> {
+  const collection = await requireCollectionAccess(context, userId, collectionId, true);
+
+  if (input.readAs !== undefined && collection.kind !== "general") {
+    throw new AssistantError(
+      "Only ordinary folders can read their files",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
+  const settings = parseJsonRecord(collection.settings);
+  const repository = context.repositories.get(SourceRepository);
+
+  await repository.updateCollection(collectionId, {
+    ...(input.title !== undefined ? { title: input.title } : {}),
+    ...(input.description !== undefined ? { description: input.description } : {}),
+    ...(input.readAs !== undefined
+      ? { settings: { ...settings, [FOLDER_READ_AS_SETTING]: input.readAs } }
+      : {}),
+  });
+
+  const updated = await repository.getCollectionSummary(collectionId);
+
+  if (!updated) {
+    throw new AssistantError("Source collection not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  if (input.readAs && input.readAs !== readFolderReadAs(settings)) {
+    const files = await repository.listCollectionSources(collectionId);
+
+    await queueFolderReadings(
+      context,
+      updated,
+      files.filter((file) => file.kind !== "memory").map((file) => file.id),
+    );
+  }
+
+  return formatCollection(updated);
 }
 
 export async function deleteSourceCollection(

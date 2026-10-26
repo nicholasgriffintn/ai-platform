@@ -1,4 +1,5 @@
 import {
+  SOURCE_KNOWLEDGE_ENRICH_TASK_TYPE,
   SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
   SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
 } from "@ngriffin_uk/polychat-schemas";
@@ -8,12 +9,14 @@ import { removeExpiredKnowledge } from "~/modules/knowledge/application/retentio
 import { scheduleKnowledgeSyncs } from "~/modules/knowledge/application/syncs/run";
 import { defineSchedule, type AppWorkflows } from "~/modules/queue/application/workflows";
 
+import { knowledgeEnrich } from "./knowledge-enrich";
 import { knowledgeIndex } from "./knowledge-index";
 import { knowledgeSync } from "./knowledge-sync";
 
 export function registerKnowledgeQueue(workflows: AppWorkflows): void {
   workflows.on(SOURCE_KNOWLEDGE_INDEX_TASK_TYPE, knowledgeIndex);
   workflows.on(SOURCE_KNOWLEDGE_SYNC_TASK_TYPE, knowledgeSync);
+  workflows.on(SOURCE_KNOWLEDGE_ENRICH_TASK_TYPE, knowledgeEnrich);
 
   workflows.always(
     defineSchedule({

@@ -200,9 +200,14 @@ export const SYNC_BINDINGS: SyncBinding[] = [
     type: "document_comments.changed",
     apply: (context, event) => {
       const outputId = readOptionalString(event.data.outputId);
+      const sourceId = readOptionalString(event.data.sourceId);
 
       if (outputId) {
         context.invalidate(["outputs", "comments", outputId]);
+      }
+
+      if (sourceId) {
+        context.invalidate(["sources", "comments", sourceId]);
       }
     },
   },

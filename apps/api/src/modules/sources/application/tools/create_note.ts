@@ -26,8 +26,8 @@ export const create_note: ApiToolDefinition = {
     return {
       status: "success",
       name: "create_note",
-      content: "Note saved to the current knowledge sources",
-      data: source,
+      content: `Saved "${source.title}" as a note in Files`,
+      data: { renderer: "saved_note", ...source },
     };
   },
 };

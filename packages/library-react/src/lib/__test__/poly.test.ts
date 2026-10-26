@@ -116,7 +116,7 @@ describe("places and files routes", () => {
     expect(getActivePlace("/work/w1/projects/p1/scheduled")).toBe("scheduled");
     expect(getActivePlace("/work/w1/projects/p1/plugins")).toBe("plugins");
     expect(getActivePlace("/work/w1/projects/p1/apps/sites/site-1")).toBe("sites");
-    expect(getActivePlace("/work/w1/projects/p1/apps/notes")).toBe("plugins");
+    expect(getActivePlace("/work/w1/projects/p1/apps/strudel")).toBe("plugins");
     expect(getActivePlace("/profile")).toBe("you");
     expect(getActivePlace("/pricing")).toBeUndefined();
   });

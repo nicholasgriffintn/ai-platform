@@ -95,30 +95,6 @@ function startRequest(
         request.project_id,
         request.input,
       );
-    case "article_analysis":
-      return startKind(
-        context,
-        user,
-        JOB_KIND_DEFINITIONS.article_analysis,
-        request.project_id,
-        request.input,
-      );
-    case "article_summary":
-      return startKind(
-        context,
-        user,
-        JOB_KIND_DEFINITIONS.article_summary,
-        request.project_id,
-        request.input,
-      );
-    case "article_report":
-      return startKind(
-        context,
-        user,
-        JOB_KIND_DEFINITIONS.article_report,
-        request.project_id,
-        request.input,
-      );
   }
 }
 

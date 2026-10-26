@@ -189,12 +189,12 @@ export function SourceKnowledgePanel({
               Read again
             </Button>
           </div>
-          <ul className="flex flex-col gap-1.5">
+          <ul className="flex flex-col gap-2.5">
             {state.enrichments.map((enrichment) => (
-              <li key={enrichment.name} className="flex items-start justify-between gap-3">
-                <span className="text-foreground">{enrichment.label}</span>
-                <span className="flex flex-col items-end gap-0.5 text-right">
-                  <Badge variant={STATUS_VARIANTS[enrichment.status]}>
+              <li key={enrichment.name} className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate text-foreground">{enrichment.label}</span>
+                  <Badge variant={STATUS_VARIANTS[enrichment.status]} className="shrink-0">
                     {enrichment.status === "done"
                       ? "Done"
                       : enrichment.status === "failed"
@@ -203,10 +203,12 @@ export function SourceKnowledgePanel({
                           ? "Skipped"
                           : "Waiting"}
                   </Badge>
-                  {enrichment.error ? (
-                    <span className="text-xs text-failure">{enrichment.error}</span>
-                  ) : null}
-                </span>
+                </div>
+                {enrichment.error ? (
+                  <p className="rounded-md border border-failure/30 bg-failure/10 px-2.5 py-1.5 text-xs leading-relaxed [overflow-wrap:anywhere] text-foreground">
+                    {enrichment.error}
+                  </p>
+                ) : null}
               </li>
             ))}
           </ul>

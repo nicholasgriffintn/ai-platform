@@ -9,6 +9,7 @@ import { defineTask, type AppWorkflows } from "~/modules/queue/application/workf
 
 import { writeNotebookGuide } from "../guide";
 import { runNotebookResearch } from "../research";
+import { runFolderStudio } from "../studio/folder";
 import { runInfographic } from "../studio/infographic";
 import { runNotebookStudio } from "../studio/run";
 
@@ -39,7 +40,10 @@ const notebookJob = defineTask<NotebookJobTaskData>({
       return { status: "success", message: "Infographic drawn" };
     }
 
-    const outcome = await runNotebookStudio(context, job);
+    const outcome =
+      job.job === "folder_studio"
+        ? await runFolderStudio(context, job)
+        : await runNotebookStudio(context, job);
 
     return {
       status: outcome === "failed" ? "error" : "success",

@@ -4,14 +4,17 @@ import type {
   CreateDocumentCommentInput,
   DocumentAnchor,
   DocumentComment,
+  DocumentCommentSubject,
   DocumentEditProposal,
-  Output,
 } from "@ngriffin_uk/polychat-schemas";
 import { canonicalJson, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useRef } from "react";
 
-export function useDocumentDiscussion(output: Output) {
-  const collaboration = useDocumentCollaboration(output.id);
+export function useDocumentDiscussion(document: {
+  subject: DocumentCommentSubject;
+  revision: number;
+}) {
+  const collaboration = useDocumentCollaboration(document.subject);
   const request = useRef<{ key: string; input: CreateDocumentCommentInput } | null>(null);
 
   async function onComment(
@@ -28,7 +31,7 @@ export function useDocumentDiscussion(output: Output) {
         key,
         input: {
           requestId: generateId(),
-          expectedRevision: output.revision,
+          expectedRevision: document.revision,
           body: body.trim(),
           parentId,
           anchor,
@@ -75,7 +78,7 @@ export function useDocumentDiscussion(output: Output) {
 
     try {
       return await collaboration.propose.mutateAsync({
-        expectedRevision: output.revision,
+        expectedRevision: document.revision,
         anchor: selection,
         instructions,
       });

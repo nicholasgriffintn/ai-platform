@@ -40,6 +40,7 @@ function sourceRecord(overrides: Partial<SourceRecord> = {}): SourceRecord {
     mime_type: null,
     filename: null,
     byte_size: null,
+    revision: 1,
     created_at: "2026-10-22T00:00:00.000Z",
     updated_at: null,
     ...overrides,

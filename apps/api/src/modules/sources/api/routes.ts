@@ -34,6 +34,21 @@ import {
   updateKnowledgeSyncSchema,
   updateSourceSchema,
   sourceListenPassageParamsSchema,
+  enrichSourceSchema,
+  folderStudioRequestSchema,
+  formatSourceResponseSchema,
+  formatSourceSchema,
+  generateNotesFromMediaResponseSchema,
+  generateNotesFromMediaSchema,
+  notebookStudioResponseSchema,
+  restoreSourceRevisionSchema,
+  sourceRevisionListSchema,
+  createDocumentCommentSchema,
+  documentCommentListQuerySchema,
+  documentCommentListSchema,
+  documentCommentSchema,
+  resolveDocumentThreadSchema,
+  updateSourceCollectionSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
@@ -41,10 +56,16 @@ import z from "zod/v4";
 import { defineResource, defineSingleton } from "~/infrastructure/http/resource";
 import { getPrivateFileResponse, readPrivateFile } from "~/infrastructure/storage/read-resource";
 import {
+  createDocumentComment,
+  listDocumentComments,
+  resolveDocumentThread,
+} from "~/modules/documents/application/comments";
+import {
   reprocessKnowledgeDocument,
   setKnowledgeDocumentControls,
 } from "~/modules/knowledge/application/control/controls";
 import { listKnowledgeDescriptors } from "~/modules/knowledge/application/control/descriptors";
+import { enrichKnowledgeDocument } from "~/modules/knowledge/application/control/enrich";
 import {
   getKnowledgeSettings,
   updateKnowledgeSettings,
@@ -58,6 +79,7 @@ import {
   createKnowledgeSync,
   listKnowledgeSyncs,
 } from "~/modules/knowledge/application/syncs/syncs";
+import { startFolderStudio } from "~/modules/notebooks/application/studio/folder";
 import { addCollectionOutputs, listCollectionOutputs } from "~/modules/outputs/application/folders";
 import { startSourceGeneration } from "~/modules/sources/application/generation";
 import { paintDrawing } from "~/modules/sources/application/generation/drawing/create";
@@ -82,6 +104,10 @@ import {
 } from "~/modules/sources/application/podcasts/feed";
 import { startPodcastGeneration } from "~/modules/sources/application/podcasts/generate";
 import {
+  listSourceRevisions,
+  restoreSourceRevision,
+} from "~/modules/sources/application/revisions";
+import {
   addCollectionSources,
   createSourceCollection,
   deleteSource,
@@ -95,7 +121,9 @@ import {
   requireSourceAccess,
   setProjectContextSources,
   updateSource,
+  updateSourceCollection,
 } from "~/modules/sources/application/sources";
+import { draftNotesFromMedia, formatSourceText } from "~/modules/sources/application/writing";
 
 const app = new Hono();
 const sourceParamsSchema = z.object({ source_id: z.string().min(1) });
@@ -268,6 +296,17 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
       handler: ({ body, params, serviceContext }) =>
         setKnowledgeDocumentControls(serviceContext, params.source_id, body),
     })
+    .action("enrich", {
+      auth: true,
+      summary: "Read a document a particular way",
+      description:
+        "Runs one on-request enricher, such as framing for an article or reading for a receipt, invoice or claim. readAs picks the form a reading fills in.",
+      paramSchema: sourceParamsSchema,
+      bodySchema: enrichSourceSchema,
+      responses: { 200: { description: "The source", schema: sourceSchema } },
+      handler: ({ body, params, serviceContext }) =>
+        enrichKnowledgeDocument(serviceContext, params.source_id, body),
+    })
     .action("reprocess", {
       auth: true,
       summary: "Process a document again",
@@ -285,6 +324,97 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
     responses: { 200: { description: "Document types", schema: knowledgeDescriptorListSchema } },
     handler: async ({ query }) => listKnowledgeDescriptors(query.provider),
   });
+
+  sources.sub("revisions", "revision_id").list({
+    auth: true,
+    summary: "List a note's earlier versions",
+    description:
+      "One entry per editing session, newest first. Only notes and other text keep versions.",
+    paramSchema: sourceParamsSchema,
+    responses: { 200: { description: "Versions", schema: sourceRevisionListSchema } },
+    handler: ({ params, serviceContext, user }) =>
+      listSourceRevisions(serviceContext, user.id, params.source_id),
+  });
+
+  sources
+    .sub("comments", "comment_id")
+    .list({
+      auth: true,
+      summary: "List a note's discussion",
+      paramSchema: sourceParamsSchema,
+      querySchema: documentCommentListQuerySchema,
+      responses: { 200: { description: "Discussion", schema: documentCommentListSchema } },
+      handler: ({ serviceContext, user, params, query }) =>
+        listDocumentComments(
+          serviceContext,
+          user.id,
+          { type: "source", id: params.source_id },
+          query.after,
+        ),
+    })
+    .create({
+      auth: true,
+      summary: "Comment on a note",
+      paramSchema: sourceParamsSchema,
+      bodySchema: createDocumentCommentSchema,
+      responses: { 200: { description: "The comment", schema: documentCommentSchema } },
+      handler: ({ serviceContext, user, params, body }) =>
+        createDocumentComment(
+          serviceContext,
+          user.id,
+          { type: "source", id: params.source_id },
+          body,
+        ),
+    })
+    .update({
+      auth: true,
+      summary: "Resolve or reopen a thread on a note",
+      paramSchema: sourceParamsSchema.extend({ comment_id: z.string().min(1) }),
+      bodySchema: resolveDocumentThreadSchema,
+      responses: { 200: { description: "The thread", schema: documentCommentSchema } },
+      handler: ({ serviceContext, user, params, body }) =>
+        resolveDocumentThread(
+          serviceContext,
+          user.id,
+          { type: "source", id: params.source_id },
+          params.comment_id,
+          body,
+        ),
+    });
+
+  sources
+    .action("restore", {
+      auth: true,
+      summary: "Bring back an earlier version of a note",
+      description: "Saves the earlier version as the newest one, so nothing in between is lost.",
+      paramSchema: sourceParamsSchema,
+      bodySchema: restoreSourceRevisionSchema,
+      responses: { 200: { description: "The source", schema: sourceSchema } },
+      handler: ({ body, params, serviceContext, user }) =>
+        restoreSourceRevision(serviceContext, user.id, params.source_id, body),
+    })
+    .action("format", {
+      auth: true,
+      summary: "Rework a document's text",
+      description:
+        "Tidies the text, or reworks it to the prompt. Returns the new text without saving it.",
+      paramSchema: sourceParamsSchema,
+      bodySchema: formatSourceSchema,
+      responses: { 200: { description: "Reworked text", schema: formatSourceResponseSchema } },
+      handler: ({ body, params, serviceContext }) =>
+        formatSourceText(serviceContext, params.source_id, body.prompt),
+    })
+    .collectionAction("media_notes", {
+      auth: true,
+      summary: "Draft notes from a recording link",
+      description:
+        "Transcribes an audio or video URL and writes the chosen notes as Markdown, ready to drop into a note.",
+      bodySchema: generateNotesFromMediaSchema,
+      responses: {
+        200: { description: "Drafted notes", schema: generateNotesFromMediaResponseSchema },
+      },
+      handler: ({ body, serviceContext }) => draftNotesFromMedia(serviceContext, body),
+    });
 
   sources
     .action("transcribe", {
@@ -462,6 +592,17 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
       handler: ({ body, serviceContext, user }) =>
         createSourceCollection(serviceContext, user.id, body),
     })
+    .update({
+      auth: true,
+      summary: "Change a source collection",
+      description:
+        "Rename a folder, or set readAs so every file added to it is read as a receipt, invoice or damage claim.",
+      paramSchema: collectionParamsSchema,
+      bodySchema: updateSourceCollectionSchema,
+      responses: { 200: { description: "The collection", schema: sourceCollectionSchema } },
+      handler: ({ body, params, serviceContext, user }) =>
+        updateSourceCollection(serviceContext, user.id, params.collection_id, body),
+    })
     .delete({
       auth: true,
       summary: "Delete a source collection",
@@ -474,6 +615,18 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
     });
 
   collections
+    .action("studio", {
+      auth: true,
+      summary: "Make a report from a folder",
+      description: "Writes a report from the folder's files. It lands in Made and in the folder.",
+      paramSchema: collectionParamsSchema,
+      bodySchema: folderStudioRequestSchema,
+      responses: {
+        200: { description: "The pending report", schema: notebookStudioResponseSchema },
+      },
+      handler: ({ body, params, serviceContext }) =>
+        startFolderStudio(serviceContext, params.collection_id, body),
+    })
     .action("feed", {
       auth: true,
       summary: "Create a private RSS feed link for a podcast show",

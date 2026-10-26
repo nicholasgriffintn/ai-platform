@@ -1,0 +1,73 @@
+import type { ModelToolDefinition } from "@ngriffin_uk/polychat-schemas";
+
+export const MODEL_TOOL_DEFINITIONS: ModelToolDefinition[] = [
+  {
+    capability: "supportsCodeExecution",
+    category: "Development",
+    command: "code execution",
+    description: "Let supported models run code tools.",
+    id: "code_execution",
+    label: "Code execution",
+  },
+  {
+    capability: "supportsSearchGrounding",
+    category: "Research",
+    command: "search grounding",
+    description: "Let supported models use search grounding.",
+    id: "search_grounding",
+    label: "Search grounding",
+  },
+  {
+    capability: "supportsImageGenerationTool",
+    category: "AI Generation",
+    command: "image generation",
+    description: "Let supported models generate images as a response tool.",
+    id: "image_generation",
+    label: "Image generation",
+  },
+  {
+    capability: "supportsFileSearch",
+    category: "Knowledge",
+    command: "file search",
+    description: "Let supported models search configured vector stores.",
+    id: "file_search",
+    label: "File search",
+    requiresConfiguration: true,
+    configurationKind: "file_search",
+  },
+  {
+    capability: "supportsMcp",
+    category: "Integrations",
+    command: "mcp",
+    description:
+      "Let models use your configured remote MCP servers. OpenAI models can use OpenAI's hosted MCP tool, and every other model goes through Polychat's gateway.",
+    id: "mcp",
+    label: "MCP",
+    requiresConfiguration: true,
+    configurationKind: "mcp",
+  },
+  {
+    capability: "supportsToolSearch",
+    category: "Utilities",
+    command: "tool search",
+    description: "Let supported models search the app tool inventory.",
+    id: "tool_search",
+    label: "Tool search",
+  },
+  {
+    capability: "supportsHostedShell",
+    category: "Development",
+    command: "hosted shell",
+    description: "Let supported models use OpenAI hosted shell.",
+    id: "hosted_shell",
+    label: "Hosted shell",
+  },
+  {
+    capability: "supportsWebFetch",
+    category: "Research",
+    command: "web fetch",
+    description: "Let supported models fetch URLs present in the conversation.",
+    id: "web_fetch",
+    label: "Web fetch",
+  },
+];

@@ -4,7 +4,7 @@ import { findPlatformTeammate } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { Teammate } from "~/infrastructure/database/schema";
-import { MODEL_TOOL_DEFINITIONS } from "~/modules/experiences/application/config";
+import { MODEL_TOOL_DEFINITIONS } from "~/modules/capabilities/domain/model-tools";
 import { findModelConfig } from "~/modules/models/application/resolve";
 import { listSkillSummaries } from "~/modules/skills/application";
 import { resolveProjectSkillGrants } from "~/modules/skills/application/scope";

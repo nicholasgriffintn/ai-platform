@@ -30,6 +30,16 @@ function linkScope(source: SourceRecord) {
   return { userId: source.created_by_user_id, projectId: source.project_id };
 }
 
+async function materialHash(
+  enricher: KnowledgeEnricher,
+  source: SourceRecord,
+  text: string,
+): Promise<string> {
+  const variant = enricher.variant?.(source, parseJsonRecord(source.metadata)) ?? null;
+
+  return sha256Hex(variant === null ? text : `${variant}\n${text}`);
+}
+
 function isCurrent(
   state: KnowledgeEnrichmentState | undefined,
   enricher: KnowledgeEnricher,
@@ -101,7 +111,6 @@ export async function runCommitEnrichers(
   text: string,
 ): Promise<void> {
   const settings = await readKnowledgeEnricherSettings(context, linkScope(source));
-  const contentHash = await sha256Hex(text);
   const sources = context.repositories.get(SourceRepository);
   let enriched = false;
 
@@ -121,6 +130,7 @@ export async function runCommitEnrichers(
     }
 
     const metadata = parseJsonRecord(current.metadata);
+    const contentHash = await materialHash(enricher, current, text);
 
     if (
       metadata.immutableSnapshot === true ||
@@ -160,7 +170,7 @@ export async function runKnowledgeEnricher(
 
   const text = await readKnowledgeText(context, source);
 
-  if (!text.trim()) {
+  if (!text.trim() && !(enricher.readsFile && source.storage_key)) {
     throw new AssistantError(
       "There is no text in this document to work from",
       ErrorType.CONFLICT_ERROR,
@@ -168,7 +178,7 @@ export async function runKnowledgeEnricher(
     );
   }
 
-  const contentHash = await sha256Hex(text);
+  const contentHash = await materialHash(enricher, source, text);
 
   if (
     !isCurrent(

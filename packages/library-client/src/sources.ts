@@ -20,6 +20,13 @@ import type {
   KnowledgeDocumentState,
   KnowledgeSettings,
   UpdateKnowledgeSettings,
+  EnrichSourceInput,
+  FolderStudioRequest,
+  GenerateNotesFromMediaInput,
+  NotebookStudioResponse,
+  RestoreSourceRevisionInput,
+  SourceRevision,
+  UpdateSourceCollectionInput,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApiData as request } from "./fetch-wrapper.js";
@@ -196,6 +203,41 @@ export async function updateSource(sourceId: string, input: UpdateSourceInput): 
   return request(sourcePath(sourceId), { method: "PATCH", body: input });
 }
 
+export async function listSourceRevisions(sourceId: string): Promise<SourceRevision[]> {
+  return (await request<ListPage<SourceRevision>>(sourcePath(sourceId, "/revisions"))).data;
+}
+
+export async function restoreSourceRevision(
+  sourceId: string,
+  input: RestoreSourceRevisionInput,
+): Promise<Source> {
+  return request(sourcePath(sourceId, "/restore"), { method: "POST", body: input });
+}
+
+export async function formatSourceText(sourceId: string, prompt?: string): Promise<string> {
+  return (
+    await request<{ content: string }>(sourcePath(sourceId, "/format"), {
+      method: "POST",
+      body: prompt ? { prompt } : {},
+      timeoutMs: null,
+    })
+  ).content;
+}
+
+export async function draftNotesFromMedia(
+  input: GenerateNotesFromMediaInput,
+): Promise<{ content: string }> {
+  return request("/sources/media_notes", { method: "POST", body: input, timeoutMs: null });
+}
+
+export async function enrichSource(sourceId: string, input: EnrichSourceInput): Promise<Source> {
+  return request(sourcePath(sourceId, "/knowledge/enrich"), {
+    method: "POST",
+    body: input,
+    timeoutMs: null,
+  });
+}
+
 export async function deleteSource(sourceId: string): Promise<void> {
   await request(`/sources/${encodeURIComponent(sourceId)}`, { method: "DELETE" });
 }
@@ -210,6 +252,26 @@ export async function createSourceCollection(
   input: CreateSourceCollectionInput,
 ): Promise<SourceCollection> {
   return request("/sources/collections", { method: "POST", body: input });
+}
+
+export async function updateSourceCollection(
+  collectionId: string,
+  input: UpdateSourceCollectionInput,
+): Promise<SourceCollection> {
+  return request(`/sources/collections/${encodeURIComponent(collectionId)}`, {
+    method: "PATCH",
+    body: input,
+  });
+}
+
+export async function startFolderStudio(
+  collectionId: string,
+  input: FolderStudioRequest,
+): Promise<NotebookStudioResponse> {
+  return request(`/sources/collections/${encodeURIComponent(collectionId)}/studio`, {
+    method: "POST",
+    body: input,
+  });
 }
 
 export async function deleteSourceCollection(collectionId: string): Promise<void> {

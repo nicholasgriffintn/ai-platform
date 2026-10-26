@@ -2441,6 +2441,7 @@
       "model": "gpt-astra/gpt-6-astra",
       "matchingModel": "gpt-6-astra",
       "overrides": {
+        "prefersResponsesApiForReasoning": true,
         "strengths": [
           "coding",
           "reasoning",
@@ -2596,6 +2597,7 @@
       "model": "gpt-luna/gpt-6-luna",
       "matchingModel": "gpt-6-luna",
       "overrides": {
+        "prefersResponsesApiForReasoning": true,
         "modalities": {
           "input": [
             "text",

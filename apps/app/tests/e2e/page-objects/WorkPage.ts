@@ -686,49 +686,6 @@ export class WorkPage extends BasePage {
     await this.getCapabilityAddButton(recipeName).waitFor();
   }
 
-  async createUpdateAndDeleteProjectNote(title: string, body: string) {
-    await this.openProjectApp("Note Taker");
-    await this.page.getByRole("link", { name: "New note" }).click();
-
-    const editor = this.page.getByPlaceholder("Start typing...");
-    const createResponse = this.page.waitForResponse(
-      (response) =>
-        response.request().method() === "POST" && response.url().includes("/experiences/notes"),
-    );
-
-    await editor.fill(`${title}\n${body}`);
-    const created = await createResponse;
-
-    if (!created.ok()) {
-      throw new Error(
-        `Project note creation failed with ${created.status()}: ${await created.text()}`,
-      );
-    }
-
-    await this.page.getByText("All changes saved", { exact: true }).waitFor();
-
-    const updateResponse = this.page.waitForResponse(
-      (response) =>
-        response.request().method() === "PATCH" && response.url().includes("/experiences/notes"),
-    );
-
-    await editor.fill(`${title}\n${body}\nUpdated through release validation.`);
-    const updated = await updateResponse;
-
-    if (!updated.ok()) {
-      throw new Error(
-        `Project note update failed with ${updated.status()}: ${await updated.text()}`,
-      );
-    }
-
-    await this.page.getByRole("button", { name: "Delete note" }).click();
-    const confirmation = this.page.getByRole("dialog", { name: "Delete Note" });
-
-    await confirmation.getByRole("button", { name: "Delete", exact: true }).click();
-    await confirmation.waitFor({ state: "hidden" });
-    await this.page.getByRole("heading", { name: "No notes yet" }).waitFor();
-  }
-
   async createUpdateAndDeleteStrudelPattern(name: string, description: string) {
     await this.openProjectApp("Strudel Music Patterns");
     await this.page.getByRole("link", { name: "New pattern", exact: true }).click();
@@ -786,41 +743,6 @@ export class WorkPage extends BasePage {
     }
 
     await this.page.getByRole("heading", { name: "No patterns yet" }).waitFor();
-  }
-
-  async createArticleReportFromPastedContent(content: string) {
-    await this.openProjectApp("Article Processor");
-    await this.page.getByRole("link", { name: "New report", exact: true }).click();
-    await this.page.getByPlaceholder("Paste article content here...").fill(content);
-
-    const analysisResponse = this.page.waitForResponse(
-      (response) =>
-        response.request().method() === "POST" &&
-        /\/experiences\/articles\/[^/]+\/analyse/.test(response.url()),
-    );
-    const summaryResponse = this.page.waitForResponse(
-      (response) =>
-        response.request().method() === "POST" &&
-        /\/experiences\/articles\/[^/]+\/summarise/.test(response.url()),
-    );
-    const reportResponse = this.page.waitForResponse(
-      (response) =>
-        response.request().method() === "POST" &&
-        /\/experiences\/articles\/[^/]+\/report/.test(response.url()),
-    );
-
-    await this.page.getByRole("button", { name: "Process & Generate Report" }).click();
-    for (const responsePromise of [analysisResponse, summaryResponse, reportResponse]) {
-      const response = await responsePromise;
-
-      if (!response.ok()) {
-        throw new Error(
-          `Article report workflow failed with ${response.status()}: ${await response.text()}`,
-        );
-      }
-    }
-
-    await this.page.getByRole("heading", { name: "Report Content", exact: true }).waitFor();
   }
 
   async searchProjectCapabilities(name: string) {

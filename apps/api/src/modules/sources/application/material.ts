@@ -5,7 +5,7 @@ import type { SourceRecord } from "~/modules/sources/infrastructure/SourceReposi
 
 export const SOURCE_MATERIAL_MAX_CHARACTERS = 80_000;
 
-type MaterialSource = Pick<SourceRecord, "title" | "content" | "external_uri"> &
+export type MaterialSource = Pick<SourceRecord, "title" | "content" | "external_uri"> &
   Partial<Pick<SourceRecord, "metadata">>;
 
 function chooseMaterialText(

@@ -1,3 +1,4 @@
+import { a2aTagDescription } from "./content/tags/a2aTagDescription.js";
 import { accountTagDescription } from "./content/tags/accountTagDescription.js";
 import { activityTagDescription } from "./content/tags/activityTagDescription.js";
 import { adminTagDescription } from "./content/tags/adminTagDescription.js";
@@ -17,6 +18,7 @@ import { conversationsTagDescription } from "./content/tags/conversationsTagDesc
 import { decisionsTagDescription } from "./content/tags/decisionsTagDescription.js";
 import { desktopTagDescription } from "./content/tags/desktopTagDescription.js";
 import { devicesTagDescription } from "./content/tags/devicesTagDescription.js";
+import { discoverTagDescription } from "./content/tags/discoverTagDescription.js";
 import { documentsTagDescription } from "./content/tags/documentsTagDescription.js";
 import { environmentsTagDescription } from "./content/tags/environmentsTagDescription.js";
 import { experiencesTagDescription } from "./content/tags/experiencesTagDescription.js";
@@ -25,6 +27,7 @@ import { flagsTagDescription } from "./content/tags/flagsTagDescription.js";
 import { guardrailsTagDescription } from "./content/tags/guardrailsTagDescription.js";
 import { jobsTagDescription } from "./content/tags/jobsTagDescription.js";
 import { machinesTagDescription } from "./content/tags/machinesTagDescription.js";
+import { mcpTagDescription } from "./content/tags/mcpTagDescription.js";
 import { memoryTagDescription } from "./content/tags/memoryTagDescription.js";
 import { modelDatasetsTagDescription } from "./content/tags/modelDatasetsTagDescription.js";
 import { modelEvaluationTagDescription } from "./content/tags/modelEvaluationTagDescription.js";
@@ -84,6 +87,7 @@ export const tagDescriptions = {
   documents: documentsTagDescription,
   sources: sourcesTagDescription,
   notebooks: notebooksTagDescription,
+  discover: discoverTagDescription,
   uploads: uploadsTagDescription,
   sites: sitesTagDescription,
   capabilities: capabilitiesTagDescription,
@@ -91,6 +95,8 @@ export const tagDescriptions = {
   recipes: recipesTagDescription,
   connectors: connectorsTagDescription,
   connections: connectionsTagDescription,
+  mcp: mcpTagDescription,
+  a2a: a2aTagDescription,
   channels: channelsTagDescription,
   webhooks: webhooksTagDescription,
   decisions: decisionsTagDescription,

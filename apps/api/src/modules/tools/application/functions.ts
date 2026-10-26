@@ -52,7 +52,7 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   create_music: { icon: "music" },
   create_speech: { icon: "speech" },
   create_qr_code: { icon: "qr-code" },
-  create_note: { icon: "note" },
+  create_note: { renderer: "saved_note", icon: "note" },
   get_note: { icon: "note" },
   extract_content: { icon: "file-text" },
   extract_text_from_document: { icon: "file-text" },

@@ -1,24 +1,12 @@
 import z from "zod/v4";
 
-import {
-  articleAnalyzeSchema,
-  articleSummariseSchema,
-  deepResearchSchema,
-  generateArticlesReportSchema,
-} from "./apps.js";
+import { deepResearchSchema } from "./apps.js";
 import { ocrBatchStartRequestSchema } from "./ocr-batch.js";
 import { listQuerySchema, listSchema } from "./platform/list.js";
 import { researchStatusSchema } from "./research.js";
 import { siteEvaluationRequestSchema, siteEvaluationResponseSchema } from "./sites.js";
 
-export const JOB_KINDS = [
-  "ocr_batch",
-  "research",
-  "site_evaluation",
-  "article_analysis",
-  "article_summary",
-  "article_report",
-] as const;
+export const JOB_KINDS = ["ocr_batch", "research", "site_evaluation"] as const;
 
 export const jobKindSchema = z.enum(JOB_KINDS);
 
@@ -54,9 +42,6 @@ export const jobSchema = z.discriminatedUnion("kind", [
     kind: z.literal("site_evaluation"),
     result: siteEvaluationResponseSchema.nullable(),
   }),
-  jobFieldsSchema.extend({ kind: z.literal("article_analysis"), result: outputJobResultSchema }),
-  jobFieldsSchema.extend({ kind: z.literal("article_summary"), result: outputJobResultSchema }),
-  jobFieldsSchema.extend({ kind: z.literal("article_report"), result: outputJobResultSchema }),
 ]);
 
 const jobScopeSchema = z.object({ project_id: z.string().min(1).optional() });
@@ -65,9 +50,6 @@ export const createJobRequestSchema = z.discriminatedUnion("kind", [
   jobScopeSchema.extend({ kind: z.literal("ocr_batch"), input: ocrBatchStartRequestSchema }),
   jobScopeSchema.extend({ kind: z.literal("research"), input: deepResearchSchema }),
   jobScopeSchema.extend({ kind: z.literal("site_evaluation"), input: siteEvaluationRequestSchema }),
-  jobScopeSchema.extend({ kind: z.literal("article_analysis"), input: articleAnalyzeSchema }),
-  jobScopeSchema.extend({ kind: z.literal("article_summary"), input: articleSummariseSchema }),
-  jobScopeSchema.extend({ kind: z.literal("article_report"), input: generateArticlesReportSchema }),
 ]);
 
 export const listJobsQuerySchema = listQuerySchema.extend({

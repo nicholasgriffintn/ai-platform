@@ -37,6 +37,7 @@ export interface SourceRecord {
   mime_type: string | null;
   filename: string | null;
   byte_size: number | null;
+  revision: number;
   created_at: string;
   updated_at: string | null;
 }
@@ -58,6 +59,7 @@ export const SOURCE_SUMMARY_COLUMNS = [
   "mime_type",
   "filename",
   "byte_size",
+  "revision",
   "created_at",
   "updated_at",
 ] as const;
@@ -84,6 +86,7 @@ export interface SourceCollectionRecord {
   description: string | null;
   kind: SourceCollectionKind;
   feed_token_hash: string | null;
+  settings: string | null;
   created_at: string;
   updated_at: string | null;
   source_count?: number;
@@ -278,14 +281,15 @@ export class SourceRepository extends BaseRepository {
 
   async updateCollection(
     collectionId: string,
-    updates: { title?: string; description?: string | null },
+    updates: { title?: string; description?: string | null; settings?: Record<string, unknown> },
   ): Promise<void> {
     const result = this.buildUpdateQuery(
       "resource_collection",
       updates,
-      ["title", "description"],
+      ["title", "description", "settings"],
       "collection_type = 'source' AND id = ?",
       [collectionId],
+      { jsonFields: ["settings"] },
     );
 
     if (result) {
@@ -346,6 +350,10 @@ export class SourceRepository extends BaseRepository {
 
   async listProjectCollections(projectId: string): Promise<SourceCollectionRecord[]> {
     return this.listCollections("sc.project_id = ?", [projectId]);
+  }
+
+  async getCollectionSummary(collectionId: string): Promise<SourceCollectionRecord | null> {
+    return (await this.listCollections("sc.id = ?", [collectionId]))[0] ?? null;
   }
 
   async getCollection(collectionId: string): Promise<SourceCollectionRecord | null> {

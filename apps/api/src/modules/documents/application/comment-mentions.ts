@@ -30,6 +30,15 @@ export async function prepareCommentMention(
 
   await requireProjectTeammate(context, projectId, comment.mentionedTeammateId);
   const position = await context.repositories.get(ProjectTaskRepository).getMaxPosition(projectId);
+  const where = comment.sourceId
+    ? {
+        label: `Note ${comment.sourceId}`,
+        instructions: `Use get_note with the query "${documentTitle}" to read the note "${documentTitle}" (${comment.sourceId}), then answer comment ${comment.id}. The note is at revision ${comment.sourceRevision}.`,
+      }
+    : {
+        label: `Document ${comment.outputId}`,
+        instructions: `Use get_document with outputId ${comment.outputId} and commentId ${comment.id} to read the current document and the complete request. Preserve its revision before suggesting an edit.`,
+      };
 
   return [
     context.repositories.get(ProjectTaskRepository).prepareTaskCreation({
@@ -40,7 +49,7 @@ export async function prepareCommentMention(
       context: {
         links: [],
         notes:
-          `Document ${comment.outputId}, revision ${comment.sourceRevision}, comment ${comment.id}\nSelected text: ${comment.anchor?.quote ?? "Whole document"}`.slice(
+          `${where.label}, revision ${comment.sourceRevision}, comment ${comment.id}\nSelected text: ${comment.anchor?.quote ?? "Whole document"}`.slice(
             0,
             4000,
           ),
@@ -60,7 +69,7 @@ export async function prepareCommentMention(
           {
             id: "document-comment",
             name: "Document comment",
-            instructions: `Use get_document with outputId ${comment.outputId} and commentId ${comment.id} to read the current document and the complete request. Preserve its revision before suggesting an edit.`,
+            instructions: where.instructions,
             teammateId: comment.mentionedTeammateId,
             skillIds: [],
             mode: null,
@@ -80,7 +89,7 @@ export async function prepareCommentMention(
       metadata: {
         projectId,
         source: "document_comment",
-        outputId: comment.outputId,
+        ...(comment.sourceId ? { sourceId: comment.sourceId } : { outputId: comment.outputId }),
         commentId: comment.id,
       },
     }),

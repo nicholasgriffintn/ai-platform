@@ -8,20 +8,16 @@ import {
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { Newspaper } from "lucide-react";
 
-import {
-  DiscoverAnalysisList,
-  DiscoverAnalysisSection,
-  DiscoverAnalysisTags,
-} from "./DiscoverAnalysis.js";
+import { AnalysisList, AnalysisSection, AnalysisTags } from "../../Knowledge/Analysis.js";
 
 function CoverageDetail({ coverage }: { coverage: DiscoverCoverage }) {
   return (
     <div className="flex flex-col gap-2.5">
-      <DiscoverAnalysisTags tags={[`${coverage.sourceIds.length} articles`]} />
+      <AnalysisTags tags={[`${coverage.sourceIds.length} articles`]} />
       <p className="text-[0.8125rem] leading-relaxed text-foreground">{coverage.overview}</p>
-      <DiscoverAnalysisList heading="What they agree on" items={coverage.agreed} />
+      <AnalysisList heading="What they agree on" items={coverage.agreed} />
       {coverage.outlets.length > 0 && (
-        <DiscoverAnalysisSection heading="Each outlet's angle" count={coverage.outlets.length}>
+        <AnalysisSection heading="Each outlet's angle" count={coverage.outlets.length}>
           <ul className="flex flex-col gap-1.5">
             {coverage.outlets.map((outlet) => (
               <li key={outlet.source}>
@@ -29,10 +25,10 @@ function CoverageDetail({ coverage }: { coverage: DiscoverCoverage }) {
               </li>
             ))}
           </ul>
-        </DiscoverAnalysisSection>
+        </AnalysisSection>
       )}
-      <DiscoverAnalysisList heading="Where they differ" items={coverage.disputed} />
-      <DiscoverAnalysisList heading="What's missing" items={coverage.gaps} />
+      <AnalysisList heading="Where they differ" items={coverage.disputed} />
+      <AnalysisList heading="What's missing" items={coverage.gaps} />
     </div>
   );
 }

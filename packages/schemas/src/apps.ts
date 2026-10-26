@@ -1,10 +1,8 @@
 import z from "zod/v4";
 
 import { isSupportedCronExpression } from "./cron.js";
-import { documentMetadataSchema } from "./documents.js";
 import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json" with { type: "json" };
 import { externalHttpUrlSchema, internalNavigationPathSchema } from "./navigation.js";
-import { outputSchema } from "./outputs.js";
 import { listSchema } from "./platform/list.js";
 import { searchOptionsSchema, searchProviderSchema } from "./search.js";
 import { skillSummarySchema } from "./skills.js";
@@ -64,20 +62,6 @@ export const guessDrawingSchema = z.object({
   drawing: z.any().refine((file) => file && file instanceof File, {
     error: "Drawing must be a valid file",
   }),
-});
-
-export const articleAnalyzeSchema = z.object({
-  article: z.string(),
-  itemId: z.string(),
-});
-
-export const articleSummariseSchema = z.object({
-  article: z.string(),
-  itemId: z.string(),
-});
-
-export const generateArticlesReportSchema = z.object({
-  itemId: z.string(),
 });
 
 export const contentExtractSchema = z.object({
@@ -375,11 +359,8 @@ export const FieldType = {
 export const capabilityThemeSchema = z.enum(capabilityThemes);
 
 export const projectExperienceRuntimeSchema = z.enum([
-  "articles",
   "benchmarks",
   "charades",
-  "notes",
-  "paperwork",
   "photo-sorter",
   "sites",
   "strudel",
@@ -792,131 +773,6 @@ export const weatherResponseSchema = z.object({
       })
       .optional(),
   }),
-});
-
-export const articleSessionSummarySchema = z.object({
-  groupId: z.string(),
-  id: z.string().optional(),
-  title: z.string(),
-  createdAt: z.string(),
-  sourceCount: z.number().optional(),
-  status: z.enum(["processing", "complete"]),
-});
-
-export const listArticlesResponseSchema = z.object({
-  articles: z.array(articleSessionSummarySchema),
-});
-
-export const sourceArticlesResponseSchema = z.object({
-  articles: z.array(outputSchema),
-});
-
-export const noteMetadataSchema = documentMetadataSchema;
-
-export const noteSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  content: z.string(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  metadata: noteMetadataSchema.optional(),
-});
-
-export const noteCreateSchema = z.object({
-  title: z.string(),
-  content: z.string(),
-  metadata: noteMetadataSchema.optional(),
-});
-
-export const noteSummarySchema = noteSchema.omit({ content: true, metadata: true }).extend({
-  excerpt: z.string(),
-});
-
-export const noteListQuerySchema = z.object({
-  q: z.string().trim().max(200).optional(),
-});
-
-export const noteUpdateSchema = noteCreateSchema.extend({
-  options: z
-    .object({
-      refreshMetadata: z
-        .boolean()
-        .optional()
-        .describe("When true, forces the API to regenerate AI metadata for the note"),
-    })
-    .optional(),
-});
-
-export const listNotesResponseSchema = z.object({
-  notes: z.array(noteSummarySchema),
-});
-
-export const noteDetailResponseSchema = z.object({
-  note: noteSchema,
-});
-
-export const noteFormatSchema = z.object({
-  prompt: z.string().optional().meta({
-    description: "Optional additional instructions to refine the note formatting",
-  }),
-});
-
-export const noteFormatResponseSchema = z.object({
-  content: z.string().meta({
-    description: "The reformatted note contents",
-  }),
-});
-
-export type NoteMetadata = z.infer<typeof noteMetadataSchema>;
-export type Note = z.infer<typeof noteSchema>;
-export type NoteSummary = z.infer<typeof noteSummarySchema>;
-export type NoteListQuery = z.infer<typeof noteListQuerySchema>;
-export type NoteCreateRequest = z.infer<typeof noteCreateSchema>;
-export type NoteUpdateRequest = z.infer<typeof noteUpdateSchema>;
-export type ListNotesResponse = z.infer<typeof listNotesResponseSchema>;
-export type NoteDetailResponse = z.infer<typeof noteDetailResponseSchema>;
-export type NoteFormatRequest = z.infer<typeof noteFormatSchema>;
-export type NoteFormatResponse = z.infer<typeof noteFormatResponseSchema>;
-
-export const generateNotesFromMediaSchema = z.object({
-  url: z.string().url().describe("The audio/video URL to transcribe and analyze."),
-  outputs: z
-    .array(
-      z.enum([
-        "concise_summary",
-        "detailed_outline",
-        "key_takeaways",
-        "action_items",
-        "meeting_minutes",
-        "qa_extraction",
-        "smart_timestamps",
-      ]),
-    )
-    .min(1)
-    .describe("Which outputs to generate. Can select multiple."),
-  noteType: z
-    .enum([
-      "general",
-      "meeting",
-      "training",
-      "lecture",
-      "interview",
-      "recording",
-      "webinar",
-      "tutorial",
-      "video_content",
-      "educational_video",
-      "documentary",
-      "other",
-    ])
-    .default("general")
-    .describe("Adjusts prompt style for the content type."),
-  extraPrompt: z.string().optional().describe("Additional instructions."),
-  timestamps: z.boolean().optional().describe("Whether to enable timestamped transcription."),
-});
-
-export const generateNotesFromMediaResponseSchema = z.object({
-  content: z.string().describe("Generated notes content in Markdown."),
 });
 
 export const strudelGenerateSchema = z.object({

@@ -67,7 +67,6 @@ function LinkTile({ Icon, label, href }: { Icon: LucideIcon; label: string; href
 }
 
 const DIALOG_TILES: Array<{ dialog: CreateDialog; label: string; Icon: LucideIcon }> = [
-  { dialog: "note", label: "Note", Icon: StickyNote },
   { dialog: "memory", label: "Memory", Icon: BookOpenText },
   { dialog: "folder", label: "Folder", Icon: FolderPlus },
   { dialog: "podcast", label: "Podcast", Icon: Radio },
@@ -86,6 +85,12 @@ export function CreateTiles({ basePath, creation }: { basePath: string; creation
           label={creation.isUploading ? "Uploading…" : "Upload"}
           busy={creation.isUploading}
           onClick={creation.openUploadPicker}
+        />
+        <ActionTile
+          Icon={StickyNote}
+          label="Note"
+          busy={creation.isCreatingNote}
+          onClick={() => void creation.createNote()}
         />
         {DIALOG_TILES.map((tile) => (
           <ActionTile

@@ -8,6 +8,7 @@ import {
 import {
   nextPageCursor,
   type CreateDocumentCommentInput,
+  type DocumentCommentSubject,
   type DocumentEditProposal,
   type ProposeDocumentEditInput,
   type ResolveDocumentThreadInput,
@@ -17,26 +18,31 @@ import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-q
 import { useLiveOrPoll } from "../sync/live-or-poll.js";
 import { OUTPUT_QUERY_KEYS } from "./useOutputs.js";
 
-export function useDocumentCollaboration(outputId: string) {
+export function documentCommentsQueryKey(subject: DocumentCommentSubject) {
+  return [subject.type === "output" ? "outputs" : "sources", "comments", subject.id] as const;
+}
+
+export function useDocumentCollaboration(subject: DocumentCommentSubject) {
   const liveOrPoll = useLiveOrPoll();
   const client = useQueryClient();
-  const queryKey = ["outputs", "comments", outputId];
+  const outputId = subject.id;
+  const queryKey = documentCommentsQueryKey(subject);
   const refresh = () => client.invalidateQueries({ queryKey });
   const comments = useInfiniteQuery({
     queryKey,
-    queryFn: ({ pageParam }) => listDocumentComments(outputId, pageParam || undefined),
+    queryFn: ({ pageParam }) => listDocumentComments(subject, pageParam || undefined),
     initialPageParam: "",
     getNextPageParam: nextPageCursor,
     refetchInterval: (query) => liveOrPoll(query, 15_000, "document_comments.changed"),
   });
   const create = useMutation({
-    mutationFn: (input: CreateDocumentCommentInput) => createDocumentComment(outputId, input),
+    mutationFn: (input: CreateDocumentCommentInput) => createDocumentComment(subject, input),
     onSettled: () =>
       Promise.all([refresh(), client.invalidateQueries({ queryKey: ["project-tasks"] })]),
   });
   const resolve = useMutation({
     mutationFn: ({ commentId, ...input }: ResolveDocumentThreadInput & { commentId: string }) =>
-      resolveDocumentThread(outputId, commentId, input),
+      resolveDocumentThread(subject, commentId, input),
     onSettled: refresh,
   });
   const propose = useMutation({

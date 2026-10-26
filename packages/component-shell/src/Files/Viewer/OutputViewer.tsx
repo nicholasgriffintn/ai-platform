@@ -48,8 +48,8 @@ import { ResponseRenderer } from "../../Content/ResponseRenderer.js";
 import { EpisodePlayer } from "../../Discover/Episode/EpisodePlayer.js";
 import { SeasonView } from "../../Discover/Episode/SeasonView.js";
 import { StudyOutputStage } from "../../Notebooks/StudyOutputStage.js";
-import { DocumentOutputDiscussion } from "../DocumentOutputDiscussion.js";
 import { DocumentOutputWorkbench } from "../DocumentOutputWorkbench.js";
+import { FileDiscussion } from "../FileDiscussion.js";
 import { outputToFileItem } from "../Library/file-items.js";
 import { useFileActions } from "../Library/useFileActions.js";
 import { OutputCouncilReviews } from "../OutputCouncilReviews.js";
@@ -181,12 +181,16 @@ function OutputInfo({ output }: { output: Output }) {
 }
 
 function OutputComments({ output }: { output: Output }) {
-  const discussion = useDocumentDiscussion(output);
+  const discussion = useDocumentDiscussion({
+    subject: { type: "output", id: output.id },
+    revision: output.revision,
+  });
   const body = readDocumentBody(output.content) ?? "";
 
   return (
-    <DocumentOutputDiscussion
-      output={output}
+    <FileDiscussion
+      projectId={output.projectId}
+      revision={output.revision}
       documentBody={body}
       selection={null}
       hasUnsavedChanges={false}
@@ -371,6 +375,7 @@ export function OutputViewer({
       drawers={[
         {
           key: "info",
+          quick: true,
           label: "File info",
           icon: <Info size={14} aria-hidden="true" />,
           content: <OutputInfo output={output} />,

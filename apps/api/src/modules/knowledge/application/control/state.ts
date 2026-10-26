@@ -42,19 +42,21 @@ export async function getKnowledgeDocumentState(
     stored: readKnowledgeBody(metadata) ? "body" : "inline",
     characters: storedCharacters(source.content, metadata),
     indexed: document && document.status !== "stale" ? document.status : "pending",
-    enrichments: KNOWLEDGE_ENRICHERS.filter((enricher) => enricher.appliesTo(source)).map(
-      (enricher) => {
-        const state = states[enricher.name];
+    enrichments: KNOWLEDGE_ENRICHERS.filter(
+      (enricher) =>
+        enricher.appliesTo(source) &&
+        (enricher.trigger === "commit" || states[enricher.name] !== undefined),
+    ).map((enricher) => {
+      const state = states[enricher.name];
 
-        return {
-          name: enricher.name,
-          label: enricher.label,
-          status: state?.status ?? "pending",
-          at: state?.at ?? null,
-          error: state?.error ?? null,
-        };
-      },
-    ),
+      return {
+        name: enricher.name,
+        label: enricher.label,
+        status: state?.status ?? "pending",
+        at: state?.at ?? null,
+        error: state?.error ?? null,
+      };
+    }),
     collections,
     relations,
   };

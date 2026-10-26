@@ -24,6 +24,18 @@ export type FilesLayout = "grid" | "list";
 
 export type FilesSort = "recent" | "name";
 
+export interface NoteReadingPreferences {
+  theme: "sepia" | "normal";
+  fontFamily: "sans" | "serif";
+  fontSize: number;
+}
+
+export const DEFAULT_NOTE_READING: NoteReadingPreferences = {
+  theme: "sepia",
+  fontFamily: "sans",
+  fontSize: 18,
+};
+
 export const POLY_DOCK_MIN_WIDTH = 340;
 export const POLY_DOCK_MAX_WIDTH = 720;
 export const POLY_DOCK_DEFAULT_WIDTH = 420;
@@ -64,6 +76,8 @@ export interface UIStore {
   setFilesLayout: (filesLayout: FilesLayout) => void;
   filesSort: FilesSort;
   setFilesSort: (filesSort: FilesSort) => void;
+  noteReading: NoteReadingPreferences;
+  setNoteReading: (preferences: Partial<NoteReadingPreferences>) => void;
 }
 
 export const useUIStore = create<UIStore>()(
@@ -117,6 +131,9 @@ export const useUIStore = create<UIStore>()(
       setFilesLayout: (filesLayout) => set({ filesLayout }),
       filesSort: "recent",
       setFilesSort: (filesSort) => set({ filesSort }),
+      noteReading: DEFAULT_NOTE_READING,
+      setNoteReading: (preferences) =>
+        set((state) => ({ noteReading: { ...state.noteReading, ...preferences } })),
     }),
     {
       name: "ui-store",
@@ -131,12 +148,14 @@ export const useUIStore = create<UIStore>()(
           showModelSources: _ms,
           chatConversationListFilters,
           workConversationListFilters,
+          noteReading,
           ...rest
         } = (persisted ?? {}) as Partial<UIStore>;
 
         return {
           ...current,
           ...rest,
+          noteReading: { ...DEFAULT_NOTE_READING, ...noteReading },
           chatConversationListFilters: {
             ...DEFAULT_CONVERSATION_LIST_FILTERS,
             ...chatConversationListFilters,

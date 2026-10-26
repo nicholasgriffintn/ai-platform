@@ -1,260 +1,218 @@
 import {
+  Button,
   cn,
-  ActionButtons,
   ConfirmationDialog,
-  FormSelect,
-  RangeInput,
+  OptionsMenu,
+  OptionsMenuAction,
+  OptionsMenuSeparator,
 } from "@ngriffin_uk/polychat-component-ui";
 import {
   Copy,
   Download,
-  Maximize2,
+  Eraser,
   Mic,
-  Minimize2,
   MonitorDot,
-  MonitorStop,
-  Trash2,
+  MonitorUp,
+  MoreHorizontal,
+  Sparkles,
   TvMinimalPlay,
-  Zap,
 } from "lucide-react";
-import { memo, useState } from "react";
+import { memo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
-const FONT_FAMILY_OPTIONS = [
-  { value: "sans", label: "Sans" },
-  { value: "serif", label: "Serif" },
-];
-
-const THEME_MODE_OPTIONS = [
-  { value: "sepia", label: "Sepia" },
-  { value: "normal", label: "Normal" },
-];
+import { NoteReadingSettings, type NoteFontFamily, type NotePaper } from "./NoteReadingSettings";
 
 interface NoteEditorToolbarProps {
-  fontFamily: string;
-  onFontFamilyChange: (fontFamily: string) => void;
-  themeMode: string;
-  onThemeChange: (mode: string) => void;
+  fontFamily: NoteFontFamily;
+  onFontFamilyChange: (fontFamily: NoteFontFamily) => void;
+  paper: NotePaper;
+  onPaperChange: (paper: NotePaper) => void;
   fontSize: number;
   onFontSizeChange: (fontSize: number) => void;
   text: string;
   wordCount: number;
   charCount: number;
-  noteId?: string;
-  onDelete?: () => Promise<void>;
-  onClearText?: () => void;
-  onToggleFullBleed?: () => void;
-  isFullBleed: boolean;
+  canAssist: boolean;
+  onClearText: () => void;
   onOpenMediaModal: () => void;
   onOpenFormatModal: () => void;
   isTranscribing: boolean;
   transcriptionStatus: string;
   isSpeechDetected: boolean;
   onTranscriptionToggle: () => void;
-  tabCapture: {
-    isCapturing: boolean;
-    start: () => Promise<MediaStream | null>;
-    stop: () => void;
-  };
+  isCapturingTab: boolean;
   onTabCaptureToggle: () => void;
+}
+
+function ToolButton({
+  label,
+  icon,
+  onClick,
+  active = false,
+  disabled = false,
+  className,
+}: {
+  label: string;
+  icon: ReactNode;
+  onClick: () => void;
+  active?: boolean;
+  disabled?: boolean;
+  className?: string;
+}) {
+  return (
+    <Button
+      type="button"
+      variant={active ? "iconActive" : "icon"}
+      size="sm"
+      icon={icon}
+      aria-label={label}
+      aria-pressed={active}
+      title={label}
+      disabled={disabled}
+      onClick={onClick}
+      className={className}
+    />
+  );
 }
 
 export const NoteEditorToolbar = memo(function NoteEditorToolbar({
   fontFamily,
   onFontFamilyChange,
-  themeMode,
-  onThemeChange,
+  paper,
+  onPaperChange,
   fontSize,
   onFontSizeChange,
   text,
   wordCount,
   charCount,
-  noteId,
-  onDelete,
+  canAssist,
   onClearText,
-  onToggleFullBleed,
-  isFullBleed,
   onOpenMediaModal,
   onOpenFormatModal,
   isTranscribing,
   transcriptionStatus,
   isSpeechDetected,
   onTranscriptionToggle,
-  tabCapture,
+  isCapturingTab,
   onTabCaptureToggle,
 }: NoteEditorToolbarProps) {
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+  const isConnecting =
+    transcriptionStatus === "connecting" || transcriptionStatus === "reconnecting";
 
-  const handleCopy = () => {
+  const copy = () =>
     navigator.clipboard
       .writeText(text)
-      .then(() => toast.success("Copied to clipboard"))
-      .catch(() => {
-        toast.error("Failed to copy to clipboard");
-      });
-  };
+      .then(() => toast.success("Copied the note"))
+      .catch(() => toast.error("The note didn't copy"));
 
-  const handleDownload = () => {
-    const blob = new Blob([text], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+  const download = () => {
+    const url = URL.createObjectURL(new Blob([text], { type: "text/markdown" }));
+    const link = document.createElement("a");
 
-    a.href = url;
-    a.download = "note.txt";
-    a.click();
+    link.href = url;
+    link.download = "note.md";
+    link.click();
     URL.revokeObjectURL(url);
-    toast.success("Downloaded note");
-  };
-
-  const handleDelete = () => {
-    if (onDelete) {
-      setShowDeleteConfirm(true);
-    } else {
-      onClearText?.();
-    }
-  };
-
-  const confirmDelete = async () => {
-    if (onDelete) {
-      setIsDeleting(true);
-      try {
-        await onDelete();
-        setShowDeleteConfirm(false);
-      } catch {
-        toast.error("Failed to delete note");
-      } finally {
-        setIsDeleting(false);
-      }
-    }
   };
 
   return (
     <div
       role="toolbar"
-      aria-label="Note editor toolbar"
-      className="flex flex-col gap-2 border-t px-2 py-2 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-4"
+      aria-label="Note tools"
+      className="flex flex-wrap items-center gap-1 border-t border-border px-2 py-1.5 sm:px-3"
     >
-      <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-        <FormSelect
-          id="fontFamily"
-          aria-label="Font"
-          fullWidth={false}
-          className="w-28"
-          value={fontFamily}
-          options={FONT_FAMILY_OPTIONS}
-          onValueChange={onFontFamilyChange}
-        />
-        <FormSelect
-          id="themeMode"
-          aria-label="Theme"
-          fullWidth={false}
-          className="w-28"
-          value={themeMode}
-          options={THEME_MODE_OPTIONS}
-          onValueChange={onThemeChange}
-        />
-        <RangeInput
-          id="fontSize"
-          label="Font size"
-          className="mx-2 w-32"
-          min={10}
-          max={72}
-          step={1}
-          value={fontSize}
-          onChange={(e) => onFontSizeChange(+e.target.value)}
-        />
-      </div>
-      <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-        <ActionButtons
-          actions={[
-            {
-              id: "media",
-              icon: <TvMinimalPlay size={16} />,
-              label: "Generate notes from media URL",
-              onClick: onOpenMediaModal,
-            },
-            {
-              id: "ai-assist",
-              icon: <Zap size={16} />,
-              label: "AI Assist",
-              onClick: onOpenFormatModal,
-              disabled: !noteId,
-            },
-            {
-              id: "transcription",
-              icon: <Mic size={16} className={isSpeechDetected ? "animate-pulse" : ""} />,
-              label: isTranscribing ? "Stop transcription" : "Start transcription",
-              onClick: onTranscriptionToggle,
-              variant: isTranscribing
-                ? isSpeechDetected
-                  ? "success"
-                  : transcriptionStatus === "active"
-                    ? "active"
-                    : transcriptionStatus === "error"
-                      ? "destructive"
-                      : "default"
-                : "default",
-              className: cn(
-                isTranscribing &&
-                  (transcriptionStatus === "connecting" || transcriptionStatus === "reconnecting")
-                  ? "animate-pulse"
-                  : "",
-              ),
-            },
-            {
-              id: "tab-capture",
-              icon: tabCapture.isCapturing ? (
-                <MonitorDot size={16} className="animate-pulse" />
-              ) : (
-                <MonitorStop size={16} />
-              ),
-              label: tabCapture.isCapturing
-                ? "Stop tab audio transcription"
-                : "Start tab audio transcription",
-              onClick: onTabCaptureToggle,
-              variant: tabCapture.isCapturing ? "active" : "default",
-            },
-            {
-              id: "copy",
-              icon: <Copy size={16} />,
-              label: "Copy text",
-              onClick: handleCopy,
-            },
-            {
-              id: "download",
-              icon: <Download size={16} />,
-              label: "Download note",
-              onClick: handleDownload,
-            },
-            {
-              id: "delete",
-              icon: <Trash2 size={16} />,
-              label: onDelete ? "Delete note" : "Clear note",
-              onClick: handleDelete,
-              variant: onDelete ? "destructive" : "default",
-            },
-            {
-              id: "fullscreen",
-              icon: isFullBleed ? <Minimize2 size={16} /> : <Maximize2 size={16} />,
-              label: "Toggle full screen mode",
-              onClick: onToggleFullBleed || (() => {}),
-            },
-          ]}
-        />
-        <span className="ml-2">
-          {wordCount} words, {charCount} characters
-        </span>
-      </div>
+      <NoteReadingSettings
+        fontFamily={fontFamily}
+        onFontFamilyChange={onFontFamilyChange}
+        paper={paper}
+        onPaperChange={onPaperChange}
+        fontSize={fontSize}
+        onFontSizeChange={onFontSizeChange}
+      />
+
+      <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
+
+      <ToolButton
+        label={isTranscribing ? "Stop dictating" : "Dictate"}
+        icon={<Mic size={16} />}
+        active={isTranscribing}
+        onClick={onTranscriptionToggle}
+        className={cn(
+          isTranscribing && isSpeechDetected && "text-success",
+          isTranscribing && isConnecting && "animate-pulse",
+          transcriptionStatus === "error" && "text-failure",
+        )}
+      />
+      <ToolButton
+        label={isCapturingTab ? "Stop transcribing the tab" : "Transcribe a browser tab"}
+        icon={isCapturingTab ? <MonitorDot size={16} /> : <MonitorUp size={16} />}
+        active={isCapturingTab}
+        onClick={onTabCaptureToggle}
+        className={isCapturingTab ? "animate-pulse" : undefined}
+      />
+      <ToolButton
+        label="Notes from a recording link"
+        icon={<TvMinimalPlay size={16} />}
+        onClick={onOpenMediaModal}
+      />
+      <ToolButton
+        label="Rework with AI"
+        icon={<Sparkles size={16} />}
+        disabled={!canAssist}
+        onClick={onOpenFormatModal}
+      />
+
+      <OptionsMenu
+        side="top"
+        align="start"
+        sideOffset={8}
+        trigger={
+          <Button
+            type="button"
+            variant="icon"
+            size="sm"
+            icon={<MoreHorizontal size={16} />}
+            aria-label="More note actions"
+            title="More"
+          />
+        }
+      >
+        <OptionsMenuAction onSelect={() => void copy()}>
+          <Copy size={14} aria-hidden="true" />
+          Copy text
+        </OptionsMenuAction>
+        <OptionsMenuAction onSelect={download}>
+          <Download size={14} aria-hidden="true" />
+          Download as Markdown
+        </OptionsMenuAction>
+        <OptionsMenuSeparator />
+        <OptionsMenuAction
+          disabled={!text}
+          className="text-failure data-[highlighted]:text-failure"
+          onSelect={() => setIsClearing(true)}
+        >
+          <Eraser size={14} aria-hidden="true" />
+          Clear the note
+        </OptionsMenuAction>
+      </OptionsMenu>
+
+      <span className="ml-auto px-2 text-xs text-muted-foreground tabular-nums">
+        {wordCount} {wordCount === 1 ? "word" : "words"} · {charCount}{" "}
+        {charCount === 1 ? "character" : "characters"}
+      </span>
+
       <ConfirmationDialog
-        open={showDeleteConfirm}
-        onOpenChange={(open) => setShowDeleteConfirm(open)}
-        onConfirm={confirmDelete}
-        title="Delete Note"
-        description="Are you sure you want to delete this note? This action cannot be undone."
-        confirmText="Delete"
+        open={isClearing}
+        onOpenChange={setIsClearing}
+        onConfirm={() => {
+          onClearText();
+          setIsClearing(false);
+        }}
+        title="Clear this note?"
+        description="The text goes, but the last saved version stays in Version history."
+        confirmText="Clear"
         variant="destructive"
-        isLoading={isDeleting}
       />
     </div>
   );

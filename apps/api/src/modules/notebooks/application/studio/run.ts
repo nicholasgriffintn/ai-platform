@@ -9,7 +9,7 @@ import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
-import { buildSourceMaterial } from "~/modules/sources/application/material";
+import { buildSourceMaterial, type MaterialSource } from "~/modules/sources/application/material";
 
 import { requireNotebookAccess } from "../access";
 import { resolveNotebookSources } from "../notebooks";
@@ -47,9 +47,21 @@ export async function runNotebookStudio(
   context: ServiceContext,
   job: { notebookId: string; outputId: string },
 ): Promise<"ready" | "failed" | "skipped"> {
+  return runStudioOutput(context, job.outputId, async (request) => {
+    const access = await requireNotebookAccess(context, job.notebookId);
+
+    return resolveNotebookSources(context, access, request.sourceIds);
+  });
+}
+
+export async function runStudioOutput(
+  context: ServiceContext,
+  outputId: string,
+  loadSources: (request: OutputStudioRequest) => Promise<MaterialSource[]>,
+): Promise<"ready" | "failed" | "skipped"> {
   const user = context.requireUser();
   const repository = context.repositories.get(OutputRepository);
-  const pending = await repository.getOutput(job.outputId);
+  const pending = await repository.getOutput(outputId);
   const parsed = notebookStudioRequestSchema.safeParse(
     pending ? parseJsonRecord(pending.content).request : undefined,
   );
@@ -66,16 +78,15 @@ export async function runNotebookStudio(
   const request = parsed.data;
 
   try {
-    const access = await requireNotebookAccess(context, job.notebookId);
-    const sources = await resolveNotebookSources(context, access, request.sourceIds);
+    const sources = await loadSources(request);
     const draft = await finishDraft(
       context,
-      job.outputId,
+      outputId,
       request,
       await writeStudioDraft(context, request, buildSourceMaterial(sources)),
     );
 
-    await repository.updateOutput(job.outputId, {
+    await repository.updateOutput(outputId, {
       title: draft.title,
       status: "ready",
       content: draft.content,
@@ -85,12 +96,12 @@ export async function runNotebookStudio(
 
     return "ready";
   } catch (error) {
-    logger.error("Notebook studio output failed", { outputId: job.outputId, error });
+    logger.error("Studio output failed", { outputId, error });
 
-    const current = await repository.getOutput(job.outputId);
+    const current = await repository.getOutput(outputId);
 
     if (current) {
-      await repository.updateOutput(job.outputId, {
+      await repository.updateOutput(outputId, {
         status: "failed",
         content: { request, error: getErrorMessage(error, "This could not be made") },
         expectedRevision: current.revision,

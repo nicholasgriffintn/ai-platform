@@ -103,25 +103,3 @@ export function buildDocumentNotesPrompt({
 export function buildContentExtractionPrompt(): string {
   return getPromptText("content/extract");
 }
-
-export interface ArticlePromptOptions {
-  metadataSection: string;
-  article: string;
-}
-
-export function buildArticleSummaryPrompt({
-  metadataSection,
-  article,
-}: ArticlePromptOptions): string {
-  return renderPrompt("apps/articles/summarise", { metadataSection, article });
-}
-
-export function buildArticleReportPrompt({
-  metadataSection,
-  articles,
-}: {
-  metadataSection: string;
-  articles: string;
-}): string {
-  return renderPrompt("apps/articles/report", { metadataSection, articles });
-}

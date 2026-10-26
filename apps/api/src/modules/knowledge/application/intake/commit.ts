@@ -12,6 +12,7 @@ import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { queueFolderReadings } from "~/modules/knowledge/application/enrichment/folders";
 import { publishKnowledgeChange } from "~/modules/knowledge/application/events";
 import { enqueueKnowledgeProcessing } from "~/modules/knowledge/application/index/indexing";
 import {
@@ -229,6 +230,11 @@ export async function commitKnowledgeDocument(
 
     for (const collectionId of target.collectionIds) {
       await sources.addCollectionSources(collectionId, [document.id]);
+      const folder = await sources.getCollection(collectionId);
+
+      if (folder) {
+        await queueFolderReadings(context, folder, [document.id]);
+      }
     }
   }
 

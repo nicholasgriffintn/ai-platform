@@ -1,7 +1,5 @@
 export { buildAgentSystemPrompt, type AgentSystemPromptOptions } from "./agents.js";
 export {
-  buildArticleReportPrompt,
-  buildArticleSummaryPrompt,
   buildContentExtractionPrompt,
   buildConversationSummarisePrompt,
   buildConversationTitlePrompt,
@@ -10,7 +8,6 @@ export {
   buildDocumentNotesPrompt,
   buildMemoryClassifierPrompt,
   buildMemorySynthesisPrompt,
-  type ArticlePromptOptions,
   type DocumentNotesPromptOptions,
   type MemoryClassifierPromptOptions,
   type MemorySynthesisPromptOptions,

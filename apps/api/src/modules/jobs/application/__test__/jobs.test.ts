@@ -20,14 +20,14 @@ function output(overrides: Partial<OutputRecord>): OutputRecord {
     project_id: null,
     conversation_id: null,
     parent_output_id: null,
-    capability_id: "articles",
+    capability_id: "research",
     group_id: null,
     collection_id: null,
-    kind: "analysis",
-    title: "Analysis",
+    kind: "research",
+    title: "Research",
     status: "pending",
     sensitivity: "personal",
-    content: JSON.stringify({ status: "processing" }),
+    content: JSON.stringify({ result: { status: "in_progress", data: { run: {} } } }),
     storage_key: null,
     mime_type: null,
     filename: null,
@@ -40,7 +40,7 @@ function output(overrides: Partial<OutputRecord>): OutputRecord {
 }
 
 const records = [
-  output({ id: "analysis-old", created_at: "2026-10-01T00:00:00.000Z" }),
+  output({ id: "research-old", created_at: "2026-10-01T00:00:00.000Z" }),
   output({
     id: "evaluation-new",
     capability_id: "site_evaluation",
@@ -49,13 +49,7 @@ const records = [
     content: JSON.stringify({ request: {} }),
     created_at: "2026-10-03T00:00:00.000Z",
   }),
-  output({
-    id: "summary-mid",
-    kind: "summary",
-    status: "ready",
-    content: JSON.stringify({ summary: "Short" }),
-    created_at: "2026-10-02T00:00:00.000Z",
-  }),
+  output({ id: "research-mid", created_at: "2026-10-02T00:00:00.000Z" }),
 ];
 
 function createContext() {
@@ -84,25 +78,25 @@ describe("jobs", () => {
 
     expect(first.data.map((job) => [job.id, job.kind])).toEqual([
       ["evaluation-new", "site_evaluation"],
-      ["summary-mid", "article_summary"],
+      ["research-mid", "research"],
     ]);
     expect(first.has_more).toBe(true);
-    expect(second.data.map((job) => job.id)).toEqual(["analysis-old"]);
+    expect(second.data.map((job) => job.id)).toEqual(["research-old"]);
     expect(second.has_more).toBe(false);
   });
 
   it("reads an output that is not a job as not found", async () => {
     const context = createContext();
 
-    records.push(output({ id: "note", capability_id: "notes" }));
+    records.push(output({ id: "document", capability_id: "document-writer", kind: "document" }));
 
-    await expect(readJob(context, user, "note", {})).rejects.toThrow("Job not found");
+    await expect(readJob(context, user, "document", {})).rejects.toThrow("Job not found");
   });
 
   it("refuses to cancel a kind that cannot be cancelled", async () => {
     const context = createContext();
 
-    await expect(cancelJob(context, user, "analysis-old", {})).rejects.toThrow(
+    await expect(cancelJob(context, user, "research-old", {})).rejects.toThrow(
       "cannot be cancelled",
     );
   });

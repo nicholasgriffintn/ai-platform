@@ -14,18 +14,18 @@ import {
   type EnabledCapability,
 } from "../capability-surfaces.js";
 
-const notes: ProjectExperienceDefinition = {
-  id: "notes",
-  runtime: "notes",
-  name: "Note Taker",
-  description: "Take notes",
-  when: "Something is worth keeping.",
-  uses: "What you write.",
-  produces: "A note you can search.",
-  ios: "native",
+const verbatim: ProjectExperienceDefinition = {
+  id: "verbatim",
+  runtime: "verbatim",
+  name: "Verbatim",
+  description: "Live transcription",
+  when: "You want a transcript you can trust.",
+  uses: "Your microphone.",
+  produces: "A checked transcript.",
+  ios: "web-only",
   scope: "any",
   scopeReason: null,
-  requirement: { kind: "capability", capabilityKind: "app", capabilityId: "featured-note-taker" },
+  requirement: { kind: "capability", capabilityKind: "app", capabilityId: "featured-verbatim" },
 };
 
 const savedOutputs: ProjectExperienceDefinition = {
@@ -46,7 +46,7 @@ function capability(overrides: Partial<EnabledCapability> = {}): EnabledCapabili
   return {
     id: "cap-1",
     kind: "app",
-    capabilityId: "featured-note-taker",
+    capabilityId: "featured-verbatim",
     configuration: {},
     createdAt: "2026-08-16T00:00:00.000Z",
     ...overrides,
@@ -63,14 +63,14 @@ function teammateItem(availability: "available" | "unavailable"): AssistantActio
 
 describe("capability surfaces", () => {
   it("builds the same paths for either scope from its base", () => {
-    expect(getAppPath(PERSONAL_SURFACE, "notes")).toBe("/chat/apps/notes");
-    expect(getAppPath(getProjectSurface("w1", "p1"), "notes")).toBe(
-      "/work/w1/projects/p1/apps/notes",
+    expect(getAppPath(PERSONAL_SURFACE, "verbatim")).toBe("/chat/apps/verbatim");
+    expect(getAppPath(getProjectSurface("w1", "p1"), "verbatim")).toBe(
+      "/work/w1/projects/p1/apps/verbatim",
     );
   });
 
   it("enables an experience from a personal capability with no creator", () => {
-    expect(getEnabledExperiences([capability()], [notes])).toEqual([notes]);
+    expect(getEnabledExperiences([capability()], [verbatim])).toEqual([verbatim]);
   });
 
   it("keeps a capability-kind experience available whenever any app is enabled", () => {

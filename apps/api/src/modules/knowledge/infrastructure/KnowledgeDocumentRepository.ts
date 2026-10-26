@@ -1,7 +1,8 @@
-import type {
-  KnowledgeEnrichmentState,
-  SourceKind,
-  SourceStatus,
+import {
+  SOURCE_READ_AS_METADATA_KEY,
+  type KnowledgeEnrichmentState,
+  type SourceKind,
+  type SourceStatus,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -175,6 +176,21 @@ export class KnowledgeDocumentRepository extends BaseRepository {
     );
 
     return result.meta.changes === 1;
+  }
+
+  async setReadAs(sourceIds: readonly string[], readAs: string): Promise<void> {
+    if (sourceIds.length === 0) {
+      return;
+    }
+
+    await this.env.DB.batch(
+      sourceIds.map((sourceId) =>
+        this.env.DB.prepare(
+          `UPDATE resource SET metadata = json_set(COALESCE(metadata, '{}'), '$.${SOURCE_READ_AS_METADATA_KEY}', ?)
+           WHERE resource_type = 'source' AND id = ? AND ${MUTABLE_SOURCE}`,
+        ).bind(readAs, sourceId),
+      ),
+    );
   }
 
   async setControls(

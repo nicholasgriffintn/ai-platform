@@ -839,6 +839,7 @@ export const resourceRevision = sqliteTable(
     source_skill_id: text(),
     source_revision_id: text(),
     output_id: text().references(() => resource.output_id, { onDelete: "cascade" }),
+    source_id: text().references(() => resource.source_id, { onDelete: "cascade" }),
     title: text(),
     status: text({
       enum: ["pending", "ready", "failed", "archived"],
@@ -851,7 +852,7 @@ export const resourceRevision = sqliteTable(
     provenance_json: text({ mode: "json" }).$type<OutputProvenance>(),
     operation: text({ enum: ["created", "updated", "restored"] }),
     restored_from_revision: integer(),
-    resource_type: text({ enum: ["memory", "skill", "output"] }).notNull(),
+    resource_type: text({ enum: ["memory", "skill", "output", "source"] }).notNull(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.resource_type, table.id] }),
@@ -867,16 +868,22 @@ export const resourceRevision = sqliteTable(
     outputRevisionIdx: uniqueIndex("resource_revision_output_revision_idx")
       .on(table.output_id, table.revision)
       .where(sql`output_id IS NOT NULL`),
+    sourceRevisionIdx: uniqueIndex("resource_revision_source_revision_idx")
+      .on(table.source_id, table.revision)
+      .where(sql`source_id IS NOT NULL`),
+    sourceSessionIdx: uniqueIndex("resource_revision_source_session_idx")
+      .on(table.source_id, table.operation_id)
+      .where(sql`source_id IS NOT NULL AND operation_id IS NOT NULL`),
     storageKeyIdx: uniqueIndex("resource_revision_storage_key_idx")
       .on(table.storage_key)
       .where(sql`storage_key IS NOT NULL`),
     requiredFields: check(
       "resource_revision_required_fields",
-      sql`(resource_type = 'memory' AND id IS NOT NULL AND document_id IS NOT NULL AND revision IS NOT NULL AND text_content IS NOT NULL AND created_by IS NOT NULL AND created_at IS NOT NULL) OR (resource_type = 'skill' AND id IS NOT NULL AND skill_id IS NOT NULL AND revision IS NOT NULL AND description IS NOT NULL AND digest IS NOT NULL AND storage_key IS NOT NULL AND size IS NOT NULL AND created_by IS NOT NULL AND created_at IS NOT NULL) OR (resource_type = 'output' AND output_id IS NOT NULL AND revision IS NOT NULL AND title IS NOT NULL AND status IS NOT NULL AND sensitivity IS NOT NULL AND content IS NOT NULL AND created_by_user_id IS NOT NULL AND created_at IS NOT NULL)`,
+      sql`(resource_type = 'memory' AND id IS NOT NULL AND document_id IS NOT NULL AND revision IS NOT NULL AND text_content IS NOT NULL AND created_by IS NOT NULL AND created_at IS NOT NULL) OR (resource_type = 'skill' AND id IS NOT NULL AND skill_id IS NOT NULL AND revision IS NOT NULL AND description IS NOT NULL AND digest IS NOT NULL AND storage_key IS NOT NULL AND size IS NOT NULL AND created_by IS NOT NULL AND created_at IS NOT NULL) OR (resource_type = 'output' AND output_id IS NOT NULL AND revision IS NOT NULL AND title IS NOT NULL AND status IS NOT NULL AND sensitivity IS NOT NULL AND content IS NOT NULL AND created_by_user_id IS NOT NULL AND created_at IS NOT NULL) OR (resource_type = 'source' AND source_id IS NOT NULL AND revision IS NOT NULL AND title IS NOT NULL AND text_content IS NOT NULL AND operation IS NOT NULL AND created_by_user_id IS NOT NULL AND created_at IS NOT NULL)`,
     ),
     check0: check(
       "resource_revision_shape_0",
-      sql`(resource_type = 'memory' AND document_id IS NOT NULL AND skill_id IS NULL AND output_id IS NULL AND text_content IS NOT NULL AND created_by IS NOT NULL) OR (resource_type = 'skill' AND skill_id IS NOT NULL AND document_id IS NULL AND output_id IS NULL AND description IS NOT NULL AND digest IS NOT NULL AND storage_key IS NOT NULL AND size IS NOT NULL AND size >= 0 AND revision >= 1 AND created_by IS NOT NULL) OR (resource_type = 'output' AND output_id IS NOT NULL AND document_id IS NULL AND skill_id IS NULL AND title IS NOT NULL AND status IN ('pending','ready','failed','archived') AND sensitivity IN ('personal','internal','confidential') AND content IS NOT NULL AND created_by_user_id IS NOT NULL)`,
+      sql`(resource_type = 'memory' AND document_id IS NOT NULL AND skill_id IS NULL AND output_id IS NULL AND source_id IS NULL AND text_content IS NOT NULL AND created_by IS NOT NULL) OR (resource_type = 'skill' AND skill_id IS NOT NULL AND document_id IS NULL AND output_id IS NULL AND source_id IS NULL AND description IS NOT NULL AND digest IS NOT NULL AND storage_key IS NOT NULL AND size IS NOT NULL AND size >= 0 AND revision >= 1 AND created_by IS NOT NULL) OR (resource_type = 'output' AND output_id IS NOT NULL AND document_id IS NULL AND skill_id IS NULL AND source_id IS NULL AND title IS NOT NULL AND status IN ('pending','ready','failed','archived') AND sensitivity IN ('personal','internal','confidential') AND content IS NOT NULL AND created_by_user_id IS NOT NULL) OR (resource_type = 'source' AND source_id IS NOT NULL AND document_id IS NULL AND skill_id IS NULL AND output_id IS NULL AND operation IN ('created','updated','restored') AND revision >= 1)`,
     ),
     check1: check(
       "resource_revision_shape_1",
@@ -3539,9 +3546,8 @@ export const documentComment = sqliteTable(
   "document_comment",
   {
     id: text().primaryKey().notNull(),
-    output_id: text()
-      .notNull()
-      .references(() => resource.output_id, { onDelete: "cascade" }),
+    output_id: text().references(() => resource.output_id, { onDelete: "cascade" }),
+    source_id: text().references(() => resource.source_id, { onDelete: "cascade" }),
     parent_id: text().references((): AnySQLiteColumn => documentComment.id, {
       onDelete: "cascade",
     }),
@@ -3559,7 +3565,16 @@ export const documentComment = sqliteTable(
     updated_at: text(),
   },
   (table) => ({
-    outputIdx: index("document_comment_output_idx").on(table.output_id, table.created_at, table.id),
+    outputIdx: index("document_comment_output_idx")
+      .on(table.output_id, table.created_at, table.id)
+      .where(sql`output_id IS NOT NULL`),
+    sourceIdx: index("document_comment_source_idx")
+      .on(table.source_id, table.created_at, table.id)
+      .where(sql`source_id IS NOT NULL`),
+    subjectCheck: check(
+      "document_comment_subject_check",
+      sql`(${table.output_id} IS NULL) <> (${table.source_id} IS NULL)`,
+    ),
     sourceRevisionCheck: check(
       "document_comment_source_revision_check",
       sql`${table.source_revision} > 0`,

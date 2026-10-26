@@ -2,6 +2,7 @@ import {
   documentCommentSchema,
   toListPage,
   type DocumentComment,
+  type DocumentCommentSubject,
   type ListPage,
 } from "@ngriffin_uk/polychat-schemas";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-core";
@@ -12,13 +13,14 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
-import { outputResourceSql } from "~/infrastructure/database/resource-storage";
+import { outputResourceSql, sourceResourceSql } from "~/infrastructure/database/resource-storage";
 
 const COMMENT_PAGE_SIZE = 100;
 
 interface DocumentCommentRow {
   id: string;
-  output_id: string;
+  output_id: string | null;
+  source_id: string | null;
   parent_id: string | null;
   anchor_json: string | null;
   source_revision: number;
@@ -32,15 +34,25 @@ interface DocumentCommentRow {
   updated_at: string | null;
 }
 
-const COMMENT_READ_GUARD = `EXISTS (SELECT 1 FROM ${outputResourceSql} output WHERE output.id = document_comment.output_id
-  AND ((output.project_id IS NULL AND output.created_by_user_id = ?) OR EXISTS
+const SUBJECTS = {
+  output: { column: "output_id", resources: outputResourceSql },
+  source: { column: "source_id", resources: sourceResourceSql },
+} as const;
+
+function readGuard(subject: DocumentCommentSubject): string {
+  const { column, resources } = SUBJECTS[subject.type];
+
+  return `EXISTS (SELECT 1 FROM ${resources} subject WHERE subject.id = document_comment.${column}
+  AND ((subject.project_id IS NULL AND subject.created_by_user_id = ?) OR EXISTS
     (SELECT 1 FROM project JOIN resource_grant workspace_member ON workspace_member.kind = 'membership' AND workspace_member.workspace_id = project.workspace_id
-      WHERE project.id = output.project_id AND workspace_member.user_id = ?)))`;
+      WHERE project.id = subject.project_id AND workspace_member.user_id = ?)))`;
+}
 
 function formatComment(row: DocumentCommentRow): DocumentComment {
   return documentCommentSchema.parse({
     id: row.id,
     outputId: row.output_id,
+    sourceId: row.source_id,
     parentId: row.parent_id,
     anchor: row.anchor_json === null ? null : safeParseJson<unknown>(row.anchor_json),
     sourceRevision: row.source_revision,
@@ -56,25 +68,34 @@ function formatComment(row: DocumentCommentRow): DocumentComment {
 }
 
 export class DocumentCommentRepository extends BaseRepository {
-  async list(outputId: string, userId: number, after?: string): Promise<ListPage<DocumentComment>> {
-    if (after && !(await this.get(outputId, after, userId))) {
+  async list(
+    subject: DocumentCommentSubject,
+    userId: number,
+    after?: string,
+  ): Promise<ListPage<DocumentComment>> {
+    if (after && !(await this.get(subject, after, userId))) {
       throw new AssistantError("Comment cursor not found", ErrorType.PARAMS_ERROR, 400);
     }
 
+    const { column } = SUBJECTS[subject.type];
     const rows = await this.runQuery<DocumentCommentRow>(
-      `SELECT * FROM document_comment WHERE output_id = ? AND
-       (? IS NULL OR (created_at, id) > (SELECT created_at, id FROM document_comment WHERE output_id = ? AND id = ?))
-       AND ${COMMENT_READ_GUARD} ORDER BY created_at, id LIMIT ${COMMENT_PAGE_SIZE + 1}`,
-      [outputId, after ?? null, outputId, after ?? null, userId, userId],
+      `SELECT * FROM document_comment WHERE ${column} = ? AND
+       (? IS NULL OR (created_at, id) > (SELECT created_at, id FROM document_comment WHERE ${column} = ? AND id = ?))
+       AND ${readGuard(subject)} ORDER BY created_at, id LIMIT ${COMMENT_PAGE_SIZE + 1}`,
+      [subject.id, after ?? null, subject.id, after ?? null, userId, userId],
     );
 
     return toListPage(rows.map(formatComment), COMMENT_PAGE_SIZE, (comment) => comment.id);
   }
 
-  async get(outputId: string, commentId: string, userId: number): Promise<DocumentComment | null> {
+  async get(
+    subject: DocumentCommentSubject,
+    commentId: string,
+    userId: number,
+  ): Promise<DocumentComment | null> {
     const row = await this.runQuery<DocumentCommentRow>(
-      `SELECT * FROM document_comment WHERE output_id = ? AND id = ? AND ${COMMENT_READ_GUARD}`,
-      [outputId, commentId, userId, userId],
+      `SELECT * FROM document_comment WHERE ${SUBJECTS[subject.type].column} = ? AND id = ? AND ${readGuard(subject)}`,
+      [subject.id, commentId, userId, userId],
       true,
     );
 
@@ -87,12 +108,13 @@ export class DocumentCommentRepository extends BaseRepository {
   ): Promise<DocumentComment> {
     const statement = this.env.DB.prepare(
       `INSERT INTO document_comment
-       (id, output_id, parent_id, anchor_json, source_revision, body, author_user_id,
+       (id, output_id, source_id, parent_id, anchor_json, source_revision, body, author_user_id,
         resolved, revision, mentioned_teammate_id, task_id, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 0, 1, ?, ?, ?) RETURNING *`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 1, ?, ?, ?) RETURNING *`,
     ).bind(
       comment.id,
       comment.outputId,
+      comment.sourceId,
       comment.parentId,
       comment.anchor ? JSON.stringify(comment.anchor) : null,
       comment.sourceRevision,
@@ -135,23 +157,24 @@ export class DocumentCommentRepository extends BaseRepository {
   }
 
   async resolve(
-    outputId: string,
+    subject: DocumentCommentSubject,
     commentId: string,
     revision: number,
     resolved: boolean,
     userId: number,
   ): Promise<DocumentComment> {
+    const { column, resources } = SUBJECTS[subject.type];
     const row = await this.runQuery<DocumentCommentRow>(
       `UPDATE document_comment SET resolved = ?, revision = revision + 1, updated_at = ?
-       WHERE output_id = ? AND id = ? AND parent_id IS NULL AND revision = ? AND ${COMMENT_READ_GUARD}
-       AND (author_user_id = ? OR EXISTS (SELECT 1 FROM ${outputResourceSql} output JOIN project ON project.id = output.project_id
+       WHERE ${column} = ? AND id = ? AND parent_id IS NULL AND revision = ? AND ${readGuard(subject)}
+       AND (author_user_id = ? OR EXISTS (SELECT 1 FROM ${resources} subject JOIN project ON project.id = subject.project_id
          JOIN resource_grant workspace_member ON workspace_member.kind = 'membership' AND workspace_member.workspace_id = project.workspace_id
-         WHERE output.id = document_comment.output_id AND workspace_member.user_id = ? AND workspace_member.role IN ('owner', 'admin')))
+         WHERE subject.id = document_comment.${column} AND workspace_member.user_id = ? AND workspace_member.role IN ('owner', 'admin')))
        RETURNING *`,
       [
         resolved ? 1 : 0,
         new Date().toISOString(),
-        outputId,
+        subject.id,
         commentId,
         revision,
         userId,

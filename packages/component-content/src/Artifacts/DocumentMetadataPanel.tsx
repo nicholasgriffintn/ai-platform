@@ -186,6 +186,7 @@ export function DocumentMetadataPanel({
                 Content Type
               </label>
               <FormSelect<NonNullable<DocumentMetadata["contentType"]>>
+                portal
                 id="content-type-select"
                 className="mt-1"
                 value={editingMetadata.contentType || "text"}
@@ -204,6 +205,7 @@ export function DocumentMetadataPanel({
                 Sentiment
               </label>
               <FormSelect<NonNullable<DocumentMetadata["sentiment"]>>
+                portal
                 id="sentiment-select"
                 className="mt-1"
                 value={editingMetadata.sentiment || "neutral"}

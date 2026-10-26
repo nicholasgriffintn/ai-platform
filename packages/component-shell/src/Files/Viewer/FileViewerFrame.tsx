@@ -30,6 +30,7 @@ export interface FileViewerDrawerEntry {
   detail?: string;
   icon: ReactNode;
   content: ReactNode;
+  quick?: boolean;
 }
 
 export interface FileViewerChrome {
@@ -185,14 +186,33 @@ export function FileViewerFrame({
         actions={
           <>
             {headerActions}
-            {panels.isAsking ? null : (
+            {drawers
+              .filter((entry) => entry.quick)
+              .map((entry) => {
+                const isOpen = panels.drawer === entry.key;
+
+                return (
+                  <Button
+                    key={entry.key}
+                    variant={isOpen ? "iconActive" : "icon"}
+                    size="sm"
+                    icon={entry.icon}
+                    aria-label={entry.label}
+                    aria-pressed={isOpen}
+                    title={entry.label}
+                    onClick={() => (isOpen ? panels.closeDrawer() : panels.openDrawer(entry.key))}
+                    className="hidden sm:inline-flex"
+                  />
+                );
+              })}
+            {panels.isAsking && !panels.drawer ? null : (
               <Button
                 variant="icon"
                 size="sm"
                 icon={<MessageSquare size={15} />}
                 aria-label="Ask about this file"
                 title="Ask about this file"
-                onClick={panels.toggleAsking}
+                onClick={panels.drawer ? panels.showAsking : panels.toggleAsking}
               />
             )}
             {chrome.fullPageHref ? (

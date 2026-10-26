@@ -1,4 +1,4 @@
-import { FormCheckbox, FormDialog, FormInput, Textarea } from "@ngriffin_uk/polychat-component-ui";
+import { FormCheckbox, FormDialog, FormInput } from "@ngriffin_uk/polychat-component-ui";
 import {
   getFilesPath,
   useMemoryDocuments,
@@ -27,58 +27,6 @@ async function withFailureToast(work: () => Promise<void>, failure: string) {
     toast.error(getErrorMessage(error, failure));
     throw error;
   }
-}
-
-function NoteDialog({ projectId, onClose }: DialogProps) {
-  const mutations = useSourceMutations();
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-
-  return (
-    <FormDialog
-      open
-      onOpenChange={(open) => !open && onClose()}
-      title="New note"
-      description="Text Polychat can read and cite whenever it is useful."
-      submitText="Add note"
-      isLoading={mutations.createSource.isPending}
-      submitDisabled={!title.trim() || !content.trim()}
-      onSubmit={() =>
-        withFailureToast(async () => {
-          await mutations.createSource.mutateAsync({
-            projectId,
-            kind: "text",
-            title: title.trim(),
-            content: content.trim(),
-            status: "available",
-            metadata: {},
-          });
-          toast.success("Note added");
-          onClose();
-        }, "Could not add the note")
-      }
-    >
-      <FormInput
-        label="Title"
-        value={title}
-        maxLength={200}
-        onChange={(event) => setTitle(event.target.value)}
-        required
-      />
-      <div className="space-y-1">
-        <label htmlFor="files-note-content" className="text-sm font-medium">
-          Content
-        </label>
-        <Textarea
-          id="files-note-content"
-          value={content}
-          onChange={(event) => setContent(event.target.value)}
-          className="min-h-40"
-          required
-        />
-      </div>
-    </FormDialog>
-  );
 }
 
 function MemoryDialog({ basePath, projectId, onClose }: DialogProps) {
@@ -177,7 +125,6 @@ export function CreateDialogs({
 
   return (
     <>
-      {creation.dialog === "note" ? <NoteDialog {...props} /> : null}
       {creation.dialog === "memory" ? <MemoryDialog {...props} /> : null}
       {creation.dialog === "folder" ? <FolderDialog {...props} /> : null}
       {creation.dialog === "follow" ? (

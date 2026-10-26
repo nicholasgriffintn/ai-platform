@@ -25,5 +25,7 @@ export interface KnowledgeEnricher {
   setting?: keyof KnowledgeEnricherSettings;
   metadataKey?: string;
   appliesTo: (source: SourceRecord) => boolean;
+  readsFile?: boolean;
+  variant?: (source: SourceRecord, metadata: Record<string, unknown>) => string | null;
   run: (context: ServiceContext, input: EnrichmentInput) => Promise<EnrichmentResult>;
 }

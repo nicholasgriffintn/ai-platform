@@ -21,6 +21,7 @@ import { EvidenceAuditView } from "./EvidenceAuditView.js";
 import { ProjectTaskListView } from "./ProjectTaskListView.js";
 import { ResearchView } from "./ResearchView.js";
 import { SandboxView } from "./SandboxView.js";
+import { SavedNoteView } from "./SavedNoteView.js";
 import { WorkOutputMessageView } from "./WorkOutputMessageView.js";
 
 export { BrowserAuthenticationForm } from "./BrowserAuthenticationForm.js";
@@ -64,6 +65,7 @@ export const sharedResponseViews: CustomResponseViewRegistry = {
     />
   ),
   document_search: ({ data }) => <DocumentSearchView data={data} />,
+  saved_note: ({ data }) => <SavedNoteView data={data} />,
   evidence_audit: ({ data }) => <EvidenceAuditView data={data} />,
   document_output: ({ data, onToolInteraction, toolName }) => (
     <DocumentOutputMessageView

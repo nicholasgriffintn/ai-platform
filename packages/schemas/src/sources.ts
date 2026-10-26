@@ -1,7 +1,9 @@
 import z from "zod/v4";
 
+import { sourceDocumentMetadataSchema } from "./documents.js";
 import { knowledgeOriginSchema } from "./knowledge.js";
 import { listSchema } from "./platform/list.js";
+import { readingFormIdSchema } from "./reading.js";
 import { sourceGenerationTypeSchema } from "./source-media.js";
 
 export const sourceKindSchema = z.enum([
@@ -51,6 +53,7 @@ export const sourceSchema = z
     vectorId: z.string().max(255).nullable(),
     metadata: z.record(z.string(), z.unknown()),
     file: sourceFileSchema.nullable(),
+    revision: z.number().int().positive(),
     createdAt: z.string(),
     updatedAt: z.string().nullable(),
   })
@@ -166,17 +169,114 @@ export const createSourceSchema = z
   })
   .strict();
 
+export const SOURCE_EDIT_SESSION_PATTERN = /^[A-Za-z0-9_-]{8,64}$/;
+
 export const updateSourceSchema = z
   .object({
     title: z.string().trim().min(1).max(200).optional(),
     status: sourceStatusSchema.optional(),
     content: z.string().max(500_000).nullable().optional(),
     metadata: z.record(z.string(), z.unknown()).optional(),
+    document: sourceDocumentMetadataSchema.optional(),
+    expectedRevision: z.number().int().positive().optional(),
+    editSession: z.string().regex(SOURCE_EDIT_SESSION_PATTERN).optional(),
   })
   .strict()
-  .refine((value) => Object.keys(value).length > 0, {
-    error: "At least one source field must be provided",
+  .refine(
+    (value) =>
+      value.title !== undefined ||
+      value.status !== undefined ||
+      value.content !== undefined ||
+      value.metadata !== undefined ||
+      value.document !== undefined,
+    { error: "At least one source field must be provided" },
+  )
+  .refine((value) => value.editSession === undefined || value.content !== undefined, {
+    error: "An edit session only applies to a content change",
+    path: ["editSession"],
   });
+
+export const sourceRevisionOperationSchema = z.enum(["created", "updated", "restored"]);
+
+export const sourceRevisionSchema = z
+  .object({
+    id: z.string().min(1),
+    revision: z.number().int().positive(),
+    title: z.string(),
+    content: z.string(),
+    operation: sourceRevisionOperationSchema,
+    restoredFromRevision: z.number().int().positive().nullable(),
+    createdByUserId: z.number().int().positive(),
+    createdAt: z.string(),
+  })
+  .strict();
+
+export const sourceRevisionListSchema = listSchema(sourceRevisionSchema);
+
+export const restoreSourceRevisionSchema = z
+  .object({
+    revision: z.number().int().positive(),
+    expectedRevision: z.number().int().positive(),
+  })
+  .strict();
+
+export const formatSourceSchema = z
+  .object({ prompt: z.string().trim().max(2000).optional() })
+  .strict();
+
+export const formatSourceResponseSchema = z
+  .object({
+    content: z.string().describe("The reworked text. Nothing is saved until you save it."),
+  })
+  .strict();
+
+export const generateNotesFromMediaSchema = z.object({
+  url: z.url().describe("The audio/video URL to transcribe and analyze."),
+  outputs: z
+    .array(
+      z.enum([
+        "concise_summary",
+        "detailed_outline",
+        "key_takeaways",
+        "action_items",
+        "meeting_minutes",
+        "qa_extraction",
+        "smart_timestamps",
+      ]),
+    )
+    .min(1)
+    .describe("Which outputs to generate. Can select multiple."),
+  noteType: z
+    .enum([
+      "general",
+      "meeting",
+      "training",
+      "lecture",
+      "interview",
+      "recording",
+      "webinar",
+      "tutorial",
+      "video_content",
+      "educational_video",
+      "documentary",
+      "other",
+    ])
+    .default("general")
+    .describe("Adjusts prompt style for the content type."),
+  extraPrompt: z.string().optional().describe("Additional instructions."),
+  timestamps: z.boolean().optional().describe("Whether to enable timestamped transcription."),
+});
+
+export const generateNotesFromMediaResponseSchema = z.object({
+  content: z.string().describe("Generated notes content in Markdown."),
+});
+
+export const enrichSourceSchema = z
+  .object({
+    enricher: z.string().trim().min(1).max(40),
+    readAs: readingFormIdSchema.optional(),
+  })
+  .strict();
 
 export const sourceListResponseSchema = listSchema(sourceSummarySchema);
 
@@ -207,10 +307,22 @@ export const sourceCollectionSchema = z
     sourceCount: z.number().int().nonnegative(),
     outputCount: z.number().int().nonnegative(),
     hasFeed: z.boolean(),
+    readAs: readingFormIdSchema.nullable(),
     createdAt: z.string(),
     updatedAt: z.string().nullable(),
   })
   .strict();
+
+export const updateSourceCollectionSchema = z
+  .object({
+    title: z.string().trim().min(1).max(120).optional(),
+    description: z.string().trim().max(500).nullable().optional(),
+    readAs: readingFormIdSchema.nullable().optional(),
+  })
+  .strict()
+  .refine((value) => Object.keys(value).length > 0, {
+    error: "Change at least one folder field",
+  });
 
 export const createSourceCollectionSchema = z
   .object({
@@ -255,6 +367,12 @@ export type Source = z.infer<typeof sourceSchema>;
 export type SourceSummary = z.infer<typeof sourceSummarySchema>;
 export type CreateSourceInput = z.infer<typeof createSourceSchema>;
 export type UpdateSourceInput = z.infer<typeof updateSourceSchema>;
+export type SourceRevision = z.infer<typeof sourceRevisionSchema>;
+export type RestoreSourceRevisionInput = z.infer<typeof restoreSourceRevisionSchema>;
+export type FormatSourceInput = z.infer<typeof formatSourceSchema>;
+export type GenerateNotesFromMediaInput = z.infer<typeof generateNotesFromMediaSchema>;
+export type EnrichSourceInput = z.infer<typeof enrichSourceSchema>;
+export type UpdateSourceCollectionInput = z.infer<typeof updateSourceCollectionSchema>;
 export type SourceCollection = z.infer<typeof sourceCollectionSchema>;
 export type SourceCollectionKind = z.infer<typeof sourceCollectionKindSchema>;
 export type CreateSourceCollectionInput = z.infer<typeof createSourceCollectionSchema>;

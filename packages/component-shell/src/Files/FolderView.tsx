@@ -1,14 +1,14 @@
 import { Button, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
-import type { SourceCollection } from "@ngriffin_uk/polychat-schemas";
+import { READING_FORMS, type SourceCollection } from "@ngriffin_uk/polychat-schemas";
 import { Folder, Upload } from "lucide-react";
 import { useNavigate } from "react-router";
 
 import { FilesBreadcrumb } from "./FilesBreadcrumb.js";
+import { FolderLedger } from "./Folders/FolderLedger.js";
+import { FolderMenu } from "./Folders/FolderMenu.js";
 import { CreateDialogs } from "./Library/CreateDialogs.js";
-import { folderToFileItem } from "./Library/file-items.js";
 import { FileActionDialogs } from "./Library/FileActionDialogs.js";
 import { FileDropZone } from "./Library/FileDropZone.js";
-import { FileItemMenu } from "./Library/FileItemMenu.js";
 import { FilesBrowser } from "./Library/FilesBrowser.js";
 import { UploadInput } from "./Library/UploadInput.js";
 import { useFileActions } from "./Library/useFileActions.js";
@@ -19,6 +19,10 @@ import { PodcastFeedControls } from "./Sources/PodcastFeedControls.js";
 function describeFolder(folder: SourceCollection): string {
   if (folder.kind === "topic") {
     return "A topic Poly keeps. New files about it are filed here on their own.";
+  }
+
+  if (folder.readAs) {
+    return `Every file added here is read as a ${READING_FORMS[folder.readAs].singular}, with the figures below.`;
   }
 
   if (folder.kind === "entity") {
@@ -99,10 +103,11 @@ export function FolderView({
                   New episode
                 </Button>
               ) : null}
-              <FileItemMenu
-                item={folderToFileItem(folder, basePath)}
-                actions={actions}
+              <FolderMenu
+                folder={folder}
                 folders={library.folders}
+                basePath={basePath}
+                actions={actions}
               />
             </>
           }
@@ -117,6 +122,13 @@ export function FolderView({
           </div>
         </div>
         {isShow ? <PodcastFeedControls show={folder} /> : null}
+        {folder.readAs ? (
+          <FolderLedger
+            folder={{ ...folder, readAs: folder.readAs }}
+            basePath={basePath}
+            projectId={projectId}
+          />
+        ) : null}
         <FilesBrowser
           basePath={basePath}
           projectId={projectId}

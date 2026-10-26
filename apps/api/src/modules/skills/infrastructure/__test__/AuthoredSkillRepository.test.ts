@@ -158,6 +158,7 @@ CREATE TABLE "resource_revision" (
   "source_skill_id" TEXT,
   "source_revision_id" TEXT,
   "output_id" TEXT REFERENCES "resource"("output_id") ON DELETE CASCADE,
+  "source_id" TEXT,
   "title" TEXT,
   "status" TEXT,
   "sensitivity" TEXT,

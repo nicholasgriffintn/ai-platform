@@ -79,9 +79,7 @@ describe("attaching an teammate to a project", () => {
 
 describe("project capability references", () => {
   it("accepts catalogue apps and recipes", async () => {
-    await expect(
-      validateCapabilityReference("app", "featured-article-processor"),
-    ).resolves.toBeUndefined();
+    await expect(validateCapabilityReference("app", "featured-strudel")).resolves.toBeUndefined();
     await expect(
       validateCapabilityReference("recipe", getAssistantRecipes()[0].id),
     ).resolves.toBeUndefined();

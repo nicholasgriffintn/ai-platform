@@ -7,6 +7,8 @@ export type FileViewerDrawer =
   | "knowledge"
   | "sources"
   | "history"
+  | "framing"
+  | "reading"
   | "comments"
   | "conversations"
   | "sharing";
@@ -38,6 +40,10 @@ export function useFileViewerPanels() {
       setAskingChoice(!isAsking);
     },
     hideAsking: () => setAskingChoice(false),
+    showAsking: () => {
+      setDrawer(null);
+      setAskingChoice(true);
+    },
     startConversation: () => {
       setConversation({ key: generateId() });
       setDrawer(null);

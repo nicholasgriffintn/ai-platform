@@ -26,7 +26,6 @@ import { write_deck, write_sheet } from "~/modules/documents/application/tools/w
 import { write_document } from "~/modules/documents/application/tools/write_document";
 import { run_code } from "~/modules/evaluate/application/tools/run_code";
 import { audit_evidence } from "~/modules/evidence/application/tools/audit_evidence";
-import { analyse_article } from "~/modules/experiences/application/tools/analyse_article";
 import { generate_pattern } from "~/modules/experiences/application/tools/generate_pattern";
 import { extract_values } from "~/modules/extractions/application/tools/extract_values";
 import { create_image } from "~/modules/generate/application/tools/image";
@@ -34,6 +33,7 @@ import { create_music } from "~/modules/generate/application/tools/music";
 import { create_speech } from "~/modules/generate/application/tools/speech";
 import { create_video } from "~/modules/generate/application/tools/video";
 import { complete_goal, set_goal } from "~/modules/goals/application/tools/goal";
+import { analyse_article } from "~/modules/knowledge/application/tools/analyse_article";
 import { configure_knowledge_sync } from "~/modules/knowledge/application/tools/configure_knowledge_sync";
 import { search_documents } from "~/modules/knowledge/application/tools/search_documents";
 import { DESKTOP_FUNCTION_TOOLS } from "~/modules/machines/application/tools/desktop";

@@ -22,9 +22,14 @@ export const createDocumentCommentSchema = z
   })
   .strict();
 
+export const documentCommentSubjectSchema = z
+  .object({ type: z.enum(["output", "source"]), id: z.string().min(1) })
+  .strict();
+
 export const documentCommentSchema = z.object({
   id: z.string(),
-  outputId: z.string(),
+  outputId: z.string().nullable(),
+  sourceId: z.string().nullable(),
   parentId: z.string().nullable(),
   anchor: documentAnchorSchema.nullable(),
   sourceRevision: z.number().int().positive(),
@@ -75,6 +80,7 @@ export const applyDocumentEditSchema = z.object({ edit: documentEditProposalSche
 export type DocumentAnchor = z.infer<typeof documentAnchorSchema>;
 export type CreateDocumentCommentInput = z.infer<typeof createDocumentCommentSchema>;
 export type DocumentComment = z.infer<typeof documentCommentSchema>;
+export type DocumentCommentSubject = z.infer<typeof documentCommentSubjectSchema>;
 export type ResolveDocumentThreadInput = z.infer<typeof resolveDocumentThreadSchema>;
 export type ProposeDocumentEditInput = z.infer<typeof proposeDocumentEditSchema>;
 export type DocumentEditProposal = z.infer<typeof documentEditProposalSchema>;

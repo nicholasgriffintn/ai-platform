@@ -220,3 +220,17 @@ export const updateKnowledgeSettingsSchema = z
 export type KnowledgeProviderState = z.infer<typeof knowledgeProviderStateSchema>;
 export type KnowledgeSettings = z.infer<typeof knowledgeSettingsSchema>;
 export type UpdateKnowledgeSettings = z.infer<typeof updateKnowledgeSettingsSchema>;
+
+export function readKnowledgeEnrichment(
+  metadata: Record<string, unknown> | null | undefined,
+  name: string,
+): KnowledgeEnrichmentState | null {
+  const enrichments = z
+    .record(z.string(), z.unknown())
+    .safeParse(metadata?.[KNOWLEDGE_ENRICHMENTS_METADATA_KEY]);
+  const parsed = knowledgeEnrichmentStateSchema.safeParse(
+    enrichments.success ? enrichments.data[name] : undefined,
+  );
+
+  return parsed.success ? parsed.data : null;
+}

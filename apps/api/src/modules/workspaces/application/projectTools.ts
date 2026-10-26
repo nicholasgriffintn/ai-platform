@@ -1,7 +1,7 @@
 import type { ChatHostedToolSettings } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { MODEL_TOOL_DEFINITIONS } from "~/modules/experiences/application/config";
+import { MODEL_TOOL_DEFINITIONS } from "~/modules/capabilities/domain/model-tools";
 import { listFunctionToolDefinitions } from "~/modules/tools/application/catalogue";
 import {
   getModelToolDefinition,

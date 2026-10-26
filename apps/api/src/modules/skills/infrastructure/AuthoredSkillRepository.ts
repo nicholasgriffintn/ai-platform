@@ -542,6 +542,7 @@ export class AuthoredSkillRepository extends BaseRepository {
                 "source_revision_id",
               ),
               output_id: sql<null>`NULL`.as("output_id"),
+              source_id: sql<null>`NULL`.as("source_id"),
               title: sql<null>`NULL`.as("title"),
               status: sql<null>`NULL`.as("status"),
               sensitivity: sql<null>`NULL`.as("sensitivity"),

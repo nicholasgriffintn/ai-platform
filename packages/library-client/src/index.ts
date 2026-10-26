@@ -2,7 +2,6 @@ export * from "./http.js";
 export * from "./chat/response-replay.js";
 export * from "./activity.js";
 export * from "./agentApprovalStore.js";
-export * from "./apps.js";
 export * from "./attention.js";
 export * from "./discover.js";
 export * from "./age-gate.js";

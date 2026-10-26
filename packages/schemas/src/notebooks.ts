@@ -220,6 +220,16 @@ const studioBase = {
   language: z.string().trim().min(2).max(10).default("en"),
 };
 
+const reportStudioRequestSchema = z
+  .object({
+    kind: z.literal("report"),
+    template: notebookReportTemplateSchema.default("briefing"),
+    ...studioBase,
+  })
+  .strict();
+
+export const folderStudioRequestSchema = reportStudioRequestSchema;
+
 export const notebookStudioRequestSchema = z.discriminatedUnion("kind", [
   z
     .object({
@@ -238,13 +248,7 @@ export const notebookStudioRequestSchema = z.discriminatedUnion("kind", [
     })
     .strict(),
   z.object({ kind: z.literal("sheet"), ...studioBase }).strict(),
-  z
-    .object({
-      kind: z.literal("report"),
-      template: notebookReportTemplateSchema.default("briefing"),
-      ...studioBase,
-    })
-    .strict(),
+  reportStudioRequestSchema,
   z
     .object({
       kind: z.literal("infographic"),
@@ -290,6 +294,13 @@ export const notebookJobTaskDataSchema = z.discriminatedUnion("job", [
     .object({
       job: z.literal("studio"),
       notebookId: z.string().min(1),
+      outputId: z.string().min(1),
+    })
+    .strict(),
+  z
+    .object({
+      job: z.literal("folder_studio"),
+      folderId: z.string().min(1),
       outputId: z.string().min(1),
     })
     .strict(),
@@ -341,3 +352,4 @@ export type NotebookStudioKind = NotebookStudioRequest["kind"];
 export type NotebookStudioRequestInput = z.input<typeof notebookStudioRequestSchema>;
 export type NotebookStudioResponse = z.infer<typeof notebookStudioResponseSchema>;
 export type NotebookJobTaskData = z.infer<typeof notebookJobTaskDataSchema>;
+export type FolderStudioRequest = z.infer<typeof folderStudioRequestSchema>;

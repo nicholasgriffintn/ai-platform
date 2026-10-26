@@ -1,6 +1,7 @@
 import type {
   CouncilReview,
   CouncilReviewListResponse,
+  CreateOutputInput,
   DocumentMetadata,
   ListPage,
   Output,
@@ -86,6 +87,16 @@ export async function restoreOutputRevision(
       body: { expectedRevision },
     },
   );
+
+  return returnFetchedData<Output>(response);
+}
+
+export async function createOutput(input: CreateOutputInput): Promise<Output> {
+  const response = await fetchApiOrThrow("/outputs", {
+    method: "POST",
+    headers: await getHeaders(),
+    body: input,
+  });
 
   return returnFetchedData<Output>(response);
 }

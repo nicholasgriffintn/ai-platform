@@ -66,6 +66,29 @@ export const documentMetadataSchema = z
   })
   .catchall(z.unknown());
 
+export const SOURCE_DOCUMENT_METADATA_KEY = "document";
+
+export const sourceDocumentMetadataSchema = z.object(
+  documentMetadataSchema.pick({
+    summary: true,
+    editorial: true,
+    tags: true,
+    keyTopics: true,
+    contentType: true,
+    sentiment: true,
+    sourceType: true,
+    capturedFrom: true,
+  }).shape,
+);
+
+export function readSourceDocumentMetadata(
+  metadata: Record<string, unknown> | null | undefined,
+): z.infer<typeof sourceDocumentMetadataSchema> {
+  const parsed = sourceDocumentMetadataSchema.safeParse(metadata?.[SOURCE_DOCUMENT_METADATA_KEY]);
+
+  return parsed.success ? parsed.data : {};
+}
+
 export const documentOutputContentSchema = z.object({
   format: z.literal("markdown"),
   body: z.string().max(DOCUMENT_MAX_BODY),
@@ -137,6 +160,7 @@ export const describeDocumentInputSchema = z.object({
 });
 
 export type DocumentMetadata = z.infer<typeof documentMetadataSchema>;
+export type SourceDocumentMetadata = z.infer<typeof sourceDocumentMetadataSchema>;
 export type DocumentOutputContent = z.infer<typeof documentOutputContentSchema>;
 export type WriteDocumentInput = z.infer<typeof writeDocumentInputSchema>;
 export type FormatDocumentInput = z.infer<typeof formatDocumentInputSchema>;

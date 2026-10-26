@@ -31,7 +31,12 @@ export function defineDocumentCollaboration(outputs: ResourceBuilder): void {
       querySchema: documentCommentListQuerySchema,
       responses: { 200: { description: "Discussion", schema: documentCommentListSchema } },
       handler: ({ serviceContext, user, params, query }) =>
-        listDocumentComments(serviceContext, user.id, params.output_id, query.after),
+        listDocumentComments(
+          serviceContext,
+          user.id,
+          { type: "output", id: params.output_id },
+          query.after,
+        ),
     })
     .create({
       auth: true,
@@ -41,7 +46,12 @@ export function defineDocumentCollaboration(outputs: ResourceBuilder): void {
       bodySchema: createDocumentCommentSchema,
       responses: { 200: { description: "The comment", schema: documentCommentSchema } },
       handler: ({ serviceContext, user, params, body }) =>
-        createDocumentComment(serviceContext, user.id, params.output_id, body),
+        createDocumentComment(
+          serviceContext,
+          user.id,
+          { type: "output", id: params.output_id },
+          body,
+        ),
     })
     .update({
       auth: true,
@@ -51,7 +61,13 @@ export function defineDocumentCollaboration(outputs: ResourceBuilder): void {
       bodySchema: resolveDocumentThreadSchema,
       responses: { 200: { description: "The thread", schema: documentCommentSchema } },
       handler: ({ serviceContext, user, params, body }) =>
-        resolveDocumentThread(serviceContext, user.id, params.output_id, params.comment_id, body),
+        resolveDocumentThread(
+          serviceContext,
+          user.id,
+          { type: "output", id: params.output_id },
+          params.comment_id,
+          body,
+        ),
     });
 
   outputs.sub("edits", "edit_id").create({

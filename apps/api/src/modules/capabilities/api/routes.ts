@@ -7,10 +7,8 @@ import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import {
-  getProjectExperienceCatalog,
-  MODEL_TOOL_DEFINITIONS,
-} from "~/modules/experiences/application/config";
+import { getProjectExperienceCatalog } from "~/modules/capabilities/domain/app-catalogue";
+import { MODEL_TOOL_DEFINITIONS } from "~/modules/capabilities/domain/model-tools";
 import { listRecipeCatalogueSummaries } from "~/modules/recipes/application";
 import { listScopedSkillSummaries } from "~/modules/skills/application";
 import { listScopedTeammateSummaries } from "~/modules/teammates/application";

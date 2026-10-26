@@ -163,6 +163,7 @@ export function MemoryViewer({
       drawers={[
         {
           key: "info",
+          quick: true,
           label: "File info",
           icon: <Info size={14} aria-hidden="true" />,
           content: (

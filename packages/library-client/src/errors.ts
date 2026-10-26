@@ -44,3 +44,7 @@ export function isNotFoundError(error: unknown): boolean {
 
   return "statusCode" in error && typeof error.statusCode === "number" && error.statusCode === 404;
 }
+
+export function isConflictError(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 409;
+}

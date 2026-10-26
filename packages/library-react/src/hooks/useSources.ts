@@ -4,6 +4,13 @@ import {
   createSource,
   createSourceCollection,
   createSourceCover,
+  draftNotesFromMedia,
+  enrichSource,
+  formatSourceText,
+  listSourceRevisions,
+  restoreSourceRevision,
+  startFolderStudio,
+  updateSourceCollection,
   deleteSource,
   deleteSourceCollection,
   disablePodcastFeed,
@@ -26,7 +33,13 @@ import {
   readSourceMedia,
   type CreateSourceCollectionInput,
   type CreateSourceInput,
+  type EnrichSourceInput,
+  type FolderStudioRequest,
+  type GenerateNotesFromMediaInput,
   type GeneratePodcastRequest,
+  type RestoreSourceRevisionInput,
+  type UpdateSourceCollectionInput,
+  type UpdateSourceInput,
   type Source,
   type SourceGenerationType,
   type SourceKind,
@@ -36,6 +49,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useLiveOrPoll } from "../sync/live-or-poll.js";
+import { OUTPUT_QUERY_KEYS } from "./useOutputs.js";
 
 const PROCESSING_POLL_INTERVAL = 10_000;
 
@@ -57,6 +71,8 @@ export const SOURCE_QUERY_KEYS = {
     generation?: SourceGenerationType,
   ) => ["sources", "list", projectId, kind, collectionId, generation] as const,
   detail: (sourceId: string | null) => ["sources", "detail", sourceId] as const,
+  lists: ["sources", "list"] as const,
+  revisions: (sourceId: string) => ["sources", "revisions", sourceId] as const,
   collections: (projectId?: string) => ["sources", "collections", projectId] as const,
   projectContext: (projectId: string) => ["sources", "project-context", projectId] as const,
 };
@@ -237,5 +253,73 @@ export function usePodcastFeed() {
   return {
     enable: useMutation({ mutationFn: enablePodcastFeed, onSuccess: invalidate }),
     disable: useMutation({ mutationFn: disablePodcastFeed, onSuccess: invalidate }),
+  };
+}
+
+export function useSourceRevisions(sourceId: string, options: { enabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: SOURCE_QUERY_KEYS.revisions(sourceId),
+    queryFn: () => listSourceRevisions(sourceId),
+    enabled: options.enabled,
+  });
+}
+
+export function useSourceEditing(sourceId: string) {
+  const queryClient = useQueryClient();
+  const onSaved = (source: Source) => {
+    queryClient.setQueryData(SOURCE_QUERY_KEYS.detail(source.id), source);
+    void queryClient.invalidateQueries({ queryKey: SOURCE_QUERY_KEYS.lists });
+    void queryClient.invalidateQueries({ queryKey: SOURCE_QUERY_KEYS.revisions(source.id) });
+  };
+
+  return {
+    save: useMutation({
+      mutationFn: (input: UpdateSourceInput) => updateSource(sourceId, input),
+      onSuccess: onSaved,
+    }),
+    restore: useMutation({
+      mutationFn: (input: RestoreSourceRevisionInput) => restoreSourceRevision(sourceId, input),
+      onSuccess: onSaved,
+    }),
+    format: useMutation({
+      mutationFn: (prompt?: string) => formatSourceText(sourceId, prompt),
+    }),
+  };
+}
+
+export function useDraftNotesFromMedia() {
+  return useMutation({
+    mutationFn: (input: GenerateNotesFromMediaInput) => draftNotesFromMedia(input),
+  });
+}
+
+export function useEnrichSource(sourceId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: EnrichSourceInput) => enrichSource(sourceId, input),
+    onSuccess: (source: Source) => {
+      queryClient.setQueryData(SOURCE_QUERY_KEYS.detail(source.id), source);
+      void queryClient.invalidateQueries({ queryKey: SOURCE_QUERY_KEYS.lists });
+      void queryClient.invalidateQueries({ queryKey: ["knowledge", "document", source.id] });
+    },
+  });
+}
+
+export function useFolderActions(folderId: string) {
+  const queryClient = useQueryClient();
+
+  return {
+    update: useMutation({
+      mutationFn: (input: UpdateSourceCollectionInput) => updateSourceCollection(folderId, input),
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: SOURCE_QUERY_KEYS.all }),
+    }),
+    studio: useMutation({
+      mutationFn: (input: FolderStudioRequest) => startFolderStudio(folderId, input),
+      onSuccess: () => {
+        void queryClient.invalidateQueries({ queryKey: SOURCE_QUERY_KEYS.all });
+        void queryClient.invalidateQueries({ queryKey: OUTPUT_QUERY_KEYS.all });
+      },
+    }),
   };
 }

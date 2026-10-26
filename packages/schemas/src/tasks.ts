@@ -39,6 +39,7 @@ export const CONVERSATION_TITLE_TASK_TYPE = "conversation_title";
 export const QUEUED_CHAT_MESSAGE_TASK_TYPE = "queued_chat_message";
 export const SOURCE_KNOWLEDGE_INDEX_TASK_TYPE = "source_knowledge_index";
 export const SOURCE_KNOWLEDGE_SYNC_TASK_TYPE = "source_knowledge_sync";
+export const SOURCE_KNOWLEDGE_ENRICH_TASK_TYPE = "source_knowledge_enrich";
 export const SOURCE_GENERATION_POLLING_TASK_TYPE = "source_generation_polling";
 export const SOURCE_MEDIA_TRANSCRIPTION_TASK_TYPE = "source_media_transcription";
 export const SOURCE_PODCAST_GENERATION_TASK_TYPE = "source_podcast_generation";
@@ -75,6 +76,7 @@ export const TASK_TYPES = [
   QUEUED_CHAT_MESSAGE_TASK_TYPE,
   SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
   SOURCE_KNOWLEDGE_SYNC_TASK_TYPE,
+  SOURCE_KNOWLEDGE_ENRICH_TASK_TYPE,
   SOURCE_GENERATION_POLLING_TASK_TYPE,
   SOURCE_MEDIA_TRANSCRIPTION_TASK_TYPE,
   SOURCE_PODCAST_GENERATION_TASK_TYPE,

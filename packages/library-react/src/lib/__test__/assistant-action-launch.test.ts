@@ -109,9 +109,9 @@ describe("assistant action launch URL contract", () => {
       createAppAssistantActionLaunch({
         appId: "articles",
         appKind: "frontend",
-        href: "/apps/articles",
+        href: "/apps/strudel",
       }),
-    ).toEqual({ navigationPath: "/apps/articles" });
+    ).toEqual({ navigationPath: "/apps/strudel" });
 
     expect(
       createAppAssistantActionLaunch({

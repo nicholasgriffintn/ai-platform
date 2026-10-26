@@ -7,7 +7,7 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
-import { MODEL_TOOL_DEFINITIONS } from "~/modules/experiences/application/config";
+import { MODEL_TOOL_DEFINITIONS } from "~/modules/capabilities/domain/model-tools";
 
 export interface StoredModelToolConfiguration {
   toolId: string;
