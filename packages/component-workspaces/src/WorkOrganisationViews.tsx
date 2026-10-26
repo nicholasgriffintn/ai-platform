@@ -19,42 +19,6 @@ import { SHORT_WEEKDAY_LABELS } from "@ngriffin_uk/polychat-utility-core";
 import { Pencil, Target, Users } from "lucide-react";
 import { useState } from "react";
 
-export function WorkQuickAdd({
-  placeholder = "Ask for something, or describe a task…",
-  isSubmitting,
-  onSubmit,
-}: {
-  placeholder?: string;
-  isSubmitting: boolean;
-  onSubmit: (text: string) => Promise<unknown>;
-}) {
-  const [text, setText] = useState("");
-
-  return (
-    <form
-      className="flex items-center gap-2 rounded-lg border border-border bg-canvas px-3 py-2"
-      onSubmit={(event) => {
-        event.preventDefault();
-
-        if (text.trim()) {
-          void onSubmit(text.trim()).then(() => setText(""));
-        }
-      }}
-    >
-      <input
-        aria-label="New task"
-        className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-        placeholder={placeholder}
-        value={text}
-        onChange={(event) => setText(event.target.value)}
-      />
-      <Button type="submit" size="xs" variant="primary" disabled={isSubmitting || !text.trim()}>
-        Add
-      </Button>
-    </form>
-  );
-}
-
 export function InitiativeDialog({
   open,
   projects,

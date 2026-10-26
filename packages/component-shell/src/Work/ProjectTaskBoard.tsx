@@ -5,7 +5,6 @@ import {
   ProjectHomeActions,
   TaskBoard,
   TaskViewTabs,
-  WorkQuickAdd,
   WorkTaskList,
   WorkTaskTimeline,
   WorkTaskTree,
@@ -39,6 +38,7 @@ import { useTaskViewParam } from "./useTaskViewParam.js";
 import { useWorkDirectory } from "./useWorkDirectory.js";
 import { useWorkData } from "./WorkDataContext.js";
 import { WorkPageFailure } from "./WorkPageFailure.js";
+import { WorkTaskComposer } from "./WorkTaskComposer.js";
 
 export function ProjectTaskBoard({
   workspaceId,
@@ -115,8 +115,12 @@ export function ProjectTaskBoard({
         ...(lead ? { owner: { type: "teammate" as const, id: lead.teammateId } } : {}),
       });
       toast.success(lead ? `Added and handed to ${lead.name}` : "Added to the backlog");
+
+      return true;
     } catch (mutationError) {
       toast.error(getErrorMessage(mutationError, "Unable to add that task"));
+
+      return false;
     }
   };
 
@@ -160,7 +164,7 @@ export function ProjectTaskBoard({
         </div>
 
         <div className="mb-4">
-          <WorkQuickAdd
+          <WorkTaskComposer
             placeholder={
               lead
                 ? `Ask for something and ${lead.name} will route it…`

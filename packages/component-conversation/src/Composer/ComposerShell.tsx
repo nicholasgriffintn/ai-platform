@@ -1,3 +1,4 @@
+import { cn } from "@ngriffin_uk/polychat-component-ui";
 import { Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -12,6 +13,7 @@ export interface ComposerShellProps {
   isGeneratingAudio?: boolean;
   footerStart?: ReactNode;
   footerEnd?: ReactNode;
+  density?: "regular" | "compact";
 }
 
 export function ComposerShell({
@@ -25,7 +27,10 @@ export function ComposerShell({
   isGeneratingAudio = false,
   footerStart,
   footerEnd,
+  density = "regular",
 }: ComposerShellProps) {
+  const isCompact = density === "compact";
+
   return (
     <div
       data-chat-input-shell
@@ -46,7 +51,10 @@ export function ComposerShell({
               <div
                 data-composer-input-row
                 data-poly-anchor="composer"
-                className="flex min-w-0 flex-1 cursor-text px-4 pt-3 pb-5"
+                className={cn(
+                  "flex min-w-0 flex-1 cursor-text",
+                  isCompact ? "items-center py-2 pl-3.5" : "px-4 pt-3 pb-5",
+                )}
                 role="presentation"
                 onMouseDown={(event) => {
                   const target = event.target as HTMLElement | null;
@@ -71,7 +79,12 @@ export function ComposerShell({
               </div>
             )}
             {actions && (
-              <div className="flex flex-shrink-0 items-start pt-3 pr-3">
+              <div
+                className={cn(
+                  "flex flex-shrink-0",
+                  isCompact ? "items-end py-1.5 pr-1.5 pl-2" : "items-start pt-3 pr-3",
+                )}
+              >
                 <div className="flex items-center gap-1">{actions}</div>
               </div>
             )}
