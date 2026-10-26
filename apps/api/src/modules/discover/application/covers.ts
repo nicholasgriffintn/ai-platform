@@ -1,14 +1,12 @@
-import type { DiscoverCard, DiscoverEditionContent } from "@ngriffin_uk/polychat-schemas";
+import type { DiscoverCard } from "@ngriffin_uk/polychat-schemas";
 import { isoWeekKey, slugify } from "@ngriffin_uk/polychat-utility-core";
 import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getPrivateObjectResponse } from "~/infrastructure/storage/read-resource";
 import { storeDrawnImage, TEXTLESS_PICTURE } from "~/modules/generate/application/stored-image";
-import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 
-import { requireDiscoverEdition } from "./editions";
-import { publishDiscoverChanged } from "./events";
+import { requireDiscoverEdition, updateDiscoverEdition } from "./editions";
 
 const COVER_CONCURRENCY = 2;
 const COVER_WIDTH = 768;
@@ -53,20 +51,12 @@ export async function drawDiscoverCovers(context: ServiceContext, editionId: str
     return 0;
   }
 
-  const latest = await requireDiscoverEdition(context, user.id, editionId);
-  const content: DiscoverEditionContent = {
-    ...latest.content,
-    cards: latest.content.cards.map((card) =>
+  await updateDiscoverEdition(context, editionId, (content) => ({
+    ...content,
+    cards: content.cards.map((card) =>
       card.kind === "topic" && drawn.has(card.id) ? { ...card, coverId: drawn.get(card.id) } : card,
     ),
-  };
-
-  await context.repositories.get(OutputRepository).updateOutput(editionId, {
-    content,
-    expectedRevision: latest.revision,
-    updatedByUserId: user.id,
-  });
-  await publishDiscoverChanged(context);
+  }));
 
   return drawn.size;
 }

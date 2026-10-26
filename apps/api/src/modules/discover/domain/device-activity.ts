@@ -17,17 +17,20 @@ export const DEVICE_ACTIVITY_ATTEMPTED_PAGES_KEY = "attemptedPages";
 
 const DEVICE_SOURCE_DETAILS: Record<
   DeviceActivitySource,
-  { name: string; description: string; group: DiscoverSignalGroup }
+  { name: string; description: string; group: DiscoverSignalGroup; contextNote?: string }
 > = {
   browsing: {
     name: "Browsing on your Mac",
     description: "Sites and pages from the browsers you share on the desktop app.",
     group: "reading",
+    contextNote: "They have already opened these pages, so never offer one as a read card",
   },
   agents: {
     name: "Coding agents on your Mac",
     description: "Claude Code and Codex sessions from the desktop app.",
     group: "work",
+    contextNote:
+      "Each session is work they already handed to a coding agent, so treat it as done or in hand and never suggest it as an action card, unless the agent's reply says it is blocked or unfinished",
   },
   apps: {
     name: "Apps on your Mac",
@@ -91,6 +94,12 @@ export function deviceActivityGroup(providerId: string): DiscoverSignalGroup | n
   const source = readDeviceActivitySource(providerId);
 
   return source ? DEVICE_SOURCE_DETAILS[source].group : null;
+}
+
+export function deviceActivityContextNote(providerId: string): string | null {
+  const source = readDeviceActivitySource(providerId);
+
+  return (source && DEVICE_SOURCE_DETAILS[source].contextNote) || null;
 }
 
 export function renderDeviceActivityHistory(

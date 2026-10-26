@@ -66,6 +66,38 @@ export function withEditionRun(
     : context;
 }
 
+const EDITION_SAVE_ATTEMPTS = 5;
+
+export async function updateDiscoverEdition(
+  context: ServiceContext,
+  editionId: string,
+  change: (content: DiscoverEditionContent) => DiscoverEditionContent,
+): Promise<void> {
+  const user = context.requireUser();
+  const outputs = context.repositories.get(OutputRepository);
+
+  for (let attempt = 0; attempt < EDITION_SAVE_ATTEMPTS; attempt += 1) {
+    const latest = await requireDiscoverEdition(context, user.id, editionId);
+
+    try {
+      await outputs.updateOutput(editionId, {
+        content: change(latest.content),
+        expectedRevision: latest.revision,
+        updatedByUserId: user.id,
+      });
+      await publishDiscoverChanged(context);
+
+      return;
+    } catch (error) {
+      if (!(error instanceof AssistantError) || error.type !== ErrorType.CONFLICT_ERROR) {
+        throw error;
+      }
+    }
+  }
+
+  throw new AssistantError("The edition kept changing while saving", ErrorType.CONFLICT_ERROR);
+}
+
 export async function requireDiscoverEdition(
   context: ServiceContext,
   userId: number,

@@ -515,7 +515,7 @@ export class OutputRepository extends BaseRepository {
     input: UpdateOutputRecord,
     audit?: OutputAuditRecord,
   ): Promise<OutputRecord> {
-    const existing = await this.getOutputIncludingDeleting(outputId);
+    const existing = await this.selectOne({ id: outputId });
 
     if (!existing) {
       throw new AssistantError("Output not found", ErrorType.NOT_FOUND, 404);
@@ -617,12 +617,12 @@ export class OutputRepository extends BaseRepository {
       throw new AssistantError("Failed to update output", ErrorType.DATABASE_ERROR);
     }
 
-    if (results[1]?.meta?.changes !== 1) {
+    if ((results[1]?.meta?.changes ?? 0) < 1) {
       throw new AssistantError("Output has changed", ErrorType.CONFLICT_ERROR, 409);
     }
 
     await this.cache?.delete(KVCache.createKey("output", outputId));
-    const updated = await this.getOutputIncludingDeleting(outputId);
+    const updated = await this.selectOne({ id: outputId });
 
     if (!updated || updated.revision !== nextRevision) {
       throw new AssistantError("Output update conflicted", ErrorType.CONFLICT_ERROR, 409);

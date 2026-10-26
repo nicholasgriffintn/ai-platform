@@ -19,8 +19,8 @@ import type {
   DiscoverSignalContext,
 } from "~/modules/discover/domain/context";
 import {
+  deviceActivityContextNote,
   deviceActivityGroup,
-  readDeviceActivitySource,
 } from "~/modules/discover/domain/device-activity";
 import {
   describeDiscoverCard,
@@ -206,7 +206,7 @@ function describeDocuments(
         readAt: document.readAt,
         error: document.error,
         lines: document.lines,
-        openedPages: readDeviceActivitySource(document.providerId) === "browsing",
+        note: deviceActivityContextNote(document.providerId),
       })),
     research: documents.research.flatMap((document) => {
       const section = latestResearchSection(document.content);

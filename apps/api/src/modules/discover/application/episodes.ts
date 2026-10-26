@@ -42,8 +42,7 @@ import {
 import { buildSourceMaterial } from "~/modules/sources/application/material";
 
 import { affordableEpisodeLength } from "./cost";
-import { requireDiscoverEdition, withEditionRun } from "./editions";
-import { publishDiscoverChanged } from "./events";
+import { requireDiscoverEdition, updateDiscoverEdition, withEditionRun } from "./editions";
 import { fileDiscoverEpisode } from "./folders";
 import { listDiscoverFollows } from "./follows";
 import { enqueueDiscoverJob } from "./jobs";
@@ -130,21 +129,15 @@ async function recordEpisodeOutcome(
   editionId: string,
   outcome: "failed" | "over_budget" | "retrying",
 ): Promise<void> {
-  const user = context.requireUser();
-  const latest = await requireDiscoverEdition(context, user.id, editionId);
-  const { episodeFailed: _failed, episodeOverBudget: _overBudget, ...content } = latest.content;
+  await updateDiscoverEdition(context, editionId, (latest) => {
+    const { episodeFailed: _failed, episodeOverBudget: _overBudget, ...content } = latest;
 
-  await context.repositories.get(OutputRepository).updateOutput(editionId, {
-    content:
-      outcome === "failed"
-        ? { ...content, episodeFailed: true }
-        : outcome === "over_budget"
-          ? { ...content, episodeOverBudget: true }
-          : content,
-    expectedRevision: latest.revision,
-    updatedByUserId: user.id,
+    return outcome === "failed"
+      ? { ...content, episodeFailed: true }
+      : outcome === "over_budget"
+        ? { ...content, episodeOverBudget: true }
+        : content;
   });
-  await publishDiscoverChanged(context);
 }
 
 export async function produceDiscoverEpisode(
@@ -257,15 +250,11 @@ async function scriptDiscoverEpisode(
     });
   }
 
-  const latest = await requireDiscoverEdition(context, user.id, editionId);
-  const { episodeFailed: _failed, ...editionContent } = latest.content;
+  await updateDiscoverEdition(context, editionId, (latest) => {
+    const { episodeFailed: _failed, ...content } = latest;
 
-  await outputs.updateOutput(editionId, {
-    content: { ...editionContent, episodeId: episode.id },
-    expectedRevision: latest.revision,
-    updatedByUserId: user.id,
+    return { ...content, episodeId: episode.id };
   });
-  await publishDiscoverChanged(context);
 
   return { episodeId: episode.id };
 }

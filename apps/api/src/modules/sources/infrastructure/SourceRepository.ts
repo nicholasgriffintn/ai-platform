@@ -276,7 +276,7 @@ export class SourceRepository extends BaseRepository {
       [status, sourceId, ...expectedStatuses],
     );
 
-    return result.meta.changes === 1;
+    return (result.meta.changes ?? 0) >= 1;
   }
 
   async updateCollection(

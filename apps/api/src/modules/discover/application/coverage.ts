@@ -18,13 +18,11 @@ import {
 import { findDiscoverCard } from "~/modules/discover/domain/edition";
 import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
 import { generateTierObject } from "~/modules/models/application/tier-object";
-import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { formatSource, requireSourceAccess } from "~/modules/sources/application/sources";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { requireDiscoverBudgetLeft } from "./cost";
-import { requireDiscoverEdition, withEditionRun } from "./editions";
-import { publishDiscoverChanged } from "./events";
+import { requireDiscoverEdition, updateDiscoverEdition, withEditionRun } from "./editions";
 import { ensureDiscoverNotebook } from "./notebook";
 import { readDiscoverRoutine } from "./settings";
 import { writeDiscoverDocument } from "./signal-documents";
@@ -108,21 +106,14 @@ export async function compareDiscoverCoverage(
     },
   });
 
-  const latest = await requireDiscoverEdition(context, user.id, editionId);
-
-  await context.repositories.get(OutputRepository).updateOutput(editionId, {
-    content: {
-      ...latest.content,
-      cards: latest.content.cards.map((candidate) =>
-        candidate.id === card.id && candidate.kind === "topic"
-          ? { ...candidate, coverageSourceId: id }
-          : candidate,
-      ),
-    },
-    expectedRevision: latest.revision,
-    updatedByUserId: user.id,
-  });
-  await publishDiscoverChanged(context);
+  await updateDiscoverEdition(context, editionId, (content) => ({
+    ...content,
+    cards: content.cards.map((candidate) =>
+      candidate.id === card.id && candidate.kind === "topic"
+        ? { ...candidate, coverageSourceId: id }
+        : candidate,
+    ),
+  }));
 
   return formatSource(await requireSourceAccess(context, user.id, id));
 }

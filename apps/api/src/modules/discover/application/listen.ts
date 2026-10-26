@@ -7,14 +7,12 @@ import {
   DISCOVER_LISTEN_FOCUS,
   DISCOVER_LISTEN_SHOW,
 } from "~/modules/discover/domain/listen";
-import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { ensureFolder } from "~/modules/sources/application/folders";
 import { startPodcastGeneration } from "~/modules/sources/application/podcasts/generate";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { canAffordDiscoverListen } from "./cost";
-import { requireDiscoverEdition, withEditionRun } from "./editions";
-import { publishDiscoverChanged } from "./events";
+import { requireDiscoverEdition, updateDiscoverEdition, withEditionRun } from "./editions";
 import { readDiscoverRoutine } from "./settings";
 
 const LISTEN_ARTICLE_LIMIT = 8;
@@ -63,14 +61,11 @@ export async function produceDiscoverListen(
     language: "en",
     showId,
   });
-  const latest = await requireDiscoverEdition(context, user.id, editionId);
 
-  await context.repositories.get(OutputRepository).updateOutput(editionId, {
-    content: { ...latest.content, listenSourceId: episode.id },
-    expectedRevision: latest.revision,
-    updatedByUserId: user.id,
-  });
-  await publishDiscoverChanged(context);
+  await updateDiscoverEdition(context, editionId, (content) => ({
+    ...content,
+    listenSourceId: episode.id,
+  }));
 
   return { sourceId: episode.id };
 }

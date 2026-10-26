@@ -99,6 +99,52 @@ describe("OutputRepository", () => {
     ]);
   });
 
+  it("saves against the stored row despite a stale cache and trigger-counted changes", async () => {
+    const stored = {
+      id: "output-cached",
+      created_by_user_id: 42,
+      project_id: null,
+      capability_id: "discover",
+      kind: "discover.edition",
+      title: "Discover",
+      status: "ready",
+      sensitivity: "personal",
+      content: "{}",
+      revision: 5,
+      provenance_json: null,
+      created_at: "2026-10-26T03:00:00.000Z",
+      updated_at: null,
+    };
+    const first = vi
+      .fn()
+      .mockResolvedValueOnce(stored)
+      .mockResolvedValueOnce({ ...stored, revision: 6 });
+    const bind = vi.fn().mockReturnValue({
+      first,
+      all: vi.fn().mockResolvedValue({ results: [] }),
+      run: vi.fn().mockResolvedValue({ success: true }),
+    });
+    const prepare = vi.fn().mockReturnValue({ bind });
+    const batch = vi.fn().mockResolvedValue([
+      { success: true, results: [], meta: { changes: 1 } },
+      { success: true, results: [], meta: { changes: 2 } },
+    ]);
+    const cache = {
+      get: vi.fn().mockResolvedValue(JSON.stringify({ ...stored, revision: 2 })),
+      put: vi.fn().mockResolvedValue(undefined),
+      delete: vi.fn().mockResolvedValue(undefined),
+    };
+    const repository = new OutputRepository({ DB: { batch, prepare }, CACHE: cache } as any);
+
+    await expect(
+      repository.updateOutput("output-cached", {
+        content: { cards: [] },
+        expectedRevision: 5,
+        updatedByUserId: 42,
+      }),
+    ).resolves.toMatchObject({ revision: 6 });
+  });
+
   it("reports a conflict when a concurrent revision wins the compare-and-swap", async () => {
     const existing = {
       id: "output-1",

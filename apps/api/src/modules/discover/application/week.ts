@@ -29,8 +29,7 @@ import { ensureFolder } from "~/modules/sources/application/folders";
 import { startPodcastGeneration } from "~/modules/sources/application/podcasts/generate";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
-import { requireDiscoverEdition, withEditionRun } from "./editions";
-import { publishDiscoverChanged } from "./events";
+import { requireDiscoverEdition, updateDiscoverEdition, withEditionRun } from "./editions";
 import { enqueueDiscoverJob } from "./jobs";
 
 const OUTPUT_SCAN_LIMIT = 100;
@@ -64,11 +63,13 @@ async function describeChat(
   const lastOf = (role: string) =>
     [...messages].reverse().find((message) => message.role === role && messageText(message));
 
-  return {
-    title,
-    asked: truncateSingleLine(messageText(lastOf("user") ?? {}), CHAT_ASK_CHARACTERS),
-    answered: truncateSingleLine(messageText(lastOf("assistant") ?? {}), CHAT_ANSWER_CHARACTERS),
-  };
+  const asked = truncateSingleLine(messageText(lastOf("user") ?? {}), CHAT_ASK_CHARACTERS);
+  const answered = truncateSingleLine(
+    messageText(lastOf("assistant") ?? {}),
+    CHAT_ANSWER_CHARACTERS,
+  );
+
+  return asked && answered ? { title, asked, answered } : null;
 }
 
 async function gatherWeek(context: ServiceContext, userId: number, sinceMs: number) {
@@ -87,7 +88,10 @@ async function gatherWeek(context: ServiceContext, userId: number, sinceMs: numb
     }),
   ]);
   const described = await Promise.all(
-    chats.data.slice(0, CHAT_DETAIL_LIMIT).map((row) => describeChat(context, row)),
+    chats.data
+      .filter((row) => row.type === "chat")
+      .slice(0, CHAT_DETAIL_LIMIT)
+      .map((row) => describeChat(context, row)),
   );
 
   return buildWeekMaterial({
@@ -167,14 +171,11 @@ export async function produceYourWeek(
     language: "en",
     showId,
   });
-  const latest = await requireDiscoverEdition(context, user.id, editionId);
 
-  await context.repositories.get(OutputRepository).updateOutput(editionId, {
-    content: { ...latest.content, weekSourceId: episode.id },
-    expectedRevision: latest.revision,
-    updatedByUserId: user.id,
-  });
-  await publishDiscoverChanged(context);
+  await updateDiscoverEdition(context, editionId, (content) => ({
+    ...content,
+    weekSourceId: episode.id,
+  }));
 
   return episode.id;
 }
