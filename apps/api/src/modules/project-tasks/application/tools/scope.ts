@@ -112,7 +112,3 @@ export async function resolveWorkActor(
     `Nobody called "${value}" is on this team. Check the name, or propose_hire if the team lacks the skill.`,
   );
 }
-
-export function readText(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
-}

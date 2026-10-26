@@ -4,6 +4,7 @@ import {
   WorkspaceTemplateList,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import {
+  canManageWorkspace,
   useProjectStarters,
   useTemplateMutations,
   useWorkspaceTemplates,
@@ -19,7 +20,7 @@ export function WorkspaceGovernance({ workspaceId }: { workspaceId: string }) {
   const navigate = useNavigate();
   const [templateIdToDelete, setTemplateIdToDelete] = useState<string | null>(null);
   const { workspaceQuery } = useWorkData();
-  const canManage = workspaceQuery.data?.role === "owner" || workspaceQuery.data?.role === "admin";
+  const canManage = Boolean(workspaceQuery.data && canManageWorkspace(workspaceQuery.data));
   const templates = useWorkspaceTemplates(workspaceId, canManage);
   const starters = useProjectStarters(canManage);
   const mutations = useTemplateMutations(workspaceId);

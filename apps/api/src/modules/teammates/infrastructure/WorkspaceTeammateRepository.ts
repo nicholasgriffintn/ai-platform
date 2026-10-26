@@ -47,7 +47,7 @@ function formatRecord(row: WorkspaceTeammateRow): WorkspaceTeammateRecord {
   };
 }
 
-export interface CreateWorkspaceTeammateParams {
+interface CreateWorkspaceTeammateParams {
   workspaceId: string;
   teammateId: string;
   title: string;
@@ -93,15 +93,6 @@ export class WorkspaceTeammateRepository extends BaseRepository {
     );
 
     return row ? formatRecord(row) : null;
-  }
-
-  async listEmployments(teammateId: string): Promise<WorkspaceTeammateRecord[]> {
-    const rows = await this.runQuery<WorkspaceTeammateRow>(
-      "SELECT * FROM workspace_teammate WHERE teammate_id = ?",
-      [teammateId],
-    );
-
-    return rows.map(formatRecord);
   }
 
   async listAwake(): Promise<WorkspaceTeammateRecord[]> {

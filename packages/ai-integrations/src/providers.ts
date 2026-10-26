@@ -280,6 +280,18 @@ export const connectorProviders: readonly ConnectorProviderConfig[] = [
   ...knowledgeBaseConnectorProviders,
 ];
 
+export function connectorOperationsForAccess(
+  provider: ConnectorProviderConfig,
+  access: ConnectorOperationAccess,
+): string[] {
+  return provider.operations
+    .filter(
+      (operation) => !operation.destructive && (access === "write" || operation.access === "read"),
+    )
+    .map((operation) => operation.id)
+    .sort();
+}
+
 export function getConnectorProviderConfig(
   providerId: string,
 ): ConnectorProviderConfig | undefined {

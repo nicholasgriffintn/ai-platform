@@ -70,8 +70,6 @@ export const projectTaskPriorityLabels: Record<ProjectTaskPriority, string> = {
 
 export const PROJECT_TASK_MAX_DEPTH = 3;
 export const WORK_MAX_AGENT_REVIEW_ROUNDS = 3;
-export const PROJECT_TASK_MAX_CHILDREN_PER_CALL = 8;
-
 export const workActorSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("teammate"), id: z.string().min(1) }),
   z.object({ type: z.literal("person"), userId: z.number().int().positive() }),
@@ -203,9 +201,7 @@ export const raiseCaseSchema = z.object({
 });
 export type RaiseCaseInput = z.infer<typeof raiseCaseSchema>;
 
-export const sendCaseReplySchema = z.object({
-  body: z.string().trim().min(1).max(8000),
-});
+export const sendCaseReplySchema = projectTaskCommentSchema;
 
 export const resolveCaseSchema = z.object({
   resolution: z.string().trim().min(1).max(4000),
@@ -949,10 +945,6 @@ export const projectTaskDetailResponseSchema = z.object({
   children: z.array(projectTaskSummarySchema).default([]),
   links: z.array(projectTaskLinkedSchema).default([]),
   thread: z.array(projectTaskThreadPostSchema).default([]),
-});
-
-export const projectTaskThreadResponseSchema = z.object({
-  thread: z.array(projectTaskThreadPostSchema),
 });
 
 export type ProjectTaskDetailResponse = z.infer<typeof projectTaskDetailResponseSchema>;

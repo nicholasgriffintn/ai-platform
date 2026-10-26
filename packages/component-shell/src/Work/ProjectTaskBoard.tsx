@@ -11,12 +11,15 @@ import {
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
-  useArchiveProject,
-  useCapabilityCatalog,
-  getTeammateSettingsPath,
+  canManageWorkspace,
+  getProjectBasePath,
   getProjectSurface,
+  getProjectTaskPath,
+  getTeammateSettingsPath,
   NEW_TEAMMATE_ID,
   projectTaskSkills,
+  useArchiveProject,
+  useCapabilityCatalog,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
@@ -105,9 +108,10 @@ export function ProjectTaskBoard({
     ...(start.isPending && typeof start.variables === "string" ? [start.variables] : []),
     ...(accept.isPending && typeof accept.variables === "string" ? [accept.variables] : []),
   ];
-  const canManage = workspaceQuery.data?.role === "owner" || workspaceQuery.data?.role === "admin";
-  const basePath = `/work/${workspaceId}/projects/${projectId}`;
-  const taskHref = (task: Pick<ProjectTask, "id">) => `${basePath}/tasks/${task.id}`;
+  const canManage = Boolean(workspaceQuery.data && canManageWorkspace(workspaceQuery.data));
+  const basePath = getProjectBasePath(workspaceId, projectId);
+  const taskHref = (task: Pick<ProjectTask, "id">) =>
+    getProjectTaskPath(workspaceId, projectId, task.id);
   const visibleTasks = tasks.filter((task) => task.kind !== "standup" || task.status !== "done");
   const workTasks = visibleTasks.filter((task) => task.kind !== "case");
   const cases = visibleTasks.filter((task) => task.kind === "case");
@@ -231,7 +235,6 @@ export function ProjectTaskBoard({
             teammates={teammates}
             pendingTaskIds={pendingTaskIds}
             taskHref={taskHref}
-            conversationHref={() => null}
             onStartTask={(task) => void runTask(task)}
             onAcceptTask={(task) => void acceptTask(task)}
             onCreateTask={() => setIsCreateOpen(true)}

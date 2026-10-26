@@ -7,9 +7,11 @@ import {
   type WorkPostAuthor,
   type WorkPostKind,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId, safeParseJson, truncateText } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, truncateText } from "@ngriffin_uk/polychat-utility-core";
+import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { formatStoredMessage } from "~/modules/conversations/application/stored-message";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 
@@ -19,37 +21,16 @@ const THREAD_LIMIT = 200;
 const THREAD_BODY_LIMIT = 4000;
 const RUN_BRIEF_LIMIT = 160;
 
-function isQuestionResponse(data: unknown): boolean {
-  const record = typeof data === "string" ? safeParseJson<Record<string, unknown>>(data) : data;
-
-  return Boolean(record && typeof record === "object" && "userQuestionResponse" in record);
-}
-
 function readWorkPost(data: unknown): { kind: WorkPostKind; author: WorkPostAuthor } | null {
-  const record = typeof data === "string" ? safeParseJson<Record<string, unknown>>(data) : data;
-
-  if (!record || typeof record !== "object" || !("workPost" in record)) {
-    return null;
-  }
-
-  const post = record.workPost;
-
-  if (!post || typeof post !== "object") {
-    return null;
-  }
-
-  const kind = workPostKindSchema.safeParse((post as { kind?: unknown }).kind);
-  const author = workPostAuthorSchema.safeParse((post as { author?: unknown }).author);
+  const post = parseJsonRecord(parseJsonRecord(data).workPost);
+  const kind = workPostKindSchema.safeParse(post.kind);
+  const author = workPostAuthorSchema.safeParse(post.author);
 
   return kind.success && author.success ? { kind: kind.data, author: author.data } : null;
 }
 
-function readMessageText(content: unknown): string {
-  if (typeof content === "string" && content.startsWith("[")) {
-    return extractTextFromMessageContent(safeParseJson(content) ?? content);
-  }
-
-  return extractTextFromMessageContent(content);
+function systemAuthor(name: string): WorkPostAuthor {
+  return { kind: "system", name, userId: null, teammateId: null };
 }
 
 export async function ensureTaskThread(
@@ -107,68 +88,45 @@ export async function listTaskThread(
 
   return rows.flatMap((row) => {
     const role = row.role;
+    const body = extractTextFromMessageContent(formatStoredMessage(row).content);
 
-    if (role !== "user" && role !== "assistant") {
+    if ((role !== "user" && role !== "assistant") || !body) {
       return [];
     }
 
-    const body = readMessageText(row.content);
-
-    if (!body) {
-      return [];
-    }
-
-    const workPost = readWorkPost(row.data);
-
-    if (!workPost && role === "user" && isQuestionResponse(row.data)) {
-      return [
-        {
-          id: typeof row.id === "string" ? row.id : "",
-          kind: "comment" as const,
-          author: { kind: "system" as const, name: "Answers", userId: null, teammateId: null },
-          body: truncateText(body, THREAD_BODY_LIMIT),
-          createdAt: typeof row.created_at === "string" ? row.created_at : "",
-        },
-      ];
-    }
-
-    if (!workPost && role === "user") {
-      return [
-        {
-          id: typeof row.id === "string" ? row.id : "",
-          kind: "event" as const,
-          author: { kind: "system" as const, name: "Flow", userId: null, teammateId: null },
-          body: truncateText(body.split(/(?<=\.)\s/)[0] ?? body, RUN_BRIEF_LIMIT),
-          createdAt: typeof row.created_at === "string" ? row.created_at : "",
-        },
-      ];
-    }
-
-    const author: WorkPostAuthor = workPost?.author ?? {
-      kind: task.owner?.type === "teammate" ? "teammate" : "system",
-      name: task.owner?.type === "teammate" ? "Teammate" : "Run",
-      userId: null,
-      teammateId: task.owner?.type === "teammate" ? task.owner.id : null,
-    };
-
-    return [
+    const post = (kind: WorkPostKind, author: WorkPostAuthor, text: string) => [
       {
         id: typeof row.id === "string" ? row.id : "",
-        kind: workPost?.kind ?? "update",
+        kind,
         author,
-        body: truncateText(body, THREAD_BODY_LIMIT),
+        body: text,
         createdAt: typeof row.created_at === "string" ? row.created_at : "",
       },
     ];
+    const workPost = readWorkPost(row.data);
+
+    if (workPost) {
+      return post(workPost.kind, workPost.author, truncateText(body, THREAD_BODY_LIMIT));
+    }
+
+    if (role === "user" && "userQuestionResponse" in parseJsonRecord(row.data)) {
+      return post("comment", systemAuthor("Answers"), truncateText(body, THREAD_BODY_LIMIT));
+    }
+
+    if (role === "user") {
+      return post(
+        "event",
+        systemAuthor("Flow"),
+        truncateText(body.split(/(?<=\.)\s/)[0] ?? body, RUN_BRIEF_LIMIT),
+      );
+    }
+
+    return post(
+      "update",
+      task.owner?.type === "teammate"
+        ? { kind: "teammate", name: "Teammate", userId: null, teammateId: task.owner.id }
+        : systemAuthor("Run"),
+      truncateText(body, THREAD_BODY_LIMIT),
+    );
   });
-}
-
-export async function countThreadPostsSince(
-  context: ServiceContext,
-  task: ProjectTask,
-  since: string,
-): Promise<number> {
-  const thread = await listTaskThread(context, task);
-
-  return thread.filter((post) => post.createdAt > since && post.author.kind === "teammate").length;
 }

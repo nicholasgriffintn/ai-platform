@@ -47,6 +47,7 @@ export {
 } from "./policy.js";
 export {
   connectorProviders,
+  connectorOperationsForAccess,
   getConnectorProviderConfig,
   RECIPE_CONNECTOR_APP_ID,
   RECIPE_CONNECTOR_ITEM_TYPE,

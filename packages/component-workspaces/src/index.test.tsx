@@ -178,7 +178,6 @@ describe("TaskBoard", () => {
         members={[]}
         teammates={[]}
         taskHref={() => "/tasks/task-1"}
-        conversationHref={() => null}
         onStartTask={vi.fn()}
         onAcceptTask={vi.fn()}
         onCreateTask={vi.fn()}
@@ -223,7 +222,6 @@ describe("TaskBoard", () => {
         members={[]}
         teammates={[]}
         taskHref={(item) => `/tasks/${item.id}`}
-        conversationHref={() => null}
         onStartTask={vi.fn()}
         onAcceptTask={vi.fn()}
         onCreateTask={vi.fn()}
@@ -269,7 +267,6 @@ describe("TaskBoard", () => {
           { id: "teammate-publish", name: "Publisher" },
         ]}
         taskHref={() => "/tasks/task-1"}
-        conversationHref={() => null}
         onStartTask={onStartTask}
         onAcceptTask={vi.fn()}
         onCreateTask={vi.fn()}
@@ -298,7 +295,6 @@ describe("TaskBoard", () => {
         members={[]}
         teammates={[]}
         taskHref={() => "/tasks/task-1"}
-        conversationHref={() => null}
         onStartTask={vi.fn()}
         onAcceptTask={vi.fn()}
         onCreateTask={vi.fn()}
@@ -328,7 +324,6 @@ describe("TaskBoard", () => {
         members={[]}
         teammates={[]}
         taskHref={() => "/tasks/task-1"}
-        conversationHref={() => "/chat?completion_id=conversation-1"}
         onStartTask={vi.fn()}
         onAcceptTask={vi.fn()}
         onCreateTask={vi.fn()}
@@ -339,9 +334,7 @@ describe("TaskBoard", () => {
     );
 
     expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
-    expect(screen.getByRole("link", { name: "Respond" }).getAttribute("href")).toBe(
-      "/chat?completion_id=conversation-1",
-    );
+    expect(screen.getByRole("link", { name: "Review" }).getAttribute("href")).toBe("/tasks/task-1");
   });
 });
 

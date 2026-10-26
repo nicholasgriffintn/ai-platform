@@ -10,7 +10,6 @@ import { Check, Eye, Inbox, X } from "lucide-react";
 type Tone = "decision" | "warning" | "failure" | "done";
 
 const DECISION_LABELS: Record<WorkInboxItem["kind"], { label: string; tone: Tone }> = {
-  task: { label: "Task", tone: "decision" },
   hire: { label: "Hire", tone: "decision" },
   budget: { label: "Budget", tone: "warning" },
   standup: { label: "Standup", tone: "decision" },

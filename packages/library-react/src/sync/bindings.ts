@@ -23,6 +23,7 @@ import {
 import { PROJECT_WORKBENCH_PREVIEW_QUERY_KEY } from "../hooks/useProjectWorkbenchPreview.js";
 import { TASK_QUERY_KEYS } from "../hooks/useTasks.js";
 import { teammateContextMemoryQueryPrefix } from "../hooks/useTeammateContextMemory.js";
+import { myTasksQueryKey, WORKSPACE_TASKS_QUERY_PREFIX } from "../hooks/useWork.js";
 import { TEAMMATE_ROSTER_QUERY_KEY } from "../lib/teammates/roster.js";
 import { applyUsageChanged } from "./usage.js";
 
@@ -126,6 +127,8 @@ export const SYNC_BINDINGS: SyncBinding[] = [
       }
 
       context.invalidate(TASK_ATTENTION_QUERY_KEY);
+      context.invalidate(myTasksQueryKey);
+      context.invalidate(WORKSPACE_TASKS_QUERY_PREFIX);
     },
   },
   {

@@ -19,10 +19,13 @@ import {
   type WorkRailsResponse,
   type WorkspaceTeammate,
 } from "@ngriffin_uk/polychat-schemas";
-import { formatCredits, parseStoredTimestamp } from "@ngriffin_uk/polychat-utility-core";
+import {
+  formatCredits,
+  formatMinutesInterval,
+  initialsOf,
+  parseStoredTimestamp,
+} from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
-
-import { initialsOf } from "./work-actors";
 
 const RUNS_ON_LABELS: Record<RunsOn, string> = {
   hosted: "Hosted",
@@ -53,9 +56,7 @@ export function describeWakeRule(teammate: Pick<WorkspaceTeammate, "heartbeatMin
     return "on wake";
   }
 
-  return teammate.heartbeatMinutes % 60 === 0
-    ? `every ${teammate.heartbeatMinutes / 60}h`
-    : `every ${teammate.heartbeatMinutes}m`;
+  return `every ${formatMinutesInterval(teammate.heartbeatMinutes)}`;
 }
 
 function SpendMeter({ teammate }: { teammate: WorkspaceTeammate }) {

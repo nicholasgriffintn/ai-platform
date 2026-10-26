@@ -1,5 +1,6 @@
 import {
   CONNECTOR_ACCOUNT_REFERENCE_KIND,
+  connectorOperationsForAccess,
   getConnectorProviderConfig,
   isConnectorConnectionKindForAuth,
 } from "@ngriffin_uk/polychat-ai-integrations";
@@ -15,7 +16,7 @@ import type { ProviderConnectionRecord } from "~/modules/connectors/infrastructu
 import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 
-import { requireProjectTeammate } from "./access";
+import { requireProjectTeammate, requireWorkspaceTeammate } from "./access";
 
 export interface TeammateConnectorAuthority {
   allowedOperations: string[];
@@ -24,19 +25,12 @@ export interface TeammateConnectorAuthority {
   grantRevision: number;
 }
 
-function ownerReadOperations(provider: NonNullable<ReturnType<typeof getConnectorProviderConfig>>) {
-  return provider.operations
-    .filter((operation) => operation.access === "read" && !operation.destructive)
-    .map((operation) => operation.id)
-    .sort();
-}
-
 async function inheritOwnerReadAuthority(params: {
   context: ServiceContext;
   userId: number;
   provider: NonNullable<ReturnType<typeof getConnectorProviderConfig>>;
 }): Promise<TeammateConnectorAuthority | null> {
-  const allowedOperations = ownerReadOperations(params.provider);
+  const allowedOperations = connectorOperationsForAccess(params.provider, "read");
 
   if (allowedOperations.length === 0) {
     return null;
@@ -94,6 +88,12 @@ export async function resolveTeammateConnectorAuthority(params: {
 
   if (teammateContext.scope.type === "project") {
     await requireProjectTeammate(
+      params.context,
+      teammateContext.scope.id,
+      teammateContext.teammateId,
+    );
+  } else if (teammateContext.scope.type === "workspace") {
+    await requireWorkspaceTeammate(
       params.context,
       teammateContext.scope.id,
       teammateContext.teammateId,

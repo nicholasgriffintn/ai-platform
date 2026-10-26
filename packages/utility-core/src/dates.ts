@@ -1,6 +1,8 @@
 import { readOptionalString } from "./objects.js";
 
-export const DAY_MS = 86_400_000;
+export const MINUTE_MS = 60_000;
+export const HOUR_MS = 60 * MINUTE_MS;
+export const DAY_MS = 24 * HOUR_MS;
 
 export function isoDaysBefore(now: Date, days: number): string {
   return new Date(now.getTime() - days * DAY_MS).toISOString();
@@ -281,15 +283,7 @@ export function partOfDay(hour: number): PartOfDay {
   return hour < 18 ? "afternoon" : "evening";
 }
 
-const WEEKDAY_INDEX: Record<string, number> = {
-  Sun: 0,
-  Mon: 1,
-  Tue: 2,
-  Wed: 3,
-  Thu: 4,
-  Fri: 5,
-  Sat: 6,
-};
+export const SHORT_WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
 export function readZonedClock(
   date: Date,
@@ -311,20 +305,21 @@ export function readZonedClock(
   );
 
   return {
-    weekday: WEEKDAY_INDEX[parts.weekday ?? "Mon"] ?? 1,
+    weekday: Math.max(
+      0,
+      SHORT_WEEKDAY_LABELS.findIndex((label) => label === parts.weekday),
+    ),
     time: `${parts.hour}:${parts.minute}`,
     date: `${parts.year}-${parts.month}-${parts.day}`,
   };
 }
 
 export function parseStoredTimestamp(value: string | null | undefined): number {
-  if (!value) {
-    return 0;
-  }
-
-  const parsed = Date.parse(value.includes("T") ? value : `${value.replace(" ", "T")}Z`);
+  const parsed = value ? parseTimestamp(value).getTime() : Number.NaN;
 
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 
-export const SHORT_WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+export function formatMinutesInterval(minutes: number): string {
+  return minutes % 60 === 0 ? `${minutes / 60}h` : `${minutes}m`;
+}

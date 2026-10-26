@@ -8,9 +8,10 @@ import {
   type ProjectTaskStandup,
   type StandupParticipant,
   type StandupSettings,
-  type WorkActor,
 } from "@ngriffin_uk/polychat-schemas";
 import {
+  DAY_MS,
+  MINUTE_MS,
   parseStoredTimestamp,
   readZonedClock,
   safeParseJson,
@@ -22,6 +23,7 @@ import { CHANNEL_TOP_LEVEL_THREAD } from "~/modules/channels/application/ports/c
 import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
 import { deliverOutboundOperation } from "~/modules/delivery/application/outbound";
+import { sameWorkActor, taskReference } from "~/modules/project-tasks/domain/work-actors";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { enqueueTeammateWake } from "~/modules/teammates/application/wakes";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
@@ -38,20 +40,11 @@ import { createProjectTask } from "./index";
 import { postToTaskThread } from "./thread";
 import type { WorkCaller } from "./work";
 
-const MINUTE_MS = 60_000;
-const DRAFT_LOOKBACK_MS = 24 * 60 * MINUTE_MS;
-
 function readSettings(project: Pick<ProjectRow, "standup">): StandupSettings {
   const stored = project.standup ? safeParseJson(project.standup) : null;
   const parsed = standupSettingsSchema.safeParse(stored);
 
   return parsed.success ? parsed.data : DEFAULT_STANDUP_SETTINGS;
-}
-
-function sameActor(left: WorkActor, right: WorkActor): boolean {
-  return left.type === "teammate"
-    ? right.type === "teammate" && right.id === left.id
-    : right.type === "person" && right.userId === left.userId;
 }
 
 function formatStandupTitle(date: Date, timeZone: string): string {
@@ -206,7 +199,7 @@ async function openStandup(env: IEnv, project: ProjectRow, settings: StandupSett
         projectId: project.id,
         reason: "standup",
         taskId: task.id,
-        detail: `Answer standup ${task.key ?? task.id} with answer_standup, using only your own task activity since the last standup: ${settings.questions.join(" / ")}`,
+        detail: `Answer standup ${taskReference(task)} with answer_standup, using only your own task activity since the last standup: ${settings.questions.join(" / ")}`,
       });
     }
   }
@@ -219,7 +212,7 @@ function summariseFromAnswers(standup: ProjectTaskStandup): string {
   const missing = standup.participants
     .filter(
       (participant) =>
-        !standup.answers.some((answer) => sameActor(answer.actor, participant.actor)),
+        !standup.answers.some((answer) => sameWorkActor(answer.actor, participant.actor)),
     )
     .map((participant) => participant.name);
 
@@ -242,7 +235,7 @@ async function requestSummary(context: ServiceContext, task: ProjectTask): Promi
       projectId: task.projectId,
       reason: "standup_summary",
       taskId: task.id,
-      detail: `Read the answers on ${task.key ?? task.id}, then call summarise_standup. Propose tasks for untracked work, update blockers that name a task, raise cases for problems with no task behind them, and never mark anything done.`,
+      detail: `Read the answers on ${taskReference(task)}, then call summarise_standup. Propose tasks for untracked work, update blockers that name a task, raise cases for problems with no task behind them, and never mark anything done.`,
     });
 
     if (queued) {
@@ -397,12 +390,12 @@ export async function answerStandup(
     throw new AssistantError("This standup has closed", ErrorType.CONFLICT_ERROR, 409);
   }
 
-  if (!standup.participants.some((participant) => sameActor(participant.actor, caller.actor))) {
+  if (!standup.participants.some((participant) => sameWorkActor(participant.actor, caller.actor))) {
     throw new AssistantError("You are not in this standup", ErrorType.FORBIDDEN, 403);
   }
 
   const answers = [
-    ...standup.answers.filter((answer) => !sameActor(answer.actor, caller.actor)),
+    ...standup.answers.filter((answer) => !sameWorkActor(answer.actor, caller.actor)),
     {
       actor: caller.actor,
       name: caller.author.name,
@@ -454,7 +447,7 @@ export async function getStandupDraft(
 ): Promise<AnswerStandupInput> {
   const user = context.requireUser();
   const task = await requireStandupTask(context, projectId, taskId);
-  const since = parseStoredTimestamp(task.createdAt) - DRAFT_LOOKBACK_MS;
+  const since = parseStoredTimestamp(task.createdAt) - DAY_MS;
   const tasks = await context.repositories
     .get(ProjectTaskRepository)
     .listWorkspaceTasks([task.workspaceId], {
@@ -471,19 +464,17 @@ export async function getStandupDraft(
     .filter((candidate) => candidate.status === "done" || candidate.status === "review")
     .map(
       (candidate) =>
-        `${candidate.key ?? candidate.id} ${candidate.objective} (${projectTaskStatusLabels[candidate.status]})`,
+        `${taskReference(candidate)} ${candidate.objective} (${projectTaskStatusLabels[candidate.status]})`,
     );
   const next = recent
     .filter(
       (candidate) =>
         !isTerminalProjectTaskStatus(candidate.status) && candidate.status !== "review",
     )
-    .map((candidate) => `${candidate.key ?? candidate.id} ${candidate.objective}`);
+    .map((candidate) => `${taskReference(candidate)} ${candidate.objective}`);
   const blocked = recent
     .filter((candidate) => candidate.status === "blocked")
-    .map(
-      (candidate) => `${candidate.key ?? candidate.id}: ${candidate.blockedDetail ?? "blocked"}`,
-    );
+    .map((candidate) => `${taskReference(candidate)}: ${candidate.blockedDetail ?? "blocked"}`);
   const drafts = [moved.join("; "), next.join("; "), blocked.join("; ")];
 
   return {

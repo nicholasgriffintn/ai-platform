@@ -8,6 +8,8 @@ import {
   WorkTaskList,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import {
+  canManageWorkspace,
+  getProjectTaskPath,
   useSetupActions,
   useTeamActions,
   useWorkRails,
@@ -26,7 +28,7 @@ import { useWorkDirectory } from "./useWorkDirectory.js";
 function beatHref(workspaceId: string) {
   return (beat: WorkRailBeat) =>
     beat.taskId && beat.projectId
-      ? `/work/${workspaceId}/projects/${beat.projectId}/tasks/${beat.taskId}`
+      ? getProjectTaskPath(workspaceId, beat.projectId, beat.taskId)
       : null;
 }
 
@@ -39,7 +41,7 @@ export function WorkTeamPage({ workspaceId }: { workspaceId: string }) {
   const [isProposeOpen, setIsProposeOpen] = useState(false);
   const workspace = workspaceQuery.data;
   const hasLead = Boolean(teamQuery.data?.leadTeammateId);
-  const canManage = workspace?.role === "owner" || workspace?.role === "admin";
+  const canManage = Boolean(workspace && canManageWorkspace(workspace));
 
   return (
     <PageShell.Content className="max-w-6xl space-y-8">
@@ -155,7 +157,7 @@ export function WorkTeammatePage({
   const actions = useTeamActions(workspaceId);
   const teammate = team.find((candidate) => candidate.teammateId === teammateId);
   const workspace = workspaceQuery.data;
-  const canManage = workspace?.role === "owner" || workspace?.role === "admin";
+  const canManage = Boolean(workspace && canManageWorkspace(workspace));
   const rail = rails.data
     ? { ...rails.data, rails: rails.data.rails.filter((entry) => entry.teammateId === teammateId) }
     : null;
@@ -251,7 +253,7 @@ export function WorkTeammatePage({
           <WorkTaskList
             tasks={tasks.data?.tasks ?? []}
             directory={directory}
-            taskHref={(task) => `/work/${workspaceId}/projects/${task.projectId}/tasks/${task.id}`}
+            taskHref={(task) => getProjectTaskPath(workspaceId, task.projectId, task.id)}
             emptyMessage={`${teammate.name} has no open work.`}
           />
         </section>

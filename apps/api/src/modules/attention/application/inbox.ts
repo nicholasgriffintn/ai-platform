@@ -1,12 +1,11 @@
 import {
   isTerminalProjectTaskStatus,
-  setupPlanStateSchema,
   toListPage,
   usagePeriodFromDate,
   type WorkInboxItem,
   type WorkInboxResponse,
+  WORKSPACE_MANAGER_ROLES,
 } from "@ngriffin_uk/polychat-schemas";
-import { safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
@@ -15,6 +14,7 @@ import { TeammateContextRepository } from "~/modules/teammates/infrastructure/Te
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import { WorkspaceTeammateRepository } from "~/modules/teammates/infrastructure/WorkspaceTeammateRepository";
 import { requireWorkAccess } from "~/modules/workspaces/application/access";
+import { readSetupState } from "~/modules/workspaces/application/onboarding";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 function taskLink(workspaceId: string, projectId: string, taskId: string): string {
@@ -27,16 +27,18 @@ export async function getWorkInbox(context: ServiceContext): Promise<WorkInboxRe
   const workspaceIds = workspaces.map((workspace) => workspace.id);
   const managed = new Set(
     workspaces
-      .filter((workspace) => workspace.role === "owner" || workspace.role === "admin")
+      .filter((workspace) => WORKSPACE_MANAGER_ROLES.includes(workspace.role))
       .map((workspace) => workspace.id),
   );
   const [employments, openTasks] = await Promise.all([
     context.repositories.get(WorkspaceTeammateRepository).listForWorkspaces(workspaceIds),
     context.repositories.get(ProjectTaskRepository).listWorkspaceTasks(workspaceIds, {}),
   ]);
-  const teammates = await context.repositories
-    .get(TeammateRepository)
-    .getTeammatesByIds([...new Set(employments.map((employment) => employment.teammateId))]);
+  const teammateIds = [...new Set(employments.map((employment) => employment.teammateId))];
+  const [teammates, teammateContexts] = await Promise.all([
+    context.repositories.get(TeammateRepository).getTeammatesByIds(teammateIds),
+    context.repositories.get(TeammateContextRepository).listAllForTeammates(teammateIds),
+  ]);
   const names = new Map(teammates.map((teammate) => [teammate.id, teammate.name]));
   const period = usagePeriodFromDate();
   const items: WorkInboxItem[] = [];
@@ -133,11 +135,7 @@ export async function getWorkInbox(context: ServiceContext): Promise<WorkInboxRe
     }
   }
 
-  const contexts = (
-    await context.repositories
-      .get(TeammateContextRepository)
-      .listAllForTeammates([...new Set(employments.map((employment) => employment.teammateId))])
-  ).filter(
+  const contexts = teammateContexts.filter(
     (candidate) =>
       candidate.actorUserId === user.id &&
       candidate.scope.type === "workspace" &&
@@ -176,21 +174,18 @@ export async function getWorkInbox(context: ServiceContext): Promise<WorkInboxRe
   }
 
   for (const workspace of workspaces.filter((candidate) => managed.has(candidate.id))) {
-    const detail = await context.repositories.get(WorkspaceRepository).getWorkspace(workspace.id);
-    const parsed = setupPlanStateSchema.safeParse(
-      detail?.setup_plan ? safeParseJson(detail.setup_plan) : null,
-    );
+    const setup = readSetupState(workspace.setup_plan);
 
-    if (parsed.success && !parsed.data.appliedAt) {
+    if (setup && !setup.appliedAt) {
       items.push({
-        id: `setup:${workspace.id}:${parsed.data.revision}`,
+        id: `setup:${workspace.id}:${setup.revision}`,
         kind: "setup",
         workspaceId: workspace.id,
-        projectId: detail?.setup_project_id ?? null,
-        taskId: detail?.setup_task_id ?? null,
-        teammateId: detail?.lead_teammate_id ?? null,
+        projectId: workspace.setup_project_id ?? null,
+        taskId: workspace.setup_task_id ?? null,
+        teammateId: workspace.lead_teammate_id ?? null,
         title: `Approve the setup plan for ${workspace.name}`,
-        detail: `Revision ${parsed.data.revision}: ${parsed.data.plan.projects.length} projects, ${parsed.data.plan.teammates.length} teammates`,
+        detail: `Revision ${setup.revision}: ${setup.plan.projects.length} projects, ${setup.plan.teammates.length} teammates`,
         since: workspace.updated_at ?? workspace.created_at,
         deepLink: `/work/${encodeURIComponent(workspace.id)}/setup`,
       });

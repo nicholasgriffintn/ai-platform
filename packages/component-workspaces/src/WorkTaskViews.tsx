@@ -7,10 +7,15 @@ import {
   type ProjectTaskPriority,
   type ProjectTaskStatus,
 } from "@ngriffin_uk/polychat-schemas";
-import { parseStoredTimestamp } from "@ngriffin_uk/polychat-utility-core";
+import {
+  DAY_MS,
+  groupBy,
+  initialsOf,
+  parseStoredTimestamp,
+} from "@ngriffin_uk/polychat-utility-core";
 import { ListTodo } from "lucide-react";
 
-import { describeWorkActor, initialsOf, type WorkDirectory } from "./work-actors";
+import { describeWorkActor, type WorkDirectory } from "./work-actors";
 
 const STATUS_ORDER: readonly ProjectTaskStatus[] = [
   "running",
@@ -30,7 +35,6 @@ const PRIORITY_LEVEL: Record<ProjectTaskPriority, number> = {
   urgent: 4,
 };
 
-const DAY_MS = 86_400_000;
 const TIMELINE_DAYS = 21;
 
 export interface WorkTaskViewProps {
@@ -243,19 +247,30 @@ export function WorkTaskList({ tasks, directory, taskHref, emptyMessage }: WorkT
 export function WorkTaskTree({ tasks, directory, taskHref, emptyMessage }: WorkTaskViewProps) {
   const known = new Set(tasks.map((task) => task.id));
   const roots = tasks.filter((task) => !task.parentTaskId || !known.has(task.parentTaskId));
-  const childrenOf = (parentId: string) => tasks.filter((task) => task.parentTaskId === parentId);
-  const progress = (task: ProjectTask): { done: number; total: number } =>
-    childrenOf(task.id).reduce(
-      (sum, child) => {
-        const nested = progress(child);
+  const children = groupBy(tasks, (task) => task.parentTaskId);
+  const childrenOf = (parentId: string) => children.get(parentId) ?? [];
+  const progressByTask = new Map<string, { done: number; total: number }>();
+  const progress = (task: ProjectTask): { done: number; total: number } => {
+    const known = progressByTask.get(task.id);
 
-        return {
-          done: sum.done + (child.status === "done" ? 1 : 0) + nested.done,
-          total: sum.total + 1 + nested.total,
-        };
-      },
-      { done: 0, total: 0 },
-    );
+    if (known) {
+      return known;
+    }
+
+    const result = { done: 0, total: 0 };
+
+    for (const child of childrenOf(task.id)) {
+      const nested = progress(child);
+
+      result.done += (child.status === "done" ? 1 : 0) + nested.done;
+      result.total += 1 + nested.total;
+    }
+
+    progressByTask.set(task.id, result);
+
+    return result;
+  };
+
   const renderBranch = (task: ProjectTask, depth: number): React.ReactNode => {
     const branch = progress(task);
 

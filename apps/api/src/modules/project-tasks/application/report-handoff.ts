@@ -6,6 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { taskReference } from "~/modules/project-tasks/domain/work-actors";
 import { enqueueTeammateWake } from "~/modules/teammates/application/wakes";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import {
@@ -31,7 +32,7 @@ function buildHandoffDetail(params: {
   questions: UserQuestionSet | null;
 }): string {
   const { task, ownerName, questions } = params;
-  const key = task.key ?? task.id;
+  const key = taskReference(task);
 
   if (questions) {
     return [
@@ -58,22 +59,27 @@ function buildHandoffDetail(params: {
   ].join("\n");
 }
 
+function reportOwnerId(task: ProjectTask): string | null {
+  return task.kind === "task" &&
+    task.status === "blocked" &&
+    task.blockedReason !== null &&
+    MANAGER_HANDLED_BLOCKED_REASONS.includes(task.blockedReason) &&
+    task.owner?.type === "teammate" &&
+    task.details.escalation?.to.type !== "person"
+    ? task.owner.id
+    : null;
+}
+
 export function findHandlingManager(
   task: ProjectTask,
   team: readonly WorkspaceTeammateRecord[],
 ): string | null {
-  if (
-    task.kind !== "task" ||
-    task.status !== "blocked" ||
-    !task.blockedReason ||
-    !MANAGER_HANDLED_BLOCKED_REASONS.includes(task.blockedReason) ||
-    task.owner?.type !== "teammate" ||
-    task.details.escalation?.to.type === "person"
-  ) {
+  const ownerId = reportOwnerId(task);
+
+  if (!ownerId) {
     return null;
   }
 
-  const ownerId = task.owner.id;
   const managerId = team.find((member) => member.teammateId === ownerId)?.reportsToTeammateId;
   const manager = team.find((member) => member.teammateId === managerId);
 
@@ -86,17 +92,23 @@ export async function handBlockedTaskToManager(
   context: ServiceContext,
   task: ProjectTask,
 ): Promise<boolean> {
+  const ownerId = reportOwnerId(task);
+
+  if (!ownerId) {
+    return false;
+  }
+
   const team = await context.repositories
     .get(WorkspaceTeammateRepository)
     .listForWorkspace(task.workspaceId);
   const managerId = findHandlingManager(task, team);
 
-  if (!managerId || task.owner?.type !== "teammate") {
+  if (!managerId) {
     return false;
   }
 
   const [owner, questions] = await Promise.all([
-    context.repositories.get(TeammateRepository).getTeammateById(task.owner.id),
+    context.repositories.get(TeammateRepository).getTeammateById(ownerId),
     task.blockedReason === "awaiting_input"
       ? getPendingProjectTaskQuestions(context, task)
       : Promise.resolve(null),

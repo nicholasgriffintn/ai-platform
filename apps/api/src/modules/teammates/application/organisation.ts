@@ -1,9 +1,11 @@
 import {
-  usagePeriodFromDate,
-  WORK_BUDGET_WARNING_RATIO,
+  AGENT_HARNESS_PROVIDER,
+  isAgentHarnessId,
   type ProposeHireInput,
   type RunsOn,
   type UpdateWorkspaceTeammateInput,
+  usagePeriodFromDate,
+  WORK_BUDGET_WARNING_RATIO,
   type WorkspaceTeammate,
   type WorkspaceTeamResponse,
 } from "@ngriffin_uk/polychat-schemas";
@@ -27,8 +29,6 @@ import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/Workspa
 import { TEAMMATE_CAPABILITY_KIND } from "./access";
 import { hireTeammate } from "./hire";
 
-const HARNESS_PROVIDERS = new Set(["polychat-agents", "hermes", "pi", "opencode"]);
-
 async function resolveRunsOn(context: ServiceContext, teammate: Teammate): Promise<RunsOn> {
   if (!teammate.model) {
     return "hosted";
@@ -37,7 +37,10 @@ async function resolveRunsOn(context: ServiceContext, teammate: Teammate): Promi
   const model = await findModelConfig(teammate.model, context.env);
   const route = resolveDelegationExecutionRoute(model);
 
-  if (route === "hosted" && model?.provider && HARNESS_PROVIDERS.has(model.provider)) {
+  if (
+    route === "hosted" &&
+    (model?.provider === AGENT_HARNESS_PROVIDER || isAgentHarnessId(model?.provider))
+  ) {
     return "harness";
   }
 

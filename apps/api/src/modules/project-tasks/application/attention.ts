@@ -12,6 +12,7 @@ import {
   type TaskNotificationCategory,
   type UpdateTaskNotificationPreferences,
 } from "@ngriffin_uk/polychat-schemas";
+import { groupBy } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
   ErrorType,
@@ -160,15 +161,13 @@ export async function listProjectTaskAttention(
   const team = await context.repositories
     .get(WorkspaceTeammateRepository)
     .listForWorkspaces([...new Set(tasks.map((task) => task.workspaceId))]);
+  const teams = groupBy(team, (member) => member.workspaceId);
   const hidden = new Set(
     tasks
       .filter(
         (task) =>
           task.kind !== "task" ||
-          findHandlingManager(
-            task,
-            team.filter((member) => member.workspaceId === task.workspaceId),
-          ) !== null,
+          findHandlingManager(task, teams.get(task.workspaceId) ?? []) !== null,
       )
       .map((task) => task.id),
   );

@@ -4,8 +4,6 @@ import { operationIsGranted } from "@ngriffin_uk/polychat-library-policy";
 import {
   isPolyTeammateId,
   PROJECT_TASK_INTERACTION_TOOL_IDS,
-  PROJECT_TASK_TOOL_IDS,
-  WORK_TASK_TOOL_IDS,
   teammateRunConfigurationSchema,
   readToolIds,
   type ChatRun,
@@ -22,6 +20,7 @@ import { resolveDelegationContinuation } from "~/modules/delegations/application
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { findModelConfig, getDefaultChatModel } from "~/modules/models/application/resolve";
 import { recordPolyApprovalOutcome } from "~/modules/poly/application/earned-trust";
+import { buildWorkRunTools } from "~/modules/project-tasks/domain/work-tools";
 import {
   readToolInteractionId,
   readToolInteractionResolution,
@@ -207,15 +206,16 @@ export async function enqueueTeammateRun({
   const effectiveSkillIds = resumeConfiguration
     ? resumeConfiguration.skillIds.filter((skillId) => liveSkillIds.includes(skillId))
     : liveSkillIds;
-  const currentEnabledTools = [
+  const teammateTools = [
     ...new Set([
       ...(readToolIds(teammate.enabled_tools) ?? []),
       ...(resolvedInvocation?.source === "project_task" ? PROJECT_TASK_INTERACTION_TOOL_IDS : []),
-      ...(preparedInvocation?.resolution.context?.scope.type === "workspace"
-        ? [...PROJECT_TASK_TOOL_IDS, ...WORK_TASK_TOOL_IDS]
-        : []),
     ]),
   ];
+  const currentEnabledTools =
+    preparedInvocation?.resolution.context?.scope.type === "workspace"
+      ? buildWorkRunTools(teammateTools)
+      : teammateTools;
   const isPolyTeammate = isPolyTeammateId(teammate.id);
   const requestedEnabledTools = isPolyTeammate
     ? executionPolicy?.enabledTools

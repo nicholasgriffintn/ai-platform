@@ -1,9 +1,6 @@
 import {
   readToolIds,
   PROJECT_TASK_INTERACTION_TOOL_IDS,
-  PROJECT_TASK_TOOL_IDS,
-  WORK_RUN_EXCLUDED_TOOL_IDS,
-  WORK_TASK_TOOL_IDS,
   type ProjectFlowStage,
   type ProjectTask,
   type ToolPermission,
@@ -16,6 +13,7 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 
 import type { Teammate } from "~/infrastructure/database/schema";
+import { buildWorkRunTools } from "~/modules/project-tasks/domain/work-tools";
 import { isPlatformTeammate } from "~/modules/teammates/application/access";
 import { readTeammateSkillIds } from "~/modules/teammates/application/teammateResponse";
 
@@ -67,15 +65,11 @@ export function resolveGrantedTaskRuntime(params: {
   const requestedSkillIds = [
     ...new Set([...(stage?.skillIds ?? []), ...toStringArray(teammate?.skill_ids)]),
   ];
-  const enabledTools = [
-    ...new Set([
-      ...configuredTools,
-      ...PROJECT_TASK_TOOL_IDS,
-      ...WORK_TASK_TOOL_IDS,
-      ...PROJECT_TASK_INTERACTION_TOOL_IDS,
-      ...codingTools,
-    ]),
-  ].filter((toolId) => !WORK_RUN_EXCLUDED_TOOL_IDS.includes(toolId));
+  const enabledTools = buildWorkRunTools([
+    ...configuredTools,
+    ...PROJECT_TASK_INTERACTION_TOOL_IDS,
+    ...codingTools,
+  ]);
 
   return {
     stage,

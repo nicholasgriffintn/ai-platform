@@ -763,6 +763,10 @@ export async function runProjectTaskDispatch(params: {
       });
     }
 
+    const contextNotes = await Promise.all([
+      buildProjectTaskContext(context, claimed),
+      buildWorkPurpose(context, claimed),
+    ]);
     const request: ResponseCommand = {
       conversationId,
       conversationType: "task",
@@ -773,13 +777,7 @@ export async function runProjectTaskDispatch(params: {
         buildTaskPrompt({
           task: claimed,
           stageInstructions: buildStageInstructions(runtime),
-          contextNotes:
-            [
-              await buildProjectTaskContext(context, claimed),
-              await buildWorkPurpose(context, claimed),
-            ]
-              .filter(Boolean)
-              .join("\n\n") || null,
+          contextNotes: contextNotes.filter(Boolean).join("\n\n") || null,
         }),
       ),
       stream: false,

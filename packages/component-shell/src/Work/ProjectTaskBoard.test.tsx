@@ -16,6 +16,7 @@ const { createTask, startTask } = vi.hoisted(() => ({
 
 vi.mock("@ngriffin_uk/polychat-library-react", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@ngriffin_uk/polychat-library-react")>()),
+  useArchiveProject: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useCapabilityCatalog: () => ({ data: undefined }),
   useTeammates: () => ({ teammates: [] }),
   useProjectTasks: () => ({
@@ -35,6 +36,14 @@ vi.mock("./WorkDataContext.js", () => ({
 }));
 
 vi.mock("./ProjectHomeHeader.js", () => ({ ProjectHomeHeader: () => null }));
+
+vi.mock("./useWorkDirectory.js", () => ({
+  useWorkDirectory: () => ({ directory: { people: [], teammates: [] }, team: [] }),
+}));
+
+vi.mock("./useProjectTemplateSave.js", () => ({
+  useProjectTemplateSave: () => ({ isSaving: false, save: vi.fn() }),
+}));
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 

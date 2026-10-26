@@ -8,6 +8,10 @@ export function getProjectBasePath(workspaceId: string, projectId: string): stri
   return `/work/${encodeURIComponent(workspaceId)}/projects/${encodeURIComponent(projectId)}`;
 }
 
+export function getProjectTaskPath(workspaceId: string, projectId: string, taskId: string): string {
+  return `${getProjectBasePath(workspaceId, projectId)}/tasks/${encodeURIComponent(taskId)}`;
+}
+
 export function getProjectNewTaskPath(workspaceId: string, projectId: string): string {
   return `${getProjectBasePath(workspaceId, projectId)}?new=1`;
 }

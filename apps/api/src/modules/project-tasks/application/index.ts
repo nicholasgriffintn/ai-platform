@@ -427,7 +427,7 @@ export async function sendProjectTaskAgain(
 
   const tasks = context.repositories.get(TaskRepository);
 
-  await tasks.releaseAbandonedTasks(new Date(), task.dispatchTaskId);
+  await tasks.releaseExpiredLease(task.dispatchTaskId);
 
   const dispatch = await tasks.getTaskById(task.dispatchTaskId);
 
@@ -595,12 +595,10 @@ export async function createProjectTask(
           input.owner,
         )
       : { runner: input.runner ?? null, assigneeUserId: input.assigneeUserId ?? null };
-  const maxPosition = await context.repositories
-    .get(ProjectTaskRepository)
-    .getMaxPosition(projectId);
-  const numbering = await context.repositories
-    .get(ProjectTaskRepository)
-    .allocateTaskNumber(projectId);
+  const [maxPosition, numbering] = await Promise.all([
+    context.repositories.get(ProjectTaskRepository).getMaxPosition(projectId),
+    context.repositories.get(ProjectTaskRepository).allocateTaskNumber(projectId),
+  ]);
   const { task, created } = await context.repositories.get(ProjectTaskRepository).createTask({
     number: numbering.number,
     key: numbering.key,

@@ -25,7 +25,6 @@ const PAGE_TITLES: Record<string, string> = {
   "project-skill": "Project skill",
   "project-task": "Task",
   "project-tasks": "Tasks",
-  "project-teammate": "Project teammate",
   "project-teammate-context": "Project teammate context",
   "project-teammate-settings": "Project teammate settings",
   "project-teammates": "Project teammates",

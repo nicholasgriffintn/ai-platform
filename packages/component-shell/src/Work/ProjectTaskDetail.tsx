@@ -3,13 +3,14 @@ import { BackLink, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui
 import { TaskDetail, type TaskWorkProps } from "@ngriffin_uk/polychat-component-workspaces";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
+  getProjectConversationPath,
+  getProjectFilesPath,
+  getProjectTaskPath,
   useProjectTask,
   useProjectTasks,
   useRaiseCase,
   useStandupDraft,
   useWorkTaskActions,
-  getProjectConversationPath,
-  getProjectFilesPath,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask, UpdateProjectTaskInput } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
@@ -211,7 +212,7 @@ export function ProjectTaskDetail({
               : null
           }
           taskHref={(candidate) =>
-            `/work/${workspaceId}/projects/${candidate.projectId}/tasks/${candidate.id}`
+            getProjectTaskPath(workspaceId, candidate.projectId, candidate.id)
           }
           runHref={(conversationId, runId) =>
             `${getProjectConversationPath(workspaceId, projectId, conversationId)}?run_id=${encodeURIComponent(runId)}`

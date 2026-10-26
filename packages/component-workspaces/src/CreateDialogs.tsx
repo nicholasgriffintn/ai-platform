@@ -10,6 +10,7 @@ import {
   FormTextarea,
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
+import { resolveHttpUrl } from "@ngriffin_uk/polychat-utility-core";
 import { type FormEvent, useRef, useState } from "react";
 
 export interface CreateWorkspaceInput {
@@ -27,8 +28,6 @@ export interface CreateWorkspaceDialogProps {
   onSubmit: (input: CreateWorkspaceInput) => Promise<void>;
 }
 
-const SOURCE_PATTERN = /^https?:\/\/\S+$/u;
-
 export function CreateWorkspaceDialog({
   open,
   isSubmitting = false,
@@ -45,7 +44,7 @@ export function CreateWorkspaceDialog({
     .split(/\s+/u)
     .map((value) => value.trim())
     .filter(Boolean);
-  const invalidSource = sourceList.find((value) => !SOURCE_PATTERN.test(value));
+  const invalidSource = sourceList.find((value) => !resolveHttpUrl(value));
   const credits = Number(budget);
 
   const handleSubmit = async (event: FormEvent) => {

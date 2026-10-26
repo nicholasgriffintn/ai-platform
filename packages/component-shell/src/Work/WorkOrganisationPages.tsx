@@ -7,6 +7,8 @@ import {
   WorkTaskList,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import {
+  canManageWorkspace,
+  getProjectTaskPath,
   useInitiativeActions,
   useInitiatives,
   useMyTasks,
@@ -38,7 +40,7 @@ export function WorkInitiativesPage({ workspaceId }: { workspaceId: string }) {
   const initiatives = useInitiatives(workspaceId);
   const actions = useInitiativeActions(workspaceId);
   const organisation = useUpdateWorkspaceOrganisation(workspaceId);
-  const canManage = workspace.data?.role === "owner" || workspace.data?.role === "admin";
+  const canManage = Boolean(workspace.data && canManageWorkspace(workspace.data));
   const projects = (workspace.data?.projects ?? []).map((project) => ({
     id: project.id,
     name: project.name,
@@ -173,7 +175,7 @@ export function WorkSetupPage({ workspaceId }: { workspaceId: string }) {
   const workspace = useWorkspace(workspaceId);
   const actions = useSetupActions(workspaceId);
   const connectors = useRecipeConnectors();
-  const canManage = workspace.data?.role === "owner" || workspace.data?.role === "admin";
+  const canManage = Boolean(workspace.data && canManageWorkspace(workspace.data));
   const state = setup.data;
 
   return (
@@ -194,7 +196,7 @@ export function WorkSetupPage({ workspaceId }: { workspaceId: string }) {
             The lead owns the setup task.{" "}
             <Link
               className="underline"
-              href={`/work/${workspaceId}/projects/${state.projectId}/tasks/${state.setupTaskId}`}
+              href={getProjectTaskPath(workspaceId, state.projectId, state.setupTaskId)}
             >
               Open it
             </Link>{" "}
@@ -238,7 +240,7 @@ function MyWorkspaceTasks({ workspaceId, tasks }: { workspaceId: string; tasks: 
       <WorkTaskList
         tasks={tasks}
         directory={directory}
-        taskHref={(task) => `/work/${task.workspaceId}/projects/${task.projectId}/tasks/${task.id}`}
+        taskHref={(task) => getProjectTaskPath(task.workspaceId, task.projectId, task.id)}
       />
     </section>
   );

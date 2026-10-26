@@ -10,7 +10,7 @@ import { proposeSetupPlan } from "../onboarding";
 
 vi.mock("~/modules/connectors/application/connected", () => ({
   listConnectedConnectors: vi.fn(),
-  connectorOperationsForAccess: vi.fn(),
+  providerOperationsForAccess: vi.fn(),
 }));
 
 const caller = {

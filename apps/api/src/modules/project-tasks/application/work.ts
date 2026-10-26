@@ -5,7 +5,6 @@ import {
   type ProjectTaskCase,
   type ProjectTask,
   type ProjectTaskLinkKind,
-  type ProjectTaskPriority,
   type ProjectTaskThreadPost,
   type RaiseCaseInput,
   type UserQuestionAnswer,
@@ -17,6 +16,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { sameWorkActor, taskReference } from "~/modules/project-tasks/domain/work-actors";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { managesTeammate, resolveManager } from "~/modules/teammates/application/organisation";
 import { enqueueTeammateWake } from "~/modules/teammates/application/wakes";
@@ -209,8 +209,7 @@ export async function assignTask(
   await postEvent(context, updated, caller, `Assigned to ${ownerName} by ${caller.author.name}.`);
 
   const actor = caller.actor;
-  const assignedToSelf =
-    owner.type === "teammate" && actor.type === "teammate" && actor.id === owner.id;
+  const assignedToSelf = owner.type === "teammate" && sameWorkActor(owner, actor);
 
   if (owner.type === "teammate" && !assignedToSelf) {
     await wakeTeammateOnTask(context, updated, owner.id, "assigned", null);
@@ -581,7 +580,7 @@ export async function raiseCase(
       context,
       origin,
       caller,
-      `${caller.author.name} raised case ${task.key ?? task.id} "${task.objective}" and sent it to Triage.`,
+      `${caller.author.name} raised case ${taskReference(task)} "${task.objective}" and sent it to Triage.`,
     );
   }
 
@@ -626,32 +625,6 @@ export async function resolveCase(
   await reconcileTaskNotifications(context, updated);
 
   return updated;
-}
-
-export async function createSubTasks(
-  context: ServiceContext,
-  projectId: string,
-  parentTaskId: string,
-  children: { objective: string; owner: WorkActor | null; priority: ProjectTaskPriority }[],
-  caller: WorkCaller,
-): Promise<ProjectTask[]> {
-  const parent = await requireTaskInProject(context, projectId, parentTaskId);
-  const created: ProjectTask[] = [];
-
-  for (const child of children) {
-    const { task } = await createProjectTask(
-      context,
-      projectId,
-      { objective: child.objective, parentTaskId: parent.id, priority: child.priority },
-      { source: caller.actor.type === "teammate" ? "model" : "user" },
-    );
-
-    created.push(
-      child.owner ? await assignTask(context, projectId, task.id, child.owner, caller) : task,
-    );
-  }
-
-  return created;
 }
 
 export async function draftCaseReply(

@@ -5,9 +5,10 @@ import {
   type WorkRailsResponse,
   type WorkSpendRow,
 } from "@ngriffin_uk/polychat-schemas";
-import { parseStoredTimestamp } from "@ngriffin_uk/polychat-utility-core";
+import { HOUR_MS, MINUTE_MS, parseStoredTimestamp } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { taskReference } from "~/modules/project-tasks/domain/work-actors";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import { WorkspaceTeammateRepository } from "~/modules/teammates/infrastructure/WorkspaceTeammateRepository";
@@ -17,8 +18,6 @@ import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/Workspa
 
 import { requireWorkspaceAccess } from "./access";
 
-const HOUR_MS = 3_600_000;
-const MINUTE_MS = 60_000;
 const RAIL_FUTURE_SHARE = 0.25;
 const RUNNING_STATUSES = new Set(["accepted", "running", "cancelling"]);
 const BLOCKED_STATUSES = new Set([
@@ -59,7 +58,7 @@ export async function getWorkCosts(
   );
   const projectNames = new Map(projects.map((project) => [project.id, project.name]));
   const taskNames = new Map(
-    tasks.map((task) => [task.id, `${task.key ?? task.id} ${task.objective}`]),
+    tasks.map((task) => [task.id, `${taskReference(task)} ${task.objective}`]),
   );
   const projectRows: WorkSpendRow[] = byProject.map((row) => ({
     id: row.group_id,

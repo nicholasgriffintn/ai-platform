@@ -1,6 +1,7 @@
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { taskReference } from "~/modules/project-tasks/domain/work-actors";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { InitiativeRepository } from "~/modules/workspaces/infrastructure/InitiativeRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
@@ -24,7 +25,7 @@ export async function buildWorkPurpose(
     workspace?.mission ? `Mission: ${workspace.mission}` : null,
     initiative ? `Initiative: ${initiative.name}` : null,
     project ? `Project: ${project.name}` : null,
-    parent ? `Parent task: ${parent.key ?? parent.id} ${parent.objective}` : null,
+    parent ? `Parent task: ${taskReference(parent)} ${parent.objective}` : null,
     task.key ? `This task: ${task.key}` : null,
   ].filter((line): line is string => Boolean(line));
 

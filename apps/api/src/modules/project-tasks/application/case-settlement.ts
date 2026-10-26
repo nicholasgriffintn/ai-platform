@@ -1,6 +1,7 @@
 import { isTerminalProjectTaskStatus } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { taskReference } from "~/modules/project-tasks/domain/work-actors";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 
 export async function settleCasesResolvedBy(
@@ -31,7 +32,7 @@ export async function settleCasesResolvedBy(
     }
 
     const resolvedAt = new Date().toISOString();
-    const keys = resolverTasks.map((resolver) => resolver.key ?? resolver.id).join(", ");
+    const keys = resolverTasks.map((resolver) => taskReference(resolver)).join(", ");
 
     await repository.updateTask(caseTask.id, {
       status: "done",

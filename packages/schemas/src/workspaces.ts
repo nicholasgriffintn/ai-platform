@@ -17,6 +17,7 @@ import {
 } from "./sandbox-provider.js";
 
 export const workspaceRoleSchema = z.enum(["owner", "admin", "member"]);
+export const WORKSPACE_MANAGER_ROLES: readonly string[] = ["owner", "admin"];
 export const connectorGrantSchema = z.object({
   operations: z.array(z.string().trim().min(1).max(200)).min(1).max(500),
 });

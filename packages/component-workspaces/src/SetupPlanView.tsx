@@ -5,10 +5,13 @@ import {
   type SetupPlan,
   type SetupPlanState,
 } from "@ngriffin_uk/polychat-schemas";
-import { formatCredits, SHORT_WEEKDAY_LABELS } from "@ngriffin_uk/polychat-utility-core";
+import {
+  formatCredits,
+  formatMinutesInterval,
+  initialsOf,
+  SHORT_WEEKDAY_LABELS,
+} from "@ngriffin_uk/polychat-utility-core";
 import { AlertTriangle, Check, Plug } from "lucide-react";
-
-import { initialsOf } from "./work-actors";
 
 function formatCap(micros: number | null): string {
   return micros ? `${formatCredits(creditsFromCreditMicros(micros))} credits a month` : "No cap";
@@ -19,7 +22,7 @@ function formatWake(minutes: number | null): string {
     return "Wakes when work arrives";
   }
 
-  return minutes % 60 === 0 ? `Checks in every ${minutes / 60}h` : `Checks in every ${minutes} min`;
+  return `Checks in every ${formatMinutesInterval(minutes)}`;
 }
 
 function PlanSection({

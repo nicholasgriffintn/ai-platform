@@ -1,7 +1,9 @@
-import type { TeammateResponse, WorkspaceSummary } from "@ngriffin_uk/polychat-schemas";
+import {
+  WORKSPACE_MANAGER_ROLES,
+  type TeammateResponse,
+  type WorkspaceSummary,
+} from "@ngriffin_uk/polychat-schemas";
 import { areUserIdsEqual } from "@ngriffin_uk/polychat-utility-core";
-
-const WORKSPACE_MANAGE_ROLES = new Set(["owner", "admin"]);
 
 export interface TeammateManagePermission {
   canManage: boolean;
@@ -10,7 +12,7 @@ export interface TeammateManagePermission {
 }
 
 export function canManageWorkspace(workspace: Pick<WorkspaceSummary, "role">): boolean {
-  return WORKSPACE_MANAGE_ROLES.has(workspace.role);
+  return WORKSPACE_MANAGER_ROLES.includes(workspace.role);
 }
 
 export function getTeammatePublishTargets(

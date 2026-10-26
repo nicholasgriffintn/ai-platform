@@ -46,11 +46,19 @@ export async function heartbeatMachine(
     return null;
   }
 
-  await context.repositories.get(MachineRepository).upsert(id, heartbeat);
-  publishMachineEvent(context, id, heartbeat.machineId);
-  await releaseMachineWaitingTasks(context, id);
+  const machines = context.repositories.get(MachineRepository);
+  const previous = (await machines.listForUser(id)).find(
+    (candidate) => candidate.machineId === heartbeat.machineId,
+  );
 
-  const machine = (await context.repositories.get(MachineRepository).listForUser(id)).find(
+  await machines.upsert(id, heartbeat);
+  publishMachineEvent(context, id, heartbeat.machineId);
+
+  if (!previous || !isMachineOnline(previous, now)) {
+    await releaseMachineWaitingTasks(context, id);
+  }
+
+  const machine = (await machines.listForUser(id)).find(
     (candidate) => candidate.machineId === heartbeat.machineId,
   );
 

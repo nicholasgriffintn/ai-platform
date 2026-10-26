@@ -5,9 +5,10 @@ import {
   WorkspaceMembersSkeleton,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import {
+  canManageWorkspace,
   useAuthStatus,
-  useWorkspaceMemberMutations,
   useRevokeWorkspaceInvitation,
+  useWorkspaceMemberMutations,
 } from "@ngriffin_uk/polychat-library-react";
 import { LogOut, UserPlus } from "lucide-react";
 import { useState } from "react";
@@ -47,7 +48,7 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
     );
   }
 
-  const canManage = workspace.role === "owner" || workspace.role === "admin";
+  const canManage = canManageWorkspace(workspace);
   const currentUserId = user?.id ? user.id : undefined;
   const headerActions = [
     ...(canManage

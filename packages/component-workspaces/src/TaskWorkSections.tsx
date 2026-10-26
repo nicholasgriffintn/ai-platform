@@ -19,7 +19,7 @@ import {
   type ProjectTaskThreadPost,
   type WorkActor,
 } from "@ngriffin_uk/polychat-schemas";
-import { formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
+import { formatRelativeTime, initialsOf } from "@ngriffin_uk/polychat-utility-core";
 import { AlertTriangle, Plus, X } from "lucide-react";
 import { useState } from "react";
 
@@ -27,7 +27,6 @@ import {
   decodeWorkActor,
   describeWorkActor,
   encodeWorkActor,
-  initialsOf,
   workActorOptions,
   type WorkDirectory,
 } from "./work-actors";

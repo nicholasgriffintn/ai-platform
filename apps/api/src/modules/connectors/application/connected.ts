@@ -1,8 +1,11 @@
+import {
+  connectorOperationsForAccess,
+  getConnectorProviderConfig,
+} from "@ngriffin_uk/polychat-ai-integrations";
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
-import { getRecipeConnectorProviderConfigs } from "./connector-adapters";
 import { listRecipeConnectorSummaries } from "./index";
 
 export interface ConnectedConnector {
@@ -19,15 +22,11 @@ export async function listConnectedConnectors(
   return connectors.map((connector) => ({ id: connector.id, name: connector.name }));
 }
 
-export function connectorOperationsForAccess(
+export function providerOperationsForAccess(
   provider: RecipeConnectorProvider,
   access: "read" | "write",
 ): string[] {
-  const config = getRecipeConnectorProviderConfigs().find((candidate) => candidate.id === provider);
+  const config = getConnectorProviderConfig(provider);
 
-  return (config?.operations ?? [])
-    .filter((operation) =>
-      access === "read" ? operation.access === "read" : operation.destructive !== true,
-    )
-    .map((operation) => operation.id);
+  return config ? connectorOperationsForAccess(config, access) : [];
 }

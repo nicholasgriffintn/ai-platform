@@ -3,7 +3,7 @@ import {
   ProjectTeammatesCard,
   ProjectOverviewSkeleton,
 } from "@ngriffin_uk/polychat-component-workspaces";
-import { getProjectBasePath } from "@ngriffin_uk/polychat-library-react";
+import { canManageWorkspace, getProjectBasePath } from "@ngriffin_uk/polychat-library-react";
 
 import { ChannelConnections } from "../Channels/ChannelConnections.js";
 import { PageShell } from "../Shell/PageShell.js";
@@ -45,7 +45,7 @@ export function ProjectSettings({
     );
   }
 
-  const canManage = workspace?.role === "owner" || workspace?.role === "admin";
+  const canManage = Boolean(workspace && canManageWorkspace(workspace));
 
   return (
     <PageShell.Content className="max-w-4xl">

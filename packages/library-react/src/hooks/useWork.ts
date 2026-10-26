@@ -54,6 +54,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 
+import { useLiveOrPoll } from "../sync/live-or-poll.js";
 import {
   projectTaskDetailQueryKey,
   projectTasksQueryKey,
@@ -68,8 +69,9 @@ export const workInboxQueryKey = [WORK_QUERY_ROOT, "inbox"] as const;
 export const myTasksQueryKey = [WORK_QUERY_ROOT, "my-tasks"] as const;
 export const workspaceTeamQueryKey = (workspaceId: string) =>
   [WORK_QUERY_ROOT, "team", workspaceId] as const;
+export const WORKSPACE_TASKS_QUERY_PREFIX = [WORK_QUERY_ROOT, "tasks"] as const;
 export const workspaceTasksQueryKey = (workspaceId: string, teammateId?: string) =>
-  [WORK_QUERY_ROOT, "tasks", workspaceId, teammateId ?? "all"] as const;
+  [...WORKSPACE_TASKS_QUERY_PREFIX, workspaceId, teammateId ?? "all"] as const;
 export const initiativesQueryKey = (workspaceId: string) =>
   [WORK_QUERY_ROOT, "initiatives", workspaceId] as const;
 export const workCostsQueryKey = (workspaceId: string, period?: string) =>
@@ -116,12 +118,13 @@ export function useWorkInbox() {
 
 export function useMyTasks(includeDone = false) {
   const enabled = useWorkEnabled();
+  const liveOrPoll = useLiveOrPoll();
 
   return useQuery({
     queryKey: [...myTasksQueryKey, includeDone],
     queryFn: () => listMyTasks({ include_done: includeDone }),
     enabled,
-    refetchInterval: WORK_REFETCH_MS,
+    refetchInterval: (query) => liveOrPoll(query, WORK_REFETCH_MS, "project_task.changed"),
   });
 }
 
@@ -138,13 +141,14 @@ export function useWorkspaceTeam(workspaceId: string) {
 
 export function useWorkspaceTasks(workspaceId: string, teammateId?: string) {
   const enabled = useWorkEnabled();
+  const liveOrPoll = useLiveOrPoll();
 
   return useQuery({
     queryKey: workspaceTasksQueryKey(workspaceId, teammateId),
     queryFn: () =>
       listWorkspaceTasks(workspaceId, teammateId ? { owner_teammate_id: teammateId } : {}),
     enabled: enabled && Boolean(workspaceId),
-    refetchInterval: WORK_REFETCH_MS,
+    refetchInterval: (query) => liveOrPoll(query, WORK_REFETCH_MS, "project_task.changed"),
   });
 }
 

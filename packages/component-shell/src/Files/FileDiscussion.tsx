@@ -1,6 +1,6 @@
 import { DocumentDiscussion } from "@ngriffin_uk/polychat-component-content";
 import {
-  getProjectBasePath,
+  getProjectTaskPath,
   useCapabilityCatalog,
   useProject,
   useWorkspace,
@@ -60,8 +60,7 @@ export function FileDiscussion({
       errorMessage={discussion.errorMessage}
       taskHref={
         project.data
-          ? (taskId) =>
-              `${getProjectBasePath(project.data.workspaceId, project.data.id)}/tasks/${encodeURIComponent(taskId)}`
+          ? (taskId) => getProjectTaskPath(project.data.workspaceId, project.data.id, taskId)
           : undefined
       }
       onComment={(body, parentId, mentionedTeammateId) =>

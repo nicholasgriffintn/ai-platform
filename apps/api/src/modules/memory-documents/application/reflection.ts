@@ -19,8 +19,10 @@ import {
   getTeammateContextMemory,
   requireTeammateContext,
 } from "~/modules/teammates/application/contexts";
+import { teammateContextCoversRun } from "~/modules/teammates/domain/context-scope";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { MemoryScope } from "~/types";
 
 import { generateMemoryReflection, prepareMemoryReflection } from "./reflection-generation";
@@ -57,7 +59,18 @@ async function requireReflectionScope(
       : toStringValue(conversation.user_id, "");
   const scopeType = typeof conversation.project_id === "string" ? "project" : "personal";
 
-  if (teammate.scope.type !== scopeType || teammate.scope.id !== scopeId) {
+  const project =
+    scopeType === "project"
+      ? await context.repositories.get(WorkspaceRepository).getProject(scopeId)
+      : null;
+
+  if (
+    !teammateContextCoversRun(teammate.scope, {
+      type: scopeType,
+      id: scopeId,
+      workspaceId: project?.workspace_id ?? null,
+    })
+  ) {
     throw new AssistantError("Memory source belongs to another scope", ErrorType.FORBIDDEN, 403);
   }
 

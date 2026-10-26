@@ -54,10 +54,6 @@ export default [
       ":workspaceId/projects/:projectId/teammates/:teammateId/context",
       "pages/work/project-teammate-context.tsx",
     ),
-    route(
-      ":workspaceId/projects/:projectId/teammates/:teammateId",
-      "pages/work/project-teammate.tsx",
-    ),
     route(":workspaceId/projects/:projectId/scheduled", "pages/work/project-scheduled.tsx"),
     route(":workspaceId/projects/:projectId/models/:place?", "pages/work/project-models.tsx"),
     route(":workspaceId/projects/:projectId/plugins", "pages/work/project-plugins.tsx"),

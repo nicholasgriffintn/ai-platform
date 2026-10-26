@@ -1,6 +1,5 @@
 import { Button, ButtonLink, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
 import {
-  isProjectTaskAwaitingInput,
   isProjectTaskRetryable,
   projectTaskBlockedReasonLabels,
   type ProjectFlow,
@@ -13,7 +12,6 @@ import {
   Bot,
   GitBranch,
   ListChecks,
-  MessageSquareText,
   Gavel,
   Pause,
   Play,
@@ -57,7 +55,6 @@ export interface TaskBoardProps {
   teammates: TaskBoardTeammateSummary[];
   pendingTaskIds?: string[];
   taskHref: (task: ProjectTask) => string;
-  conversationHref: (task: ProjectTask) => string | null;
   onStartTask: (task: ProjectTask) => void;
   onAcceptTask: (task: ProjectTask) => void;
   onCreateTask: () => void;
@@ -126,7 +123,6 @@ function TaskRow({
   members,
   teammates,
   href,
-  conversationHref,
   isPending,
   onStart,
   onAccept,
@@ -136,7 +132,6 @@ function TaskRow({
   members: TaskBoardMemberSummary[];
   teammates: TaskBoardTeammateSummary[];
   href: string;
-  conversationHref: string | null;
   isPending: boolean;
   onStart: () => void;
   onAccept: () => void;
@@ -148,7 +143,6 @@ function TaskRow({
   const teammateId = stage?.teammateId ?? task.runner?.teammateId;
   const teammate = teammates.find((candidate) => candidate.id === teammateId);
   const canRetry = isProjectTaskRetryable(task);
-  const needsInput = isProjectTaskAwaitingInput(task);
   const activityAt = task.updatedAt ?? task.createdAt;
 
   return (
@@ -208,18 +202,7 @@ function TaskRow({
             Retry
           </Button>
         ) : null}
-        {task.status === "blocked" && !canRetry && conversationHref ? (
-          <ButtonLink
-            href={conversationHref}
-            variant="primary"
-            size="sm"
-            icon={<MessageSquareText size={13} />}
-            className="no-underline hover:!no-underline"
-          >
-            {needsInput ? "Answer questions" : "Respond"}
-          </ButtonLink>
-        ) : null}
-        {task.status === "blocked" && !canRetry && !conversationHref ? (
+        {task.status === "blocked" && !canRetry ? (
           <ButtonLink
             href={href}
             variant="outline"
@@ -228,17 +211,6 @@ function TaskRow({
             className="no-underline hover:!no-underline"
           >
             Review
-          </ButtonLink>
-        ) : null}
-        {task.status === "done" && conversationHref ? (
-          <ButtonLink
-            href={conversationHref}
-            variant="outline"
-            size="sm"
-            icon={<MessageSquareText size={13} />}
-            className="no-underline hover:!no-underline"
-          >
-            View result
           </ButtonLink>
         ) : null}
       </div>
@@ -340,7 +312,6 @@ export function TaskBoard({
   teammates,
   pendingTaskIds = NO_PENDING_TASKS,
   taskHref,
-  conversationHref,
   onStartTask,
   onAcceptTask,
   onCreateTask,
@@ -415,7 +386,6 @@ export function TaskBoard({
                 members={members}
                 teammates={teammates}
                 href={taskHref(task)}
-                conversationHref={conversationHref(task)}
                 isPending={pendingTaskIds.includes(task.id)}
                 onStart={() => onStartTask(task)}
                 onAccept={() => onAcceptTask(task)}

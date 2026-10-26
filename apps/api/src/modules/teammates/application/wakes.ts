@@ -1,10 +1,7 @@
 import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import {
   isTerminalProjectTaskStatus,
-  PROJECT_TASK_TOOL_IDS,
   readToolIds,
-  WORK_RUN_EXCLUDED_TOOL_IDS,
-  WORK_TASK_TOOL_IDS,
   WORK_TEAMMATE_WAKE_TASK_TYPE,
   WORK_WAKE_QUIET_MINUTES,
   WORK_WATCHDOG_GRACE_MINUTES,
@@ -12,9 +9,11 @@ import {
   type WorkTeammateWakeTaskData,
   type WorkWakeReason,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId, parseStoredTimestamp } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, MINUTE_MS, parseStoredTimestamp } from "@ngriffin_uk/polychat-utility-core";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
+import { taskReference } from "~/modules/project-tasks/domain/work-actors";
+import { buildWorkRunTools } from "~/modules/project-tasks/domain/work-tools";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
@@ -32,7 +31,6 @@ import { assertTeammateEmploymentAvailable, resolveManager } from "./organisatio
 import { enqueueTeammateRun } from "./run-admission";
 import { ensureWorkspaceWakeConversation, resolveProjectTeammateScope } from "./work-scope";
 
-const MINUTE_MS = 60_000;
 const HEARTBEAT_PROJECT_LIMIT = 5;
 const WAKE_REASON_TEXT: Record<WorkWakeReason, string> = {
   assigned: "a task was assigned to you",
@@ -54,7 +52,7 @@ function minutesAgo(now: Date, minutes: number): number {
 }
 
 function formatTaskLine(task: ProjectTask): string {
-  const key = task.key ?? task.id;
+  const key = taskReference(task);
   const blocked = task.blockedDetail ? ` — ${task.blockedDetail}` : "";
 
   return `- ${key} [${task.status}${task.priority !== "none" ? `, ${task.priority}` : ""}] ${task.objective}${blocked}`;
@@ -242,13 +240,7 @@ export async function runTeammateWake(
     projectName: project.name,
     isLead: workspace?.lead_teammate_id === data.teammateId,
   });
-  const enabledTools = [
-    ...new Set([
-      ...(readToolIds(teammate.enabled_tools) ?? []),
-      ...PROJECT_TASK_TOOL_IDS,
-      ...WORK_TASK_TOOL_IDS,
-    ]),
-  ].filter((toolId) => !WORK_RUN_EXCLUDED_TOOL_IDS.includes(toolId));
+  const enabledTools = buildWorkRunTools(readToolIds(teammate.enabled_tools) ?? []);
 
   const conversationId = await ensureWorkspaceWakeConversation(context, teammateContext, project);
 

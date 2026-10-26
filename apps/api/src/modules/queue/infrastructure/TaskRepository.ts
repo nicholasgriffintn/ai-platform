@@ -169,7 +169,15 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
     return result ? result.map((task) => this.parseTask(task)) : [];
   }
 
-  public async releaseAbandonedTasks(now = new Date(), taskId?: string): Promise<number> {
+  public async releaseAbandonedTasks(now = new Date()): Promise<number> {
+    return this.releaseExpiredLeases(now, null);
+  }
+
+  public async releaseExpiredLease(taskId: string, now = new Date()): Promise<boolean> {
+    return (await this.releaseExpiredLeases(now, taskId)) > 0;
+  }
+
+  private async releaseExpiredLeases(now: Date, taskId: string | null): Promise<number> {
     const released = await this.runQuery<{ id: string }>(
       `UPDATE tasks
        SET status = CASE WHEN COALESCE(attempts, 0) + 1 >= COALESCE(max_attempts, 3) THEN 'failed' ELSE 'pending' END,
@@ -187,7 +195,7 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
          AND datetime(execution_lease_expires_at) <= datetime(?)
          AND (? IS NULL OR id = ?)
        RETURNING id`,
-      [now.toISOString(), now.toISOString(), taskId ?? null, taskId ?? null],
+      [now.toISOString(), now.toISOString(), taskId, taskId],
     );
 
     return released?.length ?? 0;

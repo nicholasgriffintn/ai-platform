@@ -26,6 +26,17 @@ export async function resolveProjectTeammateScope(
   return { type: "project", id: projectId };
 }
 
+export async function resolveTeammateScope(
+  context: ServiceContext,
+  teammateId: string,
+  projectId: string | null,
+  userId: number,
+): Promise<TeammateContextScope> {
+  return projectId
+    ? resolveProjectTeammateScope(context, teammateId, projectId)
+    : { type: "personal", id: String(userId) };
+}
+
 export async function carryProjectContextsIntoWorkspace(
   context: ServiceContext,
   workspaceContext: TeammateContext,

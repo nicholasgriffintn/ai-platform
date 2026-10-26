@@ -8,7 +8,7 @@ import {
   userQuestionAnswerSchema,
   WORK_HEARTBEAT_MIN_MINUTES,
 } from "@ngriffin_uk/polychat-schemas";
-import { readTrimmedStringArray } from "@ngriffin_uk/polychat-utility-core";
+import { readTrimmedString, readTrimmedStringArray } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 import { answerStandup, summariseStandup } from "~/modules/project-tasks/application/standups";
@@ -23,6 +23,7 @@ import {
   requestReview,
   reviewTask,
 } from "~/modules/project-tasks/application/work";
+import { taskReference } from "~/modules/project-tasks/domain/work-actors";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { proposeHire } from "~/modules/teammates/application/organisation";
 import { proposeSetupPlan } from "~/modules/workspaces/application/onboarding";
@@ -43,12 +44,12 @@ import {
   review_task as reviewTaskDescriptor,
   summarise_standup as summariseStandupDescriptor,
 } from "./definitions/work";
-import { readText, resolveWorkActor, resolveWorkToolScope } from "./scope";
+import { resolveWorkActor, resolveWorkToolScope } from "./scope";
 
 const MINUTES_PER_HOUR = 60;
 
 function describeTask(task: { key: string | null; id: string; objective: string; status: string }) {
-  return `${task.key ?? task.id} ${task.objective} (${task.status})`;
+  return `${taskReference(task)} ${task.objective} (${task.status})`;
 }
 
 export const assign_task: ApiToolDefinition = {
@@ -59,7 +60,7 @@ export const assign_task: ApiToolDefinition = {
     const task = await assignTask(
       scope.context,
       scope.projectId,
-      readText(args.taskId),
+      readTrimmedString(args.taskId),
       owner,
       scope.caller,
     );
@@ -80,8 +81,8 @@ export const post_update: ApiToolDefinition = {
     const post = await commentOnTask(
       scope.context,
       scope.projectId,
-      readText(args.taskId),
-      readText(args.body),
+      readTrimmedString(args.taskId),
+      readTrimmedString(args.body),
       scope.caller,
     );
 
@@ -102,8 +103,8 @@ export const block_task: ApiToolDefinition = {
     const task = await blockTask(
       scope.context,
       scope.projectId,
-      readText(args.taskId),
-      readText(args.reason),
+      readTrimmedString(args.taskId),
+      readTrimmedString(args.reason),
       unblocker,
       scope.caller,
     );
@@ -125,9 +126,9 @@ export const request_review: ApiToolDefinition = {
     const task = await requestReview(
       scope.context,
       scope.projectId,
-      readText(args.taskId),
+      readTrimmedString(args.taskId),
       reviewer,
-      readText(args.note) || null,
+      readTrimmedString(args.note) || null,
       scope.caller,
     );
 
@@ -147,9 +148,9 @@ export const review_task: ApiToolDefinition = {
     const task = await reviewTask(
       scope.context,
       scope.projectId,
-      readText(args.taskId),
+      readTrimmedString(args.taskId),
       args.decision === "accept" ? "accept" : "changes",
-      readText(args.note),
+      readTrimmedString(args.note),
       scope.caller,
     );
 
@@ -169,8 +170,8 @@ export const escalate: ApiToolDefinition = {
     const task = await escalateTask(
       scope.context,
       scope.projectId,
-      readText(args.taskId),
-      readText(args.reason),
+      readTrimmedString(args.taskId),
+      readTrimmedString(args.reason),
       scope.caller,
     );
 
@@ -187,15 +188,15 @@ export const raise_case: ApiToolDefinition = {
   ...raiseCaseDescriptor,
   execute: async (args, toolContext) => {
     const scope = await resolveWorkToolScope(toolContext.request);
-    const origin = readText(args.raisedFromTaskId);
+    const origin = readTrimmedString(args.raisedFromTaskId);
     const originTask = origin
       ? await scope.context.repositories
           .get(ProjectTaskRepository)
           .getTaskByReference(scope.projectId, origin)
       : null;
     const input = raiseCaseSchema.parse({
-      title: readText(args.title),
-      description: readText(args.description) || null,
+      title: readTrimmedString(args.title),
+      description: readTrimmedString(args.description) || null,
       priority: projectTaskPrioritySchema.safeParse(args.priority).data ?? "none",
       raisedFromTaskId: originTask?.id ?? null,
     });
@@ -214,15 +215,15 @@ export const propose_hire: ApiToolDefinition = {
   ...proposeHireDescriptor,
   execute: async (args, toolContext) => {
     const scope = await resolveWorkToolScope(toolContext.request);
-    const manager = readText(args.reportsTo)
+    const manager = readTrimmedString(args.reportsTo)
       ? await resolveWorkActor(scope, args.reportsTo)
       : scope.caller.actor;
     const heartbeatHours = typeof args.heartbeatHours === "number" ? args.heartbeatHours : null;
     const input = proposeHireSchema.parse({
-      name: readText(args.name),
-      title: readText(args.title),
-      roleSlug: readText(args.roleSlug) || null,
-      jobDescription: readText(args.jobDescription) || null,
+      name: readTrimmedString(args.name),
+      title: readTrimmedString(args.title),
+      roleSlug: readTrimmedString(args.roleSlug) || null,
+      jobDescription: readTrimmedString(args.jobDescription) || null,
       reportsToTeammateId: manager.type === "teammate" ? manager.id : null,
       monthlyCreditCapMicros:
         typeof args.monthlyCredits === "number" && args.monthlyCredits > 0
@@ -235,7 +236,7 @@ export const propose_hire: ApiToolDefinition = {
           )
         : null,
       projectIds: [scope.projectId],
-      reason: readText(args.reason),
+      reason: readTrimmedString(args.reason),
     });
     const proposed = await proposeHire(scope.context, scope.workspaceId, input, {
       teammateId: scope.caller.actor.type === "teammate" ? scope.caller.actor.id : null,
@@ -256,13 +257,13 @@ export const answer_standup: ApiToolDefinition = {
     const scope = await resolveWorkToolScope(toolContext.request);
     const task = await scope.context.repositories
       .get(ProjectTaskRepository)
-      .getTaskByReference(scope.projectId, readText(args.taskId));
+      .getTaskByReference(scope.projectId, readTrimmedString(args.taskId));
     const questions = task?.details.standup?.questions ?? [];
     const answers = readTrimmedStringArray(args.answers);
     const updated = await answerStandup(
       scope.context,
       scope.projectId,
-      readText(args.taskId),
+      readTrimmedString(args.taskId),
       { answers: questions.map((question, index) => ({ question, answer: answers[index] ?? "" })) },
       scope.caller,
     );
@@ -283,8 +284,8 @@ export const summarise_standup: ApiToolDefinition = {
     const task = await summariseStandup(
       scope.context,
       scope.projectId,
-      readText(args.taskId),
-      readText(args.summary),
+      readTrimmedString(args.taskId),
+      readTrimmedString(args.summary),
       scope.caller,
     );
 
@@ -325,15 +326,15 @@ export const draft_reply: ApiToolDefinition = {
     const task = await draftCaseReply(
       scope.context,
       scope.projectId,
-      readText(args.taskId),
-      readText(args.body),
+      readTrimmedString(args.taskId),
+      readTrimmedString(args.body),
       scope.caller,
     );
 
     return {
       status: "success",
       name: "draft_reply",
-      content: `Drafted a reply on ${task.key ?? task.id}. A person sends it.`,
+      content: `Drafted a reply on ${taskReference(task)}. A person sends it.`,
       data: { task },
     };
   },
@@ -347,7 +348,7 @@ export const answer_questions: ApiToolDefinition = {
     const task = await answerReportQuestions(
       scope.context,
       scope.projectId,
-      readText(args.taskId),
+      readTrimmedString(args.taskId),
       answers,
       scope.caller,
     );
@@ -355,7 +356,7 @@ export const answer_questions: ApiToolDefinition = {
     return {
       status: "success",
       name: "answer_questions",
-      content: `Answered the questions on ${task.key ?? task.id}. Its owner carries on.`,
+      content: `Answered the questions on ${taskReference(task)}. Its owner carries on.`,
       data: { task },
     };
   },

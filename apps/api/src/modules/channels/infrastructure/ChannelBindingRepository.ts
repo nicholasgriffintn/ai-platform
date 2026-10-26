@@ -1,4 +1,8 @@
-import type { ChannelReactionLevel, InboundChannelId } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ChannelInteractionMode,
+  ChannelReactionLevel,
+  InboundChannelId,
+} from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
@@ -13,7 +17,7 @@ export interface CreateChannelBindingRecord {
   externalId: string;
   label?: string | null;
   teammateId?: string | null;
-  interactionMode: "direct" | "automated" | "cases";
+  interactionMode: ChannelInteractionMode;
   reactionLevel: ChannelReactionLevel;
   createdByUserId: number;
 }

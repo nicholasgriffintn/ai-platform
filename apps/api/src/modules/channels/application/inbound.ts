@@ -3,11 +3,12 @@ import {
   extractChatCompletionNotification,
 } from "@ngriffin_uk/polychat-ai-providers";
 import {
-  INBOUND_CHANNEL_IDS,
-  isPolyTeammateId,
-  type InboundChannelId,
-  channelMessageContextSchema,
+  type ChannelInteractionMode,
   type ChannelMessageContext,
+  channelMessageContextSchema,
+  INBOUND_CHANNEL_IDS,
+  type InboundChannelId,
+  isPolyTeammateId,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
@@ -46,7 +47,7 @@ import {
   requireTeammateContext,
 } from "~/modules/teammates/application/contexts";
 import { enqueueTeammateRun } from "~/modules/teammates/application/run-admission";
-import { resolveProjectTeammateScope } from "~/modules/teammates/application/work-scope";
+import { resolveTeammateScope } from "~/modules/teammates/application/work-scope";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IEnv, IUser, Message } from "~/types";
@@ -373,7 +374,7 @@ type ChannelDelivery =
       bindingId?: string;
       teammateContextId?: string;
       poly?: boolean;
-      interactionMode: "direct" | "automated" | "cases";
+      interactionMode: ChannelInteractionMode;
       validate(): Promise<void>;
       send(reply: ChannelReplyPayload): Promise<void>;
       signal?(signal: ChannelRunSignal): Promise<void>;
@@ -489,9 +490,12 @@ async function resolveBindingDelivery(params: {
   }
 
   const teammateScope = binding.teammate_id
-    ? binding.scope_type === "project"
-      ? await resolveProjectTeammateScope(params.context, binding.teammate_id, binding.scope_id)
-      : ({ type: "personal", id: String(params.user.id) } as const)
+    ? await resolveTeammateScope(
+        params.context,
+        binding.teammate_id,
+        binding.scope_type === "project" ? binding.scope_id : null,
+        params.user.id,
+      )
     : null;
   const teammateContext =
     binding.teammate_id && teammateScope

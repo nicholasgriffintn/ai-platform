@@ -262,7 +262,6 @@ export type SetupPlanCreated = z.infer<typeof setupPlanCreatedSchema>;
 export const setupPlanStateSchema = z.object({
   revision: z.number().int().positive(),
   plan: setupPlanSchema,
-  approvedRevision: z.number().int().positive().nullable(),
   appliedAt: z.string().nullable(),
   created: setupPlanCreatedSchema.nullable(),
   failure: z
@@ -301,7 +300,6 @@ export const updateSetupPlanSchema = z.object({
 export const approveSetupPlanSchema = z.object({ revision: z.number().int().positive() });
 
 export const WORK_INBOX_KINDS = [
-  "task",
   "hire",
   "budget",
   "standup",

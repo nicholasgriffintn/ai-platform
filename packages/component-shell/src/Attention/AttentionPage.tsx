@@ -2,6 +2,7 @@ import { ButtonLink, EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import { WorkInbox } from "@ngriffin_uk/polychat-component-workspaces";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
+  canManageWorkspace,
   useDecideInboxHire,
   useTaskAttention,
   useWorkInbox,
@@ -24,7 +25,7 @@ export function AttentionPage() {
   const decideHire = useDecideInboxHire();
   const managedWorkspaceIds = new Set(
     (workspaces.data ?? [])
-      .filter((workspace) => workspace.role === "owner" || workspace.role === "admin")
+      .filter((workspace) => canManageWorkspace(workspace))
       .map((workspace) => workspace.id),
   );
   const loadError = tasks.error ?? decisions.error;

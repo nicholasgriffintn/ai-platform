@@ -7,7 +7,11 @@ import {
   type ProjectTaskThreadPost,
   type UserQuestionSet,
 } from "@ngriffin_uk/polychat-schemas";
-import { readTrimmedStringArray, truncateText } from "@ngriffin_uk/polychat-utility-core";
+import {
+  readTrimmedString,
+  readTrimmedStringArray,
+  truncateText,
+} from "@ngriffin_uk/polychat-utility-core";
 
 import {
   createProjectTask,
@@ -16,6 +20,7 @@ import {
   updateProjectTask,
 } from "~/modules/project-tasks/application";
 import { assignTask } from "~/modules/project-tasks/application/work";
+import { taskReference } from "~/modules/project-tasks/domain/work-actors";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import type { ApiToolDefinition } from "~/types/functions";
 
@@ -26,7 +31,7 @@ import {
   update_task as update_taskDescriptor,
   MODEL_SETTABLE_STATUSES,
 } from "./definitions/projectTasks";
-import { readText, requireProjectId, resolveWorkActor, resolveWorkToolScope } from "./scope";
+import { requireProjectId, resolveWorkActor, resolveWorkToolScope } from "./scope";
 
 const MAX_LISTED_TASKS = 25;
 const THREAD_EXCERPT_POSTS = 8;
@@ -39,7 +44,7 @@ function formatTask(task: ProjectTask): string {
     : "";
   const blocked = task.blockedDetail ? ` — ${task.blockedDetail}` : "";
 
-  return `${task.key ?? task.id}${stage}: ${task.objective}${criteria} (${projectTaskStatusLabels[task.status]})${blocked}`;
+  return `${taskReference(task)}${stage}: ${task.objective}${criteria} (${projectTaskStatusLabels[task.status]})${blocked}`;
 }
 
 function formatTaskDetail(params: {
@@ -130,7 +135,7 @@ function formatTaskDetail(params: {
 }
 
 function readDueAt(value: unknown): string | null {
-  const text = readText(value);
+  const text = readTrimmedString(value);
 
   return text && !Number.isNaN(Date.parse(text)) ? new Date(text).toISOString() : null;
 }
@@ -139,7 +144,7 @@ export const create_task: ApiToolDefinition = {
   ...create_taskDescriptor,
   execute: async (args, toolContext) => {
     const scope = await resolveWorkToolScope(toolContext.request);
-    const parentReference = readText(args.parentTaskId);
+    const parentReference = readTrimmedString(args.parentTaskId);
     const parent = parentReference
       ? await scope.context.repositories
           .get(ProjectTaskRepository)
@@ -154,7 +159,7 @@ export const create_task: ApiToolDefinition = {
       scope.context,
       scope.projectId,
       {
-        objective: readText(args.objective),
+        objective: readTrimmedString(args.objective),
         acceptanceCriteria: Array.isArray(args.acceptanceCriteria)
           ? args.acceptanceCriteria
               .filter((entry): entry is string => typeof entry === "string" && entry.trim() !== "")
@@ -164,16 +169,16 @@ export const create_task: ApiToolDefinition = {
         killConditions: readTrimmedStringArray(args.killConditions).map((condition) => ({
           condition,
         })),
-        expectedOutput: readText(args.expectedOutput) || null,
-        stageId: readText(args.stageId) || null,
-        description: readText(args.description) || null,
+        expectedOutput: readTrimmedString(args.expectedOutput) || null,
+        stageId: readTrimmedString(args.stageId) || null,
+        description: readTrimmedString(args.description) || null,
         parentTaskId: parent?.id ?? null,
         priority: projectTaskPrioritySchema.safeParse(args.priority).data ?? "none",
         dueAt: readDueAt(args.dueAt),
       },
       { source: scope.caller.actor.type === "teammate" ? "model" : "user" },
     );
-    const owned = readText(args.owner)
+    const owned = readTrimmedString(args.owner)
       ? await assignTask(
           scope.context,
           scope.projectId,
@@ -234,11 +239,11 @@ export const get_task: ApiToolDefinition = {
 
     const reference = await request.context.repositories
       .get(ProjectTaskRepository)
-      .getTaskByReference(projectId, readText(args.taskId));
+      .getTaskByReference(projectId, readTrimmedString(args.taskId));
     const result = await getProjectTask(
       request.context,
       projectId,
-      reference?.id ?? readText(args.taskId),
+      reference?.id ?? readTrimmedString(args.taskId),
     );
 
     return {
@@ -267,11 +272,11 @@ export const update_task: ApiToolDefinition = {
         : undefined;
     const reference = await request.context.repositories
       .get(ProjectTaskRepository)
-      .getTaskByReference(projectId, readText(args.taskId));
+      .getTaskByReference(projectId, readTrimmedString(args.taskId));
     const { task } = await updateProjectTask(
       request.context,
       projectId,
-      reference?.id ?? readText(args.taskId),
+      reference?.id ?? readTrimmedString(args.taskId),
       {
         ...(typeof args.objective === "string" ? { objective: args.objective.trim() } : {}),
         ...(Array.isArray(args.acceptanceCriteria)

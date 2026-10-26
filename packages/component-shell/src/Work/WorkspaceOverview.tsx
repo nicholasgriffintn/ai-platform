@@ -5,7 +5,12 @@ import {
   WorkspaceOverviewSkeleton,
   WorkspaceProjectsSection,
 } from "@ngriffin_uk/polychat-component-workspaces";
-import { useTaskAttention, useDeleteWorkspace } from "@ngriffin_uk/polychat-library-react";
+import {
+  canManageWorkspace,
+  getProjectTaskPath,
+  useDeleteWorkspace,
+  useTaskAttention,
+} from "@ngriffin_uk/polychat-library-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -42,7 +47,7 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
   }
 
   const workspaceAttention = attentionItems.filter((item) => item.workspaceId === workspaceId);
-  const canManage = workspace.role === "owner" || workspace.role === "admin";
+  const canManage = canManageWorkspace(workspace);
 
   return (
     <>
@@ -80,9 +85,7 @@ export function WorkspaceOverview({ workspaceId }: { workspaceId: string }) {
             <h2 className="mb-3 text-sm font-semibold text-foreground">Waiting on you</h2>
             <TaskAttentionList
               items={workspaceAttention}
-              itemHref={(item) =>
-                `/work/${item.workspaceId}/projects/${item.projectId}/tasks/${item.taskId}`
-              }
+              itemHref={(item) => getProjectTaskPath(item.workspaceId, item.projectId, item.taskId)}
             />
           </section>
         )}

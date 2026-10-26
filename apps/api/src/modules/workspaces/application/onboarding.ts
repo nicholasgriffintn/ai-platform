@@ -16,13 +16,13 @@ import {
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import {
-  connectorOperationsForAccess,
+  providerOperationsForAccess,
   listConnectedConnectors,
   type ConnectedConnector,
 } from "~/modules/connectors/application/connected";
 import { createProjectTask, startProjectTask } from "~/modules/project-tasks/application";
 import { postToTaskThread } from "~/modules/project-tasks/application/thread";
-import type { WorkCaller } from "~/modules/project-tasks/application/work";
+import { personCaller, type WorkCaller } from "~/modules/project-tasks/application/work";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { hireTeammate } from "~/modules/teammates/application/hire";
 import { employTeammate } from "~/modules/teammates/application/organisation";
@@ -49,7 +49,7 @@ const SETUP_FORBIDDEN_TOOLS = [
   "answer_standup",
 ];
 
-function readSetupState(raw: string | null | undefined): SetupPlanState | null {
+export function readSetupState(raw: string | null | undefined): SetupPlanState | null {
   const parsed = setupPlanStateSchema.safeParse(raw ? safeParseJson(raw) : null);
 
   return parsed.success ? parsed.data : null;
@@ -239,7 +239,6 @@ export async function proposeSetupPlan(
   const next: SetupPlanState = {
     revision: (current?.revision ?? 0) + 1,
     plan,
-    approvedRevision: null,
     appliedAt: null,
     created: null,
     failure: null,
@@ -281,12 +280,7 @@ export async function reviseSetupPlan(
     );
   }
 
-  const user = context.requireUser();
-
-  return proposeSetupPlan(context, workspaceId, plan, {
-    actor: { type: "person", userId: user.id },
-    author: { kind: "person", name: user.name ?? "Someone", userId: user.id, teammateId: null },
-  });
+  return proposeSetupPlan(context, workspaceId, plan, personCaller(context));
 }
 
 async function createSetupPlan(
@@ -408,7 +402,7 @@ async function createSetupPlan(
   }
 
   for (const connector of plan.connectors) {
-    const operations = connectorOperationsForAccess(connector.provider, connector.access);
+    const operations = providerOperationsForAccess(connector.provider, connector.access);
 
     for (const key of connector.projects) {
       const projectId = projectIds.get(key);
@@ -506,7 +500,6 @@ export async function approveSetupPlan(
 
   const applied: SetupPlanState = {
     ...state,
-    approvedRevision: revision,
     appliedAt: new Date().toISOString(),
     created,
     failure: null,
@@ -527,7 +520,7 @@ export async function approveSetupPlan(
     if (setupTask) {
       await postToTaskThread(context, setupTask, {
         kind: "event",
-        author: { kind: "person", name: user.name ?? "Someone", userId: user.id, teammateId: null },
+        author: personCaller(context).author,
         body: `Approved revision ${revision}. Created ${created.projectIds.length} projects, ${created.teammateIds.length} teammates and ${created.taskIds.length} tasks.`,
       });
     }
