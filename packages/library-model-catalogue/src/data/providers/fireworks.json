@@ -265,15 +265,15 @@
       "overrides": {
         "contextWindow": 192000,
         "maxTokens": 192000,
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "November 2024",
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
       },
       "unset": [
-        "openWeights",
-        "reasoningConfig"
+        "reasoningConfig",
+        "openWeights"
       ]
     },
     "accounts/fireworks/models/minimax-m2p1": {
@@ -288,8 +288,8 @@
         "costPer1kOutputTokens": 0.0012
       },
       "unset": [
-        "openWeights",
-        "reasoningConfig"
+        "reasoningConfig",
+        "openWeights"
       ]
     },
     "accounts/fireworks/models/qwen3-coder-480b-a35b-instruct": {
@@ -455,7 +455,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -539,15 +539,6 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "accounts/fireworks/models/kimi-k3",
       "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
@@ -569,15 +560,6 @@
       "model": "kimi-k3/kimi-k3-fast",
       "matchingModel": "accounts/fireworks/routers/kimi-k3-fast",
       "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.0045,
         "costPer1kOutputTokens": 0.0225,
@@ -653,6 +635,7 @@
       "overrides": {
         "name": "GLM 5.3 Flash",
         "contextWindow": 1048573,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -714,7 +697,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "speed": 5,
+        "speed": 4,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -836,6 +819,7 @@
       "model": "minimax/minimax-latest",
       "matchingModel": "accounts/fireworks/routers/minimax-latest",
       "overrides": {
+        "openWeights": true,
         "contextWindow": 512000,
         "releaseDate": "June 1, 2026",
         "lastUpdated": "June 1, 2026",
@@ -885,7 +869,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "October 19, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,

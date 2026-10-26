@@ -44,7 +44,7 @@
       "matchingModel": "claude-4-6-sonnet",
       "overrides": {
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003196,
         "costPer1kOutputTokens": 0.01594,
@@ -248,7 +248,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.0017,
         "costPer1kOutputTokens": 0.0034,
@@ -610,7 +610,7 @@
       "overrides": {
         "contextWindow": 400000,
         "maxTokens": 196000,
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "November 2024",
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.000349,
@@ -1203,7 +1203,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.002898,
         "costPer1kOutputTokens": 0.015453,
@@ -1279,7 +1279,7 @@
       "overrides": {
         "name": "Mistral Small 2603",
         "maxTokens": 256000,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.000156,
         "costPer1kOutputTokens": 0.000625,
@@ -1684,6 +1684,7 @@
       "matchingModel": "gpt-4.1-nano",
       "overrides": {
         "name": "GPT 4.1 Nano",
+        "maxTokens": 32768,
         "modalities": {
           "input": [
             "text",
@@ -1693,6 +1694,7 @@
             "text"
           ]
         },
+        "contextComplexity": 4,
         "speed": 5,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.000111,
@@ -1914,7 +1916,7 @@
             "text"
           ]
         },
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "August 6, 2024",
         "costPer1kInputTokens": 0.002659,
         "costPer1kOutputTokens": 0.010635,
@@ -2036,7 +2038,7 @@
             "text"
           ]
         },
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "July 18, 2024",
         "costPer1kInputTokens": 0.000159,
         "costPer1kOutputTokens": 0.000638,
@@ -2078,7 +2080,7 @@
         "contextWindow": 1048576,
         "maxTokens": 1048576,
         "contextComplexity": 5,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -2156,15 +2158,6 @@
       "matchingModel": "kimi-k3",
       "overrides": {
         "maxTokens": 1048576,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
@@ -2611,7 +2604,7 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "maxTokens": 393216,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.000201,
         "costPer1kOutputTokens": 0.0006,
@@ -2730,7 +2723,7 @@
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "contextWindow": 1000000,
         "contextComplexity": 5,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.000765,
         "costPer1kOutputTokens": 0.002351
@@ -2826,7 +2819,7 @@
           ]
         },
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "October 19, 2026",
         "costPer1kInputTokens": 0.000304,
         "costPer1kOutputTokens": 0.001219

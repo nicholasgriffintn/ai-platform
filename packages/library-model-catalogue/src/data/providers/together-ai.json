@@ -200,7 +200,7 @@
       "overrides": {
         "name": "Qwen3-Next-80B-A3B-Instruct",
         "maxTokens": 262144,
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "July 2025",
         "releaseDate": "July 25, 2025",
         "lastUpdated": "July 25, 2025",
@@ -422,7 +422,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -596,7 +596,7 @@
       "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash",
       "overrides": {
         "maxTokens": 384000,
-        "speed": 5,
+        "speed": 4,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -617,7 +617,7 @@
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro-0813",
       "overrides": {
         "maxTokens": 384000,
-        "speed": 3,
+        "speed": 4,
         "isFeatured": true,
         "lastUpdated": "August 22, 2026",
         "costPer1kInputTokens": 0.00132,

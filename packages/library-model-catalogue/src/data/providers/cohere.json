@@ -85,7 +85,7 @@
         "strengths": [
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "June 1, 2024",
         "lastUpdated": "March 13, 2025",
         "costPer1kInputTokens": 0.0025,

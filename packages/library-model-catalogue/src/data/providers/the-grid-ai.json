@@ -147,6 +147,7 @@
       "matchingModel": "glm-latest",
       "overrides": {
         "description": "Lab latest market for GLM supply. You contract for the latest qualifying route, not a specific model.",
+        "maxTokens": 131072,
         "isFeatured": true,
         "releaseDate": "July 6, 2026",
         "lastUpdated": "August 18, 2026"

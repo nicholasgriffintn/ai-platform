@@ -87,7 +87,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -621,6 +621,7 @@
       "matchingModel": "z-ai/glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -654,7 +655,7 @@
         "contextWindow": 262144,
         "maxTokens": 262144,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "October 19, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,

@@ -115,7 +115,6 @@
       "defaults": {
         "name": "GLM-5.3-Flash",
         "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
-        "maxTokens": 131072,
         "contextComplexity": 5,
         "reliability": 3,
         "releaseDate": "August 26, 2026",

@@ -1043,7 +1043,6 @@
         "openWeights": false,
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 1048576,
-        "maxTokens": 131072,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -1119,7 +1118,7 @@
         "openWeights": false,
         "description": "This model always redirects to the latest GLM model from Z.ai.",
         "contextWindow": 1048576,
-        "maxTokens": 131072,
+        "maxTokens": 943718,
         "releaseDate": "August 19, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [

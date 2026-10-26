@@ -73,7 +73,7 @@
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
         "contextWindow": 1048576,
         "maxTokens": 1048576,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00066,
         "costPer1kOutputTokens": 0.00198,
@@ -139,6 +139,7 @@
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -236,15 +237,6 @@
       "matchingModel": "kimi-k3",
       "overrides": {
         "name": "kimi-k3",
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
@@ -298,7 +290,7 @@
         "description": "MiniMax multimodal coding model for long-context reasoning and agent tasks",
         "contextWindow": 512000,
         "maxTokens": 131072,
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0006,
@@ -398,7 +390,7 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "maxTokens": 384000,
-        "speed": 5,
+        "speed": 4,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00015,
@@ -420,7 +412,7 @@
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "contextWindow": 1048576,
         "contextComplexity": 5,
-        "speed": 3,
+        "speed": 4,
         "isFeatured": true,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.00068,
@@ -442,7 +434,7 @@
         "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
         "contextWindow": 1000000,
         "maxTokens": 512000,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "October 19, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006

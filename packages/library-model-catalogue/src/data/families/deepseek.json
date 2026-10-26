@@ -791,6 +791,29 @@
         }
       }
     },
+    "deepseek-v4-pro-0813": {
+      "defaults": {
+        "name": "DeepSeek V4 Pro 0813",
+        "openWeights": true,
+        "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "strengths": [
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
+        "releaseDate": "October 20, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 36,
+          "codingIndex": 68.8,
+          "agenticIndex": 41.3,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
     "groq-deepseek-r1-distill-llama-70b-specdec": {
       "defaults": {
         "name": "Groq DeepSeek R1 Distill Llama 70B SpecDec",

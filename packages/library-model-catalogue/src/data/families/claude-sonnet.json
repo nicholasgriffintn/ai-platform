@@ -389,6 +389,37 @@
         }
       }
     },
+    "claude-sonnet-5-5-au": {
+      "defaults": {
+        "name": "Claude Sonnet 5.5 (AU)",
+        "description": "Fast Claude model for everyday coding, agents, and knowledge work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "September 28, 2026",
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 56,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
     "claude-sonnet-5-5-eu": {
       "defaults": {
         "name": "Claude Sonnet 5.5 (EU)",

@@ -278,7 +278,7 @@
             "text"
           ]
         },
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "May 13, 2024",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -537,7 +537,7 @@
           ]
         },
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -825,15 +825,6 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,

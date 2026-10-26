@@ -1,6 +1,8 @@
 {
   "defaults": {
     "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 131072,
     "modalities": {
       "input": [
         "text"
@@ -9,8 +11,10 @@
         "text"
       ]
     },
+    "releaseDate": "July 7, 2025",
     "supportsToolCalls": false,
-    "supportsAttachments": false
+    "supportsAttachments": false,
+    "supportsTemperature": true
   },
   "description": "The morph family includes models that produce text.",
   "models": {
@@ -18,42 +22,26 @@
       "defaults": {
         "name": "Morph: Morph V3 Fast",
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "contextWindow": 262144,
-        "maxTokens": 131072,
-        "releaseDate": "July 7, 2025",
-        "supportsResponseFormat": true,
-        "supportsTemperature": true
+        "supportsResponseFormat": true
       }
     },
     "morph-morph-v3-large": {
       "defaults": {
         "name": "Morph: Morph V3 Large",
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
-        "contextWindow": 262144,
-        "maxTokens": 131072,
-        "releaseDate": "July 7, 2025",
-        "supportsResponseFormat": true,
-        "supportsTemperature": true
+        "supportsResponseFormat": true
       }
     },
     "morph-v3-fast": {
       "defaults": {
         "name": "Morph v3 Fast",
-        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "contextWindow": 16000,
-        "maxTokens": 16000,
-        "releaseDate": "August 15, 2024",
-        "supportsTemperature": false
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation"
       }
     },
     "morph-v3-large": {
       "defaults": {
         "name": "Morph v3 Large",
-        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
-        "contextWindow": 32000,
-        "maxTokens": 32000,
-        "releaseDate": "August 15, 2024",
-        "supportsTemperature": false
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows"
       }
     }
   }

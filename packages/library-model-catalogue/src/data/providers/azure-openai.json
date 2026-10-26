@@ -247,7 +247,7 @@
         "strengths": [
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "June 1, 2024",
         "lastUpdated": "March 13, 2025",
         "dataRetention": {
@@ -1261,7 +1261,7 @@
       "model": "mistral-small/mistral-small-3-1",
       "matchingModel": "mistral-small-2503",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 1, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -1586,7 +1586,7 @@
       "overrides": {
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -1671,7 +1671,7 @@
       "model": "gpt/gpt-5-4",
       "matchingModel": "gpt-5.4",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 5, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -1867,7 +1867,7 @@
           "tool_use"
         ],
         "contextComplexity": 3,
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "April 8, 2026",
         "lastUpdated": "April 8, 2026",
@@ -1987,7 +1987,7 @@
           "coding",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 24, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -2604,7 +2604,7 @@
         "status": "beta",
         "contextWindow": 1000000,
         "maxTokens": 128000,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,

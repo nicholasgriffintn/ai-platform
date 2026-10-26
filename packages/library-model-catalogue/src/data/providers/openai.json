@@ -51,7 +51,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -105,7 +105,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "July 18, 2024",
@@ -1539,7 +1539,7 @@
           "document",
           "search"
         ],
-        "speed": 2,
+        "speed": 3,
         "multimodal": true,
         "lastUpdated": "March 5, 2026",
         "dataRetention": {
@@ -2441,7 +2441,6 @@
       "model": "gpt-astra/gpt-6-astra",
       "matchingModel": "gpt-6-astra",
       "overrides": {
-        "prefersResponsesApiForReasoning": true,
         "strengths": [
           "coding",
           "reasoning",
@@ -2501,6 +2500,7 @@
         "supportsLogprobs": false,
         "supportsTopLogprobs": false,
         "requiresResponsesApi": true,
+        "prefersResponsesApiForReasoning": true,
         "supportsPromptCaching": true,
         "supportsPromptCacheOptions": true,
         "supportsAsyncToolCalls": true,
@@ -2597,7 +2597,6 @@
       "model": "gpt-luna/gpt-6-luna",
       "matchingModel": "gpt-6-luna",
       "overrides": {
-        "prefersResponsesApiForReasoning": true,
         "modalities": {
           "input": [
             "text",
@@ -2618,7 +2617,8 @@
           "source": "https://developers.openai.com/api/docs/guides/your-data"
         },
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0005
+        "costPer1kOutputTokens": 0.0005,
+        "prefersResponsesApiForReasoning": true
       }
     },
     "gpt-6-sol": {

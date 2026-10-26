@@ -237,7 +237,7 @@
         "name": "DeepSeek V3",
         "maxTokens": 163840,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -302,11 +302,7 @@
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.00027,
         "costPer1kOutputTokens": 0.00112
-      },
-      "unset": [
-        "openWeights",
-        "reasoningConfig"
-      ]
+      }
     },
     "miromind-ai/MiroThinker-v1.5-235B": {
       "model": "chutes/miromind-ai/MiroThinker-v1.5-235B/mirothinker-v1-5-235b",
@@ -620,7 +616,7 @@
       "overrides": {
         "name": "Qwen3 Next 80B A3B Instruct",
         "maxTokens": 262144,
-        "speed": 3,
+        "speed": 4,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.0001,
@@ -1075,6 +1071,25 @@
         "costPer1kInputTokens": 0.000039,
         "costPer1kOutputTokens": 0.00125,
         "supportsAttachments": true
+      }
+    },
+    "deepseek-ai/DeepSeek-V4-Pro-0813": {
+      "model": "deepseek/deepseek-v4-pro-0813",
+      "matchingModel": "deepseek-ai/DeepSeek-V4-Pro-0813",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "October 25, 2026",
+        "costPer1kInputTokens": 0.00132,
+        "costPer1kOutputTokens": 0.00396,
+        "supportsToolCalls": false
+      }
+    },
+    "Qwen/Qwen3.8-Max-0902": {
+      "model": "qwen3.8-max/qwen3-8-max-0902",
+      "matchingModel": "Qwen/Qwen3.8-Max-0902",
+      "overrides": {
+        "lastUpdated": "October 25, 2026",
+        "supportsToolCalls": false
       }
     }
   }

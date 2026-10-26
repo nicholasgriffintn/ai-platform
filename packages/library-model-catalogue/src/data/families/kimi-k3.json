@@ -2,6 +2,15 @@
   "defaults": {
     "openWeights": true,
     "contextWindow": 1048576,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
     "releaseDate": "July 16, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -15,15 +24,6 @@
         "name": "Kimi Fast Latest",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -130,15 +130,6 @@
         "description": "256K-context version of Kimi K3, reducing token consumption for shorter coding sessions",
         "contextWindow": 262144,
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -203,15 +194,6 @@
         "name": "Kimi K3 (Global)",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
         "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -265,15 +247,6 @@
         "name": "Kimi K3 (US)",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
         "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -302,15 +275,6 @@
         "name": "Kimi Latest",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
