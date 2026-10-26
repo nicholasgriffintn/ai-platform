@@ -1,10 +1,11 @@
 import {
-  setupPlanStateSchema,
   type OnboardingState,
   type SetupPlan,
   type SetupPlanCreated,
   type SetupPlanState,
+  setupPlanStateSchema,
   type StartOnboardingInput,
+  type WorkInboxItem,
 } from "@ngriffin_uk/polychat-schemas";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 import {
@@ -15,11 +16,7 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
-import {
-  providerOperationsForAccess,
-  listConnectedConnectors,
-  type ConnectedConnector,
-} from "~/modules/connectors/application/connected";
+import { listConnectedConnectors } from "~/modules/connectors/application/connected";
 import { createProjectTask, startProjectTask } from "~/modules/project-tasks/application";
 import { postToTaskThread } from "~/modules/project-tasks/application/thread";
 import { personCaller, type WorkCaller } from "~/modules/project-tasks/application/work";
@@ -27,12 +24,16 @@ import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/Pr
 import { hireTeammate } from "~/modules/teammates/application/hire";
 import { employTeammate } from "~/modules/teammates/application/organisation";
 import { WorkspaceTeammateRepository } from "~/modules/teammates/infrastructure/WorkspaceTeammateRepository";
-import { instantiateProjectStarter } from "~/modules/templates/application/starters";
 import { InitiativeRepository } from "~/modules/workspaces/infrastructure/InitiativeRepository";
-import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
+import {
+  WorkspaceRepository,
+  type WorkspaceRow,
+} from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { requireWorkspaceAccess } from "./access";
-import { addProjectCapability, createProject, createWorkspace } from "./index";
+import { createProject, createWorkspace } from "./index";
+import { createSetupPlan } from "./setup-apply";
+import { assertPlanConnectors, describeConnectedServices } from "./setup-connectors";
 import { rollBackSetupCreation } from "./setup-rollback";
 
 const LEAD_HEARTBEAT_MINUTES = 240;
@@ -53,6 +54,44 @@ export function readSetupState(raw: string | null | undefined): SetupPlanState |
   const parsed = setupPlanStateSchema.safeParse(raw ? safeParseJson(raw) : null);
 
   return parsed.success ? parsed.data : null;
+}
+
+export function listSetupInboxItems(
+  workspaces: readonly Pick<
+    WorkspaceRow,
+    | "id"
+    | "name"
+    | "setup_plan"
+    | "setup_project_id"
+    | "setup_task_id"
+    | "lead_teammate_id"
+    | "updated_at"
+    | "created_at"
+  >[],
+): WorkInboxItem[] {
+  return workspaces.flatMap((workspace): WorkInboxItem[] => {
+    const setup = readSetupState(workspace.setup_plan);
+
+    if (!setup || setup.appliedAt) {
+      return [];
+    }
+
+    return [
+      {
+        id: `setup:${workspace.id}:${setup.revision}`,
+        kind: "setup",
+        workspaceId: workspace.id,
+        projectId: workspace.setup_project_id ?? null,
+        taskId: workspace.setup_task_id ?? null,
+        teammateId: workspace.lead_teammate_id ?? null,
+        title: `Approve the setup plan for ${workspace.name}`,
+        detail: `Revision ${setup.revision}: ${setup.plan.projects.length} projects, ${setup.plan.teammates.length} teammates`,
+        dueAt: null,
+        since: workspace.updated_at ?? workspace.created_at,
+        deepLink: `/work/${encodeURIComponent(workspace.id)}/setup`,
+      },
+    ];
+  });
 }
 
 export async function getOnboarding(
@@ -186,37 +225,6 @@ async function setUpWorkspaceLead(
   return getOnboarding(context, workspaceId);
 }
 
-function describeConnectedServices(connected: readonly ConnectedConnector[]): string {
-  return connected.length
-    ? `Connected services the plan may use: ${connected.map((connector) => `${connector.name} (${connector.id})`).join(", ")}. Use only these in the plan's connectors, and only the access each project needs. Put any other service you think would help in suggestions; nothing is connected for the person.`
-    : "Nothing is connected yet, so the plan uses no services. Put any service you think would help in suggestions; nothing is connected for the person.";
-}
-
-async function assertPlanConnectors(context: ServiceContext, plan: SetupPlan): Promise<void> {
-  if (plan.connectors.length === 0) {
-    return;
-  }
-
-  const connected = new Set(
-    (await listConnectedConnectors(context, context.requireUser().id)).map(
-      (connector) => connector.id,
-    ),
-  );
-  const projectKeys = new Set(plan.projects.map((project) => project.key));
-  const problems = plan.connectors.flatMap((connector) => [
-    ...(connected.has(connector.provider)
-      ? []
-      : [`${connector.provider} is not connected; move it to suggestions`]),
-    ...connector.projects
-      .filter((key) => !projectKeys.has(key))
-      .map((key) => `${connector.provider} names a project key that is not in the plan: ${key}`),
-  ]);
-
-  if (problems.length > 0) {
-    throw new AssistantError(problems.join(". "), ErrorType.PARAMS_ERROR, 400);
-  }
-}
-
 export async function proposeSetupPlan(
   context: ServiceContext,
   workspaceId: string,
@@ -281,141 +289,6 @@ export async function reviseSetupPlan(
   }
 
   return proposeSetupPlan(context, workspaceId, plan, personCaller(context));
-}
-
-async function createSetupPlan(
-  context: ServiceContext,
-  input: {
-    workspaceId: string;
-    plan: SetupPlan;
-    leadId: string | null;
-    userId: number;
-    created: SetupPlanCreated;
-    toStart: { projectId: string; taskId: string }[];
-  },
-): Promise<void> {
-  const { workspaceId, plan, leadId, created } = input;
-  const workspaces = context.repositories.get(WorkspaceRepository);
-
-  await assertPlanConnectors(context, plan);
-
-  const initiativeIds = new Map<string, string>();
-
-  for (const initiative of plan.initiatives) {
-    const row = await context.repositories.get(InitiativeRepository).create({
-      workspaceId,
-      name: initiative.name,
-      description: initiative.description,
-      status: "active",
-      targetDate: null,
-      ownerTeammateId: leadId,
-    });
-
-    initiativeIds.set(initiative.key, row.id);
-    created.initiativeIds.push(row.id);
-  }
-
-  const projectIds = new Map<string, string>();
-
-  for (const project of plan.projects) {
-    const createdProject = project.starterId
-      ? await instantiateProjectStarter(
-          context,
-          input.userId,
-          project.starterId,
-          workspaceId,
-          project.name,
-        )
-      : await createProject(context, workspaceId, {
-          name: project.name,
-          description: project.description,
-          instructions: "",
-          taskPrefix: project.taskPrefix,
-        });
-
-    created.projectIds.push(createdProject.id);
-    await workspaces.updateProject(createdProject.id, {
-      task_prefix: project.taskPrefix,
-      initiative_id: project.initiative ? (initiativeIds.get(project.initiative) ?? null) : null,
-      ...(project.standup ? { standup: JSON.stringify(project.standup) } : {}),
-    });
-    projectIds.set(project.key, createdProject.id);
-  }
-
-  const teammateIds = new Map<string, string>(leadId ? [["lead", leadId]] : []);
-
-  for (const teammate of plan.teammates) {
-    const hired = await hireTeammate(context, {
-      ...(teammate.roleSlug ? { role_slug: teammate.roleSlug } : {}),
-      ...(teammate.jobDescription ? { job_description: teammate.jobDescription } : {}),
-      name: teammate.name,
-      workspace_id: workspaceId,
-    });
-
-    teammateIds.set(teammate.key, hired.id);
-    created.teammateIds.push(hired.id);
-  }
-
-  for (const teammate of plan.teammates) {
-    const teammateId = teammateIds.get(teammate.key);
-
-    if (!teammateId) {
-      continue;
-    }
-
-    await employTeammate(context, {
-      workspaceId,
-      teammateId,
-      title: teammate.title,
-      reportsToTeammateId: teammate.reportsTo
-        ? (teammateIds.get(teammate.reportsTo) ?? leadId)
-        : leadId,
-      heartbeatMinutes: teammate.heartbeatMinutes,
-      monthlyCreditCapMicros: teammate.monthlyCreditCapMicros,
-      projectIds: teammate.projects.flatMap((key) => {
-        const projectId = projectIds.get(key);
-
-        return projectId ? [projectId] : [];
-      }),
-    });
-  }
-
-  for (const planned of plan.tasks) {
-    const projectId = projectIds.get(planned.project);
-
-    if (!projectId) {
-      continue;
-    }
-
-    const ownerId = planned.owner ? teammateIds.get(planned.owner) : undefined;
-    const { task } = await createProjectTask(context, projectId, {
-      objective: planned.objective,
-      priority: planned.priority,
-      ...(ownerId ? { owner: { type: "teammate", id: ownerId } } : {}),
-    });
-
-    created.taskIds.push(task.id);
-
-    if (ownerId) {
-      input.toStart.push({ projectId, taskId: task.id });
-    }
-  }
-
-  for (const connector of plan.connectors) {
-    const operations = providerOperationsForAccess(connector.provider, connector.access);
-
-    for (const key of connector.projects) {
-      const projectId = projectIds.get(key);
-
-      if (projectId && operations.length > 0) {
-        await addProjectCapability(context, projectId, {
-          kind: "connector",
-          capabilityId: connector.provider,
-          configuration: { operations },
-        });
-      }
-    }
-  }
 }
 
 export async function approveSetupPlan(

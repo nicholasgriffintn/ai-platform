@@ -112,7 +112,7 @@ describe("project task questions", () => {
       "conversation-1",
       "message-1",
       expect.objectContaining({
-        status: "resolved",
+        status: "answered",
         data: expect.objectContaining({ resolved: true }),
       }),
     );
@@ -220,7 +220,7 @@ describe("project task tool approvals", () => {
     expect(updateMessage).toHaveBeenCalledWith(
       "conversation-1",
       "approval-message-1",
-      expect.objectContaining({ status: "resolved" }),
+      expect.objectContaining({ status: "answered" }),
     );
     expect(mocks.add).toHaveBeenCalledWith(
       "conversation-1",

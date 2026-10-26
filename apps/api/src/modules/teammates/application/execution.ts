@@ -17,7 +17,7 @@ import { requireChannelSenderMapping } from "~/modules/channels/application/acce
 import { requireConversationAccess } from "~/modules/conversations/application/access";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
-import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
+import { findProjectTask } from "~/modules/project-tasks/application/teammate-work";
 import { parseRecipeInstallationRecord } from "~/modules/recipes/application";
 import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
@@ -308,11 +308,9 @@ export async function resolveTeammateInvocation(
     }
 
     case "project_task": {
-      const task = await context.repositories
-        .get(ProjectTaskRepository)
-        .getTaskById(invocation.taskId);
+      const task = await findProjectTask(context, invocation.projectId, invocation.taskId);
 
-      if (!task || task.projectId !== invocation.projectId || !options?.expectedTeammateId) {
+      if (!task || !options?.expectedTeammateId) {
         throw new AssistantError("Project task not found", ErrorType.NOT_FOUND, 404);
       }
 

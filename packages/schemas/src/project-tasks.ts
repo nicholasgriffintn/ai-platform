@@ -162,6 +162,9 @@ export const projectTaskDetailsSchema = z.object({
     .optional(),
   unblocker: workActorSchema.optional(),
   reviewRounds: z.number().int().nonnegative().optional(),
+  handoff: z
+    .object({ teammateId: z.string().min(1), version: z.number().int().nonnegative() })
+    .optional(),
 });
 export type ProjectTaskDetails = z.infer<typeof projectTaskDetailsSchema>;
 
@@ -944,8 +947,12 @@ export const projectTaskDetailResponseSchema = z.object({
   plan: projectTaskPlanEvidenceSchema,
   children: z.array(projectTaskSummarySchema).default([]),
   links: z.array(projectTaskLinkedSchema).default([]),
-  thread: z.array(projectTaskThreadPostSchema).default([]),
 });
+
+export const projectTaskThreadResponseSchema = z.object({
+  thread: z.array(projectTaskThreadPostSchema),
+});
+export type ProjectTaskThreadResponse = z.infer<typeof projectTaskThreadResponseSchema>;
 
 export type ProjectTaskDetailResponse = z.infer<typeof projectTaskDetailResponseSchema>;
 

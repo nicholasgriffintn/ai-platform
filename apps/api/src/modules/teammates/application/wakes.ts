@@ -1,20 +1,21 @@
 import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import {
-  isTerminalProjectTaskStatus,
   readToolIds,
   WORK_TEAMMATE_WAKE_TASK_TYPE,
   WORK_WAKE_QUIET_MINUTES,
   WORK_WATCHDOG_GRACE_MINUTES,
-  type ProjectTask,
   type WorkTeammateWakeTaskData,
+  type WorkWakeRecord,
   type WorkWakeReason,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId, MINUTE_MS, parseStoredTimestamp } from "@ngriffin_uk/polychat-utility-core";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
-import { taskReference } from "~/modules/project-tasks/domain/work-actors";
+import {
+  describeTeammateWorkload,
+  listTeammateWorkProjectIds,
+} from "~/modules/project-tasks/application/teammate-work";
 import { buildWorkRunTools } from "~/modules/project-tasks/domain/work-tools";
-import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
@@ -27,7 +28,7 @@ import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/Workspa
 import type { IEnv } from "~/types";
 
 import { ensureActiveTeammateContext } from "./contexts";
-import { assertTeammateEmploymentAvailable, resolveManager } from "./organisation";
+import { resolveManager, reviewWorkBudgets } from "./organisation";
 import { enqueueTeammateRun } from "./run-admission";
 import { ensureWorkspaceWakeConversation, resolveProjectTeammateScope } from "./work-scope";
 
@@ -49,13 +50,6 @@ const UNTHROTTLED_WAKE_REASONS: ReadonlySet<WorkWakeReason> = new Set(["report_b
 
 function minutesAgo(now: Date, minutes: number): number {
   return now.getTime() - minutes * MINUTE_MS;
-}
-
-function formatTaskLine(task: ProjectTask): string {
-  const key = taskReference(task);
-  const blocked = task.blockedDetail ? ` — ${task.blockedDetail}` : "";
-
-  return `- ${key} [${task.status}${task.priority !== "none" ? `, ${task.priority}` : ""}] ${task.objective}${blocked}`;
 }
 
 export async function enqueueTeammateWake(
@@ -149,34 +143,20 @@ async function buildWakeBrief(
   },
 ): Promise<string> {
   const { data, employment } = params;
-  const [tasks, team] = await Promise.all([
-    context.repositories.get(ProjectTaskRepository).listProjectTasks(data.projectId, {}),
-    context.repositories.get(WorkspaceTeammateRepository).listForWorkspace(data.workspaceId),
+  const team = await context.repositories
+    .get(WorkspaceTeammateRepository)
+    .listForWorkspace(data.workspaceId);
+  const [workload, manager] = await Promise.all([
+    describeTeammateWorkload(context, {
+      projectId: data.projectId,
+      teammateId: employment.teammateId,
+      reportIds: team
+        .filter((member) => member.reportsToTeammateId === employment.teammateId)
+        .map((member) => member.teammateId),
+      isLead: params.isLead,
+    }),
+    describeManager(context, data.workspaceId, employment.teammateId),
   ]);
-  const reports = new Set(
-    team
-      .filter((member) => member.reportsToTeammateId === employment.teammateId)
-      .map((member) => member.teammateId),
-  );
-  const open = tasks.filter((task) => !isTerminalProjectTaskStatus(task.status));
-  const own = open.filter(
-    (task) => task.owner?.type === "teammate" && task.owner.id === employment.teammateId,
-  );
-  const reviewing = open.filter(
-    (task) =>
-      task.status === "review" &&
-      task.reviewer?.type === "teammate" &&
-      task.reviewer.id === employment.teammateId,
-  );
-  const teamWork = open.filter(
-    (task) =>
-      task.owner?.type === "teammate" &&
-      reports.has(task.owner.id) &&
-      (task.status === "blocked" || task.status === "review"),
-  );
-  const cases = params.isLead
-    ? open.filter((task) => task.kind === "case" && !task.owner && task.status === "backlog")
-    : [];
 
   return renderPrompt("apps/work/wake-brief", {
     name: params.teammateName,
@@ -186,11 +166,11 @@ async function buildWakeBrief(
     detail: [data.taskId ? `Focus on task ${data.taskId}.` : "", data.detail ?? ""]
       .filter(Boolean)
       .join(" "),
-    manager: await describeManager(context, data.workspaceId, employment.teammateId),
-    ownTasks: own.length ? own.map(formatTaskLine).join("\n") : "- None right now.",
-    reviewTasks: reviewing.map(formatTaskLine).join("\n"),
-    teamTasks: teamWork.map(formatTaskLine).join("\n"),
-    cases: cases.map(formatTaskLine).join("\n"),
+    manager,
+    ownTasks: workload.ownTasks.length ? workload.ownTasks.join("\n") : "- None right now.",
+    reviewTasks: workload.reviewTasks.join("\n"),
+    teamTasks: workload.teamTasks.join("\n"),
+    cases: workload.cases.join("\n"),
   });
 }
 
@@ -215,8 +195,6 @@ export async function runTeammateWake(
   if (!employment || employment.status !== "active") {
     return;
   }
-
-  await assertTeammateEmploymentAvailable(context, data.workspaceId, data.teammateId);
 
   const [teammate, project, workspace] = await Promise.all([
     context.repositories.get(TeammateRepository).getTeammateById(data.teammateId),
@@ -272,20 +250,20 @@ async function listHeartbeatProjects(
   employment: WorkspaceTeammateRecord,
   isLead: boolean,
 ): Promise<string[]> {
-  const tasks = await context.repositories
-    .get(ProjectTaskRepository)
-    .listWorkspaceTasks(
-      [employment.workspaceId],
-      isLead ? {} : { ownerTeammateId: employment.teammateId },
-    );
-  const fromTasks = tasks.map((task) => task.projectId);
+  const fromTasks = await listTeammateWorkProjectIds(context, {
+    workspaceId: employment.workspaceId,
+    teammateId: isLead ? null : employment.teammateId,
+    limit: HEARTBEAT_PROJECT_LIMIT,
+  });
 
   return [...new Set([...employment.projectIds, ...fromTasks])].slice(0, HEARTBEAT_PROJECT_LIMIT);
 }
 
-export async function scheduleWorkHeartbeats(env: IEnv, now = new Date()): Promise<number> {
-  const context = createServiceContext({ env });
-  const employments = await context.repositories.get(WorkspaceTeammateRepository).listAwake();
+async function scheduleWorkHeartbeats(
+  context: ServiceContext,
+  employments: readonly WorkspaceTeammateRecord[],
+  now: Date,
+): Promise<number> {
   const leads = new Map<string, string | null>();
   let woken = 0;
 
@@ -331,88 +309,45 @@ export async function scheduleWorkHeartbeats(env: IEnv, now = new Date()): Promi
   return woken;
 }
 
-export async function watchStalledWakes(env: IEnv, now = new Date()): Promise<number> {
-  const context = createServiceContext({ env });
-  const repository = context.repositories.get(WorkspaceTeammateRepository);
-  const employments = await repository.listAwake();
-  let escalated = 0;
+export function describeWakeReason(reason: WorkWakeReason): string {
+  return WAKE_REASON_TEXT[reason];
+}
 
-  for (const employment of employments) {
+export async function listStaleWakes(
+  context: ServiceContext,
+  now: Date,
+): Promise<{ employment: WorkspaceTeammateRecord; wake: WorkWakeRecord }[]> {
+  const employments = await context.repositories.get(WorkspaceTeammateRepository).listAwake();
+
+  return employments.flatMap((employment) => {
     const wake = employment.lastWake;
 
-    if (
-      !wake ||
-      wake.settled ||
-      parseStoredTimestamp(wake.at) > minutesAgo(now, WORK_WATCHDOG_GRACE_MINUTES)
-    ) {
-      continue;
-    }
+    return wake &&
+      !wake.settled &&
+      parseStoredTimestamp(wake.at) <= minutesAgo(now, WORK_WATCHDOG_GRACE_MINUTES)
+      ? [{ employment, wake }]
+      : [];
+  });
+}
 
-    const tasks = await context.repositories
-      .get(ProjectTaskRepository)
-      .listWorkspaceTasks([employment.workspaceId], {
-        ownerTeammateId: employment.teammateId,
-        includeDone: true,
-      });
-    const focus = wake.taskId
-      ? await context.repositories.get(ProjectTaskRepository).getTaskById(wake.taskId)
-      : null;
-    const touched = [...tasks, ...(focus ? [focus] : [])].some(
-      (task) => parseStoredTimestamp(task.updatedAt) > parseStoredTimestamp(wake.at),
-    );
-
-    await repository.update(employment.workspaceId, employment.teammateId, {
+export async function settleWake(
+  context: ServiceContext,
+  employment: WorkspaceTeammateRecord,
+  wake: WorkWakeRecord,
+): Promise<void> {
+  await context.repositories
+    .get(WorkspaceTeammateRepository)
+    .update(employment.workspaceId, employment.teammateId, {
       lastWake: { ...wake, settled: true },
     });
+}
 
-    if (touched || !focus || isTerminalProjectTaskStatus(focus.status)) {
-      continue;
-    }
+export async function runWorkRhythm(env: IEnv, now = new Date()): Promise<void> {
+  const context = createServiceContext({ env });
+  const employments = await reviewWorkBudgets(
+    context,
+    await context.repositories.get(WorkspaceTeammateRepository).listAwake(),
+  );
 
-    const responsible = await context.repositories
-      .get(UserRepository)
-      .getUserById(employment.responsibleUserId);
-
-    if (!responsible) {
-      continue;
-    }
-
-    const actingContext = createServiceContext({ env, user: responsible });
-    const manager = await resolveManager(
-      actingContext,
-      employment.workspaceId,
-      employment.teammateId,
-    );
-    const teammate = await context.repositories
-      .get(TeammateRepository)
-      .getTeammateById(employment.teammateId);
-    const reason = `${teammate?.name ?? "A teammate"} woke for ${WAKE_REASON_TEXT[wake.reason]} and stopped without an update, a status change or a named blocker.`;
-
-    await context.repositories.get(ProjectTaskRepository).updateTask(focus.id, {
-      details: {
-        ...focus.details,
-        escalation: {
-          to: manager,
-          reason,
-          by: { type: "teammate", id: employment.teammateId },
-          at: now.toISOString(),
-        },
-      },
-    });
-
-    if (manager.type === "teammate") {
-      await enqueueTeammateWake(actingContext, {
-        workspaceId: employment.workspaceId,
-        teammateId: manager.id,
-        projectId: focus.projectId,
-        reason: "escalation",
-        taskId: focus.id,
-        detail: reason,
-      });
-    }
-
-    escalated += 1;
-  }
-
-  return escalated;
+  await scheduleWorkHeartbeats(context, employments, now);
 }

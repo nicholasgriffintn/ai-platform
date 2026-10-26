@@ -1,9 +1,10 @@
-import { Button, cn, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
+import { Button, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import {
   CreateTaskDialog,
   FlowEditorDialog,
   ProjectHomeActions,
   TaskBoard,
+  TaskViewTabs,
   WorkQuickAdd,
   WorkTaskList,
   WorkTaskTimeline,
@@ -25,7 +26,7 @@ import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { PageShell } from "../Shell/PageShell.js";
@@ -34,23 +35,10 @@ import { ProjectHomeHeader } from "./ProjectHomeHeader.js";
 import { ProjectTaskIntegrationsControl } from "./ProjectTaskIntegrationsControl.js";
 import { useProjectTaskBoardActions } from "./useProjectTaskBoardActions.js";
 import { useProjectTemplateSave } from "./useProjectTemplateSave.js";
+import { useTaskViewParam } from "./useTaskViewParam.js";
 import { useWorkDirectory } from "./useWorkDirectory.js";
 import { useWorkData } from "./WorkDataContext.js";
 import { WorkPageFailure } from "./WorkPageFailure.js";
-
-const VIEWS = [
-  { id: "list", label: "List" },
-  { id: "board", label: "Board" },
-  { id: "tree", label: "Tree" },
-  { id: "timeline", label: "Timeline" },
-  { id: "triage", label: "Triage" },
-] as const;
-
-type TaskView = (typeof VIEWS)[number]["id"];
-
-function readView(value: string | null): TaskView {
-  return VIEWS.find((view) => view.id === value)?.id ?? "list";
-}
 
 export function ProjectTaskBoard({
   workspaceId,
@@ -59,15 +47,14 @@ export function ProjectTaskBoard({
   workspaceId: string;
   projectId: string;
 }) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const view = readView(searchParams.get("view"));
+  const [view, setView] = useTaskViewParam();
   const [isCreateOpen, setIsCreateOpen] = useQueryDialog("new");
   const [isFlowOpen, setIsFlowOpen] = useState(false);
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
   const navigate = useNavigate();
   const archiveProject = useArchiveProject();
   const { projectQuery, workspaceQuery } = useWorkData();
-  const { directory, team } = useWorkDirectory(workspaceId);
+  const { directory, team, leadTeammateId } = useWorkDirectory(workspaceId);
   const saveTemplate = useProjectTemplateSave(workspaceId, projectQuery.data ?? null);
   const capabilityCatalog = useCapabilityCatalog(projectId);
   const teammates = capabilityCatalog.data?.teammates ?? [];
@@ -117,7 +104,9 @@ export function ProjectTaskBoard({
   const cases = visibleTasks.filter((task) => task.kind === "case");
   const lead = team.find(
     (teammate) =>
-      teammate.isLead && teammate.status === "active" && teammate.projectIds.includes(projectId),
+      teammate.teammateId === leadTeammateId &&
+      teammate.status === "active" &&
+      teammate.projectIds.includes(projectId),
   );
   const quickAdd = async (text: string) => {
     try {
@@ -129,18 +118,6 @@ export function ProjectTaskBoard({
     } catch (mutationError) {
       toast.error(getErrorMessage(mutationError, "Unable to add that task"));
     }
-  };
-
-  const setView = (next: TaskView) => {
-    const params = new URLSearchParams(searchParams);
-
-    if (next === "list") {
-      params.delete("view");
-    } else {
-      params.set("view", next);
-    }
-
-    setSearchParams(params, { replace: true });
   };
 
   return (
@@ -175,32 +152,11 @@ export function ProjectTaskBoard({
         />
 
         <div className="mb-4 flex flex-wrap items-center gap-3">
-          <div
-            role="tablist"
-            aria-label="Task views"
-            className="flex gap-0.5 rounded-md bg-selection/60 p-0.5"
-          >
-            {VIEWS.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                role="tab"
-                aria-selected={view === option.id}
-                className={cn(
-                  "rounded px-3 py-1 text-xs",
-                  view === option.id
-                    ? "bg-surface text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground",
-                )}
-                onClick={() => setView(option.id)}
-              >
-                {option.label}
-                {option.id === "triage" && cases.some((task) => task.status === "backlog")
-                  ? ` · ${cases.filter((task) => task.status === "backlog").length}`
-                  : ""}
-              </button>
-            ))}
-          </div>
+          <TaskViewTabs
+            view={view}
+            triageCount={cases.filter((task) => task.status === "backlog").length}
+            onChange={setView}
+          />
         </div>
 
         <div className="mb-4">

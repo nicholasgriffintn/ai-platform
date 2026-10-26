@@ -16,6 +16,7 @@ import {
 import {
   createProjectTask,
   getProjectTask,
+  getProjectTaskThread,
   listProjectTasks,
   updateProjectTask,
 } from "~/modules/project-tasks/application";
@@ -240,16 +241,16 @@ export const get_task: ApiToolDefinition = {
     const reference = await request.context.repositories
       .get(ProjectTaskRepository)
       .getTaskByReference(projectId, readTrimmedString(args.taskId));
-    const result = await getProjectTask(
-      request.context,
-      projectId,
-      reference?.id ?? readTrimmedString(args.taskId),
-    );
+    const taskId = reference?.id ?? readTrimmedString(args.taskId);
+    const [result, { thread }] = await Promise.all([
+      getProjectTask(request.context, projectId, taskId),
+      getProjectTaskThread(request.context, projectId, taskId),
+    ]);
 
     return {
       status: "success",
       name: "get_task",
-      content: formatTaskDetail(result),
+      content: formatTaskDetail({ ...result, thread }),
       data: result,
     };
   },

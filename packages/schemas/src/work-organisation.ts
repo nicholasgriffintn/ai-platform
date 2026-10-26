@@ -78,6 +78,22 @@ export const workspaceTeamResponseSchema = z.object({
 });
 export type WorkspaceTeamResponse = z.infer<typeof workspaceTeamResponseSchema>;
 
+export const workspaceTeamDirectoryEntrySchema = workspaceTeammateSchema.pick({
+  teammateId: true,
+  name: true,
+  title: true,
+  status: true,
+  reportsToTeammateId: true,
+  projectIds: true,
+});
+export type WorkspaceTeamDirectoryEntry = z.infer<typeof workspaceTeamDirectoryEntrySchema>;
+
+export const workspaceTeamDirectoryResponseSchema = z.object({
+  teammates: z.array(workspaceTeamDirectoryEntrySchema),
+  leadTeammateId: z.string().nullable(),
+});
+export type WorkspaceTeamDirectoryResponse = z.infer<typeof workspaceTeamDirectoryResponseSchema>;
+
 export const updateWorkspaceTeammateSchema = z
   .object({
     title: z.string().trim().min(1).max(80),
@@ -320,6 +336,7 @@ export const workInboxItemSchema = z.object({
   teammateId: z.string().nullable(),
   title: z.string(),
   detail: z.string().nullable(),
+  dueAt: z.string().nullable().default(null),
   since: z.string(),
   deepLink: z.string(),
 });

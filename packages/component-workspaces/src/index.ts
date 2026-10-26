@@ -48,5 +48,6 @@ export * from "./WorkTaskViews";
 export * from "./TaskWorkSections";
 export * from "./WorkTeamViews";
 export * from "./SetupPlanView";
+export * from "./TaskViewTabs";
 export * from "./WorkInbox";
 export * from "./WorkOrganisationViews";

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { enqueueTeammateWake } from "~/modules/teammates/application/wakes";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import { WorkspaceTeammateRepository } from "~/modules/teammates/infrastructure/WorkspaceTeammateRepository";
@@ -75,6 +76,7 @@ function context(
     requireUser: vi.fn().mockReturnValue({ id: 7 }),
     repositories: fakeRepositories([
       [WorkspaceTeammateRepository, { listForWorkspace: vi.fn().mockResolvedValue(team) }],
+      [ProjectTaskRepository, { updateTask: vi.fn().mockResolvedValue(null) }],
       [
         TeammateRepository,
         { getTeammateById: vi.fn().mockResolvedValue({ id: "coordinator", name: "Coordinator" }) },
@@ -103,7 +105,16 @@ describe("handing a report's blocked task to its manager", () => {
   });
 
   it("wakes the manager with the pending questions instead of asking people", async () => {
-    await expect(handBlockedTaskToManager(context(), blockedTask())).resolves.toBe(true);
+    const serviceContext = context();
+
+    await expect(
+      handBlockedTaskToManager(serviceContext, blockedTask({ attentionVersion: 4 })),
+    ).resolves.toBe(true);
+
+    expect(serviceContext.repositories.get(ProjectTaskRepository).updateTask).toHaveBeenCalledWith(
+      "task-1",
+      { details: { handoff: { teammateId: "lead", version: 4 } } },
+    );
 
     expect(enqueueTeammateWake).toHaveBeenCalledWith(
       expect.anything(),

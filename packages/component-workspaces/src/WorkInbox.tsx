@@ -1,38 +1,31 @@
-import { Button, cn, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
+import { Badge, Button, cn, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
 import type {
   ProjectTaskAttentionItem,
   ProjectTaskAttentionKind,
   WorkInboxItem,
 } from "@ngriffin_uk/polychat-schemas";
-import { formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
+import { formatClockTime, formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
 import { Check, Eye, Inbox, X } from "lucide-react";
 
-type Tone = "decision" | "warning" | "failure" | "done";
+type Tone = "info" | "warning" | "failure" | "success";
 
 const DECISION_LABELS: Record<WorkInboxItem["kind"], { label: string; tone: Tone }> = {
-  hire: { label: "Hire", tone: "decision" },
+  hire: { label: "Hire", tone: "info" },
   budget: { label: "Budget", tone: "warning" },
-  standup: { label: "Standup", tone: "decision" },
+  standup: { label: "Standup", tone: "info" },
   escalation: { label: "Escalated", tone: "failure" },
-  setup: { label: "Setup plan", tone: "decision" },
+  setup: { label: "Setup plan", tone: "info" },
   paused: { label: "Paused", tone: "failure" },
-  waiting: { label: "Waiting", tone: "decision" },
+  waiting: { label: "Waiting", tone: "info" },
 };
 
 const TASK_LABELS: Record<ProjectTaskAttentionKind, { label: string; tone: Tone }> = {
-  input: { label: "Questions", tone: "decision" },
-  approval: { label: "Approval", tone: "decision" },
-  review: { label: "Review", tone: "decision" },
+  input: { label: "Questions", tone: "info" },
+  approval: { label: "Approval", tone: "info" },
+  review: { label: "Review", tone: "info" },
   blocked: { label: "Stuck", tone: "failure" },
-  assigned: { label: "Yours", tone: "decision" },
-  completion: { label: "Done", tone: "done" },
-};
-
-const TONE_CLASSES: Record<Tone, string> = {
-  decision: "bg-active-work/10 text-active-work",
-  warning: "bg-attention/10 text-attention",
-  failure: "bg-failure/10 text-failure",
-  done: "bg-success/10 text-success",
+  assigned: { label: "Yours", tone: "info" },
+  completion: { label: "Done", tone: "success" },
 };
 
 type InboxEntry =
@@ -81,14 +74,9 @@ function InboxRow({
 }) {
   return (
     <li className="flex items-start gap-3 px-4 py-3">
-      <span
-        className={cn(
-          "mt-0.5 w-20 shrink-0 rounded px-1.5 py-0.5 text-center text-[11px] font-medium",
-          TONE_CLASSES[tone],
-        )}
-      >
+      <Badge variant={tone} className="mt-0.5 w-20">
         {label}
-      </span>
+      </Badge>
       <Link
         href={href}
         aria-label={title}
@@ -185,7 +173,7 @@ export function WorkInbox({
                 label={label}
                 tone={tone}
                 title={item.title}
-                context={null}
+                context={item.dueAt ? `Closes ${formatClockTime(item.dueAt)}` : null}
                 detail={item.detail}
                 since={item.since}
                 href={item.deepLink}

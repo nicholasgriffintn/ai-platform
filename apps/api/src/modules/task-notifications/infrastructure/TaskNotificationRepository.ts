@@ -34,6 +34,8 @@ const INBOX_SOURCE = `FROM project_task pt
         AND receipt.task_id = pt.id
         AND receipt.task_version = pt.attention_version
        WHERE receipt.dismissed_at IS NULL
+         AND pt.kind = 'task'
+         AND json_extract(pt.details, '$.handoff.version') IS NOT pt.attention_version
          AND (
            pt.status IN ('blocked', 'review')
            OR (pt.status = 'backlog' AND pt.assignee_user_id = ?)
@@ -276,6 +278,18 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
   }
 
   /** Unread inbox items across the whole inbox, not only the page listInbox returns. */
+  async countUnreadInbox(userId: number): Promise<number> {
+    const row = await this.runQuery<{ unread: number }>(
+      `SELECT COUNT(*) AS unread
+       ${INBOX_SOURCE}
+         AND receipt.read_at IS NULL`,
+      [userId, userId, userId, userId, userId],
+      true,
+    );
+
+    return row?.unread ?? 0;
+  }
+
   async updateInboxReceipts(
     userId: number,
     itemIds: string[],

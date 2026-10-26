@@ -13,6 +13,7 @@ import {
   computerInputRequiresTakeover,
   describeComputerTakeoverInput,
 } from "~/modules/teammates/domain/computer-policy";
+import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
 import { requireProjectCapabilityAccess } from "~/modules/workspaces/application/access";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolExecutionContext } from "~/types/functions";
@@ -89,8 +90,24 @@ export async function executeComputerControl(
 
   const teammateContext = await requireTeammateContext(context, contextId);
 
-  if (teammateContext.scope.type === "project") {
-    await requireProjectCapabilityAccess(context, teammateContext.scope.id, "tool", "use_computer");
+  const capabilityProjectId =
+    teammateContext.scope.type === "project"
+      ? teammateContext.scope.id
+      : teammateContext.scope.type === "workspace"
+        ? resolveRequestProjectId(toolContext.request)
+        : null;
+
+  if (teammateContext.scope.type === "workspace" && !capabilityProjectId) {
+    return {
+      status: "error",
+      name: "use_computer",
+      content:
+        "A workspace teammate can only use a computer inside one of the workspace's projects.",
+    };
+  }
+
+  if (capabilityProjectId) {
+    await requireProjectCapabilityAccess(context, capabilityProjectId, "tool", "use_computer");
   }
 
   if (requiresTakeover) {

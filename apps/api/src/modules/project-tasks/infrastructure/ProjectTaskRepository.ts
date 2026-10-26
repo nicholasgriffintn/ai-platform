@@ -431,6 +431,59 @@ export class ProjectTaskRepository extends BaseRepository {
     return rows.map(formatProjectTask);
   }
 
+  async listOpenProjectIds(
+    workspaceId: string,
+    ownerTeammateId: string | null,
+    limit: number,
+  ): Promise<string[]> {
+    const rows = await this.runQuery<{ project_id: string }>(
+      `SELECT DISTINCT project_id FROM project_task
+       WHERE workspace_id = ?
+         AND status NOT IN ('done', 'cancelled')
+         AND (? IS NULL OR json_extract(runner, '$.teammateId') = ?)
+       LIMIT ?`,
+      [workspaceId, ownerTeammateId, ownerTeammateId, limit],
+    );
+
+    return rows.map((row) => row.project_id);
+  }
+
+  async hasTeammateTaskUpdatedSince(
+    workspaceId: string,
+    teammateId: string,
+    since: string,
+  ): Promise<boolean> {
+    const row = await this.runQuery<{ found: number }>(
+      `SELECT 1 AS found FROM project_task
+       WHERE workspace_id = ?
+         AND json_extract(runner, '$.teammateId') = ?
+         AND datetime(updated_at) > datetime(?)
+       LIMIT 1`,
+      [workspaceId, teammateId, since],
+      true,
+    );
+
+    return Boolean(row);
+  }
+
+  async listOpenStandupsAndEscalations(workspaceIds: readonly string[]): Promise<ProjectTask[]> {
+    if (workspaceIds.length === 0) {
+      return [];
+    }
+
+    const rows = await this.runQuery<ProjectTaskRow>(
+      `SELECT * FROM project_task
+       WHERE workspace_id IN (${workspaceIds.map(() => "?").join(", ")})
+         AND status NOT IN ('done', 'cancelled')
+         AND (kind = 'standup' OR json_extract(details, '$.escalation') IS NOT NULL)
+       ORDER BY updated_at DESC
+       LIMIT 200`,
+      [...workspaceIds],
+    );
+
+    return rows.map(formatProjectTask);
+  }
+
   async findOpenChannelCase(
     bindingId: string,
     threadKey: string | null,

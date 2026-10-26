@@ -6,9 +6,8 @@ import {
   teammateCaller,
   type WorkCaller,
 } from "~/modules/project-tasks/application/work";
-import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
-import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
-import { WorkspaceTeammateRepository } from "~/modules/teammates/infrastructure/WorkspaceTeammateRepository";
+import { requireTeammateContext } from "~/modules/teammates/application/contexts";
+import { listActiveWorkspaceTeammates } from "~/modules/teammates/application/directory";
 import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IRequest } from "~/types";
@@ -47,9 +46,7 @@ export async function resolveWorkToolScope(request: IRequest): Promise<WorkToolS
   }
 
   const contextId = request.request?.teammate_context_id;
-  const teammateContext = contextId
-    ? await context.repositories.get(TeammateContextRepository).getById(contextId)
-    : null;
+  const teammateContext = contextId ? await requireTeammateContext(context, contextId) : null;
 
   return {
     context,
@@ -75,23 +72,16 @@ export async function resolveWorkActor(
     return { type: "person", userId: scope.context.requireUser().id };
   }
 
-  const team = await scope.context.repositories
-    .get(WorkspaceTeammateRepository)
-    .listForWorkspace(scope.workspaceId);
-  const teammates = await scope.context.repositories
-    .get(TeammateRepository)
-    .getTeammatesByIds(
-      team.filter((member) => member.status === "active").map((member) => member.teammateId),
-    );
+  const teammates = await listActiveWorkspaceTeammates(scope.context, scope.workspaceId);
   const teammate = teammates.find(
     (candidate) =>
-      candidate.id.toLowerCase() === value ||
+      candidate.teammateId.toLowerCase() === value ||
       candidate.name.toLowerCase() === value ||
       candidate.name.toLowerCase().split(/\s+/)[0] === value,
   );
 
   if (teammate) {
-    return { type: "teammate", id: teammate.id };
+    return { type: "teammate", id: teammate.teammateId };
   }
 
   const members = await scope.context.repositories

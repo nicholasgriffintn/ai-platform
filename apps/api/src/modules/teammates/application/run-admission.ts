@@ -37,6 +37,7 @@ import { prepareTeammateCompletionRequest } from "./completion-request";
 import { buildTeammateCompletionTools, buildTeammatePersona } from "./completion-tools";
 import { prepareAdmittedTeammateContinuation, prepareTeammateRun } from "./execution";
 import { resolveTeammateMcpServers } from "./mcp-servers";
+import { assertTeammateEmploymentAvailable } from "./organisation";
 import { admitTeammateContextAuthority, requirePolyHomeRun } from "./poly-home";
 import { prepareTeammateRunResume } from "./run-resume";
 import { readTeammateSkillIds } from "./teammateResponse";
@@ -129,8 +130,18 @@ export async function enqueueTeammateRun({
     preparedInvocation?.teammate ??
     (await requireTeammateAccess(serviceContext, teammateId, "read", user?.id));
 
-  if (preparedInvocation?.resolution.context && !continuationRun) {
-    await assertTeammateContextWithinBudget(serviceContext, preparedInvocation.resolution.context);
+  const admittedContext = preparedInvocation?.resolution.context;
+
+  if (admittedContext && !continuationRun) {
+    await assertTeammateContextWithinBudget(serviceContext, admittedContext);
+
+    if (admittedContext.scope.type === "workspace") {
+      await assertTeammateEmploymentAvailable(
+        serviceContext,
+        admittedContext.scope.id,
+        admittedContext.teammateId,
+      );
+    }
   }
 
   if (isPolyTeammateId(teammateId)) {

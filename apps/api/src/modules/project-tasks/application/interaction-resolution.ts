@@ -101,7 +101,7 @@ export async function resolvePendingInteraction<TInteraction>(params: {
         role: "tool",
         name: resolution.toolName,
         content: resolution.toolContent,
-        status: "resolved",
+        status: "answered",
         data: resolution.data,
         tool_call_id: current.toolCallId,
         timestamp: current.timestamp,

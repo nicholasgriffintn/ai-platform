@@ -12,7 +12,6 @@ import {
   type TaskNotificationCategory,
   type UpdateTaskNotificationPreferences,
 } from "@ngriffin_uk/polychat-schemas";
-import { groupBy } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
   ErrorType,
@@ -27,14 +26,13 @@ import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { publishUserEvent } from "~/modules/sync/application/conversation-events";
 import type { TaskInboxRow } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
 import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
-import { WorkspaceTeammateRepository } from "~/modules/teammates/infrastructure/WorkspaceTeammateRepository";
 import { requireProjectAccess, requireWorkAccess } from "~/modules/workspaces/application/access";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
-import { findHandlingManager, handBlockedTaskToManager } from "./report-handoff";
+import { projectTaskLink } from "../domain/links";
+import { handBlockedTaskToManager } from "./report-handoff";
 
 const DEFAULT_ATTENTION_LIMIT = 50;
-const INBOX_SCAN_LIMIT = 200;
 
 interface TaskAttentionState {
   kind: ProjectTaskAttentionKind;
@@ -112,12 +110,6 @@ function attentionDetail(task: TaskInboxRow): string | null {
   return task.blocked_detail;
 }
 
-function deepLinkFor(task: Pick<TaskInboxRow, "workspace_id" | "project_id" | "task_id">) {
-  return `/work/${encodeURIComponent(task.workspace_id)}/projects/${encodeURIComponent(
-    task.project_id,
-  )}/tasks/${encodeURIComponent(task.task_id)}`;
-}
-
 function formatInboxItem(row: TaskInboxRow): ProjectTaskAttentionItem | null {
   const state = attentionState({
     status: row.status,
@@ -142,7 +134,7 @@ function formatInboxItem(row: TaskInboxRow): ProjectTaskAttentionItem | null {
     requiresAction: state.requiresAction,
     isRead: row.read_at !== null,
     readAt: row.read_at,
-    deepLink: deepLinkFor(row),
+    deepLink: projectTaskLink(row.workspace_id, row.project_id, row.task_id),
   };
 }
 
@@ -152,34 +144,15 @@ export async function listProjectTaskAttention(
 ) {
   const user = requireWorkAccess(context);
   const limit = Math.min(options.limit ?? DEFAULT_ATTENTION_LIMIT, 100);
-  const rows = await context.repositories
-    .get(TaskNotificationRepository)
-    .listInbox(user.id, INBOX_SCAN_LIMIT);
-  const tasks = await context.repositories
-    .get(ProjectTaskRepository)
-    .listTasksByIds([...new Set(rows.map((row) => row.task_id))]);
-  const team = await context.repositories
-    .get(WorkspaceTeammateRepository)
-    .listForWorkspaces([...new Set(tasks.map((task) => task.workspaceId))]);
-  const teams = groupBy(team, (member) => member.workspaceId);
-  const hidden = new Set(
-    tasks
-      .filter(
-        (task) =>
-          task.kind !== "task" ||
-          findHandlingManager(task, teams.get(task.workspaceId) ?? []) !== null,
-      )
-      .map((task) => task.id),
-  );
+  const [rows, unread] = await Promise.all([
+    context.repositories.get(TaskNotificationRepository).listInbox(user.id, limit + 1),
+    context.repositories.get(TaskNotificationRepository).countUnreadInbox(user.id),
+  ]);
   const items = rows
-    .filter((row) => !hidden.has(row.task_id))
     .map(formatInboxItem)
     .filter((item): item is ProjectTaskAttentionItem => item !== null);
 
-  return {
-    ...toListPage(items, limit, (item) => item.id),
-    unread: items.filter((item) => !item.isRead).length,
-  };
+  return { ...toListPage(items, limit, (item) => item.id), unread };
 }
 
 export async function getTaskNotificationSettings(context: ServiceContext) {

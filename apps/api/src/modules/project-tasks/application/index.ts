@@ -366,12 +366,11 @@ export async function getProjectTask(context: ServiceContext, projectId: string,
     getPendingProjectTaskToolApproval(context, task),
     getProjectTaskInteraction(context, task),
   ]);
-  const [activity, plan, children, links, thread] = await Promise.all([
+  const [activity, plan, children, links] = await Promise.all([
     getProjectTaskActivity(context, task, goal, interaction),
     getProjectTaskPlanEvidence(context, task, parseProjectFlow(project.flow)),
     context.repositories.get(ProjectTaskRepository).listChildren(task.id),
     context.repositories.get(ProjectTaskRepository).listLinks(task.id),
-    listTaskThread(context, task),
   ]);
   const linkedTasks = await context.repositories
     .get(ProjectTaskRepository)
@@ -405,8 +404,17 @@ export async function getProjectTask(context: ServiceContext, projectId: string,
           ]
         : [];
     }),
-    thread,
   };
+}
+
+export async function getProjectTaskThread(
+  context: ServiceContext,
+  projectId: string,
+  taskId: string,
+) {
+  await requireProjectAccess(context, projectId);
+
+  return { thread: await listTaskThread(context, await requireTask(context, projectId, taskId)) };
 }
 
 export async function sendProjectTaskAgain(

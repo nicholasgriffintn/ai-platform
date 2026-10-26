@@ -8,6 +8,7 @@ import type {
   ProjectTaskLink,
   ProjectTaskLinkKind,
   ProjectTaskThreadPost,
+  ProjectTaskThreadResponse,
   ProposeHireInput,
   RaiseCaseInput,
   SetupPlan,
@@ -20,6 +21,7 @@ import type {
   WorkCostsResponse,
   WorkInboxResponse,
   WorkRailsResponse,
+  WorkspaceTeamDirectoryResponse,
   WorkspaceTeammate,
   WorkspaceTeamResponse,
   WorkTaskListResponse,
@@ -137,6 +139,19 @@ export function setStandupSettings(
   settings: StandupSettings,
 ): Promise<StandupSettings> {
   return requestJson(`/projects/${encodeURIComponent(projectId)}/standup`, "PATCH", settings);
+}
+
+export function getProjectTaskThread(
+  projectId: string,
+  taskId: string,
+): Promise<ProjectTaskThreadResponse> {
+  return requestJson(`${taskPath(projectId, taskId)}/thread`, "GET");
+}
+
+export function getWorkspaceTeamDirectory(
+  workspaceId: string,
+): Promise<WorkspaceTeamDirectoryResponse> {
+  return requestJson(`${workspacePath(workspaceId)}/team_directory`, "GET");
 }
 
 export function getWorkspaceTeam(workspaceId: string): Promise<WorkspaceTeamResponse> {

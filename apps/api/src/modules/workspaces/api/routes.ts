@@ -1,17 +1,9 @@
 import {
   acceptWorkspaceInvitationSchema,
-  createWorkspaceInvitationSchema,
-  createWorkspaceSchema,
-  transferWorkspaceOwnershipSchema,
-  updateWorkspaceMemberSchema,
-  updateWorkspaceSchema,
-  workspaceAuditListQuerySchema,
-  workspaceAuditListResponseSchema,
-  workspaceDetailSchema,
-  workspaceInvitationDeliverySchema,
-  workspaceListResponseSchema,
   approveSetupPlanSchema,
   createInitiativeSchema,
+  createWorkspaceInvitationSchema,
+  createWorkspaceSchema,
   decideHireSchema,
   initiativeListResponseSchema,
   initiativeSchema,
@@ -19,13 +11,22 @@ import {
   proposeHireSchema,
   setupPlanStateSchema,
   startOnboardingSchema,
+  transferWorkspaceOwnershipSchema,
   updateInitiativeSchema,
   updateSetupPlanSchema,
+  updateWorkspaceMemberSchema,
+  updateWorkspaceSchema,
   updateWorkspaceTeammateSchema,
   workCostsQuerySchema,
   workCostsResponseSchema,
   workRailsQuerySchema,
   workRailsResponseSchema,
+  workspaceAuditListQuerySchema,
+  workspaceAuditListResponseSchema,
+  workspaceDetailSchema,
+  workspaceInvitationDeliverySchema,
+  workspaceListResponseSchema,
+  workspaceTeamDirectoryResponseSchema,
   workspaceTeammateSchema,
   workspaceTeamResponseSchema,
   workTaskListResponseSchema,
@@ -36,6 +37,7 @@ import z from "zod/v4";
 
 import { defineResource } from "~/infrastructure/http/resource";
 import { listWorkspaceWorkTasks } from "~/modules/project-tasks/application/listing";
+import { getWorkspaceTeamDirectory } from "~/modules/teammates/application/directory";
 import {
   decideHire,
   getWorkspaceTeam,
@@ -141,6 +143,18 @@ defineResource(app, { idParam: "workspace_id", tags: ["workspaces"] }, (workspac
     paramSchema: workspaceParamsSchema,
     responses: { 200: { description: "The team", schema: workspaceTeamResponseSchema } },
     handler: ({ serviceContext, params }) => getWorkspaceTeam(serviceContext, params.workspace_id),
+  });
+
+  workspaces.singleton("team_directory").read({
+    auth: true,
+    summary: "List the workspace team by name",
+    description: "A light list of the team for naming owners and reviewers, without spend.",
+    paramSchema: workspaceParamsSchema,
+    responses: {
+      200: { description: "The team directory", schema: workspaceTeamDirectoryResponseSchema },
+    },
+    handler: ({ serviceContext, params }) =>
+      getWorkspaceTeamDirectory(serviceContext, params.workspace_id),
   });
 
   workspaces

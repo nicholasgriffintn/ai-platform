@@ -339,6 +339,7 @@ struct WorkInboxItem: Decodable, Identifiable, Hashable {
     let teammateId: String?
     let title: String
     let detail: String?
+    let dueAt: String?
     let since: String
     let deepLink: String
 

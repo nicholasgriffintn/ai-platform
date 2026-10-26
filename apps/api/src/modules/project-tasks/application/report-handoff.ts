@@ -7,6 +7,7 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { taskReference } from "~/modules/project-tasks/domain/work-actors";
+import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { enqueueTeammateWake } from "~/modules/teammates/application/wakes";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import {
@@ -114,6 +115,12 @@ export async function handBlockedTaskToManager(
       : Promise.resolve(null),
   ]);
 
+  await context.repositories.get(ProjectTaskRepository).updateTask(task.id, {
+    details: {
+      ...task.details,
+      handoff: { teammateId: managerId, version: task.attentionVersion ?? 0 },
+    },
+  });
   await enqueueTeammateWake(context, {
     workspaceId: task.workspaceId,
     teammateId: managerId,

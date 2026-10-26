@@ -110,7 +110,9 @@ describe("ConversationRunRepository", () => {
     expect(prepare.mock.calls[2]?.[0]).toContain("attempt = ? AND status = ?");
     expect(prepare.mock.calls[3]?.[0]).toContain("attempt = attempt + 1");
     expect(prepare.mock.calls[3]?.[0]).toContain("retry_json = NULL");
-    expect(batch.mock.calls[0]?.[0]).toHaveLength(4);
+    expect(prepare.mock.calls[3]?.[0]).toContain("interaction.status IN ('pending', 'answered')");
+    expect(prepare.mock.calls[4]?.[0]).toContain("SET status = 'resolved'");
+    expect(batch.mock.calls[0]?.[0]).toHaveLength(5);
   });
 
   it("only allows the run initiator to resume project and personal runs", async () => {

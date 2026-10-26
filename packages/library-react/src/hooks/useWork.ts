@@ -10,6 +10,7 @@ import {
   decideHire,
   deleteInitiative,
   escalateTask,
+  getProjectTaskThread,
   getStandupDraft,
   getStandupSettings,
   getWorkCosts,
@@ -17,6 +18,7 @@ import {
   getWorkRails,
   getWorkspaceSetup,
   getWorkspaceTeam,
+  getWorkspaceTeamDirectory,
   linkTasks,
   listInitiatives,
   listMyTasks,
@@ -25,10 +27,10 @@ import {
   raiseCase,
   requestTaskReview,
   resolveCase,
-  sendTaskAgain,
-  sendCaseReply,
   reviewTask,
   reviseSetupPlan,
+  sendCaseReply,
+  sendTaskAgain,
   setStandupSettings,
   startOnboarding,
   startWorkspaceSetup,
@@ -92,16 +94,35 @@ function useWorkEnabled(): boolean {
   return isAuthenticated && isPro;
 }
 
-function invalidateWork(queryClient: QueryClient, projectId?: string, taskId?: string) {
+function invalidateAllWork(queryClient: QueryClient) {
   void queryClient.invalidateQueries({ queryKey: [WORK_QUERY_ROOT] });
   void queryClient.invalidateQueries({ queryKey: TASK_ATTENTION_QUERY_KEY });
+}
 
-  if (projectId) {
-    void queryClient.invalidateQueries({ queryKey: projectTasksQueryKey(projectId) });
+function invalidateTaskWork(queryClient: QueryClient, projectId: string, taskId?: string) {
+  for (const queryKey of [
+    workInboxQueryKey,
+    myTasksQueryKey,
+    WORKSPACE_TASKS_QUERY_PREFIX,
+    [WORK_QUERY_ROOT, "initiatives"],
+    TASK_ATTENTION_QUERY_KEY,
+    projectTasksQueryKey(projectId),
+  ]) {
+    void queryClient.invalidateQueries({ queryKey });
   }
 
-  if (projectId && taskId) {
+  if (taskId) {
     void queryClient.invalidateQueries({ queryKey: projectTaskDetailQueryKey(projectId, taskId) });
+  }
+}
+
+function invalidateTeamWork(queryClient: QueryClient, workspaceId: string) {
+  for (const queryKey of [
+    workInboxQueryKey,
+    workspaceTeamQueryKey(workspaceId),
+    [WORK_QUERY_ROOT, "rails", workspaceId],
+  ]) {
+    void queryClient.invalidateQueries({ queryKey });
   }
 }
 
@@ -136,6 +157,29 @@ export function useWorkspaceTeam(workspaceId: string) {
     queryFn: () => getWorkspaceTeam(workspaceId),
     enabled: enabled && Boolean(workspaceId),
     refetchInterval: WORK_REFETCH_MS,
+  });
+}
+
+export function useTaskThread(projectId: string, taskId: string) {
+  const enabled = useWorkEnabled();
+  const liveOrPoll = useLiveOrPoll();
+
+  return useQuery({
+    queryKey: [...projectTaskDetailQueryKey(projectId, taskId), "thread"],
+    queryFn: () => getProjectTaskThread(projectId, taskId),
+    enabled: enabled && Boolean(projectId && taskId),
+    refetchInterval: (query) => liveOrPoll(query, WORK_REFETCH_MS / 3, "project_task.changed"),
+  });
+}
+
+export function useWorkspaceTeamDirectory(workspaceId: string) {
+  const enabled = useWorkEnabled();
+
+  return useQuery({
+    queryKey: [...workspaceTeamQueryKey(workspaceId), "directory"],
+    queryFn: () => getWorkspaceTeamDirectory(workspaceId),
+    enabled: enabled && Boolean(workspaceId),
+    staleTime: WORK_REFETCH_MS * 2,
   });
 }
 
@@ -224,7 +268,7 @@ export function useStandupDraft(projectId: string, taskId: string, enabledByCall
 
 export function useWorkTaskActions(projectId: string, taskId: string) {
   const queryClient = useQueryClient();
-  const settle = () => invalidateWork(queryClient, projectId, taskId);
+  const settle = () => invalidateTaskWork(queryClient, projectId, taskId);
 
   return {
     comment: useMutation({
@@ -291,13 +335,13 @@ export function useRaiseCase(projectId: string) {
 
   return useMutation({
     mutationFn: (input: RaiseCaseInput) => raiseCase(projectId, input),
-    onSuccess: () => invalidateWork(queryClient, projectId),
+    onSuccess: () => invalidateTaskWork(queryClient, projectId),
   });
 }
 
 export function useTeamActions(workspaceId: string) {
   const queryClient = useQueryClient();
-  const settle = () => invalidateWork(queryClient);
+  const settle = () => invalidateTeamWork(queryClient, workspaceId);
 
   return {
     update: useMutation({
@@ -342,7 +386,7 @@ export function useInitiativeActions(workspaceId: string) {
 export function useSetupActions(workspaceId: string) {
   const queryClient = useQueryClient();
   const settle = () => {
-    invalidateWork(queryClient);
+    invalidateAllWork(queryClient);
     void queryClient.invalidateQueries({ queryKey: WORKSPACES_QUERY_KEY });
     void queryClient.invalidateQueries({ queryKey: workspaceQueryKey(workspaceId) });
   };
@@ -374,7 +418,7 @@ export function useStartOnboarding() {
   return useMutation({
     mutationFn: (input: StartOnboardingInput) => startOnboarding(input),
     onSuccess: () => {
-      invalidateWork(queryClient);
+      invalidateAllWork(queryClient);
       void queryClient.invalidateQueries({ queryKey: WORKSPACES_QUERY_KEY });
     },
   });
@@ -402,6 +446,6 @@ export function useDecideInboxHire() {
       teammateId: string;
       decision: "approve" | "reject";
     }) => decideHire(input.workspaceId, input.teammateId, input.decision),
-    onSuccess: () => invalidateWork(queryClient),
+    onSuccess: (_result, input) => invalidateTeamWork(queryClient, input.workspaceId),
   });
 }

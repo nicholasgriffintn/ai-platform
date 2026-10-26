@@ -1,4 +1,4 @@
-import { cn, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
+import { Badge, cn, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
 import {
   projectTaskBlockedReasonLabels,
   projectTaskPriorityLabels,
@@ -116,21 +116,6 @@ export function WorkActorChip({
   );
 }
 
-function RowTag({ tone, children }: { tone: "info" | "attention" | "neutral"; children: string }) {
-  return (
-    <span
-      className={cn(
-        "max-w-48 truncate rounded-full border px-2 py-0.5 text-[11px] leading-4",
-        tone === "info" && "border-active-work/25 bg-active-work/10 text-active-work",
-        tone === "attention" && "border-attention/30 bg-attention/10 text-attention",
-        tone === "neutral" && "border-border bg-selection/60 text-muted-foreground",
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
 export function WorkTaskRow({
   task,
   directory,
@@ -162,13 +147,15 @@ export function WorkTaskRow({
         <span className="truncate">{task.objective}</span>
       </span>
       <span className="flex items-center justify-end gap-1.5">
-        {task.kind === "case" ? <RowTag tone="info">Case</RowTag> : null}
+        {task.kind === "case" ? <Badge variant="info">Case</Badge> : null}
         {task.status === "blocked" && task.blockedReason ? (
           <span className="hidden lg:inline-flex">
-            <RowTag tone="attention">{projectTaskBlockedReasonLabels[task.blockedReason]}</RowTag>
+            <Badge variant="warning" className="max-w-48 truncate">
+              {projectTaskBlockedReasonLabels[task.blockedReason]}
+            </Badge>
           </span>
         ) : null}
-        {childCount > 0 ? <RowTag tone="neutral">{`${childCount} sub-tasks`}</RowTag> : null}
+        {childCount > 0 ? <Badge variant="muted">{`${childCount} sub-tasks`}</Badge> : null}
         {task.dueAt ? (
           <span className="hidden text-xs text-muted-foreground tabular-nums sm:inline">
             {new Date(task.dueAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}

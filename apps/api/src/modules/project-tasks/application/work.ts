@@ -18,10 +18,10 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { sameWorkActor, taskReference } from "~/modules/project-tasks/domain/work-actors";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
+import { listActiveWorkspaceTeammates } from "~/modules/teammates/application/directory";
 import { managesTeammate, resolveManager } from "~/modules/teammates/application/organisation";
 import { enqueueTeammateWake } from "~/modules/teammates/application/wakes";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
-import { WorkspaceTeammateRepository } from "~/modules/teammates/infrastructure/WorkspaceTeammateRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
@@ -166,24 +166,20 @@ export async function commentOnTask(
     return post;
   }
 
-  const team = await context.repositories
-    .get(WorkspaceTeammateRepository)
-    .listForWorkspace(task.workspaceId);
-  const teammates = await context.repositories
-    .get(TeammateRepository)
-    .getTeammatesByIds(team.map((member) => member.teammateId));
-  const mentioned = teammates.filter((teammate) => {
-    const name = teammate.name.toLowerCase();
+  const mentioned = (await listActiveWorkspaceTeammates(context, task.workspaceId)).filter(
+    (teammate) => {
+      const name = teammate.name.toLowerCase();
 
-    return mentions.some((mention) => name === mention || name.split(/\s+/)[0] === mention);
-  });
+      return mentions.some((mention) => name === mention || name.split(/\s+/)[0] === mention);
+    },
+  );
 
   for (const teammate of mentioned) {
-    if (caller.actor.type === "teammate" && caller.actor.id === teammate.id) {
+    if (caller.actor.type === "teammate" && caller.actor.id === teammate.teammateId) {
       continue;
     }
 
-    await wakeTeammateOnTask(context, task, teammate.id, "mentioned", body.slice(0, 500));
+    await wakeTeammateOnTask(context, task, teammate.teammateId, "mentioned", body.slice(0, 500));
   }
 
   return post;

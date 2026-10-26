@@ -500,12 +500,16 @@ export async function assertTeammateEmploymentAvailable(
   );
 }
 
-export async function reviewWorkBudgets(context: ServiceContext): Promise<void> {
+export async function reviewWorkBudgets(
+  context: ServiceContext,
+  employments: readonly WorkspaceTeammateRecord[],
+): Promise<WorkspaceTeammateRecord[]> {
   const period = usagePeriodFromDate();
-  const records = (await context.repositories.get(WorkspaceTeammateRepository).listAwake()).filter(
+  const records = employments.filter(
     (record) => record.status === "active" && record.monthlyCreditCapMicros,
   );
   const workspaceIds = [...new Set(records.map((record) => record.workspaceId))];
+  const paused = new Set<string>();
 
   for (const workspaceId of workspaceIds) {
     const spend = await readTeammateSpendByWorkspace(context, workspaceId);
@@ -518,6 +522,7 @@ export async function reviewWorkBudgets(context: ServiceContext): Promise<void> 
         await context.repositories
           .get(WorkspaceTeammateRepository)
           .update(workspaceId, record.teammateId, { status: "paused", pausedReason: "budget" });
+        paused.add(`${workspaceId}:${record.teammateId}`);
       } else if (used >= cap * WORK_BUDGET_WARNING_RATIO && record.budgetWarnedPeriod !== period) {
         await context.repositories
           .get(WorkspaceTeammateRepository)
@@ -525,6 +530,12 @@ export async function reviewWorkBudgets(context: ServiceContext): Promise<void> 
       }
     }
   }
+
+  return employments.map((record) =>
+    paused.has(`${record.workspaceId}:${record.teammateId}`)
+      ? { ...record, status: "paused", pausedReason: "budget" }
+      : record,
+  );
 }
 
 export async function managesTeammate(

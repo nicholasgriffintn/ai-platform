@@ -1,9 +1,9 @@
 import type { WorkDirectory } from "@ngriffin_uk/polychat-component-workspaces";
-import { useWorkspace, useWorkspaceTeam } from "@ngriffin_uk/polychat-library-react";
+import { useWorkspace, useWorkspaceTeamDirectory } from "@ngriffin_uk/polychat-library-react";
 
 export function useWorkDirectory(workspaceId: string) {
   const workspaceQuery = useWorkspace(workspaceId);
-  const teamQuery = useWorkspaceTeam(workspaceId);
+  const teamQuery = useWorkspaceTeamDirectory(workspaceId);
   const team = teamQuery.data?.teammates ?? [];
   const directory: WorkDirectory = {
     people: (workspaceQuery.data?.members ?? []).map((member) => ({
@@ -15,5 +15,10 @@ export function useWorkDirectory(workspaceId: string) {
       .map((teammate) => ({ id: teammate.teammateId, name: teammate.name })),
   };
 
-  return { directory, team, teamQuery, workspaceQuery };
+  return {
+    directory,
+    team,
+    leadTeammateId: teamQuery.data?.leadTeammateId ?? null,
+    workspaceQuery,
+  };
 }

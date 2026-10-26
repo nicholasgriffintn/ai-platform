@@ -569,7 +569,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
                AND interaction.id = conversation_run.last_message_id
                AND interaction.tool_call_id = ?
                AND interaction.role = 'tool'
-               AND interaction.status IN ('pending', 'resolved')
+               AND interaction.status IN ('pending', 'answered')
            )
           AND (? IS NULL OR EXISTS (
             SELECT 1 FROM delegation WHERE id = ? AND state IN (${LIVE_STATE_SQL})
@@ -606,7 +606,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
               AND interaction.id = conversation_run.last_message_id
               AND interaction.tool_call_id = ?
               AND interaction.role = 'tool'
-              AND interaction.status IN ('pending', 'resolved')
+              AND interaction.status IN ('pending', 'answered')
           )
          AND (? IS NULL OR EXISTS (
            SELECT 1 FROM delegation WHERE id = ? AND state IN (${LIVE_STATE_SQL})
@@ -633,9 +633,18 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
         data: { previousStatus: current.status, status: "running" },
         expectedAttempt: nextAttempt,
       };
+      const consumeAnswerStatement = this.env.DB.prepare(
+        `UPDATE message SET status = 'resolved'
+         WHERE run_id = ? AND tool_call_id = ? AND role = 'tool' AND status = 'answered'
+           AND EXISTS (
+             SELECT 1 FROM conversation_run
+             WHERE id = ? AND attempt = ? AND status = 'running'
+           )`,
+      ).bind(params.runId, params.interactionId, params.runId, nextAttempt);
       const [commandResult, runResult] = await this.env.DB.batch([
         commandStatement,
         runStatement,
+        consumeAnswerStatement,
         buildInsertRunEventStatement(this.env.DB, event, { ignoreSequenceConflict: true }),
         buildTrimRunEventsStatement(this.env.DB, params.runId),
       ]);

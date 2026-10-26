@@ -13,7 +13,9 @@ import {
   useSetupActions,
   useTeamActions,
   useWorkRails,
+  useWorkspace,
   useWorkspaceTasks,
+  useWorkspaceTeam,
 } from "@ngriffin_uk/polychat-library-react";
 import type { WorkRailBeat } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
@@ -34,7 +36,9 @@ function beatHref(workspaceId: string) {
 
 export function WorkTeamPage({ workspaceId }: { workspaceId: string }) {
   const navigate = useNavigate();
-  const { team, teamQuery, workspaceQuery } = useWorkDirectory(workspaceId);
+  const workspaceQuery = useWorkspace(workspaceId);
+  const teamQuery = useWorkspaceTeam(workspaceId);
+  const team = teamQuery.data?.teammates ?? [];
   const rails = useWorkRails(workspaceId);
   const actions = useTeamActions(workspaceId);
   const setup = useSetupActions(workspaceId);
@@ -76,14 +80,13 @@ export function WorkTeamPage({ workspaceId }: { workspaceId: string }) {
                 size="sm"
                 variant="primary"
                 disabled={setup.start.isPending}
-                onClick={async () => {
-                  try {
-                    await setup.start.mutateAsync();
-                    void navigate(`/work/${workspaceId}/setup`);
-                  } catch (error) {
-                    toast.error(getErrorMessage(error, "The lead could not be hired"));
-                  }
-                }}
+                onClick={() =>
+                  setup.start.mutate(undefined, {
+                    onSuccess: () => void navigate(`/work/${workspaceId}/setup`),
+                    onError: (error) =>
+                      toast.error(getErrorMessage(error, "The lead could not be hired")),
+                  })
+                }
               >
                 Hire a lead and plan the team
               </Button>
@@ -151,7 +154,9 @@ export function WorkTeammatePage({
   workspaceId: string;
   teammateId: string;
 }) {
-  const { directory, team, teamQuery, workspaceQuery } = useWorkDirectory(workspaceId);
+  const { directory, workspaceQuery } = useWorkDirectory(workspaceId);
+  const teamQuery = useWorkspaceTeam(workspaceId);
+  const team = teamQuery.data?.teammates ?? [];
   const tasks = useWorkspaceTasks(workspaceId, teammateId);
   const rails = useWorkRails(workspaceId);
   const actions = useTeamActions(workspaceId);

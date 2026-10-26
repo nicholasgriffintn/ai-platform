@@ -10,6 +10,7 @@ import {
   useProjectTasks,
   useRaiseCase,
   useStandupDraft,
+  useTaskThread,
   useWorkTaskActions,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask, UpdateProjectTaskInput } from "@ngriffin_uk/polychat-schemas";
@@ -45,6 +46,7 @@ export function ProjectTaskDetail({
     create: createSubTask,
   } = useProjectTasks(projectId);
   const detailQuery = useProjectTask(projectId, taskId);
+  const threadQuery = useTaskThread(projectId, taskId);
   const task = detailQuery.data?.task ?? tasks.find((candidate) => candidate.id === taskId);
   const goal = detailQuery.data?.goal ?? null;
   const activity = detailQuery.data?.activity;
@@ -104,7 +106,7 @@ export function ProjectTaskDetail({
     directory,
     subTasks: detailQuery.data?.children ?? [],
     links: detailQuery.data?.links ?? [],
-    thread: detailQuery.data?.thread ?? [],
+    thread: threadQuery.data?.thread ?? [],
     currentUserId,
     standupDraft: standupDraft.data ?? null,
     onAssign: (owner) =>

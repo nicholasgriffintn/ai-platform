@@ -2,22 +2,23 @@ import {
   answerStandupSchema,
   createProjectTaskLinkSchema,
   createProjectTaskSchema,
-  projectTaskCommentSchema,
-  projectTaskLinkSchema,
-  projectTaskThreadPostSchema,
-  raiseCaseSchema,
-  resolveCaseSchema,
-  sendCaseReplySchema,
-  standupSettingsSchema,
-  workActorSchema,
-  workAssignSchema,
   listPageOf,
+  projectTaskCommentSchema,
   projectTaskDetailResponseSchema,
+  projectTaskLinkSchema,
   projectTaskListQuerySchema,
   projectTaskListResponseSchema,
   projectTaskResponseSchema,
   projectTaskReviewResponseSchema,
+  projectTaskThreadPostSchema,
+  projectTaskThreadResponseSchema,
+  raiseCaseSchema,
+  resolveCaseSchema,
+  sendCaseReplySchema,
+  standupSettingsSchema,
   updateProjectTaskSchema,
+  workActorSchema,
+  workAssignSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
@@ -27,6 +28,7 @@ import {
   createProjectTask,
   deleteProjectTask,
   getProjectTask,
+  getProjectTaskThread,
   listProjectTasks,
   sendProjectTaskAgain,
   startProjectTask,
@@ -332,6 +334,17 @@ export function defineProjectTasks(projects: ResourceBuilder): void {
         personCaller(serviceContext),
       ),
     }),
+  });
+
+  tasks.singleton("thread").read({
+    auth: true,
+    tags: ["projects", "tasks"],
+    summary: "Read a task's thread",
+    description: "Comments, teammate updates and events on the task, oldest first.",
+    paramSchema: taskParamsSchema,
+    responses: { 200: { description: "The thread", schema: projectTaskThreadResponseSchema } },
+    handler: ({ serviceContext, params }) =>
+      getProjectTaskThread(serviceContext, params.project_id, params.task_id),
   });
 
   tasks.singleton("standup_draft").read({

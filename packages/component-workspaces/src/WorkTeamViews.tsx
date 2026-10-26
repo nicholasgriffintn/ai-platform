@@ -1,4 +1,5 @@
 import {
+  Badge,
   Button,
   cn,
   FormCheckbox,
@@ -213,6 +214,31 @@ function beatClass(beat: WorkRailBeat): string {
   }
 }
 
+const BEAT_LABEL_GAP_PERCENT = 9;
+
+function labelledBeats(
+  beats: readonly WorkRailBeat[],
+  position: (at: string) => number,
+): Set<WorkRailBeat> {
+  const labelled = new Set<WorkRailBeat>();
+  let lastPosition = Number.POSITIVE_INFINITY;
+
+  for (const beat of [...beats].sort((left, right) => position(right.at) - position(left.at))) {
+    if (!beat.label || (beat.kind !== "running" && beat.kind !== "blocked")) {
+      continue;
+    }
+
+    const at = position(beat.at);
+
+    if (lastPosition - at >= BEAT_LABEL_GAP_PERCENT) {
+      labelled.add(beat);
+      lastPosition = at;
+    }
+  }
+
+  return labelled;
+}
+
 export function HeartbeatRails({
   rails,
   teammates,
@@ -253,6 +279,8 @@ export function HeartbeatRails({
             return null;
           }
 
+          const labelled = labelledBeats(rail.beats, position);
+
           return (
             <div
               key={rail.teammateId}
@@ -289,17 +317,13 @@ export function HeartbeatRails({
                       )}
                       style={{ left: `${position(beat.at)}%` }}
                     >
-                      {beat.label && (beat.kind === "running" || beat.kind === "blocked") ? (
-                        <span
-                          className={cn(
-                            "absolute bottom-6 left-1/2 -translate-x-1/2 rounded-md px-2 py-0.5 text-[11px] whitespace-nowrap",
-                            beat.kind === "blocked"
-                              ? "bg-failure/10 text-failure"
-                              : "bg-active-work/10 text-active-work",
-                          )}
+                      {labelled.has(beat) ? (
+                        <Badge
+                          variant={beat.kind === "blocked" ? "failure" : "info"}
+                          className="absolute bottom-6 left-1/2 -translate-x-1/2"
                         >
                           {beat.label}
-                        </span>
+                        </Badge>
                       ) : null}
                     </span>
                   );
@@ -558,23 +582,18 @@ export function TeammateProfileHeader({
       <div className="min-w-0 flex-1 space-y-2">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-lg font-semibold">{teammate.name}</h2>
-          <span
-            className={cn(
-              "rounded-full border px-2 py-0.5 text-[11px]",
+          <Badge
+            variant={
               teammate.status === "active"
-                ? "border-success/30 bg-success/10 text-success"
+                ? "success"
                 : teammate.status === "paused"
-                  ? "border-attention/30 bg-attention/10 text-attention"
-                  : "border-border bg-selection text-muted-foreground",
-            )}
+                  ? "warning"
+                  : "muted"
+            }
           >
             {statusLabel}
-          </span>
-          {teammate.isLead ? (
-            <span className="rounded-full border border-active-work/30 bg-active-work/10 px-2 py-0.5 text-[11px] text-active-work">
-              Lead
-            </span>
-          ) : null}
+          </Badge>
+          {teammate.isLead ? <Badge variant="info">Lead</Badge> : null}
         </div>
         <p className="text-sm text-muted-foreground">
           {teammate.title} · reports to {managerName} · runs {RUNS_ON_PHRASES[teammate.runsOn]} ·

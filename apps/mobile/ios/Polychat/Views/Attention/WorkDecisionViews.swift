@@ -28,6 +28,11 @@ struct WorkDecisionRow: View {
                             .foregroundStyle(Color.polychat.textMuted)
                             .lineLimit(3)
                     }
+                    if let dueAt = item.dueAt, let closes = AppDateParser.parse(dueAt) {
+                        Text("Closes \(closes.formatted(date: .omitted, time: .shortened))")
+                            .font(.caption)
+                            .foregroundStyle(Color.polychat.textMuted)
+                    }
                     HStack(spacing: 6) {
                         StatusPill(label: label, tint: tint)
                         Text(RelativeTime.label(for: item.since))

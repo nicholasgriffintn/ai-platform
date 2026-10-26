@@ -18,6 +18,8 @@ const badgeVariants = cva(
         info: "border-active-work/25 bg-active-work/10 text-active-work",
         warning: "border-attention/25 bg-attention/10 text-attention",
         success: "border-success/25 bg-success/10 text-success",
+        failure: "border-failure/25 bg-failure/10 text-failure",
+        muted: "border-border bg-selection/60 text-muted-foreground",
       },
     },
     defaultVariants: {

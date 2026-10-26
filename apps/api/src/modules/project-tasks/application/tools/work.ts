@@ -44,323 +44,235 @@ import {
   review_task as reviewTaskDescriptor,
   summarise_standup as summariseStandupDescriptor,
 } from "./definitions/work";
-import { resolveWorkActor, resolveWorkToolScope } from "./scope";
+import { resolveWorkActor, resolveWorkToolScope, type WorkToolScope } from "./scope";
 
 const MINUTES_PER_HOUR = 60;
+
+function workTool(
+  descriptor: Omit<ApiToolDefinition, "execute">,
+  run: (
+    args: Record<string, unknown>,
+    scope: WorkToolScope,
+  ) => Promise<{ content: string; data: Record<string, unknown> }>,
+): ApiToolDefinition {
+  return {
+    ...descriptor,
+    execute: async (args, toolContext) => ({
+      status: "success",
+      name: descriptor.name,
+      ...(await run(args, await resolveWorkToolScope(toolContext.request))),
+    }),
+  };
+}
 
 function describeTask(task: { key: string | null; id: string; objective: string; status: string }) {
   return `${taskReference(task)} ${task.objective} (${task.status})`;
 }
 
-export const assign_task: ApiToolDefinition = {
-  ...assignTaskDescriptor,
-  execute: async (args, toolContext) => {
-    const scope = await resolveWorkToolScope(toolContext.request);
-    const owner = await resolveWorkActor(scope, args.owner);
-    const task = await assignTask(
-      scope.context,
-      scope.projectId,
-      readTrimmedString(args.taskId),
-      owner,
-      scope.caller,
-    );
+export const assign_task = workTool(assignTaskDescriptor, async (args, scope) => {
+  const owner = await resolveWorkActor(scope, args.owner);
+  const task = await assignTask(
+    scope.context,
+    scope.projectId,
+    readTrimmedString(args.taskId),
+    owner,
+    scope.caller,
+  );
 
-    return {
-      status: "success",
-      name: "assign_task",
-      content: `Assigned: ${describeTask(task)}`,
-      data: { task },
-    };
-  },
-};
+  return { content: `Assigned: ${describeTask(task)}`, data: { task } };
+});
 
-export const post_update: ApiToolDefinition = {
-  ...postUpdateDescriptor,
-  execute: async (args, toolContext) => {
-    const scope = await resolveWorkToolScope(toolContext.request);
-    const post = await commentOnTask(
-      scope.context,
-      scope.projectId,
-      readTrimmedString(args.taskId),
-      readTrimmedString(args.body),
-      scope.caller,
-    );
+export const post_update = workTool(postUpdateDescriptor, async (args, scope) => {
+  const post = await commentOnTask(
+    scope.context,
+    scope.projectId,
+    readTrimmedString(args.taskId),
+    readTrimmedString(args.body),
+    scope.caller,
+  );
 
-    return {
-      status: "success",
-      name: "post_update",
-      content: "Posted to the task thread.",
-      data: { post },
-    };
-  },
-};
+  return { content: "Posted to the task thread.", data: { post } };
+});
 
-export const block_task: ApiToolDefinition = {
-  ...blockTaskDescriptor,
-  execute: async (args, toolContext) => {
-    const scope = await resolveWorkToolScope(toolContext.request);
-    const unblocker = await resolveWorkActor(scope, args.unblocker);
-    const task = await blockTask(
-      scope.context,
-      scope.projectId,
-      readTrimmedString(args.taskId),
-      readTrimmedString(args.reason),
-      unblocker,
-      scope.caller,
-    );
+export const block_task = workTool(blockTaskDescriptor, async (args, scope) => {
+  const unblocker = await resolveWorkActor(scope, args.unblocker);
+  const task = await blockTask(
+    scope.context,
+    scope.projectId,
+    readTrimmedString(args.taskId),
+    readTrimmedString(args.reason),
+    unblocker,
+    scope.caller,
+  );
 
-    return {
-      status: "success",
-      name: "block_task",
-      content: `Blocked: ${describeTask(task)}`,
-      data: { task },
-    };
-  },
-};
+  return { content: `Blocked: ${describeTask(task)}`, data: { task } };
+});
 
-export const request_review: ApiToolDefinition = {
-  ...requestReviewDescriptor,
-  execute: async (args, toolContext) => {
-    const scope = await resolveWorkToolScope(toolContext.request);
-    const reviewer = await resolveWorkActor(scope, args.reviewer);
-    const task = await requestReview(
-      scope.context,
-      scope.projectId,
-      readTrimmedString(args.taskId),
-      reviewer,
-      readTrimmedString(args.note) || null,
-      scope.caller,
-    );
+export const request_review = workTool(requestReviewDescriptor, async (args, scope) => {
+  const reviewer = await resolveWorkActor(scope, args.reviewer);
+  const task = await requestReview(
+    scope.context,
+    scope.projectId,
+    readTrimmedString(args.taskId),
+    reviewer,
+    readTrimmedString(args.note) || null,
+    scope.caller,
+  );
 
-    return {
-      status: "success",
-      name: "request_review",
-      content: `Sent for review: ${describeTask(task)}`,
-      data: { task },
-    };
-  },
-};
+  return { content: `Sent for review: ${describeTask(task)}`, data: { task } };
+});
 
-export const review_task: ApiToolDefinition = {
-  ...reviewTaskDescriptor,
-  execute: async (args, toolContext) => {
-    const scope = await resolveWorkToolScope(toolContext.request);
-    const task = await reviewTask(
-      scope.context,
-      scope.projectId,
-      readTrimmedString(args.taskId),
-      args.decision === "accept" ? "accept" : "changes",
-      readTrimmedString(args.note),
-      scope.caller,
-    );
+export const review_task = workTool(reviewTaskDescriptor, async (args, scope) => {
+  const task = await reviewTask(
+    scope.context,
+    scope.projectId,
+    readTrimmedString(args.taskId),
+    args.decision === "accept" ? "accept" : "changes",
+    readTrimmedString(args.note),
+    scope.caller,
+  );
 
-    return {
-      status: "success",
-      name: "review_task",
-      content: `Reviewed: ${describeTask(task)}`,
-      data: { task },
-    };
-  },
-};
+  return { content: `Reviewed: ${describeTask(task)}`, data: { task } };
+});
 
-export const escalate: ApiToolDefinition = {
-  ...escalateDescriptor,
-  execute: async (args, toolContext) => {
-    const scope = await resolveWorkToolScope(toolContext.request);
-    const task = await escalateTask(
-      scope.context,
-      scope.projectId,
-      readTrimmedString(args.taskId),
-      readTrimmedString(args.reason),
-      scope.caller,
-    );
+export const escalate = workTool(escalateDescriptor, async (args, scope) => {
+  const task = await escalateTask(
+    scope.context,
+    scope.projectId,
+    readTrimmedString(args.taskId),
+    readTrimmedString(args.reason),
+    scope.caller,
+  );
 
-    return {
-      status: "success",
-      name: "escalate",
-      content: `Escalated: ${describeTask(task)}`,
-      data: { task },
-    };
-  },
-};
+  return { content: `Escalated: ${describeTask(task)}`, data: { task } };
+});
 
-export const raise_case: ApiToolDefinition = {
-  ...raiseCaseDescriptor,
-  execute: async (args, toolContext) => {
-    const scope = await resolveWorkToolScope(toolContext.request);
-    const origin = readTrimmedString(args.raisedFromTaskId);
-    const originTask = origin
-      ? await scope.context.repositories
-          .get(ProjectTaskRepository)
-          .getTaskByReference(scope.projectId, origin)
-      : null;
-    const input = raiseCaseSchema.parse({
-      title: readTrimmedString(args.title),
-      description: readTrimmedString(args.description) || null,
-      priority: projectTaskPrioritySchema.safeParse(args.priority).data ?? "none",
-      raisedFromTaskId: originTask?.id ?? null,
-    });
-    const task = await raiseCase(scope.context, scope.projectId, input, scope.caller);
+export const raise_case = workTool(raiseCaseDescriptor, async (args, scope) => {
+  const origin = readTrimmedString(args.raisedFromTaskId);
+  const originTask = origin
+    ? await scope.context.repositories
+        .get(ProjectTaskRepository)
+        .getTaskByReference(scope.projectId, origin)
+    : null;
+  const input = raiseCaseSchema.parse({
+    title: readTrimmedString(args.title),
+    description: readTrimmedString(args.description) || null,
+    priority: projectTaskPrioritySchema.safeParse(args.priority).data ?? "none",
+    raisedFromTaskId: originTask?.id ?? null,
+  });
+  const task = await raiseCase(scope.context, scope.projectId, input, scope.caller);
 
-    return {
-      status: "success",
-      name: "raise_case",
-      content: `Raised case ${describeTask(task)} and sent it to Triage.`,
-      data: { task },
-    };
-  },
-};
+  return { content: `Raised case ${describeTask(task)} and sent it to Triage.`, data: { task } };
+});
 
-export const propose_hire: ApiToolDefinition = {
-  ...proposeHireDescriptor,
-  execute: async (args, toolContext) => {
-    const scope = await resolveWorkToolScope(toolContext.request);
-    const manager = readTrimmedString(args.reportsTo)
-      ? await resolveWorkActor(scope, args.reportsTo)
-      : scope.caller.actor;
-    const heartbeatHours = typeof args.heartbeatHours === "number" ? args.heartbeatHours : null;
-    const input = proposeHireSchema.parse({
-      name: readTrimmedString(args.name),
-      title: readTrimmedString(args.title),
-      roleSlug: readTrimmedString(args.roleSlug) || null,
-      jobDescription: readTrimmedString(args.jobDescription) || null,
-      reportsToTeammateId: manager.type === "teammate" ? manager.id : null,
-      monthlyCreditCapMicros:
-        typeof args.monthlyCredits === "number" && args.monthlyCredits > 0
-          ? creditMicrosFromCredits(args.monthlyCredits)
-          : null,
-      heartbeatMinutes: heartbeatHours
-        ? Math.min(
-            WORK_HEARTBEAT_MAX_MINUTES,
-            Math.max(WORK_HEARTBEAT_MIN_MINUTES, Math.round(heartbeatHours * MINUTES_PER_HOUR)),
-          )
+export const propose_hire = workTool(proposeHireDescriptor, async (args, scope) => {
+  const manager = readTrimmedString(args.reportsTo)
+    ? await resolveWorkActor(scope, args.reportsTo)
+    : scope.caller.actor;
+  const heartbeatHours = typeof args.heartbeatHours === "number" ? args.heartbeatHours : null;
+  const input = proposeHireSchema.parse({
+    name: readTrimmedString(args.name),
+    title: readTrimmedString(args.title),
+    roleSlug: readTrimmedString(args.roleSlug) || null,
+    jobDescription: readTrimmedString(args.jobDescription) || null,
+    reportsToTeammateId: manager.type === "teammate" ? manager.id : null,
+    monthlyCreditCapMicros:
+      typeof args.monthlyCredits === "number" && args.monthlyCredits > 0
+        ? creditMicrosFromCredits(args.monthlyCredits)
         : null,
-      projectIds: [scope.projectId],
-      reason: readTrimmedString(args.reason),
-    });
-    const proposed = await proposeHire(scope.context, scope.workspaceId, input, {
-      teammateId: scope.caller.actor.type === "teammate" ? scope.caller.actor.id : null,
-    });
+    heartbeatMinutes: heartbeatHours
+      ? Math.min(
+          WORK_HEARTBEAT_MAX_MINUTES,
+          Math.max(WORK_HEARTBEAT_MIN_MINUTES, Math.round(heartbeatHours * MINUTES_PER_HOUR)),
+        )
+      : null,
+    projectIds: [scope.projectId],
+    reason: readTrimmedString(args.reason),
+  });
+  const proposed = await proposeHire(scope.context, scope.workspaceId, input, {
+    teammateId: scope.caller.actor.type === "teammate" ? scope.caller.actor.id : null,
+  });
 
-    return {
-      status: "success",
-      name: "propose_hire",
-      content: `Proposed hiring ${proposed.name} as ${proposed.title}. A person decides in Inbox.`,
-      data: { teammate: proposed },
-    };
-  },
-};
+  return {
+    content: `Proposed hiring ${proposed.name} as ${proposed.title}. A person decides in Inbox.`,
+    data: { teammate: proposed },
+  };
+});
 
-export const answer_standup: ApiToolDefinition = {
-  ...answerStandupDescriptor,
-  execute: async (args, toolContext) => {
-    const scope = await resolveWorkToolScope(toolContext.request);
-    const task = await scope.context.repositories
-      .get(ProjectTaskRepository)
-      .getTaskByReference(scope.projectId, readTrimmedString(args.taskId));
-    const questions = task?.details.standup?.questions ?? [];
-    const answers = readTrimmedStringArray(args.answers);
-    const updated = await answerStandup(
-      scope.context,
-      scope.projectId,
-      readTrimmedString(args.taskId),
-      { answers: questions.map((question, index) => ({ question, answer: answers[index] ?? "" })) },
-      scope.caller,
-    );
+export const answer_standup = workTool(answerStandupDescriptor, async (args, scope) => {
+  const task = await scope.context.repositories
+    .get(ProjectTaskRepository)
+    .getTaskByReference(scope.projectId, readTrimmedString(args.taskId));
+  const questions = task?.details.standup?.questions ?? [];
+  const answers = readTrimmedStringArray(args.answers);
+  const updated = await answerStandup(
+    scope.context,
+    scope.projectId,
+    readTrimmedString(args.taskId),
+    { answers: questions.map((question, index) => ({ question, answer: answers[index] ?? "" })) },
+    scope.caller,
+  );
 
-    return {
-      status: "success",
-      name: "answer_standup",
-      content: "Answered standup.",
-      data: { task: updated },
-    };
-  },
-};
+  return { content: "Answered standup.", data: { task: updated } };
+});
 
-export const summarise_standup: ApiToolDefinition = {
-  ...summariseStandupDescriptor,
-  execute: async (args, toolContext) => {
-    const scope = await resolveWorkToolScope(toolContext.request);
-    const task = await summariseStandup(
-      scope.context,
-      scope.projectId,
-      readTrimmedString(args.taskId),
-      readTrimmedString(args.summary),
-      scope.caller,
-    );
+export const summarise_standup = workTool(summariseStandupDescriptor, async (args, scope) => {
+  const task = await summariseStandup(
+    scope.context,
+    scope.projectId,
+    readTrimmedString(args.taskId),
+    readTrimmedString(args.summary),
+    scope.caller,
+  );
 
-    return {
-      status: "success",
-      name: "summarise_standup",
-      content: "Standup closed.",
-      data: { task },
-    };
-  },
-};
+  return { content: "Standup closed.", data: { task } };
+});
 
-export const propose_setup_plan: ApiToolDefinition = {
-  ...proposeSetupPlanDescriptor,
-  execute: async (args, toolContext) => {
-    const scope = await resolveWorkToolScope(toolContext.request);
-    const plan = setupPlanSchema.safeParse(args.plan);
+export const propose_setup_plan = workTool(proposeSetupPlanDescriptor, async (args, scope) => {
+  const plan = setupPlanSchema.safeParse(args.plan);
 
-    if (!plan.success) {
-      throw new Error(`The setup plan is not valid: ${plan.error.message}`);
-    }
+  if (!plan.success) {
+    throw new Error(`The setup plan is not valid: ${plan.error.message}`);
+  }
 
-    const state = await proposeSetupPlan(scope.context, scope.workspaceId, plan.data, scope.caller);
+  const state = await proposeSetupPlan(scope.context, scope.workspaceId, plan.data, scope.caller);
 
-    return {
-      status: "success",
-      name: "propose_setup_plan",
-      content: `Setup plan revision ${state.revision} is waiting for approval in Inbox.`,
-      data: { setup: state },
-    };
-  },
-};
+  return {
+    content: `Setup plan revision ${state.revision} is waiting for approval in Inbox.`,
+    data: { setup: state },
+  };
+});
 
-export const draft_reply: ApiToolDefinition = {
-  ...draftReplyDescriptor,
-  execute: async (args, toolContext) => {
-    const scope = await resolveWorkToolScope(toolContext.request);
-    const task = await draftCaseReply(
-      scope.context,
-      scope.projectId,
-      readTrimmedString(args.taskId),
-      readTrimmedString(args.body),
-      scope.caller,
-    );
+export const draft_reply = workTool(draftReplyDescriptor, async (args, scope) => {
+  const task = await draftCaseReply(
+    scope.context,
+    scope.projectId,
+    readTrimmedString(args.taskId),
+    readTrimmedString(args.body),
+    scope.caller,
+  );
 
-    return {
-      status: "success",
-      name: "draft_reply",
-      content: `Drafted a reply on ${taskReference(task)}. A person sends it.`,
-      data: { task },
-    };
-  },
-};
+  return {
+    content: `Drafted a reply on ${taskReference(task)}. A person sends it.`,
+    data: { task },
+  };
+});
 
-export const answer_questions: ApiToolDefinition = {
-  ...answerQuestionsDescriptor,
-  execute: async (args, toolContext) => {
-    const scope = await resolveWorkToolScope(toolContext.request);
-    const answers = z.array(userQuestionAnswerSchema).min(1).parse(args.answers);
-    const task = await answerReportQuestions(
-      scope.context,
-      scope.projectId,
-      readTrimmedString(args.taskId),
-      answers,
-      scope.caller,
-    );
+export const answer_questions = workTool(answerQuestionsDescriptor, async (args, scope) => {
+  const answers = z.array(userQuestionAnswerSchema).min(1).parse(args.answers);
+  const task = await answerReportQuestions(
+    scope.context,
+    scope.projectId,
+    readTrimmedString(args.taskId),
+    answers,
+    scope.caller,
+  );
 
-    return {
-      status: "success",
-      name: "answer_questions",
-      content: `Answered the questions on ${taskReference(task)}. Its owner carries on.`,
-      data: { task },
-    };
-  },
-};
+  return {
+    content: `Answered the questions on ${taskReference(task)}. Its owner carries on.`,
+    data: { task },
+  };
+});
 
 export const WORK_TOOLS = [
   assign_task,
