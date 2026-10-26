@@ -1,5 +1,53 @@
 # @ngriffin_uk/polychat-component-shell
 
+## 2.3.0
+
+### Minor Changes
+
+- 5d70d5d: Everything you give Polychat is now read, filed and searched the same way, whichever door it came in by.
+
+  - **See what Poly knows about a file.** Open any file and choose Knowledge to see where it came from, whether it is searchable yet, its summary and topics, which files it cites, repeats or was made from, and anything that failed with a button to read it again.
+  - **Decide how each file is used.** Turn off Use in answers to keep a file without Poly or teammates quoting it, let followed pages remove themselves after a week, a month or three, and mark a file confidential so teammates never see it.
+  - **Topics that file themselves.** New files are filed under topics and the people, places and projects they are about. Open a topic from a file's Knowledge panel to see everything filed under it.
+  - **Follow a connected service, item by item.** In a project's Files, choose Follow, then A connected service, to follow a Notion database, Google Docs in Drive, a Gmail search, a Slack channel, GitHub issues, Linear issues or a Jira search. Each page, email, message or issue arrives as its own file, unchanged items are skipped, and anything removed upstream is archived.
+  - **Search your knowledge bases too.** Connect Cloudflare AI Search or Amazon Bedrock Knowledge Bases in Plugins and Poly can search them alongside your files without copying them in. Project owners and admins can attach their connection to a project under Follow, How new files are read.
+  - **Choose how new files are read.** Summaries, topics and related-file links can each be turned off for your library or a project under Follow, How new files are read.
+  - **Finished work is findable.** Documents, decks and sheets Polychat made are searched alongside your sources, and search can be narrowed by kind, origin, topic, folder or date.
+  - **Documents in global search.** Search now finds files in your library as well as chats and projects.
+  - **Long files no longer slow anything down.** Very long files are kept in file storage and indexed in full, however long they are.
+  - **Webhooks for knowledge.** Webhook endpoints can subscribe to files being filed, updated, removed or read through.
+
+- 8f480ac: Memories are now always kept as documents you can read and edit, and Poly finds them the way it finds your files.
+
+  - **One kind of memory.** Polychat's own memory keeps what it learns about you, and about each project, as documents under Files › Memory. The old one-line memories are gone, so Poly starts these documents fresh.
+  - **Better recall.** Memories are searched by meaning and by exact words, and Poly gets back the passage that matters rather than a whole document.
+  - **Quick notes, tidied later.** When a memory document is long or has just changed, new memories are added under Recently noted straight away and folded into the document a few minutes later.
+  - **Your search index, your storage.** If you keep your search index in S3 Vectors or DynamoDB Vectors, it now holds your own files as well as your memories. Choose it under Settings › Knowledge.
+
+### Patch Changes
+
+- Updated dependencies [5d70d5d]
+- Updated dependencies [8f480ac]
+  - @ngriffin_uk/polychat-schemas@1.9.0
+  - @ngriffin_uk/polychat-library-client@0.8.0
+  - @ngriffin_uk/polychat-library-react@0.9.0
+  - @ngriffin_uk/polychat-component-navigation@0.6.0
+  - @ngriffin_uk/polychat-utility-core@0.8.0
+  - @ngriffin_uk/polychat-utility-react@0.6.0
+  - @ngriffin_uk/polychat-component-account@1.1.0
+  - @ngriffin_uk/polychat-component-conversation@2.1.3
+  - @ngriffin_uk/polychat-component-ui@0.6.1
+  - @ngriffin_uk/polychat-library-model-registry@0.3.4
+  - @ngriffin_uk/polychat-component-workspaces@1.0.3
+  - @ngriffin_uk/polychat-component-capabilities@1.0.3
+  - @ngriffin_uk/polychat-component-content@1.3.3
+  - @ngriffin_uk/polychat-component-experiences@0.6.3
+  - @ngriffin_uk/polychat-component-models@1.2.4
+  - @ngriffin_uk/polychat-component-sites@0.2.5
+  - @ngriffin_uk/polychat-library-chat@1.3.2
+  - @ngriffin_uk/polychat-library-realtime@0.3.3
+  - @ngriffin_uk/polychat-library-sites@0.3.4
+
 ## 2.2.0
 
 ### Minor Changes

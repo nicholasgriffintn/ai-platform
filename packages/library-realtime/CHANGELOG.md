@@ -1,5 +1,14 @@
 # @ngriffin_uk/polychat-library-realtime
 
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [5d70d5d]
+- Updated dependencies [8f480ac]
+  - @ngriffin_uk/polychat-schemas@1.9.0
+  - @ngriffin_uk/polychat-utility-core@0.8.0
+
 ## 0.3.2
 
 ### Patch Changes

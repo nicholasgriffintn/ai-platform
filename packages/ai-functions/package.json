@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-ai-functions",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Typed AI interaction primitives for Polychat: text and structured generation, lists, extraction, classification, media generation, transcription, retrieval and guardrails over the provider library",
   "license": "Apache-2.0",
   "files": [

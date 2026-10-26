@@ -1,5 +1,17 @@
 # @ngriffin_uk/polychat-component-workspaces
 
+## 1.0.3
+
+### Patch Changes
+
+- Updated dependencies [5d70d5d]
+- Updated dependencies [8f480ac]
+  - @ngriffin_uk/polychat-schemas@1.9.0
+  - @ngriffin_uk/polychat-component-navigation@0.6.0
+  - @ngriffin_uk/polychat-utility-core@0.8.0
+  - @ngriffin_uk/polychat-utility-react@0.6.0
+  - @ngriffin_uk/polychat-component-ui@0.6.1
+
 ## 1.0.2
 
 ### Patch Changes

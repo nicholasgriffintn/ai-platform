@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-ai-agents",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Agent primitives for Polychat: define an agent from a model, tools and an objective, run it through the bounded decision loop with approvals, and schedule it as a worker",
   "license": "Apache-2.0",
   "files": [
