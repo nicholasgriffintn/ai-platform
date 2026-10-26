@@ -15,6 +15,11 @@ import type {
   ListPage,
   CreateKnowledgeSync,
   UpdateKnowledgeSync,
+  KnowledgeDescriptorSummary,
+  KnowledgeDocumentControls,
+  KnowledgeDocumentState,
+  KnowledgeSettings,
+  UpdateKnowledgeSettings,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApiData as request } from "./fetch-wrapper.js";
@@ -150,12 +155,34 @@ export async function searchProjectKnowledge(
     query.set("project_id", input.projectId);
   }
 
-  if (input.type) {
-    query.set("type", input.type);
-  }
-
   if (input.top_k) {
     query.set("top_k", String(input.top_k));
+  }
+
+  for (const [key, values] of [
+    ["kinds", input.kinds],
+    ["resource_types", input.resourceTypes],
+    ["origins", input.origins],
+    ["providers", input.providers],
+    ["collection_ids", input.collectionIds],
+    ["sync_ids", input.syncIds],
+  ] as const) {
+    if (values?.length) {
+      query.set(key, values.join(","));
+    }
+  }
+
+  for (const [key, value] of [
+    ["since", input.since],
+    ["until", input.until],
+  ] as const) {
+    if (value) {
+      query.set(key, value);
+    }
+  }
+
+  if (input.includeExternal) {
+    query.set("include_external", "true");
   }
 
   return request(`/sources/search?${query.toString()}`);
@@ -251,4 +278,43 @@ export async function setProjectContextSources(
       body: { project_id: projectId, sourceIds },
     })
   ).data;
+}
+
+export async function getKnowledgeDocumentState(sourceId: string): Promise<KnowledgeDocumentState> {
+  return request(sourcePath(sourceId, "/knowledge"));
+}
+
+export async function setKnowledgeDocumentControls(
+  sourceId: string,
+  controls: KnowledgeDocumentControls,
+): Promise<KnowledgeDocumentState> {
+  return request(sourcePath(sourceId, "/knowledge"), { method: "PATCH", body: controls });
+}
+
+export async function reprocessKnowledgeDocument(
+  sourceId: string,
+): Promise<KnowledgeDocumentState> {
+  return request(sourcePath(sourceId, "/knowledge/reprocess"), { method: "POST", body: {} });
+}
+
+export async function listKnowledgeDescriptors(
+  provider?: string,
+): Promise<KnowledgeDescriptorSummary[]> {
+  const query = provider ? `?provider=${encodeURIComponent(provider)}` : "";
+
+  return (
+    await request<ListPage<KnowledgeDescriptorSummary>>(`/sources/knowledge_descriptors${query}`)
+  ).data;
+}
+
+export async function getKnowledgeSettings(projectId?: string): Promise<KnowledgeSettings> {
+  const query = projectId ? `?project_id=${encodeURIComponent(projectId)}` : "";
+
+  return request(`/sources/knowledge_settings${query}`);
+}
+
+export async function updateKnowledgeSettings(
+  input: UpdateKnowledgeSettings,
+): Promise<KnowledgeSettings> {
+  return request("/sources/knowledge_settings", { method: "PATCH", body: input });
 }

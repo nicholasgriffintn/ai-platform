@@ -64,24 +64,16 @@ export const SOURCE_SUMMARY_COLUMNS = [
 
 export type SourceSummaryRecord = Omit<SourceRecord, "content">;
 
-export interface CreateSourceRecord {
-  id?: string;
+export interface CreateMemorySourceRecord {
   createdByUserId: number;
   projectId?: string | null;
   conversationId?: string | null;
-  connectionId?: string | null;
-  kind: SourceKind;
   title: string;
-  status?: SourceStatus;
-  content?: string | null;
-  provider?: string | null;
-  externalUri?: string | null;
-  vectorId?: string | null;
-  metadata?: Record<string, unknown>;
-  storageKey?: string | null;
-  mimeType?: string | null;
-  filename?: string | null;
-  byteSize?: number | null;
+  status: SourceStatus;
+  content: string;
+  provider: string;
+  vectorId: string;
+  metadata: Record<string, unknown>;
 }
 
 export interface SourceCollectionRecord {
@@ -111,105 +103,34 @@ export interface SourceFileRecord {
 }
 
 export class SourceRepository extends BaseRepository {
-  async upsertRepositorySource(input: {
-    id: string;
-    userId: number;
-    projectId?: string;
-    title: string;
-    content: string;
-    metadata: Record<string, unknown>;
-  }): Promise<void> {
-    const result = await this.executeRun(
-      `INSERT INTO resource AS source (resource_type, id, created_by_user_id, scope_type, scope_id, kind, title, status, content, metadata)
-      VALUES ('source', ?, ?, ?, ?, 'repository', ?, 'available', ?, ?)
-      ON CONFLICT(resource_type, id) DO UPDATE SET title = excluded.title, status = 'available', content = excluded.content,
-        metadata = excluded.metadata, updated_at = CURRENT_TIMESTAMP
-      WHERE source.created_by_user_id = excluded.created_by_user_id
-        AND source.project_id IS excluded.project_id AND source.kind = 'repository'`,
-      [
-        input.id,
-        input.userId,
-        input.projectId ? "project" : "personal",
-        input.projectId ?? String(input.userId),
-        input.title,
-        input.content,
-        JSON.stringify(input.metadata),
-      ],
-    );
-
-    if (result.meta.changes === 0) {
-      throw new AssistantError("Repository source scope mismatch", ErrorType.CONFLICT_ERROR, 409);
-    }
-  }
-
-  async createSource(input: CreateSourceRecord): Promise<SourceRecord> {
-    const { source, created } = await this.createSourceWithOutcome(input);
-
-    if (!created) {
-      throw new AssistantError("Source already exists", ErrorType.DATABASE_ERROR);
-    }
-
-    return source;
-  }
-
-  async createSourceWithOutcome(
-    input: CreateSourceRecord,
-  ): Promise<{ source: SourceRecord; created: boolean }> {
+  async insertMemorySource(input: CreateMemorySourceRecord): Promise<SourceRecord> {
     const insert = this.buildInsertQuery(
       "resource",
       {
         resource_type: "source",
-        id: input.id ?? generateId(),
+        id: generateId(),
         created_by_user_id: input.createdByUserId,
         ...resourceScope(input.createdByUserId, input.projectId),
         conversation_id: input.conversationId ?? null,
-        connection_id: input.connectionId ?? null,
-        kind: input.kind,
+        kind: "memory",
         title: input.title,
-        status: input.status ?? "available",
-        content: input.content ?? null,
-        provider: input.provider ?? null,
-        external_uri: input.externalUri ?? null,
-        vector_id: input.vectorId ?? null,
-        metadata: input.metadata ?? {},
-        storage_key: input.storageKey ?? null,
-        mime_type: input.mimeType ?? null,
-        filename: input.filename ?? null,
-        byte_size: input.byteSize ?? null,
+        status: input.status,
+        content: input.content,
+        provider: input.provider,
+        vector_id: input.vectorId,
+        metadata: input.metadata,
       },
       { jsonFields: ["metadata"], returning: sourceResourceColumns },
     );
+    const memory = insert
+      ? await this.runQuery<SourceRecord>(insert.query, insert.values, true)
+      : null;
 
-    if (!insert) {
-      throw new AssistantError("Failed to build source insert", ErrorType.INTERNAL_ERROR);
+    if (!memory) {
+      throw new AssistantError("Failed to create memory", ErrorType.DATABASE_ERROR);
     }
 
-    const source = await this.runQuery<SourceRecord>(
-      input.id
-        ? insert.query.replace(
-            " RETURNING ",
-            " ON CONFLICT(resource_type, id) DO NOTHING RETURNING ",
-          )
-        : insert.query,
-      insert.values,
-      true,
-    );
-
-    if (!source) {
-      const existing = input.id ? await this.getSource(input.id) : null;
-
-      if (
-        existing &&
-        existing.project_id === (input.projectId ?? null) &&
-        existing.created_by_user_id === input.createdByUserId
-      ) {
-        return { source: existing, created: false };
-      }
-
-      throw new AssistantError("Failed to create source", ErrorType.DATABASE_ERROR);
-    }
-
-    return { source, created: true };
+    return memory;
   }
 
   async getSource(sourceId: string): Promise<SourceRecord | null> {
@@ -284,14 +205,13 @@ export class SourceRepository extends BaseRepository {
     updates: {
       title?: string;
       status?: SourceStatus;
-      content?: string | null;
       metadata?: Record<string, unknown>;
     },
   ): Promise<void> {
     const result = this.buildUpdateQuery(
       "resource",
       updates,
-      ["title", "status", "content", "metadata"],
+      ["title", "status", "metadata"],
       "resource_type = 'source' AND id = ?",
       [sourceId],
       { jsonFields: ["metadata"] },

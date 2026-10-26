@@ -19,6 +19,8 @@ import {
   createConversationGroup,
   deleteConversationGroup,
 } from "~/modules/conversations/application/conversation-organisation";
+import { readKnowledgeText, withKnowledgeText } from "~/modules/knowledge/application/intake/body";
+import { fileKnowledgeSource } from "~/modules/knowledge/application/intake/file";
 import {
   formatNotebook,
   isGuideCurrent,
@@ -34,7 +36,6 @@ import { formatOutputSummary } from "~/modules/outputs/application";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import {
-  createSource,
   formatSourceSummary,
   requireSourcesAccess,
   toSourceSummary,
@@ -254,18 +255,16 @@ export async function createNotebookNote(
   notebookId: string,
   input: CreateNotebookNoteInput,
 ): Promise<SourceSummary> {
-  const user = context.requireUser();
-  const { notebook } = await requireNotebookAccess(context, notebookId);
-  const note = await createSource(context, user.id, {
-    projectId: notebook.project_id,
+  await requireNotebookAccess(context, notebookId);
+  const note = await fileKnowledgeSource(context, {
+    origin: "note",
+    notebookId,
     kind: "text",
     title: sanitiseInput(input.title) || "Note",
-    status: "available",
+    provider: null,
     content: sanitiseInput(input.content),
     metadata: { note: true },
   });
-
-  await context.repositories.get(SourceRepository).addCollectionSources(notebookId, [note.id]);
 
   return toSourceSummary(note);
 }
@@ -290,16 +289,15 @@ export async function promoteNotebookNote(
     throw new AssistantError("Note not found in this notebook", ErrorType.NOT_FOUND, 404);
   }
 
-  const source = await createSource(context, user.id, {
-    projectId: access.notebook.project_id,
+  await fileKnowledgeSource(context, {
+    origin: "note",
+    notebookId,
     kind: "text",
     title: note.title,
-    status: "available",
-    content: note.content,
+    provider: null,
+    content: await readKnowledgeText(context, note),
     metadata: { fromNoteId: note.id },
   });
-
-  await context.repositories.get(SourceRepository).addCollectionSources(notebookId, [source.id]);
 
   return getNotebookDetail(context, notebookId);
 }
@@ -313,5 +311,8 @@ export async function resolveNotebookSources(
   const requested = requestedIds ? new Set(requestedIds) : null;
   const selected = requested ? linkedIds.filter((sourceId) => requested.has(sourceId)) : linkedIds;
 
-  return context.repositories.get(SourceRepository).getSourcesByIds(selected);
+  return withKnowledgeText(
+    context,
+    await context.repositories.get(SourceRepository).getSourcesByIds(selected),
+  );
 }

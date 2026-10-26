@@ -4,7 +4,7 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { StorageService } from "~/infrastructure/storage";
+import { storeKnowledgeFile } from "~/modules/knowledge/application/intake/file";
 import { getSource } from "~/modules/sources/application/sources";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
@@ -32,12 +32,14 @@ export async function paintDrawing(
 
   const sketch = await drawing.arrayBuffer();
   const storageId = generateId();
-  const storage = StorageService.forPrivateAssets(context);
-  const storedSketch = await storage.storeSourceFile({
+  const { source: storedSketch } = await storeKnowledgeFile(context, {
+    origin: "upload",
+    kind: "file",
+    provider: null,
+    content: undefined,
     key: `drawings/${storageId}/image.png`,
     data: sketch,
-    createdByUserId: user.id,
-    projectId: projectId ?? undefined,
+    projectId: projectId ?? null,
     title: "Sketch",
     mimeType: "image/png",
     filename: "sketch.png",
@@ -76,13 +78,15 @@ export async function paintDrawing(
     provider: "workers-ai",
     mode: "image",
     prompt,
-    sourceIds: [storedSketch.sourceId],
+    sourceIds: [storedSketch.id],
   };
-  const storedPainting = await storage.storeSourceFile({
+  const { source: storedPainting } = await storeKnowledgeFile(context, {
+    origin: "generated",
+    kind: "file",
+    provider: null,
     key: `drawings/${storageId}/painting.png`,
     data: paintingData,
-    createdByUserId: user.id,
-    projectId: projectId ?? undefined,
+    projectId: projectId ?? null,
     title: prompt.slice(0, 200),
     content: prompt,
     metadata: { generation },
@@ -91,5 +95,5 @@ export async function paintDrawing(
     byteSize: paintingData.byteLength,
   });
 
-  return getSource(context, user.id, storedPainting.sourceId);
+  return getSource(context, user.id, storedPainting.id);
 }

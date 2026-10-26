@@ -1,13 +1,12 @@
 import { authorise, ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
+  KNOWLEDGE_BODY_METADATA_KEY,
   listPageOf,
   type CreateSourceCollectionInput,
-  type CreateSourceInput,
   type ListPage,
   type Source,
   type SourceCollection,
   type SourceGenerationType,
-  type SourceKind,
   type SourceSummary,
   type UpdateSourceInput,
   type WorkspaceRole,
@@ -17,8 +16,16 @@ import { safeParseJson, parseJsonRecord } from "@ngriffin_uk/polychat-utility-se
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { isMemoryProviderId } from "~/infrastructure/providers/capabilities/memory/helpers";
-import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
-import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { publishKnowledgeChange } from "~/modules/knowledge/application/events";
+import {
+  deleteKnowledgeBodies,
+  readKnowledgeText,
+} from "~/modules/knowledge/application/intake/body";
+import { reviseKnowledgeContent } from "~/modules/knowledge/application/intake/revise";
+import {
+  readKnowledgeBody,
+  withReservedKnowledgeMetadata,
+} from "~/modules/knowledge/domain/envelope";
 import { MemoryManager } from "~/modules/memory/application/manager";
 import type {
   SourceCollectionRecord,
@@ -50,6 +57,7 @@ export function formatSource(record: SourceRecord): Source {
   }
 
   delete metadata.pending;
+  delete metadata[KNOWLEDGE_BODY_METADATA_KEY];
 
   return {
     id: record.id,
@@ -235,77 +243,10 @@ export async function requireCollectionAccess(
   return collection;
 }
 
-export async function createSource(
-  context: ServiceContext,
-  userId: number,
-  input: Omit<CreateSourceInput, "kind"> & { kind: SourceKind },
-  options: { id?: string } = {},
-): Promise<Source> {
-  if (input.projectId) {
-    await requireProjectAccess(context, input.projectId);
-  }
-
-  if (input.conversationId) {
-    const conversation = await context.repositories
-      .get(ConversationRepository)
-      .getConversation(input.conversationId);
-
-    if (
-      !conversation ||
-      conversation.project_id !== (input.projectId ?? null) ||
-      (!input.projectId && !ownsResource(userId, conversation.user_id))
-    ) {
-      throw new AssistantError("Conversation not found in source scope", ErrorType.NOT_FOUND, 404);
-    }
-  }
-
-  if (input.connectionId) {
-    const connection = await context.repositories
-      .get(ProviderConnectionRepository)
-      .getConnectionById(input.connectionId);
-
-    if (!connection || !ownsResource(userId, connection.user_id)) {
-      throw new AssistantError("Connection not found", ErrorType.NOT_FOUND, 404);
-    }
-  }
-
-  const { source, created } = await context.repositories
-    .get(SourceRepository)
-    .createSourceWithOutcome({
-      id: options.id,
-      createdByUserId: userId,
-      projectId: input.projectId,
-      conversationId: input.conversationId,
-      connectionId: input.connectionId,
-      kind: input.kind,
-      title: input.title,
-      status: input.status,
-      content: input.content,
-      provider: input.provider,
-      externalUri: input.externalUri,
-      vectorId: input.vectorId,
-      metadata: input.metadata,
-      storageKey: input.file?.key,
-      mimeType: input.file?.mimeType,
-      filename: input.file?.filename,
-      byteSize: input.file?.byteSize,
-    });
-
-  if (created && source.project_id) {
-    await recordProjectAudit(context, source.project_id, {
-      actorUserId: userId,
-      action: "source.created",
-      targetType: "source",
-      targetId: source.id,
-      metadata: { kind: source.kind },
-    });
-  }
-
-  return formatSource(source);
-}
-
 export async function getSource(context: ServiceContext, userId: number, sourceId: string) {
-  return formatSource(await requireSourceAccess(context, userId, sourceId));
+  const source = await requireSourceAccess(context, userId, sourceId);
+
+  return formatSource({ ...source, content: await readKnowledgeText(context, source) });
 }
 
 export async function listSources(
@@ -364,7 +305,22 @@ export async function updateSource(
     );
   }
 
-  await context.repositories.get(SourceRepository).updateSource(sourceId, input);
+  const { content, ...fields } = input;
+  const metadata =
+    fields.metadata === undefined
+      ? undefined
+      : withReservedKnowledgeMetadata(fields.metadata, parseJsonRecord(existing.metadata));
+
+  await (content === undefined
+    ? context.repositories
+        .get(SourceRepository)
+        .updateSource(sourceId, { ...fields, ...(metadata ? { metadata } : {}) })
+    : reviseKnowledgeContent(context, existing, {
+        content,
+        ...(fields.title ? { title: fields.title } : {}),
+        ...(fields.status ? { status: fields.status } : {}),
+        ...(metadata ? { metadata } : {}),
+      }));
   const updated = await context.repositories.get(SourceRepository).getSource(sourceId);
 
   if (!updated) {
@@ -442,6 +398,14 @@ export async function deleteSource(
   }
 
   await context.repositories.get(SourceRepository).deleteSource(sourceId);
+  const body = readKnowledgeBody(parseJsonRecord(source.metadata));
+
+  if (body) {
+    await deleteKnowledgeBodies(context, [body.key]);
+  }
+
+  await publishKnowledgeChange(context, source, "removed");
+
   if (source.project_id) {
     await recordProjectAudit(context, source.project_id, {
       actorUserId: userId,

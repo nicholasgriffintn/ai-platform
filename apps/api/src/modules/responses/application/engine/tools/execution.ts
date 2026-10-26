@@ -379,41 +379,6 @@ export const handleToolCalls = async (
         }
       }
 
-      if (functionName === "memory") {
-        await options?.onToolExecutionStart?.({
-          id: toolCall.id,
-          name: functionName,
-        });
-
-        const memoryArgs = functionArgs;
-
-        const memMessage: Message = {
-          role: "tool",
-          name: "memory",
-          content:
-            memoryArgs.type === "store"
-              ? `📝 Stored ${memoryArgs.category} memory: ${memoryArgs.text}`
-              : "🔍 Created memory snapshot",
-          status: "success",
-          data: {
-            type: memoryArgs.type,
-            category: memoryArgs.category,
-            text: memoryArgs.text,
-          },
-          log_id: modelResponseLogId || "",
-          id: generateId(),
-          tool_call_id: toolCall.id,
-          tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
-          timestamp,
-          model: req.request?.model || "unknown",
-          platform: req.request?.platform || "api",
-        };
-
-        await recordToolResult(memMessage);
-        recordToolCallAttempt?.();
-        continue;
-      }
-
       await options?.onToolExecutionStart?.({
         id: toolCall.id,
         name: functionName,

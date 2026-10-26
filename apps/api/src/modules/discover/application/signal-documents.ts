@@ -1,9 +1,9 @@
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { commitKnowledgeDocument } from "~/modules/sources/application/knowledge/documents";
-import { requireKnowledgeTarget } from "~/modules/sources/application/knowledge/targets";
-import type { KnowledgeDocument, KnowledgeTarget } from "~/modules/sources/domain/knowledge/item";
+import { commitKnowledgeDocument } from "~/modules/knowledge/application/intake/commit";
+import { requireKnowledgeTarget } from "~/modules/knowledge/application/intake/targets";
+import type { KnowledgeDocument, KnowledgeTarget } from "~/modules/knowledge/domain/item";
 
 import { ensureDiscoverResearchFolder } from "./folders";
 

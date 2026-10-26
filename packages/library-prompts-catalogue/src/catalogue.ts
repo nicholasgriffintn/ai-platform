@@ -4,6 +4,7 @@ import { assistantPromptEntries } from "./data/assistant.js";
 import { chatPromptEntries } from "./data/chat.js";
 import { discoverPromptEntries } from "./data/discover.js";
 import { functionPromptEntries } from "./data/functions.js";
+import { knowledgePromptEntries } from "./data/knowledge.js";
 import { notebookPromptEntries } from "./data/notebooks.js";
 import { providerPromptEntries } from "./data/providers.js";
 import { sandboxPromptEntries } from "./data/sandbox.js";
@@ -21,6 +22,7 @@ const allPromptEntries = [
   ...teammatePromptEntries,
   ...notebookPromptEntries,
   ...discoverPromptEntries,
+  ...knowledgePromptEntries,
 ] as const;
 
 export type PromptId = (typeof allPromptEntries)[number]["id"];

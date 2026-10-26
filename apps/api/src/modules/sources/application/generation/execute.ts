@@ -9,10 +9,10 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getChatProvider } from "~/infrastructure/providers/capabilities/chat";
+import { fileKnowledgeSource } from "~/modules/knowledge/application/intake/file";
 import { getModelConfigByModel } from "~/modules/models/application/resolve";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
-import { createSource } from "~/modules/sources/application/sources";
 import {
   SourceRepository,
   type SourceRecord,
@@ -108,8 +108,11 @@ export async function startModelGeneration(
     (modelConfig.modalities?.output ?? []).every((modality) => modality === "text") &&
     (modelConfig.modalities?.output?.length ?? 0) > 0;
   const error = typeof providerResponse.error === "string" ? providerResponse.error : undefined;
-  const created = await createSource(context, user.id, {
+  const created = await fileKnowledgeSource(context, {
+    origin: "generated",
     projectId: projectId ?? null,
+    provider: null,
+    content: undefined,
     kind: producesText ? "text" : "file",
     title: titleFor(generation.prompt, modelConfig.name || modelId),
     status: status === "available" ? "processing" : status,

@@ -12,6 +12,7 @@ import {
   readResearchResults,
   type DiscoverResearchResult,
 } from "~/modules/discover/domain/research";
+import { withKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { createNotebook, updateNotebook } from "~/modules/notebooks/application/notebooks";
 import { readNotebookSettings } from "~/modules/notebooks/domain/notebook";
 import {
@@ -137,6 +138,9 @@ export async function listDiscoverDocuments(
   }
 
   return readDiscoverDocuments(
-    await context.repositories.get(SourceRepository).listCollectionSources(notebook.id),
+    await withKnowledgeText(
+      context,
+      await context.repositories.get(SourceRepository).listCollectionSources(notebook.id),
+    ),
   );
 }

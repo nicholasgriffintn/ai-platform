@@ -8,6 +8,7 @@ import {
   readUrlExtension,
   readUrlPath,
   readYouTubeVideoId,
+  extractHttpUrls,
 } from "./urls";
 
 const VIDEO = new Set(["mp4", "webm"]);
@@ -112,5 +113,15 @@ describe("comparableHttpUrl", () => {
     expect(comparableHttpUrl("https://example.com/story?id=2")).not.toBe(
       comparableHttpUrl("https://example.com/story?id=3"),
     );
+  });
+});
+
+describe("extractHttpUrls", () => {
+  it("finds each link once and leaves trailing punctuation behind", () => {
+    expect(
+      extractHttpUrls(
+        "See https://example.com/a. Also (https://example.com/b), and https://example.com/a again; ftp://no.",
+      ),
+    ).toEqual(["https://example.com/a", "https://example.com/b"]);
   });
 });

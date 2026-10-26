@@ -8,7 +8,7 @@ import {
 import { useKnowledgeSyncs } from "@ngriffin_uk/polychat-library-react";
 import { toast } from "sonner";
 
-import { KnowledgeFeedForm } from "./KnowledgeFeedForm.js";
+import { KnowledgeFollowForm } from "./KnowledgeFollowForm.js";
 import { KnowledgeSyncList } from "./KnowledgeSyncList.js";
 
 export function FollowDialog({ projectId, onClose }: { projectId?: string; onClose: () => void }) {
@@ -22,7 +22,7 @@ export function FollowDialog({ projectId, onClose }: { projectId?: string; onClo
           <DialogTitle>Follow</DialogTitle>
           <DialogDescription>
             {projectId
-              ? "New pages arrive in this project's Files for every member, and anything already filed is reused rather than read twice."
+              ? "New pages and documents arrive in this project's Files for every member, and anything already filed is reused rather than read twice."
               : "New pages arrive in your Files, and anything already filed is reused rather than read twice."}
           </DialogDescription>
         </DialogHeader>
@@ -31,7 +31,7 @@ export function FollowDialog({ projectId, onClose }: { projectId?: string; onClo
             <KnowledgeSyncList target={target} syncs={syncs} />
           </section>
         ) : null}
-        <KnowledgeFeedForm
+        <KnowledgeFollowForm
           target={target}
           onDone={() => {
             toast.success("Following. The first pages land shortly.");

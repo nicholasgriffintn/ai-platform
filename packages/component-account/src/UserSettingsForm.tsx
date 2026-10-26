@@ -142,6 +142,7 @@ export interface UserSettingsFormProps {
   userSettings: UserSettings | null;
   showSubmit?: boolean;
   afterPersonalisedResponses?: ReactNode;
+  knowledgeSettings?: ReactNode;
   isAuthenticated: boolean;
   isPro?: boolean;
   isSaving?: boolean;
@@ -155,6 +156,7 @@ export interface UserSettingsFormProps {
 export function UserSettingsForm({
   userSettings,
   afterPersonalisedResponses,
+  knowledgeSettings,
   showSubmit = true,
   isAuthenticated,
   isPro = false,
@@ -646,8 +648,11 @@ export function UserSettingsForm({
         </div>
       </SettingsSection>
 
-      <SettingsSection title="Embeddings (RAG)">
+      <SettingsSection title="Knowledge">
         <div className="space-y-4">
+          {knowledgeSettings ? (
+            <div className="border-b border-border pb-4">{knowledgeSettings}</div>
+          ) : null}
           <div>
             <label
               htmlFor="embedding_provider"

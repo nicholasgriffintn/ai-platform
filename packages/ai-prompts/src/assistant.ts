@@ -25,14 +25,6 @@ export function buildMemoryClassifierPrompt({
   });
 }
 
-export function buildMemoryNormaliserPrompt(): string {
-  return getPromptText("memory/normaliser");
-}
-
-export function buildMemorySummariserPrompt(): string {
-  return getPromptText("memory/summariser");
-}
-
 export interface MemorySynthesisPromptOptions {
   memories: string;
   existingSynthesis?: string | null;

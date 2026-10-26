@@ -15,6 +15,8 @@ import {
   getPersonalConversationPath,
   getProjectConversationPath,
 } from "../lib/conversation-route.js";
+import { getFilesPath } from "../lib/files-route.js";
+import { getPlacePaths } from "../lib/navigation/places.js";
 
 export type GlobalSearchResultKind = SearchResultKind;
 
@@ -102,6 +104,15 @@ export function buildGlobalSearchResults({
             : getPersonalConversationPath(conversation.id),
           searchText: `${conversation.title ?? ""} ${conversation.project?.name ?? ""} ${conversation.project?.workspaceName ?? ""} ${conversation.group?.name ?? ""}`,
           updatedAt: conversation.updatedAt,
+        })),
+        ...remote.documents.map((document) => ({
+          id: `document:${document.id}`,
+          kind: "document" as const,
+          title: document.title,
+          description: document.snippet || "Document in your library",
+          href: getFilesPath(getPlacePaths("chat").files, "sources", document.id),
+          searchText: `${document.title} ${document.snippet}`,
+          updatedAt: document.updatedAt,
         })),
         ...remote.projects.map((project) => ({
           id: `project:${project.id}`,

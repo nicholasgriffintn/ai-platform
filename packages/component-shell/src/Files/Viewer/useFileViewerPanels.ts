@@ -4,6 +4,7 @@ import { useState } from "react";
 
 export type FileViewerDrawer =
   | "info"
+  | "knowledge"
   | "sources"
   | "history"
   | "comments"

@@ -28,8 +28,9 @@ import {
   executeRecipeConnectorOperation,
   getActiveComposioAccountForProvider,
 } from "~/modules/connectors/application/operations";
+import { fileKnowledgeSource } from "~/modules/knowledge/application/intake/file";
 import { requireActiveExecutionRun } from "~/modules/responses/application/runs/execution-authority";
-import { createSource, deleteSource } from "~/modules/sources/application/sources";
+import { deleteSource } from "~/modules/sources/application/sources";
 import { resolveProjectRecipeConnectorScope } from "~/modules/workspaces/application/projectRecipeConnectorScope";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
@@ -209,7 +210,8 @@ export async function snapshotSiteConnector(
       connectedAccountId: request.connectedAccountId,
       requireSelectedAccount: true,
     });
-    const source = await createSource(context, user.id, {
+    const source = await fileKnowledgeSource(context, {
+      origin: "site",
       projectId: request.projectId,
       kind: "connector",
       title: `${site.title}: ${request.bindingId}`,

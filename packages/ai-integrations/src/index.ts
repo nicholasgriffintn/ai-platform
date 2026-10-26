@@ -61,6 +61,10 @@ export {
   type ConnectorProviderConfig,
 } from "./providers.js";
 export {
+  KNOWLEDGE_BASE_CONNECTOR_PROVIDERS,
+  type KnowledgeBaseConnectorProvider,
+} from "./knowledge-providers.js";
+export {
   completeComposioAuthorization,
   createComposioConnectLink,
   createComposioSessionMountDownloadUrl,
@@ -106,7 +110,20 @@ export {
   listConfiguredComposioToolkits,
   type ConfiguredComposioToolkit,
 } from "@ngriffin_uk/polychat-library-composio";
-export { normaliseConnectorKnowledge, type ConnectorKnowledgeDocument } from "./knowledge.js";
+export {
+  buildDescriptorParameters,
+  normaliseConnectorKnowledge,
+  readConnectorKnowledgeBody,
+  readConnectorKnowledgePage,
+  type ConnectorKnowledgeDocument,
+  type ConnectorKnowledgeItem,
+  type ConnectorKnowledgeNextPage,
+  type ConnectorKnowledgePage,
+} from "./knowledge.js";
+export {
+  getKnowledgeConnectorDescriptor,
+  KNOWLEDGE_CONNECTOR_DESCRIPTORS,
+} from "./knowledge-descriptors.js";
 export {
   MCP_PROTOCOL_VERSION,
   readMcpAppUiMeta,

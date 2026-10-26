@@ -5,6 +5,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import type { Repositories } from "~/infrastructure/database/repositories";
 import { isConversationUnread } from "~/modules/conversations/application/conversation-unread";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { findKnowledgeDocuments } from "~/modules/knowledge/application/query/find";
 import {
   type GlobalProjectSearchRow,
   type GlobalWorkspaceSearchRow,
@@ -22,10 +23,11 @@ export async function searchPolychat(
 ): Promise<GlobalSearchResponse> {
   const user = context.requireUser();
   const canSearchWork = hasProEntitlement(user);
-  const [conversations, workspaces, projects] = await Promise.all([
+  const [conversations, documents, workspaces, projects] = await Promise.all([
     context.repositories
       .get(ConversationRepository)
       .searchAccessibleConversations(user.id, input.query, input.limit),
+    findKnowledgeDocuments(context.repositories, user.id, input.query, input.limit),
     canSearchWork
       ? context.repositories
           .get(WorkspaceRepository)
@@ -72,6 +74,7 @@ export async function searchPolychat(
               }
             : null,
       })),
+    documents,
     workspaces: workspaces.map((workspace) => ({
       id: workspace.id,
       name: workspace.name,

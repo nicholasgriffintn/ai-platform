@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { knowledgeOriginSchema } from "./knowledge.js";
 import { listSchema } from "./platform/list.js";
 import { sourceGenerationTypeSchema } from "./source-media.js";
 
@@ -16,7 +17,14 @@ const creatableSourceKindSchema = z.enum(["file", "text", "url", "connector", "r
 
 export const sourceStatusSchema = z.enum(["processing", "available", "failed", "archived"]);
 export const sourceScopeSchema = z.enum(["personal", "project"]);
-export const sourceCollectionKindSchema = z.enum(["general", "memory", "context", "podcast"]);
+export const sourceCollectionKindSchema = z.enum([
+  "general",
+  "memory",
+  "context",
+  "podcast",
+  "topic",
+  "entity",
+]);
 
 export const sourceFileSchema = z
   .object({
@@ -50,19 +58,62 @@ export const sourceSchema = z
 
 export const sourceSummarySchema = sourceSchema.omit({ content: true });
 
+const knowledgeKindSchema = z.string().trim().min(1).max(80);
+
+export const knowledgeResultTypeSchema = z.enum(["source", "output", "external"]);
+
+export const knowledgeSearchFiltersSchema = z
+  .object({
+    kinds: z.array(knowledgeKindSchema).max(12).optional(),
+    resourceTypes: z
+      .array(z.enum(["source", "output"]))
+      .max(2)
+      .optional(),
+    origins: z.array(knowledgeOriginSchema).max(13).optional(),
+    providers: z.array(z.string().trim().min(1).max(100)).max(20).optional(),
+    collectionIds: z.array(z.string().min(1)).max(50).optional(),
+    syncIds: z.array(z.string().min(1)).max(50).optional(),
+    since: z.iso.datetime({ offset: true }).optional(),
+    until: z.iso.datetime({ offset: true }).optional(),
+    includeExternal: z.boolean().optional(),
+  })
+  .strict();
+
 export const projectKnowledgeSearchQuerySchema = z
   .object({
     projectId: z.string().min(1).optional(),
     query: z.string().trim().min(1).max(1000),
-    type: creatableSourceKindSchema.optional(),
     top_k: z.coerce.number().int().min(1).max(30).optional(),
     sourceIds: z.array(z.string().min(1)).max(300).optional(),
   })
+  .extend(knowledgeSearchFiltersSchema.shape)
   .strict();
 
-export const knowledgeSearchQuerySchema = projectKnowledgeSearchQuerySchema
-  .omit({ projectId: true, sourceIds: true })
-  .extend({ project_id: z.string().min(1).optional() });
+const csvList = <TSchema extends z.ZodType>(schema: TSchema) =>
+  z.preprocess(
+    (value) => (typeof value === "string" ? value.split(",").filter(Boolean) : value),
+    z.array(schema),
+  );
+
+export const knowledgeSearchQuerySchema = z
+  .object({
+    project_id: z.string().min(1).optional(),
+    query: z.string().trim().min(1).max(1000),
+    top_k: z.coerce.number().int().min(1).max(30).optional(),
+    kinds: csvList(knowledgeKindSchema).optional(),
+    resource_types: csvList(z.enum(["source", "output"])).optional(),
+    origins: csvList(knowledgeOriginSchema).optional(),
+    providers: csvList(z.string().trim().min(1).max(100)).optional(),
+    collection_ids: csvList(z.string().min(1)).optional(),
+    sync_ids: csvList(z.string().min(1)).optional(),
+    since: z.iso.datetime({ offset: true }).optional(),
+    until: z.iso.datetime({ offset: true }).optional(),
+    include_external: z
+      .enum(["true", "false"])
+      .transform((value) => value === "true")
+      .optional(),
+  })
+  .strict();
 
 export const projectKnowledgeSearchResponseSchema = z.object({
   status: z.literal("success"),
@@ -72,9 +123,12 @@ export const projectKnowledgeSearchResponseSchema = z.object({
       sourceId: z.string(),
       chunkId: z.string(),
       chunkIndex: z.number().int().nonnegative(),
+      resultType: knowledgeResultTypeSchema,
       title: z.string(),
       content: z.string(),
       type: z.string(),
+      origin: knowledgeOriginSchema.nullable(),
+      provider: z.string().nullable(),
       score: z.number(),
       rankingMethod: z.string(),
       provenance: z.object({
@@ -89,6 +143,7 @@ export const projectKnowledgeSearchResponseSchema = z.object({
       }),
     }),
   ),
+  external: z.array(z.object({ provider: z.string(), error: z.string().nullable() })).optional(),
 });
 
 export type ProjectKnowledgeSearchQuery = z.infer<typeof projectKnowledgeSearchQuerySchema>;

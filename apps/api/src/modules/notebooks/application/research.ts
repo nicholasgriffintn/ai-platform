@@ -8,12 +8,12 @@ import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { gatherKnowledgeArticles } from "~/modules/knowledge/application/intake/articles";
+import { fileKnowledgeSource } from "~/modules/knowledge/application/intake/file";
+import { requireKnowledgeTarget } from "~/modules/knowledge/application/intake/targets";
 import { runResearchReport } from "~/modules/research/application/report";
 import { findWebResults } from "~/modules/search/application/results";
-import { gatherKnowledgeArticles } from "~/modules/sources/application/knowledge/articles";
-import { requireKnowledgeTarget } from "~/modules/sources/application/knowledge/targets";
-import { createSource, toSourceSummary, updateSource } from "~/modules/sources/application/sources";
-import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
+import { toSourceSummary, updateSource } from "~/modules/sources/application/sources";
 
 import { requireNotebookAccess } from "./access";
 import { enqueueNotebookJob } from "./jobs";
@@ -27,22 +27,23 @@ export async function researchForNotebook(
   notebookId: string,
   input: { query: string; depth: "fast" | "deep" },
 ): Promise<NotebookResearchResponse> {
-  const user = context.requireUser();
   const { notebook } = await requireNotebookAccess(context, notebookId);
 
   if (input.depth === "fast") {
     return { depth: "fast", results: await findWebResults(context, input.query) };
   }
 
-  const report = await createSource(context, user.id, {
-    projectId: notebook.project_id,
+  const report = await fileKnowledgeSource(context, {
+    origin: "research",
+    notebookId,
     kind: "text",
     title: `Deep research: ${input.query}`.slice(0, 200),
+    provider: null,
     status: "processing",
+    content: undefined,
     metadata: { research: { query: input.query, depth: "deep" } },
   });
 
-  await context.repositories.get(SourceRepository).addCollectionSources(notebookId, [report.id]);
   await enqueueNotebookJob(context, notebook.project_id, {
     job: "research",
     notebookId,
@@ -63,7 +64,12 @@ export async function importNotebookResearch(
     context,
     await requireKnowledgeTarget(context, { projectId: null, notebookId }, { manage: false }),
     input.results.map((result) => ({ title: result.title, url: result.url, snippet: "" })),
-    { readLimit: input.results.length, summarise: false, metadata: () => metadata },
+    {
+      origin: "research",
+      readLimit: input.results.length,
+      summarise: false,
+      metadata: () => metadata,
+    },
   );
 
   if (!gathered.some((article) => article.sourceId)) {

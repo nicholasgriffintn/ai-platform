@@ -20,7 +20,10 @@ export type CapabilityConfigurationScope =
   | { type: "user"; id: number }
   | { type: "project"; id: string };
 
-export type CapabilityConfigurationKind = AssistantCapabilityKind | ProjectCapabilityKind;
+export type CapabilityConfigurationKind =
+  | AssistantCapabilityKind
+  | ProjectCapabilityKind
+  | "knowledge";
 
 export interface CapabilityConfigurationRow {
   id: string;

@@ -98,7 +98,7 @@ const source = (input: {
   }) as any;
 
 const repository = (sources: any[] = []) => ({
-  createSource: vi.fn().mockResolvedValue({ id: "memory-new" }),
+  insertMemorySource: vi.fn().mockResolvedValue({ id: "memory-new" }),
   deleteSource: vi.fn().mockResolvedValue(undefined),
   getSource: vi.fn(),
   getSourceByVectorId: vi.fn(async (vectorId: string) =>
@@ -233,7 +233,7 @@ describe("built-in memory embedding provenance", () => {
     expect(mocks.s3.generate).toHaveBeenCalled();
     expect(mocks.vectorize.getQuery).toHaveBeenCalledWith("Duplicate");
     expect(mocks.s3.insert).not.toHaveBeenCalled();
-    expect(repo.createSource).not.toHaveBeenCalled();
+    expect(repo.insertMemorySource).not.toHaveBeenCalled();
   });
 
   it("treats a committed activation with a lost response as success", async () => {

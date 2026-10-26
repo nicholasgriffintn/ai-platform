@@ -25,6 +25,12 @@ import {
   sourceListResponseSchema,
   sourceSchema,
   knowledgeSearchQuerySchema,
+  knowledgeDescriptorListSchema,
+  knowledgeDocumentControlsSchema,
+  knowledgeDocumentStateSchema,
+  knowledgeSettingsQuerySchema,
+  knowledgeSettingsSchema,
+  updateKnowledgeSettingsSchema,
   updateKnowledgeSyncSchema,
   updateSourceSchema,
   sourceListenPassageParamsSchema,
@@ -34,19 +40,30 @@ import z from "zod/v4";
 
 import { defineResource, defineSingleton } from "~/infrastructure/http/resource";
 import { getPrivateFileResponse, readPrivateFile } from "~/infrastructure/storage/read-resource";
+import {
+  reprocessKnowledgeDocument,
+  setKnowledgeDocumentControls,
+} from "~/modules/knowledge/application/control/controls";
+import { listKnowledgeDescriptors } from "~/modules/knowledge/application/control/descriptors";
+import {
+  getKnowledgeSettings,
+  updateKnowledgeSettings,
+} from "~/modules/knowledge/application/control/settings";
+import { getKnowledgeDocumentState } from "~/modules/knowledge/application/control/state";
+import { fileKnowledgeSource } from "~/modules/knowledge/application/intake/file";
+import { searchProjectKnowledge } from "~/modules/knowledge/application/query/search";
+import {
+  controlKnowledgeSync,
+  deleteKnowledgeSync,
+  createKnowledgeSync,
+  listKnowledgeSyncs,
+} from "~/modules/knowledge/application/syncs/syncs";
 import { addCollectionOutputs, listCollectionOutputs } from "~/modules/outputs/application/folders";
 import { startSourceGeneration } from "~/modules/sources/application/generation";
 import { paintDrawing } from "~/modules/sources/application/generation/drawing/create";
 import { guessDrawingFromImage } from "~/modules/sources/application/generation/drawing/guess";
 import { listReplicateModels } from "~/modules/sources/application/generation/replicate-models";
 import { listCanvasModels } from "~/modules/sources/application/generation/studio/list-models";
-import { searchProjectKnowledge } from "~/modules/sources/application/knowledge/search";
-import {
-  controlKnowledgeSync,
-  deleteKnowledgeSync,
-  createKnowledgeSync,
-  listKnowledgeSyncs,
-} from "~/modules/sources/application/knowledge/syncs";
 import {
   createSourceCover,
   readSourceCoverObject,
@@ -66,7 +83,6 @@ import {
 import { startPodcastGeneration } from "~/modules/sources/application/podcasts/generate";
 import {
   addCollectionSources,
-  createSource,
   createSourceCollection,
   deleteSource,
   deleteSourceCollection,
@@ -85,6 +101,7 @@ const app = new Hono();
 const sourceParamsSchema = z.object({ source_id: z.string().min(1) });
 const collectionParamsSchema = z.object({ collection_id: z.string().min(1) });
 const syncParamsSchema = z.object({ sync_id: z.string().min(1) });
+const knowledgeDescriptorListQuerySchema = z.object({ provider: z.string().min(1).optional() });
 const projectQuerySchema = z.object({ project_id: z.string().min(1).optional() });
 const createSourceRequestSchema = createSourceSchema.omit({ file: true });
 const feedParamsSchema = z.object({ token: z.string().min(32) });
@@ -108,6 +125,27 @@ defineSingleton(app, { path: "/project_context", tags: ["sources"] }, (projectCo
     handler: ({ body, serviceContext, user }) =>
       setProjectContextSources(serviceContext, user.id, body.project_id, body.sourceIds),
   });
+});
+
+defineSingleton(app, { path: "/knowledge_settings", tags: ["sources"] }, (settings) => {
+  settings
+    .read({
+      auth: true,
+      summary: "Read knowledge settings",
+      description:
+        "Which enrichers run on new documents in your library or a project, and which connected knowledge bases are searched alongside it.",
+      querySchema: knowledgeSettingsQuerySchema,
+      responses: { 200: { description: "Knowledge settings", schema: knowledgeSettingsSchema } },
+      handler: ({ query, serviceContext }) =>
+        getKnowledgeSettings(serviceContext, query.project_id),
+    })
+    .update({
+      auth: true,
+      summary: "Change knowledge settings",
+      bodySchema: updateKnowledgeSettingsSchema,
+      responses: { 200: { description: "Knowledge settings", schema: knowledgeSettingsSchema } },
+      handler: ({ body, serviceContext }) => updateKnowledgeSettings(serviceContext, body),
+    });
 });
 
 defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
@@ -140,7 +178,21 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
       summary: "Create a source",
       bodySchema: createSourceRequestSchema,
       responses: { 200: { description: "The source", schema: sourceSchema } },
-      handler: ({ body, serviceContext, user }) => createSource(serviceContext, user.id, body),
+      handler: ({ body, serviceContext }) =>
+        fileKnowledgeSource(serviceContext, {
+          origin: body.kind === "text" ? "note" : body.kind === "url" ? "page" : "manual",
+          projectId: body.projectId ?? null,
+          conversationId: body.conversationId,
+          connectionId: body.connectionId,
+          kind: body.kind,
+          title: body.title,
+          status: body.status,
+          provider: body.provider ?? null,
+          externalUri: body.externalUri,
+          vectorId: body.vectorId,
+          content: body.content ?? undefined,
+          metadata: body.metadata,
+        }),
     })
     .view("search", {
       auth: true,
@@ -149,8 +201,21 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
       responses: {
         200: { description: "Passages", schema: projectKnowledgeSearchResponseSchema },
       },
-      handler: ({ query: { project_id, ...query }, serviceContext }) =>
-        searchProjectKnowledge(serviceContext, { ...query, projectId: project_id }),
+      handler: ({ query, serviceContext }) =>
+        searchProjectKnowledge(serviceContext, {
+          query: query.query,
+          projectId: query.project_id,
+          top_k: query.top_k,
+          kinds: query.kinds,
+          resourceTypes: query.resource_types,
+          origins: query.origins,
+          providers: query.providers,
+          collectionIds: query.collection_ids,
+          syncIds: query.sync_ids,
+          since: query.since,
+          until: query.until,
+          includeExternal: query.include_external,
+        }),
     })
     .read({
       auth: true,
@@ -179,6 +244,47 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
         return { deleted: true };
       },
     });
+
+  sources
+    .singleton("knowledge")
+    .read({
+      auth: true,
+      summary: "Read a document's knowledge state",
+      description:
+        "Where the document came from, how it is stored and indexed, each enrichment's status, its topics and entities, related documents and its controls.",
+      paramSchema: sourceParamsSchema,
+      responses: { 200: { description: "Knowledge state", schema: knowledgeDocumentStateSchema } },
+      handler: ({ params, serviceContext }) =>
+        getKnowledgeDocumentState(serviceContext, params.source_id),
+    })
+    .update({
+      auth: true,
+      summary: "Change a document's knowledge controls",
+      description:
+        "Keep a document out of answers, set when it expires or mark how sensitive it is. Confidential documents are never given to teammates.",
+      paramSchema: sourceParamsSchema,
+      bodySchema: knowledgeDocumentControlsSchema,
+      responses: { 200: { description: "Knowledge state", schema: knowledgeDocumentStateSchema } },
+      handler: ({ body, params, serviceContext }) =>
+        setKnowledgeDocumentControls(serviceContext, params.source_id, body),
+    })
+    .action("reprocess", {
+      auth: true,
+      summary: "Process a document again",
+      description: "Runs its enrichers and indexing again where anything is out of date or failed.",
+      paramSchema: sourceParamsSchema,
+      responses: { 200: { description: "Knowledge state", schema: knowledgeDocumentStateSchema } },
+      handler: ({ params, serviceContext }) =>
+        reprocessKnowledgeDocument(serviceContext, params.source_id),
+    });
+
+  sources.collection("knowledge_descriptors", "descriptor_id").list({
+    auth: true,
+    summary: "List document types connector syncs can follow",
+    querySchema: knowledgeDescriptorListQuerySchema,
+    responses: { 200: { description: "Document types", schema: knowledgeDescriptorListSchema } },
+    handler: async ({ query }) => listKnowledgeDescriptors(query.provider),
+  });
 
   sources
     .action("transcribe", {

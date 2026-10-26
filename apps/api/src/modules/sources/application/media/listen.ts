@@ -15,6 +15,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
 import { getPrivateObjectResponse } from "~/infrastructure/storage/read-resource";
 import { narratePassages } from "~/modules/audio/application/narration";
+import { readKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { formatSource, requireSourceAccess } from "~/modules/sources/application/sources";
@@ -32,8 +33,8 @@ function passageKey(sourceId: string, passage: number): string {
   return `sources/${sourceId}/listen/${passage}.mp3`;
 }
 
-function listenableText(source: SourceRecord): string {
-  const content = source.content ?? "";
+async function listenableText(context: ServiceContext, source: SourceRecord): Promise<string> {
+  const content = await readKnowledgeText(context, source);
 
   if (!canListenToSource({ kind: source.kind, content, mimeType: source.mime_type })) {
     throw new AssistantError("This source has no text to read aloud", ErrorType.PARAMS_ERROR, 400);
@@ -48,7 +49,7 @@ export async function startSourceListen(
   sourceId: string,
 ): Promise<Source> {
   const source = await requireSourceAccess(context, userId, sourceId);
-  const content = listenableText(source);
+  const content = await listenableText(context, source);
   const contentHash = await sha256Hex(content);
   const current = readSourceRecordListen(source);
 

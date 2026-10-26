@@ -5,8 +5,8 @@ import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { findDiscoverCard } from "~/modules/discover/domain/edition";
-import { analyseArticleFraming } from "~/modules/experiences/application/articles/framing";
-import { updateSourceRecord } from "~/modules/sources/application/media/metadata";
+import { runKnowledgeEnricher } from "~/modules/knowledge/application/enrichment/run";
+import { readKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { formatSource, requireSourceAccess } from "~/modules/sources/application/sources";
 
 import { requireDiscoverBudgetLeft } from "./cost";
@@ -26,12 +26,7 @@ export async function frameDiscoverArticle(
     throw new AssistantError("Discover card not found", ErrorType.NOT_FOUND, 404);
   }
 
-  const source = card.sourceId
-    ? await requireSourceAccess(context, user.id, card.sourceId, true)
-    : null;
-  const content = source?.content?.trim();
-
-  if (!source || !content) {
+  if (!card.sourceId) {
     throw new AssistantError(
       "Poly didn't keep a copy of this page, so there's nothing to examine",
       ErrorType.CONFLICT_ERROR,
@@ -39,27 +34,17 @@ export async function frameDiscoverArticle(
     );
   }
 
-  const contentHash = await sha256Hex(content);
+  const source = await requireSourceAccess(context, user.id, card.sourceId, true);
+  const framing = readSourceFraming(parseJsonRecord(source.metadata));
 
-  if (readSourceFraming(parseJsonRecord(source.metadata))?.contentHash === contentHash) {
-    return formatSource(source);
+  if (
+    !framing ||
+    framing.contentHash !== (await sha256Hex(await readKnowledgeText(context, source)))
+  ) {
+    await requireDiscoverBudgetLeft(context, (await readDiscoverRoutine(context)).installationId);
   }
 
-  await requireDiscoverBudgetLeft(context, (await readDiscoverRoutine(context)).installationId);
-
-  const { framing, editorial } = await analyseArticleFraming(
-    withEditionRun(context, edition),
-    content,
-  );
-
   return formatSource(
-    await updateSourceRecord(context, source, {
-      framing: {
-        ...framing,
-        ...(editorial ? { grade: editorial.grade } : {}),
-        contentHash,
-        generatedAt: new Date().toISOString(),
-      },
-    }),
+    await runKnowledgeEnricher(withEditionRun(context, edition), source.id, "framing"),
   );
 }

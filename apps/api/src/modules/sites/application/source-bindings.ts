@@ -8,6 +8,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { readKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { formatSource, requireSourcesAccess } from "~/modules/sources/application/sources";
 
 async function requireSiteSourcesAccess(
@@ -53,7 +54,10 @@ async function readSiteSourcesRows(
 
   try {
     for (const source of sources) {
-      rows.set(source.id, normaliseSiteSourceRows(safeParseJson<unknown>(source.content ?? "")));
+      rows.set(
+        source.id,
+        normaliseSiteSourceRows(safeParseJson<unknown>(await readKnowledgeText(context, source))),
+      );
     }
 
     return rows;

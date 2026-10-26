@@ -77,8 +77,6 @@ export async function captureRunMemories(params: CaptureRunMemoriesParams): Prom
     );
     const events = await memoryManager.handleMemory(
       lastUser.text,
-      history,
-      params.conversationManager,
       params.completionId,
       params.userSettings,
       `memory-capture:${params.completionId}:${lastUser.identity}`,
@@ -104,10 +102,7 @@ function buildMemoryMessage(event: MemoryEvent, params: CaptureRunMemoriesParams
   return {
     role: "tool",
     name: "memory",
-    content:
-      event.type === "store"
-        ? `📝 Stored ${event.category} memory: ${event.text}`
-        : "🔍 Created memory snapshot",
+    content: `📝 Stored ${event.category} memory: ${event.text}`,
     status: "success",
     data: { type: event.type, category: event.category, text: event.text },
     id: generateId(),

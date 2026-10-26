@@ -8,6 +8,10 @@ export const WEBHOOK_EVENT_TYPES = [
   "response.cancelled",
   "response.incomplete",
   "response.waiting",
+  "knowledge.document.filed",
+  "knowledge.document.updated",
+  "knowledge.document.removed",
+  "knowledge.document.enriched",
 ] as const;
 
 export const WEBHOOK_TEST_EVENT_TYPE = "webhook.test";

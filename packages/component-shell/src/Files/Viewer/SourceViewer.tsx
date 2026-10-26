@@ -13,6 +13,7 @@ import {
 import { getSourceContentUrl, getSourceCoverUrl } from "@ngriffin_uk/polychat-library-client";
 import {
   createSourceAttachment,
+  getFilesPath,
   useSource,
   useSourceMediaActions,
 } from "@ngriffin_uk/polychat-library-react";
@@ -29,6 +30,7 @@ import { formatRelativeTime, humaniseIdentifier } from "@ngriffin_uk/polychat-ut
 import { downloadTextFile } from "@ngriffin_uk/polychat-utility-react";
 import {
   AudioLines,
+  Brain,
   ExternalLink,
   FileText,
   FileWarning,
@@ -37,6 +39,7 @@ import {
   Link2,
   Library,
 } from "lucide-react";
+import { useNavigate } from "react-router";
 
 import { sourceToFileItem } from "../Library/file-items.js";
 import { useFileActions } from "../Library/useFileActions.js";
@@ -46,6 +49,7 @@ import { FileSourcesList } from "./FileSourcesList.js";
 import { FileViewerCloseButton } from "./FileViewerCloseButton.js";
 import { type FileViewerChrome, FileViewerFrame } from "./FileViewerFrame.js";
 import { MarkdownStage } from "./MarkdownStage.js";
+import { SourceKnowledgePanel } from "./SourceKnowledgePanel.js";
 import { SourceListen } from "./SourceListen.js";
 import { useFileViewerPanels } from "./useFileViewerPanels.js";
 
@@ -322,6 +326,7 @@ export function SourceViewer({
   onDeleted: () => void;
 }) {
   const panels = useFileViewerPanels();
+  const navigate = useNavigate();
   const actions = useFileActions({ projectId, onDeleted });
   const { data: source, isLoading, error } = useSource(sourceId);
 
@@ -383,6 +388,22 @@ export function SourceViewer({
           icon: <Info size={14} aria-hidden="true" />,
           content: <SourceInfo source={source} detail={item.detail} />,
         },
+        ...(source.kind === "memory"
+          ? []
+          : [
+              {
+                key: "knowledge" as const,
+                label: "Knowledge",
+                icon: <Brain size={14} aria-hidden="true" />,
+                content: (
+                  <SourceKnowledgePanel
+                    sourceId={source.id}
+                    onOpenSource={(id) => chrome.onOpenFile({ origin: "source", id, projectId })}
+                    onOpenCollection={(id) => void navigate(getFilesPath(basePath, "folders", id))}
+                  />
+                ),
+              },
+            ]),
         ...(linkedSources.length > 0
           ? [
               {

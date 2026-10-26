@@ -42,11 +42,12 @@ import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
 import { DISCOVER_SIGNALS, type DiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
 import { renderSignalDocument } from "~/modules/discover/domain/signal-document";
 import { selectDiscoverSignals } from "~/modules/discover/domain/signal-selection";
+import { readKnowledgeText, withKnowledgeText } from "~/modules/knowledge/application/intake/body";
+import { findTopicArticles } from "~/modules/knowledge/application/syncs/topics";
 import { generateTierObject } from "~/modules/models/application/tier-object";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { getAssistantRecipe } from "~/modules/recipes/application";
-import { findTopicArticles } from "~/modules/sources/application/knowledge/topics";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { readDiscoverArticles } from "./articles";
@@ -162,6 +163,7 @@ async function readSignal(
 
     await writeDiscoverDocument(context, notebookId, {
       id: sourceId,
+      origin: "connector",
       kind: "connector",
       title: signal.title,
       provider: signal.providerId,
@@ -194,6 +196,7 @@ async function readSignal(
 
     await writeDiscoverDocument(context, notebookId, {
       id: sourceId,
+      origin: "connector",
       kind: "connector",
       title: signal.title,
       provider: signal.providerId,
@@ -267,10 +270,14 @@ async function researchTopic(
 
     await writeDiscoverDocument(context, notebookId, {
       id: sourceId,
+      origin: "research",
       kind: "text",
       title: `Research: ${topic}`.slice(0, 200),
       provider: "web",
-      content: mergeResearchDocument(existing?.content ?? "", { date, results }),
+      content: mergeResearchDocument(existing ? await readKnowledgeText(context, existing) : "", {
+        date,
+        results,
+      }),
       metadata: {
         [DISCOVER_RESEARCH_METADATA_KEY]: topic,
         readAt: new Date().toISOString(),
@@ -441,7 +448,10 @@ export async function ensureDiscoverGathered(
   const notebook = await ensureDiscoverNotebook(context);
 
   return readDiscoverDocuments(
-    await context.repositories.get(SourceRepository).listCollectionSources(notebook.id),
+    await withKnowledgeText(
+      context,
+      await context.repositories.get(SourceRepository).listCollectionSources(notebook.id),
+    ),
   );
 }
 

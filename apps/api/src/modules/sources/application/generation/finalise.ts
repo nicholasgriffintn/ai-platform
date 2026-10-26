@@ -10,8 +10,8 @@ import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
 import { getPrivateFileResourceFromUrl } from "~/infrastructure/storage/resource-urls";
+import { fileKnowledgeSource } from "~/modules/knowledge/application/intake/file";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
-import { createSource } from "~/modules/sources/application/sources";
 import {
   SourceRepository,
   type SourceRecord,
@@ -256,8 +256,11 @@ async function adoptGeneration(
   const metadata = parseJsonRecord(stored.metadata);
 
   for (const extra of rest) {
-    const sibling = await createSource(context, stored.created_by_user_id, {
+    const sibling = await fileKnowledgeSource(context, {
+      origin: "generated",
       projectId: stored.project_id,
+      provider: null,
+      content: undefined,
       kind: "file",
       title: stored.title,
       status: "processing",

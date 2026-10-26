@@ -19,6 +19,8 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
 import { assertPlanEntitlement } from "~/middleware/requirePlan";
 import { estimateSpokenSeconds } from "~/modules/audio/domain/speech-text";
+import { withKnowledgeText } from "~/modules/knowledge/application/intake/body";
+import { fileKnowledgeSource } from "~/modules/knowledge/application/intake/file";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { buildSourceMaterial } from "~/modules/sources/application/material";
@@ -30,7 +32,6 @@ import {
 } from "~/modules/sources/application/media/metadata";
 import {
   addCollectionSources,
-  createSource,
   requireCollectionAccess,
   requireSourcesAccess,
 } from "~/modules/sources/application/sources";
@@ -70,7 +71,7 @@ export async function startPodcastGeneration(
     );
   }
 
-  const chosenSources = await requireSourcesAccess(context, user.id, input.sourceIds, (source) => {
+  const accessible = await requireSourcesAccess(context, user.id, input.sourceIds, (source) => {
     if (source.project_id !== projectId) {
       throw new AssistantError(
         "Sources must belong to the episode's scope",
@@ -79,6 +80,7 @@ export async function startPodcastGeneration(
       );
     }
   });
+  const chosenSources = await withKnowledgeText(context, accessible);
 
   if (!input.material && !buildSourceMaterial(chosenSources)) {
     throw new AssistantError(
@@ -89,19 +91,22 @@ export async function startPodcastGeneration(
   }
 
   const material = input.material
-    ? await createSource(context, user.id, {
+    ? await fileKnowledgeSource(context, {
+        origin: "note",
         projectId,
         kind: "text",
         title: `${input.title ?? "Episode"} research`,
-        status: "available",
+        provider: null,
         content: input.material,
-        metadata: {},
       })
     : null;
   const sourceIds = material ? [...input.sourceIds, material.id] : [...input.sourceIds];
 
-  const episode = await createSource(context, user.id, {
+  const episode = await fileKnowledgeSource(context, {
+    origin: "generated",
     projectId,
+    provider: null,
+    content: undefined,
     kind: "podcast",
     title: input.title ?? "New episode",
     status: "processing",

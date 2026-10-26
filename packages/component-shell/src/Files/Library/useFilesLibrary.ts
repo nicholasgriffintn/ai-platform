@@ -36,7 +36,12 @@ export function useFilesLibrary({
   const folderOutputs = useCollectionOutputs(folderId);
   const memory = useMemoryDocuments(projectId);
   const collections = useSourceCollections(projectId);
-  const folders = (collections.data ?? []).filter((collection) => collection.kind !== "context");
+  const collectionFolders = (collections.data ?? []).filter(
+    (collection) => collection.kind !== "context",
+  );
+  const folders = collectionFolders.filter(
+    (folder) => folder.kind !== "topic" && folder.kind !== "entity",
+  );
 
   const items: FileItem[] = [
     ...(includes("made")
@@ -52,6 +57,7 @@ export function useFilesLibrary({
   return {
     items,
     folders,
+    collectionFolders,
     areFoldersLoading: collections.isLoading,
     folderItems:
       folderId || filter === "made" || filter === "memory"

@@ -1,4 +1,5 @@
 import { Button, CardGridLoadingSkeleton, EmptyState } from "@ngriffin_uk/polychat-component-ui";
+import type { SourceCollection } from "@ngriffin_uk/polychat-schemas";
 import { Folder, Upload } from "lucide-react";
 import { useNavigate } from "react-router";
 
@@ -14,6 +15,23 @@ import { useFileActions } from "./Library/useFileActions.js";
 import { useFileCreation } from "./Library/useFileCreation.js";
 import { useFilesLibrary } from "./Library/useFilesLibrary.js";
 import { PodcastFeedControls } from "./Sources/PodcastFeedControls.js";
+
+function describeFolder(folder: SourceCollection): string {
+  if (folder.kind === "topic") {
+    return "A topic Poly keeps. New files about it are filed here on their own.";
+  }
+
+  if (folder.kind === "entity") {
+    return `Files about this ${folder.description ?? "subject"}, filed here on their own.`;
+  }
+
+  return (
+    folder.description ??
+    (folder.kind === "podcast"
+      ? "A podcast show. Episodes published here appear in its feed."
+      : "Everything here also stays in Files.")
+  );
+}
 
 export function FolderView({
   basePath,
@@ -35,7 +53,7 @@ export function FolderView({
       }
     },
   });
-  const folder = library.folders.find((candidate) => candidate.id === folderId);
+  const folder = library.collectionFolders.find((candidate) => candidate.id === folderId);
 
   if (library.areFoldersLoading) {
     return <CardGridLoadingSkeleton count={4} label="Loading folder" />;
@@ -95,12 +113,7 @@ export function FolderView({
           </span>
           <div className="min-w-0">
             <h2 className="truncate text-2xl font-semibold text-foreground">{folder.title}</h2>
-            <p className="text-sm text-muted-foreground">
-              {folder.description ??
-                (isShow
-                  ? "A podcast show. Episodes published here appear in its feed."
-                  : "Everything here also stays in Files.")}
-            </p>
+            <p className="text-sm text-muted-foreground">{describeFolder(folder)}</p>
           </div>
         </div>
         {isShow ? <PodcastFeedControls show={folder} /> : null}

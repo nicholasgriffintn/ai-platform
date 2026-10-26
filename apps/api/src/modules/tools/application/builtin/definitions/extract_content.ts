@@ -5,7 +5,7 @@ import type { FunctionToolDescriptor } from "~/types/functions";
 export const extract_content: FunctionToolDescriptor = {
   name: "extract_content",
   description:
-    "Extracts and analyzes web content from provided URLs. Supports Tavily extraction and Cloudflare Browser Rendering endpoints (including crawl). Can process multiple URLs and optionally store content in vector memory.",
+    "Extracts and analyzes web content from provided URLs. Supports Tavily extraction and Cloudflare Browser Rendering endpoints (including crawl). Can process multiple URLs and optionally save it to the knowledge base.",
   inputSchema: jsonSchemaToZod({
     type: "object",
     properties: {
@@ -24,9 +24,9 @@ export const extract_content: FunctionToolDescriptor = {
         description: "Whether to include images from the content",
         default: false,
       },
-      should_vectorize: {
+      save_to_knowledge: {
         type: "boolean",
-        description: "Whether to store the content in the vector database for future reference",
+        description: "Whether to save the extracted content to the knowledge base for later search",
         default: false,
       },
       provider: {
@@ -68,7 +68,7 @@ export const extract_content: FunctionToolDescriptor = {
     urls: input.urls,
     extractDepth: input.extract_depth,
     includeImages: input.include_images,
-    storesContent: input.should_vectorize,
+    storesContent: input.save_to_knowledge,
     provider: input.provider,
     crawl: input.cloudflareCrawlOptions,
   }),

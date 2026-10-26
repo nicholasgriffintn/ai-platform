@@ -7,6 +7,8 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { toast } from "sonner";
 
+import { KnowledgeReadingSettings } from "../Knowledge/KnowledgeReadingSettings.js";
+
 export function ProjectKnowledgeCard({
   workspaceId,
   projectId,
@@ -34,6 +36,7 @@ export function ProjectKnowledgeCard({
       )}
       sourcesHref={getProjectFilesPath(workspaceId, projectId, "sources")}
       isSavingContext={setContext.isPending}
+      readingSettings={<KnowledgeReadingSettings projectId={projectId} />}
       onSaveContext={async (sourceIds) => {
         await setContext.mutateAsync(sourceIds);
         toast.success("Project context updated");

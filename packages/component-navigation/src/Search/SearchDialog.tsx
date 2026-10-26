@@ -11,6 +11,7 @@ import {
   Blocks,
   Building2,
   CornerDownLeft,
+  FileText,
   FolderKanban,
   Loader2,
   MessageSquareText,
@@ -43,6 +44,7 @@ type SearchFilter = "all" | SearchResultKind;
 const SEARCH_FILTERS: Array<{ id: SearchFilter; label: string }> = [
   { id: "all", label: "All" },
   { id: "conversation", label: "Chats" },
+  { id: "document", label: "Documents" },
   { id: "project", label: "Projects" },
   { id: "workspace", label: "Workspaces" },
   { id: "capability", label: "Capabilities" },
@@ -50,6 +52,7 @@ const SEARCH_FILTERS: Array<{ id: SearchFilter; label: string }> = [
 
 const RESULT_ICONS: Record<SearchResultKind, ReactNode> = {
   conversation: <MessageSquareText size={18} />,
+  document: <FileText size={18} />,
   project: <FolderKanban size={18} />,
   workspace: <Building2 size={18} />,
   capability: <Blocks size={18} />,
@@ -135,7 +138,7 @@ export function SearchDialog({
       <DialogContent className="gap-0 overflow-hidden border-border bg-surface-elevated p-0 shadow-[var(--polychat-elevated-shadow)] [&_[data-slot=dialog-close]]:top-6 [&_[data-slot=dialog-close]]:right-5">
         <DialogTitle className="sr-only">Search Polychat</DialogTitle>
         <DialogDescription className="sr-only">
-          Search conversations, projects, workspaces, and capabilities.
+          Search conversations, documents, projects, workspaces, and capabilities.
         </DialogDescription>
 
         <div className="relative border-b border-border px-5 py-4 pr-14">

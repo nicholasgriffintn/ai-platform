@@ -198,3 +198,26 @@ export function readYouTubeVideoId(value: string): string | null {
 
   return candidate && YOUTUBE_VIDEO_ID_PATTERN.test(candidate) ? candidate : null;
 }
+
+const HTTP_URL_PATTERN = /https?:\/\/[^\s<>"'()[\]{}]+/g;
+const TRAILING_URL_PUNCTUATION = new Set([".", ",", ";", ":", "!", "?", "*", "_", "`"]);
+
+export function extractHttpUrls(text: string): string[] {
+  const urls = new Set<string>();
+
+  for (const match of text.matchAll(HTTP_URL_PATTERN)) {
+    let candidate = match[0];
+
+    while (candidate && TRAILING_URL_PUNCTUATION.has(candidate.at(-1) ?? "")) {
+      candidate = candidate.slice(0, -1);
+    }
+
+    const resolved = resolveHttpUrl(candidate);
+
+    if (resolved) {
+      urls.add(resolved);
+    }
+  }
+
+  return [...urls];
+}

@@ -11,9 +11,10 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { StorageService, type StoredSourceFileResult } from "~/infrastructure/storage";
+import { StorageService } from "~/infrastructure/storage";
+import { buildPrivateFileUrl } from "~/infrastructure/storage/resource-urls";
 import { convertBlobToMarkdownViaCloudflare } from "~/modules/documents/application/convert";
-import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
+import { fileKnowledgeSource } from "~/modules/knowledge/application/intake/file";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 const logger = getLogger({ prefix: "services/uploads" });
@@ -283,19 +284,10 @@ export async function handleFileUpload(
   const fileExtension = fileType === "code" ? inferredExtension || mimeExtension : mimeExtension;
   const key = `uploads/${userId}/${fileType}s/${generateId()}.${fileExtension}`;
 
-  let storedSource: StoredSourceFileResult;
+  const storage = StorageService.forPrivateAssets(context);
 
   try {
-    storedSource = await StorageService.forPrivateAssets(context).storeSourceFile({
-      key,
-      data: arrayBuffer,
-      createdByUserId: userId,
-      projectId,
-      title: file.name,
-      mimeType: file.type,
-      filename: file.name,
-      byteSize: arrayBuffer.byteLength,
-    });
+    await storage.uploadObject(key, arrayBuffer, { httpMetadata: { contentType: file.type } });
   } catch (storageError) {
     logger.error("Failed to upload file to storage", {
       error: getErrorMessage(storageError),
@@ -305,7 +297,8 @@ export async function handleFileUpload(
     throw new AssistantError("Failed to store file", ErrorType.EXTERNAL_API_ERROR, 500);
   }
 
-  const fileUrl = storedSource.url;
+  const sourceId = generateId();
+  const fileUrl = buildPrivateFileUrl(context.env, "source", sourceId);
   const effectiveConversionOptions = shouldConvert
     ? buildMarkdownConversionOptions(file.type, fileUrl, conversionOptions)
     : undefined;
@@ -348,8 +341,15 @@ export async function handleFileUpload(
     }
   }
 
-  await context.repositories.get(SourceRepository).updateSource(storedSource.sourceId, {
-    content: markdownContent || null,
+  await fileKnowledgeSource(context, {
+    id: sourceId,
+    origin: "upload",
+    projectId: projectId ?? null,
+    kind: "file",
+    title: file.name.slice(0, 200) || "Upload",
+    provider: null,
+    content: markdownContent,
+    file: { key, mimeType: file.type, filename: file.name, byteSize: arrayBuffer.byteLength },
     metadata: { uploadType: fileType, convertedToMarkdown: Boolean(markdownContent) },
   });
 
@@ -361,9 +361,9 @@ export async function handleFileUpload(
     name: string;
     markdown?: string;
   } = {
-    sourceId: storedSource.sourceId,
+    sourceId,
     url: fileUrl,
-    key: storedSource.key,
+    key,
     type: markdownContent ? "markdown_document" : fileType,
     name: file.name,
   };

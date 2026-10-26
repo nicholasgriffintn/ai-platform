@@ -33,6 +33,7 @@ import {
   AGE_CHECK_RESULTS,
   CONVERSATION_SUBJECT_TYPES,
   COST_SUBJECTS,
+  KNOWLEDGE_RELATIONS,
   LINEAGE_RELATIONS,
   MODEL_ASSET_KINDS,
   MODEL_ASSET_SOURCES,
@@ -456,6 +457,9 @@ export const searchDocument = sqliteTable(
     lease_token: text(),
     lease_expires_at: text(),
     document_type: text({ enum: ["legacy", "embedding", "source"] }).notNull(),
+    resource_type: text({ enum: ["source", "output"] })
+      .default("source")
+      .notNull(),
     legacy_user_id: integer()
       .generatedAlwaysAs(sql`CASE WHEN document_type = 'legacy' THEN user_id END`)
       .references(() => user.id),
@@ -481,7 +485,7 @@ export const searchDocument = sqliteTable(
       .on(table.user_id, table.lifecycle_status)
       .where(sql`document_type = 'embedding'`),
     sourceRevisionIdx: uniqueIndex("search_document_source_revision_idx")
-      .on(table.source_id, table.source_revision)
+      .on(table.resource_type, table.source_id, table.source_revision)
       .where(sql`document_type = 'source'`),
     sourceScopeIdx: index("search_document_source_scope_idx")
       .on(table.project_id, table.status)
@@ -1914,6 +1918,7 @@ export const sourceKnowledgeSync = sqliteTable(
     last_error: text(),
     lease_token: text(),
     lease_expires_at: text(),
+    checkpoint: text(),
   },
   (table) => ({
     dueIdx: index("source_knowledge_sync_due_idx").on(table.status, table.next_sync_at),
@@ -1942,7 +1947,7 @@ export const resourceCollection = sqliteTable(
     title: text().notNull(),
     normalised_name: text(),
     description: text(),
-    kind: text({ enum: ["general", "memory", "context", "podcast"] })
+    kind: text({ enum: ["general", "memory", "context", "podcast", "topic", "entity"] })
       .default("general")
       .notNull(),
     feed_token_hash: text(),
@@ -3483,14 +3488,21 @@ export const resourceLink = sqliteTable(
   "resource_link",
   {
     kind: text({
-      enum: ["output_source", "source_collection", "output_collection", "model_lineage"],
+      enum: [
+        "output_source",
+        "source_collection",
+        "output_collection",
+        "source_relation",
+        "model_lineage",
+      ],
     }).notNull(),
     output_id: text().references(() => resource.output_id, { onDelete: "cascade" }),
     collection_id: text().references(() => resourceCollection.id, { onDelete: "cascade" }),
     source_id: text().references(() => resource.source_id, { onDelete: "cascade" }),
+    related_source_id: text().references(() => resource.source_id, { onDelete: "cascade" }),
     from_version_id: text().references(() => modelAssetVersion.id, { onDelete: "cascade" }),
     to_version_id: text().references(() => modelAssetVersion.id, { onDelete: "cascade" }),
-    relation: text({ enum: LINEAGE_RELATIONS }),
+    relation: text({ enum: [...LINEAGE_RELATIONS, ...KNOWLEDGE_RELATIONS] }),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
@@ -3505,6 +3517,12 @@ export const resourceLink = sqliteTable(
     collectionOutputIdx: uniqueIndex("resource_link_collection_output_idx")
       .on(table.collection_id, table.output_id)
       .where(sql`${table.kind} = 'output_collection'`),
+    sourceRelationIdx: uniqueIndex("resource_link_source_relation_idx")
+      .on(table.source_id, table.related_source_id, table.relation)
+      .where(sql`${table.kind} = 'source_relation'`),
+    relatedSourceIdx: index("resource_link_related_source_idx")
+      .on(table.related_source_id)
+      .where(sql`${table.kind} = 'source_relation'`),
     lineageIdx: uniqueIndex("resource_link_lineage_idx")
       .on(table.from_version_id, table.to_version_id, table.relation)
       .where(sql`${table.kind} = 'model_lineage'`),
@@ -3512,7 +3530,7 @@ export const resourceLink = sqliteTable(
     lineageTargetIdx: index("resource_link_lineage_target_idx").on(table.kind, table.to_version_id),
     shapeCheck: check(
       "resource_link_shape_check",
-      sql`(${table.kind} = 'output_source' AND ${table.output_id} IS NOT NULL AND ${table.source_id} IS NOT NULL AND ${table.collection_id} IS NULL AND ${table.from_version_id} IS NULL AND ${table.to_version_id} IS NULL AND ${table.relation} IS NULL) OR (${table.kind} = 'source_collection' AND ${table.collection_id} IS NOT NULL AND ${table.source_id} IS NOT NULL AND ${table.output_id} IS NULL AND ${table.from_version_id} IS NULL AND ${table.to_version_id} IS NULL AND ${table.relation} IS NULL) OR (${table.kind} = 'output_collection' AND ${table.collection_id} IS NOT NULL AND ${table.output_id} IS NOT NULL AND ${table.source_id} IS NULL AND ${table.from_version_id} IS NULL AND ${table.to_version_id} IS NULL AND ${table.relation} IS NULL) OR (${table.kind} = 'model_lineage' AND ${table.from_version_id} IS NOT NULL AND ${table.to_version_id} IS NOT NULL AND ${table.relation} IS NOT NULL AND ${table.output_id} IS NULL AND ${table.collection_id} IS NULL AND ${table.source_id} IS NULL)`,
+      sql`(${table.kind} = 'output_source' AND ${table.output_id} IS NOT NULL AND ${table.source_id} IS NOT NULL AND ${table.collection_id} IS NULL AND ${table.related_source_id} IS NULL AND ${table.from_version_id} IS NULL AND ${table.to_version_id} IS NULL AND ${table.relation} IS NULL) OR (${table.kind} = 'source_collection' AND ${table.collection_id} IS NOT NULL AND ${table.source_id} IS NOT NULL AND ${table.output_id} IS NULL AND ${table.related_source_id} IS NULL AND ${table.from_version_id} IS NULL AND ${table.to_version_id} IS NULL AND ${table.relation} IS NULL) OR (${table.kind} = 'output_collection' AND ${table.collection_id} IS NOT NULL AND ${table.output_id} IS NOT NULL AND ${table.source_id} IS NULL AND ${table.related_source_id} IS NULL AND ${table.from_version_id} IS NULL AND ${table.to_version_id} IS NULL AND ${table.relation} IS NULL) OR (${table.kind} = 'source_relation' AND ${table.source_id} IS NOT NULL AND ${table.related_source_id} IS NOT NULL AND ${table.source_id} != ${table.related_source_id} AND ${table.relation} IN ('cites', 'duplicates', 'updates', 'mentions', 'derived_from') AND ${table.output_id} IS NULL AND ${table.collection_id} IS NULL AND ${table.from_version_id} IS NULL AND ${table.to_version_id} IS NULL) OR (${table.kind} = 'model_lineage' AND ${table.from_version_id} IS NOT NULL AND ${table.to_version_id} IS NOT NULL AND ${table.relation} IS NOT NULL AND ${table.output_id} IS NULL AND ${table.collection_id} IS NULL AND ${table.source_id} IS NULL AND ${table.related_source_id} IS NULL)`,
     ),
   }),
 );

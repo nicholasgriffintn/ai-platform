@@ -21,6 +21,52 @@ export function chunkText(text: string, maxChars = 2000): string[] {
   return chunks;
 }
 
+export type KnowledgeChunkFormat = "markdown" | "blocks";
+
+function splitSections(text: string, format: KnowledgeChunkFormat): string[] {
+  const boundary = format === "markdown" ? /\n(?=#{1,6}\s)/ : /\n\s*\n/;
+
+  return text.split(boundary).filter((section) => section.trim().length > 0);
+}
+
+export function chunkKnowledgeText(
+  text: string,
+  {
+    maxChars = 2000,
+    format = "markdown",
+  }: { maxChars?: number; format?: KnowledgeChunkFormat } = {},
+): string[] {
+  const chunks: string[] = [];
+  let current = "";
+
+  for (const section of splitSections(text, format)) {
+    if (section.length > maxChars) {
+      if (current) {
+        chunks.push(current);
+        current = "";
+      }
+
+      chunks.push(...chunkText(section, maxChars));
+      continue;
+    }
+
+    const joined = current ? `${current}\n\n${section}` : section;
+
+    if (joined.length > maxChars) {
+      chunks.push(current);
+      current = section;
+    } else {
+      current = joined;
+    }
+  }
+
+  if (current) {
+    chunks.push(current);
+  }
+
+  return chunks;
+}
+
 function isNumericVector(vector: unknown): vector is number[] {
   return (
     Array.isArray(vector) &&

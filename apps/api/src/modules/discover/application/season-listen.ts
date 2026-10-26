@@ -5,8 +5,9 @@ import { StorageService } from "~/infrastructure/storage";
 import { joinAudioSegments } from "~/modules/audio/domain/mp3";
 import { chapterAudioKey } from "~/modules/discover/domain/episodes";
 import { DISCOVER_LISTEN_SHOW } from "~/modules/discover/domain/listen";
+import { fileKnowledgeSource } from "~/modules/knowledge/application/intake/file";
 import { ensureFolder } from "~/modules/sources/application/folders";
-import { addCollectionSources, createSource } from "~/modules/sources/application/sources";
+import { addCollectionSources } from "~/modules/sources/application/sources";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { requireDiscoverEpisode, requireDiscoverSeason } from "./episodes";
@@ -57,12 +58,13 @@ export async function produceSeasonListen(context: ServiceContext, seasonId: str
     title: DISCOVER_LISTEN_SHOW,
     kind: "podcast",
   });
-  const source = await createSource(context, user.id, {
-    projectId: null,
+  const source = await fileKnowledgeSource(context, {
+    origin: "generated",
     kind: "podcast",
     title: `${season.title}: the whole season`,
+    provider: null,
     status: "processing",
-    metadata: {},
+    content: undefined,
   });
   const key = `sources/${source.id}/episode.mp3`;
 

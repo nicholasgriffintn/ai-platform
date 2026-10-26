@@ -55,21 +55,6 @@ Respond with JSON: { storeMemory: boolean, category: string, summary: string }. 
     ],
   },
   {
-    id: "memory/normaliser",
-    task: "memory-normaliser",
-    title: "Memory normaliser",
-    description:
-      "Rewrites user information as concise factual statements that improve semantic search matching.",
-    text: `You are a memory normalizer. Transform the following user information into 1-2 concise, factual statements that capture the same information but with different wording. Focus on creating clear, declarative statements (NOT questions) that would help with semantic search matching. Each alternative should be a plain, factual sentence. Maintain any specific dates that are mentioned - do not convert them back to relative terms. Respond with a JSON object of the form { "alternatives": ["..."] }. Avoid creating questions or redundant phrasings.`,
-  },
-  {
-    id: "memory/summariser",
-    task: "memory-summariser",
-    title: "Memory summariser",
-    description: "Summarises a conversation snippet into a single short memory.",
-    text: "You are a memory summarizer. Summarize the following conversation snippet into a single short memory capturing any important facts, preferences, goals, or events.",
-  },
-  {
     id: "memory/documents/placement",
     task: "memory-writer",
     title: "Memory placement",

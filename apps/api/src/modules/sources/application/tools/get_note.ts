@@ -1,7 +1,7 @@
 import { projectKnowledgeSearchQuerySchema } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
-import { searchProjectKnowledge } from "~/modules/sources/application/knowledge/search";
+import { searchProjectKnowledge } from "~/modules/knowledge/application/query/search";
 import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
 import type { ApiToolDefinition } from "~/types/functions";
 
@@ -15,7 +15,7 @@ export const get_note: ApiToolDefinition = {
       resolveServiceContext(request),
       projectKnowledgeSearchQuerySchema.parse({
         query: args.query,
-        type: "text",
+        kinds: ["text"],
         projectId: resolveRequestProjectId(request) ?? undefined,
       }),
     );

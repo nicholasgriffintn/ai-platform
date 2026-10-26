@@ -1,8 +1,4 @@
-import {
-  buildMemoryClassifierPrompt,
-  buildMemoryNormaliserPrompt,
-  buildMemorySummariserPrompt,
-} from "@ngriffin_uk/polychat-ai-prompts";
+import { buildMemoryClassifierPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { z } from "zod/v4";
@@ -11,13 +7,11 @@ import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getMemoryProvider } from "~/infrastructure/providers/capabilities/memory";
 import type { MemoryProviderId } from "~/infrastructure/providers/capabilities/memory/types";
-import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { gateMemoryClassification } from "~/modules/memory/application/gate";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
-import { toProviderMessages } from "~/modules/responses/application/engine/messages/provider-mapping";
 import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import { recordProjectAudit } from "~/modules/workspaces/application/audit";
-import type { IEnv, IUser, IUserSettings, MemoryScope, Message } from "~/types";
+import type { IEnv, IUser, IUserSettings, MemoryScope } from "~/types";
 
 const logger = getLogger({ prefix: "services/memory/manager" });
 
@@ -27,27 +21,8 @@ const memoryClassificationSchema = z.object({
   summary: z.string().optional(),
 });
 
-const memoryAlternativesSchema = z.object({
-  alternatives: z.array(z.string()).optional(),
-});
-
-const NORMALISED_MEMORY_CATEGORIES = new Set(["fact", "schedule", "preference"]);
-const NORMALISED_MEMORY_MAX_LENGTH = 200;
-
-function cleanNormalisedMemories(alternatives: string[] | undefined): string[] {
-  return (alternatives ?? [])
-    .map((text) => text.trim())
-    .filter(
-      (text) =>
-        text.length > 0 &&
-        !text.includes("###") &&
-        !text.includes("**") &&
-        text.length < NORMALISED_MEMORY_MAX_LENGTH,
-    );
-}
-
 export interface MemoryEvent {
-  type: "store" | "snapshot";
+  type: "store";
   text: string;
   category: string;
 }
@@ -157,19 +132,6 @@ export class MemoryManager {
       userSettings?: IUserSettings | null;
     },
   ): Promise<Array<{ text: string; score: number }>> {
-    const normalizedQuery = query.trim();
-
-    if (normalizedQuery.length < 4) {
-      return [];
-    }
-
-    const trivialWords = new Set(["hi", "hey", "hello", "sup", "yo"]);
-    const words = normalizedQuery.toLowerCase().split(/\s+/);
-
-    if (words.length <= 2 && words.every((w) => trivialWords.has(w))) {
-      return [];
-    }
-
     const userSettings =
       opts?.userSettings ??
       (this.serviceContext ? await getRequestUserSettings(this.serviceContext) : undefined);
@@ -190,8 +152,6 @@ export class MemoryManager {
 
   public async handleMemory(
     lastUser: string,
-    messages: Message[],
-    conversationManager: ConversationManager,
     completionId: string,
     userSettings: IUserSettings,
     operationPrefix: string,
@@ -247,115 +207,17 @@ export class MemoryManager {
                 conversationId: completionId,
                 timestamp: Date.now().toString(),
                 category,
-                isNormalized: "false",
               },
               completionId,
               userSettings,
               `${operationPrefix}:classified`,
             );
 
-            const { capabilities } = getMemoryProvider({
-              env: this.env,
-              user: this.user,
-              userSettings,
-              serviceContext: this.serviceContext,
-              memoryScope: this.memoryScope,
-            });
-
-            if (NORMALISED_MEMORY_CATEGORIES.has(category) && capabilities.semanticSearch) {
-              try {
-                const { object: normalised } = await ai.generateObject({
-                  ...scope,
-                  system: buildMemoryNormaliserPrompt(),
-                  prompt: summaryText,
-                  schema: memoryAlternativesSchema,
-                  name: "memory_alternatives",
-                });
-
-                for (const [index, altText] of cleanNormalisedMemories(
-                  normalised.alternatives,
-                ).entries()) {
-                  await this.storeMemory(
-                    altText,
-                    {
-                      conversationId: completionId,
-                      timestamp: Date.now().toString(),
-                      category,
-                      isNormalized: "true",
-                      originalText: summaryText,
-                    },
-                    completionId,
-                    userSettings,
-                    `${operationPrefix}:normalised:${index}`,
-                  );
-                }
-              } catch (e) {
-                logger.error("Failed to normalize memory", { error: e });
-              }
-            }
-
             events.push({ type: "store", text: summaryText, category });
           }
         }
       } catch (e) {
         logger.error("Memory classification failed", { error: e });
-      }
-    }
-
-    if (userSettings?.memories_chat_history_enabled) {
-      try {
-        const userCount = messages.filter((m) => m.role === "user").length;
-
-        if (userCount > 0 && userCount % 5 === 0) {
-          const recent = (await conversationManager.get(completionId)).slice(-10);
-          const snippet = toProviderMessages(recent)
-            .map(
-              (m) =>
-                `${m.role}: ${typeof m.content === "string" ? m.content : JSON.stringify(m.content)}`,
-            )
-            .join("\n");
-
-          const {
-            model: modelToUse,
-            provider: providerToUse,
-            effort,
-          } = await getAuxiliaryModel(this.env, this.user);
-          const text = (
-            await ai.generateText({
-              env: this.env,
-              user: this.user,
-              model: modelToUse,
-              provider: providerToUse,
-              system: buildMemorySummariserPrompt(),
-              prompt: snippet,
-              reasoning_effort: effort,
-              disable_functions: true,
-            })
-          ).trim();
-
-          if (text) {
-            const category = "snapshot";
-
-            try {
-              await this.storeMemory(
-                text,
-                {
-                  conversationId: completionId,
-                  timestamp: Date.now().toString(),
-                  category,
-                },
-                completionId,
-                userSettings,
-                `${operationPrefix}:snapshot`,
-              );
-              events.push({ type: "snapshot", text, category });
-            } catch (e) {
-              logger.error("Failed to store snapshot", { error: e });
-            }
-          }
-        }
-      } catch (e) {
-        logger.error("Snapshot generation failed", { error: e });
       }
     }
 

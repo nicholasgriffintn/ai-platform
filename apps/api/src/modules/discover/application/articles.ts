@@ -4,7 +4,7 @@ import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { DiscoverResearchResult } from "~/modules/discover/domain/research";
-import { gatherKnowledgeArticles } from "~/modules/sources/application/knowledge/articles";
+import { gatherKnowledgeArticles } from "~/modules/knowledge/application/intake/articles";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { findDiscoverNotebook } from "./notebook";
@@ -48,6 +48,7 @@ export async function readDiscoverArticles(
     await discoverKnowledgeTarget(context, notebookId),
     input.results,
     {
+      origin: "page",
       readLimit: ARTICLE_READ_LIMIT,
       summarise: true,
       metadata: () => ({

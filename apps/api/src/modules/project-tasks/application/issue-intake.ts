@@ -10,9 +10,9 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { fileKnowledgeSource } from "~/modules/knowledge/application/intake/file";
 import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
-import { createSource } from "~/modules/sources/application/sources";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
@@ -106,22 +106,20 @@ export async function importProjectIssue(
     },
   });
 
-  await createSource(
-    context,
-    context.requireUser().id,
-    {
-      projectId,
-      kind: "connector",
-      status: "available",
-      title: `${issue.identifier}: ${issue.title}`.slice(0, 200),
-      provider: issue.provider,
-      externalUri: issue.url,
-      connectionId: issue.connectionId,
-      content: `${issue.identifier}: ${issue.title}\n${issue.url}\nRevision: ${issue.revision}\nCaptured: ${issue.capturedAt}\n\n${issue.description}`,
-      metadata: { immutableSnapshot: true, externalIssue: issue },
-    },
-    { id: sourceId },
-  );
+  await fileKnowledgeSource(context, {
+    id: sourceId,
+    origin: "evidence",
+    projectId,
+    immutable: true,
+    kind: "connector",
+    status: "available",
+    title: `${issue.identifier}: ${issue.title}`.slice(0, 200),
+    provider: issue.provider,
+    externalUri: issue.url,
+    connectionId: issue.connectionId,
+    content: `${issue.identifier}: ${issue.title}\n${issue.url}\nRevision: ${issue.revision}\nCaptured: ${issue.capturedAt}\n\n${issue.description}`,
+    metadata: { externalIssue: issue },
+  });
   const { task } = await createProjectTask(context, projectId, taskInput, {
     id: `issue_task_${identity}`,
   });

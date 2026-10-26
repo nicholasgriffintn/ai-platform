@@ -38,15 +38,6 @@ interface StorePrivateFileRequest {
   byteSize?: number | null;
 }
 
-export interface StoreSourceFileRequest extends StorePrivateFileRequest {
-  createdByUserId: number;
-  projectId?: string | null;
-  conversationId?: string | null;
-  title: string;
-  content?: string | null;
-  metadata?: Record<string, unknown>;
-}
-
 export interface StoreOutputFileRequest extends StorePrivateFileRequest {
   outputId?: string;
   createdByUserId: number;
@@ -75,12 +66,6 @@ export interface RecordOutputFileRequest {
   mimeType: string;
   filename?: string | null;
   byteSize?: number | null;
-}
-
-export interface StoredSourceFileResult {
-  sourceId: string;
-  key: string;
-  url: string;
 }
 
 export interface StoredOutputFileResult {
@@ -185,40 +170,6 @@ export class StorageService {
 
       cursor = page.truncated ? page.cursor : undefined;
     } while (cursor);
-  }
-
-  async storeSourceFile({
-    key,
-    data,
-    createdByUserId,
-    mimeType,
-    filename,
-    byteSize,
-    projectId,
-    conversationId,
-    title,
-    content,
-    metadata,
-  }: StoreSourceFileRequest): Promise<StoredSourceFileResult> {
-    await this.uploadObject(key, data, {
-      httpMetadata: { contentType: mimeType },
-    });
-    const context = this.requireResourceContext();
-    const source = await context.repositories.get(SourceRepository).createSource({
-      createdByUserId,
-      projectId,
-      conversationId,
-      kind: "file",
-      title,
-      content,
-      metadata,
-      storageKey: key,
-      mimeType,
-      filename,
-      byteSize,
-    });
-
-    return { sourceId: source.id, key, url: buildPrivateFileUrl(context.env, "source", source.id) };
   }
 
   async storeOutputFile(input: StoreOutputFileRequest): Promise<StoredOutputFileResult> {

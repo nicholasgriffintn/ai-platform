@@ -17,6 +17,10 @@ export function readPathValues(value: unknown, path: readonly (string | number)[
         for (const item of entry) {
           next.push(item);
         }
+      } else if (segment === "*" && isRecord(entry)) {
+        for (const item of Object.values(entry)) {
+          next.push(item);
+        }
       } else if (
         Array.isArray(entry) &&
         typeof segment === "number" &&

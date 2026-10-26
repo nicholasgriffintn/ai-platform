@@ -1,9 +1,8 @@
-import { createSourceSchema } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
-import { createSource } from "~/modules/sources/application/sources";
+import { fileKnowledgeSource } from "~/modules/knowledge/application/intake/file";
 import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
 import type { ApiToolDefinition } from "~/types/functions";
 
@@ -14,14 +13,15 @@ export const create_note: ApiToolDefinition = {
   execute: async (args, toolContext) => {
     const request = toolContext.request;
     const context = resolveServiceContext(request);
-    const input = createSourceSchema.parse({
+    const source = await fileKnowledgeSource(context, {
+      origin: "note",
       kind: "text",
-      title: sanitiseInput(args.title),
-      content: sanitiseInput(args.content),
-      projectId: resolveRequestProjectId(request),
+      title: sanitiseInput(String(args.title ?? "")).slice(0, 200) || "Note",
+      provider: null,
+      content: sanitiseInput(String(args.content ?? "")),
+      projectId: resolveRequestProjectId(request) ?? null,
       metadata: isRecord(args.metadata) ? args.metadata : {},
     });
-    const source = await createSource(context, context.requireUser().id, input);
 
     return {
       status: "success",

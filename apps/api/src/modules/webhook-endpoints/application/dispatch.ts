@@ -26,13 +26,34 @@ const RUN_STATUS_EVENTS: Partial<Record<ChatRunStatus, WebhookEventType>> = {
 export async function dispatchResponseWebhooks(env: IEnv, run: ChatRun): Promise<void> {
   const type = RUN_STATUS_EVENTS[run.status];
 
-  if (!type || !env.DB) {
+  if (!type) {
     return;
   }
 
-  const endpoints = (
-    await new WebhookEndpointRepository(env).listEnabled(run.initiatorUserId)
-  ).filter((endpoint) => endpoint.events.includes(type));
+  await dispatchWebhookEvent(env, {
+    userId: run.initiatorUserId,
+    type,
+    idSeed: `${run.id}:${run.status}:${run.updatedAt}`,
+    data: { response: toResponse(run) },
+  });
+}
+
+export async function dispatchWebhookEvent(
+  env: IEnv,
+  input: {
+    userId: number;
+    type: WebhookEventType;
+    idSeed: string;
+    data: Record<string, unknown>;
+  },
+): Promise<void> {
+  if (!env.DB) {
+    return;
+  }
+
+  const endpoints = (await new WebhookEndpointRepository(env).listEnabled(input.userId)).filter(
+    (endpoint) => endpoint.events.includes(input.type),
+  );
 
   if (endpoints.length === 0) {
     return;
@@ -40,10 +61,10 @@ export async function dispatchResponseWebhooks(env: IEnv, run: ChatRun): Promise
 
   const event: WebhookEvent = {
     object: "event",
-    id: `evt_${(await sha256Hex(`${run.id}:${run.status}:${run.updatedAt}`)).slice(0, 32)}`,
-    type,
+    id: `evt_${(await sha256Hex(input.idSeed)).slice(0, 32)}`,
+    type: input.type,
     created_at: new Date().toISOString(),
-    data: { response: toResponse(run) },
+    data: input.data,
   };
   const taskService = new TaskService(env, new TaskRepository(env));
 
@@ -52,8 +73,8 @@ export async function dispatchResponseWebhooks(env: IEnv, run: ChatRun): Promise
       taskService.enqueueTask({
         id: `webhook:${endpoint.id}:${event.id}`,
         task_type: WEBHOOK_DELIVERY_TASK_TYPE,
-        user_id: run.initiatorUserId,
-        task_data: { endpointId: endpoint.id, userId: run.initiatorUserId, event },
+        user_id: input.userId,
+        task_data: { endpointId: endpoint.id, userId: input.userId, event },
         priority: 6,
       }),
     ),

@@ -6,8 +6,8 @@ describe("chat request settings", () => {
   it("excludes obsolete persisted settings from strict completion requests", () => {
     const persistedSettings = {
       temperature: 0.7,
-      use_rag: false,
-      rag_options: { topK: 3, namespace: "" },
+      retired_toggle: false,
+      retired_options: { limit: 3 },
     };
 
     expect(projectChatRequestSettings(persistedSettings).generationSettings).toEqual({

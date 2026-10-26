@@ -22,6 +22,7 @@ const PUBLISHED_EVENT_TYPES = new Set<DeviceSyncEventType>([
   "output.changed",
   "model_platform.changed",
   "knowledge_sync.changed",
+  "knowledge.changed",
   "source.changed",
   "project_review.changed",
   "channel_senders.changed",

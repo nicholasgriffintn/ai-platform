@@ -35,7 +35,7 @@ export const extract_content: ApiToolDefinition = {
         urls,
         extract_depth: args.extract_depth,
         include_images: args.include_images,
-        should_vectorize: args.should_vectorize,
+        save_to_knowledge: args.save_to_knowledge,
         provider: args.provider,
         cloudflareFormat: args.cloudflareFormat,
         cloudflareJsonOptions: args.cloudflareJsonOptions,

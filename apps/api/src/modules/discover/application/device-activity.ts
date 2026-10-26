@@ -20,6 +20,7 @@ import {
   renderDeviceActivityHistory,
 } from "~/modules/discover/domain/device-activity";
 import { readResearchResults } from "~/modules/discover/domain/research";
+import { readKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { readDiscoverArticles } from "./articles";
@@ -70,13 +71,18 @@ export async function recordDeviceActivity(
         : [],
     );
     const shared = [...describeDeviceActivityItems(items, read), ...lines];
-    const content = renderDeviceActivityHistory(title, owned?.content ?? "", {
-      date,
-      lines: shared,
-    });
+    const content = renderDeviceActivityHistory(
+      title,
+      owned ? await readKnowledgeText(context, owned) : "",
+      {
+        date,
+        lines: shared,
+      },
+    );
 
     await writeDiscoverDocument(context, notebook.id, {
       id,
+      origin: "device",
       kind: "text",
       title,
       provider: providerId,

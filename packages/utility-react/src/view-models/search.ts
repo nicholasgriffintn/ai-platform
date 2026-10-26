@@ -1,4 +1,4 @@
-export type SearchResultKind = "conversation" | "project" | "workspace" | "capability";
+export type SearchResultKind = "conversation" | "document" | "project" | "workspace" | "capability";
 
 export interface SearchResult {
   id: string;

@@ -10,6 +10,7 @@ import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { drawImage } from "~/modules/generate/application/stored-image";
+import { fileKnowledgeSource } from "~/modules/knowledge/application/intake/file";
 import { INFOGRAPHIC_SIZES } from "~/modules/notebooks/domain/studio-guidance";
 import {
   failSourceGeneration,
@@ -20,7 +21,7 @@ import {
   readSourceRecordGeneration,
   updateSourceRecord,
 } from "~/modules/sources/application/media/metadata";
-import { createSource, toSourceSummary } from "~/modules/sources/application/sources";
+import { toSourceSummary } from "~/modules/sources/application/sources";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { requireNotebookAccess, type NotebookAccess } from "../access";
@@ -42,8 +43,11 @@ export async function startInfographic(
   request: Extract<NotebookStudioRequest, { kind: "infographic" }>,
   sourceIds: string[],
 ): Promise<SourceSummary> {
-  const infographic = await createSource(context, context.requireUser().id, {
-    projectId: access.notebook.project_id,
+  const infographic = await fileKnowledgeSource(context, {
+    origin: "generated",
+    notebookId: access.notebook.id,
+    provider: null,
+    content: undefined,
     kind: "file",
     title: "Infographic",
     status: "processing",
@@ -61,9 +65,6 @@ export async function startInfographic(
     },
   });
 
-  await context.repositories
-    .get(SourceRepository)
-    .addCollectionSources(access.notebook.id, [infographic.id]);
   await enqueueNotebookJob(context, access.notebook.project_id, {
     job: "infographic",
     notebookId: access.notebook.id,

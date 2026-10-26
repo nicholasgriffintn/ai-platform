@@ -1,6 +1,6 @@
 import { Button, Card, Checkbox, FormDialog, TextLink } from "@ngriffin_uk/polychat-component-ui";
-import { Brain, Database, ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { Brain, Database, ArrowRight, BookOpenText } from "lucide-react";
+import { type ReactNode, useState } from "react";
 
 export interface ProjectSourceSummary {
   id: string;
@@ -17,6 +17,7 @@ export interface ProjectKnowledgeCardProps {
   sourcesHref: string;
   isSavingContext?: boolean;
   onSaveContext: (sourceIds: string[]) => Promise<void>;
+  readingSettings?: ReactNode;
 }
 
 export function ProjectKnowledgeCard({
@@ -28,6 +29,7 @@ export function ProjectKnowledgeCard({
   sourcesHref,
   isSavingContext = false,
   onSaveContext,
+  readingSettings,
 }: ProjectKnowledgeCardProps) {
   const [isContextOpen, setIsContextOpen] = useState(false);
   const [selectedContextIds, setSelectedContextIds] = useState<string[]>([]);
@@ -105,6 +107,24 @@ export function ProjectKnowledgeCard({
           Browse project sources
         </TextLink>
       </section>
+
+      {readingSettings ? (
+        <section className="space-y-3 border-t border-border p-5">
+          <div className="flex items-start gap-3">
+            <div className="rounded-lg bg-active-work/12 p-2 text-active-work">
+              <BookOpenText size={17} />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold">Reading new files</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                What Poly works out about each file added to this project, and which knowledge bases
+                it searches too.
+              </p>
+            </div>
+          </div>
+          <div className="pl-11">{readingSettings}</div>
+        </section>
+      ) : null}
     </>
   );
 

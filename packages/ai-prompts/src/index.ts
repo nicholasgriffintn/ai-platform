@@ -9,8 +9,6 @@ export {
   buildDocumentMetadataPrompt,
   buildDocumentNotesPrompt,
   buildMemoryClassifierPrompt,
-  buildMemoryNormaliserPrompt,
-  buildMemorySummariserPrompt,
   buildMemorySynthesisPrompt,
   type ArticlePromptOptions,
   type DocumentNotesPromptOptions,

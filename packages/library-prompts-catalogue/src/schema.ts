@@ -9,8 +9,6 @@ export const promptTasks = [
   "sandbox-agent",
   "sandbox-strategy",
   "memory-classifier",
-  "memory-normaliser",
-  "memory-summariser",
   "memory-synthesis",
   "memory-writer",
   "conversation-summary",

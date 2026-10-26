@@ -11,6 +11,8 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import type { ReactNode } from "react";
 
+import { KnowledgeReadingSettings } from "../Knowledge/KnowledgeReadingSettings.js";
+
 interface UserSettingsFormProps {
   userSettings: UserSettings | null;
   afterPersonalisedResponses?: ReactNode;
@@ -36,6 +38,7 @@ export function UserSettingsForm({
     <ControlledUserSettingsForm
       userSettings={userSettings}
       afterPersonalisedResponses={afterPersonalisedResponses}
+      knowledgeSettings={isAuthenticated ? <KnowledgeReadingSettings /> : undefined}
       showSubmit={showSubmit}
       isAuthenticated={isAuthenticated}
       isPro={isPro}

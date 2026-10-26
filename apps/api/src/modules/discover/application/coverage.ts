@@ -94,6 +94,7 @@ export async function compareDiscoverCoverage(
 
   await writeDiscoverDocument(context, notebook.id, {
     id,
+    origin: "research",
     kind: "text",
     title: `Coverage: ${card.title}`.slice(0, 200),
     provider: null,

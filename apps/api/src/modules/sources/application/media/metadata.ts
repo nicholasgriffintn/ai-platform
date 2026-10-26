@@ -14,6 +14,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { reviseKnowledgeContent } from "~/modules/knowledge/application/intake/revise";
 import {
   SourceRepository,
   type SourceRecord,
@@ -106,19 +107,19 @@ export async function updateSourceRecord(
     content?: string | null;
   },
 ): Promise<SourceRecord> {
-  const { media, generation, pending, listen, framing, ...fields } = patch;
+  const { media, generation, pending, listen, framing, content, ...fields } = patch;
   const repository = context.repositories.get(SourceRepository);
-
-  await repository.updateSource(source.id, {
-    ...fields,
-    metadata: mergeSourceMetadata(parseJsonRecord(source.metadata), {
-      media,
-      generation,
-      pending,
-      listen,
-      framing,
-    }),
+  const metadata = mergeSourceMetadata(parseJsonRecord(source.metadata), {
+    media,
+    generation,
+    pending,
+    listen,
+    framing,
   });
+
+  await (content === undefined
+    ? repository.updateSource(source.id, { ...fields, metadata })
+    : reviseKnowledgeContent(context, source, { ...fields, content, metadata }));
 
   const updated = await repository.getSource(source.id);
 

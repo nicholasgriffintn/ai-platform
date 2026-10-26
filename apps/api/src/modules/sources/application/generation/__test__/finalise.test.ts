@@ -10,9 +10,11 @@ import {
 
 import { finaliseSourceGeneration } from "../finalise";
 
-const createSourceMock = vi.hoisted(() => vi.fn());
+const fileKnowledgeSourceMock = vi.hoisted(() => vi.fn());
 
-vi.mock("~/modules/sources/application/sources", () => ({ createSource: createSourceMock }));
+vi.mock("~/modules/knowledge/application/intake/file", () => ({
+  fileKnowledgeSource: fileKnowledgeSourceMock,
+}));
 vi.mock("~/modules/sync/application/resource-events", () => ({
   publishResourceEvent: vi.fn(),
 }));
@@ -102,7 +104,7 @@ function setup({ failUpload = false } = {}) {
     }),
   };
 
-  createSourceMock.mockImplementation(async () => {
+  fileKnowledgeSourceMock.mockImplementation(async () => {
     sources.set("source-2", sourceRecord({ id: "source-2" }));
 
     return { id: "source-2" };
@@ -129,7 +131,7 @@ const providerResponse = {
 
 describe("finaliseSourceGeneration", () => {
   beforeEach(() => {
-    createSourceMock.mockReset();
+    fileKnowledgeSourceMock.mockReset();
   });
 
   it("moves generated media into sources and only then removes the provider's copies", async () => {

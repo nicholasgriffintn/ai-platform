@@ -8,9 +8,9 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
+import { fileKnowledgeSource } from "~/modules/knowledge/application/intake/file";
 import { ProjectTaskIntegrationRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskIntegrationRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
-import { createSource } from "~/modules/sources/application/sources";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import { connectTaskReview } from "../infrastructure/integrations";
@@ -88,27 +88,24 @@ async function createPullRequestReview(
 
   const sourceId = `pr_source_${id}`;
 
-  await createSource(
-    context,
-    context.requireUser().id,
-    {
-      projectId,
-      kind: "connector",
-      status: "available",
-      title: `PR #${locator.pullRequestNumber}: ${captured.title}`.slice(0, 200),
-      connectionId: captured.target.connectionId,
-      provider: captured.target.provider,
-      externalUri: captured.url,
-      content: captured.content,
-      metadata: {
-        immutableSnapshot: true,
-        pullRequestTarget: captured.target,
-        omittedPaths: captured.omitted,
-        unavailableFileCount: captured.unavailableCount,
-      },
+  await fileKnowledgeSource(context, {
+    id: sourceId,
+    origin: "evidence",
+    projectId,
+    immutable: true,
+    kind: "connector",
+    status: "available",
+    title: `PR #${locator.pullRequestNumber}: ${captured.title}`.slice(0, 200),
+    connectionId: captured.target.connectionId,
+    provider: captured.target.provider,
+    externalUri: captured.url,
+    content: captured.content,
+    metadata: {
+      pullRequestTarget: captured.target,
+      omittedPaths: captured.omitted,
+      unavailableFileCount: captured.unavailableCount,
     },
-    { id: sourceId },
-  );
+  });
   const { task } = await createProjectTask(
     context,
     projectId,

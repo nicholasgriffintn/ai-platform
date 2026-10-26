@@ -1,4 +1,4 @@
-export function sourceVisibilitySql(alias: "s" | "source"): string {
+export function sourceVisibilitySql(alias: string): string {
   return `(${alias}.connection_id IS NULL OR EXISTS (
     SELECT 1 FROM provider_connection connection WHERE connection.id = ${alias}.connection_id
       AND connection.status = 'connected' AND connection.user_id = ${alias}.created_by_user_id

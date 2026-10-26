@@ -154,6 +154,28 @@
   },
   "overrides": [
     {
+      "files": ["apps/api/src/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["~/modules/knowledge/infrastructure/*"],
+                "message": "File knowledge through commitKnowledgeDocument or fileKnowledgeSource in the knowledge module."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["apps/api/src/modules/knowledge/**"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    },
+    {
       "files": ["apps/api/**"],
       "rules": {
         "typescript/no-unnecessary-boolean-literal-compare": "off",

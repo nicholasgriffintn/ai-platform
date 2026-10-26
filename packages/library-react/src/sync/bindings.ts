@@ -184,6 +184,19 @@ export const SYNC_BINDINGS: SyncBinding[] = [
     },
   },
   {
+    type: "knowledge.changed",
+    apply: (context, event) => {
+      const sourceId = readOptionalString(event.data.sourceId);
+
+      context.invalidate(["sources"]);
+      context.invalidate(["global-search"]);
+
+      if (sourceId) {
+        context.invalidate(["knowledge", "document", sourceId]);
+      }
+    },
+  },
+  {
     type: "document_comments.changed",
     apply: (context, event) => {
       const outputId = readOptionalString(event.data.outputId);

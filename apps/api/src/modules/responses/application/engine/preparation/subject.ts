@@ -15,6 +15,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { readStoredSubject } from "~/modules/conversations/domain/subject";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { requireDiscoverCardSubject } from "~/modules/discover/application/card-subject";
+import { readKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { formatOutput } from "~/modules/outputs/application";
 import { requireOutputAccess } from "~/modules/outputs/application/access";
@@ -113,7 +114,7 @@ async function loadSourceSubject(
   const media = readSourceMedia(metadata);
   const generation = readSourceGeneration(metadata);
   const transcript = describeTranscript(media);
-  const body = transcript ?? source.content?.trim();
+  const body = transcript ?? (await readKnowledgeText(context, source)).trim();
 
   return {
     subject,
@@ -298,7 +299,10 @@ async function loadLinkedSources(
         return {
           id: source.id,
           title: source.title,
-          text: source.content?.trim() || source.external_uri || "No text has been extracted.",
+          text:
+            (await readKnowledgeText(context, source)).trim() ||
+            source.external_uri ||
+            "No text has been extracted.",
         };
       } catch (error) {
         if (error instanceof AssistantError && HIDDEN_SUBJECT_ERRORS.has(error.type)) {

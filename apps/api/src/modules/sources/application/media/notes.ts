@@ -9,6 +9,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { readKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { formatSource, requireSourceAccess } from "~/modules/sources/application/sources";
 
@@ -28,7 +29,7 @@ export async function summariseSource(
   const speakers = { ...transcript?.speakers, ...input.speakers };
   const text = transcript
     ? formatTranscriptText({ ...transcript, speakers })
-    : (source.content ?? "").trim();
+    : (await readKnowledgeText(context, source)).trim();
 
   if (!text) {
     throw new AssistantError(

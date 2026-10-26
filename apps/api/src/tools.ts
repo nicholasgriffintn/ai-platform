@@ -34,6 +34,8 @@ import { create_music } from "~/modules/generate/application/tools/music";
 import { create_speech } from "~/modules/generate/application/tools/speech";
 import { create_video } from "~/modules/generate/application/tools/video";
 import { complete_goal, set_goal } from "~/modules/goals/application/tools/goal";
+import { configure_knowledge_sync } from "~/modules/knowledge/application/tools/configure_knowledge_sync";
+import { search_documents } from "~/modules/knowledge/application/tools/search_documents";
 import { DESKTOP_FUNCTION_TOOLS } from "~/modules/machines/application/tools/desktop";
 import {
   read_memory_document,
@@ -59,13 +61,11 @@ import { run_sandbox_task } from "~/modules/sandbox/application/tools/sandbox";
 import { build_site } from "~/modules/sites/application/tools/build_site";
 import { load_skill } from "~/modules/skills/application/tools/load_skill";
 import { save_skill } from "~/modules/skills/application/tools/save_skill";
-import { configure_knowledge_sync } from "~/modules/sources/application/tools/configure_knowledge_sync";
 import { create_note } from "~/modules/sources/application/tools/create_note";
 import { generate_podcast } from "~/modules/sources/application/tools/generate_podcast";
 import { get_note } from "~/modules/sources/application/tools/get_note";
 import { process_media } from "~/modules/sources/application/tools/process_media";
 import { run_prediction } from "~/modules/sources/application/tools/run_prediction";
-import { search_documents } from "~/modules/sources/application/tools/search_documents";
 import { call_api } from "~/modules/tools/application/builtin/api_call";
 import { calculate } from "~/modules/tools/application/builtin/calculate";
 import { get_current_time } from "~/modules/tools/application/builtin/current_time";

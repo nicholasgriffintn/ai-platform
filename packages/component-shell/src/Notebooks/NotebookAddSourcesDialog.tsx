@@ -26,7 +26,7 @@ import { toast } from "sonner";
 
 import { sourceToFileItem } from "../Files/Library/file-items.js";
 import { FileTypeIcon } from "../Files/Library/FilePreview.js";
-import { KnowledgeFeedForm } from "../Files/Library/KnowledgeFeedForm.js";
+import { KnowledgeFollowForm } from "../Files/Library/KnowledgeFollowForm.js";
 import { UploadInput } from "../Files/Library/UploadInput.js";
 import { useFileCreation } from "../Files/Library/useFileCreation.js";
 
@@ -282,7 +282,7 @@ export function NotebookAddSourcesDialog({
             <FromText projectId={projectId} actions={actions} onDone={close} />
           </TabsContent>
           <TabsContent value="follow" className="pt-3">
-            <KnowledgeFeedForm target={{ notebookId: notebook.id }} onDone={close} />
+            <KnowledgeFollowForm target={{ notebookId: notebook.id }} onDone={close} />
           </TabsContent>
         </Tabs>
       </DialogContent>

@@ -1,5 +1,6 @@
 import { createAuthorizer, namedPolicies } from "./engine.js";
 import { executionPolicies } from "./policies/execution.js";
+import { knowledgePolicies } from "./policies/knowledge.js";
 import { modelPolicies } from "./policies/models.js";
 import { platformPolicies } from "./policies/platform.js";
 import { scopePolicies } from "./policies/scope.js";
@@ -94,6 +95,9 @@ const actionShapes = {
   "teammate.read": resourceShape,
   "teammate.write": resourceShape,
   "capability.use": { granted: boolean, excluded: boolean },
+  "knowledge.configure": resourceShape,
+  "knowledge.attach": { connected: boolean, member: boolean, role: string },
+  "knowledge.retrieve": { retrieval: string, sensitivity: string, teammate: boolean },
   "tool.use": toolShape,
   "tool.unattended": toolShape,
   "model.execute": modelShape,
@@ -243,6 +247,7 @@ export function authorisationBundle() {
     schema: actionSchema(actionShapes),
     policies: namedPolicies({
       ...scopePolicies,
+      ...knowledgePolicies,
       ...toolPolicies,
       ...modelPolicies,
       ...executionPolicies,

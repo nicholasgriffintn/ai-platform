@@ -102,9 +102,18 @@ export const globalSearchProjectSchema = z.object({
   updatedAt: z.string().nullable(),
 });
 
+export const globalSearchDocumentSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  kind: z.string(),
+  snippet: z.string(),
+  updatedAt: z.string().nullable(),
+});
+
 export const globalSearchResponseSchema = z.object({
   query: z.string(),
   conversations: z.array(globalSearchConversationSchema),
+  documents: z.array(globalSearchDocumentSchema),
   workspaces: z.array(globalSearchWorkspaceSchema),
   projects: z.array(globalSearchProjectSchema),
 });
@@ -113,4 +122,5 @@ export type GlobalSearchQuery = z.infer<typeof globalSearchQuerySchema>;
 export type GlobalSearchConversation = z.infer<typeof globalSearchConversationSchema>;
 export type GlobalSearchWorkspace = z.infer<typeof globalSearchWorkspaceSchema>;
 export type GlobalSearchProject = z.infer<typeof globalSearchProjectSchema>;
+export type GlobalSearchDocument = z.infer<typeof globalSearchDocumentSchema>;
 export type GlobalSearchResponse = z.infer<typeof globalSearchResponseSchema>;

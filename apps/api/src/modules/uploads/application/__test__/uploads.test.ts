@@ -1,36 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
-import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { handleFileUpload } from "../index";
 
-const storeSourceFile = vi.hoisted(() => vi.fn());
+const uploadObject = vi.hoisted(() => vi.fn());
+const fileKnowledgeSource = vi.hoisted(() => vi.fn());
 const convertBlobToMarkdownViaCloudflare = vi.hoisted(() => vi.fn());
 
 vi.mock("~/infrastructure/storage", () => ({
   StorageService: {
-    forPrivateAssets: vi.fn(() => ({ storeSourceFile })),
+    forPrivateAssets: vi.fn(() => ({ uploadObject })),
   },
 }));
+
+vi.mock("~/modules/knowledge/application/intake/file", () => ({ fileKnowledgeSource }));
 
 vi.mock("~/modules/documents/application/convert", () => ({
   convertBlobToMarkdownViaCloudflare,
 }));
 
 function createContext(): ServiceContext {
-  return {
-    env: {},
-    repositories: fakeRepositories([
-      [
-        SourceRepository,
-        {
-          updateSource: vi.fn(),
-        },
-      ],
-    ]),
-  } as unknown as ServiceContext;
+  return { env: { API_BASE_URL: "https://api.test" } } as unknown as ServiceContext;
 }
 
 function createUpload(fileType: "document" | "image", mimeType: string, name: string): FormData {
@@ -45,11 +36,10 @@ function createUpload(fileType: "document" | "image", mimeType: string, name: st
 describe("handleFileUpload", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    storeSourceFile.mockResolvedValue({
-      sourceId: "source-1",
-      key: "uploads/42/documents/source-1",
-      url: "https://assets.example.test/source/source-1",
-    });
+    uploadObject.mockResolvedValue("uploads/42/documents/source-1");
+    fileKnowledgeSource.mockImplementation(async (_context, input: { id: string }) => ({
+      id: input.id,
+    }));
     convertBlobToMarkdownViaCloudflare.mockResolvedValue({ result: "Converted text" });
   });
 
@@ -65,7 +55,11 @@ describe("handleFileUpload", () => {
   ] as const)("accepts current Cloudflare %s format %s", async (fileType, mimeType, name) => {
     await expect(
       handleFileUpload(createContext(), 42, createUpload(fileType, mimeType, name)),
-    ).resolves.toMatchObject({ sourceId: "source-1", name });
+    ).resolves.toMatchObject({ name });
+    expect(fileKnowledgeSource).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ origin: "upload", kind: "file" }),
+    );
   });
 
   it("forwards a plain-text conversion request to Cloudflare", async () => {

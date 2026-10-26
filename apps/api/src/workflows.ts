@@ -8,6 +8,7 @@ import { registerDelegationsQueue } from "~/modules/delegations/application/queu
 import { registerDiscoverQueue } from "~/modules/discover/application/queue/register";
 import { registerInfraQueue } from "~/modules/infra/application/queue/register";
 import { registerJobsQueue } from "~/modules/jobs/application/queue/register";
+import { registerKnowledgeQueue } from "~/modules/knowledge/application/queue/register";
 import { registerMemoryQueue } from "~/modules/memory/application/queue/register";
 import { registerModelAnalysisQueue } from "~/modules/model-analysis/application/queue/register";
 import { registerModelDatasetsQueue } from "~/modules/model-datasets/application/queue/register";
@@ -40,6 +41,7 @@ import type { IEnv } from "~/types";
 const logger = getLogger({ prefix: "queue/consumer" });
 
 registerSourcesQueue(workflows);
+registerKnowledgeQueue(workflows);
 registerNotebooksQueue(workflows);
 registerDiscoverQueue(workflows);
 registerQueueMaintenance(workflows);

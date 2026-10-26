@@ -3,7 +3,7 @@ import type { SandboxRunData } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
-import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
+import { fileKnowledgeSource } from "~/modules/knowledge/application/intake/file";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
 import { getSandboxRunRecordForUser } from "./runs";
@@ -63,10 +63,12 @@ export async function indexSandboxRunResult(params: {
       return;
     }
 
-    await context.repositories.get(SourceRepository).upsertRepositorySource({
+    await fileKnowledgeSource(context, {
       id: `sandbox-run-${run.runId}`,
-      userId,
-      projectId: record.projectId ?? undefined,
+      origin: "repository",
+      kind: "repository",
+      provider: "sandbox",
+      projectId: record.projectId ?? null,
       title: `Sandbox run ${run.runId}`.slice(0, 200),
       content: toIndexableContent(record.run),
       metadata: {

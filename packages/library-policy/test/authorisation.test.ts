@@ -32,6 +32,46 @@ describe("Cedar authorisation", () => {
     expect(authorise("resource.write", { ...context, role: "unknown" }).allowed).toBe(false);
   });
 
+  it("keeps knowledge settings, knowledge bases and confidential retrieval with the right people", () => {
+    const member = {
+      actorId: "7",
+      ownerId: "8",
+      scope: "project" as const,
+      member: true,
+      role: "member",
+    };
+
+    expect(authorise("knowledge.configure", member).allowed).toBe(false);
+    expect(authorise("knowledge.configure", { ...member, role: "admin" }).allowed).toBe(true);
+    expect(
+      authorise("knowledge.configure", { ...member, scope: "personal", ownerId: "7" }).allowed,
+    ).toBe(true);
+    expect(
+      authorise("knowledge.attach", { connected: true, member: true, role: "member" }).allowed,
+    ).toBe(false);
+    expect(
+      authorise("knowledge.attach", { connected: false, member: true, role: "owner" }).allowed,
+    ).toBe(false);
+    expect(
+      authorise("knowledge.retrieve", {
+        retrieval: "included",
+        sensitivity: "confidential",
+        teammate: true,
+      }).allowed,
+    ).toBe(false);
+    expect(
+      authorise("knowledge.retrieve", {
+        retrieval: "included",
+        sensitivity: "confidential",
+        teammate: false,
+      }).allowed,
+    ).toBe(true);
+    expect(
+      authorise("knowledge.retrieve", { retrieval: "excluded", sensitivity: "", teammate: false })
+        .allowed,
+    ).toBe(false);
+  });
+
   it("prevents project sharing and cross-user teammate conversation access", () => {
     expect(
       authorise("conversation.share", { actorId: "7", ownerId: "7", project: false }).allowed,
