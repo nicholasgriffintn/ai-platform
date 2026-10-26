@@ -1,7 +1,7 @@
 import { discoverEditionContentSchema } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { chooseBriefingTopics, describeBriefingLeads } from "../briefing";
+import { addResearchedReads, chooseBriefingTopics, describeBriefingLeads } from "../briefing";
 
 const edition = discoverEditionContentSchema.parse({
   version: 1,
@@ -65,5 +65,43 @@ describe("describeBriefingLeads", () => {
       "The Brazil sprint",
       "Verstappen takes pole in the rain",
     ]);
+  });
+});
+
+describe("addResearchedReads", () => {
+  it("adds pages found while researching after the topic's reads, once each and with their filed copy", () => {
+    const found = (slug: string, title: string) => ({
+      title,
+      url: `https://news.example/${slug}`,
+      snippet: `About ${slug}.`,
+      source: "News Example",
+      date: "2026-10-26",
+      sourceId: `source_${slug}`,
+    });
+    let next = 0;
+    const updated = addResearchedReads({
+      edition,
+      topic: "Formula 1",
+      found: [
+        found("tyres", "Why the wet tyres failed at Interlagos"),
+        found("seen", "A story from yesterday's edition"),
+        { ...found("dupe", "Verstappen takes pole in the rain"), url: "https://example.com/f1" },
+      ],
+      seenLinks: [{ url: "https://news.example/seen", title: "" }],
+      createId: () => `research_${(next += 1)}`,
+    });
+
+    expect(updated.cards.map((card) => card.id)).toEqual([
+      "read_1",
+      "topic_1",
+      "read_2",
+      "research_1",
+    ]);
+    expect(updated.cards[3]).toMatchObject({
+      kind: "read",
+      topic: "Formula 1",
+      url: "https://news.example/tyres",
+      sourceId: "source_tyres",
+    });
   });
 });

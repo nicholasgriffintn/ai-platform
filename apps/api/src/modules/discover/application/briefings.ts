@@ -6,6 +6,7 @@ import {
   discoverBriefingDraftSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import {
+  generateId,
   isRecord,
   readUrlHost,
   sha256Hex,
@@ -16,6 +17,7 @@ import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
+  addResearchedReads,
   buildDiscoverBriefingMaterial,
   chooseBriefingTopics,
   describeBriefingLeads,
@@ -25,11 +27,14 @@ import {
   type DiscoverBriefingText,
 } from "~/modules/discover/domain/briefing";
 import { remainingCreditMicros } from "~/modules/discover/domain/cost";
-import { discoverTopicKey } from "~/modules/discover/domain/edition";
+import { discoverTopicKey, listEditionLinks } from "~/modules/discover/domain/edition";
 import { pickEpisodeTopic } from "~/modules/discover/domain/episodes";
 import { DISCOVER_HEADLINES_TOPIC } from "~/modules/discover/domain/research";
 import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
-import { gatherKnowledgeArticles } from "~/modules/knowledge/application/intake/articles";
+import {
+  gatherKnowledgeArticles,
+  type GatheredArticle,
+} from "~/modules/knowledge/application/intake/articles";
 import { withKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { findTopicArticles } from "~/modules/knowledge/application/syncs/topics";
 import type { KnowledgeArticleCandidate } from "~/modules/knowledge/domain/item";
@@ -37,7 +42,13 @@ import { generateTierObject } from "~/modules/models/application/tier-object";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { readDiscoverSpend } from "./cost";
-import { requireDiscoverEdition, withEditionRun, type StoredDiscoverEdition } from "./editions";
+import {
+  listRecentDiscoverEditions,
+  requireDiscoverEdition,
+  updateDiscoverEdition,
+  withEditionRun,
+  type StoredDiscoverEdition,
+} from "./editions";
 import { listDiscoverFollows } from "./follows";
 import { enqueueDiscoverJob } from "./jobs";
 import { ensureDiscoverNotebook } from "./notebook";
@@ -52,6 +63,7 @@ const ARTICLE_LIMIT = 8;
 const ARTICLE_CHARACTERS = 8_000;
 const MIN_ARTICLE_CHARACTERS = 400;
 const NEWS_LANGUAGE = "en";
+const RECENT_EDITION_LIMIT = 7;
 
 export interface DiscoverBriefing extends DiscoverBriefingText {
   sourceId: string;
@@ -175,6 +187,43 @@ async function readArticles(
   });
 }
 
+async function addResearchedLinks(
+  context: ServiceContext,
+  edition: StoredDiscoverEdition,
+  topic: string,
+  deeper: readonly GatheredArticle[],
+  articles: readonly { sourceId: string }[],
+): Promise<void> {
+  const readable = new Set(articles.map((article) => article.sourceId));
+  const found = deeper.flatMap(({ sourceId, ...item }) =>
+    sourceId && readable.has(sourceId) ? [{ ...item, sourceId }] : [],
+  );
+
+  if (found.length === 0) {
+    return;
+  }
+
+  try {
+    const recent = await listRecentDiscoverEditions(
+      context,
+      context.requireUser().id,
+      RECENT_EDITION_LIMIT,
+    );
+    const seenLinks = listEditionLinks(
+      recent.filter((other) => other.id !== edition.id).map((other) => other.content),
+    );
+
+    await updateDiscoverEdition(context, edition.id, (content) =>
+      addResearchedReads({ edition: content, topic, found, seenLinks, createId: generateId }),
+    );
+  } catch (error) {
+    logger.warn("Researched links could not be added to the edition", {
+      topic,
+      error_message: getErrorMessage(error),
+    });
+  }
+}
+
 async function researchBriefing(
   context: ServiceContext,
   edition: StoredDiscoverEdition,
@@ -203,6 +252,8 @@ async function researchBriefing(
       ...deeper.flatMap((article) => (article.sourceId ? [article.sourceId] : [])),
     ])
   ).slice(0, ARTICLE_LIMIT);
+
+  await addResearchedLinks(context, edition, topic, deeper, articles);
 
   if (articles.length === 0) {
     return null;

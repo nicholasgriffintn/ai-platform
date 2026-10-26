@@ -1,10 +1,14 @@
-import type {
-  DiscoverBriefingDraft,
-  DiscoverCard,
-  DiscoverEditionContent,
+import {
+  DISCOVER_MAX_EDITION_CARDS,
+  type DiscoverBriefingDraft,
+  type DiscoverCard,
+  type DiscoverEditionContent,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { discoverTopicKey } from "./edition";
+import { discoverTopicKey, listEditionLinks } from "./edition";
+import { fillDiscoverFeed } from "./feed";
+import { collectSeenLinks, type DiscoverLink } from "./links";
+import type { DiscoverResearchResult } from "./research";
 
 export const DISCOVER_BRIEFING_TOPIC_LIMIT = 4;
 export const DISCOVER_BRIEFING_LEAD_LIMIT = 2;
@@ -119,4 +123,49 @@ export function describeBriefings(briefings: readonly DiscoverBriefingText[]): s
         ...briefings.map((briefing) => briefing.content),
       ]
     : [];
+}
+
+export function addResearchedReads(input: {
+  edition: DiscoverEditionContent;
+  topic: string;
+  found: readonly (DiscoverResearchResult & { sourceId: string })[];
+  seenLinks: readonly DiscoverLink[];
+  createId: () => string;
+}): DiscoverEditionContent {
+  const key = discoverTopicKey(input.topic);
+  const sourceIds = new Map(input.found.map((item) => [item.url, item.sourceId]));
+  const added = fillDiscoverFeed({
+    groups: [
+      {
+        topic: input.topic,
+        lead: `Found researching ${input.topic}`,
+        items: input.found,
+        spoken: true,
+      },
+    ],
+    seen: collectSeenLinks([...input.seenLinks, ...listEditionLinks([input.edition])]),
+    skipTopics: new Set(),
+    limit: DISCOVER_MAX_EDITION_CARDS - input.edition.cards.length,
+    createId: input.createId,
+  }).map((card) => {
+    const sourceId = card.kind === "read" ? sourceIds.get(card.url) : undefined;
+
+    return sourceId ? { ...card, sourceId } : card;
+  });
+
+  if (added.length === 0) {
+    return input.edition;
+  }
+
+  const lastRead = input.edition.cards.reduce(
+    (last, card, index) =>
+      card.kind === "read" && discoverTopicKey(card.topic) === key ? index : last,
+    -1,
+  );
+  const at = lastRead === -1 ? input.edition.cards.length : lastRead + 1;
+
+  return {
+    ...input.edition,
+    cards: [...input.edition.cards.slice(0, at), ...added, ...input.edition.cards.slice(at)],
+  };
 }
