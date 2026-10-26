@@ -19,7 +19,7 @@
       "defaults": {
         "description": "Tiny GPT-4.1 option for classification, routing, and very high-volume tasks",
         "contextWindow": 1047576,
-        "maxTokens": 32768,
+        "maxTokens": 942818,
         "modalities": {
           "input": [
             "image",
@@ -30,6 +30,7 @@
             "text"
           ]
         },
+        "contextComplexity": 5,
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
         "artificialAnalysis": {

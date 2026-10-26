@@ -1312,10 +1312,8 @@
         }
       },
       "unset": [
-        "openWeights",
         "supportsToolCalls",
-        "supportsTemperature",
-        "reasoningConfig"
+        "supportsTemperature"
       ]
     },
     "replicate-chatterbox-turbo": {
@@ -2670,10 +2668,8 @@
         }
       },
       "unset": [
-        "openWeights",
         "supportsToolCalls",
-        "supportsTemperature",
-        "reasoningConfig"
+        "supportsTemperature"
       ]
     },
     "replicate-veo-3-1": {
@@ -4495,10 +4491,7 @@
           ],
           "reference": "https://replicate.com/minimax/image-01"
         }
-      },
-      "unset": [
-        "reasoningConfig"
-      ]
+      }
     },
     "replicate-datacte-proteus-v0-3": {
       "model": "replicate/datacte/proteus-v0.3/proteus-v0-3",

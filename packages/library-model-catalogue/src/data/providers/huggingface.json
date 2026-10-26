@@ -253,7 +253,7 @@
       "overrides": {
         "name": "Qwen3-Next-80B-A3B-Instruct",
         "maxTokens": 32768,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.001
@@ -349,7 +349,7 @@
       "overrides": {
         "contextWindow": 1048576,
         "maxTokens": 393216,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.000435,
         "costPer1kOutputTokens": 0.00087,
@@ -561,7 +561,7 @@
         "description": "Efficient open MiniMax model built for coding agents and tool-heavy workflows",
         "contextWindow": 204800,
         "maxTokens": 131072,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -590,7 +590,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -833,6 +833,7 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "Qwen/Qwen3.6-27B",
       "overrides": {
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -951,15 +952,6 @@
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "contextWindow": 1000000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
@@ -1052,7 +1044,7 @@
       "overrides": {
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 64000,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "December 26, 2024",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0013
@@ -1226,6 +1218,7 @@
       "overrides": {
         "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
         "contextWindow": 1048576,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -1279,7 +1272,7 @@
       "overrides": {
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
         "maxTokens": 384000,
-        "speed": 5,
+        "speed": 4,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,

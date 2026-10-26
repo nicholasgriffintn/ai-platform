@@ -149,7 +149,7 @@
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -477,7 +477,7 @@
       "model": "gpt/gpt-5-4",
       "matchingModel": "gpt-5.4",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.015
@@ -749,7 +749,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00174,
         "costPer1kOutputTokens": 0.00348,
@@ -846,7 +846,7 @@
       "overrides": {
         "contextWindow": 512000,
         "maxTokens": 128000,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -1123,6 +1123,7 @@
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -1213,7 +1214,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -1364,7 +1365,7 @@
       "overrides": {
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "contextWindow": 524288,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.00068,
         "costPer1kOutputTokens": 0.00209

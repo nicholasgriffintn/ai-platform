@@ -1313,7 +1313,7 @@
       "overrides": {
         "name": "Qwen/Qwen3-Next-80B-A3B-Instruct",
         "maxTokens": 262000,
-        "speed": 3,
+        "speed": 4,
         "releaseDate": "September 11, 2025",
         "lastUpdated": "November 25, 2025",
         "dataRetention": {
@@ -1418,7 +1418,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6",
       "matchingModel": "anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1531,7 +1531,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-eu",
       "matchingModel": "eu.anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1570,7 +1570,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-global",
       "matchingModel": "global.anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1599,7 +1599,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-jp",
       "matchingModel": "jp.anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1777,7 +1777,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-us",
       "matchingModel": "us.anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3239,6 +3239,17 @@
         },
         "costPer1kInputTokens": 0.00011,
         "costPer1kOutputTokens": 0.00055,
+        "supportsTemperature": false
+      }
+    },
+    "au.anthropic.claude-sonnet-5-5": {
+      "model": "claude-sonnet/claude-sonnet-5-5-au",
+      "matchingModel": "au.anthropic.claude-sonnet-5-5",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "September 28, 2026",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.011,
         "supportsTemperature": false
       }
     }

@@ -790,7 +790,7 @@
       "matchingModel": "@cf/deepseek-ai/deepseek-v4-pro-0813",
       "overrides": {
         "maxTokens": 1048576,
-        "speed": 3,
+        "speed": 4,
         "isFeatured": true,
         "lastUpdated": "August 22, 2026",
         "costPer1kInputTokens": 0.00132,

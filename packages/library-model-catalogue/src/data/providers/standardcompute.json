@@ -198,7 +198,7 @@
         "contextWindow": 1000000,
         "maxTokens": 50000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.001044,
         "costPer1kOutputTokens": 0.002088,
@@ -220,7 +220,7 @@
         "contextWindow": 1000000,
         "maxTokens": 50000,
         "contextComplexity": 4,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00042,
@@ -331,7 +331,7 @@
       "overrides": {
         "contextWindow": 1048576,
         "maxTokens": 50000,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -344,7 +344,7 @@
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "contextWindow": 1048576,
         "maxTokens": 50000,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.00068,
         "costPer1kOutputTokens": 0.00209

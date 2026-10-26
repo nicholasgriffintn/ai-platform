@@ -66,6 +66,26 @@
           "intelligenceIndexVersion": 4.3
         }
       }
+    },
+    "qwen3-8-max-0902": {
+      "defaults": {
+        "name": "Qwen3.8 Max 0902",
+        "openWeights": true,
+        "description": "Flagship Qwen model for complex reasoning, coding, and agentic workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 20, 2026",
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
     }
   }
 }

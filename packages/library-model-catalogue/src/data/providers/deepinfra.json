@@ -148,7 +148,7 @@
         "name": "MiniMax M2",
         "contextWindow": 262144,
         "maxTokens": 32768,
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "November 13, 2025",
         "lastUpdated": "November 13, 2025",
@@ -275,7 +275,7 @@
         "contextWindow": 1048576,
         "maxTokens": 16384,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.0013,
         "costPer1kOutputTokens": 0.0026,
@@ -582,7 +582,7 @@
       "overrides": {
         "contextWindow": 524288,
         "maxTokens": 512000,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.00028,
         "costPer1kOutputTokens": 0.0011
@@ -606,7 +606,7 @@
       "overrides": {
         "name": "Qwen3-Next 80B-A3B Instruct",
         "maxTokens": 32768,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.0011,
@@ -664,6 +664,7 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "Qwen/Qwen3.6-27B",
       "overrides": {
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -708,15 +709,6 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "moonshotai/Kimi-K3",
       "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.00285,
@@ -799,7 +791,7 @@
       "model": "deepseek/deepseek-v3",
       "matchingModel": "deepseek-ai/DeepSeek-V3",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "December 26, 2024",
         "costPer1kInputTokens": 0.00032,
         "costPer1kOutputTokens": 0.00089,
@@ -969,6 +961,7 @@
       "matchingModel": "zai-org/GLM-5.3-Flash",
       "overrides": {
         "contextWindow": 1048576,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -1022,7 +1015,7 @@
       "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash",
       "overrides": {
         "maxTokens": 384000,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0006,

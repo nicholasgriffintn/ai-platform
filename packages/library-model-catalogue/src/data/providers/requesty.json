@@ -98,7 +98,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "multimodal": true,
         "isFeatured": false,
         "knowledgeCutoffDate": "October 2024",
@@ -584,7 +584,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 17, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -891,7 +891,7 @@
       "model": "gpt/gpt-5-4",
       "matchingModel": "openai/gpt-5.4",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.015,
@@ -1248,7 +1248,7 @@
       "overrides": {
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -1270,7 +1270,7 @@
       "overrides": {
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.0033,
         "costPer1kOutputTokens": 0.0165,
@@ -1469,7 +1469,7 @@
       "model": "gpt-mini/gpt-4o-mini-eu",
       "matchingModel": "gpt-4o-mini@eu",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "July 18, 2024",
         "costPer1kInputTokens": 0.000165,
         "costPer1kOutputTokens": 0.00066
@@ -1511,7 +1511,7 @@
       "model": "gpt/gpt-5-4-eu",
       "matchingModel": "gpt-5.4@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.00275,
         "costPer1kOutputTokens": 0.0165
@@ -1743,7 +1743,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 131072,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00132,
         "costPer1kOutputTokens": 0.00396,
@@ -1764,7 +1764,7 @@
       "model": "deepseek-thinking/deepseek-v4-pro-eu",
       "matchingModel": "deepseek-v4-pro@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.0035,
@@ -2151,7 +2151,7 @@
       "model": "gpt/gpt-5-4",
       "matchingModel": "gpt-5.4",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.00275,
         "costPer1kOutputTokens": 0.0165,
@@ -2834,7 +2834,7 @@
         "contextWindow": 1000000,
         "maxTokens": 128000,
         "contextComplexity": 5,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -2854,7 +2854,7 @@
       "model": "minimax/minimax-m3-eu",
       "matchingModel": "minimax-m3@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.002
@@ -2930,7 +2930,7 @@
       "overrides": {
         "contextWindow": 256000,
         "maxTokens": 256000,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.000165,
         "costPer1kOutputTokens": 0.00066,
@@ -2950,7 +2950,7 @@
       "model": "mistral-small/mistral-small-4-eu",
       "matchingModel": "mistral-small-2603@eu",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.000165,
         "costPer1kOutputTokens": 0.00066
@@ -3689,7 +3689,7 @@
       "model": "deepseek-thinking/deepseek-v4-pro-0813-eu",
       "matchingModel": "deepseek-v4-pro-0813@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "August 22, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.0035,
@@ -3858,7 +3858,7 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "maxTokens": 393216,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015,
@@ -3878,7 +3878,7 @@
       "model": "deepseek-flash/deepseek-v4-1-flash-eu",
       "matchingModel": "deepseek-v4.1-flash@eu",
       "overrides": {
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015
@@ -4132,7 +4132,7 @@
       "overrides": {
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "contextWindow": 524288,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.00068,
         "costPer1kOutputTokens": 0.00209,
@@ -4152,7 +4152,7 @@
       "model": "mistral-large/mistral-large-4-eu",
       "matchingModel": "mistral-large-4@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.00068,
         "costPer1kOutputTokens": 0.00209
@@ -4310,7 +4310,7 @@
         "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
         "contextWindow": 1000000,
         "maxTokens": 128000,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "October 19, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -4417,6 +4417,16 @@
           ],
           "defaultEffort": "none"
         }
+      }
+    },
+    "minimax-m3.1-flash@eu": {
+      "model": "minimax/minimax-m3-1-flash-eu",
+      "matchingModel": "minimax-m3.1-flash@eu",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "October 19, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012
       }
     }
   }

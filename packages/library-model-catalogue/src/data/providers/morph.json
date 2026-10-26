@@ -1,8 +1,9 @@
 {
   "defaults": {
-    "supportsToolCalls": false,
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": false
+    "supportsTemperature": true
   },
   "models": {
     "morph-auto": {
@@ -12,7 +13,9 @@
         "speed": 4,
         "lastUpdated": "June 1, 2024",
         "costPer1kInputTokens": 0.00085,
-        "costPer1kOutputTokens": 0.00155
+        "costPer1kOutputTokens": 0.00155,
+        "supportsToolCalls": false,
+        "supportsTemperature": false
       },
       "unset": [
         "supportsResponseFormat",
@@ -30,10 +33,14 @@
         "reliability": 4,
         "speed": 3,
         "knowledgeCutoffDate": "August 2024",
-        "lastUpdated": "August 15, 2024",
+        "lastUpdated": "July 7, 2025",
         "costPer1kInputTokens": 0.0009,
-        "costPer1kOutputTokens": 0.0019
-      }
+        "costPer1kOutputTokens": 0.0019,
+        "supportsToolCalls": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "morph-v3-fast": {
       "model": "morph/morph-v3-fast",
@@ -46,9 +53,177 @@
         "reliability": 3,
         "speed": 5,
         "knowledgeCutoffDate": "August 2024",
-        "lastUpdated": "August 15, 2024",
+        "lastUpdated": "July 7, 2025",
         "costPer1kInputTokens": 0.0008,
-        "costPer1kOutputTokens": 0.0012
+        "costPer1kOutputTokens": 0.0012,
+        "supportsToolCalls": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "morph-dsv41flash": {
+      "model": "deepseek-flash/deepseek-v4-1-flash",
+      "matchingModel": "morph-dsv41flash",
+      "overrides": {
+        "maxTokens": 1048576,
+        "speed": 4,
+        "lastUpdated": "September 10, 2026",
+        "costPer1kInputTokens": 0.00012,
+        "costPer1kOutputTokens": 0.0008,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "morph-dsv4flash": {
+      "model": "deepseek-flash/deepseek-v4-flash-0731",
+      "matchingModel": "morph-dsv4flash",
+      "overrides": {
+        "maxTokens": 1048576,
+        "speed": 4,
+        "lastUpdated": "July 31, 2026",
+        "costPer1kInputTokens": 0.0001419531,
+        "costPer1kOutputTokens": 0.000399625,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "morph-glm52-744b": {
+      "model": "glm/glm-5-2",
+      "matchingModel": "morph-glm52-744b",
+      "overrides": {
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "speed": 3,
+        "lastUpdated": "June 13, 2026",
+        "costPer1kInputTokens": 0.00119,
+        "costPer1kOutputTokens": 0.006,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "morph-glm53-744b": {
+      "model": "glm/glm-5-3",
+      "matchingModel": "morph-glm53-744b",
+      "overrides": {
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "speed": 3,
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0.00119,
+        "costPer1kOutputTokens": 0.006,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "morph-glm53flash": {
+      "model": "glm-flash/glm-5-3-flash",
+      "matchingModel": "morph-glm53flash",
+      "overrides": {
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "coding",
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "August 26, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0007,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "morph-kimik3": {
+      "model": "kimi-k3/kimi-k3",
+      "matchingModel": "morph-kimik3",
+      "overrides": {
+        "maxTokens": 1048576,
+        "speed": 2,
+        "lastUpdated": "July 16, 2026",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.014,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "morph-kimik3-fast": {
+      "model": "kimi-k3/kimi-k3-fast",
+      "matchingModel": "morph-kimik3-fast",
+      "overrides": {
+        "maxTokens": 1048576,
+        "lastUpdated": "July 16, 2026",
+        "costPer1kInputTokens": 0.006,
+        "costPer1kOutputTokens": 0.0225,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

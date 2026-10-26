@@ -37,7 +37,7 @@
       "model": "deepseek-thinking/deepseek-v4-pro-new",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00066,
         "costPer1kOutputTokens": 0.00198,
@@ -93,7 +93,7 @@
       "model": "minimax-m3/minimax-m3",
       "matchingModel": "minimax-m3",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -352,6 +352,7 @@
       "overrides": {
         "name": "GLM-5.3-Flash (2x usage)",
         "contextWindow": 1000000,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -448,7 +449,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -610,7 +611,7 @@
         "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
         "contextWindow": 1000000,
         "maxTokens": 512000,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "October 19, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006

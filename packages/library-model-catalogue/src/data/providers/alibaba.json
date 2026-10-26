@@ -402,6 +402,7 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "qwen3.6-27b",
       "overrides": {
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -569,15 +570,6 @@
       "matchingModel": "kimi-k3",
       "overrides": {
         "maxTokens": 1048576,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 2,
         "isFeatured": true,
         "lastUpdated": "July 16, 2026",

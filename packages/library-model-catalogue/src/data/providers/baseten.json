@@ -33,7 +33,7 @@
       "overrides": {
         "maxTokens": 32768,
         "contextComplexity": 4,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -141,15 +141,6 @@
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
@@ -428,6 +419,7 @@
         "name": "GLM 5.3 Flash",
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
         "contextWindow": 1048576,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -455,7 +447,7 @@
       "overrides": {
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
         "maxTokens": 262144,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "August 22, 2026",
         "costPer1kInputTokens": 0.00132,
         "costPer1kOutputTokens": 0.00396,

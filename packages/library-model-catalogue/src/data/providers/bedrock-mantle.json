@@ -12,7 +12,7 @@
       "matchingModel": "openai.gpt-5.4",
       "overrides": {
         "contextWindow": 1000000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 1, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",

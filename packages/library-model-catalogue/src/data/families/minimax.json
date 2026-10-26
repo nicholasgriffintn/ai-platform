@@ -1,6 +1,5 @@
 {
   "defaults": {
-    "openWeights": true,
     "modalities": {
       "input": [
         "text"
@@ -11,14 +10,7 @@
     },
     "supportsToolCalls": true,
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "none",
-        "thinking"
-      ],
-      "defaultEffort": "none"
-    }
+    "supportsTemperature": true
   },
   "description": "The minimax family includes models that produce audio, text, video.",
   "models": {
@@ -101,6 +93,7 @@
     "minimax-01": {
       "defaults": {
         "name": "MiniMax-01",
+        "openWeights": true,
         "description": "MiniMax multimodal coding model for long-context reasoning and agent tasks",
         "contextWindow": 1000192,
         "maxTokens": 40000,
@@ -123,6 +116,7 @@
     "minimax-h3": {
       "defaults": {
         "name": "MiniMax H3",
+        "openWeights": true,
         "description": "MiniMax general-purpose video model with multimodal references and synchronized stereo audio. Open H3-Base checkpoints; Context-IR and 2K regeneration are not included in the initial weights release.",
         "contextWindow": 0,
         "maxTokens": 0,
@@ -235,12 +229,20 @@
         "maxTokens": 40000,
         "knowledgeCutoffDate": "June 30, 2024",
         "releaseDate": "June 17, 2025",
-        "supportsResponseFormat": false
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "minimax-m1-80k": {
       "defaults": {
         "name": "MiniMax M1 80K",
+        "openWeights": true,
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 1000000,
         "maxTokens": 80000,
@@ -251,6 +253,13 @@
         "reliability": 1,
         "releaseDate": "June 17, 2025",
         "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 11.7,
           "codingIndex": null,
@@ -262,6 +271,7 @@
     "minimax-m2": {
       "defaults": {
         "name": "MiniMax-M2",
+        "openWeights": true,
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "strengths": [
           "tool_use"
@@ -269,6 +279,13 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "October 27, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 18.6,
           "codingIndex": null,
@@ -280,6 +297,7 @@
     "minimax-m2-1": {
       "defaults": {
         "name": "MiniMax-M2.1",
+        "openWeights": true,
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 204800,
         "maxTokens": 131072,
@@ -289,6 +307,13 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "December 23, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 20.9,
           "codingIndex": null,
@@ -305,7 +330,14 @@
         "contextWindow": 204800,
         "maxTokens": 131072,
         "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "December 23, 2025"
+        "releaseDate": "December 23, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "minimax-m2-1-tee": {
@@ -320,6 +352,7 @@
     },
     "minimax-m2-5": {
       "defaults": {
+        "openWeights": true,
         "description": "Prior MiniMax coding model for agent workflows, office edits, and automation",
         "contextWindow": 204800,
         "maxTokens": 131072,
@@ -329,6 +362,13 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "February 12, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 22.8,
           "codingIndex": null,
@@ -350,6 +390,13 @@
         "reliability": 1,
         "releaseDate": "February 12, 2026",
         "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 22.8,
           "codingIndex": null,
@@ -361,24 +408,41 @@
     "minimax-m2-5-high-speed": {
       "defaults": {
         "name": "MiniMax M2.5 High Speed",
+        "openWeights": true,
         "description": "High-speed MiniMax model for low-latency coding and agent workflows",
         "contextWindow": 204800,
         "maxTokens": 131000,
-        "releaseDate": "February 13, 2026"
+        "releaseDate": "February 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "minimax-m2-5-tee": {
       "defaults": {
         "name": "MiniMax M2.5 TEE",
+        "openWeights": true,
         "description": "MiniMax M2.5 TEE accepts text and produces text.",
         "contextWindow": 196608,
         "maxTokens": 65536,
         "releaseDate": "February 12, 2026",
-        "supportsResponseFormat": true
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "minimax-m2-7": {
       "defaults": {
+        "openWeights": true,
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 204800,
         "strengths": [
@@ -387,6 +451,13 @@
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "March 18, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 22.8,
           "codingIndex": 52.6,
@@ -397,6 +468,7 @@
     },
     "minimax-m2-7-free": {
       "defaults": {
+        "openWeights": true,
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196608,
         "strengths": [
@@ -405,6 +477,13 @@
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "March 18, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 22.8,
           "codingIndex": 52.6,
@@ -416,6 +495,7 @@
     "minimax-m2-7-high-speed": {
       "defaults": {
         "name": "MiniMax M2.7 High Speed",
+        "openWeights": true,
         "description": "Low-latency M2.7 variant for interactive coding plans and agent loops",
         "contextWindow": 204800,
         "maxTokens": 131100,
@@ -428,12 +508,20 @@
             "text"
           ]
         },
-        "releaseDate": "March 18, 2026"
+        "releaseDate": "March 18, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "minimax-m2-7-highspeed": {
       "defaults": {
         "name": "MiniMax-M2.7-highspeed",
+        "openWeights": true,
         "description": "Low-latency M2.7 variant for interactive coding plans and agent loops",
         "contextWindow": 200000,
         "maxTokens": 128000,
@@ -465,6 +553,7 @@
     "minimax-m3": {
       "defaults": {
         "name": "MiniMax-M3",
+        "openWeights": true,
         "description": "MiniMax multimodal model for long-context coding, perception, and agent planning",
         "modalities": {
           "input": [
@@ -487,6 +576,13 @@
         "releaseDate": "June 1, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 29.2,
           "codingIndex": 58.6,
@@ -539,9 +635,56 @@
         }
       }
     },
+    "minimax-m3-1-flash-eu": {
+      "defaults": {
+        "name": "MiniMax-M3.1-Flash (EU)",
+        "openWeights": false,
+        "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "releaseDate": "October 19, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 42.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
     "minimax-m3-eu": {
       "defaults": {
         "name": "MiniMax-M3 (EU)",
+        "openWeights": true,
         "description": "MiniMax multimodal model for long-context coding, perception, and agent planning",
         "contextWindow": 1048576,
         "maxTokens": 1048576,
@@ -586,12 +729,20 @@
     },
     "minimax-m3-free": {
       "defaults": {
+        "openWeights": true,
         "description": "MiniMax multimodal coding model for long-context reasoning and agent tasks",
         "contextWindow": 1048576,
         "contextComplexity": 5,
         "reliability": 2,
         "releaseDate": "June 1, 2026",
         "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 29.2,
           "codingIndex": 58.6,
@@ -619,7 +770,14 @@
         "releaseDate": "January 15, 2025",
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "minimax-minimax-m1": {
