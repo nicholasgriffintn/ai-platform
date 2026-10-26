@@ -9,13 +9,11 @@ import { discoverTopicKey } from "./edition";
 import { claimUnseenLink, type SeenDiscoverLinks } from "./links";
 import type { DiscoverResearchResult } from "./research";
 
-export const DISCOVER_TOP_READS = 6;
-export const DISCOVER_READS_PER_TOPIC = 2;
-
 export interface DiscoverFeedGroup {
   topic: string;
   lead: string;
   items: readonly DiscoverResearchResult[];
+  spoken?: boolean;
 }
 
 export interface DiscoverFeedSources {
@@ -25,6 +23,10 @@ export interface DiscoverFeedSources {
   followedTopics: ReadonlySet<string>;
   curate: string;
   interestOrder: readonly string[];
+}
+
+function wasAskedFor(key: string, sources: DiscoverFeedSources): boolean {
+  return key.length > 0 && discoverTopicKey(sources.curate).includes(key);
 }
 
 function describeLead(topic: string, sources: DiscoverFeedSources): string {
@@ -38,7 +40,7 @@ function describeLead(topic: string, sources: DiscoverFeedSources): string {
     return `You follow ${topic}`;
   }
 
-  if (discoverTopicKey(sources.curate).includes(key)) {
+  if (wasAskedFor(key, sources)) {
     return `You asked for ${topic}`;
   }
 
@@ -60,6 +62,10 @@ function researchRank(topic: string, sources: DiscoverFeedSources): number {
     return 1 + position / 100;
   }
 
+  if (key !== discoverTopicKey(sources.headlinesTopic) && wasAskedFor(key, sources)) {
+    return 1.5;
+  }
+
   return key === discoverTopicKey(sources.headlinesTopic) ? 3 : 2;
 }
 
@@ -71,6 +77,7 @@ export function buildDiscoverFeedGroups(sources: DiscoverFeedSources): DiscoverF
       topic: document.topic,
       lead: describeLead(document.topic, sources),
       items: document.results,
+      spoken: researchRank(document.topic, sources) < 2,
     }));
   const signals = sources.signals
     .filter((signal) => signal.items.length > 0)
@@ -87,72 +94,81 @@ function newestFirst(items: readonly DiscoverResearchResult[]): DiscoverResearch
   return [...items].sort((left, right) => (right.date ?? "").localeCompare(left.date ?? ""));
 }
 
-export function fillDiscoverFeed(input: {
-  groups: readonly DiscoverFeedGroup[];
-  seen: SeenDiscoverLinks;
-  skipTopics: ReadonlySet<string>;
-  readsByTopic: ReadonlyMap<string, number>;
-  limit: number;
-  createId: () => string;
-}): DiscoverCard[] {
-  const taken = new Map(input.readsByTopic);
-  const queues = input.groups
-    .filter((group) => !input.skipTopics.has(discoverTopicKey(group.topic)))
-    .map((group) => ({
-      group,
-      key: discoverTopicKey(group.topic),
-      remaining: newestFirst(group.items),
-    }));
+interface FeedQueue {
+  group: DiscoverFeedGroup;
+  remaining: DiscoverResearchResult[];
+}
+
+function fillRound(
+  queues: readonly FeedQueue[],
+  seen: SeenDiscoverLinks,
+  createId: () => string,
+): DiscoverCard[] {
   const cards: DiscoverCard[] = [];
 
-  while (cards.length < input.limit) {
-    let added = false;
+  for (const queue of queues) {
+    while (queue.remaining.length > 0) {
+      const item = queue.remaining.shift();
+      const url = item ? comparableHttpUrl(item.url) : null;
 
-    for (const queue of queues) {
-      if (cards.length >= input.limit || (taken.get(queue.key) ?? 0) >= DISCOVER_READS_PER_TOPIC) {
+      if (!item || !url || !claimUnseenLink(seen, item)) {
         continue;
       }
 
-      while (queue.remaining.length > 0) {
-        const item = queue.remaining.shift();
-        const url = item ? comparableHttpUrl(item.url) : null;
+      const source = describeItemSource(item);
+      const card = discoverCardSchema.safeParse({
+        id: createId(),
+        kind: "read",
+        topic: truncateSingleLine(queue.group.topic, 60),
+        title: truncateSingleLine(item.title, 160),
+        url: item.url,
+        source: truncateSingleLine(item.source || readUrlHost(url), 80),
+        summary: truncateSingleLine(item.snippet || item.title, 400),
+        reason: truncateSingleLine(
+          source ? `${queue.group.lead}. ${source}` : queue.group.lead,
+          200,
+        ),
+        sensitive: false,
+      });
 
-        if (!item || !url || !claimUnseenLink(input.seen, item)) {
-          continue;
-        }
-
-        const source = describeItemSource(item);
-        const card = discoverCardSchema.safeParse({
-          id: input.createId(),
-          kind: "read",
-          topic: truncateSingleLine(queue.group.topic, 60),
-          title: truncateSingleLine(item.title, 160),
-          url: item.url,
-          source: truncateSingleLine(item.source || readUrlHost(url), 80),
-          summary: truncateSingleLine(item.snippet || item.title, 400),
-          reason: truncateSingleLine(
-            source ? `${queue.group.lead}. ${source}` : queue.group.lead,
-            200,
-          ),
-          sensitive: false,
-        });
-
-        if (!card.success) {
-          continue;
-        }
-
-        taken.set(queue.key, (taken.get(queue.key) ?? 0) + 1);
-        added = true;
+      if (card.success) {
         cards.push(card.data);
 
         break;
       }
     }
-
-    if (!added) {
-      break;
-    }
   }
 
   return cards;
+}
+
+export function fillDiscoverFeed(input: {
+  groups: readonly DiscoverFeedGroup[];
+  seen: SeenDiscoverLinks;
+  skipTopics: ReadonlySet<string>;
+  limit: number;
+  createId: () => string;
+}): DiscoverCard[] {
+  const queues = input.groups
+    .filter((group) => !input.skipTopics.has(discoverTopicKey(group.topic)))
+    .map((group) => ({ group, remaining: newestFirst(group.items) }));
+  const tiers = [
+    queues.filter((queue) => queue.group.spoken),
+    queues.filter((queue) => !queue.group.spoken),
+  ];
+  const cards: DiscoverCard[] = [];
+
+  for (const tier of tiers) {
+    for (;;) {
+      const round = fillRound(tier, input.seen, input.createId);
+
+      if (round.length === 0) {
+        break;
+      }
+
+      cards.push(...round);
+    }
+  }
+
+  return cards.slice(0, Math.max(0, input.limit));
 }

@@ -1,5 +1,6 @@
 import { Button, cn, LoadingSpinner } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { isDiscoverListenResearching } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage, partOfDay } from "@ngriffin_uk/polychat-utility-core";
 import { AudioLines, Settings2 } from "lucide-react";
 import { useState } from "react";
@@ -55,6 +56,7 @@ function todayLine(): string {
 
 function DiscoverMediaPane({ controller }: { controller: DiscoverEditionController }) {
   const { edition, media } = controller;
+  const [openedAt] = useState(Date.now);
 
   if (media === "wind_down") {
     return (
@@ -101,10 +103,11 @@ function DiscoverMediaPane({ controller }: { controller: DiscoverEditionControll
   ) : (
     <DiscoverListenStage
       sourceId={edition.listenSourceId}
+      researching={isDiscoverListenResearching(edition, openedAt)}
       eyebrow="The Perch"
       title="Today's round-up"
-      subtitle="Two hosts talk through today's edition."
-      idleMessage="A short two-host round-up of today's edition."
+      subtitle="Two hosts dig into today's topics, from the research behind the edition."
+      idleMessage="Two hosts research today's topics, then talk them through in depth."
       artBackground={PERCH_GRADIENT}
       isRecording={controller.isRecordingListen}
       recordError={controller.recordListenError}

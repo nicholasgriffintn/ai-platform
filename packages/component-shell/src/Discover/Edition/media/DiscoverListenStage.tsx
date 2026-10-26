@@ -10,6 +10,7 @@ import { listenStatus } from "./media-status.js";
 
 export function DiscoverListenStage({
   sourceId,
+  researching = false,
   eyebrow,
   title,
   subtitle,
@@ -22,6 +23,7 @@ export function DiscoverListenStage({
   onPlayingChange,
 }: {
   sourceId: string | undefined;
+  researching?: boolean;
   eyebrow: string;
   title: string;
   subtitle: string;
@@ -34,7 +36,7 @@ export function DiscoverListenStage({
   onPlayingChange: (playing: boolean) => void;
 }) {
   const source = useSource(sourceId ?? null).data;
-  const status = listenStatus(sourceId, source);
+  const status = listenStatus(sourceId, source, researching);
   const action = (icon: ReactNode, label: string) =>
     onRecord ? (
       <MediaNoticeAction icon={icon} label={label} disabled={isRecording} onClick={onRecord} />
@@ -57,7 +59,11 @@ export function DiscoverListenStage({
           ) : status.state === "making" ? (
             <MediaNotice
               status={status}
-              message="Recording. It plays here when it's done, so carry on with the edition."
+              message={
+                researching
+                  ? "Researching today's topics first, then recording. It plays here when it's done, so carry on with the edition."
+                  : "Recording. It plays here when it's done, so carry on with the edition."
+              }
             />
           ) : status.state === "failed" ? (
             <MediaNotice

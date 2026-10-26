@@ -147,7 +147,10 @@ async function produceEpisode(
   generation: SourceGeneration,
 ): Promise<SourceRecord> {
   const user = context.requireUser();
-  const sources = await requireSourcesAccess(context, user.id, generation.sourceIds ?? []);
+  const sources = await withKnowledgeText(
+    context,
+    await requireSourcesAccess(context, user.id, generation.sourceIds ?? []),
+  );
   const language =
     typeof generation.input?.language === "string" ? generation.input.language : "en";
   const script = await writePodcastScript(context, {

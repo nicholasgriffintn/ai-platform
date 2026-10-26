@@ -9,7 +9,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { normaliseComparableText } from "@ngriffin_uk/polychat-utility-core";
 
-import { DISCOVER_TOP_READS, fillDiscoverFeed, type DiscoverFeedGroup } from "./feed";
+import { fillDiscoverFeed, type DiscoverFeedGroup } from "./feed";
 import { claimUnseenLink, collectSeenLinks, type DiscoverLink } from "./links";
 
 export interface BuildDiscoverEditionInput {
@@ -52,10 +52,6 @@ export function carriedDiscoverMedia(
   };
 }
 
-function countReads(readsByTopic: ReadonlyMap<string, number>): number {
-  return [...readsByTopic.values()].reduce((total, count) => total + count, 0);
-}
-
 function cardTopic(card: DiscoverCardDraft): string | null {
   return "topic" in card ? card.topic : null;
 }
@@ -94,7 +90,6 @@ function isWithheld(
 
 export function buildDiscoverEdition(input: BuildDiscoverEditionInput): DiscoverEditionContent {
   const seen = collectSeenLinks(input.seenLinks);
-  const readsByTopic = new Map<string, number>();
   const cards: DiscoverCard[] = [];
 
   for (const card of input.draft.cards) {
@@ -106,20 +101,10 @@ export function buildDiscoverEdition(input: BuildDiscoverEditionInput): Discover
       continue;
     }
 
-    if (card.kind === "read" && countReads(readsByTopic) >= DISCOVER_TOP_READS) {
-      continue;
-    }
-
     const link = discoverCardLink(card);
 
     if (link && !claimUnseenLink(seen, link)) {
       continue;
-    }
-
-    if (card.kind === "read") {
-      const key = discoverTopicKey(card.topic);
-
-      readsByTopic.set(key, (readsByTopic.get(key) ?? 0) + 1);
     }
 
     cards.push({ ...card, id: input.createId() });
@@ -136,11 +121,7 @@ export function buildDiscoverEdition(input: BuildDiscoverEditionInput): Discover
       groups: input.feed,
       seen,
       skipTopics: new Set([...input.hiddenTopics, ...withheldTopics]),
-      readsByTopic,
-      limit: Math.min(
-        DISCOVER_MAX_EDITION_CARDS - cards.length,
-        DISCOVER_TOP_READS - countReads(readsByTopic),
-      ),
+      limit: DISCOVER_MAX_EDITION_CARDS - cards.length,
       createId: input.createId,
     }),
   );

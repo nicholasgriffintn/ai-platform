@@ -31,6 +31,7 @@ import {
 } from "~/modules/discover/domain/episodes";
 import { buildDiscoverListenMaterial } from "~/modules/discover/domain/listen";
 import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
+import { withKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { generateTierObject } from "~/modules/models/application/tier-object";
 import { requireNotebookAccess } from "~/modules/notebooks/application/access";
 import { resolveNotebookSources } from "~/modules/notebooks/application/notebooks";
@@ -41,6 +42,7 @@ import {
 } from "~/modules/outputs/infrastructure/OutputRepository";
 import { buildSourceMaterial } from "~/modules/sources/application/material";
 
+import { ensureDiscoverBriefings, readDiscoverBriefing } from "./briefings";
 import { affordableEpisodeLength } from "./cost";
 import { requireDiscoverEdition, updateDiscoverEdition, withEditionRun } from "./editions";
 import { fileDiscoverEpisode } from "./folders";
@@ -61,7 +63,7 @@ async function gatherMaterial(
   }
 
   const access = await requireNotebookAccess(context, notebookId);
-  const sources = await resolveNotebookSources(context, access);
+  const sources = await withKnowledgeText(context, await resolveNotebookSources(context, access));
 
   return [
     editionMaterial,
@@ -184,10 +186,11 @@ async function scriptDiscoverEpisode(
   const notebookId =
     follows.find((follow) => discoverTopicKey(follow.topic) === discoverTopicKey(topic))
       ?.notebookId ?? null;
+  const briefings = await ensureDiscoverBriefings(context, edition, [topic]);
   const material = await gatherMaterial(
     context,
     topic,
-    buildDiscoverListenMaterial(edition.content),
+    buildDiscoverListenMaterial(edition.content, briefings),
     notebookId,
   );
   const season = await ensureSeason(context, topic, settings.style, material);
@@ -293,11 +296,12 @@ export async function loadEpisodeMaterial(
     context.requireUser().id,
     episode.editionId,
   );
+  const briefing = await readDiscoverBriefing(context, edition.id, episode.topic);
 
   return gatherMaterial(
     context,
     episode.topic,
-    buildDiscoverListenMaterial(edition.content),
+    buildDiscoverListenMaterial(edition.content, briefing ? [briefing] : []),
     episode.notebookId,
   );
 }

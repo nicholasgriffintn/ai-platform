@@ -5,7 +5,12 @@ import {
   useDiscoverWindDown,
   useSource,
 } from "@ngriffin_uk/polychat-library-react";
-import { readSourceMedia, type DiscoverEdition } from "@ngriffin_uk/polychat-schemas";
+import {
+  isDiscoverListenResearching,
+  readSourceMedia,
+  type DiscoverEdition,
+} from "@ngriffin_uk/polychat-schemas";
+import { useState } from "react";
 
 import { episodeCoverUrl } from "../Episode/episode-cover.js";
 import { episodeStatus } from "../Episode/episode-status.js";
@@ -45,6 +50,7 @@ export function DiscoverMediaShelf({
   active: DiscoverMedia | null;
   onOpen: (media: DiscoverMedia) => void;
 }) {
+  const [openedAt] = useState(Date.now);
   const episode = useDiscoverEpisode(edition.episodeId).data;
   const perch = useSource(edition.listenSourceId ?? null).data;
   const week = useSource(edition.weekSourceId ?? null).data;
@@ -102,7 +108,11 @@ export function DiscoverMediaShelf({
           }
           eyebrow="The Perch"
           title="Today's round-up"
-          status={listenStatus(edition.listenSourceId, perch)}
+          status={listenStatus(
+            edition.listenSourceId,
+            perch,
+            isDiscoverListenResearching(edition, openedAt),
+          )}
           selected={active === "perch"}
           onSelect={() => onOpen("perch")}
         />

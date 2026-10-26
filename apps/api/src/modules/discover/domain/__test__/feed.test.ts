@@ -21,24 +21,32 @@ function fill(groups: DiscoverFeedGroup[], options: { seen?: string[]; skip?: st
     groups,
     seen: collectSeenLinks((options.seen ?? []).map((url) => ({ url, title: "" }))),
     skipTopics: new Set((options.skip ?? []).map(discoverTopicKey)),
-    readsByTopic: new Map(),
-    limit: 30,
+    limit: 100,
     createId: () => `feed_${(next += 1)}`,
   });
 }
 
 describe("fillDiscoverFeed", () => {
-  it("takes one item from each topic in turn and at most two per topic", () => {
+  it("keeps every useful link, one topic at a time, with the topics the edition covers first", () => {
     const cards = fill([
-      { topic: "Rust", lead: "You follow Rust", items: ["a", "b", "c", "d"].map((s) => item(s)) },
-      { topic: "Formula 1", lead: "You follow Formula 1", items: [item("e"), item("f")] },
+      {
+        topic: "Rust",
+        lead: "You follow Rust",
+        items: ["a", "b", "c", "d"].map((s) => item(s)),
+        spoken: true,
+      },
+      { topic: "Reddit", lead: "From Reddit", items: [item("p"), item("q")] },
+      { topic: "Formula 1", lead: "You follow Formula 1", items: [item("e")], spoken: true },
     ]);
 
     expect(cards.map((card) => (card.kind === "read" ? card.url : ""))).toEqual([
       "https://example.com/a",
       "https://example.com/e",
       "https://example.com/b",
-      "https://example.com/f",
+      "https://example.com/c",
+      "https://example.com/d",
+      "https://example.com/p",
+      "https://example.com/q",
     ]);
   });
 
@@ -116,11 +124,11 @@ describe("buildDiscoverFeedGroups", () => {
       interestOrder: ["Sourdough"],
     });
 
-    expect(groups.map((group) => [group.topic, group.lead])).toEqual([
-      ["Rust", "You follow Rust"],
-      ["Sourdough", "What you have been into lately: Sourdough"],
-      ["Today's headlines", "Today's headlines"],
-      ["Reddit", "From Reddit"],
+    expect(groups.map((group) => [group.topic, group.lead, group.spoken ?? false])).toEqual([
+      ["Rust", "You follow Rust", true],
+      ["Sourdough", "What you have been into lately: Sourdough", true],
+      ["Today's headlines", "Today's headlines", false],
+      ["Reddit", "From Reddit", false],
     ]);
   });
 });

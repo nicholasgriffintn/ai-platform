@@ -8,6 +8,7 @@ import { withExecutionRunContext } from "~/infrastructure/context/serviceContext
 import { loadUserContext } from "~/modules/queue/application/user-context";
 import { defineTask, type AppWorkflows } from "~/modules/queue/application/workflows";
 
+import { researchDiscoverEdition } from "../briefings";
 import { drawDiscoverCovers } from "../covers";
 import { makeEpisodeStudySet } from "../episode-extras";
 import { renderEpisodeChapter } from "../episode-render";
@@ -71,6 +72,12 @@ const discoverJob = defineTask<DiscoverJobTaskData>({
       await renderEpisodeChapter(context, job.episodeId, job.chapter);
 
       return { status: "success", message: `Rendered chapter ${job.chapter + 1}` };
+    }
+
+    if (job.job === "research") {
+      const researched = await researchDiscoverEdition(context, job.editionId, job.next);
+
+      return { status: "success", message: `Researched ${researched} topics for the edition` };
     }
 
     if (job.job === "listen") {
