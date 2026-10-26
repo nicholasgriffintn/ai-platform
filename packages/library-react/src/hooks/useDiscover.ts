@@ -6,6 +6,7 @@ import {
   getDiscoverWindDown,
   getDiscoverWindDownTonight,
   queueDiscoverSeasonListen,
+  startDiscoverStory,
   startDiscoverWindDown,
   unfollowDiscoverTopic,
   refreshDiscover,
@@ -284,6 +285,18 @@ export function useStartDiscoverWindDown() {
       void queryClient.invalidateQueries({
         queryKey: [...DISCOVER_QUERY_KEY, "wind-down", "tonight"],
       });
+    },
+  });
+}
+
+export function useStartDiscoverStory() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ editionId, cardId }: { editionId: string; cardId: string }) =>
+      startDiscoverStory(editionId, cardId),
+    onSuccess: (windDown) => {
+      queryClient.setQueryData([...DISCOVER_QUERY_KEY, "wind-down", windDown.id], windDown);
     },
   });
 }

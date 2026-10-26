@@ -6,7 +6,7 @@ import {
   useRequestDiscoverListen,
   useRequestDiscoverWeek,
   useRequestDiscoverEpisode,
-  useStartDiscoverWindDown,
+  useStartDiscoverStory,
   useUpdateDiscoverSettings,
 } from "@ngriffin_uk/polychat-library-react";
 import type {
@@ -18,7 +18,7 @@ import { normaliseComparableText, readLocalTimeZone } from "@ngriffin_uk/polycha
 import { useState } from "react";
 
 import { cardTopic, hasDiscoverTopic } from "./discover-card-drafts.js";
-import { DISCOVER_STORY_MINUTES, type DiscoverStoryCard } from "./DiscoverStoryTile.js";
+import type { DiscoverStoryCard } from "./DiscoverStoryTile.js";
 import type { DiscoverMedia } from "./media/media-status.js";
 
 export function useDiscoverEditionController() {
@@ -32,8 +32,9 @@ export function useDiscoverEditionController() {
   const requestEpisode = useRequestDiscoverEpisode();
   const requestListen = useRequestDiscoverListen();
   const requestWeek = useRequestDiscoverWeek();
-  const startWindDown = useStartDiscoverWindDown();
+  const startStory = useStartDiscoverStory();
   const [storyCardId, setStoryCardId] = useState<string | null>(null);
+  const [storyWindDownId, setStoryWindDownId] = useState<string | null>(null);
   const updateSettings = useUpdateDiscoverSettings();
   const refresh = useRefreshDiscover();
   const feedback = useDiscoverFeedback();
@@ -84,6 +85,23 @@ export function useDiscoverEditionController() {
     feedback.mutate({ editionId: edition.id, cardId: card.id, signal });
   };
 
+  const playStory = (cardId: string) => {
+    if (!edition) {
+      return;
+    }
+
+    setStoryCardId(cardId);
+    startStory.mutate(
+      { editionId: edition.id, cardId },
+      {
+        onSuccess: (windDown) => {
+          setStoryWindDownId(windDown.id);
+          openMedia("story");
+        },
+      },
+    );
+  };
+
   return {
     discover,
     edition,
@@ -94,20 +112,22 @@ export function useDiscoverEditionController() {
     mediaPlaying,
     setMediaPlaying,
     openMedia,
-    startingStoryId: startWindDown.isPending ? storyCardId : null,
-    failedStoryId: startWindDown.isError ? storyCardId : null,
+    startingStoryId: startStory.isPending ? storyCardId : null,
+    failedStoryId: startStory.isError ? storyCardId : null,
+    openStoryId: view === "media" && media === "story" ? storyCardId : null,
+    storyWindDownId,
+    isStartingStory: startStory.isPending,
     startStory: (card: DiscoverStoryCard) => {
-      setStoryCardId(card.id);
-      sendFeedback(card, "opened");
-      startWindDown.mutate(
-        {
-          kind: "story",
-          minutes: DISCOVER_STORY_MINUTES,
-          topic: card.topic,
-          premise: card.premise,
-        },
-        { onSuccess: () => openMedia("wind_down") },
-      );
+      if (!edition?.feedback[card.id]?.includes("opened")) {
+        sendFeedback(card, "opened");
+      }
+
+      playStory(card.id);
+    },
+    retryStory: () => {
+      if (storyCardId) {
+        playStory(storyCardId);
+      }
     },
     showMedia: () => setView("media"),
     windDownId: discover.data?.windDownId ?? null,

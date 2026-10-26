@@ -7,6 +7,7 @@ struct HomeView: View {
     @EnvironmentObject private var polyStore: PolyStore
     @Environment(\.openURL) private var openURL
     @State private var mediaItem: DiscoverMediaItem?
+    @State private var storyWindDownId: String?
     @State private var selectedCard: DiscoverCard?
     @State private var askRequest: DiscoverAskRequest?
     @Binding var link: DiscoverLink?
@@ -148,7 +149,7 @@ struct HomeView: View {
         }
 
         if !store.visibleMedia.isEmpty {
-            DiscoverMediaShelf(items: store.visibleMedia, states: store.media, art: store.mediaArt) { mediaItem = $0 }
+            DiscoverMediaShelf(items: store.visibleMedia, states: store.media, art: store.mediaArt) { openShelf($0) }
         }
 
         let topics = store.cards(in: .topics)
@@ -157,7 +158,7 @@ struct HomeView: View {
                 EyebrowLabel(DiscoverSection.topics.title)
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(topics) { card in
-                        if card.storyRequest != nil {
+                        if card.isStory {
                             DiscoverStoryTile(card: card) { startStory(card) }
                         } else {
                             DiscoverTopicTile(card: card, cover: card.coverId.flatMap { store.covers[$0] }) {
@@ -228,13 +229,21 @@ struct HomeView: View {
     }
 
     private func startStory(_ card: DiscoverCard) {
-        guard let request = card.storyRequest else { return }
-        mediaItem = .windDown
+        guard card.isStory, let edition = store.edition else { return }
         Task {
             await store.send("opened", for: card)
-            await playback.windDown.start(request)
-            await store.refresh()
+            guard let id = await playback.windDown.startStory(editionId: edition.id, cardId: card.id) else { return }
+            storyWindDownId = id
+            mediaItem = .windDown
         }
+    }
+
+    private func openShelf(_ item: DiscoverMediaItem) {
+        if item == .windDown, storyWindDownId != nil, playback.windDown.windDown?.id == storyWindDownId {
+            playback.windDown.reset()
+            storyWindDownId = nil
+        }
+        mediaItem = item
     }
 
     private func ask(_ card: DiscoverCard) {

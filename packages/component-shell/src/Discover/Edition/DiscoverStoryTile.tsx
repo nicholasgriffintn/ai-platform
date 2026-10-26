@@ -1,21 +1,21 @@
 import { MediaTile } from "@ngriffin_uk/polychat-component-ui";
-import type { DiscoverCard } from "@ngriffin_uk/polychat-schemas";
+import { DISCOVER_WIND_DOWN_STORY_MINUTES, type DiscoverCard } from "@ngriffin_uk/polychat-schemas";
 
 import { WindDownScene } from "./media/WindDownScene.js";
 
 export type DiscoverStoryCard = Extract<DiscoverCard, { kind: "wind_down" }>;
 
-export const DISCOVER_STORY_MINUTES = 20;
-
 export function DiscoverStoryTile({
   card,
   starting,
   failed,
+  selected,
   onStart,
 }: {
   card: DiscoverStoryCard;
   starting: boolean;
   failed: boolean;
+  selected: boolean;
   onStart: (card: DiscoverStoryCard) => void;
 }) {
   return (
@@ -28,9 +28,9 @@ export function DiscoverStoryTile({
           ? { state: "making", label: "Starting" }
           : failed
             ? { state: "failed", label: "Didn't start" }
-            : { state: "ready", label: `${DISCOVER_STORY_MINUTES} min` }
+            : { state: "ready", label: `${DISCOVER_WIND_DOWN_STORY_MINUTES} min` }
       }
-      selected={false}
+      selected={selected}
       onSelect={() => onStart(card)}
     />
   );

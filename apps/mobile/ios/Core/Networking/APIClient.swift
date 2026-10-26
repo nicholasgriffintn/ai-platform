@@ -244,6 +244,10 @@ final class APIClient: ObservableObject {
         try await send(path: "/discover/wind-down", method: "POST", body: request)
     }
 
+    func startDiscoverStory(editionId: String, cardId: String) async throws -> DiscoverWindDown {
+        try await send(path: "/discover/editions/\(editionId)/cards/\(cardId)/story", method: "POST", emptyBody: true)
+    }
+
     func fetchDiscoverWindDown(id: String) async throws -> DiscoverWindDown {
         try await send(path: "/discover/wind-down/\(id)", method: "GET")
     }

@@ -77,6 +77,7 @@ import {
 } from "~/modules/discover/application/wind-down";
 import { readWindDownBed } from "~/modules/discover/application/wind-down-beds";
 import { readWindDownTonight } from "~/modules/discover/application/wind-down-context";
+import { startDiscoverStory } from "~/modules/discover/application/wind-down-story";
 
 const app = new Hono();
 
@@ -188,6 +189,21 @@ addRoute(app, "post", "/editions/:edition_id/cards/:card_id/coverage", {
   },
   handler: async ({ serviceContext, params }) =>
     compareDiscoverCoverage(serviceContext, params.edition_id, params.card_id),
+});
+
+addRoute(app, "post", "/editions/:edition_id/cards/:card_id/story", {
+  tags: ["discover"],
+  summary: "Play tonight's story from a card",
+  description:
+    "Makes the slow story a wind-down card offers, once. Later calls return the same session, and a failed one is made again.",
+  auth: true,
+  paramSchema: discoverCardParamsSchema,
+  responses: {
+    200: { description: "The card's story session", schema: discoverWindDownSchema },
+    404: { description: "Not one of your story cards", schema: errorResponseSchema },
+  },
+  handler: async ({ serviceContext, params }) =>
+    startDiscoverStory(serviceContext, params.edition_id, params.card_id),
 });
 
 addRoute(app, "post", "/editions/:edition_id/listen", {

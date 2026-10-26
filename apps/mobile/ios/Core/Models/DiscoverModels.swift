@@ -89,15 +89,7 @@ struct DiscoverCard: Decodable, Equatable, Identifiable {
 
     var body: String? { angle ?? summary ?? detail ?? premise }
 
-    var storyRequest: DiscoverWindDownRequest? {
-        guard kind == "wind_down" else { return nil }
-        return DiscoverWindDownRequest(
-            kind: "story",
-            minutes: DiscoverWindDown.storyMinutes,
-            topic: topic,
-            premise: premise
-        )
-    }
+    var isStory: Bool { kind == "wind_down" }
 
     func subject(editionId: String) -> ConversationSubject {
         if kind == "read", let sourceId {
@@ -390,7 +382,6 @@ struct DiscoverWindDownRequest: Encodable {
     var bed: String?
     var aboutToday: Bool?
     var topic: String?
-    var premise: String?
     var notes: String?
 }
 

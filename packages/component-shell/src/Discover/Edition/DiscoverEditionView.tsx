@@ -34,6 +34,7 @@ const MEDIA_LABELS: Record<DiscoverMedia, string> = {
   perch: "The Perch",
   week: "Your week",
   wind_down: "Wind down",
+  story: "tonight's story",
 };
 
 function useGreeting(): { opener: string; name: string | null } {
@@ -57,6 +58,18 @@ function todayLine(): string {
 function DiscoverMediaPane({ controller }: { controller: DiscoverEditionController }) {
   const { edition, media } = controller;
   const [openedAt] = useState(Date.now);
+
+  if (media === "story") {
+    return (
+      <DiscoverWindDownStage
+        key={controller.storyWindDownId}
+        windDownId={controller.storyWindDownId}
+        story={{ retrying: controller.isStartingStory, onRetry: controller.retryStory }}
+        onClose={controller.closePanel}
+        onPlayingChange={controller.setMediaPlaying}
+      />
+    );
+  }
 
   if (media === "wind_down") {
     return (
@@ -217,6 +230,7 @@ export function DiscoverEditionView() {
                 onSelect={controller.select}
                 startingStoryId={controller.startingStoryId}
                 failedStoryId={controller.failedStoryId}
+                openStoryId={controller.openStoryId}
                 onStartStory={controller.startStory}
                 media={
                   <DiscoverMediaShelf

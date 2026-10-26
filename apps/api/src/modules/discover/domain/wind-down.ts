@@ -15,6 +15,10 @@ import {
 
 export const WIND_DOWN_BED_SECONDS = 90;
 
+export function discoverStoryGroupId(editionId: string, cardId: string): string {
+  return `discover-story:${editionId}:${cardId}`;
+}
+
 const SHORT_NIGHT_MINUTES = 6 * 60;
 const BUSY_OPEN_ITEMS = 3;
 const STORY_HOUR = 21;

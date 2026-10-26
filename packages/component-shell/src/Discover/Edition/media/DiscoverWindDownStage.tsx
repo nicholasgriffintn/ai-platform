@@ -71,10 +71,12 @@ function phaseText(
 
 export function DiscoverWindDownStage({
   windDownId,
+  story,
   onClose,
   onPlayingChange,
 }: {
   windDownId: string | null;
+  story?: { retrying: boolean; onRetry: () => void };
   onClose: () => void;
   onPlayingChange: (playing: boolean) => void;
 }) {
@@ -116,7 +118,7 @@ export function DiscoverWindDownStage({
 
   return (
     <DiscoverStage
-      eyebrow="Wind down"
+      eyebrow={story ? "Tonight's story" : "Wind down"}
       title={!choosing && windDown ? windDown.title : "Something quieter"}
       subtitle="A calm voice, or none, over a quiet sound. Slide between the two."
       onClose={onClose}
@@ -149,13 +151,15 @@ export function DiscoverWindDownStage({
                   <MediaNoticeAction
                     icon={<RotateCcw size={15} aria-hidden />}
                     label="Try again"
-                    disabled={start.isPending}
+                    disabled={story ? story.retrying : start.isPending}
                     onClick={() =>
-                      begin({
-                        kind: windDown?.kind ?? "breathing",
-                        minutes: windDown?.minutes ?? 10,
-                        ...(windDown?.topic ? { topic: windDown.topic } : {}),
-                      })
+                      story
+                        ? story.onRetry()
+                        : begin({
+                            kind: windDown?.kind ?? "breathing",
+                            minutes: windDown?.minutes ?? 10,
+                            ...(windDown?.topic ? { topic: windDown.topic } : {}),
+                          })
                     }
                   />
                 }
@@ -228,7 +232,7 @@ export function DiscoverWindDownStage({
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenu>
-                  {!choosing && (
+                  {!choosing && !story && (
                     <Button variant="outline" size="sm" onClick={() => setChoosing(true)}>
                       <Plus size={14} aria-hidden />
                       New session

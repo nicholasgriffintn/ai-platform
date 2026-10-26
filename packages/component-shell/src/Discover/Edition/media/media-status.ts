@@ -2,7 +2,7 @@ import type { MediaStatus } from "@ngriffin_uk/polychat-component-ui";
 import { readSourceMedia, type DiscoverWindDown, type Source } from "@ngriffin_uk/polychat-schemas";
 import { formatRoundedMinutes } from "@ngriffin_uk/polychat-utility-core";
 
-export type DiscoverMedia = "episode" | "perch" | "week" | "wind_down";
+export type DiscoverMedia = "episode" | "perch" | "week" | "wind_down" | "story";
 
 export function listenStatus(
   sourceId: string | undefined,

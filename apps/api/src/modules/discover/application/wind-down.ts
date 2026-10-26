@@ -72,6 +72,7 @@ export async function latestDiscoverWindDownId(
     .listPersonalOutputs(userId, DISCOVER_CAPABILITY_ID, {
       kind: DISCOVER_WIND_DOWN_KIND,
       limit: 1,
+      ungrouped: true,
     });
 
   return latest?.id ?? null;
@@ -101,6 +102,7 @@ async function planStory(
 export async function startDiscoverWindDown(
   context: ServiceContext,
   input: CreateDiscoverWindDown,
+  groupId: string | null = null,
 ): Promise<DiscoverWindDown> {
   const user = context.requireUser();
 
@@ -128,6 +130,7 @@ export async function startDiscoverWindDown(
   const record = await context.repositories.get(OutputRepository).createOutput({
     createdByUserId: user.id,
     capabilityId: DISCOVER_CAPABILITY_ID,
+    groupId,
     kind: DISCOVER_WIND_DOWN_KIND,
     title: content.title,
     status: content.status === "ready" ? "ready" : "pending",
@@ -146,6 +149,20 @@ export async function startDiscoverWindDown(
   }
 
   return { ...content, id: record.id };
+}
+
+export async function retryDiscoverWindDown(
+  context: ServiceContext,
+  record: OutputRecord,
+  content: DiscoverWindDownContent,
+  premise?: string,
+): Promise<DiscoverWindDown> {
+  const pending: DiscoverWindDownContent = { ...content, status: "pending", steps: [] };
+
+  await saveWindDown(context, record, pending);
+  await enqueueDiscoverJob(context, { job: "wind_down", windDownId: record.id, premise });
+
+  return { ...pending, id: record.id };
 }
 
 async function saveWindDown(

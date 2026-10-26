@@ -128,6 +128,10 @@ export function startDiscoverWindDown(input: CreateDiscoverWindDown): Promise<Di
   return requestJson("/discover/wind-down", "POST", input);
 }
 
+export function startDiscoverStory(editionId: string, cardId: string): Promise<DiscoverWindDown> {
+  return requestJson(cardPath(editionId, cardId, "story"), "POST", {});
+}
+
 export function getDiscoverWindDown(windDownId: string): Promise<DiscoverWindDown> {
   return requestJson(`/discover/wind-down/${encodeURIComponent(windDownId)}`, "GET");
 }

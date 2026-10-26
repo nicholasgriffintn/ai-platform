@@ -14,6 +14,7 @@ export interface DiscoverFeedProps {
   onSelect: (card: DiscoverCard) => void;
   startingStoryId: string | null;
   failedStoryId: string | null;
+  openStoryId: string | null;
   onStartStory: (card: DiscoverStoryCard) => void;
   media: ReactNode;
 }
@@ -61,6 +62,7 @@ export function DiscoverFeed({
   onSelect,
   startingStoryId,
   failedStoryId,
+  openStoryId,
   onStartStory,
   media,
 }: DiscoverFeedProps) {
@@ -103,6 +105,7 @@ export function DiscoverFeed({
                 card={card}
                 starting={card.id === startingStoryId}
                 failed={card.id === failedStoryId}
+                selected={card.id === openStoryId}
                 onStart={onStartStory}
               />
             ))}

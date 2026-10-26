@@ -15,6 +15,7 @@ export const DISCOVER_WIND_DOWN_MINUTES = [5, 10, 20, 30] as const;
 export const DISCOVER_WIND_DOWN_BEDS = ["night", "rain", "sea", "embers", "aurora"] as const;
 export const DISCOVER_WIND_DOWN_AFTER_VOICE_MINUTES = [0, 15, 30, 60] as const;
 export const DISCOVER_WIND_DOWN_STORY_PARTS = 5;
+export const DISCOVER_WIND_DOWN_STORY_MINUTES = 20;
 export const DISCOVER_WIND_DOWN_MAX_STEPS = 60;
 export const DISCOVER_WIND_DOWN_NOTES_MAX_LENGTH = 4_000;
 

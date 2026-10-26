@@ -123,6 +123,7 @@ interface OutputListOptions {
   limit?: number;
   after?: string;
   excludeCapabilityIds?: readonly string[];
+  ungrouped?: boolean;
 }
 
 const OUTPUT_CACHE_TTL = 900;
@@ -450,6 +451,10 @@ export class OutputRepository extends BaseRepository {
     if (options.kind) {
       conditions.push("kind = ?");
       values.push(options.kind);
+    }
+
+    if (options.ungrouped) {
+      conditions.push("group_id IS NULL");
     }
 
     if (options.excludeCapabilityIds?.length) {

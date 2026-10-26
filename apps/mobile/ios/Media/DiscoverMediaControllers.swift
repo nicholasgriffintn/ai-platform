@@ -317,6 +317,25 @@ final class WindDownPlaybackController: ObservableObject {
         }
     }
 
+    func startStory(editionId: String, cardId: String) async -> String? {
+        isWorking = true
+        defer { isWorking = false }
+        do {
+            let story = try await apiClient.startDiscoverStory(editionId: editionId, cardId: cardId)
+            if windDown?.id != story.id {
+                stop()
+                stepIndex = 0
+                soundElapsed = 0
+                windDown = story
+            }
+            error = nil
+            return story.id
+        } catch {
+            self.error = "Tonight's story could not start: \(error.localizedDescription)"
+            return nil
+        }
+    }
+
     func waitUntilReady() async {
         while let current = windDown, !current.isReady, current.status != "failed", !Task.isCancelled {
             try? await Task.sleep(for: .seconds(3))
