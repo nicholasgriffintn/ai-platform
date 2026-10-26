@@ -331,6 +331,19 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     return row ? formatRun(row) : null;
   }
 
+  async countForInitiator(
+    userId: number,
+    range: { from: string; to: string },
+  ): Promise<Array<{ trigger: string | null; status: string; count: number }>> {
+    return this.runQuery<{ trigger: string | null; status: string; count: number }>(
+      `SELECT trigger, status, COUNT(*) AS count
+       FROM conversation_run
+       WHERE initiator_user_id = ? AND created_at >= ? AND created_at < ?
+       GROUP BY trigger, status`,
+      [userId, range.from, range.to],
+    );
+  }
+
   async listForProjectTask(projectId: string, projectTaskId: string): Promise<ChatRun[]> {
     const rows = await this.runQuery<ConversationRunRow>(
       `SELECT * FROM conversation_run

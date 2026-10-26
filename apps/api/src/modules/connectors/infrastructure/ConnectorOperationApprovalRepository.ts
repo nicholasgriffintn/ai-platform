@@ -119,6 +119,28 @@ export class ConnectorOperationApprovalRepository extends BaseRepository {
     return results.map(parseApproval);
   }
 
+  async countForUser(
+    userId: number,
+    range: { from: string; to: string },
+    now: string,
+  ): Promise<
+    Array<{ state: string; provider: string | null; operation: string | null; count: number }>
+  > {
+    return this.runQuery<{
+      state: string;
+      provider: string | null;
+      operation: string | null;
+      count: number;
+    }>(
+      `SELECT CASE WHEN state = 'pending' AND expires_at <= ? THEN 'expired' ELSE state END AS state,
+              provider, operation, COUNT(*) AS count
+       FROM approval
+       WHERE kind = 'connector' AND user_id = ? AND created_at >= ? AND created_at < ?
+       GROUP BY 1, provider, operation`,
+      [now, userId, range.from, range.to],
+    );
+  }
+
   async getByIdForUser(
     id: string,
     userId: number,
