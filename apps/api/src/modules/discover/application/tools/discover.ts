@@ -27,7 +27,7 @@ import { canAffordDiscoverListen } from "../cost";
 import { saveDiscoverEdition } from "../editions";
 import { scheduleNextDiscoverGather } from "../gather";
 import { enqueueDiscoverJob } from "../jobs";
-import { markDiscoverListenRequested } from "../listen";
+import { queueDiscoverResearch } from "../listen";
 import { listDiscoverDocuments } from "../notebook";
 import { startDiscoverWindDown } from "../wind-down";
 import {
@@ -146,16 +146,11 @@ export const compose_discover_edition: ApiToolDefinition = {
       (await canAffordDiscoverListen(context, basis.installationId));
     const episode = morning && basis.watchedLatestEpisode && basis.preferences.episode !== "off";
 
-    if (listen) {
-      await markDiscoverListenRequested(context, saved.id);
-    }
-
     if (listen || episode) {
-      await enqueueDiscoverJob(context, {
-        job: "research",
-        editionId: saved.id,
-        next: [...(listen ? ["listen" as const] : []), ...(episode ? ["episode" as const] : [])],
-      });
+      await queueDiscoverResearch(context, saved, [
+        ...(listen ? ["listen" as const] : []),
+        ...(episode ? ["episode" as const] : []),
+      ]);
     }
 
     if (basis.follows.length > 0 && edition.cards.some((card) => card.kind === "read")) {

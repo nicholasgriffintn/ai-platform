@@ -1,5 +1,6 @@
 import {
   isDiscoverListenResearching,
+  type DiscoverEditionContent,
   type DiscoverListenResponse,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -55,16 +56,42 @@ async function requireListenBudget(context: ServiceContext): Promise<void> {
   }
 }
 
-export async function markDiscoverListenRequested(
-  context: ServiceContext,
-  editionId: string,
-): Promise<void> {
-  const requestedAt = new Date().toISOString();
+function withoutListenRequest({
+  listenRequestedAt: _requested,
+  ...content
+}: DiscoverEditionContent): DiscoverEditionContent {
+  return content;
+}
 
-  await updateDiscoverEdition(context, editionId, (content) => ({
-    ...content,
-    listenRequestedAt: requestedAt,
-  }));
+export async function queueDiscoverResearch(
+  context: ServiceContext,
+  edition: StoredDiscoverEdition,
+  next: readonly ("listen" | "episode")[],
+): Promise<void> {
+  const listen = next.includes("listen");
+
+  if (listen) {
+    const requestedAt = new Date().toISOString();
+
+    await updateDiscoverEdition(context, edition.id, (content) => ({
+      ...content,
+      listenRequestedAt: requestedAt,
+    }));
+  }
+
+  try {
+    await enqueueDiscoverJob(withEditionRun(context, edition), {
+      job: "research",
+      editionId: edition.id,
+      next: [...next],
+    });
+  } catch (error) {
+    if (listen) {
+      await updateDiscoverEdition(context, edition.id, withoutListenRequest);
+    }
+
+    throw error;
+  }
 }
 
 export async function requestDiscoverListen(
@@ -84,12 +111,7 @@ export async function requestDiscoverListen(
   }
 
   await requireListenBudget(context);
-  await markDiscoverListenRequested(context, editionId);
-  await enqueueDiscoverJob(withEditionRun(context, edition), {
-    job: "research",
-    editionId,
-    next: ["listen"],
-  });
+  await queueDiscoverResearch(context, edition, ["listen"]);
 
   return { sourceId: null };
 }
@@ -137,22 +159,14 @@ export async function produceDiscoverListen(
       showId,
     });
 
-    await updateDiscoverEdition(
-      context,
-      editionId,
-      ({ listenRequestedAt: _requested, ...content }) => ({
-        ...content,
-        listenSourceId: episode.id,
-      }),
-    );
+    await updateDiscoverEdition(context, editionId, (content) => ({
+      ...withoutListenRequest(content),
+      listenSourceId: episode.id,
+    }));
 
     return { sourceId: episode.id };
   } catch (error) {
-    await updateDiscoverEdition(
-      context,
-      editionId,
-      ({ listenRequestedAt: _requested, ...content }) => content,
-    );
+    await updateDiscoverEdition(context, editionId, withoutListenRequest);
 
     throw error;
   }

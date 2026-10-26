@@ -1,7 +1,12 @@
 import { discoverEditionContentSchema } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { addResearchedReads, chooseBriefingTopics, describeBriefingLeads } from "../briefing";
+import {
+  addResearchedReads,
+  chooseBriefingTopics,
+  describeBriefingLeads,
+  planEditionResearch,
+} from "../briefing";
 
 const edition = discoverEditionContentSchema.parse({
   version: 1,
@@ -56,6 +61,16 @@ describe("chooseBriefingTopics", () => {
       "Rust",
     ]);
     expect(chooseBriefingTopics(edition, null, 2)).toEqual(["formula 1", "Sourdough"]);
+  });
+});
+
+describe("planEditionResearch", () => {
+  it("researches only the episode's topic when The Perch is not being made, since the episode budgets one briefing", () => {
+    expect(planEditionResearch({ edition, listen: false, episodeTopic: "Cycling" })).toEqual([
+      "Cycling",
+    ]);
+    expect(planEditionResearch({ edition, listen: false, episodeTopic: null })).toEqual([]);
+    expect(planEditionResearch({ edition, listen: true, episodeTopic: "Cycling" })).toHaveLength(4);
   });
 });
 

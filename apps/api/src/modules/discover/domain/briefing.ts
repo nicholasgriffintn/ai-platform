@@ -56,6 +56,18 @@ export function chooseBriefingTopics(
   return topics;
 }
 
+export function planEditionResearch(input: {
+  edition: DiscoverEditionContent;
+  listen: boolean;
+  episodeTopic: string | null;
+}): string[] {
+  if (input.listen) {
+    return chooseBriefingTopics(input.edition, input.episodeTopic);
+  }
+
+  return input.episodeTopic ? [input.episodeTopic] : [];
+}
+
 export function listBriefingReads(
   edition: DiscoverEditionContent,
   topic: string,

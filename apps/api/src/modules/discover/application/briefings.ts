@@ -19,14 +19,13 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
   addResearchedReads,
   buildDiscoverBriefingMaterial,
-  chooseBriefingTopics,
   describeBriefingLeads,
   listBriefingReads,
+  planEditionResearch,
   renderDiscoverBriefing,
   type DiscoverBriefingArticle,
   type DiscoverBriefingText,
 } from "~/modules/discover/domain/briefing";
-import { remainingCreditMicros } from "~/modules/discover/domain/cost";
 import { discoverTopicKey, listEditionLinks } from "~/modules/discover/domain/edition";
 import { pickEpisodeTopic } from "~/modules/discover/domain/episodes";
 import { DISCOVER_HEADLINES_TOPIC } from "~/modules/discover/domain/research";
@@ -41,7 +40,7 @@ import type { KnowledgeArticleCandidate } from "~/modules/knowledge/domain/item"
 import { generateTierObject } from "~/modules/models/application/tier-object";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
-import { readDiscoverSpend } from "./cost";
+import { affordableEpisodeLength, canAffordDiscoverListen } from "./cost";
 import {
   listRecentDiscoverEditions,
   requireDiscoverEdition,
@@ -348,23 +347,19 @@ export async function researchDiscoverEdition(
       listDiscoverFollows(context, user.id),
       readDiscoverRoutine(context),
     ]);
-    const remaining = remainingCreditMicros(
-      await readDiscoverSpend(context, routine.installationId),
-    );
+    const listen =
+      next.includes("listen") && (await canAffordDiscoverListen(context, routine.installationId));
+    const episode =
+      next.includes("episode") &&
+      routine.episode !== "off" &&
+      (await affordableEpisodeLength(context, routine.installationId, routine.episode)) !== null;
+    const topics = planEditionResearch({
+      edition: edition.content,
+      listen,
+      episodeTopic: episode ? pickEpisodeTopic(edition.content, follows) : null,
+    });
 
-    if (remaining === null || remaining > 0) {
-      const episodeTopic = next.includes("episode")
-        ? pickEpisodeTopic(edition.content, follows)
-        : null;
-
-      researched = (
-        await ensureDiscoverBriefings(
-          context,
-          edition,
-          chooseBriefingTopics(edition.content, episodeTopic),
-        )
-      ).length;
-    }
+    researched = (await ensureDiscoverBriefings(context, edition, topics)).length;
   } catch (error) {
     logger.warn("The edition's topics could not be researched", {
       edition_id: editionId,
