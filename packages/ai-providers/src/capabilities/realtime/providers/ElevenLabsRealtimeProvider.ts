@@ -1,15 +1,7 @@
 import type { RealtimeLiveProviderDescriptor } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
-import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { resolveHostProviderApiKey } from "../../../credentials.js";
-import type { ProviderRuntime } from "../../../runtime.js";
-import type {
-  RealtimeProvider,
-  RealtimeSessionRequest,
-  RealtimeTranscriptionDelay,
-} from "../index.js";
-import { buildGrantedRealtimeProxyUrl, REALTIME_TRANSCRIPTION_PROXY_PATH } from "./proxyUrl.js";
+import type { RealtimeSessionRequest, RealtimeTranscriptionDelay } from "../index.js";
+import { TranscriptionProxyRealtimeProvider } from "./TranscriptionProxyRealtimeProvider.js";
 
 export const ELEVENLABS_REALTIME_DESCRIPTOR = {
   id: "elevenlabs",
@@ -27,115 +19,26 @@ export const ELEVENLABS_REALTIME_DESCRIPTOR = {
   composeWith: { reasoning: true, speech: true },
 } satisfies RealtimeLiveProviderDescriptor;
 
-const DEFAULT_TRANSCRIPTION_MODEL = ELEVENLABS_REALTIME_DESCRIPTOR.defaultModelId;
-const API_KEY_ENVIRONMENT_VARIABLE = "ELEVENLABS_API_KEY";
-const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
-  realtime: [],
-  translation: [],
-  transcription: [DEFAULT_TRANSCRIPTION_MODEL],
-};
-const DEFAULT_TRANSCRIPTION_DELAY: RealtimeTranscriptionDelay = "minimal";
-
-export class ElevenLabsRealtimeProvider implements RealtimeProvider {
-  constructor(protected readonly runtime: ProviderRuntime) {}
-
+export class ElevenLabsRealtimeProvider extends TranscriptionProxyRealtimeProvider {
   name = "elevenlabs";
   descriptor = ELEVENLABS_REALTIME_DESCRIPTOR;
   configuration = {
     acceptsUserApiKey: true,
-    environmentVariables: [API_KEY_ENVIRONMENT_VARIABLE],
+    environmentVariables: ["ELEVENLABS_API_KEY"],
   };
-  models = SESSION_MODELS_BY_TYPE.transcription;
+  models = [ELEVENLABS_REALTIME_DESCRIPTOR.defaultModelId];
 
-  async getApiKey(request: RealtimeSessionRequest): Promise<string> {
-    return resolveHostProviderApiKey(this.runtime.host, {
-      env: request.env,
-      providerName: this.name,
-      envKeyName: API_KEY_ENVIRONMENT_VARIABLE,
-      userId: request.user.id,
-      credentialAuthority: request.credentialAuthority,
-    });
+  protected override buildProxyParams(
+    request: RealtimeSessionRequest,
+    delay: RealtimeTranscriptionDelay,
+  ): Record<string, string | undefined> {
+    return { delay, language: request.language };
   }
 
-  getDefaultModel(type: RealtimeSessionRequest["type"]): string {
-    if (type !== "transcription") {
-      throw new AssistantError("Invalid session type", ErrorType.PARAMS_ERROR);
-    }
-
-    return DEFAULT_TRANSCRIPTION_MODEL;
-  }
-
-  private async resolveModel(request: RealtimeSessionRequest): Promise<string> {
-    const requestedModel = request.model || this.getDefaultModel(request.type);
-
-    if (!SESSION_MODELS_BY_TYPE[request.type].includes(requestedModel)) {
-      throw new AssistantError("Invalid model specified", ErrorType.PARAMS_ERROR);
-    }
-
-    const modelConfig = await this.runtime.host.models.getModelConfigByModel(
-      requestedModel,
-      request.env,
-    );
-
-    if (!modelConfig || modelConfig.provider !== this.name) {
-      throw new AssistantError(
-        `Model configuration not found for ${requestedModel}`,
-        ErrorType.CONFIGURATION_ERROR,
-      );
-    }
-
-    return modelConfig.matchingModel;
-  }
-
-  buildAudioFormat(): Record<string, unknown> {
-    return {
-      encoding: "pcm_s16le",
-      sample_rate: 16000,
-    };
-  }
-
-  getTranscriptionDelay(request: RealtimeSessionRequest): RealtimeTranscriptionDelay {
-    return request.delay ?? DEFAULT_TRANSCRIPTION_DELAY;
-  }
-
-  async createSession(request: RealtimeSessionRequest): Promise<unknown> {
-    if (request.type !== "transcription") {
-      throw new AssistantError("Invalid session type", ErrorType.PARAMS_ERROR);
-    }
-
-    const model = await this.resolveModel(request);
-    const delay = this.getTranscriptionDelay(request);
-    const sessionId = generateId();
-    const proxy = await buildGrantedRealtimeProxyUrl({
-      host: this.runtime.host,
-      apiBaseUrl: request.apiBaseUrl ?? request.env.API_BASE_URL,
-      byok: request.credentialAuthority === "byok",
-      env: request.env,
-      model,
-      params: {
-        delay,
-        language: request.language,
-      },
-      path: REALTIME_TRANSCRIPTION_PROXY_PATH,
-      provider: this.name,
-      sessionId,
-      userId: request.user.id,
-    });
-
-    return {
-      id: sessionId,
-      object: "realtime.transcription.session",
-      type: "transcription",
-      provider: this.name,
-      transport: "websocket",
-      url: proxy.url,
-      proxy_grant_expires_at: proxy.expiresAt,
-      audio_format: this.buildAudioFormat(),
-      input_audio_format: this.buildAudioFormat().encoding,
-      input_audio_transcription: {
-        model,
-        ...(request.language ? { language_code: request.language } : {}),
-      },
-    };
+  protected override buildTranscriptionMetadata(
+    request: RealtimeSessionRequest,
+    model: string,
+  ): Record<string, string> {
+    return { model, ...(request.language ? { language_code: request.language } : {}) };
   }
 }

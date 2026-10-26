@@ -1,9 +1,11 @@
 import { getNotificationInstallationId } from "@ngriffin_uk/polychat-library-client";
 import {
+  getReadyRealtimeSessionModels,
+  type RealtimeLiveProviderOption,
+} from "@ngriffin_uk/polychat-library-realtime/live-providers";
+import {
   COMPUTE_SITES,
-  getChatAndRealtimeModelsByMode,
   getModelsByMode,
-  getRealtimeSessionModelsByProvider,
   getToolCallModels,
   type ComputeSite,
   type LastModelSelection,
@@ -57,25 +59,21 @@ export function getPickerLocationLabel(
 export function getPickerScopeModels(
   models: ModelConfig,
   scope: ModelSelectorScope,
-  agentMode: boolean,
-  provider?: string,
+  {
+    agentMode,
+    liveProviders,
+    provider,
+  }: { agentMode: boolean; liveProviders: RealtimeLiveProviderOption[]; provider?: string },
 ): ModelConfig {
   if (scope === "live") {
-    return getRealtimeSessionModelsByProvider(models, provider);
+    return getReadyRealtimeSessionModels(models, liveProviders, provider);
   }
 
   if (scope === "default" && agentMode) {
     return getToolCallModels(models);
   }
 
-  return Object.assign(
-    {},
-    ...COMPUTE_SITES.map((site) =>
-      scope === "chat-and-live"
-        ? getChatAndRealtimeModelsByMode(models, site)
-        : getModelsByMode(models, site),
-    ),
-  );
+  return Object.assign({}, ...COMPUTE_SITES.map((site) => getModelsByMode(models, site)));
 }
 
 export function getLastUsedPickerModel(

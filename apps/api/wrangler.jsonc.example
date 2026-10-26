@@ -115,6 +115,10 @@
       {
         "name": "USER_SYNC_COORDINATOR",
         "class_name": "UserSyncCoordinator"
+      },
+      {
+        "name": "REALTIME_PROXY_COORDINATOR",
+        "class_name": "RealtimeProxyCoordinator"
       }
     ]
   },
@@ -133,7 +137,8 @@
     },
     { "tag": "v4-machine-runs", "new_sqlite_classes": ["MachineRunCoordinator"] },
     { "tag": "v5-user-sync", "new_sqlite_classes": ["UserSyncCoordinator"] },
-    { "tag": "v6-sites-runtime", "new_sqlite_classes": ["SiteRuntime"] }
+    { "tag": "v6-sites-runtime", "new_sqlite_classes": ["SiteRuntime"] },
+    { "tag": "v7-realtime-proxy", "new_sqlite_classes": ["RealtimeProxyCoordinator"] }
   ],
   "analytics_engine_datasets": [
     {

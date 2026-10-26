@@ -24,6 +24,10 @@ export {
   MistralRealtimeProvider,
 } from "./MistralRealtimeProvider.js";
 export {
+  WORKERS_AI_REALTIME_DESCRIPTOR,
+  WorkersAiRealtimeProvider,
+} from "./WorkersAiRealtimeProvider.js";
+export {
   buildMistralVoiceAgentSessionRequest,
   MISTRAL_VOICE_AGENT_DESCRIPTOR,
   MistralVoiceAgentProvider,

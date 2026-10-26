@@ -11,6 +11,7 @@ import {
 } from "./greenpt";
 
 const mocks = vi.hoisted(() => ({
+  connectRealtimeWebSocketUpstream: vi.fn(),
   createRealtimeTranscriptionProxyResponse: vi.fn(),
   getRealtimeProvider: vi.fn(),
 }));
@@ -21,6 +22,7 @@ vi.mock("~/infrastructure/providers/capabilities/realtime", () => ({
 
 vi.mock("./transcriptionProxy", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./transcriptionProxy")>()),
+  connectRealtimeWebSocketUpstream: mocks.connectRealtimeWebSocketUpstream,
   createRealtimeTranscriptionProxyResponse: mocks.createRealtimeTranscriptionProxyResponse,
 }));
 
@@ -50,10 +52,12 @@ describe("GreenPT realtime protocol", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getRealtimeProvider.mockReturnValue({
+      descriptor: { shortLabel: "GreenPT" },
       getApiKey: vi.fn().mockResolvedValue("greenpt-api-key"),
       getDefaultModel: vi.fn().mockReturnValue("green-s"),
       models: ["green-s", "green-s-pro"],
     });
+    mocks.connectRealtimeWebSocketUpstream.mockReturnValue(vi.fn());
     mocks.createRealtimeTranscriptionProxyResponse.mockResolvedValue(
       new Response(null, { status: 204 }),
     );
@@ -62,7 +66,7 @@ describe("GreenPT realtime protocol", () => {
   it("connects to the live listen endpoint with linear16 audio and language", () => {
     const url = buildGreenPtRealtimeUpstreamUrl({ model: "green-s-pro", language: "multi" });
 
-    expect(url.origin).toBe("wss://api.greenpt.ai");
+    expect(url.origin).toBe("https://api.greenpt.ai");
     expect(url.pathname).toBe("/v1/listen");
     expect(Object.fromEntries(url.searchParams)).toEqual({
       model: "green-s-pro",
@@ -103,10 +107,12 @@ describe("GreenPT realtime protocol", () => {
     expect(mocks.createRealtimeTranscriptionProxyResponse).toHaveBeenCalledWith(
       expect.objectContaining({
         providerLabel: "GreenPT",
-        headers: { Authorization: "Token greenpt-api-key" },
         onSessionEnd,
       }),
     );
+    expect(mocks.connectRealtimeWebSocketUpstream).toHaveBeenCalledWith(expect.any(URL), {
+      Authorization: "Token greenpt-api-key",
+    });
   });
 
   it("rejects models the provider does not advertise", async () => {

@@ -1,7 +1,6 @@
 import type {
   DecisionRequest,
   DecisionResponse,
-  TranscriptionResponse,
   TwentyQuestionsAnswer,
   TwentyQuestionsAskRequest,
   TwentyQuestionsCategory,
@@ -35,19 +34,6 @@ export const decisionsService = {
 };
 
 export const verbatimService = {
-  async transcribeDraft(audio: Blob): Promise<string> {
-    const form = new FormData();
-
-    form.append("audio", new File([audio], "draft.wav", { type: "audio/wav" }));
-
-    const response = await fetchApiOrThrow("/audio/transcribe", {
-      method: "POST",
-      body: form,
-      timeoutMs: MEDIA_DECISION_TIMEOUT_MS,
-    });
-
-    return (await returnFetchedData<TranscriptionResponse>(response)).response.content.trim();
-  },
   async streamSegment(
     audio: Blob,
     context: string,

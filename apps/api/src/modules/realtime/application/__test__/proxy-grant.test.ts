@@ -105,6 +105,43 @@ describe("realtime proxy grants", () => {
     ).rejects.toMatchObject({ statusCode: 403 });
   });
 
+  it("accepts the route host wrangler dev rewrites to while still checking the origin", async () => {
+    const developmentEnv = {
+      ...env,
+      ENV: "development",
+      API_BASE_URL: "http://localhost:8787",
+      APP_BASE_URL: "http://localhost:5173",
+    } as unknown as IEnv;
+    const grant = await createRealtimeProxyGrant(developmentEnv, {
+      byok: false,
+      model: "scribe-v2",
+      provider: "elevenlabs",
+      sessionId: "session-1",
+      userId: user.id,
+    });
+    const request = (origin: string) =>
+      new Request("https://api.polychat.app/realtime/transcription", {
+        headers: { Host: "api.polychat.app", Origin: origin },
+      });
+    const assertGrant = (origin: string) =>
+      assertRealtimeProxyGrant({
+        env: developmentEnv,
+        grant: grant.token,
+        model: "scribe-v2",
+        provider: "elevenlabs",
+        request: request(origin),
+        sessionId: "session-1",
+        user,
+      });
+
+    coordinatorFetch.mockResolvedValueOnce(Response.json({ acquired: true }));
+
+    await expect(assertGrant("http://localhost:5173")).resolves.toMatchObject({ byok: false });
+    await expect(assertGrant("https://attacker.example")).rejects.toMatchObject({
+      statusCode: 403,
+    });
+  });
+
   it("rejects a mismatched Host header", async () => {
     const grant = await validGrant();
 

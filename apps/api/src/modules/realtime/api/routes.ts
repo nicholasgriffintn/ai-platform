@@ -8,18 +8,14 @@ import {
   realtimeSessionResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { type Context, Hono } from "hono";
+import { Hono } from "hono";
 import z from "zod/v4";
 
 import { optionalRepositories, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import { defineResource } from "~/infrastructure/http/resource";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { createCartesiaRealtimeProxyResponse } from "~/modules/realtime/application/cartesia";
 import { listRealtimeLiveProviders } from "~/modules/realtime/application/catalogue";
-import { createElevenLabsRealtimeProxyResponse } from "~/modules/realtime/application/elevenlabs";
-import { createGreenPtRealtimeProxyResponse } from "~/modules/realtime/application/greenpt";
-import { createMistralRealtimeProxyResponse } from "~/modules/realtime/application/mistral";
 import { createOpenAILiveCallResponse } from "~/modules/realtime/application/openaiLive";
 import { createRealtimePipelineSession } from "~/modules/realtime/application/pipeline";
 import {
@@ -28,10 +24,11 @@ import {
 } from "~/modules/realtime/application/proxy-grant";
 import { createRealtimeSession } from "~/modules/realtime/application/session";
 import { settleRealtimeSessionUsage } from "~/modules/realtime/application/sessionUsage";
-import type {
-  RealtimeProxySessionEndHandler,
-  RealtimeProxySessionSummary,
-} from "~/modules/realtime/application/transcriptionProxy";
+import {
+  createTranscriptionProxyResponse,
+  TRANSCRIPTION_PROXY_PROVIDERS,
+} from "~/modules/realtime/application/transcriptionProxies";
+import type { RealtimeProxySessionSummary } from "~/modules/realtime/application/transcriptionProxy";
 import type { IEnv, IUser } from "~/types";
 
 const app = new Hono<{
@@ -79,9 +76,8 @@ app.use("/*", async (c, next) => {
   c.res.headers.set("Cache-Control", NO_STORE);
 });
 
-const transcriptionProviderSchema = z.enum(["mistral", "elevenlabs", "cartesia", "greenpt"]);
 const transcriptionQuerySchema = realtimeProxyGrantQuerySchema.extend({
-  provider: transcriptionProviderSchema,
+  provider: z.enum(TRANSCRIPTION_PROXY_PROVIDERS),
 });
 const sessionQuerySchema = z.object({
   type: z.enum(["realtime", "translation", "transcription", "pipeline"]),
@@ -97,50 +93,6 @@ const sessionQuerySchema = z.object({
   input_modalities: z.string().min(1).optional(),
   output_modalities: z.string().min(1).optional(),
 });
-
-type TranscriptionProvider = z.infer<typeof transcriptionProviderSchema>;
-type TranscriptionQuery = z.infer<typeof transcriptionQuerySchema>;
-
-function transcriptionProxy(
-  provider: TranscriptionProvider,
-  raw: Context,
-  serviceContext: ServiceContext,
-  user: IUser,
-  query: TranscriptionQuery,
-) {
-  return (onSessionEnd: RealtimeProxySessionEndHandler) => {
-    const shared = {
-      context: raw,
-      env: serviceContext.env,
-      user,
-      model: query.model,
-      onSessionEnd,
-    };
-
-    switch (provider) {
-      case "mistral":
-        return createMistralRealtimeProxyResponse({
-          ...shared,
-          delay: query.delay,
-          speakerLabels: query.speakers === "true",
-        });
-      case "elevenlabs":
-        return createElevenLabsRealtimeProxyResponse({
-          ...shared,
-          language: query.language,
-          waitUntil: serviceContext.waitUntil,
-        });
-      case "cartesia":
-        return createCartesiaRealtimeProxyResponse({ ...shared, delay: query.delay });
-      case "greenpt":
-        return createGreenPtRealtimeProxyResponse({
-          ...shared,
-          delay: query.delay,
-          language: query.language,
-        });
-    }
-  };
-}
 
 defineResource(
   app,
@@ -229,7 +181,18 @@ addRoute(app, "get", "/transcription", {
 
     return connectReservedRealtimeProxy(
       reservation,
-      transcriptionProxy(query.provider, raw, serviceContext, user, query),
+      (onSessionEnd) =>
+        createTranscriptionProxyResponse(query.provider, {
+          context: raw,
+          env: serviceContext.env,
+          user,
+          model: query.model,
+          delay: query.delay,
+          language: query.language,
+          speakerLabels: query.speakers === "true",
+          waitUntil: serviceContext.waitUntil,
+          onSessionEnd,
+        }),
       settleProxySession({
         serviceContext,
         user,

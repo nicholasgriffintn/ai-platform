@@ -12,6 +12,7 @@ import {
 } from "./cartesia";
 
 const mocks = vi.hoisted(() => ({
+  connectRealtimeWebSocketUpstream: vi.fn(),
   createRealtimeTranscriptionProxyResponse: vi.fn(),
   getRealtimeProvider: vi.fn(),
 }));
@@ -22,6 +23,7 @@ vi.mock("~/infrastructure/providers/capabilities/realtime", () => ({
 
 vi.mock("./transcriptionProxy", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./transcriptionProxy")>()),
+  connectRealtimeWebSocketUpstream: mocks.connectRealtimeWebSocketUpstream,
   createRealtimeTranscriptionProxyResponse: mocks.createRealtimeTranscriptionProxyResponse,
 }));
 
@@ -51,10 +53,12 @@ describe("Cartesia realtime protocol", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getRealtimeProvider.mockReturnValue({
+      descriptor: { shortLabel: "Cartesia" },
       getApiKey: vi.fn().mockResolvedValue("cartesia-api-key"),
       getDefaultModel: vi.fn().mockReturnValue("ink-2"),
       models: ["ink-2"],
     });
+    mocks.connectRealtimeWebSocketUpstream.mockReturnValue(vi.fn());
     mocks.createRealtimeTranscriptionProxyResponse.mockResolvedValue(
       new Response(null, { status: 204 }),
     );
@@ -94,14 +98,14 @@ describe("Cartesia realtime protocol", () => {
       expect.objectContaining({
         context: expect.anything(),
         providerLabel: "Cartesia",
-        upstreamUrl: new URL(
-          "https://api.cartesia.ai/stt/turns/websocket?model=ink-2&encoding=pcm_s16le&sample_rate=16000&cartesia_version=2026-08-14&turn_end_timeout_ms=1600",
-        ),
-        headers: {
-          "X-API-Key": "cartesia-api-key",
-        },
         onSessionEnd,
       }),
+    );
+    expect(mocks.connectRealtimeWebSocketUpstream).toHaveBeenCalledWith(
+      new URL(
+        "https://api.cartesia.ai/stt/turns/websocket?model=ink-2&encoding=pcm_s16le&sample_rate=16000&cartesia_version=2026-08-14&turn_end_timeout_ms=1600",
+      ),
+      { "X-API-Key": "cartesia-api-key" },
     );
   });
 

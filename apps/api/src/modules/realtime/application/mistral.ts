@@ -1,9 +1,9 @@
+import type { WebSocket as RealtimeUpstreamSocket } from "@cloudflare/workers-types";
 import {
   type RealtimeTranscriptionDelay,
   getMistralTargetStreamingDelayMs,
   resolveMistralRealtimeProxyModel,
 } from "@ngriffin_uk/polychat-ai-providers";
-import { NO_STORE } from "@ngriffin_uk/polychat-schemas";
 import type { Context } from "hono";
 
 import { REALTIME_PROXY_LIMITS } from "~/config/realtime";
@@ -18,9 +18,12 @@ import {
   isMistralSessionCreatedMessage,
   toMistralUpstreamMessage,
 } from "./mistralProtocol";
+import { resolveRealtimeProxyApiKey } from "./proxyTarget";
 import {
-  createRealtimeProxyHandshakeFailure,
+  closeRealtimeSocket,
+  connectRealtimeWebSocketUpstream,
   createRealtimeProxySessionEnd,
+  openRealtimeProxySockets,
   normalizeClientRealtimeMessage,
   RealtimeProxyLimitError,
   RealtimeProxySessionLimits,
@@ -30,16 +33,6 @@ import {
 
 const MISTRAL_REALTIME_USER_AGENT = "polychat-mistral-realtime-proxy/1.0";
 
-function closeSocket(socket: WebSocket, code = 1000, reason = ""): void {
-  try {
-    if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
-      socket.close(code, reason);
-    }
-  } catch {
-    // close can race with the peer closing first.
-  }
-}
-
 function bridgeMistralRealtimeSockets({
   client,
   upstream,
@@ -48,7 +41,7 @@ function bridgeMistralRealtimeSockets({
   maxSessionDurationMs,
 }: {
   client: WebSocket;
-  upstream: WebSocket;
+  upstream: RealtimeUpstreamSocket;
   sessionUpdateMessage: string;
   onSessionEnd?: RealtimeProxySessionEndHandler;
   maxSessionDurationMs?: number;
@@ -58,8 +51,8 @@ function bridgeMistralRealtimeSockets({
   const limits = new RealtimeProxySessionLimits();
   const endSession = createRealtimeProxySessionEnd(onSessionEnd, limits);
   const sessionTimer = setTimeout(() => {
-    closeSocket(client, 1008, "Realtime session duration limit reached");
-    closeSocket(upstream, 1008, "Realtime session duration limit reached");
+    closeRealtimeSocket(client, 1008, "Realtime session duration limit reached");
+    closeRealtimeSocket(upstream, 1008, "Realtime session duration limit reached");
     endSession();
   }, maxSessionDurationMs ?? REALTIME_PROXY_LIMITS.sessionDurationMs);
   const clearSessionTimer = () => clearTimeout(sessionTimer);
@@ -108,8 +101,8 @@ function bridgeMistralRealtimeSockets({
       const reason =
         error instanceof RealtimeProxyLimitError ? error.message : "Invalid realtime message";
 
-      closeSocket(client, code, reason);
-      closeSocket(upstream, code, reason);
+      closeRealtimeSocket(client, code, reason);
+      closeRealtimeSocket(upstream, code, reason);
       endSession();
     }
   });
@@ -132,30 +125,30 @@ function bridgeMistralRealtimeSockets({
       const reason =
         error instanceof RealtimeProxyLimitError ? error.message : "Invalid provider message";
 
-      closeSocket(client, code, reason);
-      closeSocket(upstream, code, reason);
+      closeRealtimeSocket(client, code, reason);
+      closeRealtimeSocket(upstream, code, reason);
       endSession();
     }
   });
 
   client.addEventListener("close", () => {
     clearSessionTimer();
-    closeSocket(upstream);
+    closeRealtimeSocket(upstream);
     endSession();
   });
   client.addEventListener("error", () => {
     clearSessionTimer();
-    closeSocket(upstream, 1011, "Client socket error");
+    closeRealtimeSocket(upstream, 1011, "Client socket error");
     endSession();
   });
   upstream.addEventListener("close", (event) => {
     clearSessionTimer();
-    closeSocket(client, event.code, event.reason);
+    closeRealtimeSocket(client, event.code, event.reason);
     endSession();
   });
   upstream.addEventListener("error", () => {
     clearSessionTimer();
-    closeSocket(client, 1011, "Upstream socket error");
+    closeRealtimeSocket(client, 1011, "Upstream socket error");
     endSession();
   });
 }
@@ -177,16 +170,6 @@ export async function createMistralRealtimeProxyResponse({
   model?: string;
   onSessionEnd?: RealtimeProxySessionEndHandler;
 }): Promise<Response> {
-  const request = context.req.raw;
-  const isWebSocketUpgrade = request.headers.get("Upgrade")?.toLowerCase() === "websocket";
-
-  if (!isWebSocketUpgrade) {
-    return new Response("Expected WebSocket upgrade", {
-      status: 426,
-      headers: { Upgrade: "websocket", "Cache-Control": NO_STORE },
-    });
-  }
-
   const provider = getRealtimeProvider("mistral", context);
   const modelToUse = resolveMistralRealtimeProxyModel(model);
 
@@ -194,37 +177,28 @@ export async function createMistralRealtimeProxyResponse({
     return ResponseFactory.error(context, "Invalid model specified", 400);
   }
 
-  const apiKey = await provider.getApiKey?.({
-    env,
-    user,
-    type: "transcription",
-  });
+  const apiKey = await resolveRealtimeProxyApiKey(context, provider, { env, user });
 
-  if (!apiKey) {
-    return ResponseFactory.error(context, "Failed to resolve API key for Mistral provider", 500);
+  if (apiKey instanceof Response) {
+    return apiKey;
   }
 
   const url = new URL("/v1/audio/transcriptions/realtime", "https://api.mistral.ai");
 
   url.searchParams.set("model", modelToUse);
 
-  const upstreamResponse = await fetch(url, {
-    headers: {
+  const sockets = await openRealtimeProxySockets({
+    context,
+    providerLabel: provider.descriptor.shortLabel,
+    connectUpstream: connectRealtimeWebSocketUpstream(url, {
       Authorization: `Bearer ${apiKey}`,
-      Upgrade: "websocket",
       "user-agent": MISTRAL_REALTIME_USER_AGENT,
-    },
+    }),
   });
 
-  if (upstreamResponse.status !== 101 || !upstreamResponse.webSocket) {
-    return createRealtimeProxyHandshakeFailure(context, "Mistral", upstreamResponse);
+  if (!sockets.ok) {
+    return sockets.response;
   }
-
-  const pair = new WebSocketPair();
-  const [clientSocket, serverSocket] = Object.values(pair);
-
-  serverSocket.accept();
-  upstreamResponse.webSocket.accept();
 
   const userSettings = await new UserSettingsRepository(env).getUserSettings(user.id);
   const audioFormat = provider.buildAudioFormat ? provider.buildAudioFormat() : undefined;
@@ -240,9 +214,9 @@ export async function createMistralRealtimeProxyResponse({
     : undefined;
 
   bridgeMistralRealtimeSockets({
-    client: serverSocket,
+    client: sockets.client,
     onSessionEnd,
-    upstream: upstreamResponse.webSocket,
+    upstream: sockets.upstream,
     sessionUpdateMessage: buildMistralSessionUpdateMessage({
       audioFormat,
       speakerLabels,
@@ -252,11 +226,5 @@ export async function createMistralRealtimeProxyResponse({
     maxSessionDurationMs: resolveRealtimeMaxSessionSeconds(env) * 1000,
   });
 
-  return new Response(null, {
-    status: 101,
-    webSocket: clientSocket,
-    headers: {
-      "Cache-Control": NO_STORE,
-    },
-  });
+  return sockets.response;
 }

@@ -6,7 +6,11 @@ import * as apiKeyUtils from "~/infrastructure/providers/credentials";
 import { providerLibrary } from "~/infrastructure/providers/library";
 import * as modelsService from "~/modules/models/application";
 
-import { listRealtimeLiveProviders, resolveRealtimeProviderReadiness } from "./catalogue";
+import {
+  hasPlatformRealtimeConfiguration,
+  listRealtimeLiveProviders,
+  resolveRealtimeProviderReadiness,
+} from "./catalogue";
 
 const descriptor: RealtimeLiveProviderDescriptor = {
   id: "openai",
@@ -42,6 +46,23 @@ describe("realtime provider catalogue", () => {
     ).toMatchObject({ available: false, readiness: "unavailable" });
   });
 
+  it("treats a Workers binding as platform configuration", () => {
+    const configuration = {
+      acceptsUserApiKey: false,
+      environmentVariables: [],
+      bindings: ["AI"],
+    };
+
+    expect(hasPlatformRealtimeConfiguration({ AI: {} }, configuration)).toBe(true);
+    expect(hasPlatformRealtimeConfiguration({}, configuration)).toBe(false);
+    expect(
+      hasPlatformRealtimeConfiguration(
+        { AI: {} },
+        { acceptsUserApiKey: false, environmentVariables: [] },
+      ),
+    ).toBe(false);
+  });
+
   it("projects registered providers using account model and credential readiness", async () => {
     const registrations = providerLibrary.list("realtime");
     const models: Awaited<ReturnType<typeof modelsService.listModels>> = Object.fromEntries(
@@ -61,7 +82,7 @@ describe("realtime provider catalogue", () => {
     );
     const error = vi.fn();
     const context = {
-      env: {},
+      env: { AI: {} },
       getLogger: () => ({ error }),
       requireUser: () => ({ id: 42 }),
       user: { id: 42 },
@@ -96,7 +117,7 @@ describe("realtime provider catalogue", () => {
     );
     const error = vi.fn();
     const context = {
-      env: {},
+      env: { AI: {} },
       getLogger: () => ({ error }),
       requireUser: () => ({ id: 42 }),
       user: { id: 42 },

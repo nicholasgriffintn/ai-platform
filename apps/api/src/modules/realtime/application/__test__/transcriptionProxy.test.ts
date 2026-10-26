@@ -5,6 +5,7 @@ import { REALTIME_MAX_SESSION_SECONDS_MAX, REALTIME_PROXY_LIMITS } from "~/confi
 
 import {
   bridgeRealtimeTranscriptionSockets,
+  connectRealtimeWebSocketUpstream,
   createRealtimeTranscriptionProxyResponse,
   normalizeClientRealtimeMessage,
   RealtimeProxyLimitError,
@@ -142,8 +143,10 @@ describe("realtime transcription proxy limits", () => {
       createRealtimeTranscriptionProxyResponse({
         context,
         providerLabel: "Provider",
-        upstreamUrl: new URL("https://provider.example/realtime"),
-        headers: { Authorization: "Bearer provider-key" },
+        connectUpstream: connectRealtimeWebSocketUpstream(
+          new URL("https://provider.example/realtime"),
+          { Authorization: "Bearer provider-key" },
+        ),
         toUpstreamMessage: () => null,
         toClientMessage: () => undefined,
       }),

@@ -90,6 +90,7 @@ describe("ElevenLabs realtime proxy messages", () => {
     expect(toUpstream({ type: "input_audio.flush" })).toBe(
       JSON.stringify({
         message_type: "input_audio_chunk",
+        audio_base_64: "",
         commit: true,
         sample_rate: 16000,
       }),

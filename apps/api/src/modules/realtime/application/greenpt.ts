@@ -1,21 +1,23 @@
 import type { RealtimeTranscriptionDelay } from "@ngriffin_uk/polychat-ai-providers";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, readNonBlankString } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import type { Context } from "hono";
 
-import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
 import { getRealtimeProvider } from "~/infrastructure/providers/capabilities/realtime";
 import { resolveRealtimeMaxSessionSeconds } from "~/modules/realtime/application/sessionLimits";
 import type { IEnv, IUser } from "~/types";
 
+import { resolveRealtimeProxyApiKey, resolveRealtimeProxyModel } from "./proxyTarget";
 import {
   base64AudioToBuffer,
+  connectRealtimeWebSocketUpstream,
   createRealtimeTranscriptionProxyResponse,
   type NormalizedClientRealtimeMessage,
   type RealtimeProxySessionEndHandler,
 } from "./transcriptionProxy";
+import { buildRealtimeErrorMessage } from "./turnProtocol";
 
-const GREENPT_LIVE_URL = "wss://api.greenpt.ai/v1/listen";
+const GREENPT_LIVE_URL = "https://api.greenpt.ai/v1/listen";
 const DEFAULT_LANGUAGE = "en";
 const MULTILINGUAL_MODEL = "green-s-pro";
 const MULTILINGUAL_LANGUAGE = "multi";
@@ -63,10 +65,6 @@ export function buildGreenPtRealtimeUpstreamUrl({
   return upstreamUrl;
 }
 
-function getString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim().length > 0 ? value : undefined;
-}
-
 export function toGreenPtClientMessage(data: unknown): string | undefined {
   if (typeof data !== "string") {
     return undefined;
@@ -78,13 +76,13 @@ export function toGreenPtClientMessage(data: unknown): string | undefined {
     return undefined;
   }
 
-  const type = getString(payload.type);
+  const type = readNonBlankString(payload.type);
 
   if (type === "Results") {
     const channel = isRecord(payload.channel) ? payload.channel : undefined;
     const alternatives = Array.isArray(channel?.alternatives) ? channel.alternatives : [];
     const firstAlternative = isRecord(alternatives[0]) ? alternatives[0] : undefined;
-    const text = getString(firstAlternative?.transcript);
+    const text = readNonBlankString(firstAlternative?.transcript);
 
     if (!text) {
       return undefined;
@@ -97,10 +95,9 @@ export function toGreenPtClientMessage(data: unknown): string | undefined {
   }
 
   if (type === "Error") {
-    return JSON.stringify({
-      type: "error",
-      error: { message: getString(payload.description) ?? getString(payload.message) },
-    });
+    return buildRealtimeErrorMessage(
+      readNonBlankString(payload.description) ?? readNonBlankString(payload.message),
+    );
   }
 
   if (type === "Metadata" || type === "SpeechStarted" || type === "UtteranceEnd") {
@@ -128,32 +125,26 @@ export async function createGreenPtRealtimeProxyResponse({
   onSessionEnd?: RealtimeProxySessionEndHandler;
 }): Promise<Response> {
   const provider = getRealtimeProvider("greenpt", { env, user });
-  const apiKey = await provider.getApiKey?.({
-    env,
-    user,
-    type: "transcription",
-  });
+  const apiKey = await resolveRealtimeProxyApiKey(context, provider, { env, user });
 
-  if (!apiKey) {
-    return ResponseFactory.error(context, "Failed to resolve API key for GreenPT provider", 500);
+  if (apiKey instanceof Response) {
+    return apiKey;
   }
 
-  const modelToUse = model || provider.getDefaultModel("transcription");
+  const modelToUse = resolveRealtimeProxyModel(context, provider, model);
 
-  if (!provider.models?.includes(modelToUse)) {
-    return ResponseFactory.error(context, "Invalid GreenPT realtime model", 400);
+  if (modelToUse instanceof Response) {
+    return modelToUse;
   }
-
-  const upstreamUrl = buildGreenPtRealtimeUpstreamUrl({ model: modelToUse, language, delay });
 
   return createRealtimeTranscriptionProxyResponse({
     context,
-    providerLabel: "GreenPT",
+    providerLabel: provider.descriptor.shortLabel,
     maxSessionDurationMs: resolveRealtimeMaxSessionSeconds(env) * 1000,
-    upstreamUrl,
-    headers: {
-      Authorization: `Token ${apiKey}`,
-    },
+    connectUpstream: connectRealtimeWebSocketUpstream(
+      buildGreenPtRealtimeUpstreamUrl({ model: modelToUse, language, delay }),
+      { Authorization: `Token ${apiKey}` },
+    ),
     onSessionEnd,
     toUpstreamMessage: toGreenPtUpstreamMessage,
     toClientMessage: toGreenPtClientMessage,

@@ -11,6 +11,10 @@ const NON_CHAT_MODEL_PATTERN =
   /(^|[-_/.:])(embed|embedding|embeddings|rerank|reranker|reranking|moderation|guardrail|guardrails|vad|whisper|transcribe|transcription|tts|text-to-speech)([-_/.:]|$)/i;
 
 export function isChatSurfaceModel(model: ModelConfigItem): boolean {
+  if (model.supportsRealtimeSession) {
+    return true;
+  }
+
   const modalities = model.modalities;
   const inputs = modalities?.input ?? ["text"];
   const outputs = modalities?.output ?? ["text"];

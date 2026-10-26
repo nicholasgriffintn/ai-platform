@@ -1,3 +1,4 @@
+import type { RealtimeLiveProviderOption } from "@ngriffin_uk/polychat-library-realtime/live-providers";
 import {
   getLineupModelsByRuntime,
   isTextInputChatModel,
@@ -20,6 +21,7 @@ interface ModelPickerCatalogueOptions {
   modelScope: ModelSelectorScope;
   agentMode: boolean;
   modelProviderFilter?: string;
+  liveProviders: RealtimeLiveProviderOption[];
   featuredOnly: boolean;
   lastSelection?: LastModelSelection | null;
   runtimeOptions: ModelRuntimeOption[];
@@ -31,6 +33,7 @@ export function useModelPickerCatalogue({
   modelScope,
   agentMode,
   modelProviderFilter,
+  liveProviders,
   featuredOnly,
   lastSelection,
   runtimeOptions,
@@ -41,12 +44,11 @@ export function useModelPickerCatalogue({
     const scopedModels = isModelListOnlyScope
       ? getLineupModelsByRuntime(availableModels, "hosted")
       : availableModels;
-    const candidates = getPickerScopeModels(
-      scopedModels,
-      modelScope,
+    const candidates = getPickerScopeModels(scopedModels, modelScope, {
       agentMode,
-      modelProviderFilter,
-    );
+      liveProviders,
+      provider: modelProviderFilter,
+    });
 
     return Object.fromEntries(
       Object.entries(candidates).filter(
@@ -60,6 +62,7 @@ export function useModelPickerCatalogue({
     isModelListOnlyScope,
     modelScope,
     agentMode,
+    liveProviders,
     modelProviderFilter,
     featuredOnly,
     isTextOnlyScope,

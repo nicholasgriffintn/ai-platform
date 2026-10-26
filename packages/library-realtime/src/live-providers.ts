@@ -1,5 +1,6 @@
 import {
   getDefaultModelId,
+  getRealtimeSessionModelsByProvider,
   isRealtimeSessionModel,
   isTextInputChatModel,
   type RealtimeLiveProviderCatalogueItem,
@@ -81,6 +82,18 @@ export function getRealtimeLiveProviderIdForModel(
   }
 
   return provider.id;
+}
+
+export function getReadyRealtimeSessionModels(
+  models: ModelConfig,
+  options: RealtimeLiveProviderOption[],
+  provider?: string,
+): ModelConfig {
+  return Object.fromEntries(
+    Object.entries(getRealtimeSessionModelsByProvider(models, provider)).filter(([, model]) =>
+      Boolean(getRealtimeLiveProviderIdForModel(model, options)),
+    ),
+  );
 }
 
 export function getDefaultLiveModelId(

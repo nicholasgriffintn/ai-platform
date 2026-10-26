@@ -1,3 +1,4 @@
+import type { WebSocket as RealtimeUpstreamSocket } from "@cloudflare/workers-types";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { NO_STORE } from "@ngriffin_uk/polychat-schemas";
 import { base64ToBuffer, bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
@@ -132,11 +133,19 @@ export class RealtimeProxySessionLimits {
   }
 }
 
+export interface RealtimeUpstreamResponse {
+  status: number;
+  statusText: string;
+  headers: { get(name: string): string | null };
+  webSocket: RealtimeUpstreamSocket | null;
+}
+
+export type RealtimeUpstreamConnector = () => Promise<RealtimeUpstreamResponse>;
+
 export interface RealtimeTranscriptionProxyOptions {
   context: Context;
   providerLabel: string;
-  upstreamUrl: URL;
-  headers: Record<string, string>;
+  connectUpstream: RealtimeUpstreamConnector;
   toUpstreamMessage: (message: NormalizedClientRealtimeMessage) => string | ArrayBuffer | null;
   toClientMessage: (message: unknown) => string | string[] | undefined;
   onSessionEnd?: RealtimeProxySessionEndHandler;
@@ -166,7 +175,11 @@ export function createRealtimeProxySessionEnd(
   };
 }
 
-function closeSocket(socket: WebSocket, code = 1000, reason = ""): void {
+export function closeRealtimeSocket(
+  socket: RealtimeUpstreamSocket,
+  code = 1000,
+  reason = "",
+): void {
   try {
     if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
       socket.close(code, reason);
@@ -249,7 +262,7 @@ function getProxyFailureStatus(providerStatus: number): 400 | 401 | 403 | 404 | 
 export function createRealtimeProxyHandshakeFailure(
   context: Context,
   providerLabel: string,
-  upstreamResponse: Response,
+  upstreamResponse: RealtimeUpstreamResponse,
 ): Response {
   const hasCorrelationId = Boolean(
     upstreamResponse.headers.get("mistral-correlation-id") ??
@@ -295,7 +308,7 @@ export function bridgeRealtimeTranscriptionSockets({
   maxSessionDurationMs,
 }: {
   client: WebSocket;
-  upstream: WebSocket;
+  upstream: RealtimeUpstreamSocket;
   toUpstreamMessage: RealtimeTranscriptionProxyOptions["toUpstreamMessage"];
   toClientMessage: RealtimeTranscriptionProxyOptions["toClientMessage"];
   onSessionEnd?: RealtimeTranscriptionProxyOptions["onSessionEnd"];
@@ -304,8 +317,8 @@ export function bridgeRealtimeTranscriptionSockets({
   const limits = new RealtimeProxySessionLimits();
   const endSession = createRealtimeProxySessionEnd(onSessionEnd, limits);
   const sessionTimer = setTimeout(() => {
-    closeSocket(client, 1008, "Realtime session duration limit reached");
-    closeSocket(upstream, 1008, "Realtime session duration limit reached");
+    closeRealtimeSocket(client, 1008, "Realtime session duration limit reached");
+    closeRealtimeSocket(upstream, 1008, "Realtime session duration limit reached");
     endSession();
   }, maxSessionDurationMs ?? REALTIME_PROXY_LIMITS.sessionDurationMs);
   const clearSessionTimer = () => clearTimeout(sessionTimer);
@@ -324,8 +337,8 @@ export function bridgeRealtimeTranscriptionSockets({
       const reason =
         error instanceof RealtimeProxyLimitError ? error.message : "Invalid realtime message";
 
-      closeSocket(client, code, reason);
-      closeSocket(upstream, code, reason);
+      closeRealtimeSocket(client, code, reason);
+      closeRealtimeSocket(upstream, code, reason);
       endSession();
     }
   });
@@ -355,30 +368,30 @@ export function bridgeRealtimeTranscriptionSockets({
       const reason =
         error instanceof RealtimeProxyLimitError ? error.message : "Invalid provider message";
 
-      closeSocket(client, code, reason);
-      closeSocket(upstream, code, reason);
+      closeRealtimeSocket(client, code, reason);
+      closeRealtimeSocket(upstream, code, reason);
       endSession();
     }
   });
 
   client.addEventListener("close", () => {
     clearSessionTimer();
-    closeSocket(upstream);
+    closeRealtimeSocket(upstream);
     endSession();
   });
   client.addEventListener("error", () => {
     clearSessionTimer();
-    closeSocket(upstream, 1011, "Client socket error");
+    closeRealtimeSocket(upstream, 1011, "Client socket error");
     endSession();
   });
   upstream.addEventListener("close", (event) => {
     clearSessionTimer();
-    closeSocket(client, event.code, event.reason);
+    closeRealtimeSocket(client, event.code, event.reason);
     endSession();
   });
   upstream.addEventListener("error", () => {
     clearSessionTimer();
-    closeSocket(client, 1011, "Upstream socket error");
+    closeRealtimeSocket(client, 1011, "Upstream socket error");
     endSession();
   });
 }
@@ -392,57 +405,88 @@ export function base64AudioToBuffer(base64Audio: string): ArrayBuffer {
   return buffer;
 }
 
-export async function createRealtimeTranscriptionProxyResponse({
+export function connectRealtimeWebSocketUpstream(
+  upstreamUrl: URL,
+  headers: Record<string, string>,
+): RealtimeUpstreamConnector {
+  return () => fetch(upstreamUrl, { headers: { ...headers, Upgrade: "websocket" } });
+}
+
+export async function openRealtimeProxySockets({
+  connectUpstream,
   context,
-  headers,
-  onSessionEnd,
   providerLabel,
-  toClientMessage,
-  toUpstreamMessage,
-  upstreamUrl,
-  maxSessionDurationMs,
-}: RealtimeTranscriptionProxyOptions): Promise<Response> {
-  const request = context.req.raw;
-  const isWebSocketUpgrade = request.headers.get("Upgrade")?.toLowerCase() === "websocket";
+}: {
+  connectUpstream: RealtimeUpstreamConnector;
+  context: Context;
+  providerLabel: string;
+}): Promise<
+  | { ok: true; client: WebSocket; upstream: RealtimeUpstreamSocket; response: Response }
+  | { ok: false; response: Response }
+> {
+  const isWebSocketUpgrade = context.req.raw.headers.get("Upgrade")?.toLowerCase() === "websocket";
 
   if (!isWebSocketUpgrade) {
-    return new Response("Expected WebSocket upgrade", {
-      status: 426,
-      headers: { Upgrade: "websocket", "Cache-Control": NO_STORE },
-    });
+    return {
+      ok: false,
+      response: new Response("Expected WebSocket upgrade", {
+        status: 426,
+        headers: { Upgrade: "websocket", "Cache-Control": NO_STORE },
+      }),
+    };
   }
 
-  const upstreamResponse = await fetch(upstreamUrl, {
-    headers: {
-      ...headers,
-      Upgrade: "websocket",
-    },
-  });
+  const upstreamResponse = await connectUpstream();
 
   if (upstreamResponse.status !== 101 || !upstreamResponse.webSocket) {
-    return createRealtimeProxyHandshakeFailure(context, providerLabel, upstreamResponse);
+    return {
+      ok: false,
+      response: createRealtimeProxyHandshakeFailure(context, providerLabel, upstreamResponse),
+    };
   }
 
   const pair = new WebSocketPair();
   const [clientSocket, serverSocket] = Object.values(pair);
 
+  serverSocket.binaryType = "arraybuffer";
   serverSocket.accept();
   upstreamResponse.webSocket.accept();
 
-  bridgeRealtimeTranscriptionSockets({
+  return {
+    ok: true,
     client: serverSocket,
-    onSessionEnd,
     upstream: upstreamResponse.webSocket,
+    response: new Response(null, {
+      status: 101,
+      webSocket: clientSocket,
+      headers: { "Cache-Control": NO_STORE },
+    }),
+  };
+}
+
+export async function createRealtimeTranscriptionProxyResponse({
+  connectUpstream,
+  context,
+  onSessionEnd,
+  providerLabel,
+  toClientMessage,
+  toUpstreamMessage,
+  maxSessionDurationMs,
+}: RealtimeTranscriptionProxyOptions): Promise<Response> {
+  const sockets = await openRealtimeProxySockets({ connectUpstream, context, providerLabel });
+
+  if (!sockets.ok) {
+    return sockets.response;
+  }
+
+  bridgeRealtimeTranscriptionSockets({
+    client: sockets.client,
+    onSessionEnd,
+    upstream: sockets.upstream,
     toClientMessage,
     toUpstreamMessage,
     maxSessionDurationMs,
   });
 
-  return new Response(null, {
-    status: 101,
-    webSocket: clientSocket,
-    headers: {
-      "Cache-Control": NO_STORE,
-    },
-  });
+  return sockets.response;
 }

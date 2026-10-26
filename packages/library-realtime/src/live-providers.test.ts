@@ -8,6 +8,7 @@ import {
   getFirstReadyRealtimeTranscriptionProviderOption,
   getRealtimeLiveProviderIdForModel,
   getRealtimeLiveProviderOption,
+  getReadyRealtimeSessionModels,
   supportsRealtimeLiveVideoInput,
   waitsForRealtimeLiveProviderFinalEventOnStop,
 } from "./live-providers";
@@ -50,6 +51,27 @@ const providers: RealtimeLiveProviderCatalogueItem[] = [
 ];
 
 describe("runtime realtime provider catalogue", () => {
+  it("lists only live models whose provider is ready", () => {
+    const options = createRealtimeLiveProviderOptions(providers);
+    const models = {
+      "gpt-realtime-2": {
+        matchingModel: "gpt-realtime-2",
+        provider: "openai",
+        supportsRealtimeSession: true,
+      },
+      "gemini-3.1-flash-live-preview": {
+        matchingModel: "gemini-3.1-flash-live-preview",
+        provider: "google-ai-studio",
+        supportsRealtimeSession: true,
+      },
+      "gemini-3.1-pro": { matchingModel: "gemini-3.1-pro", provider: "google-ai-studio" },
+    };
+
+    expect(Object.keys(getReadyRealtimeSessionModels(models, options))).toEqual([
+      "gemini-3.1-flash-live-preview",
+    ]);
+  });
+
   it("enriches backend descriptors with client protocol behaviour", () => {
     const options = createRealtimeLiveProviderOptions(providers);
 

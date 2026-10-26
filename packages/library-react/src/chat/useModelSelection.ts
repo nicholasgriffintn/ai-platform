@@ -1,19 +1,20 @@
 import { clearModelResponseSettings } from "@ngriffin_uk/polychat-library-chat";
 import type { ChatSettings } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
-import { getDefaultLiveModelId } from "@ngriffin_uk/polychat-library-realtime/live-providers";
+import {
+  getDefaultLiveModelId,
+  getReadyRealtimeSessionModels,
+} from "@ngriffin_uk/polychat-library-realtime/live-providers";
 import {
   createModelReferenceMap,
   EMPTY_MODEL_CONFIG,
   getAvailableModels,
-  getChatAndRealtimeModelsByMode,
   getDefaultModelId,
   getFeaturedModelIds,
   getModelByReference,
   getModelsByMode,
   getModelTierDefinition,
   getLineupModelsByRuntime,
-  getRealtimeSessionModelsByProvider,
   getToolCallModels,
   isTextInputChatModel,
   type ComputeSite,
@@ -136,8 +137,7 @@ export function useModelSelection({
   const [machineSelection, setSelectedMachineId] = useState<string | undefined>();
   const isTextOnlyScope = modelScope === "text-only";
   const isLiveScope = modelScope === "live";
-  const isChatAndLiveScope = modelScope === "chat-and-live";
-  const isModelListOnlyScope = isTextOnlyScope || isLiveScope || isChatAndLiveScope;
+  const isModelListOnlyScope = isTextOnlyScope || isLiveScope;
   const selectedTierLabel = modelTier ? getModelTierDefinition(modelTier).label : "Default";
   const { data: apiModels = EMPTY_MODEL_CONFIG, isLoading: isLoadingModels } = useModels();
   const selectedMachineId =
@@ -167,6 +167,7 @@ export function useModelSelection({
     modelScope,
     agentMode: chatMode === "agent",
     modelProviderFilter,
+    liveProviders: realtimeProviderOptions,
     featuredOnly,
     lastSelection: lastUsed.selection,
     runtimeOptions: runtimeOptionsState.options,
@@ -174,20 +175,18 @@ export function useModelSelection({
   const baseFilteredModels = useMemo(
     () =>
       isLiveScope
-        ? getRealtimeSessionModelsByProvider(siteModels, modelProviderFilter)
-        : isChatAndLiveScope
-          ? getChatAndRealtimeModelsByMode(siteModels, computeSite)
-          : !isTextOnlyScope && chatMode === "agent"
-            ? functionModels
-            : getModelsByMode(siteModels, computeSite),
+        ? getReadyRealtimeSessionModels(siteModels, realtimeProviderOptions, modelProviderFilter)
+        : !isTextOnlyScope && chatMode === "agent"
+          ? functionModels
+          : getModelsByMode(siteModels, computeSite),
     [
       chatMode,
       computeSite,
       functionModels,
-      isChatAndLiveScope,
       isLiveScope,
       isTextOnlyScope,
       modelProviderFilter,
+      realtimeProviderOptions,
       siteModels,
     ],
   );

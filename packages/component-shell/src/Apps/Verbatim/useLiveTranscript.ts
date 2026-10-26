@@ -1,4 +1,5 @@
-import { verbatimService } from "@ngriffin_uk/polychat-library-client";
+import { useChatStore, verbatimService } from "@ngriffin_uk/polychat-library-client";
+import { useRealtimeLiveSession, useRealtimeProviders } from "@ngriffin_uk/polychat-library-react";
 import {
   encodePcm16Wav,
   requestRealtimeAudioStream,
@@ -6,10 +7,22 @@ import {
   stopMediaStream,
   type RealtimeMediaController,
 } from "@ngriffin_uk/polychat-library-realtime/audio";
+import {
+  getFirstReadyRealtimeTranscriptionProviderOption,
+  getRealtimeLiveProviderOption,
+  type RealtimeLiveProviderOption,
+} from "@ngriffin_uk/polychat-library-realtime/live-providers";
+import type { RealtimeTranscriptResult } from "@ngriffin_uk/polychat-library-realtime/messages";
 import type { VerbatimSegment } from "@ngriffin_uk/polychat-schemas";
 import { VERBATIM_CONTEXT_MAX_LENGTH } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import {
+  applyLiveTranscript,
+  EMPTY_LIVE_DRAFT,
+  liveDraftText,
+  markLiveDraftSubmitted,
+} from "./liveDraft.js";
 import { SEGMENT_SAMPLE_RATE, SpeechSegmenter } from "./segmenter.js";
 
 export type LiveTranscriptStatus = "idle" | "starting" | "listening";
@@ -42,7 +55,17 @@ export function transcriptText(entries: readonly TranscriptEntry[]): string {
     .join(" ");
 }
 
-const LIVE_DRAFT_INTERVAL_MS = 900;
+const PREFERRED_TRANSCRIPTION_PROVIDER = "workers-ai";
+
+function selectTranscriptionProvider(
+  options: RealtimeLiveProviderOption[],
+): RealtimeLiveProviderOption | undefined {
+  const preferred = getRealtimeLiveProviderOption(PREFERRED_TRANSCRIPTION_PROVIDER, options);
+
+  return preferred?.readiness === "ready"
+    ? preferred
+    : getFirstReadyRealtimeTranscriptionProviderOption(options);
+}
 
 export function useLiveTranscript(projectId?: string) {
   const [status, setStatus] = useState<LiveTranscriptStatus>("idle");
@@ -55,7 +78,9 @@ export function useLiveTranscript(projectId?: string) {
   const segmenterRef = useRef(new SpeechSegmenter());
   const transcriptRef = useRef("");
   const nextIdRef = useRef(1);
-  const liveRef = useRef({ generation: 0, inFlight: false, lastAt: 0, text: "" });
+  const draftRef = useRef(EMPTY_LIVE_DRAFT);
+  const isPro = useChatStore((state) => state.isPro);
+  const { data: realtimeProviders = [] } = useRealtimeProviders(isPro);
 
   const updateEntry = useCallback((entry: TranscriptEntry) => {
     setEntries((current) => current.map((item) => (item.id === entry.id ? entry : item)));
@@ -106,14 +131,10 @@ export function useLiveTranscript(projectId?: string) {
       const durationMs = segmentDurationMs(chunks);
       const wav = new Blob([encodePcm16Wav(chunks, SEGMENT_SAMPLE_RATE)], { type: "audio/wav" });
 
-      const draft = liveRef.current.text;
+      const draft = liveDraftText(draftRef.current);
 
       nextIdRef.current += 1;
-      liveRef.current = {
-        ...liveRef.current,
-        generation: liveRef.current.generation + 1,
-        text: "",
-      };
+      draftRef.current = markLiveDraftSubmitted(draftRef.current);
       setLive("");
       setEntries((current) => [
         ...current,
@@ -124,33 +145,45 @@ export function useLiveTranscript(projectId?: string) {
     [verify],
   );
 
-  const draftLive = useCallback((chunks: ArrayBuffer[]) => {
-    const state = liveRef.current;
-    const generation = state.generation;
+  const handleTranscript = useCallback(
+    (transcript: RealtimeTranscriptResult) => {
+      if (transcript.source === "output") {
+        return;
+      }
 
-    liveRef.current = { ...state, inFlight: true, lastAt: Date.now() };
+      draftRef.current = applyLiveTranscript(draftRef.current, transcript);
+      setLive(liveDraftText(draftRef.current));
 
-    const wav = new Blob([encodePcm16Wav(chunks, SEGMENT_SAMPLE_RATE)], { type: "audio/wav" });
+      if (!transcript.isFinal) {
+        return;
+      }
 
-    void verbatimService
-      .transcribeDraft(wav)
-      .then((text) => {
-        if (liveRef.current.generation === generation) {
-          liveRef.current = { ...liveRef.current, text };
-          setLive(text);
-        }
+      const segment = segmenterRef.current.flush();
 
-        return text;
-      })
-      .catch(() => "")
-      .finally(() => {
-        liveRef.current = { ...liveRef.current, inFlight: false };
-      });
-  }, []);
+      if (segment) {
+        submit(segment);
+      }
+    },
+    [submit],
+  );
+  const {
+    start: startTranscription,
+    status: transcriptionStatus,
+    stop: stopTranscription,
+  } = useRealtimeLiveSession({
+    providers: realtimeProviders,
+    sessionType: "transcription",
+    onTranscript: handleTranscript,
+  });
+
+  useEffect(() => {
+    segmenterRef.current.setCommitOnSilence(transcriptionStatus !== "active");
+  }, [transcriptionStatus]);
 
   const stop = useCallback(() => {
     controllerRef.current?.stop();
     controllerRef.current = null;
+    stopTranscription();
     stopMediaStream(streamRef.current);
     streamRef.current = null;
 
@@ -160,12 +193,12 @@ export function useLiveTranscript(projectId?: string) {
       submit(remaining);
     }
 
-    liveRef.current = { ...liveRef.current, generation: liveRef.current.generation + 1, text: "" };
+    draftRef.current = EMPTY_LIVE_DRAFT;
     setLive("");
 
     setLevel(0);
     setStatus("idle");
-  }, [submit]);
+  }, [stopTranscription, submit]);
 
   const start = useCallback(async () => {
     setError(null);
@@ -176,6 +209,7 @@ export function useLiveTranscript(projectId?: string) {
 
       streamRef.current = stream;
       segmenterRef.current = new SpeechSegmenter();
+      segmenterRef.current.setCommitOnSilence(transcriptionStatus !== "active");
       controllerRef.current = await startPcm16MicrophoneStream({
         stream,
         sampleRate: SEGMENT_SAMPLE_RATE,
@@ -186,18 +220,16 @@ export function useLiveTranscript(projectId?: string) {
 
           if (step.segment) {
             submit(step.segment);
-
-            return;
-          }
-
-          const { inFlight, lastAt } = liveRef.current;
-          const inProgress = segmenterRef.current.peek();
-
-          if (inProgress && !inFlight && Date.now() - lastAt >= LIVE_DRAFT_INTERVAL_MS) {
-            draftLive(inProgress);
           }
         },
       });
+
+      const provider = selectTranscriptionProvider(realtimeProviders);
+
+      if (provider) {
+        void startTranscription(provider.id, undefined, { inputStream: stream });
+      }
+
       setStatus("listening");
     } catch (caught) {
       stopMediaStream(streamRef.current);
@@ -209,10 +241,11 @@ export function useLiveTranscript(projectId?: string) {
           : "The microphone would not start.",
       );
     }
-  }, [draftLive, submit]);
+  }, [realtimeProviders, startTranscription, submit, transcriptionStatus]);
 
   const clear = useCallback(() => {
     transcriptRef.current = "";
+    draftRef.current = EMPTY_LIVE_DRAFT;
     setLive("");
     setEntries([]);
   }, []);

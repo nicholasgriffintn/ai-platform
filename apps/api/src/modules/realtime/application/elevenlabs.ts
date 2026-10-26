@@ -1,16 +1,17 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, readNonBlankString } from "@ngriffin_uk/polychat-utility-core";
 import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
 import type { Context } from "hono";
 
-import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
 import { getRealtimeProvider } from "~/infrastructure/providers/capabilities/realtime";
 import { providerHost } from "~/infrastructure/providers/host";
 import { resolveRealtimeMaxSessionSeconds } from "~/modules/realtime/application/sessionLimits";
 import { recordProviderQuotaExhausted } from "~/modules/user/application/provider-quota";
 import type { IEnv, IUser } from "~/types";
 
+import { resolveRealtimeProxyApiKey } from "./proxyTarget";
 import {
+  connectRealtimeWebSocketUpstream,
   createRealtimeTranscriptionProxyResponse,
   type NormalizedClientRealtimeMessage,
   type RealtimeProxySessionEndHandler,
@@ -53,7 +54,7 @@ function createInputAudioChunkMessage({
 }): string {
   return JSON.stringify({
     message_type: "input_audio_chunk",
-    ...(audio ? { audio_base_64: audio } : {}),
+    audio_base_64: audio ?? "",
     commit,
     sample_rate: ELEVENLABS_SAMPLE_RATE,
   });
@@ -85,10 +86,6 @@ export function createElevenLabsUpstreamMessageMapper(): ElevenLabsUpstreamMessa
 
 function createSegmentId(): string {
   return `elevenlabs-${generateId()}`;
-}
-
-function getString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim().length > 0 ? value : undefined;
 }
 
 export function createElevenLabsClientMessageMapper(
@@ -134,8 +131,8 @@ export function createElevenLabsClientMessageMapper(
       return undefined;
     }
 
-    const messageType = getString(payload.message_type);
-    const text = getString(payload.text);
+    const messageType = readNonBlankString(payload.message_type);
+    const text = readNonBlankString(payload.text);
 
     if (messageType === "partial_transcript" && text) {
       return JSON.stringify({
@@ -171,7 +168,8 @@ export function createElevenLabsClientMessageMapper(
       return JSON.stringify({
         type: "error",
         error: {
-          message: getString(payload.error) ?? getString(payload.message) ?? messageType,
+          message:
+            readNonBlankString(payload.error) ?? readNonBlankString(payload.message) ?? messageType,
           code: messageType,
         },
       });
@@ -199,14 +197,10 @@ export async function createElevenLabsRealtimeProxyResponse({
   waitUntil: (work: Promise<unknown>) => void;
 }): Promise<Response> {
   const provider = getRealtimeProvider("elevenlabs", { env, user });
-  const apiKey = await provider.getApiKey?.({
-    env,
-    user,
-    type: "transcription",
-  });
+  const apiKey = await resolveRealtimeProxyApiKey(context, provider, { env, user });
 
-  if (!apiKey) {
-    return ResponseFactory.error(context, "Failed to resolve API key for ElevenLabs provider", 500);
+  if (apiKey instanceof Response) {
+    return apiKey;
   }
 
   const modelToUse = model || provider.getDefaultModel("transcription");
@@ -220,10 +214,9 @@ export async function createElevenLabsRealtimeProxyResponse({
 
   return createRealtimeTranscriptionProxyResponse({
     context,
-    providerLabel: "ElevenLabs",
+    providerLabel: provider.descriptor.shortLabel,
     maxSessionDurationMs: resolveRealtimeMaxSessionSeconds(env) * 1000,
-    upstreamUrl,
-    headers: { "xi-api-key": apiKey },
+    connectUpstream: connectRealtimeWebSocketUpstream(upstreamUrl, { "xi-api-key": apiKey }),
     onSessionEnd,
     toUpstreamMessage: createElevenLabsUpstreamMessageMapper(),
     toClientMessage: createElevenLabsClientMessageMapper(() =>

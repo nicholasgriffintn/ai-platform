@@ -1,0 +1,25 @@
+{
+  "defaults": {
+    "modalities": {
+      "input": [
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "transcription"
+    ],
+    "releaseDate": "October 2, 2025"
+  },
+  "description": "The workers ai/@cf/deepgram/flux family includes models that produce text.",
+  "models": {
+    "deepgram-flux": {
+      "defaults": {
+        "name": "Deepgram Flux",
+        "description": "Deepgram's English conversational speech-to-text model with turn detection, streamed over WebSocket on Workers AI."
+      }
+    }
+  }
+}

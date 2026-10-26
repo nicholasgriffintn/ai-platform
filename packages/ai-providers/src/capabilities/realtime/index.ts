@@ -41,14 +41,17 @@ export interface RealtimeSessionRequest {
   outputModalities?: RealtimeModality[];
 }
 
+export interface RealtimeProviderConfiguration {
+  readonly acceptsUserApiKey: boolean;
+  readonly environmentVariables: readonly string[];
+  readonly bindings?: readonly string[];
+  readonly modelProvider?: string;
+}
+
 export interface RealtimeProvider {
   name: string;
   readonly descriptor: RealtimeLiveProviderDescriptor;
-  readonly configuration: {
-    readonly acceptsUserApiKey: boolean;
-    readonly environmentVariables: readonly string[];
-    readonly modelProvider?: string;
-  };
+  readonly configuration: RealtimeProviderConfiguration;
   models?: string[];
   getApiKey?: (request: RealtimeSessionRequest) => Promise<string>;
   getDefaultModel: (type: RealtimeSessionRequest["type"]) => string;

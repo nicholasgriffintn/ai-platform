@@ -32,6 +32,11 @@ export class SpeechSegmenter {
   private chunks: ArrayBuffer[] = [];
   private bufferedMs = 0;
   private heardSpeech = false;
+  private commitOnSilence = true;
+
+  setCommitOnSilence(enabled: boolean): void {
+    this.commitOnSilence = enabled;
+  }
 
   push(chunk: ArrayBuffer, now: number): SpeechSegmenterStep {
     const level = calculatePcm16AudioLevel(chunk);
@@ -49,15 +54,14 @@ export class SpeechSegmenter {
       return { level, segment: null };
     }
 
-    if (shouldCommitAudioGate(this.gate, GATE, now) || this.bufferedMs >= MAX_SEGMENT_MS) {
+    if (
+      (this.commitOnSilence && shouldCommitAudioGate(this.gate, GATE, now)) ||
+      this.bufferedMs >= MAX_SEGMENT_MS
+    ) {
       return { level, segment: this.take() };
     }
 
     return { level, segment: null };
-  }
-
-  peek(): ArrayBuffer[] | null {
-    return this.heardSpeech ? [...this.chunks] : null;
   }
 
   flush(): ArrayBuffer[] | null {

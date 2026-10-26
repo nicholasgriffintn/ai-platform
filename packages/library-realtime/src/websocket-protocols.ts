@@ -78,6 +78,22 @@ export function hasServerTurnDetection(session: RealtimeSession): boolean {
   return isRecord(input) && isRecord(input.turn_detection);
 }
 
+function createBinaryTranscriptionConfig(label: string): RealtimeLiveWebSocketConfig {
+  return {
+    audioInput: {
+      chunkEncoding: "binary",
+      endMessages: [{ type: "input_audio.end" }],
+      keepSendingSilenceWhenMuted: true,
+      waitForSocketCloseOnStop: true,
+    },
+    closeErrorLabel: `${label} realtime transcription`,
+    connectedEventLabel: `${label} realtime transcription connected`,
+    connectionFailedMessage: `${label} realtime transcription failed`,
+    mediaStartFailedMessage: `Failed to start ${label} realtime transcription media`,
+    startingMediaEventLabel: `Starting ${label} microphone`,
+  };
+}
+
 export const REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG: Partial<
   Record<RealtimeLiveProviderId, RealtimeLiveWebSocketConfig>
 > = {
@@ -177,30 +193,7 @@ export const REALTIME_LIVE_PROVIDER_WEBSOCKET_CONFIG: Partial<
     mediaStartFailedMessage: "Failed to start ElevenLabs realtime transcription media",
     startingMediaEventLabel: "Starting ElevenLabs microphone",
   },
-  cartesia: {
-    audioInput: {
-      chunkEncoding: "binary",
-      endMessages: [{ type: "input_audio.end" }],
-      keepSendingSilenceWhenMuted: true,
-      waitForSocketCloseOnStop: true,
-    },
-    closeErrorLabel: "Cartesia realtime transcription",
-    connectedEventLabel: "Cartesia realtime transcription connected",
-    connectionFailedMessage: "Cartesia realtime transcription failed",
-    mediaStartFailedMessage: "Failed to start Cartesia realtime transcription media",
-    startingMediaEventLabel: "Starting Cartesia microphone",
-  },
-  greenpt: {
-    audioInput: {
-      chunkEncoding: "binary",
-      endMessages: [{ type: "input_audio.end" }],
-      keepSendingSilenceWhenMuted: true,
-      waitForSocketCloseOnStop: true,
-    },
-    closeErrorLabel: "GreenPT realtime transcription",
-    connectedEventLabel: "GreenPT realtime transcription connected",
-    connectionFailedMessage: "GreenPT realtime transcription failed",
-    mediaStartFailedMessage: "Failed to start GreenPT realtime transcription media",
-    startingMediaEventLabel: "Starting GreenPT microphone",
-  },
+  cartesia: createBinaryTranscriptionConfig("Cartesia"),
+  greenpt: createBinaryTranscriptionConfig("GreenPT"),
+  "workers-ai": createBinaryTranscriptionConfig("Workers AI"),
 };

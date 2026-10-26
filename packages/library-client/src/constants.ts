@@ -107,6 +107,8 @@ const COMMON_CSP = {
     "https://api.openai.com",
     "https://generativelanguage.googleapis.com",
     "wss://generativelanguage.googleapis.com",
+    "https://livekit.mistral.ai",
+    "wss://livekit.mistral.ai",
     "https://huggingface.co",
     "https://us.aws.cdn.hf.co",
     "https://raw.githubusercontent.com",

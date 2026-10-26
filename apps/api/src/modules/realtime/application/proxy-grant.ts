@@ -95,11 +95,10 @@ function expectedOrigins(env: IEnv): { api: string; app: string } {
   };
 }
 
-export function assertRealtimeProxyRequestBoundary(request: Request, env: IEnv): void {
-  const expected = expectedOrigins(env);
+function assertRealtimeProxyHost(request: Request, expectedApiOrigin: string): void {
   const requestUrl = new URL(request.url);
 
-  if (requestUrl.origin !== expected.api) {
+  if (requestUrl.origin !== expectedApiOrigin) {
     throw new AssistantError("Realtime proxy host is not allowed", ErrorType.FORBIDDEN, 403);
   }
 
@@ -107,6 +106,14 @@ export function assertRealtimeProxyRequestBoundary(request: Request, env: IEnv):
 
   if (host && host.toLowerCase() !== requestUrl.host.toLowerCase()) {
     throw new AssistantError("Realtime proxy host is not allowed", ErrorType.FORBIDDEN, 403);
+  }
+}
+
+export function assertRealtimeProxyRequestBoundary(request: Request, env: IEnv): void {
+  const expected = expectedOrigins(env);
+
+  if (env.ENV !== "development") {
+    assertRealtimeProxyHost(request, expected.api);
   }
 
   const origin = request.headers.get("Origin");

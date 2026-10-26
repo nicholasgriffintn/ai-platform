@@ -37,14 +37,14 @@ describe("SpeechSegmenter", () => {
     expect(committed[0]?.length).toBeLessThan(30);
   });
 
-  it("exposes the phrase in progress for live drafts without committing it", () => {
+  it("leaves phrase ends to the caller when silence commits are off", () => {
     const segmenter = new SpeechSegmenter();
 
-    expect(segmenter.peek()).toBeNull();
-    feed(segmenter, Array<number>(10).fill(6000));
+    segmenter.setCommitOnSilence(false);
+    const steps = feed(segmenter, [...Array<number>(10).fill(6000), ...Array<number>(10).fill(0)]);
 
-    expect(segmenter.peek()?.length).toBeGreaterThan(5);
-    expect(segmenter.peek()).not.toBe(segmenter.peek());
+    expect(steps.every((step) => step.segment === null)).toBe(true);
+    expect(segmenter.flush()?.length).toBeGreaterThan(10);
   });
 
   it("splits continuous speech so live transcripts keep moving", () => {

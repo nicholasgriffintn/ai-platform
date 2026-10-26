@@ -1,17 +1,21 @@
 import type { RealtimeTranscriptionDelay } from "@ngriffin_uk/polychat-ai-providers";
+import { isRecord, readNonBlankString } from "@ngriffin_uk/polychat-utility-core";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import type { Context } from "hono";
 
-import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
 import { getRealtimeProvider } from "~/infrastructure/providers/capabilities/realtime";
 import { resolveRealtimeMaxSessionSeconds } from "~/modules/realtime/application/sessionLimits";
 import type { IEnv, IUser } from "~/types";
 
+import { resolveRealtimeProxyApiKey, resolveRealtimeProxyModel } from "./proxyTarget";
 import {
   base64AudioToBuffer,
+  connectRealtimeWebSocketUpstream,
   createRealtimeTranscriptionProxyResponse,
   type NormalizedClientRealtimeMessage,
   type RealtimeProxySessionEndHandler,
 } from "./transcriptionProxy";
+import { buildRealtimeErrorMessage, REALTIME_TURN_END_TIMEOUT_MS_BY_DELAY } from "./turnProtocol";
 
 export function toCartesiaUpstreamMessage(
   message: NormalizedClientRealtimeMessage,
@@ -28,13 +32,6 @@ export function toCartesiaUpstreamMessage(
 }
 
 export const CARTESIA_STT_API_VERSION = "2026-08-14";
-const CARTESIA_TURN_END_TIMEOUT_MS_BY_DELAY: Record<RealtimeTranscriptionDelay, number> = {
-  minimal: 640,
-  low: 1600,
-  medium: 3200,
-  high: 5600,
-  xhigh: 8000,
-};
 
 export function buildCartesiaRealtimeUpstreamUrl({
   delay,
@@ -53,15 +50,11 @@ export function buildCartesiaRealtimeUpstreamUrl({
   if (delay) {
     upstreamUrl.searchParams.set(
       "turn_end_timeout_ms",
-      String(CARTESIA_TURN_END_TIMEOUT_MS_BY_DELAY[delay]),
+      String(REALTIME_TURN_END_TIMEOUT_MS_BY_DELAY[delay]),
     );
   }
 
   return upstreamUrl;
-}
-
-function getString(value: unknown): string | undefined {
-  return typeof value === "string" && value.trim().length > 0 ? value : undefined;
 }
 
 export function toCartesiaClientMessage(data: unknown): string | undefined {
@@ -69,24 +62,19 @@ export function toCartesiaClientMessage(data: unknown): string | undefined {
     return undefined;
   }
 
-  let payload: Record<string, unknown>;
+  const payload = safeParseJson<unknown>(data);
 
-  try {
-    payload = JSON.parse(data);
-  } catch {
+  if (!isRecord(payload)) {
     return undefined;
   }
 
-  const type = getString(payload.type);
+  const type = readNonBlankString(payload.type);
 
   if (type === "error") {
-    return JSON.stringify({
-      type: "error",
-      error: {
-        message: getString(payload.message) ?? getString(payload.title),
-        code: getString(payload.error_code) ?? payload.status_code,
-      },
-    });
+    return buildRealtimeErrorMessage(
+      readNonBlankString(payload.message) ?? readNonBlankString(payload.title),
+      readNonBlankString(payload.error_code) ?? payload.status_code,
+    );
   }
 
   return data;
@@ -108,32 +96,26 @@ export async function createCartesiaRealtimeProxyResponse({
   onSessionEnd?: RealtimeProxySessionEndHandler;
 }): Promise<Response> {
   const provider = getRealtimeProvider("cartesia", { env, user });
-  const apiKey = await provider.getApiKey?.({
-    env,
-    user,
-    type: "transcription",
-  });
+  const apiKey = await resolveRealtimeProxyApiKey(context, provider, { env, user });
 
-  if (!apiKey) {
-    return ResponseFactory.error(context, "Failed to resolve API key for Cartesia provider", 500);
+  if (apiKey instanceof Response) {
+    return apiKey;
   }
 
-  const modelToUse = model || provider.getDefaultModel("transcription");
+  const modelToUse = resolveRealtimeProxyModel(context, provider, model);
 
-  if (!provider.models?.includes(modelToUse)) {
-    return ResponseFactory.error(context, "Invalid Cartesia realtime model", 400);
+  if (modelToUse instanceof Response) {
+    return modelToUse;
   }
-
-  const upstreamUrl = buildCartesiaRealtimeUpstreamUrl({ delay, model: modelToUse });
 
   return createRealtimeTranscriptionProxyResponse({
     context,
-    providerLabel: "Cartesia",
+    providerLabel: provider.descriptor.shortLabel,
     maxSessionDurationMs: resolveRealtimeMaxSessionSeconds(env) * 1000,
-    upstreamUrl,
-    headers: {
-      "X-API-Key": apiKey,
-    },
+    connectUpstream: connectRealtimeWebSocketUpstream(
+      buildCartesiaRealtimeUpstreamUrl({ delay, model: modelToUse }),
+      { "X-API-Key": apiKey },
+    ),
     onSessionEnd,
     toUpstreamMessage: toCartesiaUpstreamMessage,
     toClientMessage: toCartesiaClientMessage,

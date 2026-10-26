@@ -45,12 +45,11 @@ const saved: LastModelSelection = {
 
 describe("model picker catalogue", () => {
   it("includes each execution location without admitting hidden or embedding-only models", () => {
-    expect(Object.keys(getPickerScopeModels(models, "default", false)).sort()).toEqual([
-      "browser",
-      "cloud",
-      "local",
-      "remote",
-    ]);
+    expect(
+      Object.keys(
+        getPickerScopeModels(models, "default", { agentMode: false, liveProviders: [] }),
+      ).sort(),
+    ).toEqual(["browser", "cloud", "local", "remote"]);
   });
   it("does not mistake another installation's local runtime for the saved device", () => {
     const localChoice: LastModelSelection = {
@@ -66,8 +65,16 @@ describe("model picker catalogue", () => {
     expect(getLastUsedPickerModel(localChoice, models, "first")[0].isExecutable).not.toBe(false);
   });
   it("keeps live provider restrictions and agent tool requirements", () => {
-    expect(getPickerScopeModels(models, "live", false, "openai")).toEqual({});
-    expect(getPickerScopeModels(models, "default", true)).toEqual({});
+    expect(
+      getPickerScopeModels(models, "live", {
+        agentMode: false,
+        liveProviders: [],
+        provider: "openai",
+      }),
+    ).toEqual({});
+    expect(getPickerScopeModels(models, "default", { agentMode: true, liveProviders: [] })).toEqual(
+      {},
+    );
   });
   it("keeps an unavailable saved device visible without making it executable, then resolves its return", () => {
     const missing = getLastUsedPickerModel(saved, {});

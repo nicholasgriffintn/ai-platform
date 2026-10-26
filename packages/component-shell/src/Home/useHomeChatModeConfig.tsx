@@ -29,6 +29,7 @@ import {
   createModelReferenceMap,
   EMPTY_MODEL_CONFIG,
   getModelByReference,
+  isRealtimeSessionModel,
 } from "@ngriffin_uk/polychat-schemas";
 import type { HomeChatModeId, ModelSelectionChangeHandler } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -269,6 +270,21 @@ export function useHomeChatModeConfig(): {
     setChatMode("chat");
   }, [activeModeId, setChatMode, setSelectedTeammateId]);
 
+  const chatModelBeforeLiveRef = useRef<string | null>(null);
+  const isLiveModelSelected = Boolean(
+    selectedModelConfig && isRealtimeSessionModel(selectedModelConfig),
+  );
+  const rememberChatModel = useCallback(() => {
+    if (!isLiveModelSelected) {
+      chatModelBeforeLiveRef.current = selectedModel;
+    }
+  }, [isLiveModelSelected, selectedModel]);
+  const restoreChatModel = useCallback(() => {
+    if (isLiveModelSelected) {
+      setModel(chatModelBeforeLiveRef.current);
+    }
+  }, [isLiveModelSelected, setModel]);
+
   const handleModeChange = useCallback(
     (modeId: HomeChatModeId) => {
       setActiveModeId(modeId);
@@ -284,6 +300,8 @@ export function useHomeChatModeConfig(): {
       }
 
       if (modeId === "live") {
+        rememberChatModel();
+
         if (selectedModelLiveProvider) {
           setLiveProvider(selectedModelLiveProvider);
           void startLiveSession(selectedModelLiveProvider, selectedModel);
@@ -303,6 +321,7 @@ export function useHomeChatModeConfig(): {
         }
       } else if (effectiveActiveModeId === "live") {
         stopLiveSessionAndFlush();
+        restoreChatModel();
       }
 
       setSearchParams(next, { replace: true });
@@ -311,6 +330,8 @@ export function useHomeChatModeConfig(): {
       effectiveActiveModeId,
       liveProvider,
       realtimeProviderOptions,
+      rememberChatModel,
+      restoreChatModel,
       selectLiveProviderAndModel,
       searchParams,
       selectedModel,
@@ -340,6 +361,7 @@ export function useHomeChatModeConfig(): {
       const next = new URLSearchParams(searchParams);
 
       if (nextLiveProvider) {
+        rememberChatModel();
         setModel(modelId);
         setActiveModeId("live");
         setHomeChatMode("live");
@@ -367,6 +389,7 @@ export function useHomeChatModeConfig(): {
       effectiveActiveModeId,
       modelReferences,
       realtimeProviderOptions,
+      rememberChatModel,
       searchParams,
       setChatMode,
       setHomeChatMode,
@@ -479,7 +502,7 @@ export function useHomeChatModeConfig(): {
             followUp: "Live mode is running. Add notes or follow-up text...",
           },
           inputControls: liveInputControls,
-          modelScope: "chat-and-live",
+          modelScope: "live",
           onModelChange: handleModelChange,
           hideTextInput: true,
           hideComposerActionMenu: true,

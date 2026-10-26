@@ -90,6 +90,10 @@ export function readNonEmptyString(value: unknown): string | undefined {
   return text !== undefined && text !== "" ? text : undefined;
 }
 
+export function readNonBlankString(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim().length > 0 ? value : undefined;
+}
+
 export function getStringProperty(value: unknown, key: string): string | undefined {
   if (!isRecord(value)) {
     return undefined;

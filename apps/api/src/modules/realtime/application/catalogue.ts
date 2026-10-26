@@ -1,3 +1,4 @@
+import type { RealtimeProviderConfiguration } from "@ngriffin_uk/polychat-ai-providers";
 import {
   realtimeLiveProviderDescriptorSchema,
   type ModelConfig,
@@ -14,6 +15,23 @@ function hasConfiguredEnvironmentVariable(env: object, name: string): boolean {
   const value = Reflect.get(env, name);
 
   return typeof value === "string" && value.trim().length > 0;
+}
+
+function hasConfiguredBinding(env: object, name: string): boolean {
+  const binding = Reflect.get(env, name);
+
+  return binding !== undefined && binding !== null;
+}
+
+export function hasPlatformRealtimeConfiguration(
+  env: object,
+  { bindings = [], environmentVariables }: RealtimeProviderConfiguration,
+): boolean {
+  return (
+    environmentVariables.length + bindings.length > 0 &&
+    environmentVariables.every((variable) => hasConfiguredEnvironmentVariable(env, variable)) &&
+    bindings.every((binding) => hasConfiguredBinding(env, binding))
+  );
 }
 
 function hasAccessibleDefaultModel(
@@ -94,11 +112,10 @@ export async function listRealtimeLiveProviders(
       }
 
       try {
-        const hasPlatformConfiguration =
-          provider.configuration.environmentVariables.length > 0 &&
-          provider.configuration.environmentVariables.every((variable) =>
-            hasConfiguredEnvironmentVariable(context.env, variable),
-          );
+        const hasPlatformConfiguration = hasPlatformRealtimeConfiguration(
+          context.env,
+          provider.configuration,
+        );
         const hasUserConfiguration =
           !hasPlatformConfiguration &&
           provider.configuration.acceptsUserApiKey &&

@@ -61,6 +61,7 @@ describe("Mistral realtime proxy", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getRealtimeProvider.mockReturnValue({
+      descriptor: { shortLabel: "Mistral" },
       getApiKey: vi.fn().mockResolvedValue("mistral-api-key"),
       getDefaultModel: vi.fn().mockReturnValue("voxtral-default-fixture"),
     });

@@ -444,6 +444,20 @@
         "costPer1kOutputTokens": 0
       }
     },
+    "@cf/deepgram/flux": {
+      "model": "workers-ai/@cf/deepgram/flux/deepgram-flux",
+      "matchingModel": "@cf/deepgram/flux",
+      "overrides": {
+        "lastUpdated": "October 2, 2025",
+        "costPerAudioSecond": 0.000128,
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "hiddenFromDefaultList": true,
+        "supportsStreaming": true,
+        "supportsRealtimeSession": true,
+        "supportsTemperature": false
+      }
+    },
     "smart-turn-v2": {
       "model": "workers-ai/@cf/pipecat-ai/smart-turn-v2/pipecat-smart-turn-v2",
       "matchingModel": "@cf/pipecat-ai/smart-turn-v2",

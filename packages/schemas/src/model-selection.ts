@@ -333,13 +333,6 @@ export function getRealtimeSessionModelsByProvider(models: ModelConfig, provider
   }, {});
 }
 
-export function getChatAndRealtimeModelsByMode(models: ModelConfig, computeSite: ComputeSite) {
-  return {
-    ...getModelsByMode(models, computeSite),
-    ...getRealtimeSessionModelsByProvider(models),
-  };
-}
-
 export function getToolCallModels(models: ModelConfig) {
   return Object.entries(models).reduce<Record<string, ModelCatalogItem>>((acc, [key, model]) => {
     if (model.supportsToolCalls) {
