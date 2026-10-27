@@ -2398,6 +2398,7 @@ export const workspaceTeammate = sqliteTable(
     last_wake: text({ mode: "json" }).$type<WorkWakeRecord | null>(),
     monthly_credit_cap_micros: integer(),
     budget_warned_period: text(),
+    budget_alert_at: text(),
     project_ids: text({ mode: "json" }).$type<string[]>().default([]).notNull(),
     proposal: text({ mode: "json" }).$type<HireProposal | null>(),
     created_at: text()

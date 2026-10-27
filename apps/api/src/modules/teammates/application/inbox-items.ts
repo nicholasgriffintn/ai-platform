@@ -44,7 +44,7 @@ function employmentItem(
       kind: "paused",
       title: `${name} is paused: monthly budget used`,
       detail: "Raise its cap on the Team page to resume its work.",
-      since: employment.createdAt,
+      since: employment.budgetAlertAt ?? employment.createdAt,
     };
   }
 
@@ -55,7 +55,7 @@ function employmentItem(
       kind: "budget",
       title: `${name} has used 80% of its monthly budget`,
       detail: "It pauses at 100%. Raise the cap on the Team page if it needs more.",
-      since: employment.createdAt,
+      since: employment.budgetAlertAt ?? employment.createdAt,
     };
   }
 

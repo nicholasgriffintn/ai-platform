@@ -28,6 +28,7 @@ export * from "./TaskAttentionList";
 export * from "./CreateTaskDialog";
 export * from "./FlowEditorDialog";
 export * from "./ProjectTasksSummary";
+export * from "./TaskCallout";
 export * from "./TaskDetail";
 export * from "./TaskActivityTimeline";
 export * from "./TaskStageEvidence";

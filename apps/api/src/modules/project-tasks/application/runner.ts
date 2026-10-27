@@ -15,6 +15,7 @@ import {
   PROJECT_TASK_DEFAULT_CONCURRENCY,
   PROJECT_TASK_DEFAULT_TOKEN_BUDGET,
   PROJECT_TASK_RUN_TASK_TYPE,
+  isTerminalProjectTaskStatus,
   teammateRunConfigurationSchema,
   type ChatRun,
   type ProjectTask,
@@ -1029,35 +1030,48 @@ export async function runProjectTaskDispatch(params: {
           council,
         })
       : null;
-  const nextStatus = metKillCondition
-    ? "blocked"
-    : goal?.status === "completed"
-      ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId, council)
-      : projection.status;
+  const current = await context.repositories.get(ProjectTaskRepository).getTaskById(taskId);
+  const finished = current && isTerminalProjectTaskStatus(current.status) ? current : null;
+  const nextStatus = finished
+    ? finished.status
+    : metKillCondition
+      ? "blocked"
+      : goal?.status === "completed"
+        ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId, council)
+        : projection.status;
 
   await updateOwnedProjectTask({
     context,
     taskId,
     dispatchTaskId: params.dispatchTaskId,
     executionLease: params.executionLease,
-    updates: {
-      status: nextStatus,
-      blockedReason: metKillCondition ? "kill_condition_met" : projection.blockedReason,
-      blockedDetail: metKillCondition?.condition ?? goal?.stopped_reason ?? null,
-      tokensSpent,
-      ...(completion ? { completions: [...claimed.completions, completion] } : {}),
-      ...(nextStatus === "done"
-        ? { completedAt: new Date().toISOString() }
-        : nextStatus === "review"
-          ? { completedAt: null }
-          : {}),
-    },
+    updates: finished
+      ? {
+          tokensSpent,
+          ...(completion ? { completions: [...claimed.completions, completion] } : {}),
+        }
+      : {
+          status: nextStatus,
+          blockedReason: metKillCondition ? "kill_condition_met" : projection.blockedReason,
+          blockedDetail: metKillCondition?.condition ?? goal?.stopped_reason ?? null,
+          tokensSpent,
+          ...(completion ? { completions: [...claimed.completions, completion] } : {}),
+          ...(nextStatus === "done"
+            ? { completedAt: new Date().toISOString() }
+            : nextStatus === "review"
+              ? { completedAt: null }
+              : {}),
+        },
   });
   await params.executionLease.assertOwned();
   await context.repositories.get(ActivityRepository).updateActivity(activity.id, {
     status: nextStatus === "blocked" ? "waiting" : "succeeded",
     summary: goal?.objective.slice(0, 200) ?? claimed.objective.slice(0, 200),
   });
+
+  if (finished) {
+    return { status: "completed" };
+  }
 
   if (completion && claimed.executionProfile === "diff_review") {
     try {

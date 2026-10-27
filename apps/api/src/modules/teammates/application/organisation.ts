@@ -288,7 +288,11 @@ export async function updateWorkspaceTeammate(
       : {}),
     ...(input.heartbeatMinutes !== undefined ? { heartbeatMinutes: input.heartbeatMinutes } : {}),
     ...(input.monthlyCreditCapMicros !== undefined
-      ? { monthlyCreditCapMicros: input.monthlyCreditCapMicros, budgetWarnedPeriod: null }
+      ? {
+          monthlyCreditCapMicros: input.monthlyCreditCapMicros,
+          budgetWarnedPeriod: null,
+          budgetAlertAt: null,
+        }
       : {}),
     ...(input.projectIds !== undefined ? { projectIds: input.projectIds } : {}),
     ...(nextStatus !== undefined
@@ -521,12 +525,19 @@ export async function reviewWorkBudgets(
       if (used >= cap) {
         await context.repositories
           .get(WorkspaceTeammateRepository)
-          .update(workspaceId, record.teammateId, { status: "paused", pausedReason: "budget" });
+          .update(workspaceId, record.teammateId, {
+            status: "paused",
+            pausedReason: "budget",
+            budgetAlertAt: new Date().toISOString(),
+          });
         paused.add(`${workspaceId}:${record.teammateId}`);
       } else if (used >= cap * WORK_BUDGET_WARNING_RATIO && record.budgetWarnedPeriod !== period) {
         await context.repositories
           .get(WorkspaceTeammateRepository)
-          .update(workspaceId, record.teammateId, { budgetWarnedPeriod: period });
+          .update(workspaceId, record.teammateId, {
+            budgetWarnedPeriod: period,
+            budgetAlertAt: new Date().toISOString(),
+          });
       }
     }
   }

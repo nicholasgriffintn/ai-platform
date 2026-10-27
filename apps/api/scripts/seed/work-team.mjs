@@ -436,6 +436,7 @@ export function workTeamStatements() {
         }),
         monthly_credit_cap_micros: hire.cap,
         budget_warned_period: hire.budgetWarned ? period() : null,
+        budget_alert_at: hire.budgetWarned ? at({ days: 3 }) : null,
         project_ids: hire.projects,
         created_at: hire.key === "atlas" ? setupAt : appliedAt,
         updated_at: at({ days: 1 }),

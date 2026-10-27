@@ -3,6 +3,7 @@ import {
   InitiativeDialog,
   InitiativesView,
   SetupPlanView,
+  TaskCallout,
   WorkspaceAuditList,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import {
@@ -25,6 +26,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { PageShell } from "../Shell/PageShell.js";
+import { useSetupLead } from "./useSetupLead.js";
 import { WorkspaceUsage } from "./WorkspaceUsage.js";
 
 export function WorkInitiativesPage({ workspaceId }: { workspaceId: string }) {
@@ -170,6 +172,7 @@ export function WorkSetupPage({ workspaceId }: { workspaceId: string }) {
   const connectors = useRecipeConnectors();
   const canManage = Boolean(workspace.data && canManageWorkspace(workspace.data));
   const state = setup.data;
+  const lead = useSetupLead(state?.projectId ?? "", state?.setupTaskId ?? "");
 
   return (
     <PageShell.Content className="max-w-5xl">
@@ -195,40 +198,53 @@ export function WorkSetupPage({ workspaceId }: { workspaceId: string }) {
             </Link>{" "}
             to follow its work or ask for changes.
           </p>
-          <SetupPlanView
-            setup={state.setup}
-            canApprove={canManage}
-            connectorName={(provider) =>
-              connectors.data?.connectors.find((connector) => connector.id === provider)?.name ??
-              provider
-            }
-            connectHref="/chat/plugins"
-            isBusy={
-              actions.approve.isPending || actions.archive.isPending || actions.revise.isPending
-            }
-            onApprove={(revision) =>
-              void actions.approve
-                .mutateAsync(revision)
-                .then(() => toast.success("Approved. The team is starting."))
-                .catch((error: unknown) =>
-                  toast.error(getErrorMessage(error, "The plan could not be applied")),
-                )
-            }
-            onArchive={() =>
-              void actions.archive
-                .mutateAsync()
-                .then(() => toast.success("Archived what the plan created"))
-            }
-            onRevise={(plan, expectedRevision) =>
-              actions.revise
-                .mutateAsync({ plan, expectedRevision })
-                .then((next) => toast.success(`Saved as revision ${next.revision}`))
-                .catch((error: unknown) => {
-                  toast.error(getErrorMessage(error, "The plan could not be saved"));
-                  throw error;
-                })
-            }
-          />
+          {lead.stopped && !state.setup?.appliedAt ? (
+            <TaskCallout
+              task={lead.stopped}
+              needsInput={lead.needsInput}
+              canRetry={lead.canRetry}
+              conversationHref={getProjectTaskPath(workspaceId, state.projectId, state.setupTaskId)}
+              isBusy={lead.isRetrying}
+              onAccept={() => undefined}
+              onRun={lead.retry}
+            />
+          ) : null}
+          {lead.stopped && !state.setup ? null : (
+            <SetupPlanView
+              setup={state.setup}
+              canApprove={canManage}
+              connectorName={(provider) =>
+                connectors.data?.connectors.find((connector) => connector.id === provider)?.name ??
+                provider
+              }
+              connectHref="/chat/plugins"
+              isBusy={
+                actions.approve.isPending || actions.archive.isPending || actions.revise.isPending
+              }
+              onApprove={(revision) =>
+                void actions.approve
+                  .mutateAsync(revision)
+                  .then(() => toast.success("Approved. The team is starting."))
+                  .catch((error: unknown) =>
+                    toast.error(getErrorMessage(error, "The plan could not be applied")),
+                  )
+              }
+              onArchive={() =>
+                void actions.archive
+                  .mutateAsync()
+                  .then(() => toast.success("Archived what the plan created"))
+              }
+              onRevise={(plan, expectedRevision) =>
+                actions.revise
+                  .mutateAsync({ plan, expectedRevision })
+                  .then((next) => toast.success(`Saved as revision ${next.revision}`))
+                  .catch((error: unknown) => {
+                    toast.error(getErrorMessage(error, "The plan could not be saved"));
+                    throw error;
+                  })
+              }
+            />
+          )}
         </div>
       )}
     </PageShell.Content>

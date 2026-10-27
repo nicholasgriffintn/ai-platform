@@ -22,6 +22,7 @@ export interface WorkspaceTeammateRecord {
   lastWake: WorkWakeRecord | null;
   monthlyCreditCapMicros: number | null;
   budgetWarnedPeriod: string | null;
+  budgetAlertAt: string | null;
   projectIds: string[];
   proposal: HireProposal | null;
   createdAt: string;
@@ -41,6 +42,7 @@ function formatRecord(row: WorkspaceTeammateRow): WorkspaceTeammateRecord {
     lastWake: parseJsonColumn<WorkWakeRecord | null>(row.last_wake, null),
     monthlyCreditCapMicros: row.monthly_credit_cap_micros,
     budgetWarnedPeriod: row.budget_warned_period,
+    budgetAlertAt: row.budget_alert_at,
     projectIds: parseJsonColumn<string[]>(row.project_ids, []),
     proposal: parseJsonColumn<HireProposal | null>(row.proposal, null),
     createdAt: row.created_at,
@@ -155,6 +157,7 @@ export class WorkspaceTeammateRepository extends BaseRepository {
       lastWake: WorkWakeRecord | null;
       monthlyCreditCapMicros: number | null;
       budgetWarnedPeriod: string | null;
+      budgetAlertAt: string | null;
       projectIds: string[];
       proposal: HireProposal | null;
     }>,
@@ -170,6 +173,7 @@ export class WorkspaceTeammateRepository extends BaseRepository {
       lastWake: "last_wake",
       monthlyCreditCapMicros: "monthly_credit_cap_micros",
       budgetWarnedPeriod: "budget_warned_period",
+      budgetAlertAt: "budget_alert_at",
       projectIds: "project_ids",
       proposal: "proposal",
     };
