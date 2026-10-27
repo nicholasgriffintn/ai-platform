@@ -31,3 +31,4 @@ export * from "./text-anchor.js";
 export * from "./urls.js";
 export * from "./user-ids.js";
 export * from "./versions.js";
+export * from "./vectors.js";
