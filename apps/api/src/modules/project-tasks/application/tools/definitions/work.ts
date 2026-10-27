@@ -178,6 +178,26 @@ export const propose_hire: FunctionToolDescriptor = {
   }),
 };
 
+export const set_budget: FunctionToolDescriptor = {
+  name: "set_budget",
+  description:
+    "Change a report's monthly budget in credits. Lower it whenever its work is not worth the spend. Raise it when its work is worth more and the workspace budget has enough left this month; otherwise escalate to a person. Raising it resumes a teammate paused for budget.",
+  type: "normal",
+  permissions: ["write"],
+  effects: { effectClass: "write" },
+  intentEvidence: (input) => ({ operation: "set_budget", ...input }),
+  inputSchema: jsonSchemaToZod({
+    type: "object",
+    properties: {
+      teammate: { type: "string", description: "The report's name." },
+      monthlyCredits: { type: "number", description: "The new monthly budget in credits." },
+      reason: { type: "string", description: "Why, in one sentence, for the activity log." },
+    },
+    required: ["teammate", "monthlyCredits", "reason"],
+    additionalProperties: false,
+  }),
+};
+
 export const answer_standup: FunctionToolDescriptor = {
   name: "answer_standup",
   description:

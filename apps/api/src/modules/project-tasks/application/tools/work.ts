@@ -29,6 +29,7 @@ import {
 } from "~/modules/project-tasks/application/work";
 import { taskReference } from "~/modules/project-tasks/domain/work-actors";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
+import { setReportBudget } from "~/modules/teammates/application/budgets";
 import { proposeHire } from "~/modules/teammates/application/organisation";
 import { proposeSetupPlan } from "~/modules/workspaces/application/onboarding";
 import type { ApiToolDefinition } from "~/types/functions";
@@ -48,9 +49,15 @@ import {
   raise_case as raiseCaseDescriptor,
   request_review as requestReviewDescriptor,
   review_task as reviewTaskDescriptor,
+  set_budget as setBudgetDescriptor,
   summarise_standup as summariseStandupDescriptor,
 } from "./definitions/work";
-import { resolveWorkActor, resolveWorkToolScope, type WorkToolScope } from "./scope";
+import {
+  resolveWorkActor,
+  resolveWorkReport,
+  resolveWorkToolScope,
+  type WorkToolScope,
+} from "./scope";
 
 const MINUTES_PER_HOUR = 60;
 
@@ -205,6 +212,32 @@ export const propose_hire = workTool(proposeHireDescriptor, async (args, scope) 
   };
 });
 
+export const set_budget = workTool(setBudgetDescriptor, async (args, scope) => {
+  if (scope.caller.actor.type !== "teammate") {
+    throw new Error("Change budgets on the Team page.");
+  }
+
+  if (typeof args.monthlyCredits !== "number" || args.monthlyCredits <= 0) {
+    throw new Error("Give the new monthly budget as a positive number of credits.");
+  }
+
+  const updated = await setReportBudget(scope.context, {
+    workspaceId: scope.workspaceId,
+    managerId: scope.caller.actor.id,
+    teammateId: await resolveWorkReport(scope, args.teammate),
+    monthlyCreditCapMicros: creditMicrosFromCredits(args.monthlyCredits),
+    reason: readTrimmedString(args.reason),
+  });
+
+  return {
+    content: `Set the monthly budget to ${args.monthlyCredits} credits${updated.status === "active" ? "" : ". It is still paused"}.`,
+    data: {
+      teammateId: updated.teammateId,
+      monthlyCreditCapMicros: updated.monthlyCreditCapMicros,
+    },
+  };
+});
+
 export const answer_standup = workTool(answerStandupDescriptor, async (args, scope) => {
   const task = await scope.context.repositories
     .get(ProjectTaskRepository)
@@ -344,6 +377,7 @@ export const WORK_TOOLS = [
   escalate,
   raise_case,
   propose_hire,
+  set_budget,
   answer_standup,
   summarise_standup,
   propose_setup_plan,

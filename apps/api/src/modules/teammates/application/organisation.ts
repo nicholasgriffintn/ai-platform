@@ -5,7 +5,6 @@ import {
   type RunsOn,
   type UpdateWorkspaceTeammateInput,
   usagePeriodFromDate,
-  WORK_BUDGET_WARNING_RATIO,
   type WorkspaceTeammate,
   type WorkspaceTeamResponse,
 } from "@ngriffin_uk/polychat-schemas";
@@ -501,51 +500,6 @@ export async function assertTeammateEmploymentAvailable(
     describeEmploymentUnavailable({ status: "paused", pausedReason: "budget" }, name),
     ErrorType.RATE_LIMIT_ERROR,
     429,
-  );
-}
-
-export async function reviewWorkBudgets(
-  context: ServiceContext,
-  employments: readonly WorkspaceTeammateRecord[],
-): Promise<WorkspaceTeammateRecord[]> {
-  const period = usagePeriodFromDate();
-  const records = employments.filter(
-    (record) => record.status === "active" && record.monthlyCreditCapMicros,
-  );
-  const workspaceIds = [...new Set(records.map((record) => record.workspaceId))];
-  const paused = new Set<string>();
-
-  for (const workspaceId of workspaceIds) {
-    const spend = await readTeammateSpendByWorkspace(context, workspaceId);
-
-    for (const record of records.filter((candidate) => candidate.workspaceId === workspaceId)) {
-      const cap = record.monthlyCreditCapMicros ?? 0;
-      const used = spend.get(record.teammateId) ?? 0;
-
-      if (used >= cap) {
-        await context.repositories
-          .get(WorkspaceTeammateRepository)
-          .update(workspaceId, record.teammateId, {
-            status: "paused",
-            pausedReason: "budget",
-            budgetAlertAt: new Date().toISOString(),
-          });
-        paused.add(`${workspaceId}:${record.teammateId}`);
-      } else if (used >= cap * WORK_BUDGET_WARNING_RATIO && record.budgetWarnedPeriod !== period) {
-        await context.repositories
-          .get(WorkspaceTeammateRepository)
-          .update(workspaceId, record.teammateId, {
-            budgetWarnedPeriod: period,
-            budgetAlertAt: new Date().toISOString(),
-          });
-      }
-    }
-  }
-
-  return employments.map((record) =>
-    paused.has(`${record.workspaceId}:${record.teammateId}`)
-      ? { ...record, status: "paused", pausedReason: "budget" }
-      : record,
   );
 }
 

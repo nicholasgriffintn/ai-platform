@@ -7,7 +7,10 @@ import {
   type WorkCaller,
 } from "~/modules/project-tasks/application/work";
 import { requireTeammateContext } from "~/modules/teammates/application/contexts";
-import { listActiveWorkspaceTeammates } from "~/modules/teammates/application/directory";
+import {
+  listActiveWorkspaceTeammates,
+  listWorkspaceTeamDirectory,
+} from "~/modules/teammates/application/directory";
 import { resolveRequestProjectId } from "~/modules/tools/application/request-context";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IRequest } from "~/types";
@@ -58,6 +61,28 @@ export async function resolveWorkToolScope(request: IRequest): Promise<WorkToolS
   };
 }
 
+function matchesName(candidate: { name: string }, value: string): boolean {
+  const name = candidate.name.toLowerCase();
+
+  return name === value || name.split(/\s+/)[0] === value;
+}
+
+export async function resolveWorkReport(scope: WorkToolScope, reference: unknown): Promise<string> {
+  const value = typeof reference === "string" ? reference.trim().toLowerCase() : "";
+  const team = await listWorkspaceTeamDirectory(scope.context, scope.workspaceId);
+  const teammate = team.find(
+    (candidate) =>
+      (candidate.status === "active" || candidate.status === "paused") &&
+      (candidate.teammateId.toLowerCase() === value || matchesName(candidate, value)),
+  );
+
+  if (!teammate) {
+    throw new Error(`No teammate called "${value}" is on this team. Check the name.`);
+  }
+
+  return teammate.teammateId;
+}
+
 export async function resolveWorkActor(
   scope: WorkToolScope,
   reference: unknown,
@@ -74,10 +99,7 @@ export async function resolveWorkActor(
 
   const teammates = await listActiveWorkspaceTeammates(scope.context, scope.workspaceId);
   const teammate = teammates.find(
-    (candidate) =>
-      candidate.teammateId.toLowerCase() === value ||
-      candidate.name.toLowerCase() === value ||
-      candidate.name.toLowerCase().split(/\s+/)[0] === value,
+    (candidate) => candidate.teammateId.toLowerCase() === value || matchesName(candidate, value),
   );
 
   if (teammate) {
@@ -90,8 +112,7 @@ export async function resolveWorkActor(
   const member = members.find(
     (candidate) =>
       candidate.email.toLowerCase() === value ||
-      candidate.name?.toLowerCase() === value ||
-      candidate.name?.toLowerCase().split(/\s+/)[0] === value,
+      (candidate.name ? matchesName({ name: candidate.name }, value) : false),
   );
 
   if (member) {

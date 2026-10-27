@@ -107,6 +107,7 @@ export const WORK_WAKE_REASONS = [
   "setup",
   "blocker_cleared",
   "report_blocked",
+  "report_budget",
 ] as const;
 export const workWakeReasonSchema = z.enum(WORK_WAKE_REASONS);
 export type WorkWakeReason = z.infer<typeof workWakeReasonSchema>;

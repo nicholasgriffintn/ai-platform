@@ -94,6 +94,12 @@ const actionShapes = {
   },
   "teammate.read": resourceShape,
   "teammate.write": resourceShape,
+  "teammate.budget": {
+    manager: boolean,
+    raising: boolean,
+    capped: boolean,
+    withinHeadroom: boolean,
+  },
   "capability.use": { granted: boolean, excluded: boolean },
   "knowledge.configure": resourceShape,
   "knowledge.attach": { connected: boolean, member: boolean, role: string },

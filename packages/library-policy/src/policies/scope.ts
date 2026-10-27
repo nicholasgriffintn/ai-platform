@@ -32,6 +32,8 @@ export const scopePolicies = {
       (context.scope == "workspace" && context.member && ["owner", "admin"].contains(context.role)) };
     forbid(principal, action == Polychat::Action::"teammate.write", resource)
     when { context.scope == "platform" };`,
+  "scope.teammate.budget": `permit(principal, action == Polychat::Action::"teammate.budget", resource)
+    when { context.manager && (!context.raising || (context.capped && context.withinHeadroom)) };`,
   "scope.capability": `permit(principal, action == Polychat::Action::"capability.use", resource)
     when { context.granted && !context.excluded };`,
 };

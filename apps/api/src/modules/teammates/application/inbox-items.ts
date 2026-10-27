@@ -15,6 +15,7 @@ function employmentItem(
   employment: WorkspaceTeammateRecord,
   name: string,
   period: string,
+  managedByTeammate: boolean,
 ): WorkInboxItem | null {
   const base = {
     workspaceId: employment.workspaceId,
@@ -48,7 +49,11 @@ function employmentItem(
     };
   }
 
-  if (employment.status === "active" && employment.budgetWarnedPeriod === period) {
+  if (
+    employment.status === "active" &&
+    employment.budgetWarnedPeriod === period &&
+    !managedByTeammate
+  ) {
     return {
       ...base,
       id: `budget:${employment.workspaceId}:${employment.teammateId}:${period}`,
@@ -78,6 +83,11 @@ export async function listTeammateInboxItems(
     .getTeammatesByIds(teammateIds);
   const names = new Map(teammates.map((teammate) => [teammate.id, teammate.name]));
   const period = usagePeriodFromDate();
+  const activeTeammates = new Set(
+    employments
+      .filter((employment) => employment.status === "active")
+      .map((employment) => `${employment.workspaceId}:${employment.teammateId}`),
+  );
 
   return employments
     .filter((employment) => params.managedWorkspaceIds.has(employment.workspaceId))
@@ -86,6 +96,7 @@ export async function listTeammateInboxItems(
         employment,
         names.get(employment.teammateId) ?? "A teammate",
         period,
+        activeTeammates.has(`${employment.workspaceId}:${employment.reportsToTeammateId}`),
       );
 
       return item ? [item] : [];

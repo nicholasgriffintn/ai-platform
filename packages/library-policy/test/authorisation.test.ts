@@ -105,6 +105,23 @@ describe("Cedar authorisation", () => {
     expect(authorise("connector.unattended", { ...read, access: "write" }).allowed).toBe(false);
   });
 
+  it("lets a manager move a report's budget only within the workspace's remaining cap", () => {
+    const raise = { manager: true, raising: true, capped: true, withinHeadroom: true };
+
+    expect(authorise("teammate.budget", raise).allowed).toBe(true);
+    expect(authorise("teammate.budget", { ...raise, withinHeadroom: false }).allowed).toBe(false);
+    expect(authorise("teammate.budget", { ...raise, capped: false }).allowed).toBe(false);
+    expect(authorise("teammate.budget", { ...raise, manager: false }).allowed).toBe(false);
+    expect(
+      authorise("teammate.budget", {
+        ...raise,
+        raising: false,
+        capped: false,
+        withinHeadroom: false,
+      }).allowed,
+    ).toBe(true);
+  });
+
   it("lets agent identities act without a person but never on unknown operations", () => {
     const send = { supported: true, access: "write", destructive: true, agentIdentity: true };
 

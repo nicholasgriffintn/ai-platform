@@ -1,5 +1,6 @@
 import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import {
+  creditsFromCreditMicros,
   readToolIds,
   WORK_TEAMMATE_WAKE_TASK_TYPE,
   WORK_WAKE_QUIET_MINUTES,
@@ -8,7 +9,12 @@ import {
   type WorkWakeRecord,
   type WorkWakeReason,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId, MINUTE_MS, parseStoredTimestamp } from "@ngriffin_uk/polychat-utility-core";
+import {
+  formatCredits,
+  generateId,
+  MINUTE_MS,
+  parseStoredTimestamp,
+} from "@ngriffin_uk/polychat-utility-core";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
@@ -27,8 +33,9 @@ import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IEnv } from "~/types";
 
+import { reviewWorkBudgets, type BudgetAlert } from "./budgets";
 import { ensureActiveTeammateContext } from "./contexts";
-import { resolveManager, reviewWorkBudgets } from "./organisation";
+import { resolveManager } from "./organisation";
 import { enqueueTeammateRun } from "./run-admission";
 import { ensureWorkspaceWakeConversation, resolveProjectTeammateScope } from "./work-scope";
 
@@ -44,6 +51,8 @@ const WAKE_REASON_TEXT: Record<WorkWakeReason, string> = {
   setup: "the workspace needs its setup plan",
   blocker_cleared: "something you were waiting on has finished",
   report_blocked: "one of your reports is stuck, and you handle it before a person is asked",
+  report_budget:
+    "one of your reports is running out of its monthly budget, and you decide whether it gets more",
 };
 
 const UNTHROTTLED_WAKE_REASONS: ReadonlySet<WorkWakeReason> = new Set(["report_blocked"]);
@@ -342,12 +351,39 @@ export async function settleWake(
     });
 }
 
+async function wakeManagersForBudgets(
+  context: ServiceContext,
+  alerts: readonly BudgetAlert[],
+): Promise<void> {
+  const teammates = await context.repositories
+    .get(TeammateRepository)
+    .getTeammatesByIds([...new Set(alerts.map((alert) => alert.teammateId))]);
+  const names = new Map(teammates.map((teammate) => [teammate.id, teammate.name]));
+
+  for (const alert of alerts) {
+    const name = names.get(alert.teammateId) ?? "A report";
+    const usage = `${formatCredits(creditsFromCreditMicros(alert.usedMicros))} of its ${formatCredits(creditsFromCreditMicros(alert.capMicros))} credits`;
+
+    await enqueueTeammateWake(context, {
+      workspaceId: alert.workspaceId,
+      teammateId: alert.managerId,
+      projectId: alert.projectId,
+      reason: "report_budget",
+      detail:
+        alert.kind === "paused"
+          ? `${name} has used ${usage} this month and is paused. If its work is worth more, give it more with set_budget; otherwise leave it paused until next month.`
+          : `${name} has used ${usage} this month. Decide whether to give it more with set_budget, or let it pause at its cap.`,
+    });
+  }
+}
+
 export async function runWorkRhythm(env: IEnv, now = new Date()): Promise<void> {
   const context = createServiceContext({ env });
-  const employments = await reviewWorkBudgets(
+  const { employments, alerts } = await reviewWorkBudgets(
     context,
     await context.repositories.get(WorkspaceTeammateRepository).listAwake(),
   );
 
+  await wakeManagersForBudgets(context, alerts);
   await scheduleWorkHeartbeats(context, employments, now);
 }

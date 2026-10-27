@@ -41,6 +41,7 @@ export const WORK_TASK_TOOL_IDS = [
   "escalate",
   "raise_case",
   "propose_hire",
+  "set_budget",
   "answer_standup",
   "summarise_standup",
   "propose_setup_plan",
