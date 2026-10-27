@@ -2165,7 +2165,7 @@ export function seedGuideMarkdown() {
     "",
     "**Try:** Open Northstar Studio. Atlas, the lead, set it up from the mission three weeks ago: three initiatives, Autumn launch, Website refresh, Support desk and Company, with Release bot, Mara and Juno hired and Quinn proposed. Open Inbox, then CO-1 to read how setup went, CO-2 for today's brief, LNCH-1 for an accepted breakdown, LNCH-7 to answer the standup, LNCH-10 for an escalation and WEB-1 to review Mara's copy.",
     "",
-    "**Expect:** Inbox groups by workspace and project: Quinn's hire, Juno's reply to Ellie waiting on approval, the standup, the escalation, WEB-3's breakdown, LNCH-6's migration approval and the reviews. LNCH-5 failed but stays out of Inbox because Atlas is handling it. Settings shows the applied plan, routines and spend, with Mara near her cap.",
+    "**Expect:** Inbox groups by workspace and project: Quinn's hire, Juno's question about crediting Brightdesk after replying from Agent Mail, the standup, the escalation, WEB-3's breakdown, LNCH-6's migration approval and the reviews. LNCH-5 failed but stays out of Inbox because Atlas is handling it. Settings shows the applied plan, routines and spend, with Mara near her cap.",
     "",
     "## Work: watch a lead set up a workspace",
     "",

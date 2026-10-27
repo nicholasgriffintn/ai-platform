@@ -1,6 +1,7 @@
 import {
   connectorOperationsForAccess,
   getConnectorProviderConfig,
+  isAgentIdentityProvider,
 } from "@ngriffin_uk/polychat-ai-integrations";
 import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 
@@ -11,6 +12,7 @@ import { listRecipeConnectorSummaries } from "./index";
 export interface ConnectedConnector {
   id: RecipeConnectorProvider;
   name: string;
+  agentIdentity: boolean;
 }
 
 export async function listConnectedConnectors(
@@ -19,7 +21,15 @@ export async function listConnectedConnectors(
 ): Promise<ConnectedConnector[]> {
   const connectors = await listRecipeConnectorSummaries({ context, userId, status: "connected" });
 
-  return connectors.map((connector) => ({ id: connector.id, name: connector.name }));
+  return connectors.map((connector) => {
+    const config = getConnectorProviderConfig(connector.id);
+
+    return {
+      id: connector.id,
+      name: connector.name,
+      agentIdentity: config ? isAgentIdentityProvider(config) : false,
+    };
+  });
 }
 
 export function providerOperationsForAccess(

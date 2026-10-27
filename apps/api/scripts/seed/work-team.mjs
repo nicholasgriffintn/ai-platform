@@ -649,7 +649,7 @@ export function workTeamStatements() {
       projectId: PROJECTS.support,
       createdAt: at({ minutes: 50 }),
       run: {
-        status: "awaiting_approval",
+        status: "awaiting_input",
         trigger: "schedule",
         teammateContextId: workContextId("juno"),
         projectId: PROJECTS.support,
@@ -662,15 +662,26 @@ export function workTeamStatements() {
           "You are Juno, Support agent. Your scheduled heartbeat came round. Check the Support desk for anything waiting on you.",
       },
       ...toolCall({
-        name: "send_email",
+        name: "use_recipe_connector",
         callId: "call_juno_reply",
         input: {
-          to: "ellie@brightdesk.example",
-          subject: "Re: Exporting invoices",
-          body: "Hi Ellie, you can export invoices from Billing → History → Export while we fix the CSV button. I'll write again when it's live. Juno",
+          provider: "agent_mail",
+          operation: "AGENT_MAIL_REPLY_TO_MESSAGE",
+          arguments: {
+            text: "Hi Ellie, you can export invoices from Billing → History → Export while we fix the CSV button. I'll write again when it's live. Juno",
+          },
+        },
+        result: "Replied to Ellie Hart from support@northstar.agentmail.to.",
+      }),
+      ...toolCall({
+        name: "ask_user",
+        callId: "call_juno_credit",
+        input: {
+          question:
+            "Ellie lost a morning to the blank CSV. Should I offer Brightdesk a month's credit when the fix ships?",
         },
         result:
-          "Reply to Ellie Hart with the CSV workaround and a promise to follow up when the fix ships.",
+          "Ellie lost a morning to the blank CSV. Should I offer Brightdesk a month's credit when the fix ships?",
         status: "pending",
       }),
     ],

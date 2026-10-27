@@ -29,4 +29,12 @@ describe("Composio operation policy metadata", () => {
     expect(connectorOperationRequiresApproval("linear", "LINEAR_RUN_QUERY_OR_MUTATION")).toBe(true);
     expect(connectorOperationRequiresApproval("gmail", "GMAIL_UNKNOWN_OPERATION")).toBe(true);
   });
+
+  it("lets an agent's own mailbox send and reply without a person", () => {
+    expect(connectorOperationRequiresApproval("agent_mail", "AGENT_MAIL_SEND_EMAIL")).toBe(false);
+    expect(connectorOperationRequiresApproval("agent_mail", "AGENT_MAIL_REPLY_TO_MESSAGE")).toBe(
+      false,
+    );
+    expect(connectorOperationRequiresApproval("agent_mail", "AGENT_MAIL_UNKNOWN")).toBe(true);
+  });
 });

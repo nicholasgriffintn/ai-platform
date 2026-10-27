@@ -4,6 +4,7 @@ import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 import {
   connectorProviders,
   getConnectorProviderConfig,
+  isAgentIdentityProvider,
   type ComposioAuthConfigDefinition,
   type ConnectorOperationAccess,
   type ConnectorOperationConfig,
@@ -44,11 +45,13 @@ export function connectorOperationRequiresApproval(
   operation: string,
 ): boolean {
   const config = getConnectorOperationConfig(providerId, operation);
+  const provider = getConnectorProviderConfig(providerId);
 
   return !isUnattendedOperation({
     supported: Boolean(config),
     access: config?.access ?? "",
     destructive: config?.destructive === true,
+    agentIdentity: provider ? isAgentIdentityProvider(provider) : false,
   });
 }
 

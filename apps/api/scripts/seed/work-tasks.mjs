@@ -120,7 +120,7 @@ const DAILY_BRIEF = `# Daily brief
 
 **Decisions for you**
 - Approve Release bot's migration on LNCH-6 before it can finish quoted selections.
-- Juno has a reply to Ellie Hart ready to send on SUP-1.
+- Juno replied to Ellie Hart on SUP-1 and asks whether to offer Brightdesk a month's credit.
 - Quinn is proposed as Product analyst: £15 a month, reads usage and support together.
 
 **Moved since yesterday**
@@ -540,10 +540,9 @@ function taskDefinitions({ threads }) {
       objective: "Decide whether quoted selections ship behind a flag",
       description:
         "Release bot wants a flag so we can roll back; Mara wants it on for everyone so the release notes can lead with it.",
-      status: "blocked",
+      status: "backlog",
       priority: "high",
       owner: "atlas",
-      blocked: ["awaiting_input", "Needs a call from the person responsible."],
       created: at({ hours: 9 }),
       details: {
         escalation: {
@@ -662,11 +661,6 @@ function taskDefinitions({ threads }) {
         case: {
           source: "email",
           requester: { name: "Ellie Hart", address: "ellie@brightdesk.example" },
-          draftReply: {
-            body: "Hi Ellie, you can export invoices from Billing → History → Export while we fix the CSV button. I'll write again when it's live. Juno",
-            draftedBy: { type: "teammate", id: "juno" },
-            at: at({ minutes: 50 }),
-          },
         },
       },
     },
@@ -731,10 +725,6 @@ function resolveDetails(details, ids, handoff, attention) {
       ...answer,
       actor: resolveActor(answer.actor, ids),
     }));
-  }
-
-  if (resolved.case?.draftReply) {
-    resolved.case.draftReply.draftedBy = resolveActor(resolved.case.draftReply.draftedBy, ids);
   }
 
   if (resolved.escalation) {

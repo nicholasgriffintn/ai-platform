@@ -199,7 +199,12 @@ const actionShapes = {
     workspaceId: string,
     sessionWorkspaceId: string,
   },
-  "connector.unattended": { supported: boolean, access: string, destructive: boolean },
+  "connector.unattended": {
+    supported: boolean,
+    access: string,
+    destructive: boolean,
+    agentIdentity: boolean,
+  },
   "computer.unattended": { inputType: string, key: string },
   "grant.operation": { operations: strings, operation: string },
   "grant.revision": {

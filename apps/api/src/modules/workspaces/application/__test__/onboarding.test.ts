@@ -34,7 +34,7 @@ describe("proposing a setup plan", () => {
   beforeEach(() => {
     updateWorkspace.mockReset();
     vi.mocked(listConnectedConnectors).mockResolvedValue([
-      { id: "googlesheets", name: "Google Sheets" },
+      { id: "googlesheets", name: "Google Sheets", agentIdentity: false },
     ]);
     context = Object.assign(Object.create(null), {
       requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),

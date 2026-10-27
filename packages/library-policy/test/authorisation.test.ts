@@ -97,12 +97,19 @@ describe("Cedar authorisation", () => {
   });
 
   it("requires approval for unknown, destructive and write connector operations", () => {
-    const read = { supported: true, access: "read", destructive: false };
+    const read = { supported: true, access: "read", destructive: false, agentIdentity: false };
 
     expect(authorise("connector.unattended", read).allowed).toBe(true);
     expect(authorise("connector.unattended", { ...read, supported: false }).allowed).toBe(false);
     expect(authorise("connector.unattended", { ...read, destructive: true }).allowed).toBe(false);
     expect(authorise("connector.unattended", { ...read, access: "write" }).allowed).toBe(false);
+  });
+
+  it("lets agent identities act without a person but never on unknown operations", () => {
+    const send = { supported: true, access: "write", destructive: true, agentIdentity: true };
+
+    expect(authorise("connector.unattended", send).allowed).toBe(true);
+    expect(authorise("connector.unattended", { ...send, supported: false }).allowed).toBe(false);
   });
 
   it("binds approval replay to the owner, scope, operation and live grant revision", () => {
@@ -247,8 +254,14 @@ describe("Cedar authorisation", () => {
       ],
       ["entitlement.pro", { plan: "pro" }],
       ["entitlement.pro", { plan: "free" }],
-      ["connector.unattended", { supported: true, access: "read", destructive: false }],
-      ["connector.unattended", { supported: true, access: "write", destructive: false }],
+      [
+        "connector.unattended",
+        { supported: true, access: "read", destructive: false, agentIdentity: false },
+      ],
+      [
+        "connector.unattended",
+        { supported: true, access: "write", destructive: false, agentIdentity: false },
+      ],
       [
         "model.execute",
         { plan: "", active: true, free: true, byok: false, onDevice: false, platformEnabled: true },

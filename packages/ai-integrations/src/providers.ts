@@ -280,13 +280,23 @@ export const connectorProviders: readonly ConnectorProviderConfig[] = [
   ...knowledgeBaseConnectorProviders,
 ];
 
+export const AGENT_IDENTITY_CATEGORY_ID = "ai-agents";
+
+export function isAgentIdentityProvider(provider: ConnectorProviderConfig): boolean {
+  return provider.categories.some((category) => category.id === AGENT_IDENTITY_CATEGORY_ID);
+}
+
 export function connectorOperationsForAccess(
   provider: ConnectorProviderConfig,
   access: ConnectorOperationAccess,
 ): string[] {
+  const agentIdentity = isAgentIdentityProvider(provider);
+
   return provider.operations
     .filter(
-      (operation) => !operation.destructive && (access === "write" || operation.access === "read"),
+      (operation) =>
+        (agentIdentity || !operation.destructive) &&
+        (access === "write" || operation.access === "read"),
     )
     .map((operation) => operation.id)
     .sort();

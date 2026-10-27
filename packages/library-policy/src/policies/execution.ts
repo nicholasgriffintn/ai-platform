@@ -26,7 +26,7 @@ export const executionPolicies = {
   "execution.browser": `permit(principal, action == Polychat::Action::"browser.use", resource)
     when { context.actorId == context.ownerId && !context.destroyed && context.workspaceId == context.sessionWorkspaceId };`,
   "execution.connector.unattended": `permit(principal, action == Polychat::Action::"connector.unattended", resource)
-    when { context.supported && context.access == "read" && !context.destructive };`,
+    when { context.supported && (context.agentIdentity || (context.access == "read" && !context.destructive)) };`,
   "execution.computer.unattended": `permit(principal, action == Polychat::Action::"computer.unattended", resource)
     when { ["navigate", "click", "key", "scroll", "wait", "read"].contains(context.inputType) && !(context.inputType == "key" && ["Return", "Tab", "ctrl+v"].contains(context.key)) };`,
   "execution.grant.operation": `permit(principal, action == Polychat::Action::"grant.operation", resource)

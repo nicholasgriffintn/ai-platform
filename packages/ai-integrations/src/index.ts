@@ -49,6 +49,7 @@ export {
   connectorProviders,
   connectorOperationsForAccess,
   getConnectorProviderConfig,
+  isAgentIdentityProvider,
   RECIPE_CONNECTOR_APP_ID,
   RECIPE_CONNECTOR_ITEM_TYPE,
   type ApiKeyConnectorConfig,
