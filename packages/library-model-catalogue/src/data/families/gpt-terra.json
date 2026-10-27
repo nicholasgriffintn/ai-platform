@@ -111,6 +111,40 @@
         "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work"
       }
     },
+    "gpt-6-1-terra": {
+      "defaults": {
+        "name": "GPT-6.1 Terra",
+        "description": "Fast, efficient model for visual reasoning, precise computer use, and clear, natural writing.",
+        "knowledgeCutoffDate": "June 1, 2026",
+        "releaseDate": "October 26, 2026"
+      }
+    },
+    "gpt-6-1-terra-eu": {
+      "defaults": {
+        "name": "GPT-6.1 Terra (EU)",
+        "description": "Fast, efficient model for visual reasoning, precise computer use, and clear, natural writing.",
+        "knowledgeCutoffDate": "June 1, 2026",
+        "releaseDate": "October 26, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-6-1-terra-fast": {
+      "defaults": {
+        "name": "GPT-6.1 Terra (Fast)",
+        "description": "Compact GPT model for low-latency assistance and high-volume workloads",
+        "knowledgeCutoffDate": "June 1, 2026",
+        "releaseDate": "October 26, 2026"
+      }
+    },
     "gpt-terra-latest": {
       "defaults": {
         "name": "OpenAI GPT Terra Latest",
@@ -126,6 +160,14 @@
           ]
         },
         "releaseDate": "September 11, 2026"
+      }
+    },
+    "openai-gpt-6-1-terra": {
+      "defaults": {
+        "name": "OpenAI: GPT-6.1 Terra",
+        "description": "GPT-6.1 Terra is the mid-tier model in OpenAI's GPT-6.1 series, built for fast, capable computer use at a lower price than GPT-6.1 Sol. It reads what is on screen, takes...",
+        "knowledgeCutoffDate": "June 1, 2026",
+        "releaseDate": "October 26, 2026"
       }
     },
     "openai-gpt-terra-latest": {

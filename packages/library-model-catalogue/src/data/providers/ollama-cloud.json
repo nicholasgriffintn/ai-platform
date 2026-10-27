@@ -102,6 +102,7 @@
       "overrides": {
         "name": "glm-5.1",
         "contextWindow": 202752,
+        "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "March 27, 2026",
         "lastUpdated": "April 7, 2026",
@@ -237,7 +238,7 @@
       "matchingModel": "kimi-k3",
       "overrides": {
         "name": "kimi-k3",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -431,8 +432,6 @@
       "model": "minimax/minimax-m3-1-flash",
       "matchingModel": "minimax-m3.1-flash",
       "overrides": {
-        "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
-        "contextWindow": 1000000,
         "maxTokens": 512000,
         "speed": 4,
         "lastUpdated": "October 19, 2026",

@@ -44,7 +44,7 @@
       "matchingModel": "claude-4-6-sonnet",
       "overrides": {
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003196,
         "costPer1kOutputTokens": 0.01594,
@@ -80,7 +80,7 @@
       "model": "claude-opus/claude-opus-4-5-latest",
       "matchingModel": "claude-opus4-5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005313,
         "costPer1kOutputTokens": 0.026568,
@@ -436,7 +436,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.002192,
         "costPer1kOutputTokens": 0.008769,
@@ -769,7 +769,7 @@
         "contextWindow": 262000,
         "maxTokens": 262000,
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.000199,
@@ -804,7 +804,7 @@
       "overrides": {
         "name": "Qwen3 Coder 30B A3B Instruct",
         "maxTokens": 262144,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "July 31, 2025",
         "costPer1kInputTokens": 0.000179,
         "costPer1kOutputTokens": 0.000697,
@@ -1279,7 +1279,7 @@
       "overrides": {
         "name": "Mistral Small 2603",
         "maxTokens": 256000,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.000156,
         "costPer1kOutputTokens": 0.000625,
@@ -1533,7 +1533,7 @@
       "matchingModel": "gpt-5",
       "overrides": {
         "name": "GPT 5",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.01096,
@@ -2038,7 +2038,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 18, 2024",
         "costPer1kInputTokens": 0.000159,
         "costPer1kOutputTokens": 0.000638,
@@ -2158,7 +2158,7 @@
       "matchingModel": "kimi-k3",
       "overrides": {
         "maxTokens": 1048576,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.014999,
@@ -2806,7 +2806,6 @@
       "model": "minimax/minimax-m3-1-flash",
       "matchingModel": "minimax-m3.1-flash",
       "overrides": {
-        "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
         "contextWindow": 1048576,
         "maxTokens": 64000,
         "modalities": {

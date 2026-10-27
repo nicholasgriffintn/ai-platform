@@ -120,7 +120,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "multimodal": true,
         "lastUpdated": "July 18, 2024",
         "costPer1kInputTokens": 0.00015,
@@ -150,7 +150,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "multimodal": true,
         "isFeatured": false,
         "lastUpdated": "August 7, 2025",
@@ -202,7 +202,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "multimodal": true,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.002,
@@ -590,7 +590,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -2035,7 +2035,7 @@
       "overrides": {
         "name": "GPT-5.2-Codex",
         "description": "Code-specialist GPT for repository edits, reviews, and long-running software agents",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -2247,7 +2247,7 @@
       "overrides": {
         "maxTokens": 131072,
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "lastUpdated": "July 21, 2025",
@@ -2265,7 +2265,7 @@
       "matchingModel": "qwen/qwen3-235b-a22b-07-25:free",
       "overrides": {
         "isFree": true,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2313,7 +2313,7 @@
         "maxTokens": 235929,
         "knowledgeCutoffDate": "June 30, 2025",
         "lastUpdated": "July 28, 2025",
-        "costPer1kInputTokens": 0.00009,
+        "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0003,
         "supportsAttachments": false
       }
@@ -2408,7 +2408,7 @@
       "overrides": {
         "name": "Qwen3 Coder 30B A3B Instruct",
         "maxTokens": 235929,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "July 31, 2025",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.00028,
@@ -2982,8 +2982,8 @@
         "name": "MoonshotAI Kimi Latest",
         "releaseDate": "April 27, 2026",
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.0001814,
-        "costPer1kOutputTokens": 0.0085226,
+        "costPer1kInputTokens": 0.00019,
+        "costPer1kOutputTokens": 0.00894,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -3279,7 +3279,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6",
       "matchingModel": "anthropic/claude-sonnet-4.6",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "isFeatured": false,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
@@ -3605,7 +3605,7 @@
         ],
         "contextComplexity": 3,
         "reliability": 1,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 28, 2026",
         "costPer1kInputTokens": 0.0002574,
         "costPer1kOutputTokens": 0.0010287,
@@ -3646,11 +3646,11 @@
       "model": "deepseek-flash/deepseek-v4-flash",
       "matchingModel": "deepseek/deepseek-v4-flash",
       "overrides": {
-        "maxTokens": 943717,
+        "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.000091,
-        "costPer1kOutputTokens": 0.000182,
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.00028,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -4024,8 +4024,8 @@
         "speed": 3,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.0000675,
-        "costPer1kOutputTokens": 0.000225,
+        "costPer1kInputTokens": 0.0000765,
+        "costPer1kOutputTokens": 0.000255,
         "artificialAnalysis": {
           "intelligenceIndex": 16.7,
           "codingIndex": 39.3,
@@ -4051,7 +4051,7 @@
       "matchingModel": "google/gemma-4-31b-it",
       "overrides": {
         "name": "Gemma 4 31B",
-        "maxTokens": 235929,
+        "maxTokens": 16384,
         "modalities": {
           "input": [
             "image",
@@ -4072,8 +4072,8 @@
         "reliability": 1,
         "speed": 2,
         "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.00034,
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0004,
         "artificialAnalysis": {
           "intelligenceIndex": 14.7,
           "codingIndex": 43.4,
@@ -4637,7 +4637,7 @@
       "model": "mistral-small/mistral-small-3",
       "matchingModel": "mistralai/mistral-small-24b-instruct-2501",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "January 30, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.00008,
@@ -4650,7 +4650,7 @@
       "matchingModel": "mistralai/mistral-small-2603",
       "overrides": {
         "maxTokens": 209715,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -5010,7 +5010,7 @@
       "matchingModel": "openai/gpt-5.3-codex",
       "overrides": {
         "name": "GPT-5.3-Codex",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -5779,7 +5779,7 @@
       "matchingModel": "qwen/qwen3-vl-235b-a22b-instruct",
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.00021,
         "costPer1kOutputTokens": 0.0019
@@ -5883,6 +5883,7 @@
       "matchingModel": "qwen/qwen3.5-27b",
       "overrides": {
         "name": "Qwen3.5-27B",
+        "maxTokens": 81920,
         "modalities": {
           "input": [
             "text",
@@ -5901,8 +5902,8 @@
         ],
         "speed": 3,
         "lastUpdated": "February 23, 2026",
-        "costPer1kInputTokens": 0.00027,
-        "costPer1kOutputTokens": 0.00216
+        "costPer1kInputTokens": 0.00026,
+        "costPer1kOutputTokens": 0.0026
       }
     },
     "qwen/qwen3.5-35b-a3b": {
@@ -6342,7 +6343,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
@@ -6442,10 +6443,11 @@
         "name": "GLM 5.1",
         "description": "Strong GLM coding model for agentic engineering, terminals, and repository generation",
         "contextWindow": 204800,
+        "maxTokens": 128000,
         "speed": 3,
         "lastUpdated": "April 7, 2026",
-        "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044,
+        "costPer1kInputTokens": 0.000966,
+        "costPer1kOutputTokens": 0.003036,
         "supportsAttachments": false
       }
     },
@@ -6795,8 +6797,8 @@
         ],
         "speed": 3,
         "lastUpdated": "June 12, 2026",
-        "costPer1kInputTokens": 0.0006712,
-        "costPer1kOutputTokens": 0.00335
+        "costPer1kInputTokens": 0.00056,
+        "costPer1kOutputTokens": 0.0031
       }
     },
     "z-ai/glm-5.2": {
@@ -7231,11 +7233,11 @@
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "maxTokens": 943718,
-        "speed": 2,
+        "speed": 3,
         "isFeatured": false,
         "lastUpdated": "July 16, 2026",
-        "costPer1kInputTokens": 0.000191,
-        "costPer1kOutputTokens": 0.016,
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.02,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -8049,8 +8051,8 @@
       "matchingModel": "~z-ai/glm-flash-latest",
       "overrides": {
         "lastUpdated": "August 27, 2026",
-        "costPer1kInputTokens": 0.0000413,
-        "costPer1kOutputTokens": 0.0000758
+        "costPer1kInputTokens": 0.0000513,
+        "costPer1kOutputTokens": 0.0000701
       }
     },
     "anthropic/claude-fable-5.1": {
@@ -8293,8 +8295,8 @@
       "matchingModel": "~openai/gpt-terra-latest",
       "overrides": {
         "lastUpdated": "September 11, 2026",
-        "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.012,
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005,
         "supportsTemperature": false
       },
       "unset": [
@@ -8309,11 +8311,11 @@
       "matchingModel": "deepseek/deepseek-v4.1-flash",
       "overrides": {
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
-        "maxTokens": 943718,
+        "maxTokens": 131072,
         "speed": 4,
         "lastUpdated": "September 10, 2026",
-        "costPer1kInputTokens": 0.00002,
-        "costPer1kOutputTokens": 0.001,
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.00042,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -8435,7 +8437,7 @@
         "releaseDate": "September 14, 2026",
         "lastUpdated": "September 14, 2026",
         "costPer1kInputTokens": 0.00002,
-        "costPer1kOutputTokens": 0.001,
+        "costPer1kOutputTokens": 0.000106042,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -8459,7 +8461,7 @@
         "maxTokens": 393216,
         "releaseDate": "September 14, 2026",
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.0002565,
+        "costPer1kInputTokens": 0.0002211,
         "costPer1kOutputTokens": 0.008,
         "supportsAttachments": false,
         "reasoningConfig": {
@@ -8824,7 +8826,7 @@
         "strengths": [
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0002,
@@ -9031,7 +9033,7 @@
       "overrides": {
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "maxTokens": 16384,
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "June 30, 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.00009,
@@ -9203,6 +9205,7 @@
       "model": "minimax/minimax-m3-1-flash",
       "matchingModel": "minimax/minimax-m3.1-flash",
       "overrides": {
+        "description": "MiniMax multimodal coding model for long-context reasoning and agent tasks",
         "contextWindow": 1048576,
         "maxTokens": 524288,
         "speed": 4,
@@ -9369,6 +9372,26 @@
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.002,
         "supportsAttachments": false
+      }
+    },
+    "openai/gpt-6.1-terra": {
+      "model": "gpt-terra/gpt-6-1-terra",
+      "matchingModel": "openai/gpt-6.1-terra",
+      "overrides": {
+        "lastUpdated": "October 26, 2026",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005,
+        "supportsTemperature": false
+      }
+    },
+    "openai/gpt-6.1-terra-pro": {
+      "model": "gpt/gpt-6-1-terra-pro",
+      "matchingModel": "openai/gpt-6.1-terra-pro",
+      "overrides": {
+        "lastUpdated": "October 26, 2026",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005,
+        "supportsTemperature": false
       }
     }
   }

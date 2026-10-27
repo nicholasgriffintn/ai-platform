@@ -149,7 +149,7 @@
       "model": "claude-opus/claude-opus-4-5",
       "matchingModel": "claude-opus-4-5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "August 1, 2025",
         "dataRetention": {
@@ -455,7 +455,7 @@
       "matchingModel": "gpt-5",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -800,7 +800,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 2,
+        "speed": 3,
         "releaseDate": "January 14, 2026",
         "lastUpdated": "January 14, 2026",
         "dataRetention": {
@@ -1261,7 +1261,7 @@
       "model": "mistral-small/mistral-small-3-1",
       "matchingModel": "mistral-small-2503",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 1, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -1586,7 +1586,7 @@
       "overrides": {
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -1644,7 +1644,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 2,
+        "speed": 3,
         "releaseDate": "February 24, 2026",
         "lastUpdated": "February 24, 2026",
         "dataRetention": {
@@ -2619,6 +2619,16 @@
           ],
           "defaultEffort": "none"
         }
+      }
+    },
+    "gpt-6.1-terra": {
+      "model": "gpt-terra/gpt-6-1-terra",
+      "matchingModel": "gpt-6.1-terra",
+      "overrides": {
+        "lastUpdated": "October 26, 2026",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005,
+        "supportsTemperature": false
       }
     }
   }

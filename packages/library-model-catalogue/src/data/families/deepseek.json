@@ -672,30 +672,15 @@
     },
     "deepseek-v4-1-flash-1017": {
       "defaults": {
-        "name": "Deepseek V4.1 Flash 1017",
         "openWeights": true,
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
-        "contextWindow": 1048576,
-        "maxTokens": 1048576,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
           "tool_use"
         ],
-        "contextComplexity": 5,
         "reliability": 2,
-        "releaseDate": "October 17, 2026",
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

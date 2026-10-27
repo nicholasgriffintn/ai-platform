@@ -651,7 +651,6 @@
       "model": "minimax/minimax-m3-1-flash",
       "matchingModel": "minimaxai/minimax-m3.1-flash",
       "overrides": {
-        "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
         "contextWindow": 262144,
         "maxTokens": 262144,
         "contextComplexity": 4,

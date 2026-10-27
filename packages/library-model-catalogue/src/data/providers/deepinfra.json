@@ -487,7 +487,7 @@
       "model": "deepinfra/xiaomi/mimo-v2.5/mimo-v2-5",
       "matchingModel": "xiaomi/mimo-v2.5",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.002
@@ -709,7 +709,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "moonshotai/Kimi-K3",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.00285,
         "costPer1kOutputTokens": 0.01425,
@@ -791,7 +791,7 @@
       "model": "deepseek/deepseek-v3",
       "matchingModel": "deepseek-ai/DeepSeek-V3",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 26, 2024",
         "costPer1kInputTokens": 0.00032,
         "costPer1kOutputTokens": 0.00089,
@@ -816,7 +816,7 @@
       "overrides": {
         "name": "Qwen3 235B-A22B Instruct 2507",
         "maxTokens": 16384,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.00055,
@@ -918,7 +918,7 @@
       "model": "qwen/qwen3-vl-235b-a22b-instruct",
       "matchingModel": "Qwen/Qwen3-VL-235B-A22B-Instruct",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00088
@@ -1118,7 +1118,7 @@
       "model": "mistral-small/mistral-small-3",
       "matchingModel": "mistralai/Mistral-Small-24B-Instruct-2501",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "January 30, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.00008,

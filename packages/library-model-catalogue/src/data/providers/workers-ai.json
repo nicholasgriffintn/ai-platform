@@ -448,11 +448,11 @@
       "model": "workers-ai/@cf/deepgram/flux/deepgram-flux",
       "matchingModel": "@cf/deepgram/flux",
       "overrides": {
+        "hiddenFromDefaultList": true,
         "lastUpdated": "October 2, 2025",
-        "costPerAudioSecond": 0.000128,
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "hiddenFromDefaultList": true,
+        "costPerAudioSecond": 0.000128,
         "supportsStreaming": true,
         "supportsRealtimeSession": true,
         "supportsTemperature": false
@@ -959,7 +959,21 @@
       "model": "deepseek/deepseek-v4-1-flash-1017",
       "matchingModel": "@cf/deepseek-ai/deepseek-v4.1-flash-1017",
       "overrides": {
+        "name": "Deepseek V4.1 Flash 1017",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 5,
         "speed": 4,
+        "releaseDate": "October 17, 2026",
         "lastUpdated": "October 17, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
