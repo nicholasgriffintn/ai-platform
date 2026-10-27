@@ -19,7 +19,6 @@ import { ensureProjectTaskConversation, projectTaskConversationId } from "./runn
 
 const THREAD_LIMIT = 200;
 const THREAD_BODY_LIMIT = 4000;
-const RUN_BRIEF_LIMIT = 160;
 
 function readWorkPost(data: unknown): { kind: WorkPostKind; author: WorkPostAuthor } | null {
   const post = parseJsonRecord(parseJsonRecord(data).workPost);
@@ -114,11 +113,7 @@ export async function listTaskThread(
     }
 
     if (role === "user") {
-      return post(
-        "event",
-        systemAuthor("Flow"),
-        truncateText(body.split(/(?<=\.)\s/)[0] ?? body, RUN_BRIEF_LIMIT),
-      );
+      return post("event", systemAuthor("Run"), "Started a run");
     }
 
     return post(

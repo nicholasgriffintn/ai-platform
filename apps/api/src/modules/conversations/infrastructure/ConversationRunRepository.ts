@@ -331,22 +331,31 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     return row ? formatRun(row) : null;
   }
 
-  async listWaitingForTeammateContexts(teammateContextIds: readonly string[]): Promise<ChatRun[]> {
-    if (teammateContextIds.length === 0) {
-      return [];
-    }
-
-    const rows = await this.runQuery<ConversationRunRow>(
-      `SELECT * FROM conversation_run
-       WHERE teammate_context_id IN (${teammateContextIds.map(() => "?").join(", ")})
-         AND project_task_id IS NULL
-         AND status IN ('awaiting_input', 'awaiting_approval', 'awaiting_takeover')
-       ORDER BY updated_at DESC
-       LIMIT 50`,
-      [...teammateContextIds],
+  async listWaitingForUser(
+    userId: number,
+  ): Promise<Array<{ run: ChatRun; workspaceId: string | null; teammateId: string | null }>> {
+    const rows = await this.runQuery<
+      ConversationRunRow & { place_workspace_id: string | null; context_teammate_id: string | null }
+    >(
+      `SELECT r.*, c.teammate_id AS context_teammate_id,
+         COALESCE(p.workspace_id, CASE WHEN c.scope_type = 'workspace' THEN c.scope_id END)
+           AS place_workspace_id
+       FROM conversation_run r
+       LEFT JOIN teammate_context c ON c.id = r.teammate_context_id
+       LEFT JOIN project p ON p.id = r.project_id
+       WHERE r.status IN ('awaiting_input', 'awaiting_approval', 'awaiting_takeover')
+         AND r.project_task_id IS NULL
+         AND (r.initiator_user_id = ? OR c.actor_user_id = ?)
+       ORDER BY r.updated_at DESC
+       LIMIT 100`,
+      [userId, userId],
     );
 
-    return rows.map(formatRun);
+    return rows.map((row) => ({
+      run: formatRun(row),
+      workspaceId: row.place_workspace_id,
+      teammateId: row.context_teammate_id,
+    }));
   }
 
   async listForProjectTask(projectId: string, projectTaskId: string): Promise<ChatRun[]> {

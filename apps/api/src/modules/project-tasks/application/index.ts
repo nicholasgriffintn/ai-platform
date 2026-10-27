@@ -32,8 +32,10 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
 import { AuditRepository } from "~/modules/audit/infrastructure/AuditRepository";
 import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { createGoalService } from "~/modules/goals/application/createGoalService";
 import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
+import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { ListProjectTaskFilters } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { TaskService } from "~/modules/queue/application/TaskService";
@@ -366,12 +368,16 @@ export async function getProjectTask(context: ServiceContext, projectId: string,
     getPendingProjectTaskToolApproval(context, task),
     getProjectTaskInteraction(context, task),
   ]);
-  const [activity, plan, children, links] = await Promise.all([
+  const [activity, plan, children, links, runs] = await Promise.all([
     getProjectTaskActivity(context, task, goal, interaction),
     getProjectTaskPlanEvidence(context, task, parseProjectFlow(project.flow)),
     context.repositories.get(ProjectTaskRepository).listChildren(task.id),
     context.repositories.get(ProjectTaskRepository).listLinks(task.id),
+    context.repositories.get(ConversationRunRepository).listForProjectTask(projectId, task.id),
   ]);
+  const outputs = await context.repositories
+    .get(OutputRepository)
+    .listProjectOutputsForTaskRuns(projectId, runs);
   const linkedTasks = await context.repositories
     .get(ProjectTaskRepository)
     .listTasksByIds([
@@ -404,6 +410,12 @@ export async function getProjectTask(context: ServiceContext, projectId: string,
           ]
         : [];
     }),
+    outputs: outputs.map((output) => ({
+      id: output.id,
+      title: output.title,
+      kind: output.kind,
+      status: output.status,
+    })),
   };
 }
 

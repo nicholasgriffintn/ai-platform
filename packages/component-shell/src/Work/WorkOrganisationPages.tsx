@@ -1,17 +1,15 @@
-import { BackLink, cn, EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
+import { BackLink, cn, Link } from "@ngriffin_uk/polychat-component-ui";
 import {
   InitiativeDialog,
   InitiativesView,
   SetupPlanView,
   WorkspaceAuditList,
-  WorkTaskList,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import {
   canManageWorkspace,
   getProjectTaskPath,
   useInitiativeActions,
   useInitiatives,
-  useMyTasks,
   useRecipeConnectors,
   useSetupActions,
   useUpdateWorkspaceOrganisation,
@@ -20,18 +18,13 @@ import {
   useWorkspaceAudit,
   useWorkspaceSetup,
 } from "@ngriffin_uk/polychat-library-react";
-import {
-  creditsFromCreditMicros,
-  WORK_BUDGET_WARNING_RATIO,
-  type ProjectTask,
-} from "@ngriffin_uk/polychat-schemas";
+import { creditsFromCreditMicros, WORK_BUDGET_WARNING_RATIO } from "@ngriffin_uk/polychat-schemas";
 import { formatCredits, getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
-import { ListTodo, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { PageShell } from "../Shell/PageShell.js";
-import { useWorkDirectory } from "./useWorkDirectory.js";
 import { WorkspaceUsage } from "./WorkspaceUsage.js";
 
 export function WorkInitiativesPage({ workspaceId }: { workspaceId: string }) {
@@ -237,51 +230,6 @@ export function WorkSetupPage({ workspaceId }: { workspaceId: string }) {
             }
           />
         </div>
-      )}
-    </PageShell.Content>
-  );
-}
-
-function MyWorkspaceTasks({ workspaceId, tasks }: { workspaceId: string; tasks: ProjectTask[] }) {
-  const { directory, workspaceQuery } = useWorkDirectory(workspaceId);
-
-  return (
-    <section className="space-y-2">
-      <h2 className="text-sm font-semibold">{workspaceQuery.data?.name ?? "Workspace"}</h2>
-      <WorkTaskList
-        tasks={tasks}
-        directory={directory}
-        taskHref={(task) => getProjectTaskPath(task.workspaceId, task.projectId, task.id)}
-      />
-    </section>
-  );
-}
-
-export function WorkMyTasksPage() {
-  const tasks = useMyTasks();
-  const all = tasks.data?.tasks ?? [];
-  const workspaceIds = [...new Set(all.map((task) => task.workspaceId))];
-
-  return (
-    <PageShell.Content className="max-w-6xl space-y-6">
-      <PageShell.Header title="My tasks" />
-      {tasks.isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading…</p>
-      ) : workspaceIds.length === 0 ? (
-        <EmptyState
-          icon={<ListTodo size={24} className="text-muted-foreground" />}
-          title="Nothing on your plate"
-          message="Tasks you own, and tasks your teammates run on your behalf, show up here."
-          className="min-h-[220px]"
-        />
-      ) : (
-        workspaceIds.map((workspaceId) => (
-          <MyWorkspaceTasks
-            key={workspaceId}
-            workspaceId={workspaceId}
-            tasks={all.filter((task) => task.workspaceId === workspaceId)}
-          />
-        ))
       )}
     </PageShell.Content>
   );

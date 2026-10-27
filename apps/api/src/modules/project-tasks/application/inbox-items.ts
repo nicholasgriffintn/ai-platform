@@ -36,6 +36,7 @@ export async function listProjectTaskInboxItems(
         title: task.objective,
         detail: `${standup.questions.length} questions`,
         dueAt: standup.closesAt,
+        conversationId: null,
         since: task.createdAt,
         deepLink,
       });
@@ -52,6 +53,7 @@ export async function listProjectTaskInboxItems(
         title: `${taskReference(task)} escalated: ${task.objective}`,
         detail: escalation.reason,
         dueAt: null,
+        conversationId: null,
         since: escalation.at,
         deepLink,
       });
@@ -77,6 +79,7 @@ export async function listProjectTaskInboxItems(
         title: `Accept the breakdown of ${taskReference(task)}: ${task.objective}`,
         detail: `${breakdown.items.length} sub-tasks proposed`,
         dueAt: null,
+        conversationId: null,
         since: breakdown.proposedAt,
         deepLink,
       });

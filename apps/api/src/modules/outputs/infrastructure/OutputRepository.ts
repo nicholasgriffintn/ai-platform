@@ -378,6 +378,30 @@ export class OutputRepository extends BaseRepository {
     );
   }
 
+  async listProjectOutputsForTaskRuns(
+    projectId: string,
+    runs: readonly { id: string; conversationId: string }[],
+  ): Promise<OutputRecord[]> {
+    if (runs.length === 0) {
+      return [];
+    }
+
+    const runIds = [...new Set(runs.map((run) => run.id))];
+    const conversationIds = [...new Set(runs.map((run) => run.conversationId))];
+    const outputs = await this.runQuery<OutputRecord>(
+      `SELECT * FROM ${outputResourceSql} output
+       WHERE project_id = ?
+         AND (
+           conversation_id IN (${conversationIds.map(() => "?").join(", ")})
+           OR json_extract(provenance_json, '$.run.id') IN (${runIds.map(() => "?").join(", ")})
+         )
+       ORDER BY created_at ASC, id ASC`,
+      [projectId, ...conversationIds, ...runIds],
+    );
+
+    return outputs.filter((output) => !isOutputDeletionPending(output));
+  }
+
   async listOutputsForRun(runId: string): Promise<OutputRecord[]> {
     const outputs = await this.runQuery<OutputRecord>(
       `SELECT * FROM ${outputResourceSql} output

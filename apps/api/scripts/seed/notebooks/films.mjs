@@ -9,6 +9,7 @@ export const FILMS_NOTEBOOK = {
     persona: "",
     responseLength: "longer",
     sourcesOnly: true,
+    followTopic: "Films",
   },
   guide: {
     generated: { days: 5 },

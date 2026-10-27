@@ -333,18 +333,19 @@ struct ProjectConversation: Decodable, Identifiable, Equatable {
 struct WorkInboxItem: Decodable, Identifiable, Hashable {
     let id: String
     let kind: String
-    let workspaceId: String
+    let workspaceId: String?
     let projectId: String?
     let taskId: String?
     let teammateId: String?
     let title: String
     let detail: String?
     let dueAt: String?
+    let conversationId: String?
     let since: String
     let deepLink: String
 
     var target: MobileWorkTarget? {
-        guard let projectId, let taskId else { return nil }
+        guard let workspaceId, let projectId, let taskId else { return nil }
         return MobileWorkTarget(
             workspaceId: workspaceId,
             projectId: projectId,

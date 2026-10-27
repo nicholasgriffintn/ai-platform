@@ -1,9 +1,8 @@
-import { DropdownMenu, DropdownMenuItem, Link } from "@ngriffin_uk/polychat-component-ui";
-import { Archive, Ellipsis, LayoutTemplate, Settings2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuItem } from "@ngriffin_uk/polychat-component-ui";
+import { Archive, Ellipsis, LayoutTemplate } from "lucide-react";
 
 interface ProjectHomeActionsProps {
   canManage: boolean;
-  settingsPath: string;
   isSavingTemplate: boolean;
   onArchive: () => void;
   onSaveTemplate: () => void;
@@ -11,51 +10,36 @@ interface ProjectHomeActionsProps {
 
 export function ProjectHomeActions({
   canManage,
-  settingsPath,
   isSavingTemplate,
   onArchive,
   onSaveTemplate,
 }: ProjectHomeActionsProps) {
-  return (
-    <fieldset className="m-0 flex shrink-0 items-center gap-1 border-0 p-0">
-      <legend className="sr-only">Project actions</legend>
-      {canManage ? (
-        <DropdownMenu
-          position="bottom"
-          menuClassName="!left-auto right-0 w-52"
-          trigger={<Ellipsis size={18} />}
-          buttonProps={{
-            variant: "icon",
-            className: "h-8 w-8 shrink-0 p-1.5",
-            "aria-label": "More project actions",
-            title: "More project actions",
-          }}
-        >
-          <DropdownMenuItem
-            onClick={onSaveTemplate}
-            disabled={isSavingTemplate}
-            icon={<LayoutTemplate size={16} />}
-          >
-            {isSavingTemplate ? "Saving template…" : "Save template"}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={onArchive}
-            className="text-failure"
-            icon={<Archive size={16} />}
-          >
-            Archive
-          </DropdownMenuItem>
-        </DropdownMenu>
-      ) : null}
+  if (!canManage) {
+    return null;
+  }
 
-      <Link
-        href={settingsPath}
-        aria-label="Project settings"
-        title="Project settings"
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground no-underline transition-colors hover:bg-selection hover:text-foreground"
+  return (
+    <DropdownMenu
+      position="bottom"
+      menuClassName="!left-auto right-0 w-56"
+      trigger={<Ellipsis size={18} />}
+      buttonProps={{
+        variant: "icon",
+        className: "h-8 w-8 shrink-0 p-1.5",
+        "aria-label": "More project actions",
+        title: "More project actions",
+      }}
+    >
+      <DropdownMenuItem
+        onClick={onSaveTemplate}
+        disabled={isSavingTemplate}
+        icon={<LayoutTemplate size={16} />}
       >
-        <Settings2 size={16} />
-      </Link>
-    </fieldset>
+        {isSavingTemplate ? "Saving template…" : "Save as template"}
+      </DropdownMenuItem>
+      <DropdownMenuItem onClick={onArchive} className="text-failure" icon={<Archive size={16} />}>
+        Archive project
+      </DropdownMenuItem>
+    </DropdownMenu>
   );
 }

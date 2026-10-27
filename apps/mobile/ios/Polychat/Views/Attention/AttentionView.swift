@@ -3,11 +3,24 @@ import SwiftUI
 struct AttentionView: View {
     @EnvironmentObject private var store: AttentionStore
     @EnvironmentObject private var inbox: TaskNotificationManager
+    @EnvironmentObject private var workStore: WorkStore
     @Binding var selectedTarget: MobileWorkTarget?
     let onOpenConversation: (String) -> Void
     @State private var standupItem: WorkInboxItem?
     @State private var standupAnswers: StandupAnswers?
     @State private var decidingItemId: String?
+
+    private var places: [AttentionPlace] {
+        AttentionPlaces.group(
+            decisions: store.decisions,
+            workItems: store.workItems,
+            notifications: inbox.items,
+            workspaceNames: Dictionary(
+                workStore.workspaces.map { ($0.id, $0.name) },
+                uniquingKeysWith: { first, _ in first }
+            )
+        )
+    }
 
     private var isEmpty: Bool {
         store.workItems.isEmpty && store.decisions.isEmpty && inbox.items.isEmpty
@@ -25,79 +38,13 @@ struct AttentionView: View {
                     .listRowBackground(Color.clear)
                 }
 
-                if !store.decisions.isEmpty {
+                ForEach(places) { place in
                     Section {
-                        ForEach(store.decisions) { item in
-                            WorkDecisionRow(
-                                item: item,
-                                isBusy: decidingItemId == item.id,
-                                onApproveHire: { decide(item) { await store.decideHire(item, approve: true) } },
-                                onRejectHire: { decide(item) { await store.decideHire(item, approve: false) } },
-                                onApproveSetup: { decide(item) { await store.approveSetup(item) } },
-                                onAnswerStandup: { openStandup(item) }
-                            )
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                if let target = item.target, item.kind == "escalation" {
-                                    selectedTarget = target
-                                }
-                            }
+                        ForEach(place.entries) { entry in
+                            row(for: entry)
                         }
                     } header: {
-                        sectionHeader("Waiting on you", count: store.decisions.count)
-                    }
-                }
-
-                if !store.actionableItems.isEmpty {
-                    Section {
-                        ForEach(store.actionableItems) { item in
-                            Button { selectedTarget = item.target } label: {
-                                AttentionItemRow(item: item)
-                            }
-                        }
-                    } header: {
-                        sectionHeader("Needs you", count: store.actionableItems.count)
-                    }
-                }
-
-                if !inbox.items.isEmpty {
-                    Section {
-                        ForEach(inbox.items) { item in
-                            Button { open(item) } label: {
-                                InboxRow(item: item)
-                            }
-                            .swipeActions(edge: .trailing) {
-                                Button(role: .destructive) {
-                                    Task { await inbox.dismiss(item); await publish() }
-                                } label: {
-                                    Label("Dismiss", systemImage: "xmark")
-                                }
-                            }
-                            .swipeActions(edge: .leading) {
-                                if !item.isRead {
-                                    Button {
-                                        Task { await inbox.markRead(item); await publish() }
-                                    } label: {
-                                        Label("Read", systemImage: "envelope.open")
-                                    }
-                                    .tint(Color.polychat.primary)
-                                }
-                            }
-                        }
-                    } header: {
-                        sectionHeader("Inbox", count: inbox.unread)
-                    }
-                }
-
-                if !store.otherItems.isEmpty {
-                    Section {
-                        ForEach(store.otherItems) { item in
-                            Button { selectedTarget = item.target } label: {
-                                AttentionItemRow(item: item)
-                            }
-                        }
-                    } header: {
-                        sectionHeader("Project work", count: 0)
+                        sectionHeader(place.title, count: place.needsYouCount)
                     }
                 }
 
@@ -143,6 +90,56 @@ struct AttentionView: View {
                     ProgressView()
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private func row(for entry: AttentionEntry) -> some View {
+        switch entry {
+        case .decision(let item):
+            WorkDecisionRow(
+                item: item,
+                isBusy: decidingItemId == item.id,
+                onApproveHire: { decide(item) { await store.decideHire(item, approve: true) } },
+                onRejectHire: { decide(item) { await store.decideHire(item, approve: false) } },
+                onApproveSetup: { decide(item) { await store.approveSetup(item) } },
+                onAnswerStandup: { openStandup(item) }
+            )
+            .contentShape(Rectangle())
+            .onTapGesture { open(item) }
+        case .attention(let item):
+            Button { selectedTarget = item.target } label: {
+                AttentionItemRow(item: item)
+            }
+        case .notification(let item):
+            Button { open(item) } label: {
+                InboxRow(item: item)
+            }
+            .swipeActions(edge: .trailing) {
+                Button(role: .destructive) {
+                    Task { await inbox.dismiss(item); await publish() }
+                } label: {
+                    Label("Dismiss", systemImage: "xmark")
+                }
+            }
+            .swipeActions(edge: .leading) {
+                if !item.isRead {
+                    Button {
+                        Task { await inbox.markRead(item); await publish() }
+                    } label: {
+                        Label("Read", systemImage: "envelope.open")
+                    }
+                    .tint(Color.polychat.primary)
+                }
+            }
+        }
+    }
+
+    private func open(_ item: WorkInboxItem) {
+        if let conversationId = item.conversationId, item.kind == "waiting" {
+            onOpenConversation(conversationId)
+        } else if let target = item.target {
+            selectedTarget = target
         }
     }
 
@@ -232,7 +229,7 @@ private struct AttentionItemRow: View {
                 }
                 HStack(spacing: 6) {
                     StatusPill(label: label, tint: tint)
-                    Text("\(item.projectName) · \(RelativeTime.label(for: item.occurredAt))")
+                    Text(RelativeTime.label(for: item.occurredAt))
                         .font(.caption)
                         .foregroundStyle(Color.polychat.textMuted)
                         .lineLimit(1)
@@ -296,7 +293,7 @@ private struct InboxRow: View {
                         .foregroundStyle(Color.polychat.textMuted)
                         .lineLimit(2)
                 }
-                Text("\(item.projectName) · \(RelativeTime.label(for: item.since))")
+                Text(RelativeTime.label(for: item.since))
                     .font(.caption)
                     .foregroundStyle(Color.polychat.textMuted)
             }

@@ -231,6 +231,8 @@ private struct RootTabView: View {
             openConversation(id)
         case .device(let userCode):
             deviceApproval = DeviceApprovalTarget(id: userCode)
+        case .work(let target):
+            open(target)
         case .poly:
             if let conversationId = polyStore.agenda?.conversationId {
                 openConversation(conversationId)

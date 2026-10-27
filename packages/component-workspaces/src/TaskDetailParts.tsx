@@ -1,22 +1,17 @@
 import {
   Badge,
-  Button,
   ButtonLink,
   DropdownMenu,
   DropdownMenuItem,
-  TextLink,
 } from "@ngriffin_uk/polychat-component-ui";
 import type {
   Goal,
   GoalEvidenceEntry,
   GoalEvidenceStatus,
-  ProjectFlowStage,
   ProjectTask,
   ProjectTaskActivityTimeline,
   ProjectTaskPlanEvidence,
 } from "@ngriffin_uk/polychat-schemas";
-import { projectTaskPriorityLabels } from "@ngriffin_uk/polychat-schemas";
-import { formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
 import {
   Check,
   ChevronRight,
@@ -25,7 +20,6 @@ import {
   Ellipsis,
   Flag,
   MessageSquareText,
-  Play,
   RefreshCw,
   RotateCcw,
   Trash2,
@@ -36,10 +30,7 @@ import { isTaskCriterionMet } from "./task-evidence";
 import { TaskActivityTimeline as TaskActivityTimelineView } from "./TaskActivityTimeline";
 import { TaskPlanRecord } from "./TaskPlanRecord";
 import { TaskStageEvidence } from "./TaskStageEvidence";
-import { TaskStatusBadge } from "./TaskStatusBadge";
-import { PropertyRow, TaskSection } from "./TaskWorkSections";
-
-type TaskHref = (task: Pick<ProjectTask, "id" | "projectId">) => string;
+import { TaskSection } from "./TaskWorkSections";
 
 const EVIDENCE_BADGE_VARIANT: Record<
   GoalEvidenceStatus,
@@ -59,15 +50,11 @@ const EVIDENCE_STATUS_LABEL: Record<GoalEvidenceStatus, string> = {
 };
 
 export interface TaskHeaderActions {
-  canRetry: boolean;
   canReopen: boolean;
   isFinished: boolean;
   hasExecutionEvidence: boolean;
   needsInput: boolean;
   conversationHref: string | null;
-  isBusy: boolean;
-  onAccept: () => void;
-  onRun: () => void;
   onCancel: () => void;
   onReopen: () => void;
   onDelete: () => void;
@@ -76,145 +63,87 @@ export interface TaskHeaderActions {
   onEscalate: () => void;
 }
 
-export function TaskHeader({
+export function TaskActionsMenu({
   task,
-  stage,
-  taskHref,
   actions,
 }: {
   task: ProjectTask;
-  stage: ProjectFlowStage | null;
-  taskHref: TaskHref;
   actions: TaskHeaderActions;
 }) {
   return (
-    <header className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <span className="font-mono">{task.key ?? task.id.slice(0, 8)}</span>
-        {task.parentTaskId ? (
-          <>
-            <ChevronRight size={12} aria-hidden />
-            <TextLink
-              href={taskHref({ id: task.parentTaskId, projectId: task.projectId })}
-              size="xs"
-            >
-              Parent task
-            </TextLink>
-          </>
-        ) : null}
-        {task.kind !== "task" ? (
-          <Badge variant="info">{task.kind === "case" ? "Case" : "Standup"}</Badge>
-        ) : null}
-      </div>
-      <h1 className="text-2xl font-semibold tracking-tight text-balance text-foreground">
-        {task.objective}
-      </h1>
-      <div className="flex flex-wrap items-center gap-2">
-        <TaskStatusBadge status={task.status} />
-        {stage ? <Badge variant="outline">{stage.name}</Badge> : null}
-        {task.priority !== "none" ? (
-          <Badge variant={task.priority === "urgent" ? "destructive" : "outline"}>
-            {projectTaskPriorityLabels[task.priority]}
-          </Badge>
-        ) : null}
-        {task.source === "model" ? <Badge variant="outline">Drafted by a teammate</Badge> : null}
-        <span className="flex-1" />
-        {task.status === "review" ? (
-          <Button
-            size="sm"
-            variant="primary"
-            icon={<Check size={14} />}
-            onClick={actions.onAccept}
-            disabled={actions.isBusy}
-          >
-            Approve result
-          </Button>
-        ) : null}
-        {task.status === "backlog" && task.kind === "task" ? (
-          <Button
-            size="sm"
-            variant="primary"
-            icon={<Play size={14} />}
-            onClick={actions.onRun}
-            disabled={actions.isBusy}
-          >
-            Run
-          </Button>
-        ) : null}
-        {actions.canRetry ? (
-          <Button
-            size="sm"
-            variant="secondary"
-            icon={<Play size={14} />}
-            onClick={actions.onRun}
-            disabled={actions.isBusy}
-          >
-            Run again
-          </Button>
-        ) : null}
-        {actions.conversationHref ? (
-          <ButtonLink
-            href={actions.conversationHref}
-            size="sm"
-            variant={actions.needsInput ? "primary" : "outline"}
-            icon={<MessageSquareText size={14} />}
-            className="no-underline hover:!no-underline"
-          >
-            {actions.needsInput ? "Answer questions" : "Open run"}
-          </ButtonLink>
-        ) : null}
-        <DropdownMenu
-          position="bottom"
-          menuClassName="!left-auto right-0 w-56"
-          trigger={<Ellipsis size={16} />}
-          buttonProps={{
-            variant: "icon",
-            className: "h-8 w-8 p-1.5",
-            "aria-label": "More task actions",
-            title: "More task actions",
-          }}
+    <div className="flex items-center gap-1">
+      {actions.conversationHref && !actions.needsInput ? (
+        <ButtonLink
+          href={actions.conversationHref}
+          size="sm"
+          variant="ghost"
+          icon={<MessageSquareText size={14} />}
+          className="no-underline hover:!no-underline"
         >
-          {!actions.isFinished ? (
-            <DropdownMenuItem icon={<CircleDot size={15} />} onClick={actions.onRaiseCase}>
-              Raise a case from this task
-            </DropdownMenuItem>
-          ) : null}
-          {!actions.isFinished ? (
-            <DropdownMenuItem icon={<Flag size={15} />} onClick={actions.onEscalate}>
-              Escalate
-            </DropdownMenuItem>
-          ) : null}
-          {task.status === "queued" || task.status === "running" ? (
-            <DropdownMenuItem icon={<RefreshCw size={15} />} onClick={actions.onSendAgain}>
-              Send to the queue again
-            </DropdownMenuItem>
-          ) : null}
-          {actions.canReopen ? (
-            <DropdownMenuItem icon={<RotateCcw size={15} />} onClick={actions.onReopen}>
-              Reopen
-            </DropdownMenuItem>
-          ) : !actions.isFinished ? (
-            <DropdownMenuItem icon={<XCircle size={15} />} onClick={actions.onCancel}>
-              Cancel task
-            </DropdownMenuItem>
-          ) : null}
-          {!actions.hasExecutionEvidence && task.status !== "running" ? (
-            <DropdownMenuItem
-              icon={<Trash2 size={15} />}
-              className="text-failure"
-              onClick={actions.onDelete}
-            >
-              Delete task
-            </DropdownMenuItem>
-          ) : null}
-        </DropdownMenu>
-      </div>
-      {actions.isFinished && actions.hasExecutionEvidence ? (
-        <p className="text-xs text-muted-foreground">
-          Executed plans keep their evidence. Create a new task to run the work again.
-        </p>
+          Open run
+        </ButtonLink>
       ) : null}
-    </header>
+      <DropdownMenu
+        position="bottom"
+        menuClassName="!left-auto right-0 w-56"
+        trigger={<Ellipsis size={16} />}
+        buttonProps={{
+          variant: "icon",
+          className: "h-8 w-8 p-1.5",
+          "aria-label": "More task actions",
+          title: "More task actions",
+        }}
+      >
+        {!actions.isFinished ? (
+          <DropdownMenuItem icon={<CircleDot size={15} />} onClick={actions.onRaiseCase}>
+            Raise a case from this task
+          </DropdownMenuItem>
+        ) : null}
+        {!actions.isFinished ? (
+          <DropdownMenuItem icon={<Flag size={15} />} onClick={actions.onEscalate}>
+            Escalate
+          </DropdownMenuItem>
+        ) : null}
+        {task.status === "queued" || task.status === "running" ? (
+          <DropdownMenuItem icon={<RefreshCw size={15} />} onClick={actions.onSendAgain}>
+            Send to the queue again
+          </DropdownMenuItem>
+        ) : null}
+        {actions.canReopen ? (
+          <DropdownMenuItem icon={<RotateCcw size={15} />} onClick={actions.onReopen}>
+            Reopen
+          </DropdownMenuItem>
+        ) : !actions.isFinished ? (
+          <DropdownMenuItem icon={<XCircle size={15} />} onClick={actions.onCancel}>
+            Cancel task
+          </DropdownMenuItem>
+        ) : null}
+        {!actions.hasExecutionEvidence && task.status !== "running" ? (
+          <DropdownMenuItem
+            icon={<Trash2 size={15} />}
+            className="text-failure"
+            onClick={actions.onDelete}
+          >
+            Delete task
+          </DropdownMenuItem>
+        ) : null}
+      </DropdownMenu>
+    </div>
+  );
+}
+
+export function TaskMeta({ task }: { task: ProjectTask }) {
+  if (task.kind === "task" && task.source !== "model") {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {task.kind !== "task" ? (
+        <Badge variant="info">{task.kind === "case" ? "Case" : "Standup"}</Badge>
+      ) : null}
+      {task.source === "model" ? <Badge variant="muted">Drafted by a teammate</Badge> : null}
+    </div>
   );
 }
 
@@ -225,34 +154,36 @@ export function TaskDoneWhen({
   task: ProjectTask;
   evidence: readonly GoalEvidenceEntry[];
 }) {
+  if (task.acceptanceCriteria.length === 0) {
+    return null;
+  }
+
+  const met = task.acceptanceCriteria.filter((criterion) =>
+    isTaskCriterionMet(task.status, criterion.text, evidence),
+  ).length;
+
   return (
-    <TaskSection title="Done when">
-      {task.acceptanceCriteria.length > 0 ? (
-        <ul className="space-y-2">
-          {task.acceptanceCriteria.map((criterion) => (
-            <li key={criterion.id} className="flex items-start gap-2 text-sm">
-              {isTaskCriterionMet(task.status, criterion.text, evidence) ? (
-                <Check
-                  size={14}
-                  className="mt-0.5 shrink-0 text-success"
-                  aria-label={`Met: ${criterion.text}`}
-                />
-              ) : (
-                <Circle
-                  size={14}
-                  className="mt-0.5 shrink-0 text-muted-foreground"
-                  aria-label={`Not yet met: ${criterion.text}`}
-                />
-              )}
-              <span>{criterion.text}</span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          No acceptance criteria yet, so the run has nothing to check itself against.
-        </p>
-      )}
+    <TaskSection title="Done when" meta={`${met} of ${task.acceptanceCriteria.length} met`}>
+      <ul className="space-y-2">
+        {task.acceptanceCriteria.map((criterion) => (
+          <li key={criterion.id} className="flex items-start gap-2 text-sm">
+            {isTaskCriterionMet(task.status, criterion.text, evidence) ? (
+              <Check
+                size={14}
+                className="mt-0.5 shrink-0 text-success"
+                aria-label={`Met: ${criterion.text}`}
+              />
+            ) : (
+              <Circle
+                size={14}
+                className="mt-0.5 shrink-0 text-muted-foreground"
+                aria-label={`Not yet met: ${criterion.text}`}
+              />
+            )}
+            <span>{criterion.text}</span>
+          </li>
+        ))}
+      </ul>
     </TaskSection>
   );
 }
@@ -361,76 +292,5 @@ export function TaskRunHistory({
         ) : null}
       </div>
     </details>
-  );
-}
-
-function TaskNote({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p>{children}</p>
-    </div>
-  );
-}
-
-export function TaskSideFacts({
-  task,
-  stage,
-  blockedBy,
-  taskHref,
-}: {
-  task: ProjectTask;
-  stage: ProjectFlowStage | null;
-  blockedBy: readonly ProjectTask[];
-  taskHref: TaskHref;
-}) {
-  return (
-    <>
-      <div className="py-2">
-        {stage ? <PropertyRow label="Stage">{stage.name}</PropertyRow> : null}
-        <PropertyRow label="Updated">
-          {formatRelativeTime(task.updatedAt ?? task.createdAt)}
-        </PropertyRow>
-        <PropertyRow label="Budget">
-          {task.tokenBudget
-            ? `${task.tokensSpent.toLocaleString()} of ${task.tokenBudget.toLocaleString()} tokens`
-            : `${task.tokensSpent.toLocaleString()} tokens`}
-        </PropertyRow>
-        {task.requireApprovalFor.length ? (
-          <PropertyRow label="Asks before">{task.requireApprovalFor.join(", ")}</PropertyRow>
-        ) : null}
-      </div>
-      {task.expectedOutput || task.context?.notes || task.constraints?.notes ? (
-        <div className="space-y-3 py-3 text-sm">
-          {task.expectedOutput ? (
-            <TaskNote label="Expected output">{task.expectedOutput}</TaskNote>
-          ) : null}
-          {task.context?.notes ? <TaskNote label="Context">{task.context.notes}</TaskNote> : null}
-          {task.constraints?.notes ? (
-            <TaskNote label="Constraints">{task.constraints.notes}</TaskNote>
-          ) : null}
-        </div>
-      ) : null}
-      {blockedBy.length > 0 ? (
-        <div className="py-3">
-          <p className="mb-1 text-xs text-muted-foreground">Blocked by</p>
-          <ul className="space-y-1 text-sm">
-            {blockedBy.map((dependency) => (
-              <li key={dependency.id} className="flex items-start gap-1.5">
-                {dependency.status === "done" ? (
-                  <Check size={13} className="mt-0.5 shrink-0 text-success" />
-                ) : (
-                  <Circle size={13} className="mt-0.5 shrink-0 text-muted-foreground" />
-                )}
-                <TextLink href={taskHref(dependency)} size="xs">
-                  {dependency.key ? `${dependency.key} ` : ""}
-                  {dependency.objective}
-                </TextLink>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-    </>
   );
 }

@@ -88,6 +88,7 @@ export function listSetupInboxItems(
         title: `Approve the setup plan for ${workspace.name}`,
         detail: `Revision ${setup.revision}: ${setup.plan.projects.length} projects, ${setup.plan.teammates.length} teammates`,
         dueAt: null,
+        conversationId: null,
         since: workspace.updated_at ?? workspace.created_at,
         deepLink: `/work/${encodeURIComponent(workspace.id)}/setup`,
       },

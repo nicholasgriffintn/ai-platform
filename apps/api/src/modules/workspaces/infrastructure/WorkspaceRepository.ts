@@ -643,6 +643,20 @@ export class WorkspaceRepository extends BaseRepository {
     ]);
   }
 
+  async listProjectNamesForWorkspaces(
+    workspaceIds: readonly string[],
+  ): Promise<Array<{ id: string; workspace_id: string; name: string }>> {
+    if (workspaceIds.length === 0) {
+      return [];
+    }
+
+    return this.runQuery<{ id: string; workspace_id: string; name: string }>(
+      `SELECT id, workspace_id, name FROM project
+       WHERE workspace_id IN (${workspaceIds.map(() => "?").join(", ")})`,
+      [...workspaceIds],
+    );
+  }
+
   async listProjects(workspaceId: string): Promise<ProjectRow[]> {
     return this.runQuery<ProjectRow>(
       `SELECT p.*,

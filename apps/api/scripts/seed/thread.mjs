@@ -169,6 +169,7 @@ export function buildThread(options, messages) {
         project_task_id: run.projectTaskId ?? null,
         stage_id: run.stageId ?? null,
         initiator_user_id: run.initiatorUserId ?? userId,
+        teammate_context_id: run.teammateContextId ?? null,
         status: runStatus,
         attempt: run.attempt ?? 1,
         event_sequence: sequence,

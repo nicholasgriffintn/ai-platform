@@ -14,7 +14,6 @@ import {
   FlowEditorDialog,
   ProjectBriefCard,
   ProjectTasksSummary,
-  TaskBoard,
   TaskDetail,
 } from "./index";
 
@@ -169,175 +168,6 @@ describe("ProjectTasksSummary", () => {
   });
 });
 
-describe("TaskBoard", () => {
-  it("does not mark a pipeline stage as active before backlog work starts", () => {
-    render(
-      <TaskBoard
-        tasks={[{ ...task, status: "backlog", stageId: "research" }]}
-        flow={flow}
-        members={[]}
-        teammates={[]}
-        taskHref={() => "/tasks/task-1"}
-        onStartTask={vi.fn()}
-        onAcceptTask={vi.fn()}
-        onCreateTask={vi.fn()}
-        onConfigureFlow={vi.fn()}
-        canCreateTask
-        canManageFlow
-      />,
-    );
-
-    const progress = screen.getByLabelText("Pipeline progress");
-
-    expect(progress.querySelector('[title="Research"]')?.className).not.toContain(
-      "border-active-work",
-    );
-    expect(
-      Array.from(progress.children).map((part) => part.getAttribute("title") ?? "connector"),
-    ).toEqual(["Research", "connector", "Publish"]);
-  });
-
-  it("filters queued work by search, status, and pipeline stage", () => {
-    render(
-      <TaskBoard
-        tasks={[
-          { ...task, id: "task-backlog", objective: "Write the launch spec", status: "backlog" },
-          {
-            ...task,
-            id: "task-attention",
-            objective: "Publish the launch note",
-            status: "blocked",
-            blockedReason: "awaiting_input",
-            stageId: "publish",
-          },
-          {
-            ...task,
-            id: "task-done",
-            objective: "Summarise the launch",
-            status: "done",
-            stageId: "publish",
-          },
-        ]}
-        flow={flow}
-        members={[]}
-        teammates={[]}
-        taskHref={(item) => `/tasks/${item.id}`}
-        onStartTask={vi.fn()}
-        onAcceptTask={vi.fn()}
-        onCreateTask={vi.fn()}
-        onConfigureFlow={vi.fn()}
-        canCreateTask
-        canManageFlow
-      />,
-    );
-
-    fireEvent.change(screen.getByRole("searchbox", { name: "Search work queue" }), {
-      target: { value: "publish" },
-    });
-    expect(screen.getByText("Publish the launch note")).toBeTruthy();
-    expect(screen.queryByText("Write the launch spec")).toBeNull();
-
-    fireEvent.change(screen.getByRole("searchbox", { name: "Search work queue" }), {
-      target: { value: "" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Filter work by status" }));
-    fireEvent.click(screen.getByRole("menuitem", { name: "Needs attention" }));
-    expect(screen.getByText("Publish the launch note")).toBeTruthy();
-    expect(screen.queryByText("Summarise the launch")).toBeNull();
-
-    fireEvent.click(screen.getByRole("button", { name: "Filter work by status" }));
-    fireEvent.click(screen.getByRole("menuitem", { name: "All statuses" }));
-    fireEvent.click(screen.getByRole("button", { name: "Filter work by stage" }));
-    fireEvent.click(screen.getByRole("menuitem", { name: "Research" }));
-    expect(screen.getByText("Write the launch spec")).toBeTruthy();
-    expect(screen.queryByText("Publish the launch note")).toBeNull();
-    expect(screen.getByText("1 of 3")).toBeTruthy();
-  });
-
-  it("shows the configured teammate pipeline and recovers queued work without a dispatch", () => {
-    const onStartTask = vi.fn();
-
-    render(
-      <TaskBoard
-        tasks={[task]}
-        flow={flow}
-        members={[]}
-        teammates={[
-          { id: "teammate-research", name: "Researcher" },
-          { id: "teammate-publish", name: "Publisher" },
-        ]}
-        taskHref={() => "/tasks/task-1"}
-        onStartTask={onStartTask}
-        onAcceptTask={vi.fn()}
-        onCreateTask={vi.fn()}
-        onConfigureFlow={vi.fn()}
-        canCreateTask
-        canManageFlow
-      />,
-    );
-
-    expect(screen.getByText("Auto hand-off")).toBeTruthy();
-    expect(screen.getByText("Human review")).toBeTruthy();
-    expect(screen.getAllByText("Researcher").length).toBeGreaterThan(0);
-    expect(
-      screen.getByLabelText("Pipeline progress").querySelector('[aria-current="step"]'),
-    ).not.toBeNull();
-
-    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
-    expect(onStartTask).toHaveBeenCalledWith(task);
-  });
-
-  it("offers acceptance without retry after an teammate succeeds", () => {
-    render(
-      <TaskBoard
-        tasks={[{ ...task, status: "review" }]}
-        flow={flow}
-        members={[]}
-        teammates={[]}
-        taskHref={() => "/tasks/task-1"}
-        onStartTask={vi.fn()}
-        onAcceptTask={vi.fn()}
-        onCreateTask={vi.fn()}
-        onConfigureFlow={vi.fn()}
-        canCreateTask
-        canManageFlow
-      />,
-    );
-
-    expect(screen.getByRole("button", { name: "Approve" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
-  });
-
-  it("sends stalled work to its conversation instead of retrying it", () => {
-    render(
-      <TaskBoard
-        tasks={[
-          {
-            ...task,
-            status: "blocked",
-            blockedReason: "stalled",
-            blockedDetail: "Needs a person to confirm the launch date",
-            conversationId: "conversation-1",
-          },
-        ]}
-        flow={flow}
-        members={[]}
-        teammates={[]}
-        taskHref={() => "/tasks/task-1"}
-        onStartTask={vi.fn()}
-        onAcceptTask={vi.fn()}
-        onCreateTask={vi.fn()}
-        onConfigureFlow={vi.fn()}
-        canCreateTask
-        canManageFlow
-      />,
-    );
-
-    expect(screen.queryByRole("button", { name: "Retry" })).toBeNull();
-    expect(screen.getByRole("link", { name: "Review" }).getAttribute("href")).toBe("/tasks/task-1");
-  });
-});
-
 describe("TaskDetail", () => {
   it("makes the accepted result primary and shows confirmed criteria as met", () => {
     const criterion = "The note includes the confirmed launch date";
@@ -390,6 +220,8 @@ describe("TaskDetail", () => {
           thread: [],
           currentUserId: null,
           standupDraft: null,
+          onRename: vi.fn(),
+          onDescribe: vi.fn(),
           onAssign: vi.fn(),
           onSetReviewer: vi.fn(),
           onSetPriority: vi.fn(),
@@ -411,7 +243,9 @@ describe("TaskDetail", () => {
         originConversationHref={null}
         taskHref={() => "/tasks/task-1"}
         runHref={() => "/chat?run_id=run-1"}
+        title="Project › TASK-1"
         outputHref={() => "/outputs/output-1"}
+        outputs={[]}
         onRun={vi.fn()}
         onAccept={vi.fn()}
         onCancel={vi.fn()}

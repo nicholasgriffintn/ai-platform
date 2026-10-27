@@ -4,18 +4,20 @@ import {
   at,
   encryptWithServerKey,
   insert,
+  NOW,
   seedId,
   SEED_MODEL,
   sha256Hex,
-  shift,
   sqlValue,
 } from "./sql.mjs";
 import { buildThread, toolCall } from "./thread.mjs";
+import { INITIATIVES, PROJECTS, taskId, WORKSPACE_ID, workContextId } from "./work-ids.mjs";
+import { workTaskStatements } from "./work-tasks.mjs";
+import { MISSION, workTeamStatements } from "./work-team.mjs";
 
-export const WORKSPACE_ID = seedId("workspace", "northstar");
-export const LAUNCH_PROJECT_ID = seedId("project", "autumn-launch");
-export const WEBSITE_PROJECT_ID = seedId("project", "website-refresh");
-const ARCHIVED_PROJECT_ID = seedId("project", "pilot");
+export const LAUNCH_PROJECT_ID = PROJECTS.launch;
+const WEBSITE_PROJECT_ID = PROJECTS.website;
+const ARCHIVED_PROJECT_ID = PROJECTS.pilot;
 const REPOSITORY = "nicholasgriffintn/ai-platform-sandbox-worker-tester";
 const USAGE = {
   prompt_tokens: 1500,
@@ -206,7 +208,7 @@ export async function workStatements({ serverKey, teammates }) {
     insert("workspace", {
       id: WORKSPACE_ID,
       name: "Northstar Studio",
-      description: "The seeded workspace. Everything in Work lives here.",
+      description: MISSION,
       colour: "#E8643C",
       created_by: OWNER.id,
       created_at: created,
@@ -325,6 +327,20 @@ export async function workStatements({ serverKey, teammates }) {
       },
       flow: FLOW,
       default_model_tier: "high",
+      task_prefix: "LNCH",
+      initiative_id: INITIATIVES.release,
+      standup: {
+        enabled: true,
+        time: "09:15",
+        days: [1, 2, 3, 4, 5],
+        timeZone: "Europe/London",
+        questions: ["What did you finish?", "What's next?", "Anything in your way?"],
+        participants: "everyone",
+        windowMinutes: 180,
+        shareBindingId: null,
+        pausedUntil: null,
+      },
+      standup_last_run_at: NOW.toISOString(),
       created_by: OWNER.id,
       created_at: at({ days: 45 }),
       updated_at: at({ days: 1 }),
@@ -336,6 +352,8 @@ export async function workStatements({ serverKey, teammates }) {
       description: "Marketing site copy and design refresh.",
       instructions: "Keep copy short. British English.",
       colour: "#0F766E",
+      task_prefix: "WEB",
+      initiative_id: INITIATIVES.growth,
       created_by: 9001,
       created_at: at({ days: 30 }),
       updated_at: at({ days: 5 }),
@@ -346,10 +364,35 @@ export async function workStatements({ serverKey, teammates }) {
       name: "Pilot",
       description: "The original pilot project, archived after launch.",
       colour: "#6B7280",
+      task_prefix: "PIL",
       created_by: OWNER.id,
       archived_at: at({ days: 14 }),
       created_at: at({ days: 58 }),
       updated_at: at({ days: 14 }),
+    }),
+    insert("project", {
+      id: PROJECTS.support,
+      workspace_id: WORKSPACE_ID,
+      name: "Support desk",
+      description: "Customer questions from email, with drafted replies and help articles.",
+      instructions: "Reply within a day. Never send to a customer without approval.",
+      colour: "#7C3AED",
+      task_prefix: "SUP",
+      initiative_id: INITIATIVES.support,
+      created_by: OWNER.id,
+      created_at: at({ days: 20 }),
+      updated_at: at({ hours: 1 }),
+    }),
+    insert("project", {
+      id: PROJECTS.company,
+      workspace_id: WORKSPACE_ID,
+      name: "Company",
+      description: "Where the lead sets up the workspace, writes briefs and reviews initiatives.",
+      colour: "#B45309",
+      task_prefix: "CO",
+      created_by: OWNER.id,
+      created_at: at({ days: 21 }),
+      updated_at: at({ hours: 6 }),
     }),
   );
   audit(statements, "project.created", "project", LAUNCH_PROJECT_ID, OWNER.id, at({ days: 45 }), {
@@ -578,7 +621,6 @@ export async function workStatements({ serverKey, teammates }) {
     }),
   );
 
-  const runningTaskId = seedId("task", "retry-helper");
   const runningThread = buildThread(
     {
       userId: OWNER.id,
@@ -589,8 +631,10 @@ export async function workStatements({ serverKey, teammates }) {
       createdAt: at({ hours: 4 }),
       run: {
         status: "running",
-        projectTaskId: runningTaskId,
+        projectTaskId: taskId("launch", 3),
         stageId: "build",
+        teammateContextId: workContextId("release-bot"),
+        trigger: "handle",
       },
     },
     [
@@ -649,15 +693,12 @@ export async function workStatements({ serverKey, teammates }) {
   );
 
   const threadInsertIndex = statements.length;
-  const taskStatements = [];
-  const goalStatements = [];
 
   statements.push(...runningThread.statements);
   statements.push(
     `UPDATE conversation SET group_id = ${sqlValue(projectGroup)}, group_assigned_by_user_id = ${sqlValue(OWNER.id)}, group_assigned_at = ${sqlValue(at({ hours: 4 }))} WHERE id = ${sqlValue(runningThread.conversationId)};`,
   );
 
-  const doneTaskId = seedId("task", "unread-badge");
   const doneThread = buildThread(
     {
       userId: OWNER.id,
@@ -666,7 +707,13 @@ export async function workStatements({ serverKey, teammates }) {
       type: "task",
       projectId: LAUNCH_PROJECT_ID,
       createdAt: at({ days: 2, hours: 6 }),
-      run: { status: "succeeded", projectTaskId: doneTaskId, stageId: "build" },
+      run: {
+        status: "succeeded",
+        projectTaskId: taskId("launch", 2),
+        stageId: "build",
+        teammateContextId: workContextId("release-bot"),
+        trigger: "handle",
+      },
     },
     [
       {
@@ -720,8 +767,10 @@ export async function workStatements({ serverKey, teammates }) {
       run: {
         status: "failed",
         terminalReason: "Polychat API returned an empty completion response",
-        projectTaskId: seedId("task", "flaky-e2e"),
+        projectTaskId: taskId("launch", 5),
         stageId: "build",
+        teammateContextId: workContextId("release-bot"),
+        trigger: "handle",
       },
     },
     [
@@ -891,344 +940,21 @@ export async function workStatements({ serverKey, teammates }) {
     }
   }
 
-  const tasks = [
-    {
-      id: seedId("task", "release-notes"),
-      objective: "Write the September release notes",
-      status: "backlog",
-      position: 1,
-      createdBy: OWNER.id,
-      stage: "plan",
-    },
-    {
-      id: seedId("task", "handoff-docs"),
-      objective: "Document machine handoffs for the desktop app",
-      status: "backlog",
-      position: 2,
-      createdBy: 9003,
-      assignee: 9002,
-      stage: "plan",
-      dependsOn: [seedId("task", "unread-badge")],
-    },
-    {
-      id: seedId("task", "audit-export"),
-      objective: "Export the workspace audit log as CSV",
-      status: "queued",
-      position: 3,
-      createdBy: 9001,
-      stage: "build",
-      dispatch: seedId("task", "dispatch-audit-export"),
-    },
-    {
-      id: runningTaskId,
-      objective: "Add retries to the fetch helper",
-      status: "running",
-      position: 4,
-      createdBy: OWNER.id,
-      assignee: OWNER.id,
-      stage: "build",
-      conversation: runningThread,
-      started: at({ hours: 4 }),
-    },
-    {
-      id: seedId("task", "flaky-e2e"),
-      objective: "Fix the flaky onboarding e2e test",
-      status: "blocked",
-      blockedReason: "run_failed",
-      blockedDetail: "Polychat API returned an empty completion response",
-      position: 5,
-      createdBy: 9002,
-      assignee: 9002,
-      stage: "build",
-      conversation: failedThread,
-      started: at({ days: 1, hours: 3 }),
-      attention: 2,
-    },
-    {
-      id: seedId("task", "approve-schema"),
-      objective: "Approve the user_resource_state migration",
-      status: "blocked",
-      blockedReason: "awaiting_approval",
-      blockedDetail:
-        "The run wants to apply a migration and the stage requires approval for writes.",
-      position: 6,
-      createdBy: OWNER.id,
-      assignee: OWNER.id,
-      stage: "build",
-      approvals: ["write", "sandbox"],
-      attention: 3,
-    },
-    {
-      id: seedId("task", "pricing-copy"),
-      objective: "Rewrite the pricing page copy",
-      status: "review",
-      position: 7,
-      createdBy: 9001,
-      assignee: OWNER.id,
-      stage: "review",
-      project: WEBSITE_PROJECT_ID,
-      completion: "pending",
-    },
-    {
-      id: doneTaskId,
-      objective: "Show unread counts in the sidebar",
-      status: "done",
-      position: 8,
-      createdBy: OWNER.id,
-      assignee: OWNER.id,
-      stage: "review",
-      conversation: doneThread,
-      started: at({ days: 2, hours: 6 }),
-      completed: at({ days: 2, hours: 5 }),
-      completion: "approved",
-    },
-    {
-      id: seedId("task", "dark-mode-audit"),
-      objective: "Audit dark mode contrast",
-      status: "cancelled",
-      position: 9,
-      createdBy: 9003,
-      stage: "plan",
-      project: WEBSITE_PROJECT_ID,
-    },
-  ];
+  const team = workTeamStatements();
+  const work = workTaskStatements({
+    flow: FLOW,
+    releaseBot: teammates.releaseBot,
+    threads: { running: runningThread, done: doneThread, failed: failedThread },
+  });
 
-  for (const task of tasks) {
-    const projectId = task.project ?? LAUNCH_PROJECT_ID;
-    const createdAt = at({ days: 3, hours: task.position });
-    const completions = task.completion
-      ? [
-          {
-            id: seedId("completion", task.id),
-            stageId: task.stage,
-            conversationId: task.conversation?.conversationId ?? seedId("work", "pricing-copy"),
-            goalId: seedId("goal", task.id),
-            runId: task.conversation?.runId ?? undefined,
-            output:
-              task.completion === "approved"
-                ? "Unread counts render next to each group."
-                : "Pricing copy rewritten with three plans and one call to action.",
-            evidence: [
-              {
-                claim: "Quality gate passed",
-                route: "sandbox",
-                evidence_surface: "sandbox",
-                status: "confirmed",
-              },
-            ],
-            approval: {
-              mode: "human",
-              status: task.completion,
-              reviewedByUserId: task.completion === "approved" ? OWNER.id : null,
-              reviewedAt: task.completion === "approved" ? at({ days: 2, hours: 5 }) : null,
-            },
-            createdAt: at({ days: 2, hours: 5, minutes: 30 }),
-          },
-        ]
-      : null;
-
-    taskStatements.push(
-      insert("project_task", {
-        id: task.id,
-        project_id: projectId,
-        workspace_id: WORKSPACE_ID,
-        objective: task.objective,
-        acceptance_criteria: [
-          { id: "ac-1", text: "Behaviour is covered by a test" },
-          { id: "ac-2", text: "Documented in the setup references" },
-        ],
-        expected_output: "A pull request against main with a short description.",
-        context: {
-          links: [{ url: `https://github.com/${REPOSITORY}`, label: "Repository" }],
-          notes: "Seeded task.",
-        },
-        constraints: { forbiddenTools: ["image_generation"], notes: null },
-        depends_on_task_ids: task.dependsOn ?? [],
-        require_approval_for: task.approvals ?? [],
-        status: task.status,
-        source: "user",
-        blocked_reason: task.blockedReason ?? null,
-        blocked_detail: task.blockedDetail ?? null,
-        stage_id: task.stage,
-        flow_snapshot: projectId === LAUNCH_PROJECT_ID ? FLOW : null,
-        runner: {
-          kind: "conversation",
-          teammateId: task.stage === "build" ? teammates.releaseBot : null,
-          model: SEED_MODEL,
-          mode: task.stage === "build" ? "build" : "plan",
-        },
-        created_by_user_id: task.createdBy,
-        assignee_user_id: task.assignee ?? null,
-        conversation_id: null,
-        origin_conversation_id: task.status === "backlog" ? seedId("chat", "goal") : null,
-        goal_id: null,
-        dispatch_task_id: task.dispatch ?? null,
-        run_id: null,
-        completions,
-        position: task.position,
-        token_budget: 200_000,
-        tokens_spent: task.status === "backlog" ? 0 : 12_400 * task.position,
-        created_at: createdAt,
-        updated_at: task.completed ?? task.started ?? createdAt,
-        started_at: task.started ?? null,
-        completed_at: task.completed ?? null,
-        attention_version: task.attention ?? 1,
-      }),
-    );
-    audit(statements, "project.task.created", "project_task", task.id, task.createdBy, createdAt, {
-      objective: task.objective,
-    });
-
-    if (task.status !== "backlog") {
-      audit(
-        statements,
-        "project.task.status_changed",
-        "project_task",
-        task.id,
-        task.assignee ?? task.createdBy,
-        shift(createdAt, { minutes: 30 }),
-        { from: "backlog", to: task.status },
-      );
-    }
-
-    if (task.completion) {
-      goalStatements.push(
-        insert("goal", {
-          id: seedId("goal", task.id),
-          conversation_id: task.conversation?.conversationId ?? seedId("work", "pricing-copy"),
-          user_id: task.assignee ?? task.createdBy,
-          objective: task.objective,
-          status: task.completion === "approved" ? "completed" : "completed",
-          source: "user",
-          iteration_count: 3,
-          tokens_spent: 9_800,
-          progress: [
-            {
-              iteration: 3,
-              surface: "sandbox",
-              summary: "Objective met.",
-              evidence: ["Quality gate passed"],
-              at: at({ days: 2, hours: 5, minutes: 30 }),
-            },
-          ],
-          evidence: [
-            {
-              claim: "Quality gate passed",
-              route: "sandbox",
-              evidence_surface: "sandbox",
-              status: "confirmed",
-            },
-          ],
-          created_at: createdAt,
-          updated_at: at({ days: 2, hours: 5, minutes: 30 }),
-          completed_at: at({ days: 2, hours: 5, minutes: 30 }),
-        }),
-      );
-    }
-  }
-
-  statements.splice(threadInsertIndex, 0, ...taskStatements);
-
-  const pricingThread = buildThread(
-    {
-      userId: OWNER.id,
-      id: seedId("work", "pricing-copy"),
-      title: "Rewrite the pricing page copy",
-      type: "task",
-      projectId: WEBSITE_PROJECT_ID,
-      createdAt: at({ days: 2, hours: 8 }),
-      run: {
-        status: "succeeded",
-        projectTaskId: seedId("task", "pricing-copy"),
-        stageId: "review",
-      },
-    },
-    [
-      {
-        role: "user",
-        content: "Rewrite the pricing page: three plans, one call to action, no marketing fluff.",
-      },
-      {
-        role: "assistant",
-        usage: USAGE,
-        content: `**Free** — try Polychat with hosted models and a monthly allowance.
-
-**Pro** — £8 a month. Frontier models, generation, live voice, sandboxed runs and Work.
-
-**Enterprise** — talk to us about seats, audit and data residency.
-
-Start with Free. Upgrade when you hit the allowance.`,
-      },
-    ],
-  );
-
-  statements.push(...pricingThread.statements);
-
-  for (const task of tasks) {
-    const conversationId =
-      task.conversation?.conversationId ??
-      (task.completion ? seedId("work", "pricing-copy") : null);
-
-    if (!conversationId && !task.completion) {
-      continue;
-    }
-
-    statements.push(
-      `UPDATE "project_task" SET "conversation_id" = ${sqlValue(conversationId)}, "run_id" = ${sqlValue(task.conversation?.runId ?? null)}, "goal_id" = ${sqlValue(task.completion ? seedId("goal", task.id) : null)} WHERE "id" = ${sqlValue(task.id)};`,
-    );
-  }
-
+  statements.splice(threadInsertIndex, 0, ...team.statements, ...work.taskStatements);
   statements.push(
-    insert("tasks", {
-      id: seedId("task", "dispatch-audit-export"),
-      task_type: "project_task_dispatch",
-      status: "queued",
-      priority: 4,
-      user_id: 9001,
-      project_id: LAUNCH_PROJECT_ID,
-      task_data: JSON.stringify({
-        projectTaskId: seedId("task", "audit-export"),
-        projectId: LAUNCH_PROJECT_ID,
-      }),
-      created_by: "user",
-      created_at: at({ hours: 5 }),
-      updated_at: at({ hours: 5 }),
-    }),
-    insert("user_resource_state", {
-      resource_type: "task",
-      user_id: OWNER.id,
-      task_id: doneTaskId,
-      task_version: 1,
-      read_at: at({ days: 2, hours: 4 }),
-      dismissed_at: null,
-    }),
-    insert("user_resource_state", {
-      resource_type: "task",
-      user_id: OWNER.id,
-      task_id: seedId("task", "flaky-e2e"),
-      task_version: 1,
-      read_at: at({ days: 1 }),
-      dismissed_at: at({ days: 1 }),
-    }),
-    insert("approval", {
-      kind: "connector",
-      arguments_json: JSON.stringify({ channel: "#autumn-launch", text: "Tests are green" }),
-      id: seedId("approval", "slack-post"),
-      user_id: OWNER.id,
-      run_id: `${runningThread.runId}`,
-      completion_id: runningThread.conversationId,
-      provider: "slack",
-      operation: "chat.postMessage",
-      connected_account_id: "acct_seed_slack",
-      channel: "#autumn-launch",
-      argument_digest: sha256Hex("chat.postMessage:#autumn-launch:Tests are green"),
-      state: "pending",
-      created_at: at({ minutes: 12 }),
-      expires_at: ahead({ minutes: 48 }),
-    }),
+    ...work.after,
+    ...Object.entries(work.sequences).map(
+      ([project, sequence]) =>
+        `UPDATE "project" SET "task_sequence" = ${sequence} WHERE "id" = ${sqlValue(PROJECTS[project])};`,
+    ),
   );
-
-  statements.push(...goalStatements);
 
   return {
     statements,

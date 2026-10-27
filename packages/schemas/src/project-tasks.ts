@@ -50,6 +50,23 @@ export const WORK_TASK_TOOL_IDS = [
   "accept_breakdown",
 ] as const;
 
+export const WORK_AGENT_TOOL_IDS = [
+  "web_search",
+  "research",
+  "extract_content",
+  "search_documents",
+  "get_document",
+  "write_document",
+  "write_sheet",
+  "write_deck",
+  "run_code",
+  "use_computer",
+  "store_memory",
+  "search_memories",
+  "discover_capabilities",
+  "create_automation",
+] as const;
+
 export const WORK_RUN_EXCLUDED_TOOL_IDS: readonly string[] = ["delegate"];
 
 export type WorkTaskToolId = (typeof WORK_TASK_TOOL_IDS)[number];
@@ -887,6 +904,7 @@ export const projectTaskStageOutputSchema = z.object({
   kind: z.string().min(1),
   status: z.enum(["pending", "ready", "failed", "archived"]),
 });
+export type ProjectTaskStageOutput = z.infer<typeof projectTaskStageOutputSchema>;
 
 export const projectTaskStageAttemptSchema = z.object({
   id: z.string().min(1),
@@ -984,6 +1002,7 @@ export const projectTaskDetailResponseSchema = z.object({
   plan: projectTaskPlanEvidenceSchema,
   children: z.array(projectTaskSummarySchema).default([]),
   links: z.array(projectTaskLinkedSchema).default([]),
+  outputs: z.array(projectTaskStageOutputSchema).default([]),
 });
 
 export const projectTaskThreadResponseSchema = z.object({

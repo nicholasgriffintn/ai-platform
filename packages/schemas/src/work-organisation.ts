@@ -338,19 +338,29 @@ export type WorkInboxKind = z.infer<typeof workInboxKindSchema>;
 export const workInboxItemSchema = z.object({
   id: z.string(),
   kind: workInboxKindSchema,
-  workspaceId: z.string(),
+  workspaceId: z.string().nullable(),
   projectId: z.string().nullable(),
   taskId: z.string().nullable(),
   teammateId: z.string().nullable(),
   title: z.string(),
   detail: z.string().nullable(),
   dueAt: z.string().nullable().default(null),
+  conversationId: z.string().nullable().default(null),
   since: z.string(),
   deepLink: z.string(),
 });
 export type WorkInboxItem = z.infer<typeof workInboxItemSchema>;
 
-export const workInboxResponseSchema = listSchema(workInboxItemSchema);
+export const workPlaceSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  projects: z.array(z.object({ id: z.string(), name: z.string() })),
+});
+export type WorkPlace = z.infer<typeof workPlaceSchema>;
+
+export const workInboxResponseSchema = listSchema(workInboxItemSchema).extend({
+  places: z.array(workPlaceSchema).default([]),
+});
 export type WorkInboxResponse = z.infer<typeof workInboxResponseSchema>;
 
 export const workTaskListResponseSchema = z.object({

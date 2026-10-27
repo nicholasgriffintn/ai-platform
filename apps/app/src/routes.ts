@@ -21,7 +21,6 @@ export default [
   route("/work", "pages/work/layout.tsx", [
     index("pages/work/index.tsx"),
     route("attention", "pages/work/attention.tsx"),
-    route("tasks", "pages/work/tasks.tsx"),
     route("invitations", "pages/work/invitations.tsx"),
     route(":workspaceId", "pages/work/workspace.tsx"),
     route(":workspaceId/team", "pages/work/team.tsx"),
@@ -31,7 +30,6 @@ export default [
     route(":workspaceId/activity", "pages/work/activity.tsx"),
     route(":workspaceId/setup", "pages/work/setup.tsx"),
     route(":workspaceId/members", "pages/work/members.tsx"),
-    route(":workspaceId/governance", "pages/work/governance.tsx"),
     route(":workspaceId/models/:place?", "pages/work/models.tsx"),
     route(":workspaceId/models/versions/:versionId", "pages/work/model-version.tsx"),
     route(":workspaceId/models/datasets/:versionId", "pages/work/model-dataset.tsx"),
@@ -45,7 +43,6 @@ export default [
       ":workspaceId/projects/:projectId/notebooks/:notebookId/:conversationId?",
       "pages/work/project-notebook.tsx",
     ),
-    route(":workspaceId/projects/:projectId/teammates", "pages/work/project-teammates.tsx"),
     route(
       ":workspaceId/projects/:projectId/teammates/:teammateId/settings",
       "pages/work/project-teammate-settings.tsx",
@@ -54,7 +51,6 @@ export default [
       ":workspaceId/projects/:projectId/teammates/:teammateId/context",
       "pages/work/project-teammate-context.tsx",
     ),
-    route(":workspaceId/projects/:projectId/scheduled", "pages/work/project-scheduled.tsx"),
     route(":workspaceId/projects/:projectId/models/:place?", "pages/work/project-models.tsx"),
     route(":workspaceId/projects/:projectId/plugins", "pages/work/project-plugins.tsx"),
     route(":workspaceId/projects/:projectId/apps/:appId/*", "pages/work/project-app.tsx"),

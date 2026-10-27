@@ -11,5 +11,5 @@ export function meta() {
 }
 
 export default function ChatAttentionPage() {
-  return <AttentionPage />;
+  return <AttentionPage surface="chat" />;
 }

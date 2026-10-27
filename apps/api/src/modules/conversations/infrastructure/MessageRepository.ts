@@ -470,6 +470,24 @@ export class MessageRepository extends BaseRepository {
     );
   }
 
+  public async listPendingToolCallsForRuns(
+    runIds: readonly string[],
+  ): Promise<Array<{ run_id: string; name: string | null; content: string | null }>> {
+    if (runIds.length === 0) {
+      return [];
+    }
+
+    return this.runQuery<{ run_id: string; name: string | null; content: string | null }>(
+      `SELECT run_id, name, content FROM message
+       WHERE run_id IN (${runIds.map(() => "?").join(", ")})
+         AND role = 'tool'
+         AND status = 'pending'
+         AND is_archived = 0
+       ORDER BY ${MESSAGE_ORDER_BY_DESC}`,
+      [...runIds],
+    );
+  }
+
   public async getLatestProjectTaskInteractionMessage(
     conversationId: string,
   ): Promise<Record<string, unknown> | null> {

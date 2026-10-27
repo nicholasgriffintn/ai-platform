@@ -113,7 +113,11 @@ function outputRows(notebook, entry, sourceIds) {
         run: null,
         model: null,
         skills: [],
-        sources: sourceIds.map((id) => ({ id, name: null, state: "referenced" })),
+        sources: sourceIds.map((referencedId) => ({
+          id: referencedId,
+          name: null,
+          state: "referenced",
+        })),
         approvals: [],
       },
       revision: 1,

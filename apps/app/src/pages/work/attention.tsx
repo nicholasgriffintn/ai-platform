@@ -11,5 +11,5 @@ export function meta() {
 }
 
 export default function WorkAttentionPage() {
-  return <AttentionPage />;
+  return <AttentionPage surface="work" />;
 }

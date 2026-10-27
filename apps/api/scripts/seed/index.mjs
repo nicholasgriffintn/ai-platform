@@ -1,6 +1,6 @@
 import { chatStatements, guideStatements, SCENARIOS, seedGuideMarkdown } from "./chat.mjs";
 import { continuityStatements } from "./continuity.mjs";
-import { discoverStatements } from "./discover.mjs";
+import { DISCOVER_FILES, discoverStatements } from "./discover.mjs";
 import {
   API_KEY,
   identityStatements,
@@ -33,7 +33,7 @@ export async function buildSeed({ serverKey }) {
   return {
     statements,
     guide: seedGuideMarkdown(),
-    files: [...Object.values(SEED_SOURCE_FILES), ...NOTEBOOK_FILES],
+    files: [...Object.values(SEED_SOURCE_FILES), ...NOTEBOOK_FILES, ...DISCOVER_FILES],
     scenarios: SCENARIOS,
     login: {
       email: OWNER.email,

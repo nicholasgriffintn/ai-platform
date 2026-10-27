@@ -1,23 +1,29 @@
 import {
   Button,
-  ButtonLink,
   CardGridLoadingSkeleton,
   EmptyState,
+  SegmentedControl,
 } from "@ngriffin_uk/polychat-component-ui";
 import {
   WorkAccessEmptyState,
   WorkspaceCardGrid,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { isAuthenticationError, useChatStore } from "@ngriffin_uk/polychat-library-client";
-import { getPlacePaths, useTaskAttention } from "@ngriffin_uk/polychat-library-react";
-import { BellRing, BriefcaseBusiness, Plus } from "lucide-react";
+import { BriefcaseBusiness, Plus } from "lucide-react";
 import { useState } from "react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { useShellHost } from "../Host/ShellHostContext.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { CreateWorkspaceDialog } from "./CreateWorkspaceDialog.js";
+import { useViewParam } from "./useViewParam.js";
 import { useWorkData } from "./WorkDataContext.js";
+
+type WorkOverviewView = "workspaces" | "notifications";
+
+function readWorkOverviewView(value: string | null): WorkOverviewView {
+  return value === "notifications" ? value : "workspaces";
+}
 
 export function WorkOverview() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -27,7 +33,7 @@ export function WorkOverview() {
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
   const isPro = useChatStore((state) => state.isPro);
   const canAccessWork = isAuthenticated && isPro;
-  const { unread } = useTaskAttention();
+  const [view, setView] = useViewParam<WorkOverviewView>(readWorkOverviewView, "workspaces");
   const { TaskNotificationSettings } = useShellHost();
 
   return (
@@ -84,7 +90,7 @@ export function WorkOverview() {
           />
         ) : null}
 
-        {canAccessWork && data?.length === 0 && (
+        {canAccessWork && view === "workspaces" && data?.length === 0 && (
           <EmptyState
             icon={<BriefcaseBusiness className="text-muted-foreground" size={24} />}
             title="No workspaces yet"
@@ -94,7 +100,20 @@ export function WorkOverview() {
           />
         )}
 
-        {canAccessWork && data?.length ? (
+        {canAccessWork ? (
+          <SegmentedControl
+            className="mb-6"
+            label="Workspaces views"
+            value={view}
+            options={[
+              { id: "workspaces", label: "Workspaces", count: data?.length },
+              { id: "notifications", label: "Notifications" },
+            ]}
+            onChange={setView}
+          />
+        ) : null}
+
+        {canAccessWork && view === "workspaces" && data?.length ? (
           <WorkspaceCardGrid
             workspaces={data.map((workspace) => ({
               ...workspace,
@@ -103,19 +122,7 @@ export function WorkOverview() {
           />
         ) : null}
 
-        {canAccessWork && unread > 0 ? (
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-3">
-            <p className="flex items-center gap-2 text-sm text-foreground">
-              <BellRing size={16} className="text-attention" aria-hidden="true" />
-              {unread === 1 ? "1 unread notification" : `${unread} unread notifications`}
-            </p>
-            <ButtonLink href={getPlacePaths("work").attention} variant="outline" size="sm">
-              Open Inbox
-            </ButtonLink>
-          </div>
-        ) : null}
-
-        {canAccessWork && <TaskNotificationSettings />}
+        {canAccessWork && view === "notifications" ? <TaskNotificationSettings /> : null}
       </PageShell.Content>
       <CreateWorkspaceDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </>

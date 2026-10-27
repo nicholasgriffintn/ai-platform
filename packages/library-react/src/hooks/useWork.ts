@@ -130,7 +130,7 @@ function invalidateTeamWork(queryClient: QueryClient, workspaceId: string) {
 }
 
 export function useWorkInbox() {
-  const enabled = useWorkEnabled();
+  const enabled = useChatStore((state) => state.isAuthenticated);
 
   return useQuery({
     queryKey: workInboxQueryKey,

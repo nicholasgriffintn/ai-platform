@@ -19,10 +19,14 @@ export const projectScopeQuerySchema = z.object({
   project_id: z.string().min(1).optional(),
 });
 
+export function canAccessWork(user: { plan_id?: string | null }): boolean {
+  return authorise("work.access", { plan: user.plan_id ?? "" }).allowed;
+}
+
 export function requireWorkAccess(context: ServiceContext) {
   const user = context.requireUser();
 
-  if (!authorise("work.access", { plan: user.plan_id ?? "" }).allowed) {
+  if (!canAccessWork(user)) {
     throw new AssistantError("Workspaces require a Pro plan", ErrorType.AUTHORISATION_ERROR, 403);
   }
 

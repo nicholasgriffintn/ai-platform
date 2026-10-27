@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { PageShell } from "../Shell/PageShell.js";
 import { ProjectReviewPublicationControl } from "./ProjectReviewPublicationControl.js";
 import { useWorkDirectory } from "./useWorkDirectory.js";
+import { useWorkData } from "./WorkDataContext.js";
 
 export function ProjectTaskDetail({
   workspaceId,
@@ -54,6 +55,7 @@ export function ProjectTaskDetail({
   const basePath = `/work/${workspaceId}/projects/${projectId}`;
   const currentUserId = useChatStore((state) => state.user?.id ?? null);
   const { directory } = useWorkDirectory(workspaceId);
+  const { projectQuery } = useWorkData();
   const actions = useWorkTaskActions(projectId, taskId);
   const raiseCase = useRaiseCase(projectId);
   const standup = task?.details.standup;
@@ -118,6 +120,8 @@ export function ProjectTaskDetail({
         () => actions.requestReview.mutateAsync({ reviewer, note: null }),
         "Sent for review",
       ),
+    onRename: (objective) => void patch({ objective }, "Title updated"),
+    onDescribe: (description) => void patch({ description }, "Description updated"),
     onSetPriority: (priority) => void patch({ priority }, "Priority updated"),
     onSetDueAt: (dueAt) => void patch({ dueAt }, "Due date updated"),
     onComment: (body) => actions.comment.mutateAsync(body),
@@ -192,13 +196,12 @@ export function ProjectTaskDetail({
 
   return (
     <>
-      <PageShell.Content className="max-w-6xl">
-        <BackLink href={`${basePath}/tasks`} label="Back to tasks" />
-        <PageShell.Header title={task.key ?? "Task"} />
+      <PageShell.Content className="max-w-7xl">
         {task.executionProfile === "diff_review" ? (
           <ProjectReviewPublicationControl key={task.id} projectId={projectId} task={task} />
         ) : null}
         <TaskDetail
+          title={`${projectQuery.data?.name ?? "Project"} › ${task.key ?? "Task"}`}
           task={task}
           goal={goal}
           activity={activity}
@@ -224,6 +227,7 @@ export function ProjectTaskDetail({
           outputHref={(outputId) =>
             getProjectFilesPath(workspaceId, projectId, "made", encodeURIComponent(outputId))
           }
+          outputs={detailQuery.data?.outputs ?? []}
           isBusy={isBusy}
           work={work}
           onRun={() => void run()}

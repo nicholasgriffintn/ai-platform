@@ -20,7 +20,7 @@ import { resolveDelegationContinuation } from "~/modules/delegations/application
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { findModelConfig, getDefaultChatModel } from "~/modules/models/application/resolve";
 import { recordPolyApprovalOutcome } from "~/modules/poly/application/earned-trust";
-import { buildWorkRunTools } from "~/modules/project-tasks/domain/work-tools";
+import { buildWorkRunTools, grantWorkBoardTools } from "~/modules/project-tasks/domain/work-tools";
 import {
   readToolInteractionId,
   readToolInteractionResolution,
@@ -223,10 +223,8 @@ export async function enqueueTeammateRun({
       ...(resolvedInvocation?.source === "project_task" ? PROJECT_TASK_INTERACTION_TOOL_IDS : []),
     ]),
   ];
-  const currentEnabledTools =
-    preparedInvocation?.resolution.context?.scope.type === "workspace"
-      ? buildWorkRunTools(teammateTools)
-      : teammateTools;
+  const isWorkspaceRun = preparedInvocation?.resolution.context?.scope.type === "workspace";
+  const currentEnabledTools = isWorkspaceRun ? buildWorkRunTools(teammateTools) : teammateTools;
   const isPolyTeammate = isPolyTeammateId(teammate.id);
   const requestedEnabledTools = isPolyTeammate
     ? executionPolicy?.enabledTools
@@ -241,6 +239,9 @@ export async function enqueueTeammateRun({
   const effectiveSettings = {
     ...body.settings,
     ...(effectiveEnabledTools ? { enabled_tools: effectiveEnabledTools } : {}),
+    ...(isWorkspaceRun
+      ? { approved_tools: grantWorkBoardTools(body.settings?.approved_tools) }
+      : {}),
   };
   const effectiveTeammate = {
     ...teammate,

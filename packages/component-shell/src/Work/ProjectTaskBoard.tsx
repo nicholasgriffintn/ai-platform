@@ -1,10 +1,9 @@
-import { Button, ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
+import { ConfirmationDialog } from "@ngriffin_uk/polychat-component-ui";
 import {
   CreateTaskDialog,
-  FlowEditorDialog,
   ProjectHomeActions,
-  TaskBoard,
   TaskViewTabs,
+  WorkTaskBoard,
   WorkTaskList,
   WorkTaskTimeline,
   WorkTaskTree,
@@ -13,25 +12,21 @@ import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
   canManageWorkspace,
   getProjectBasePath,
-  getProjectSurface,
   getProjectTaskPath,
-  getTeammateSettingsPath,
-  NEW_TEAMMATE_ID,
-  projectTaskSkills,
   useArchiveProject,
   useCapabilityCatalog,
 } from "@ngriffin_uk/polychat-library-react";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
-import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { PageShell } from "../Shell/PageShell.js";
 import { useQueryDialog } from "../utils/useQueryDialog.js";
+import { AddTaskMenu } from "./AddTaskMenu.js";
+import { ImportProjectIssueDialog } from "./ImportProjectIssueDialog.js";
 import { ProjectHomeHeader } from "./ProjectHomeHeader.js";
-import { ProjectTaskIntegrationsControl } from "./ProjectTaskIntegrationsControl.js";
 import { useProjectTaskBoardActions } from "./useProjectTaskBoardActions.js";
 import { useProjectTemplateSave } from "./useProjectTemplateSave.js";
 import { useTaskViewParam } from "./useTaskViewParam.js";
@@ -49,8 +44,8 @@ export function ProjectTaskBoard({
 }) {
   const [view, setView] = useTaskViewParam();
   const [isCreateOpen, setIsCreateOpen] = useQueryDialog("new");
-  const [isFlowOpen, setIsFlowOpen] = useState(false);
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const navigate = useNavigate();
   const archiveProject = useArchiveProject();
   const { projectQuery, workspaceQuery } = useWorkData();
@@ -58,24 +53,9 @@ export function ProjectTaskBoard({
   const saveTemplate = useProjectTemplateSave(workspaceId, projectQuery.data ?? null);
   const capabilityCatalog = useCapabilityCatalog(projectId);
   const teammates = capabilityCatalog.data?.teammates ?? [];
-  const skills = projectTaskSkills(projectQuery.data?.capabilities, capabilityCatalog.data?.skills);
-  const {
-    tasks,
-    flow,
-    isLoading,
-    error,
-    create,
-    start,
-    accept,
-    saveFlow,
-    runTask,
-    acceptTask,
-    addTask,
-    saveProjectFlow,
-  } = useProjectTaskBoardActions({
+  const { tasks, flow, isLoading, error, create, start, addTask } = useProjectTaskBoardActions({
     projectId,
     onTaskCreated: () => setIsCreateOpen(false),
-    onFlowSaved: () => setIsFlowOpen(false),
   });
 
   if (isAuthenticationError(error)) {
@@ -91,10 +71,8 @@ export function ProjectTaskBoard({
   }
 
   const members = [...directory.people];
-  const pendingTaskIds = [
-    ...(start.isPending && typeof start.variables === "string" ? [start.variables] : []),
-    ...(accept.isPending && typeof accept.variables === "string" ? [accept.variables] : []),
-  ];
+  const stageOf = (task: ProjectTask) =>
+    (task.flowSnapshot ?? flow)?.stages.find((stage) => stage.id === task.stageId)?.name ?? null;
   const canManage = Boolean(workspaceQuery.data && canManageWorkspace(workspaceQuery.data));
   const basePath = getProjectBasePath(workspaceId, projectId);
   const taskHref = (task: Pick<ProjectTask, "id">) =>
@@ -110,11 +88,16 @@ export function ProjectTaskBoard({
   );
   const quickAdd = async (text: string) => {
     try {
-      await create.mutateAsync({
+      const { task } = await create.mutateAsync({
         objective: text,
         ...(lead ? { owner: { type: "teammate" as const, id: lead.teammateId } } : {}),
       });
-      toast.success(lead ? `Added and handed to ${lead.name}` : "Added to the backlog");
+
+      if (lead) {
+        await start.mutateAsync(task.id);
+      }
+
+      toast.success(lead ? `Handed to ${lead.name}` : "Added to the backlog");
 
       return true;
     } catch (mutationError) {
@@ -134,23 +117,14 @@ export function ProjectTaskBoard({
             <div className="flex items-center gap-1">
               <ProjectHomeActions
                 canManage={canManage}
-                settingsPath={`${basePath}/settings`}
                 isSavingTemplate={saveTemplate.isSaving}
                 onArchive={() => setIsArchiveOpen(true)}
                 onSaveTemplate={() => void saveTemplate.save()}
               />
-              <Button
-                variant="primary"
-                size="sm"
-                collapseLabel
-                className="shrink-0"
-                aria-label="Add a task"
-                title="Add a task"
-                icon={<Plus size={16} />}
-                onClick={() => setIsCreateOpen(true)}
-              >
-                Add a task
-              </Button>
+              <AddTaskMenu
+                onAddTask={() => setIsCreateOpen(true)}
+                onImportIssue={() => setIsImportOpen(true)}
+              />
             </div>
           }
         />
@@ -175,12 +149,6 @@ export function ProjectTaskBoard({
           />
         </div>
 
-        <ProjectTaskIntegrationsControl
-          key={projectId}
-          projectId={projectId}
-          taskBasePath={`${basePath}/tasks`}
-          canManage={canManage}
-        />
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Loading project tasks…</p>
         ) : error ? (
@@ -188,22 +156,20 @@ export function ProjectTaskBoard({
             {error.message}
           </p>
         ) : view === "board" ? (
-          <TaskBoard
+          <WorkTaskBoard
             tasks={workTasks}
-            flow={flow}
-            members={members}
-            teammates={teammates}
-            pendingTaskIds={pendingTaskIds}
+            directory={directory}
             taskHref={taskHref}
-            onStartTask={(task) => void runTask(task)}
-            onAcceptTask={(task) => void acceptTask(task)}
-            onCreateTask={() => setIsCreateOpen(true)}
-            onConfigureFlow={() => setIsFlowOpen(true)}
-            canCreateTask
-            canManageFlow={canManage}
+            stageOf={stageOf}
+            emptyMessage="No tasks yet. Ask for something above to get started."
           />
         ) : view === "tree" ? (
-          <WorkTaskTree tasks={workTasks} directory={directory} taskHref={taskHref} />
+          <WorkTaskTree
+            tasks={workTasks}
+            directory={directory}
+            taskHref={taskHref}
+            stageOf={stageOf}
+          />
         ) : view === "timeline" ? (
           <WorkTaskTimeline tasks={workTasks} directory={directory} taskHref={taskHref} />
         ) : view === "triage" ? (
@@ -218,6 +184,7 @@ export function ProjectTaskBoard({
             tasks={workTasks}
             directory={directory}
             taskHref={taskHref}
+            stageOf={stageOf}
             emptyMessage="No tasks yet. Ask for something above to get started."
           />
         )}
@@ -235,21 +202,17 @@ export function ProjectTaskBoard({
         onSubmit={addTask}
       />
 
-      <FlowEditorDialog
-        open={isFlowOpen}
-        flow={flow}
-        teammates={teammates}
-        skills={skills}
-        capabilitiesHref={`/work/${workspaceId}/team`}
-        createTeammateHref={getTeammateSettingsPath(
-          getProjectSurface(workspaceId, projectId),
-          NEW_TEAMMATE_ID,
-        )}
-        isSaving={saveFlow.isPending}
-        errorMessage={saveFlow.error ? getErrorMessage(saveFlow.error, "") : undefined}
-        onOpenChange={setIsFlowOpen}
-        onSave={saveProjectFlow}
-      />
+      {isImportOpen ? (
+        <ImportProjectIssueDialog
+          projectId={projectId}
+          taskBasePath={`${basePath}/tasks`}
+          onClose={() => setIsImportOpen(false)}
+          onImported={(taskId) => {
+            setIsImportOpen(false);
+            void navigate(`${basePath}/tasks/${taskId}`);
+          }}
+        />
+      ) : null}
 
       <ConfirmationDialog
         open={isArchiveOpen}

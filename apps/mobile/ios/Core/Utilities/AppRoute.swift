@@ -18,6 +18,33 @@ enum AppRoute: Equatable {
     case conversation(String)
     case poly
     case device(String)
+    case work(MobileWorkTarget)
+
+    static func workLink(_ target: MobileWorkTarget) -> URL? {
+        var path = "polychat://work/\(target.workspaceId)/projects/\(target.projectId)"
+        if let runId = target.runId {
+            path += "/runs/\(runId)"
+        } else if let taskId = target.taskId {
+            path += "/tasks/\(taskId)"
+        } else if let conversationId = target.conversationId {
+            path += "/chat/\(conversationId)"
+        }
+        return URL(string: path)
+    }
+
+    private static func workTarget(segments: [String]) -> MobileWorkTarget? {
+        guard segments.count >= 4, segments[2] == "projects" else { return nil }
+        let item = segments.count >= 6 ? segments[5] : nil
+        let kind = segments.count >= 5 ? segments[4] : nil
+        return MobileWorkTarget(
+            workspaceId: segments[1],
+            projectId: segments[3],
+            conversationId: kind == "chat" ? item : nil,
+            taskId: kind == "tasks" ? item : nil,
+            runId: kind == "runs" ? item : nil,
+            interactionId: nil
+        )
+    }
 
     static func parse(_ url: URL) -> AppRoute? {
         let isNative = url.scheme == "polychat"
@@ -53,6 +80,8 @@ enum AppRoute: Equatable {
             return .tab(.settings)
         case "poly":
             return .poly
+        case "work":
+            return workTarget(segments: segments).map(AppRoute.work) ?? .tab(.attention)
         case "chat":
             guard segments.count == 2, segments[1] != "new" else {
                 return .tab(.chats)

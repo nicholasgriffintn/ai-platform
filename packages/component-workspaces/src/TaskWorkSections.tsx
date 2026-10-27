@@ -1,36 +1,19 @@
-import {
-  Button,
-  cn,
-  FormDialog,
-  FormSelect,
-  FormTextarea,
-  Link,
-} from "@ngriffin_uk/polychat-component-ui";
-import {
-  PROJECT_TASK_PRIORITIES,
-  projectTaskPriorityLabels,
-  type AnswerStandupInput,
-  type ProjectTask,
-  type ProjectTaskDetails,
-  type ProjectTaskLinked,
-  type ProjectTaskPriority,
-  type ProjectTaskStandup,
-  type ProjectTaskSummary,
-  type ProjectTaskThreadPost,
-  type WorkActor,
+import { Button, cn, FormDialog, FormTextarea, Link } from "@ngriffin_uk/polychat-component-ui";
+import type {
+  AnswerStandupInput,
+  ProjectTask,
+  ProjectTaskDetails,
+  ProjectTaskLinked,
+  ProjectTaskStandup,
+  ProjectTaskSummary,
+  ProjectTaskThreadPost,
 } from "@ngriffin_uk/polychat-schemas";
 import { formatRelativeTime, initialsOf } from "@ngriffin_uk/polychat-utility-core";
 import { AlertTriangle, Plus, X } from "lucide-react";
 import { useState } from "react";
 
-import {
-  decodeWorkActor,
-  describeWorkActor,
-  encodeWorkActor,
-  workActorOptions,
-  type WorkDirectory,
-} from "./work-actors";
-import { WorkActorChip } from "./WorkTaskViews";
+import { describeWorkActor, type WorkDirectory } from "./work-actors";
+import { StatusDot, WorkActorChip } from "./WorkTaskViews";
 
 const LINK_LABELS: Record<ProjectTaskLinked["kind"], { outgoing: string; incoming: string }> = {
   raised_from: { outgoing: "Raised from", incoming: "Raised case" },
@@ -88,27 +71,39 @@ export function TaskThread({
   renderBody?: (body: string) => React.ReactNode;
 }) {
   const [comment, setComment] = useState("");
+  const submit = () => {
+    if (comment.trim() && !isBusy) {
+      void onComment(comment.trim()).then(() => setComment(""));
+    }
+  };
 
   return (
-    <TaskSection title="Thread" meta={thread.length ? `${thread.length} posts` : undefined}>
+    <TaskSection title="Activity">
       {thread.length ? (
-        <ol className="space-y-4">
+        <ol className="relative space-y-4 before:absolute before:top-2 before:bottom-2 before:left-[0.8125rem] before:w-px before:bg-border">
           {thread.map((post) => {
             const name = resolveAuthorName(post, directory);
 
             return post.kind === "event" ? (
-              <li key={post.id} className="flex gap-3 pl-1 text-xs text-muted-foreground">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-border-strong" />
-                <span>
+              <li
+                key={post.id}
+                className="relative flex items-center gap-3 text-xs text-muted-foreground"
+              >
+                <span className="relative z-10 grid h-7 w-7 shrink-0 place-items-center">
+                  <span className="h-2 w-2 rounded-full bg-border-strong ring-4 ring-background" />
+                </span>
+                <span className="min-w-0">
                   {post.body}
-                  <span className="ml-2">{formatRelativeTime(post.createdAt)}</span>
+                  <span className="ml-2 text-muted-foreground/70">
+                    {formatRelativeTime(post.createdAt)}
+                  </span>
                 </span>
               </li>
             ) : (
-              <li key={post.id} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-3">
+              <li key={post.id} className="relative flex gap-3">
                 <span
                   className={cn(
-                    "grid h-7 w-7 place-items-center rounded-full text-[11px] font-semibold",
+                    "relative z-10 grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-semibold ring-4 ring-background",
                     post.author.kind === "teammate"
                       ? "bg-active-work/15 text-active-work"
                       : "bg-selection text-foreground",
@@ -117,7 +112,7 @@ export function TaskThread({
                 >
                   {initialsOf(name)}
                 </span>
-                <div className="min-w-0 rounded-lg border border-border bg-surface px-3 py-2">
+                <div className="min-w-0 flex-1 rounded-lg border border-border bg-surface px-4 py-3">
                   <p className="flex flex-wrap items-baseline gap-2 text-sm">
                     <span className="font-medium">{name}</span>
                     <span className="text-xs text-muted-foreground">
@@ -125,9 +120,9 @@ export function TaskThread({
                     </span>
                   </p>
                   {renderBody ? (
-                    <div className="mt-1 text-sm leading-6">{renderBody(post.body)}</div>
+                    <div className="mt-1.5 text-sm leading-6">{renderBody(post.body)}</div>
                   ) : (
-                    <p className="mt-1 text-sm leading-6 whitespace-pre-wrap">{post.body}</p>
+                    <p className="mt-1.5 text-sm leading-6 whitespace-pre-wrap">{post.body}</p>
                   )}
                 </div>
               </li>
@@ -136,31 +131,33 @@ export function TaskThread({
         </ol>
       ) : (
         <p className="text-sm text-muted-foreground">
-          No updates yet. Teammates post progress here as they work.
+          Nothing yet. Teammates post progress here as they work.
         </p>
       )}
       <form
-        className="space-y-2"
+        className="flex items-end gap-2 rounded-lg border border-border bg-surface px-3 py-2 focus-within:border-ring"
         onSubmit={(event) => {
           event.preventDefault();
-
-          if (comment.trim()) {
-            void onComment(comment.trim()).then(() => setComment(""));
-          }
+          submit();
         }}
       >
-        <FormTextarea
+        <textarea
           aria-label="Reply"
-          rows={3}
-          placeholder="Reply, or @name a teammate to wake it…"
+          rows={1}
+          placeholder="Leave a comment, or @name a teammate to wake it…"
+          className="field-sizing-content max-h-48 min-h-7 flex-1 resize-none border-0 bg-transparent py-1 text-sm leading-6 outline-none placeholder:text-muted-foreground"
           value={comment}
           onChange={(event) => setComment(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+              event.preventDefault();
+              submit();
+            }
+          }}
         />
-        <div className="flex justify-end">
-          <Button type="submit" size="sm" variant="primary" disabled={isBusy || !comment.trim()}>
-            Post
-          </Button>
-        </div>
+        <Button type="submit" size="sm" variant="secondary" disabled={isBusy || !comment.trim()}>
+          Comment
+        </Button>
       </form>
     </TaskSection>
   );
@@ -202,7 +199,8 @@ export function TaskSubTasks({
                 href={taskHref(child)}
                 className="flex items-center gap-3 px-3 py-2 text-sm no-underline hover:bg-selection/50 hover:!no-underline"
               >
-                <span className="w-16 shrink-0 font-mono text-xs text-muted-foreground">
+                <StatusDot status={child.status} />
+                <span className="w-14 shrink-0 font-mono text-xs text-muted-foreground">
                   {child.key}
                 </span>
                 <span
@@ -592,110 +590,6 @@ export function TaskEscalationBanner({
       <Button size="xs" variant="secondary" disabled={isBusy} onClick={onClear}>
         Mark handled
       </Button>
-    </div>
-  );
-}
-
-export function PropertyRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-2 py-1.5 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <div className="min-w-0">{children}</div>
-    </div>
-  );
-}
-
-export function TaskPropertiesPanel({
-  task,
-  directory,
-  isBusy,
-  onAssign,
-  onSetReviewer,
-  onSetPriority,
-  onSetDueAt,
-  children,
-}: {
-  task: ProjectTask;
-  directory: WorkDirectory;
-  isBusy: boolean;
-  onAssign: (owner: WorkActor | null) => void;
-  onSetReviewer: (reviewer: WorkActor) => void;
-  onSetPriority: (priority: ProjectTaskPriority) => void;
-  onSetDueAt: (dueAt: string | null) => void;
-  children?: React.ReactNode;
-}) {
-  const options = workActorOptions(directory);
-  const isFinished = task.status === "done" || task.status === "cancelled";
-  const isRunning = task.status === "running" || task.status === "queued";
-
-  return (
-    <div className="divide-y divide-border">
-      <div className="pb-2">
-        <PropertyRow label="Owner">
-          <FormSelect
-            aria-label="Owner"
-            options={options}
-            value={encodeWorkActor(task.owner)}
-            disabled={isBusy || isRunning || isFinished}
-            triggerClassName="w-full"
-            onValueChange={(value) => onAssign(decodeWorkActor(value))}
-          />
-        </PropertyRow>
-        <PropertyRow label="Reviewer">
-          <FormSelect
-            aria-label="Reviewer"
-            options={options.filter((option) => option.value !== "none")}
-            value={task.reviewer ? encodeWorkActor(task.reviewer) : ""}
-            placeholder="Nobody yet"
-            disabled={isBusy || isFinished}
-            triggerClassName="w-full"
-            onValueChange={(value) => {
-              const reviewer = decodeWorkActor(value);
-
-              if (reviewer) {
-                onSetReviewer(reviewer);
-              }
-            }}
-          />
-        </PropertyRow>
-        <PropertyRow label="Priority">
-          <FormSelect
-            aria-label="Priority"
-            options={PROJECT_TASK_PRIORITIES.map((priority) => ({
-              value: priority,
-              label: projectTaskPriorityLabels[priority],
-            }))}
-            value={task.priority}
-            disabled={isBusy}
-            triggerClassName="w-full"
-            onValueChange={onSetPriority}
-          />
-        </PropertyRow>
-        <PropertyRow label="Due">
-          <input
-            aria-label="Due date"
-            type="date"
-            className="w-full rounded-md border border-border bg-canvas px-2 py-1.5 text-sm"
-            value={task.dueAt ? task.dueAt.slice(0, 10) : ""}
-            disabled={isBusy}
-            onChange={(event) =>
-              onSetDueAt(
-                event.target.value
-                  ? new Date(`${event.target.value}T17:00:00Z`).toISOString()
-                  : null,
-              )
-            }
-          />
-        </PropertyRow>
-        <PropertyRow label="Responsible">
-          <span>
-            {task.runnerIdentityUserId
-              ? describeWorkActor({ type: "person", userId: task.runnerIdentityUserId }, directory)
-              : "Whoever starts it"}
-          </span>
-        </PropertyRow>
-      </div>
-      {children}
     </div>
   );
 }

@@ -5,30 +5,46 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { listWaitingRunInboxItems } from "~/modules/conversations/application/waiting-items";
 import { listProjectTaskInboxItems } from "~/modules/project-tasks/application/inbox-items";
 import { listTeammateInboxItems } from "~/modules/teammates/application/inbox-items";
-import { requireWorkAccess } from "~/modules/workspaces/application/access";
+import { canAccessWork } from "~/modules/workspaces/application/access";
 import { listSetupInboxItems } from "~/modules/workspaces/application/onboarding";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 export async function getWorkInbox(context: ServiceContext): Promise<WorkInboxResponse> {
-  const user = requireWorkAccess(context);
-  const workspaces = await context.repositories.get(WorkspaceRepository).listWorkspaces(user.id);
+  const user = context.requireUser();
+  const workspaces = canAccessWork(user)
+    ? await context.repositories.get(WorkspaceRepository).listWorkspaces(user.id)
+    : [];
   const workspaceIds = workspaces.map((workspace) => workspace.id);
   const managed = workspaces.filter((workspace) =>
     WORKSPACE_MANAGER_ROLES.includes(workspace.role),
   );
-  const [teammateItems, taskItems] = await Promise.all([
+  const [waitingItems, teammateItems, taskItems, projects] = await Promise.all([
+    listWaitingRunInboxItems(context, { userId: user.id, workspaceIds: new Set(workspaceIds) }),
     listTeammateInboxItems(context, {
-      userId: user.id,
       workspaceIds,
       managedWorkspaceIds: new Set(managed.map((workspace) => workspace.id)),
     }),
     listProjectTaskInboxItems(context, { userId: user.id, workspaceIds }),
+    context.repositories.get(WorkspaceRepository).listProjectNamesForWorkspaces(workspaceIds),
   ]);
-  const items = [...teammateItems, ...taskItems, ...listSetupInboxItems(managed)].sort(
-    (left, right) => right.since.localeCompare(left.since),
-  );
+  const items = [
+    ...waitingItems,
+    ...teammateItems,
+    ...taskItems,
+    ...listSetupInboxItems(managed),
+  ].sort((left, right) => right.since.localeCompare(left.since));
 
-  return toListPage(items, items.length || 1, (item) => item.id);
+  return {
+    ...toListPage(items, items.length || 1, (item) => item.id),
+    places: workspaces.map((workspace) => ({
+      id: workspace.id,
+      name: workspace.name,
+      projects: projects
+        .filter((project) => project.workspace_id === workspace.id)
+        .map((project) => ({ id: project.id, name: project.name })),
+    })),
+  };
 }

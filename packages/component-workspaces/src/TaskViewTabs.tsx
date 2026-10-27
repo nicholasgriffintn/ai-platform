@@ -1,4 +1,4 @@
-import { cn } from "@ngriffin_uk/polychat-component-ui";
+import { SegmentedControl } from "@ngriffin_uk/polychat-component-ui";
 
 export const TASK_VIEWS = [
   { id: "list", label: "List" },
@@ -24,29 +24,14 @@ export function TaskViewTabs({
   onChange: (view: TaskView) => void;
 }) {
   return (
-    <div
-      role="tablist"
-      aria-label="Task views"
-      className="flex gap-0.5 rounded-md bg-selection/60 p-0.5"
-    >
-      {TASK_VIEWS.map((option) => (
-        <button
-          key={option.id}
-          type="button"
-          role="tab"
-          aria-selected={view === option.id}
-          className={cn(
-            "rounded px-3 py-1 text-xs",
-            view === option.id
-              ? "bg-surface text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-          onClick={() => onChange(option.id)}
-        >
-          {option.label}
-          {option.id === "triage" && triageCount > 0 ? ` · ${triageCount}` : ""}
-        </button>
-      ))}
-    </div>
+    <SegmentedControl
+      label="Task views"
+      value={view}
+      options={TASK_VIEWS.map((option) => ({
+        ...option,
+        count: option.id === "triage" ? triageCount : undefined,
+      }))}
+      onChange={onChange}
+    />
   );
 }

@@ -50,17 +50,45 @@ final class AttentionStore: ObservableObject {
         let running = workItems.filter(\.isRunning).count + backgroundTasks.filter(\.isActive).count
         try? await UNUserNotificationCenter.current().setBadgeCount(needsYou)
         WidgetPublisher.publish(attention: actionableItems + workItems.filter(\.isRunning), needsYou: needsYou, running: running)
-        await liveActivity.sync(
+        await liveActivity.sync(needsYou: needsYou, workingOn: running, lines: liveLines)
+    }
+
+    private var liveLines: [LiveWorkLine] {
+        let running = workItems.filter(\.isRunning).map { item in
+            liveLine(item, needsYou: false)
+        }
+        let waiting = actionableItems.map { item in liveLine(item, needsYou: true) }
+        let decided = decisions.map { item in
+            LiveWorkLine(
+                id: item.id,
+                title: item.title,
+                place: item.workspaceId == nil ? "Personal" : "Work",
+                step: item.detail,
+                needsYou: true,
+                since: AppDateParser.parse(item.since, fallback: Date()),
+                link: item.target.flatMap(AppRoute.workLink)
+                    ?? item.conversationId.flatMap { URL(string: "polychat://chat/\($0)") }
+            )
+        }
+        return running + waiting + decided
+    }
+
+    private func liveLine(_ item: WorkAttentionItem, needsYou: Bool) -> LiveWorkLine {
+        LiveWorkLine(
+            id: item.id,
+            title: item.title,
+            place: "\(item.workspaceName) · \(item.projectName)",
+            step: item.detail,
             needsYou: needsYou,
-            workingOn: running,
-            headline: (actionableItems.first ?? workItems.first(where: \.isRunning))?.title
+            since: AppDateParser.parse(item.occurredAt, fallback: Date()),
+            link: AppRoute.workLink(item.target)
         )
     }
 
     func decideHire(_ item: WorkInboxItem, approve: Bool) async {
-        guard let teammateId = item.teammateId else { return }
+        guard let teammateId = item.teammateId, let workspaceId = item.workspaceId else { return }
         do {
-            try await apiClient.decideHire(workspaceId: item.workspaceId, teammateId: teammateId, approve: approve)
+            try await apiClient.decideHire(workspaceId: workspaceId, teammateId: teammateId, approve: approve)
             decisions.removeAll { $0.id == item.id }
         } catch {
             self.error = "That hire could not be decided: \(error.localizedDescription)"
@@ -68,8 +96,9 @@ final class AttentionStore: ObservableObject {
     }
 
     func approveSetup(_ item: WorkInboxItem) async {
+        guard let workspaceId = item.workspaceId else { return }
         do {
-            try await apiClient.approveCurrentSetupPlan(workspaceId: item.workspaceId)
+            try await apiClient.approveCurrentSetupPlan(workspaceId: workspaceId)
             decisions.removeAll { $0.id == item.id }
         } catch {
             self.error = "The setup plan could not be approved: \(error.localizedDescription)"
@@ -117,7 +146,7 @@ final class AttentionStore: ObservableObject {
         error = nil
         workUnavailable = false
         try? await UNUserNotificationCenter.current().setBadgeCount(0)
-        await liveActivity.sync(needsYou: 0, workingOn: 0, headline: nil)
+        await liveActivity.sync(needsYou: 0, workingOn: 0, lines: [])
     }
 
     private func loadWork() async {

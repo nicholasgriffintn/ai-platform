@@ -1,9 +1,5 @@
 import { SidebarNavLink } from "@ngriffin_uk/polychat-component-navigation";
-import {
-  getPlacePaths,
-  type ProductMode,
-  useTaskAttention,
-} from "@ngriffin_uk/polychat-library-react";
+import { getPlacePaths, type ProductMode } from "@ngriffin_uk/polychat-library-react";
 import { polyPlaceAnchor } from "@ngriffin_uk/polychat-schemas";
 import {
   BellRing,
@@ -15,6 +11,8 @@ import {
   UsersRound,
 } from "lucide-react";
 
+import { useInboxNeedsYou } from "../Attention/useInboxNeedsYou.js";
+
 export function PlacesNavLinks({
   mode = "chat",
   onNavigate,
@@ -23,7 +21,7 @@ export function PlacesNavLinks({
   onNavigate?: () => void;
 }) {
   const places = getPlacePaths(mode);
-  const { unread } = useTaskAttention();
+  const needsYou = useInboxNeedsYou();
 
   return (
     <>
@@ -41,11 +39,11 @@ export function PlacesNavLinks({
         anchor={polyPlaceAnchor("attention")}
         href={places.attention}
         icon={<BellRing size={16} />}
-        count={unread}
-        countLabel={`${unread} unread notifications`}
+        count={needsYou}
+        countLabel={`${needsYou} waiting on you`}
         onClick={onNavigate}
       >
-        Attention
+        Inbox
       </SidebarNavLink>
       <SidebarNavLink
         anchor={polyPlaceAnchor("sites")}

@@ -57,6 +57,7 @@ export * from "./Page/PageTitle";
 export * from "./Page/SectionNav";
 export * from "./popover";
 export * from "./SearchInput";
+export * from "./SegmentedControl";
 export * from "./ShortcutTooltip";
 export * from "./SidebarBackdrop";
 export * from "./SidebarShell";

@@ -41,10 +41,22 @@ export interface WorkTaskViewProps {
   tasks: readonly ProjectTask[];
   directory: WorkDirectory;
   taskHref: (task: ProjectTask) => string;
+  stageOf?: (task: ProjectTask) => string | null;
   emptyMessage?: string;
 }
 
-function PriorityBars({ priority }: { priority: ProjectTaskPriority }) {
+const BOARD_COLUMNS: readonly {
+  id: string;
+  label: string;
+  statuses: readonly ProjectTaskStatus[];
+}[] = [
+  { id: "backlog", label: "Backlog", statuses: ["backlog"] },
+  { id: "active", label: "In progress", statuses: ["queued", "running"] },
+  { id: "needs", label: "Needs you", statuses: ["blocked", "review"] },
+  { id: "done", label: "Done", statuses: ["done"] },
+];
+
+export function PriorityBars({ priority }: { priority: ProjectTaskPriority }) {
   const level = PRIORITY_LEVEL[priority];
 
   return (
@@ -67,7 +79,7 @@ function PriorityBars({ priority }: { priority: ProjectTaskPriority }) {
   );
 }
 
-function StatusDot({ status }: { status: ProjectTaskStatus }) {
+export function StatusDot({ status }: { status: ProjectTaskStatus }) {
   return (
     <span
       aria-hidden
@@ -120,12 +132,14 @@ export function WorkTaskRow({
   task,
   directory,
   href,
+  stage = null,
   childCount = 0,
   depth = 0,
 }: {
   task: ProjectTask;
   directory: WorkDirectory;
   href: string;
+  stage?: string | null;
   childCount?: number;
   depth?: number;
 }) {
@@ -148,6 +162,11 @@ export function WorkTaskRow({
       </span>
       <span className="flex items-center justify-end gap-1.5">
         {task.kind === "case" ? <Badge variant="info">Case</Badge> : null}
+        {stage ? (
+          <span className="hidden sm:inline-flex">
+            <Badge variant="outline">{stage}</Badge>
+          </span>
+        ) : null}
         {task.status === "blocked" && task.blockedReason ? (
           <span className="hidden lg:inline-flex">
             <Badge variant="warning" className="max-w-48 truncate">
@@ -185,7 +204,13 @@ function countChildren(tasks: readonly ProjectTask[]): Map<string, number> {
   return counts;
 }
 
-export function WorkTaskList({ tasks, directory, taskHref, emptyMessage }: WorkTaskViewProps) {
+export function WorkTaskList({
+  tasks,
+  directory,
+  taskHref,
+  stageOf,
+  emptyMessage,
+}: WorkTaskViewProps) {
   const children = countChildren(tasks);
   const groups = STATUS_ORDER.map((status) => ({
     status,
@@ -222,6 +247,7 @@ export function WorkTaskList({ tasks, directory, taskHref, emptyMessage }: WorkT
               task={task}
               directory={directory}
               href={taskHref(task)}
+              stage={stageOf?.(task) ?? null}
               childCount={children.get(task.id) ?? 0}
             />
           ))}
@@ -231,7 +257,13 @@ export function WorkTaskList({ tasks, directory, taskHref, emptyMessage }: WorkT
   );
 }
 
-export function WorkTaskTree({ tasks, directory, taskHref, emptyMessage }: WorkTaskViewProps) {
+export function WorkTaskTree({
+  tasks,
+  directory,
+  taskHref,
+  stageOf,
+  emptyMessage,
+}: WorkTaskViewProps) {
   const known = new Set(tasks.map((task) => task.id));
   const roots = tasks.filter((task) => !task.parentTaskId || !known.has(task.parentTaskId));
   const children = groupBy(tasks, (task) => task.parentTaskId);
@@ -268,6 +300,7 @@ export function WorkTaskTree({ tasks, directory, taskHref, emptyMessage }: WorkT
             task={task}
             directory={directory}
             href={taskHref(task)}
+            stage={stageOf?.(task) ?? null}
             childCount={childrenOf(task.id).length}
             depth={depth}
           />
@@ -400,6 +433,101 @@ export function WorkTaskTimeline({ tasks, directory, taskHref, emptyMessage }: W
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function WorkTaskCard({
+  task,
+  directory,
+  href,
+  stage,
+}: {
+  task: ProjectTask;
+  directory: WorkDirectory;
+  href: string;
+  stage: string | null;
+}) {
+  const owner = describeWorkActor(task.owner, directory);
+
+  return (
+    <Link
+      href={href}
+      title={task.objective}
+      className="block space-y-2.5 rounded-lg border border-border bg-surface p-3 text-sm text-foreground no-underline shadow-xs transition-colors hover:border-border-strong hover:!no-underline"
+    >
+      <span className="flex items-center gap-2 text-xs text-muted-foreground">
+        <PriorityBars priority={task.priority} />
+        <span className="font-mono tabular-nums">{task.key ?? task.id.slice(0, 6)}</span>
+        <span className="flex-1" />
+        <StatusDot status={task.status} />
+      </span>
+      <span className="line-clamp-3 block leading-5">{task.objective}</span>
+      {task.status === "blocked" && task.blockedReason ? (
+        <span className="block text-xs text-attention">
+          {projectTaskBlockedReasonLabels[task.blockedReason]}
+        </span>
+      ) : null}
+      <span className="flex flex-wrap items-center gap-1.5">
+        <WorkActorChip
+          name={owner}
+          isTeammate={task.owner?.type === "teammate"}
+          isEmpty={!task.owner}
+        />
+        {stage ? <Badge variant="outline">{stage}</Badge> : null}
+        {task.kind === "case" ? <Badge variant="info">Case</Badge> : null}
+      </span>
+    </Link>
+  );
+}
+
+export function WorkTaskBoard({
+  tasks,
+  directory,
+  taskHref,
+  stageOf,
+  emptyMessage,
+}: WorkTaskViewProps) {
+  if (tasks.filter((task) => task.status !== "cancelled").length === 0) {
+    return (
+      <EmptyState
+        variant="inset"
+        icon={<ListTodo size={22} className="text-muted-foreground" />}
+        message={emptyMessage ?? "Nothing here yet."}
+        className="min-h-[180px]"
+      />
+    );
+  }
+
+  return (
+    <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2">
+      {BOARD_COLUMNS.map((column) => {
+        const columnTasks = tasks
+          .filter((task) => column.statuses.includes(task.status))
+          .sort((left, right) => PRIORITY_LEVEL[right.priority] - PRIORITY_LEVEL[left.priority]);
+
+        return (
+          <section
+            key={column.id}
+            aria-label={column.label}
+            className="flex w-72 shrink-0 flex-col gap-2 rounded-xl bg-selection/40 p-2"
+          >
+            <header className="flex items-center justify-between px-1.5 py-1 text-xs font-semibold text-muted-foreground">
+              <span>{column.label}</span>
+              <span className="tabular-nums">{columnTasks.length}</span>
+            </header>
+            {columnTasks.map((task) => (
+              <WorkTaskCard
+                key={task.id}
+                task={task}
+                directory={directory}
+                href={taskHref(task)}
+                stage={stageOf?.(task) ?? null}
+              />
+            ))}
+          </section>
+        );
+      })}
     </div>
   );
 }

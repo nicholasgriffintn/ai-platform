@@ -8,8 +8,6 @@ import {
   Activity,
   Boxes,
   ChevronRight,
-  CircleDot,
-  ClipboardList,
   Coins,
   FolderKanban,
   FolderOpen,
@@ -17,7 +15,6 @@ import {
   LayoutDashboard,
   LayoutTemplate,
   ListChecks,
-  ListTodo,
   Network,
   Plus,
   Settings,
@@ -45,7 +42,6 @@ export interface WorkSidebarWorkspace {
   costsHref: string;
   activityHref: string;
   membersHref: string;
-  governanceHref: string;
   modelsHref: string;
   projects: WorkSidebarProjectLink[];
 }
@@ -53,9 +49,6 @@ export interface WorkSidebarWorkspace {
 export interface WorkSidebarProject {
   tasksHref: string;
   tasksActive: boolean;
-  triageHref: string;
-  triageActive: boolean;
-  triageCount?: number;
   sitesHref: string;
   filesHref: string;
   settingsHref: string;
@@ -65,7 +58,6 @@ export interface WorkSidebarProject {
 export interface WorkSidebarNavProps {
   inboxHref: string;
   inboxCount?: number;
-  myTasksHref: string;
   workspacesHref: string;
   workspace?: WorkSidebarWorkspace;
   activeProjectId?: string;
@@ -78,7 +70,6 @@ export interface WorkSidebarNavProps {
 export function WorkSidebarNav({
   inboxHref,
   inboxCount = 0,
-  myTasksHref,
   workspacesHref,
   workspace,
   activeProjectId,
@@ -88,7 +79,6 @@ export function WorkSidebarNav({
   onNewTask,
 }: WorkSidebarNavProps) {
   const linkClass = sidebarNavLinkClass;
-  const canManage = workspace?.role === "owner" || workspace?.role === "admin";
 
   return (
     <nav aria-label="Workspace" className="space-y-5 p-2 pb-8">
@@ -99,9 +89,6 @@ export function WorkSidebarNav({
         <NavLink href={inboxHref} className={linkClass} onClick={onNavigate}>
           <Inbox size={17} /> Inbox
           <SidebarCountBadge count={inboxCount} label={`${inboxCount} items waiting on you`} />
-        </NavLink>
-        <NavLink href={myTasksHref} className={linkClass} onClick={onNavigate}>
-          <ListTodo size={17} /> My tasks
         </NavLink>
       </div>
 
@@ -137,11 +124,6 @@ export function WorkSidebarNav({
           <NavLink href={workspace.modelsHref} className={linkClass} onClick={onNavigate}>
             <Boxes size={16} /> Models
           </NavLink>
-          {canManage && (
-            <NavLink href={workspace.governanceHref} className={linkClass} onClick={onNavigate}>
-              <ClipboardList size={16} /> Governance
-            </NavLink>
-          )}
         </div>
       )}
 
@@ -185,18 +167,6 @@ export function WorkSidebarNav({
                       <SidebarCountBadge
                         count={project.attentionCount ?? 0}
                         label={`${project.attentionCount} tasks need attention`}
-                      />
-                    </Link>
-                    <Link
-                      href={project.triageHref}
-                      aria-current={project.triageActive ? "page" : undefined}
-                      className={linkClass({ isActive: project.triageActive })}
-                      onClick={onNavigate}
-                    >
-                      <CircleDot size={15} /> Triage
-                      <SidebarCountBadge
-                        count={project.triageCount ?? 0}
-                        label={`${project.triageCount} cases to triage`}
                       />
                     </Link>
                     <NavLink href={project.filesHref} className={linkClass} onClick={onNavigate}>

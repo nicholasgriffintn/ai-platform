@@ -52,6 +52,7 @@ vi.mock("@ngriffin_uk/polychat-library-react", async (importOriginal) => ({
   useTaskAttention: () => inbox,
   useWorkInbox: () => ({ data: { data: [] }, isLoading: false, error: null }),
   useWorkspaces: () => ({ data: [] }),
+  useMyTasks: () => ({ data: { tasks: [] }, isLoading: false }),
   useDecideInboxHire: () => ({ isPending: false, mutateAsync: vi.fn() }),
 }));
 
@@ -67,7 +68,7 @@ describe("Attention task loading", () => {
   it("reports a failed inbox instead of an empty one", () => {
     render(
       <MemoryRouter>
-        <AttentionPage />
+        <AttentionPage surface="work" />
       </MemoryRouter>,
     );
     expect(screen.getByText("Inbox unavailable")).toBeVisible();
@@ -97,7 +98,7 @@ describe("Attention task loading", () => {
     inbox.dismiss.mockRejectedValueOnce(new Error("Notification update failed"));
     render(
       <MemoryRouter>
-        <AttentionPage />
+        <AttentionPage surface="work" />
       </MemoryRouter>,
     );
     fireEvent.click(screen.getByRole("button", { name: "Dismiss Review launch" }));

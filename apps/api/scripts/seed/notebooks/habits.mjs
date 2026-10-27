@@ -52,6 +52,7 @@ export const HABITS_NOTEBOOK = {
       "A warm, practical behavioural coach. Plain words, no jargon, one experiment at a time.",
     responseLength: "shorter",
     sourcesOnly: true,
+    followTopic: "Habits",
   },
   guide: {
     generated: { days: 2 },

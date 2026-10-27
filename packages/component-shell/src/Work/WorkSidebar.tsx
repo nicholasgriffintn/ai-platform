@@ -3,13 +3,12 @@ import { WorkSidebarNav } from "@ngriffin_uk/polychat-component-workspaces";
 import {
   getPlacePaths,
   getProjectBasePath,
-  useProjectTasks,
   useTaskAttention,
   useUIStore,
-  useWorkInbox,
 } from "@ngriffin_uk/polychat-library-react";
 import { useLocation, useNavigate } from "react-router";
 
+import { useInboxNeedsYou } from "../Attention/useInboxNeedsYou.js";
 import { SidebarFooter } from "../Sidebar/SidebarFooter.js";
 import { SidebarHeader } from "../Sidebar/SidebarHeader.js";
 import { useSidebarPeekPanel } from "../Sidebar/SidebarPeekContext.js";
@@ -27,21 +26,16 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
   const { data } = workspacesQuery;
   const { data: workspace } = workspaceQuery;
   const navigate = useNavigate();
-  const { pathname, search } = useLocation();
-  const { items: attentionItems, unread: unreadAttention } = useTaskAttention();
-  const inbox = useWorkInbox();
-  const projectTasks = useProjectTasks(projectId ?? "");
+  const { pathname } = useLocation();
+  const { items: attentionItems } = useTaskAttention();
+  const inboxNeedsYou = useInboxNeedsYou();
   const workPlaces = getPlacePaths("work");
   const projectBasePath = getProjectBasePath(workspaceId ?? "", projectId ?? "");
   const projectAttentionCount = projectId
     ? attentionItems.filter((item) => item.projectId === projectId).length
     : 0;
-  const isTriageView = new URLSearchParams(search).get("view") === "triage";
   const isProjectTasksPath =
     pathname === projectBasePath || pathname.startsWith(`${projectBasePath}/tasks`);
-  const triageCount = projectTasks.tasks.filter(
-    (task) => task.kind === "case" && task.status === "backlog",
-  ).length;
 
   const closeOnMobile = () => {
     if (isMobile) {
@@ -62,8 +56,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
     >
       <WorkSidebarNav
         inboxHref={workPlaces.attention}
-        inboxCount={unreadAttention + (inbox.data?.data.length ?? 0)}
-        myTasksHref={`${workPlaces.conversations}/tasks`}
+        inboxCount={inboxNeedsYou}
         workspacesHref={workPlaces.conversations}
         workspace={
           workspace
@@ -77,7 +70,6 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
                 costsHref: `/work/${workspace.id}/costs`,
                 activityHref: `/work/${workspace.id}/activity`,
                 membersHref: `/work/${workspace.id}/members`,
-                governanceHref: `/work/${workspace.id}/governance`,
                 modelsHref: `/work/${workspace.id}/models`,
                 projects: workspace.projects.map((item) => ({
                   id: item.id,
@@ -94,10 +86,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
           projectId && workspaceId
             ? {
                 tasksHref: projectBasePath,
-                tasksActive: isProjectTasksPath && !isTriageView,
-                triageHref: `${projectBasePath}?view=triage`,
-                triageActive: isProjectTasksPath && isTriageView,
-                triageCount,
+                tasksActive: isProjectTasksPath,
                 sitesHref: `${projectBasePath}/apps/sites`,
                 filesHref: `${projectBasePath}/files`,
                 settingsHref: `${projectBasePath}/settings`,
