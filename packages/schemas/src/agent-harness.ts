@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { agentTurnChangesSchema } from "./agent-changes.js";
 import {
   chatCompletionMessageSchema,
   chatCompletionToolSchema,
@@ -198,6 +199,7 @@ export const agentHarnessEventSchema = z.discriminatedUnion("type", [
     reason: z.string().optional(),
   }),
   z.object({ type: z.literal("diagnostic"), message: z.string() }),
+  z.object({ type: z.literal("changes"), changes: agentTurnChangesSchema }),
 ]);
 export type AgentHarnessEvent = z.infer<typeof agentHarnessEventSchema>;
 
@@ -276,3 +278,11 @@ export const agentHarnessToolStreamEventSchema = z.discriminatedUnion("phase", [
   }),
 ]);
 export type AgentHarnessToolStreamEvent = z.infer<typeof agentHarnessToolStreamEventSchema>;
+
+export const AGENT_HARNESS_CHANGES_STREAM_TYPE = "polychat.agent_changes" as const;
+
+export const agentHarnessChangesStreamEventSchema = z.object({
+  type: z.literal(AGENT_HARNESS_CHANGES_STREAM_TYPE),
+  changes: agentTurnChangesSchema,
+});
+export type AgentHarnessChangesStreamEvent = z.infer<typeof agentHarnessChangesStreamEventSchema>;

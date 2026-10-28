@@ -47,6 +47,7 @@ export function ConversationPage({
     <ConversationWorkbenchLayout
       conversationId={pathConversationId}
       conversationMessages={currentConversation?.messages}
+      conversationTitle={currentConversation?.title}
       renderHeader={(actions) =>
         header !== undefined ? (
           header

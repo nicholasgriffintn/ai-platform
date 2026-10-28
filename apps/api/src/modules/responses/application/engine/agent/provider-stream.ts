@@ -13,6 +13,7 @@ import {
   getLogger,
 } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
+  agentHarnessChangesStreamEventSchema,
   agentHarnessToolStreamEventSchema,
   type InferenceImpact,
 } from "@ngriffin_uk/polychat-schemas";
@@ -312,6 +313,18 @@ export async function consumeProviderStream(
 
     if (!data) {
       logger.error("Failed to parse provider stream data", { data: dataStr });
+
+      return false;
+    }
+
+    const agentHarnessChanges = agentHarnessChangesStreamEventSchema.safeParse(data);
+
+    if (agentHarnessChanges.success) {
+      turn.parts.push({
+        type: "changes",
+        changes: agentHarnessChanges.data.changes,
+        timestamp: Date.now(),
+      });
 
       return false;
     }

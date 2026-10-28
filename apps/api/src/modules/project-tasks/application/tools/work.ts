@@ -15,6 +15,7 @@ import {
   acceptTaskBreakdown,
   proposeTaskBreakdown,
 } from "~/modules/project-tasks/application/breakdown";
+import { linkTaskPullRequest } from "~/modules/project-tasks/application/pull-request-feedback";
 import { answerStandup, summariseStandup } from "~/modules/project-tasks/application/standups";
 import {
   answerReportQuestions,
@@ -25,6 +26,7 @@ import {
   escalateTask,
   raiseCase,
   requestReview,
+  requireTaskInProject,
   reviewTask,
 } from "~/modules/project-tasks/application/work";
 import { taskReference } from "~/modules/project-tasks/domain/work-actors";
@@ -49,6 +51,7 @@ import {
   raise_case as raiseCaseDescriptor,
   request_review as requestReviewDescriptor,
   review_task as reviewTaskDescriptor,
+  link_pull_request as linkPullRequestDescriptor,
   set_budget as setBudgetDescriptor,
   summarise_standup as summariseStandupDescriptor,
 } from "./definitions/work";
@@ -209,6 +212,23 @@ export const propose_hire = workTool(proposeHireDescriptor, async (args, scope) 
   return {
     content: `Proposed hiring ${proposed.name} as ${proposed.title}. A person decides in Inbox.`,
     data: { teammate: proposed },
+  };
+});
+
+export const link_pull_request = workTool(linkPullRequestDescriptor, async (args, scope) => {
+  const task = await linkTaskPullRequest(
+    scope.context,
+    await requireTaskInProject(scope.context, scope.projectId, readTrimmedString(args.taskId)),
+    readTrimmedString(args.url),
+    scope.caller,
+  );
+  const pullRequest = task.details.pullRequest;
+
+  return {
+    content: pullRequest
+      ? `Linked ${pullRequest.repository}#${pullRequest.number} to ${describeTask(task)}.`
+      : `Linked the pull request to ${describeTask(task)}.`,
+    data: { task },
   };
 });
 
@@ -378,6 +398,7 @@ export const WORK_TOOLS = [
   raise_case,
   propose_hire,
   set_budget,
+  link_pull_request,
   answer_standup,
   summarise_standup,
   propose_setup_plan,

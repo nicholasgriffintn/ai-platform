@@ -138,6 +138,7 @@ export const publishPullRequestReviewSchema = z
   .object({
     completionId: z.string().min(1),
     body: z.string().trim().min(1).max(60000),
+    sendToAuthor: z.boolean().default(false),
   })
   .strict();
 

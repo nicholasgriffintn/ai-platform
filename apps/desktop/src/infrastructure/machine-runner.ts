@@ -38,6 +38,8 @@ type MachineRunnerBackend = Pick<
   | "saveAgentDirectory"
   | "listAgentDirectories"
   | "ensureWorkDirectory"
+  | "snapshotAgentWorkspace"
+  | "agentTurnChanges"
   | "probeAgentTool"
   | "runLocalTool"
 >;
@@ -205,6 +207,10 @@ async function executeClaim(
           nudge();
         },
         onUsage: (usage) => events.usage(usage),
+        onChanges: (changes) => {
+          events.changes(changes);
+          nudge();
+        },
         onStatus: () => undefined,
         onApproval: (approval, answer) => {
           answers.set(approval.requestId, answer);

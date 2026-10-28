@@ -5,7 +5,7 @@ const GITHUB_USER_AGENT = "Polychat-Sandbox/1.0 (+https://polychat.app)";
 
 export async function githubApiRequest(params: {
   url: string;
-  method: "GET" | "POST";
+  method: "GET" | "POST" | "PATCH";
   bearerToken: string;
   body?: Record<string, unknown>;
 }): Promise<Response> {

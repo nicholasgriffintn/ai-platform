@@ -6,7 +6,11 @@ import {
   type DesktopAgentSession,
   type DesktopBackend,
 } from "@ngriffin_uk/polychat-library-chat";
-import type { AgentRuntimeVendor, AgentSessionEvent } from "@ngriffin_uk/polychat-schemas";
+import type {
+  AgentRuntimeVendor,
+  AgentSessionEvent,
+  AgentWorktree,
+} from "@ngriffin_uk/polychat-schemas";
 
 export class AgentSessionUnavailableError extends Error {
   constructor(name: string) {
@@ -21,6 +25,7 @@ export interface AgentSessionHost {
   readonly directoryId: string;
   readonly sessionId: string | null;
   readonly sessionSpec: string;
+  readonly worktree: AgentWorktree | null;
   listen: (listener: (event: AgentSessionEvent) => void) => () => void;
   stop: () => Promise<void>;
 }
@@ -32,6 +37,7 @@ interface HostKeyInput {
   driver: AgentRuntimeVendor;
   directoryId: string;
   session?: AgentSessionSpec;
+  worktree?: boolean;
 }
 
 function describeSessionSpec(input: HostKeyInput): string {
@@ -40,6 +46,7 @@ function describeSessionSpec(input: HostKeyInput): string {
     input.session?.isolated ?? false,
     input.session?.sandboxed ?? false,
     input.session?.mcpConfig ?? null,
+    input.worktree ?? false,
   ]);
 }
 
@@ -99,6 +106,7 @@ export function createAgentSessionRegistry() {
       input.directoryId,
       input.conversationId,
       input.session,
+      { worktree: input.worktree ?? false },
     );
     const listeners = new Set<(event: AgentSessionEvent) => void>();
     const emit = (event: AgentSessionEvent) => {
@@ -115,6 +123,7 @@ export function createAgentSessionRegistry() {
       directoryId: input.directoryId,
       sessionId: input.session?.sessionId ?? null,
       sessionSpec: describeSessionSpec(input),
+      worktree: session.worktree,
       listen: (listener) => {
         listeners.add(listener);
 

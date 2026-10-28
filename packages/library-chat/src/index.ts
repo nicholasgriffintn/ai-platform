@@ -49,6 +49,7 @@ export {
 } from "./conversation-storage-policy.js";
 export {
   type AgentSessionSpec,
+  type AgentWorkspaceOptions,
   type DesktopAgentSession,
   type DesktopBackend,
   type DesktopRun,

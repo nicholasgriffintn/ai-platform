@@ -6,6 +6,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  FormCheckbox,
   FormTextarea,
 } from "@ngriffin_uk/polychat-component-ui";
 import type { ProjectTask } from "@ngriffin_uk/polychat-schemas";
@@ -114,6 +115,13 @@ export function ProjectReviewPublicationControl({
           <p className="text-xs text-muted-foreground">
             The reviewed base and head commits are appended to the published review.
           </p>
+          <FormCheckbox
+            label="Send these findings back to the task that opened this pull request"
+            labelPosition="right"
+            checked={state.sendToAuthor}
+            disabled={state.pending}
+            onCheckedChange={state.setSendToAuthor}
+          />
           {state.error ? (
             <p role="alert" className="text-sm text-failure">
               {state.error}

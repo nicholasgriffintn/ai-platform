@@ -12,6 +12,7 @@ export function useReviewPublication(projectId: string, task: ProjectTask) {
   const review = reviewQuery.data?.review;
   const [prepared, setPrepared] = useState<PreparedReviewPublication | null>(null);
   const [body, setBody] = useState("");
+  const [sendToAuthor, setSendToAuthor] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const currentPrepared =
     prepared?.review.taskId === task.id && prepared.review.projectId === projectId
@@ -42,7 +43,7 @@ export function useReviewPublication(projectId: string, task: ProjectTask) {
     try {
       await publish.mutateAsync({
         reviewId: currentPrepared.review.id,
-        input: { completionId: currentPrepared.completionId, body },
+        input: { completionId: currentPrepared.completionId, body, sendToAuthor },
       });
       setPrepared(null);
     } catch (failure) {
@@ -68,6 +69,8 @@ export function useReviewPublication(projectId: string, task: ProjectTask) {
     prepared: currentPrepared,
     body,
     setBody,
+    sendToAuthor,
+    setSendToAuthor,
     error: error ?? reviewQuery.error?.message,
     open,
     approve,

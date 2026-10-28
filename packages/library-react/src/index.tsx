@@ -4,6 +4,7 @@ export * from "./hooks/use-analytics-identity.js";
 export * from "./hooks/use-track-event.js";
 export * from "./hooks/useActivity.js";
 export * from "./hooks/useAgentApprovals.js";
+export * from "./hooks/useAgentWorktree.js";
 export * from "./hooks/useApiKeys.js";
 export * from "./hooks/useArtifactPanel.js";
 export * from "./hooks/useArtifactWorkbench.js";

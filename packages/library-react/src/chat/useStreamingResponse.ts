@@ -32,6 +32,7 @@ import {
   responseActivityEventSchema,
   responseSchema,
   runsOnDevice,
+  type MessagePart,
   type PlatformResponse,
   type ResponseAgent,
   type ResponseStatus,
@@ -463,6 +464,8 @@ export function useStreamingResponse(
 
       try {
         if (runsOnThisDevice && requestedModel) {
+          const changeParts: MessagePart[] = [];
+
           try {
             const runOptions = {
               conversationId,
@@ -491,6 +494,9 @@ export function useStreamingResponse(
                           .requestApproval(conversationId, approval, answer),
                       onApprovalResolved: (requestId) =>
                         useAgentApprovalStore.getState().resolveApproval(conversationId, requestId),
+                      onChanges: (changes) => {
+                        changeParts.push({ type: "changes", changes, timestamp: Date.now() });
+                      },
                     })
                   : await streamDeviceModelRun({ ...runOptions, backend: deviceBackend });
             }
@@ -505,12 +511,17 @@ export function useStreamingResponse(
               conversationId,
               response,
               undefined,
-              { status: "completed" },
+              { status: "completed", ...(changeParts.length > 0 ? { parts: changeParts } : {}) },
               { messageId: placeholderMessage.id },
             ),
           );
 
-          generatedMessage = { ...placeholderMessage, content: response, status: "completed" };
+          generatedMessage = {
+            ...placeholderMessage,
+            content: response,
+            status: "completed",
+            ...(changeParts.length > 0 ? { parts: changeParts } : {}),
+          };
           generatedMessages.push(generatedMessage);
         } else if (runsInBrowser) {
           const currentModel = normalizeSelectedModel(options?.model ?? model);

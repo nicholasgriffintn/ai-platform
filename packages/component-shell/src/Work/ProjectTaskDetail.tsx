@@ -116,10 +116,12 @@ export function ProjectTaskDetail({
         ? void runAction(() => actions.assign.mutateAsync(owner), "Task handed over")
         : void patch({ owner: null }, "Owner cleared"),
     onSetReviewer: (reviewer) =>
-      void runAction(
-        () => actions.requestReview.mutateAsync({ reviewer, note: null }),
-        "Sent for review",
-      ),
+      task.status === "review"
+        ? void runAction(
+            () => actions.requestReview.mutateAsync({ reviewer, note: null }),
+            "Sent for review",
+          )
+        : void patch({ reviewer }, "Reviewer lined up for when the work is ready"),
     onRename: (objective) => void patch({ objective }, "Title updated"),
     onDescribe: (description) => void patch({ description }, "Description updated"),
     onSetPriority: (priority) => void patch({ priority }, "Priority updated"),

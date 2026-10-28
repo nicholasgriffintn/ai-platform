@@ -6,6 +6,7 @@ import {
   type AgentItem,
   type AgentThreadBinding,
   type AgentTokenUsage,
+  type AgentTurnChanges,
   type PermissionMode,
   type ReasoningEffort,
 } from "@ngriffin_uk/polychat-schemas";
@@ -35,6 +36,7 @@ export interface AgentSessionRunOptions extends Omit<DeviceModelRunOptions, "bac
   onReasoning?: (delta: string) => void;
   onPlan?: (text: string) => void;
   onDiff?: (diff: string) => void;
+  onChanges?: (changes: AgentTurnChanges) => void;
   onUsage?: (usage: AgentTokenUsage) => void;
   onDiagnostic?: (message: string) => void;
   onApproval?: (
@@ -53,6 +55,8 @@ export type SessionBackend = Pick<
   | "pickAgentDirectory"
   | "saveAgentDirectory"
   | "probeAgentTool"
+  | "snapshotAgentWorkspace"
+  | "agentTurnChanges"
 >;
 
 function sessionStartsWithProcess(driver: AgentThreadBinding["driver"]): boolean {
@@ -109,6 +113,35 @@ async function resolveDirectoryId(
   }
 
   return (await backend.saveAgentDirectory(path)).id;
+}
+
+function snapshotWorkspace(
+  options: AgentSessionRunOptions,
+  directoryId: string,
+): Promise<string | null> {
+  return options.onChanges
+    ? options.backend.snapshotAgentWorkspace(directoryId, options.conversationId).catch(() => null)
+    : Promise.resolve(null);
+}
+
+async function reportTurnChanges(
+  options: AgentSessionRunOptions,
+  directoryId: string,
+  before: string | null,
+): Promise<void> {
+  const after = before ? await snapshotWorkspace(options, directoryId) : null;
+
+  if (!before || !after || before === after) {
+    return;
+  }
+
+  const changes = await options.backend
+    .agentTurnChanges(directoryId, options.conversationId, before, after)
+    .catch(() => null);
+
+  if (changes && changes.files.length > 0) {
+    options.onChanges?.(changes);
+  }
 }
 
 export async function streamAgentSessionRun(options: AgentSessionRunOptions): Promise<string> {
@@ -168,6 +201,7 @@ export async function streamAgentSessionRun(options: AgentSessionRunOptions): Pr
       conversationId: options.conversationId,
       driver,
       directoryId,
+      worktree: !options.isolation,
       ...(sessionStartsWithProcess(driver)
         ? {
             session: {
@@ -290,6 +324,8 @@ export async function streamAgentSessionRun(options: AgentSessionRunOptions): Pr
     });
 
     options.onStatus(`${modelName} is working in ${host.directoryPath}.`);
+    const before = await snapshotWorkspace(options, directoryId);
+
     await host.adapter.sendTurn(
       threadId,
       turnPrompt(options.messages, resumed),
@@ -297,6 +333,7 @@ export async function streamAgentSessionRun(options: AgentSessionRunOptions): Pr
     );
 
     await turnSettled;
+    await reportTurnChanges(options, directoryId, before);
 
     if (failure) {
       throw new Error(failure);

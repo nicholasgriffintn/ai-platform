@@ -40,6 +40,7 @@ import { acquireThread } from "~/modules/conversations/infrastructure/coordinato
 import { createGoalService } from "~/modules/goals/application/createGoalService";
 import { notifyMobileProjectTask } from "~/modules/mobile-push/application";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { renderFixUp } from "~/modules/project-tasks/domain/fix-ups";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import type { TaskExecutionLease } from "~/modules/queue/application/types";
@@ -67,6 +68,7 @@ import {
 import { reviewStageOutputs } from "./council-gate";
 import { selectReleasableDependents } from "./dependents";
 import { findExecutionRouteBlocker } from "./execution-route";
+import { settleFixUp, wakeTaskReviewer } from "./fix-ups";
 import { buildStageInstructions, resolveTaskRuntime } from "./flow";
 import { recoverPendingProjectTaskInteraction } from "./interaction-recovery";
 import { settleMachineAgentGoal } from "./machine-goal";
@@ -765,10 +767,13 @@ export async function runProjectTaskDispatch(params: {
       });
     }
 
-    const contextNotes = await Promise.all([
-      buildProjectTaskContext(context, claimed),
-      buildWorkPurpose(context, claimed),
-    ]);
+    const contextNotes = [
+      renderFixUp(claimed.details.fixUp),
+      ...(await Promise.all([
+        buildProjectTaskContext(context, claimed),
+        buildWorkPurpose(context, claimed),
+      ])),
+    ];
     const request: ResponseCommand = {
       conversationId,
       conversationType: "task",
@@ -1136,6 +1141,14 @@ export async function runProjectTaskDispatch(params: {
             ? pendingApproval?.interactionId
             : null,
     });
+  }
+
+  if (nextStatus === "review" || nextStatus === "done") {
+    await settleFixUp(context, taskId, claimed.details.fixUp);
+  }
+
+  if (nextStatus === "review") {
+    await wakeTaskReviewer(context, taskId);
   }
 
   if (nextStatus === "done") {

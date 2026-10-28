@@ -308,7 +308,20 @@ export async function reviewTask(
   const responsible = task.runnerIdentityUserId ?? task.createdByUserId;
   const updated = await context.repositories.get(ProjectTaskRepository).updateTask(task.id, {
     status: handToPerson ? "review" : "backlog",
-    details: { ...task.details, reviewRounds: rounds },
+    details: {
+      ...task.details,
+      reviewRounds: rounds,
+      ...(handToPerson
+        ? {}
+        : {
+            fixUp: {
+              source: "review" as const,
+              from: caller.author.name,
+              note,
+              at: new Date().toISOString(),
+            },
+          }),
+    },
     ...(handToPerson ? { reviewer: { type: "person", userId: responsible } } : {}),
   });
 

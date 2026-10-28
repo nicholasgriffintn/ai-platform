@@ -34,6 +34,7 @@ import { ReasoningSection } from "./ReasoningSection.js";
 import { useResolvedToolCallIds } from "./ResolvedToolCalls.js";
 import { SearchGroundingSection } from "./SearchGroundingSection.js";
 import { ToolResultView } from "./ToolResultView.js";
+import { TurnChangesCard } from "./TurnChangesCard.js";
 
 interface MessageContentProps {
   message: Message;
@@ -502,6 +503,10 @@ export const MessageContent = memo((props: MessageContentProps) => {
 
             if (part.type === "snapshot") {
               return renderSnapshotPart(part, index);
+            }
+
+            if (part.type === "changes") {
+              return <TurnChangesCard key={`changes-${part.changes.to}`} changes={part.changes} />;
             }
 
             if (part.type === "file") {

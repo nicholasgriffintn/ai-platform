@@ -12,6 +12,7 @@ export const PROJECT_WORKBENCH_PANES = [
   "files",
   "proof",
   "delegates",
+  "terminal",
 ] as const;
 
 export type ProjectWorkbenchPane = (typeof PROJECT_WORKBENCH_PANES)[number];

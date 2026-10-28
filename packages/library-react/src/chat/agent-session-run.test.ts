@@ -35,6 +35,7 @@ function createScriptedSession(threadId: string, directoryPath: string): Scripte
     directoryPath,
     head: null,
     adopted: false,
+    worktree: null,
     events: {
       // eslint-disable-next-line require-yield
       async *[Symbol.asyncIterator]() {
@@ -88,7 +89,12 @@ function createScriptedSession(threadId: string, directoryPath: string): Scripte
   return { session, sent, push };
 }
 
-function createBackend(options: { binding?: AgentThreadBinding; threadId?: string }) {
+function createBackend(options: {
+  binding?: AgentThreadBinding;
+  threadId?: string;
+  snapshots?: string[];
+}) {
+  const snapshots = [...(options.snapshots ?? [])];
   const scripted = createScriptedSession(options.threadId ?? "thread-1", "/repo");
   const saved: AgentThreadBinding[] = [];
   let stored = options.binding ?? null;
@@ -109,6 +115,24 @@ function createBackend(options: { binding?: AgentThreadBinding; threadId?: strin
         saved.push(binding);
         stored = binding;
       }),
+      snapshotAgentWorkspace: vi.fn(async () => snapshots.shift() ?? null),
+      agentTurnChanges: vi.fn(
+        async (_directoryId: string, _conversationId: string, from: string, to: string) => ({
+          from,
+          to,
+          files: [
+            {
+              path: "src/app.ts",
+              status: "modified" as const,
+              previousPath: null,
+              additions: 2,
+              deletions: 1,
+            },
+          ],
+          patch: "diff --git a/src/app.ts b/src/app.ts",
+          truncated: false,
+        }),
+      ),
       pickAgentDirectory: vi.fn(async () => "/repo"),
       saveAgentDirectory: vi.fn(async () => ({
         id: "directory-1",
@@ -168,6 +192,40 @@ describe("streamAgentSessionRun", () => {
       threadId: "thread-1",
       permissionMode: "auto_accept_edits",
     });
+  });
+
+  it("works in the conversation's own worktree and reports what the turn changed", async () => {
+    const harness = createBackend({ snapshots: ["tree-before", "tree-after"] });
+    const onChanges = vi.fn();
+
+    await streamAgentSessionRun({ ...runOptions(harness, "conversation-1"), onChanges });
+
+    expect(harness.backend.startAgentSession).toHaveBeenCalledWith(
+      "codex",
+      "directory-1",
+      "conversation-1",
+      undefined,
+      { worktree: true },
+    );
+    expect(harness.backend.agentTurnChanges).toHaveBeenCalledWith(
+      "directory-1",
+      "conversation-1",
+      "tree-before",
+      "tree-after",
+    );
+    expect(onChanges).toHaveBeenCalledWith(
+      expect.objectContaining({ files: [expect.objectContaining({ path: "src/app.ts" })] }),
+    );
+  });
+
+  it("reports nothing when a turn leaves the files as they were", async () => {
+    const harness = createBackend({ snapshots: ["tree-same", "tree-same"] });
+    const onChanges = vi.fn();
+
+    await streamAgentSessionRun({ ...runOptions(harness, "conversation-1"), onChanges });
+
+    expect(harness.backend.agentTurnChanges).not.toHaveBeenCalled();
+    expect(onChanges).not.toHaveBeenCalled();
   });
 
   it("resumes the stored thread instead of picking a folder again", async () => {

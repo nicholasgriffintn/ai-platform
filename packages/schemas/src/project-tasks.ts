@@ -42,6 +42,7 @@ export const WORK_TASK_TOOL_IDS = [
   "raise_case",
   "propose_hire",
   "set_budget",
+  "link_pull_request",
   "answer_standup",
   "summarise_standup",
   "propose_setup_plan",
@@ -206,7 +207,41 @@ export const acceptTaskBreakdownSchema = z.object({
 });
 export type AcceptTaskBreakdownInput = z.infer<typeof acceptTaskBreakdownSchema>;
 
+export const PROJECT_TASK_FIX_UP_SOURCES = ["review", "ci", "pull_request_review"] as const;
+
+export const projectTaskFixUpSchema = z.object({
+  source: z.enum(PROJECT_TASK_FIX_UP_SOURCES),
+  from: z.string().trim().min(1).max(200),
+  note: z.string().max(8000),
+  at: z.string(),
+});
+export type ProjectTaskFixUp = z.infer<typeof projectTaskFixUpSchema>;
+
+export const PROJECT_TASK_CHECK_STATES = ["pending", "passing", "failing"] as const;
+
+export const projectTaskPullRequestSchema = z.object({
+  repository: z
+    .string()
+    .regex(/^[\w.-]+\/[\w.-]+$/)
+    .transform((value) => value.toLowerCase()),
+  number: z.number().int().positive(),
+  url: z.url(),
+  checks: z
+    .object({
+      headSha: z.string().min(1),
+      state: z.enum(PROJECT_TASK_CHECK_STATES),
+      failing: z
+        .array(z.object({ name: z.string().min(1).max(200), url: z.url().nullable() }))
+        .max(20),
+      updatedAt: z.string(),
+    })
+    .optional(),
+});
+export type ProjectTaskPullRequest = z.infer<typeof projectTaskPullRequestSchema>;
+
 export const projectTaskDetailsSchema = z.object({
+  pullRequest: projectTaskPullRequestSchema.optional(),
+  fixUp: projectTaskFixUpSchema.optional(),
   breakdown: taskBreakdownSchema.optional(),
   case: projectTaskCaseSchema.optional(),
   standup: projectTaskStandupSchema.optional(),

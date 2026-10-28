@@ -227,6 +227,8 @@ export * from "./desktop-releases.js";
 export * from "./model-selection-ui.js";
 export * from "./machine-runs.js";
 export * from "./agent-catalogue.js";
+export * from "./agent-changes.js";
+export * from "./desktop-terminal.js";
 export * from "./agent-harness.js";
 export * from "./bedrock-managed-agents.js";
 export * from "./agent-model-id.js";

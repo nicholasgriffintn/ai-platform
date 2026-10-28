@@ -27,3 +27,5 @@ A shared run starts without the member's own agent settings and instructions, so
 Browsers can show which account machines and models are currently reachable without learning how to reach a customer's network. The API has a small, inspectable persistence boundary and can forget a machine without touching conversations or provider credentials.
 
 Remote machine models can be displayed before remote execution is available, so clients mark them non-executable and keep the execution guard explicit. The heartbeat interval is shorter than the freshness window, but network loss and process termination still leave a bounded period in which a machine appears online.
+
+A desktop conversation in a git folder works on its own `polychat/<conversation>` branch in a worktree under the app's data folder. Opening a pull request never hands a GitHub token to the desktop: the desktop sends the branch's changed files and the API builds the commit and pull request through the person's GitHub App connection, writing only `polychat/` branches.

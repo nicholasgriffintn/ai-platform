@@ -1,3 +1,4 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -89,7 +90,7 @@ describe("openSitePullRequest", () => {
       }
 
       if (method === "GET" && url.includes("/git/ref/heads/polychat%2Fsite-crumb-bakery")) {
-        throw new Error("GitHub API error (404)");
+        throw new AssistantError("GitHub API error (404)", ErrorType.EXTERNAL_API_ERROR, 404);
       }
 
       if (method === "GET" && url.includes("/git/commits/base-sha")) {
@@ -109,7 +110,7 @@ describe("openSitePullRequest", () => {
       }
 
       if (url.endsWith("/git/refs")) {
-        return jsonResponse({});
+        return jsonResponse({ object: { sha: "commit-new" } });
       }
 
       if (url.endsWith("/pulls")) {

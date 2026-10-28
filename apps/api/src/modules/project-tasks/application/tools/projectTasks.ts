@@ -202,6 +202,9 @@ export const create_task: ApiToolDefinition = {
         parentTaskId: parent?.id ?? null,
         priority: projectTaskPrioritySchema.safeParse(args.priority).data ?? "none",
         dueAt: readDueAt(args.dueAt),
+        reviewer: readTrimmedString(args.reviewer)
+          ? await resolveWorkActor(scope, args.reviewer)
+          : null,
       },
       { source: scope.caller.actor.type === "teammate" ? "model" : "user" },
     );

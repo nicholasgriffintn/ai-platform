@@ -3,6 +3,7 @@ import type {
   AgentHarnessEvent,
   AgentItem,
   AgentTokenUsage,
+  AgentTurnChanges,
 } from "@ngriffin_uk/polychat-schemas";
 
 const OUTPUT_LIMIT = 20_000;
@@ -80,6 +81,9 @@ export function createMachineAgentEvents() {
         description: approval.command ? `Run ${approval.command}` : approval.title,
         ...(approval.detail ? { input: { detail: approval.detail } } : {}),
       });
+    },
+    changes(changes: AgentTurnChanges) {
+      events.push({ type: "changes", changes });
     },
     usage(usage: AgentTokenUsage) {
       const input = usage.inputTokens + usage.cachedInputTokens + usage.cacheWriteInputTokens;

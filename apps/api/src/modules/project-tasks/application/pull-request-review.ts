@@ -17,6 +17,7 @@ import { connectTaskReview } from "../infrastructure/integrations";
 import type { ReviewPublicationResult } from "../infrastructure/integrations/types";
 import { createProjectTask, startProjectTask } from "./index";
 import { reviewIdentity } from "./integration-identity";
+import { recordPullRequestReview } from "./pull-request-feedback";
 import { retainReviewOutput } from "./review-output";
 import { connectOwnedReview, matchesReviewPolicy } from "./review-policy";
 
@@ -314,6 +315,20 @@ export async function publishPullRequestReview(
   await context.repositories
     .get(ProjectTaskIntegrationRepository)
     .settlePublication(review.id, projectId, publication.url);
+
+  if (input.sendToAuthor) {
+    await recordPullRequestReview(
+      context,
+      {
+        repository: review.target.repository,
+        pullRequest: review.target.pullRequestNumber,
+        reviewer: "Polychat review",
+        body: input.body,
+        url: publication.url,
+      },
+      context.requireUser().id,
+    );
+  }
 
   await context.repositories.get(AuditRepository).createRecord({
     workspaceId: review.workspaceId,

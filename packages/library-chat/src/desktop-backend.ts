@@ -1,5 +1,8 @@
 import type {
+  AgentBranchChanges,
   AgentSessionEvent,
+  AgentTurnChanges,
+  AgentWorktree,
   AgentThreadBinding,
   DesktopAgentProcessRunRequest,
   AgentDirectory,
@@ -11,6 +14,9 @@ import type {
   DesktopModelRunRequest,
   DesktopRuntimeReadiness,
   DesktopStreamEvent,
+  DesktopTerminal,
+  DesktopTerminalEvent,
+  DesktopTerminalOpenRequest,
   DiscoveredModel,
   LocalConversation,
   LocalMessage,
@@ -30,11 +36,16 @@ export interface AgentSessionSpec {
   mcpConfig?: string | null;
 }
 
+export interface AgentWorkspaceOptions {
+  worktree: boolean;
+}
+
 export interface DesktopAgentSession {
   sessionKey: string;
   directoryPath: string;
   head: string | null;
   adopted: boolean;
+  worktree: AgentWorktree | null;
   events: AsyncIterable<AgentSessionEvent>;
   transport: AsyncIterable<string>;
   send: (payload: string) => Promise<void>;
@@ -59,7 +70,29 @@ export interface DesktopBackend {
     directoryId: string,
     conversationId: string,
     session?: AgentSessionSpec,
+    workspace?: AgentWorkspaceOptions,
   ) => Promise<DesktopAgentSession>;
+  agentWorktree: (directoryId: string, conversationId: string) => Promise<AgentWorktree | null>;
+  snapshotAgentWorkspace: (directoryId: string, conversationId: string) => Promise<string | null>;
+  agentTurnChanges: (
+    directoryId: string,
+    conversationId: string,
+    from: string,
+    to: string,
+  ) => Promise<AgentTurnChanges>;
+  commitAgentWorktree: (
+    directoryId: string,
+    conversationId: string,
+    message: string,
+  ) => Promise<string>;
+  agentBranchChanges: (directoryId: string, conversationId: string) => Promise<AgentBranchChanges>;
+  openTerminal: (
+    request: DesktopTerminalOpenRequest,
+    onEvent: (event: DesktopTerminalEvent) => void,
+  ) => Promise<DesktopTerminal>;
+  writeTerminal: (terminalId: string, data: string) => Promise<void>;
+  resizeTerminal: (terminalId: string, cols: number, rows: number) => Promise<void>;
+  closeTerminal: (terminalId: string) => Promise<void>;
   readAgentThread: (conversationId: string) => Promise<AgentThreadBinding | null>;
   saveAgentThread: (binding: AgentThreadBinding) => Promise<void>;
   forgetAgentThread: (conversationId: string) => Promise<void>;

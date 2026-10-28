@@ -2,12 +2,18 @@ import {
   parseAgentProcessOutput,
   setDesktopExecutionBackend,
   type AgentSessionSpec,
+  type AgentWorkspaceOptions,
   type DesktopAgentSession,
   type DesktopBackend,
   type DesktopRun,
 } from "@ngriffin_uk/polychat-library-chat";
 import {
+  agentBranchChangesSchema,
+  agentTurnChangesSchema,
+  agentWorktreeSchema,
   desktopEndpointSchema,
+  desktopTerminalEventSchema,
+  desktopTerminalSchema,
   desktopRuntimeReadinessSchema,
   desktopSessionTokenSchema,
   desktopStreamEventSchema,
@@ -64,6 +70,7 @@ const sessionDescriptorSchema = z.object({
   directoryPath: z.string().min(1),
   head: z.string().nullable(),
   adopted: z.boolean(),
+  worktree: agentWorktreeSchema.nullable(),
 });
 
 const sessionEventSchema = z.discriminatedUnion("type", [
@@ -83,6 +90,7 @@ async function startAgentSession(
   directoryId: string,
   conversationId: string,
   session?: AgentSessionSpec,
+  workspace?: AgentWorkspaceOptions,
 ): Promise<DesktopAgentSession> {
   const queue = createAsyncEventQueue<AgentSessionEvent>();
   const lines = createAsyncEventQueue<string>();
@@ -127,6 +135,7 @@ async function startAgentSession(
         resume: session?.resume ?? false,
         isolated: session?.isolated ?? false,
         sandboxed: session?.sandboxed ?? false,
+        worktree: workspace?.worktree ?? false,
         mcpConfig: session?.mcpConfig ?? null,
       },
       onEvent: channel,
@@ -138,6 +147,7 @@ async function startAgentSession(
     directoryPath: descriptor.directoryPath,
     head: descriptor.head,
     adopted: descriptor.adopted,
+    worktree: descriptor.worktree,
     events: queue.events,
     transport: lines.events,
     send: async (payload: string) => {
@@ -235,6 +245,49 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
     agentDirectorySchema.parse(await invoke("save_agent_directory", { path })),
   ensureWorkDirectory: async (name) =>
     agentDirectorySchema.parse(await invoke("ensure_work_directory", { name })),
+  agentWorktree: async (directoryId, conversationId) =>
+    agentWorktreeSchema
+      .nullable()
+      .parse(await invoke("agent_worktree", { directoryId, conversationId })),
+  snapshotAgentWorkspace: async (directoryId, conversationId) =>
+    z
+      .string()
+      .nullable()
+      .parse(await invoke("agent_snapshot", { directoryId, conversationId })),
+  agentTurnChanges: async (directoryId, conversationId, from, to) =>
+    agentTurnChangesSchema.parse(
+      await invoke("agent_turn_changes", { directoryId, conversationId, from, to }),
+    ),
+  commitAgentWorktree: async (directoryId, conversationId, message) =>
+    z.string().parse(await invoke("agent_commit", { directoryId, conversationId, message })),
+  agentBranchChanges: async (directoryId, conversationId) =>
+    agentBranchChangesSchema.parse(
+      await invoke("agent_branch_changes", { directoryId, conversationId }),
+    ),
+  openTerminal: async (request, onEvent) => {
+    const channel = new Channel();
+
+    channel.onmessage = (raw) => {
+      const event = desktopTerminalEventSchema.safeParse(raw);
+
+      if (event.success) {
+        onEvent(event.data);
+      }
+    };
+
+    return desktopTerminalSchema.parse(
+      await invoke("terminal_open", { request, onEvent: channel }),
+    );
+  },
+  writeTerminal: async (terminalId, data) => {
+    await invoke("terminal_write", { terminalId, data });
+  },
+  resizeTerminal: async (terminalId, cols, rows) => {
+    await invoke("terminal_resize", { terminalId, cols, rows });
+  },
+  closeTerminal: async (terminalId) => {
+    await invoke("terminal_close", { terminalId });
+  },
   revokeAgentDirectory: async (directoryId) => {
     await invoke("revoke_agent_directory", { directoryId });
   },

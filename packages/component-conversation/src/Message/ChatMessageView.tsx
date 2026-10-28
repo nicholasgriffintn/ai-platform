@@ -93,7 +93,7 @@ export const isRenderableMessage = (
       return !isHiddenToolResultPart(part);
     }
 
-    return part.type === "snapshot" || part.type === "file";
+    return part.type === "snapshot" || part.type === "file" || part.type === "changes";
   });
 
   return Boolean(hasTextContent || hasReasoning || hasSupportingContent || hasRenderablePart);

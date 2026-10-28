@@ -13,6 +13,7 @@ tauri-build = { version = "2", features = [] }
 opener = { version = "0.9", default-features = false }
 keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
 getrandom = "0.4"
+portable-pty = "0.9"
 bytes = "1"
 futures-util = { version = "0.3", default-features = false }
 rusqlite = { version = "0.40", features = ["bundled"] }

@@ -1,8 +1,10 @@
 import {
   AGENT_HARNESS_APPROVAL_TOOL,
+  AGENT_HARNESS_CHANGES_STREAM_TYPE,
   AGENT_HARNESS_TOOL_STREAM_TYPE,
   agentHarnessEventRecordSchema,
   type AgentHarnessEventRecord,
+  type AgentHarnessChangesStreamEvent,
   type AgentHarnessToolStreamEvent,
 } from "@ngriffin_uk/polychat-schemas";
 import {
@@ -130,6 +132,16 @@ export function harnessRecordToProviderChunks(
           delta({}, "tool_calls"),
         ],
         done: true,
+      };
+    case "changes":
+      return {
+        chunks: [
+          {
+            type: AGENT_HARNESS_CHANGES_STREAM_TYPE,
+            changes: event.changes,
+          } satisfies AgentHarnessChangesStreamEvent,
+        ],
+        done: false,
       };
     case "operation-settled":
       if (context.operationId && event.operationId !== context.operationId) {

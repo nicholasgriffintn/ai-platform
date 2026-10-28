@@ -12,6 +12,7 @@ import { buildRunActivityEntries } from "@ngriffin_uk/polychat-library-chat/run-
 import { getComputerObservations } from "@ngriffin_uk/polychat-library-chat/tool-results";
 import {
   ArtifactWorkbenchProvider,
+  useAgentWorktree,
   useArtifactWorkbench,
   useProjectWorkbenchLayout,
 } from "@ngriffin_uk/polychat-library-react";
@@ -19,13 +20,16 @@ import { useMemo, type ReactNode } from "react";
 
 import { WorkbenchComputerPreview } from "../Work/WorkbenchComputerPreview.js";
 import { ConversationContextRail } from "./ConversationContextRail.js";
+import { ConversationTerminalPanel } from "./ConversationTerminalPanel.js";
 import { useConversationWorkbenchContext } from "./useConversationWorkbenchContext.js";
+import { WorktreeChangesPanel } from "./WorktreeChangesPanel.js";
 
 const CHAT_WORKBENCH_LAYOUT_KEY = "polychat:chat-workbench";
 
 interface ConversationWorkbenchLayoutProps {
   conversationId?: string | null;
   conversationMessages?: Message[];
+  conversationTitle?: string;
   renderHeader: (actions: ReactNode) => ReactNode;
   contextRail?: ReactNode;
   children: ReactNode;
@@ -34,6 +38,7 @@ interface ConversationWorkbenchLayoutProps {
 export function ConversationWorkbenchLayout({
   conversationId,
   conversationMessages,
+  conversationTitle,
   renderHeader,
   contextRail,
   children,
@@ -43,6 +48,7 @@ export function ConversationWorkbenchLayout({
       <ConversationWorkbenchLayoutInner
         conversationId={conversationId}
         conversationMessages={conversationMessages}
+        conversationTitle={conversationTitle}
         renderHeader={renderHeader}
         contextRail={contextRail}
       >
@@ -55,6 +61,7 @@ export function ConversationWorkbenchLayout({
 function ConversationWorkbenchLayoutInner({
   conversationId,
   conversationMessages,
+  conversationTitle,
   renderHeader,
   contextRail,
   children,
@@ -72,6 +79,8 @@ function ConversationWorkbenchLayoutInner({
       buildRunActivityEntries({ traceEntries: buildAgentTraceEntries(conversationMessages ?? []) }),
     [conversationMessages],
   );
+  const revision = conversationMessages?.length ?? 0;
+  const { directoryId, worktree } = useAgentWorktree(conversationId ?? undefined, revision);
   const latestComputerObservation = computerObservations[computerObservations.length - 1];
   const attention: ConversationWorkbenchAttention | undefined = hasArtifact
     ? {
@@ -118,8 +127,20 @@ function ConversationWorkbenchLayoutInner({
             onAddSelectionToChat={artifact.addArtifactSelection}
           />
         ) : undefined,
+        changes:
+          conversationId && worktree ? (
+            <WorktreeChangesPanel
+              conversationId={conversationId}
+              conversationTitle={conversationTitle ?? "Changes from Polychat"}
+              revision={revision}
+            />
+          ) : undefined,
+        terminal:
+          conversationId && directoryId ? (
+            <ConversationTerminalPanel conversationId={conversationId} directoryId={directoryId} />
+          ) : undefined,
       }}
-      availablePanes={["artifact", "activity", "preview"]}
+      availablePanes={["artifact", "activity", "preview", "changes", "terminal"]}
       attention={attention}
       status="ready"
       showStatus={false}

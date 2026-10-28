@@ -312,6 +312,19 @@ export class ProjectTaskRepository extends BaseRepository {
     return row ? formatProjectTask(row) : null;
   }
 
+  async listOpenTasksForPullRequest(repository: string, number: number): Promise<ProjectTask[]> {
+    const rows = await this.runQuery<ProjectTaskRow>(
+      `SELECT * FROM project_task
+       WHERE json_extract(details, '$.pullRequest.repository') = ?
+         AND json_extract(details, '$.pullRequest.number') = ?
+         AND status NOT IN ('done', 'cancelled')
+       LIMIT 20`,
+      [repository.toLowerCase(), number],
+    );
+
+    return rows.map(formatProjectTask);
+  }
+
   async getTaskByReference(projectId: string, reference: string): Promise<ProjectTask | null> {
     const row = await this.runQuery<ProjectTaskRow>(
       "SELECT * FROM project_task WHERE project_id = ? AND (id = ? OR key = ?) LIMIT 1",

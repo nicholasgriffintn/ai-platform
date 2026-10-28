@@ -96,6 +96,24 @@ export async function getGitHubAppConnectionForUserRepo(
   throw new AssistantError("GitHub App connection not found for repository", ErrorType.NOT_FOUND);
 }
 
+export async function resolveGitHubInstallationOwner(
+  context: ServiceContext,
+  installationId: number,
+  repo: string,
+): Promise<number | null> {
+  const record = await context.repositories
+    .get(ProviderConnectionRepository)
+    .getConnectionByExternalId("github", GITHUB_CONNECTION_KIND, String(installationId));
+
+  if (!record || record.status !== "connected") {
+    return null;
+  }
+
+  const parsed = await decodeConnectionRecord(context, record);
+
+  return parsed && recordAllowsRepo(parsed.data, repo) ? record.user_id : null;
+}
+
 export async function getGitHubTaskConnection(
   context: ServiceContext,
   userId: number,

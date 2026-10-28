@@ -11,9 +11,17 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { slugify } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { githubApiRequest } from "~/infrastructure/github/api-client";
+import {
+  createGitHubRepositoryClient,
+  githubCommitSchema,
+  githubPullRequestSchema,
+  githubRefSchema,
+  githubShaSchema,
+  type GitHubRepositoryClient,
+} from "~/infrastructure/github/repository-client";
 import { resolveSandboxGitHubToken } from "~/modules/sandbox/application/github-credentials";
 import {
   requireProjectAccess,
@@ -25,7 +33,6 @@ import type { IUser } from "~/types";
 import { collectSiteImageAssets } from "./images";
 import { getSite } from "./records";
 
-const GITHUB_API_BASE = "https://api.github.com";
 const PROTECTED_BRANCHES = new Set(["main", "master", "production", "release"]);
 
 export interface OpenSitePullRequestOptions {
@@ -33,26 +40,6 @@ export interface OpenSitePullRequestOptions {
   user: IUser;
   siteId: string;
   request: SitePullRequestRequest;
-}
-
-interface GitHubClient {
-  get<T>(path: string): Promise<T>;
-  post<T>(path: string, body: Record<string, unknown>): Promise<T>;
-}
-
-function createClient(repo: string, token: string): GitHubClient {
-  const base = `${GITHUB_API_BASE}/repos/${repo}`;
-
-  return {
-    get: async <T>(path: string) =>
-      (
-        await githubApiRequest({ url: `${base}${path}`, method: "GET", bearerToken: token })
-      ).json() as Promise<T>,
-    post: async <T>(path: string, body: Record<string, unknown>) =>
-      (
-        await githubApiRequest({ url: `${base}${path}`, method: "POST", bearerToken: token, body })
-      ).json() as Promise<T>,
-  };
 }
 
 function normaliseDirectory(directory: string | undefined): string {
@@ -65,13 +52,11 @@ function normaliseDirectory(directory: string | undefined): string {
   return trimmed;
 }
 
-async function resolveBranchName(client: GitHubClient, base: string): Promise<string> {
+async function resolveBranchName(client: GitHubRepositoryClient, base: string): Promise<string> {
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const candidate = attempt === 0 ? base : `${base}-${attempt + 1}`;
 
-    try {
-      await client.get(`/git/ref/heads/${encodeURIComponent(candidate)}`);
-    } catch {
+    if ((await client.findRef(candidate)) === null) {
       return candidate;
     }
   }
@@ -120,15 +105,14 @@ export async function openSitePullRequest({
     repo,
     installationId: codingEnvironment.installationId,
   });
-  const client = createClient(repo, token);
-  const repository = await client.get<{ default_branch: string }>("");
+  const client = createGitHubRepositoryClient(repo, token);
+  const repository = await client.get("", z.object({ default_branch: z.string().min(1) }));
   const baseBranch = repository.default_branch;
-  const baseRef = await client.get<{ object: { sha: string } }>(
+  const baseRef = await client.get(
     `/git/ref/heads/${encodeURIComponent(baseBranch)}`,
+    githubRefSchema,
   );
-  const baseCommit = await client.get<{ tree: { sha: string } }>(
-    `/git/commits/${baseRef.object.sha}`,
-  );
+  const baseCommit = await client.get(`/git/commits/${baseRef.object.sha}`, githubCommitSchema);
   const slug = slugify(site.project.title, 40) || "site";
   const branch = await resolveBranchName(client, `polychat/site-${slug}`);
 
@@ -143,52 +127,65 @@ export async function openSitePullRequest({
   const prefix = (path: string) => (directory ? `${directory}/${path}` : path);
   const binaryEntries = await Promise.all(
     assets.map(async (asset) => {
-      const blob = await client.post<{ sha: string }>("/git/blobs", {
-        content: asset.content,
-        encoding: asset.encoding,
-      });
+      const blob = await client.post(
+        "/git/blobs",
+        { content: asset.content, encoding: asset.encoding },
+        githubShaSchema,
+      );
 
       return { path: prefix(asset.path), mode: "100644", type: "blob", sha: blob.sha };
     }),
   );
-  const tree = await client.post<{ sha: string }>("/git/trees", {
-    base_tree: baseCommit.tree.sha,
-    tree: [
-      ...files.map((file) => ({
-        path: prefix(file.path),
-        mode: "100644",
-        type: "blob",
-        content: file.content,
-      })),
-      ...binaryEntries,
-    ],
-  });
-  const commit = await client.post<{ sha: string }>("/git/commits", {
-    message: `feat(site): add ${site.project.title} from Polychat Sites`,
-    tree: tree.sha,
-    parents: [baseRef.object.sha],
-  });
+  const tree = await client.post(
+    "/git/trees",
+    {
+      base_tree: baseCommit.tree.sha,
+      tree: [
+        ...files.map((file) => ({
+          path: prefix(file.path),
+          mode: "100644",
+          type: "blob",
+          content: file.content,
+        })),
+        ...binaryEntries,
+      ],
+    },
+    githubShaSchema,
+  );
+  const commit = await client.post(
+    "/git/commits",
+    {
+      message: `feat(site): add ${site.project.title} from Polychat Sites`,
+      tree: tree.sha,
+      parents: [baseRef.object.sha],
+    },
+    githubShaSchema,
+  );
 
-  await client.post("/git/refs", { ref: `refs/heads/${branch}`, sha: commit.sha });
+  await client.post("/git/refs", { ref: `refs/heads/${branch}`, sha: commit.sha }, githubRefSchema);
 
   const pageList = Object.values(site.project.pages)
     .map((page) => `- \`${page.path}\` ${page.title}`)
     .join("\n");
-  const pullRequest = await client.post<{ number: number; html_url: string }>("/pulls", {
-    title: request.title ?? `Add ${site.project.title} site`,
-    head: branch,
-    base: baseBranch,
-    body: [
-      `Generated by Polychat Sites from the brief:`,
-      "",
-      `> ${site.brief.replace(/\n/g, "\n> ")}`,
-      "",
-      "Pages:",
-      pageList,
-      "",
-      `${files.length} files${assets.length ? ` and ${assets.length} generated ${assets.length === 1 ? "image" : "images"}` : ""} under \`${directory || "/"}\` as a ${request.target} app with Tailwind CSS v4.`,
-    ].join("\n"),
-  });
+  const pullRequest = await client.post(
+    "/pulls",
+    {
+      title: request.title ?? `Add ${site.project.title} site`,
+      head: branch,
+      base: baseBranch,
+      body: [
+        `Generated by Polychat Sites from the brief:`,
+        "",
+        `> ${site.brief.replace(/\n/g, "\n> ")}`,
+        "",
+        "Pages:",
+        pageList,
+        "",
+        `${files.length} files${assets.length ? ` and ${assets.length} generated ${assets.length === 1 ? "image" : "images"}` : ""} under \`${directory || "/"}\` as a ${request.target} app with Tailwind CSS v4.`,
+      ].join("\n"),
+    },
+    githubPullRequestSchema,
+  );
 
   return {
     repo,

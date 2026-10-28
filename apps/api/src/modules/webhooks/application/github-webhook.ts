@@ -4,10 +4,22 @@ import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { validateSignature } from "~/infrastructure/github";
-import { getGitHubAppConnectionForInstallation } from "~/modules/github/application/connections";
+import {
+  getGitHubAppConnectionForInstallation,
+  resolveGitHubInstallationOwner,
+} from "~/modules/github/application/connections";
+import {
+  recordPullRequestCheck,
+  recordPullRequestReview,
+} from "~/modules/project-tasks/application/pull-request-feedback";
 import { enqueueProjectReviewIntake } from "~/modules/project-tasks/application/review-intake";
 
 import { processGithubComment } from "./github-comment-intake";
+import {
+  isGitHubCheckEvent,
+  readGitHubChangesRequested,
+  readGitHubCheckResult,
+} from "./github-pull-request-events";
 
 const installationSchema = z.object({
   installation: z.object({ id: z.number().int().positive() }),
@@ -61,6 +73,42 @@ export async function handleGithubWebhook(params: {
 
   if (!validateSignature(params.payload, params.signature, connection.webhookSecret)) {
     return { status: 401, body: { error: "Invalid signature" } };
+  }
+
+  if (isGitHubCheckEvent(params.eventType)) {
+    const result = readGitHubCheckResult(params.eventType, raw);
+    const owner = result
+      ? await resolveGitHubInstallationOwner(
+          params.context,
+          parsed.data.installation.id,
+          result.repository,
+        )
+      : null;
+
+    return {
+      status: 200,
+      body: {
+        tasks: result && owner ? await recordPullRequestCheck(params.context, result, owner) : 0,
+      },
+    };
+  }
+
+  if (params.eventType === "pull_request_review") {
+    const review = readGitHubChangesRequested(raw);
+    const owner = review
+      ? await resolveGitHubInstallationOwner(
+          params.context,
+          parsed.data.installation.id,
+          review.repository,
+        )
+      : null;
+
+    return {
+      status: 200,
+      body: {
+        tasks: review && owner ? await recordPullRequestReview(params.context, review, owner) : 0,
+      },
+    };
   }
 
   if (params.eventType === "issue_comment") {

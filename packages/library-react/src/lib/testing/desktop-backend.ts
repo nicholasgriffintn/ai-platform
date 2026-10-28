@@ -5,6 +5,7 @@ import type {
 } from "@ngriffin_uk/polychat-library-chat";
 import type {
   AgentDirectory,
+  AgentTurnChanges,
   AgentThreadBinding,
   DesktopEndpoint,
   DesktopRuntimeReadiness,
@@ -25,6 +26,8 @@ export interface FakeDesktopBackendSeed {
   sessionDrivers?: string[];
   sessionTransport?: string[];
   agentThreads?: AgentThreadBinding[];
+  workspaceSnapshots?: string[];
+  turnChanges?: AgentTurnChanges;
 }
 
 export interface FakeDesktopBackend extends DesktopBackend {
@@ -80,6 +83,7 @@ export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): Fak
   const saved: DesktopEndpoint[] = [...(seed.endpoints ?? [])];
   const conversations: LocalConversation[] = [...(seed.conversations ?? [])];
   const messages: LocalMessage[] = [...(seed.messages ?? [])];
+  const snapshots = [...(seed.workspaceSnapshots ?? [])];
 
   function createSession(
     driver: string,
@@ -94,6 +98,7 @@ export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): Fak
       directoryPath: `/fake/${directoryId}`,
       head: null,
       adopted: false,
+      worktree: null,
       events: {
         // eslint-disable-next-line require-yield
         async *[Symbol.asyncIterator]() {
@@ -129,6 +134,25 @@ export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): Fak
     agentSupportsSessions: async (driver) => (seed.sessionDrivers ?? ["codex"]).includes(driver),
     startAgentSession: async (driver, directoryId, conversationId) =>
       createSession(driver, directoryId, conversationId),
+    agentWorktree: async () => null,
+    snapshotAgentWorkspace: async () => snapshots.shift() ?? null,
+    agentTurnChanges: async (_directoryId, _conversationId, from, to) => ({
+      ...(seed.turnChanges ?? { files: [], patch: "", truncated: false }),
+      from,
+      to,
+    }),
+    commitAgentWorktree: async () => {
+      throw new Error("The fake desktop has no worktrees.");
+    },
+    agentBranchChanges: async () => {
+      throw new Error("The fake desktop has no worktrees.");
+    },
+    openTerminal: async () => {
+      throw new Error("The fake desktop has no terminal.");
+    },
+    writeTerminal: async () => undefined,
+    resizeTerminal: async () => undefined,
+    closeTerminal: async () => undefined,
     readAgentThread: async (conversationId) => agentThreads.get(conversationId) ?? null,
     saveAgentThread: async (binding) => {
       agentThreads.set(binding.conversationId, binding);

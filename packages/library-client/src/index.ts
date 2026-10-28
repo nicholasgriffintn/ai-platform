@@ -39,6 +39,7 @@ export * from "./recipe-triggers.js";
 export * from "./mcp-apps.js";
 export * from "./recipes.js";
 export * from "./runnable-tools.js";
+export * from "./github.js";
 export * from "./sandbox.js";
 export * from "./resource.js";
 export * from "./saved-items.js";

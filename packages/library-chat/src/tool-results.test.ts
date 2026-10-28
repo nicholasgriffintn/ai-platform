@@ -53,6 +53,22 @@ describe("resolveToolResultPartDisplay", () => {
     expect(resolveToolResultPartDisplay(part).label).toBe("Get Hacker News Stories");
   });
 
+  it("shows only the step, not an empty-content warning, when a text result has no output", () => {
+    const part: ToolResultPart = {
+      type: "tool_result",
+      name: "file_change",
+      toolCallId: "toolu_1",
+      status: "success",
+      content: "",
+      data: { formattedName: "file_change", responseType: "text", result: "" },
+    };
+
+    const display = resolveToolResultPartDisplay(part);
+
+    expect(display.label).toBe("file_change");
+    expect(display.result).toBeUndefined();
+  });
+
   it("serialises structured content so a non-string payload still reaches the renderer", () => {
     const part = {
       type: "tool_result",

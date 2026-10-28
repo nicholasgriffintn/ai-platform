@@ -709,8 +709,9 @@ async fn start_agent_session(
     on_event: Channel<SessionEvent>,
     directories: State<'_, DirectoryGrants>,
     sessions: State<'_, AgentSessionRegistry>,
+    worktrees: State<'_, agents::changes::WorktreeRoot>,
 ) -> Result<SessionDescriptor, String> {
-    agents::session::start(request, on_event, &directories, &sessions).await
+    agents::session::start(request, on_event, &directories, &sessions, &worktrees.0).await
 }
 
 #[tauri::command]
@@ -913,6 +914,8 @@ fn main() {
             app.manage(RunRegistry::default());
             app.manage(AgentSessionRegistry::default());
             app.manage(DirectoryGrants::from_grants(directories));
+            app.manage(agents::changes::WorktreeRoot(directory.join("worktrees")));
+            app.manage(agents::terminal::TerminalRegistry::default());
             app.manage(activity::sampler::ActivityRuntime::default());
             activity::sampler::start(app.handle());
 
@@ -951,6 +954,15 @@ fn main() {
             start_agent_process_run,
             start_agent_session,
             ensure_work_directory,
+            agents::workspace::agent_worktree,
+            agents::workspace::agent_snapshot,
+            agents::workspace::agent_turn_changes,
+            agents::workspace::agent_commit,
+            agents::workspace::agent_branch_changes,
+            agents::terminal::terminal_open,
+            agents::terminal::terminal_write,
+            agents::terminal::terminal_resize,
+            agents::terminal::terminal_close,
             send_agent_session,
             stop_agent_session,
             agent_supports_sessions,

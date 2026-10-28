@@ -322,3 +322,25 @@ export const accept_breakdown: FunctionToolDescriptor = {
     revision: z.number().int().positive(),
   }),
 };
+
+export const link_pull_request: FunctionToolDescriptor = {
+  name: "link_pull_request",
+  description:
+    "Link the GitHub pull request you opened for a task. Failing CI and requested changes on it then come back to the task as fix-ups for you. Link it as soon as the pull request exists.",
+  type: "normal",
+  permissions: ["write"],
+  effects: { effectClass: "write" },
+  intentEvidence: (input) => ({ operation: "link_pull_request", ...input }),
+  inputSchema: jsonSchemaToZod({
+    type: "object",
+    properties: {
+      taskId: taskIdProperty,
+      url: {
+        type: "string",
+        description: "The pull request's address, like https://github.com/owner/repo/pull/12.",
+      },
+    },
+    required: ["taskId", "url"],
+    additionalProperties: false,
+  }),
+};

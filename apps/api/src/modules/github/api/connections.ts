@@ -4,6 +4,8 @@ import {
   getGitHubAppInstallUrl,
 } from "@ngriffin_uk/polychat-ai-integrations";
 import {
+  agentPullRequestRequestSchema,
+  agentPullRequestSchema,
   autoConnectSchema,
   githubConnectionSchema,
   listPageOf,
@@ -14,6 +16,7 @@ import z from "zod/v4";
 
 import { defineResource } from "~/infrastructure/http/resource";
 import { requirePlan } from "~/middleware/requirePlan";
+import { openBranchPullRequest } from "~/modules/github/application/branch-pull-requests";
 import {
   getGitHubAppConnectionForUserInstallation,
   listGitHubAppConnectionsForUser,
@@ -121,6 +124,16 @@ defineResource(
           return { updated: true };
         },
       });
+
+    installations.collectionAction("pull_requests", {
+      auth: true,
+      summary: "Open or update a pull request from a desktop conversation's branch",
+      description:
+        "Builds the branch's commit on GitHub from the files the desktop sends, using your GitHub App connection, then opens a pull request or updates the open one.",
+      bodySchema: agentPullRequestRequestSchema,
+      responses: { 200: { description: "The pull request", schema: agentPullRequestSchema } },
+      handler: ({ body, serviceContext }) => openBranchPullRequest(serviceContext, body),
+    });
   },
 );
 

@@ -88,7 +88,13 @@ export interface FileMessagePart extends MessagePartBase {
   sizeBytes?: number;
 }
 
+export interface ChangesMessagePart extends MessagePartBase {
+  type: "changes";
+  changes: AgentTurnChanges;
+}
+
 export type MessagePart =
+  | ChangesMessagePart
   | TextMessagePart
   | ToolUseMessagePart
   | ToolResultMessagePart
@@ -106,6 +112,8 @@ export const compactionStatusLabels = {
 } as const;
 
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
+import { agentTurnChangesSchema, type AgentTurnChanges } from "./agent-changes.js";
 
 function isObjectOrArray(value: unknown): value is unknown[] | Record<string, unknown> {
   return Array.isArray(value) || isRecord(value);
@@ -357,6 +365,12 @@ function normaliseMessagePart(part: unknown, fallbackTimestamp?: number): Messag
         label: readOptionalString(part.label),
         objective: readOptionalString(part.objective),
       };
+    }
+
+    case "changes": {
+      const changes = agentTurnChangesSchema.safeParse(part.changes);
+
+      return changes.success ? { ...base, type: "changes", changes: changes.data } : null;
     }
 
     case "file":

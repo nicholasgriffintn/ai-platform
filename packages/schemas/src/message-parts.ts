@@ -12,6 +12,7 @@ export {
   normaliseMessageParts,
 } from "./message-part-utils.js";
 export type {
+  ChangesMessagePart,
   CompactionCoverage,
   CompactionMessagePart,
   CompactionPartStatus,
@@ -25,6 +26,7 @@ export type {
   ToolResultMessagePart,
   ToolUseMessagePart,
 } from "./message-part-utils.js";
+import { agentTurnChangesSchema } from "./agent-changes.js";
 import { goalMarkerEvents } from "./goals.js";
 import { compactionPartStatuses, compactionSummaryStrategies } from "./message-part-utils.js";
 
@@ -108,7 +110,13 @@ export const filePartSchema = partBaseSchema.extend({
   sizeBytes: z.number().int().nonnegative().optional(),
 });
 
+export const changesPartSchema = partBaseSchema.extend({
+  type: z.literal("changes"),
+  changes: agentTurnChangesSchema,
+});
+
 export const messagePartSchema = z.discriminatedUnion("type", [
+  changesPartSchema,
   textPartSchema,
   toolUsePartSchema,
   toolResultPartSchema,

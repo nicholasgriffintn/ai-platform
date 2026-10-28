@@ -355,22 +355,26 @@ const buildDisplay = ({
   content: string;
 }): ToolResultDisplay => {
   const toolName = name ?? readOptionalString(data?.name) ?? "Tool";
+  const responseType = readOptionalString(data?.responseType);
+  const hasNothingToShow = responseType === ToolResponseType.TEXT && !content.trim();
 
   return {
     name: toolName,
     label: readOptionalString(data?.formattedName) ?? titleCaseSlug(toolName),
     icon: readOptionalString(data?.icon),
     status,
-    responseType: readOptionalString(data?.responseType),
+    responseType,
     renderer: readOptionalString(data?.renderer),
     streamPreview: readToolStreamPreview(data),
     receipt: readToolReceipt(data),
-    result: {
-      status: status ?? "success",
-      name: toolName,
-      content,
-      data,
-    },
+    result: hasNothingToShow
+      ? undefined
+      : {
+          status: status ?? "success",
+          name: toolName,
+          content,
+          data,
+        },
   };
 };
 

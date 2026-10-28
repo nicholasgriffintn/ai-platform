@@ -10,6 +10,7 @@ import {
   FileText,
   MonitorPlay,
   ShieldCheck,
+  SquareTerminal,
   type LucideIcon,
 } from "lucide-react";
 
@@ -22,9 +23,10 @@ export const PANE_PRESENTATION: Record<ProjectWorkbenchPane, { label: string; ic
     files: { label: "Files", icon: Files },
     proof: { label: "Proof", icon: ShieldCheck },
     delegates: { label: "Delegates", icon: Bot },
+    terminal: { label: "Terminal", icon: SquareTerminal },
   };
 
-export const FLUSH_PANES: readonly ProjectWorkbenchPane[] = ["artifact"];
+export const FLUSH_PANES: readonly ProjectWorkbenchPane[] = ["artifact", "terminal"];
 
 export const STATUS_PRESENTATION: Record<
   ProjectWorkbenchStatus,

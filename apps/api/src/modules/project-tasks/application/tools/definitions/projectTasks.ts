@@ -61,6 +61,11 @@ export const create_task: FunctionToolDescriptor = {
         description:
           "Who owns it: a teammate's name, or a person's name or email. A teammate owner wakes and starts straight away.",
       },
+      reviewer: {
+        type: "string",
+        description:
+          "Who checks the work when it's ready, such as a QA teammate. They are woken when the owner's run finishes, and their requested changes go back to the owner.",
+      },
       parentTaskId: {
         type: "string",
         description: "Key or id of the parent task, when this is a sub-task. Three levels at most.",

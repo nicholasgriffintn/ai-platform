@@ -8,6 +8,7 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{Child, ChildStdin, Command};
 use tokio::sync::Mutex as AsyncMutex;
 
+use super::changes::{self, WorktreeInfo};
 use super::process::{self, AgentDriver, DirectoryGrants, ProcessRefusal};
 use crate::lines::MAX_STREAM_LINE;
 use crate::timestamp;
@@ -29,6 +30,8 @@ pub struct SessionStartRequest {
     #[serde(default)]
     pub sandboxed: bool,
     #[serde(default)]
+    pub worktree: bool,
+    #[serde(default)]
     pub mcp_config: Option<String>,
 }
 
@@ -42,6 +45,7 @@ pub struct SessionDescriptor {
     pub started_at: String,
     pub head: Option<String>,
     pub adopted: bool,
+    pub worktree: Option<WorktreeInfo>,
 }
 
 #[derive(Clone, Serialize)]
@@ -174,17 +178,34 @@ pub async fn start(
     on_event: Channel<SessionEvent>,
     directories: &DirectoryGrants,
     registry: &AgentSessionRegistry,
+    worktrees: &std::path::Path,
 ) -> Result<SessionDescriptor, String> {
     let grant = directories
         .get(&request.directory_id)
         .map_err(|cause| format!("{cause:?}"))?;
-    let directory = process::ensure_directory_grant(&grant.path, &grant)
+    let granted = process::ensure_directory_grant(&grant.path, &grant)
         .map_err(|cause| format!("{cause:?}"))?;
+    let worktree = if request.worktree && process::git_head(&granted).is_ok() {
+        let repository = granted.clone();
+        let root = worktrees.to_path_buf();
+        let conversation_id = request.conversation_id.clone();
+
+        Some(
+            tokio::task::spawn_blocking(move || {
+                changes::ensure_worktree(&root, &repository, &conversation_id)
+            })
+            .await
+            .map_err(|cause| cause.to_string())??,
+        )
+    } else {
+        None
+    };
+    let directory = worktree
+        .as_ref()
+        .map(|info| std::path::PathBuf::from(&info.path))
+        .unwrap_or(granted);
     let key = session_key(request.driver, &request.conversation_id);
-    let head = grant
-        .is_git_repo
-        .then(|| process::git_head(&directory).ok())
-        .flatten();
+    let head = process::git_head(&directory).ok();
     let at = timestamp();
 
     if let Some(handle) = registry.get(&key) {
@@ -199,6 +220,7 @@ pub async fn start(
                 started_at: at,
                 head,
                 adopted: true,
+                worktree,
             });
         }
 
@@ -290,6 +312,7 @@ pub async fn start(
         started_at: at,
         head,
         adopted: false,
+        worktree,
     })
 }
 
