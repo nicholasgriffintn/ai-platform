@@ -326,7 +326,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003762,
@@ -403,7 +403,7 @@
       "model": "mistral-small/mistral-small-3-2",
       "matchingModel": "mistral-small-3.2-24b-instruct-2506",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 20, 2025",
         "costPer1kInputTokens": 0.000228,
         "costPer1kOutputTokens": 0.000456,
@@ -419,7 +419,7 @@
       "overrides": {
         "description": "Qwen3 235B MoE instruct model for long-context multilingual chat and reasoning",
         "maxTokens": 16384,
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.001026,

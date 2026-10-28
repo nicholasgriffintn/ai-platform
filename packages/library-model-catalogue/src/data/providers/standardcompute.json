@@ -373,7 +373,7 @@
           "video"
         ],
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -579,7 +579,7 @@
       "overrides": {
         "maxTokens": 30000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
@@ -600,7 +600,7 @@
       "overrides": {
         "description": "Open MiMo model for multimodal coding agents and long-context automation",
         "maxTokens": 50000,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00028

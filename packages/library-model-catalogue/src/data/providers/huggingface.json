@@ -483,6 +483,7 @@
       "matchingModel": "zai-org/GLM-5.1",
       "overrides": {
         "contextWindow": 202752,
+        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.001,
@@ -659,7 +660,7 @@
       "overrides": {
         "name": "Qwen3-Coder 30B-A3B Instruct",
         "maxTokens": 65536,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "July 31, 2025",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.00026
@@ -930,7 +931,7 @@
         "strengths": [
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.002,
@@ -952,7 +953,7 @@
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "contextWindow": 1000000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -1044,7 +1045,7 @@
       "overrides": {
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 64000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 26, 2024",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0013
@@ -1070,7 +1071,7 @@
         "name": "Qwen3 235B-A22B Instruct 2507",
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "maxTokens": 16384,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.000855,
         "costPer1kOutputTokens": 0.002565
@@ -1130,7 +1131,7 @@
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 131072,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0015,
@@ -1342,7 +1343,7 @@
       "model": "minimax/minimax-m1-80k",
       "matchingModel": "MiniMaxAI/MiniMax-M1-80k",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.00055,
         "costPer1kOutputTokens": 0.0022
@@ -1402,6 +1403,27 @@
           ],
           "defaultEffort": "none"
         }
+      }
+    },
+    "MiniMaxAI/MiniMax-M3.1-Flash": {
+      "model": "minimax/minimax-m3-1-flash",
+      "matchingModel": "MiniMaxAI/MiniMax-M3.1-Flash",
+      "overrides": {
+        "maxTokens": 512000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 4,
+        "lastUpdated": "October 19, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
+        "supportsAttachments": true
       }
     }
   }

@@ -101,7 +101,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "June 28, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",

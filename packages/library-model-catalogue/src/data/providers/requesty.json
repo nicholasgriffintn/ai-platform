@@ -98,7 +98,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "multimodal": true,
         "isFeatured": false,
         "knowledgeCutoffDate": "October 2024",
@@ -133,7 +133,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "multimodal": true,
         "isFeatured": false,
         "lastUpdated": "April 14, 2025",
@@ -313,7 +313,7 @@
       "model": "claude-opus/claude-opus-4-5",
       "matchingModel": "anthropic/claude-opus-4-5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
@@ -406,7 +406,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -584,7 +584,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 17, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -824,7 +824,7 @@
       "matchingModel": "openai/gpt-5.2-codex",
       "overrides": {
         "name": "GPT-5.2-Codex",
-        "speed": 2,
+        "speed": 3,
         "releaseDate": "January 14, 2026",
         "lastUpdated": "January 14, 2026",
         "costPer1kInputTokens": 0.00175,
@@ -872,7 +872,7 @@
       "matchingModel": "openai/gpt-5.3-codex",
       "overrides": {
         "name": "GPT-5.3-Codex",
-        "speed": 2,
+        "speed": 3,
         "releaseDate": "February 24, 2026",
         "lastUpdated": "February 24, 2026",
         "costPer1kInputTokens": 0.00175,
@@ -1003,7 +1003,7 @@
       "matchingModel": "claude-opus-4-5",
       "overrides": {
         "name": "Claude Opus 4.5 (latest)",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -1026,7 +1026,7 @@
       "model": "claude-opus/claude-opus-4-5-latest-eu",
       "matchingModel": "claude-opus-4-5@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275
@@ -1248,7 +1248,7 @@
       "overrides": {
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -1270,7 +1270,7 @@
       "overrides": {
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.0033,
         "costPer1kOutputTokens": 0.0165,
@@ -1459,7 +1459,7 @@
       "model": "gpt/gpt-4-1-eu",
       "matchingModel": "gpt-4.1@eu",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.0088
@@ -1469,7 +1469,7 @@
       "model": "gpt-mini/gpt-4o-mini-eu",
       "matchingModel": "gpt-4o-mini@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 18, 2024",
         "costPer1kInputTokens": 0.000165,
         "costPer1kOutputTokens": 0.00066
@@ -1565,7 +1565,7 @@
       "model": "gpt/gpt-5-eu",
       "matchingModel": "gpt-5@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.011,
@@ -1623,7 +1623,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -1644,7 +1644,7 @@
       "model": "kimi-k3/kimi-k3-eu",
       "matchingModel": "kimi-k3@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -2131,7 +2131,7 @@
       "model": "gpt-codex/gpt-5-3-codex",
       "matchingModel": "gpt-5.3-codex",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -2404,7 +2404,7 @@
       "overrides": {
         "maxTokens": 30000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
@@ -2752,7 +2752,7 @@
       "overrides": {
         "description": "Open MiMo model for multimodal coding agents and long-context automation",
         "contextComplexity": 5,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00028,
@@ -2930,7 +2930,7 @@
       "overrides": {
         "contextWindow": 256000,
         "maxTokens": 256000,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.000165,
         "costPer1kOutputTokens": 0.00066,
@@ -2950,7 +2950,7 @@
       "model": "mistral-small/mistral-small-4-eu",
       "matchingModel": "mistral-small-2603@eu",
       "overrides": {
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.000165,
         "costPer1kOutputTokens": 0.00066
@@ -4307,8 +4307,6 @@
       "model": "minimax/minimax-m3-1-flash",
       "matchingModel": "minimax-m3.1-flash",
       "overrides": {
-        "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
-        "contextWindow": 1000000,
         "maxTokens": 128000,
         "speed": 4,
         "lastUpdated": "October 19, 2026",
@@ -4427,6 +4425,36 @@
         "lastUpdated": "October 19, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
+      }
+    },
+    "gpt-6.1-terra": {
+      "model": "gpt-terra/gpt-6-1-terra",
+      "matchingModel": "gpt-6.1-terra",
+      "overrides": {
+        "lastUpdated": "October 26, 2026",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-6.1-terra@eu": {
+      "model": "gpt-terra/gpt-6-1-terra-eu",
+      "matchingModel": "gpt-6.1-terra@eu",
+      "overrides": {
+        "lastUpdated": "October 26, 2026",
+        "costPer1kInputTokens": 0.0012,
+        "costPer1kOutputTokens": 0.006,
+        "supportsTemperature": false
       }
     }
   }

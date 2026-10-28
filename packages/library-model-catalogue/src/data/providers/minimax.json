@@ -24,8 +24,6 @@
       "model": "minimax/minimax-m3-1-flash",
       "matchingModel": "MiniMax-M3.1-Flash",
       "overrides": {
-        "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
-        "contextWindow": 1000000,
         "maxTokens": 524288,
         "speed": 4,
         "lastUpdated": "October 19, 2026",

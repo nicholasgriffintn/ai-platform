@@ -11,7 +11,9 @@
     "strengths": [
       "transcription"
     ],
-    "releaseDate": "October 2, 2025"
+    "releaseDate": "October 2, 2025",
+    "supportsAttachments": false,
+    "supportsTemperature": false
   },
   "description": "The workers ai/@cf/deepgram/flux family includes models that produce text.",
   "models": {

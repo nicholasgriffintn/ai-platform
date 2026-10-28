@@ -120,7 +120,7 @@
         "name": "Qwen3-Coder-30B-A3B-Instruct",
         "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
         "maxTokens": 262144,
-        "speed": 4,
+        "speed": 5,
         "releaseDate": "October 28, 2025",
         "lastUpdated": "October 28, 2025",
         "costPer1kInputTokens": 0.00007,

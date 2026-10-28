@@ -1336,6 +1336,36 @@
         }
       }
     },
+    "gpt-6-1-terra-pro": {
+      "defaults": {
+        "name": "GPT-6.1 Terra Pro",
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 26, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "gpt-6-astra-pro": {
       "defaults": {
         "name": "GPT-6 Astra Pro",
@@ -1750,7 +1780,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1077,
+              "value": 1075,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -2194,6 +2224,36 @@
           ]
         },
         "releaseDate": "September 29, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "openai-gpt-6-1-terra-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6.1 Terra Pro",
+        "description": "GPT-6.1 Terra Pro is the same underlying model as [GPT-6.1 Terra](https://openrouter.ai/openai/gpt-6.1-terra), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 26, 2026",
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [

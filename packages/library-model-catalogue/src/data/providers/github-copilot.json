@@ -2,8 +2,7 @@
   "defaults": {
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsAttachments": true
   },
   "models": {
     "ghcopilot/openai/o4-mini": {
@@ -15,8 +14,7 @@
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0044,
         "supportsToolCalls": false,
-        "supportsAttachments": false,
-        "supportsTemperature": false
+        "supportsAttachments": false
       },
       "unset": [
         "supportsResponseFormat"
@@ -230,8 +228,7 @@
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0044,
         "supportsToolCalls": false,
-        "supportsAttachments": false,
-        "supportsTemperature": false
+        "supportsAttachments": false
       },
       "unset": [
         "supportsResponseFormat"
@@ -258,7 +255,7 @@
           "tool_use"
         ],
         "contextComplexity": 3,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008
@@ -296,8 +293,7 @@
         "lastUpdated": "April 16, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008,
-        "supportsParallelToolCalls": false,
-        "supportsTemperature": false
+        "supportsParallelToolCalls": false
       },
       "unset": [
         "supportsResponseFormat"
@@ -346,7 +342,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -467,6 +463,7 @@
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -481,11 +478,10 @@
       "matchingModel": "gpt-5.2-codex",
       "overrides": {
         "name": "GPT-5.2-Codex",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -537,7 +533,7 @@
           ]
         },
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -597,7 +593,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -632,7 +628,6 @@
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
-        "supportsTemperature": false,
         "apiBaseUrl": "https://api.githubcopilot.com/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -695,8 +690,7 @@
       "overrides": {
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.002,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.002
       }
     },
     "claude-fable-5": {
@@ -708,7 +702,6 @@
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
-        "supportsTemperature": false,
         "apiBaseUrl": "https://api.githubcopilot.com/v1"
       }
     },
@@ -720,7 +713,6 @@
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false,
         "apiBaseUrl": "https://api.githubcopilot.com/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -751,8 +743,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0012,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.0012
       }
     },
     "gpt-5.6-sol": {
@@ -762,8 +753,7 @@
         "speed": 2,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.004,
-        "costPer1kOutputTokens": 0.02,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.02
       }
     },
     "gpt-5.6-terra": {
@@ -773,8 +763,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.012,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.012
       }
     },
     "claude-opus-5": {
@@ -787,7 +776,6 @@
         "lastUpdated": "July 24, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
-        "supportsTemperature": false,
         "apiBaseUrl": "https://api.githubcopilot.com/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -825,11 +813,10 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -846,8 +833,7 @@
       "overrides": {
         "lastUpdated": "August 11, 2026",
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0012,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.0012
       }
     },
     "grok-4.6": {
@@ -869,7 +855,6 @@
         "lastUpdated": "September 1, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
-        "supportsTemperature": false,
         "apiBaseUrl": "https://api.githubcopilot.com/v1"
       }
     },
@@ -911,8 +896,7 @@
         "speed": 2,
         "lastUpdated": "September 4, 2026",
         "costPer1kInputTokens": 0.01,
-        "costPer1kOutputTokens": 0.05,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.05
       }
     },
     "grok-4.7": {
@@ -935,7 +919,6 @@
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
-        "supportsTemperature": false,
         "apiBaseUrl": "https://api.githubcopilot.com/v1"
       }
     },
@@ -946,8 +929,7 @@
         "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0005,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.0005
       }
     },
     "gpt-6-sol": {
@@ -957,8 +939,7 @@
         "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.01
       }
     },
     "claude-sonnet-5.5": {
@@ -969,7 +950,6 @@
         "lastUpdated": "September 28, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false,
         "apiBaseUrl": "https://api.githubcopilot.com/v1"
       }
     },
@@ -981,8 +961,7 @@
         "isFeatured": true,
         "lastUpdated": "September 29, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.01
       }
     },
     "claude-haiku-5.5": {
@@ -994,7 +973,6 @@
         "lastUpdated": "October 7, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
-        "supportsTemperature": false,
         "apiBaseUrl": "https://api.githubcopilot.com/v1",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1018,8 +996,16 @@
         "speed": 2,
         "lastUpdated": "October 13, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "gpt-6.1-terra": {
+      "model": "gpt-terra/gpt-6-1-terra",
+      "matchingModel": "gpt-6.1-terra",
+      "overrides": {
+        "lastUpdated": "October 26, 2026",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005
       }
     }
   }

@@ -408,7 +408,6 @@
       "defaults": {
         "name": "GLM-5.1",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],

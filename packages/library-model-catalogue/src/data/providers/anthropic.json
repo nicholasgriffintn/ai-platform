@@ -256,7 +256,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "lastUpdated": "November 24, 2025",
         "dataRetention": {
@@ -335,7 +335,7 @@
           "search",
           "research"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "maxDays": 30,

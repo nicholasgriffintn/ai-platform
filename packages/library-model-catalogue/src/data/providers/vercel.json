@@ -57,7 +57,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008
@@ -67,7 +67,7 @@
       "model": "gpt/gpt-5",
       "matchingModel": "openai/gpt-5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -79,7 +79,7 @@
       "matchingModel": "openai/gpt-4o-mini",
       "overrides": {
         "name": "GPT-4o mini",
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 18, 2024",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006
@@ -424,7 +424,7 @@
       "overrides": {
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "maxTokens": 16384,
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.00022,
@@ -540,7 +540,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       },
       "unset": [
         "supportsResponseFormat"
@@ -556,7 +556,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       },
       "unset": [
         "supportsResponseFormat"
@@ -581,7 +581,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       },
       "unset": [
         "supportsResponseFormat"
@@ -723,7 +723,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "anthropic/claude-haiku-4.5": {
@@ -759,7 +759,7 @@
       "model": "claude-opus/claude-opus-4-5",
       "matchingModel": "anthropic/claude-opus-4.5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -860,7 +860,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "bfl/flux-kontext-pro": {
@@ -871,7 +871,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "bfl/flux-pro-1.0-fill": {
@@ -882,7 +882,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       },
       "unset": [
         "reliability"
@@ -896,7 +896,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "bfl/flux-pro-1.1-ultra": {
@@ -907,7 +907,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "bytedance/seed-1.6": {
@@ -968,7 +968,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "deepseek/deepseek-v3": {
@@ -978,7 +978,7 @@
         "name": "DeepSeek V3 0324",
         "contextWindow": 163840,
         "maxTokens": 163840,
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "December 26, 2024",
         "lastUpdated": "December 26, 2024",
@@ -1326,7 +1326,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "google/imagen-4.0-fast-generate-001": {
@@ -1370,7 +1370,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "google/text-multilingual-embedding-002": {
@@ -1383,7 +1383,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "inception/mercury-coder-small": {
@@ -1605,7 +1605,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "mistral/devstral-2": {
@@ -1678,7 +1678,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "mistral/mistral-large-3": {
@@ -2204,7 +2204,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -2332,7 +2332,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "openai/text-embedding-3-small": {
@@ -2347,7 +2347,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "openai/text-embedding-ada-002": {
@@ -2362,7 +2362,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "perplexity/sonar": {
@@ -2462,7 +2462,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       },
       "unset": [
         "strengths",
@@ -2477,7 +2477,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "voyage/voyage-3-large": {
@@ -2490,7 +2490,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "voyage/voyage-3.5": {
@@ -2503,7 +2503,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "voyage/voyage-3.5-lite": {
@@ -2516,7 +2516,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "voyage/voyage-code-2": {
@@ -2529,7 +2529,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "voyage/voyage-code-3": {
@@ -2542,7 +2542,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "voyage/voyage-finance-2": {
@@ -2555,7 +2555,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "voyage/voyage-law-2": {
@@ -2568,7 +2568,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "xai/grok-2-vision": {
@@ -2965,7 +2965,7 @@
           "vision",
           "document"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0016,
@@ -3085,7 +3085,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6",
       "matchingModel": "anthropic/claude-sonnet-4.6",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -3282,7 +3282,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "google/gemma-4-26b-a4b-it": {
@@ -3510,7 +3510,7 @@
       "matchingModel": "openai/gpt-5.3-codex",
       "overrides": {
         "name": "GPT 5.3 Codex",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -3676,7 +3676,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "voyage/voyage-4-large": {
@@ -3687,7 +3687,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "voyage/voyage-4-lite": {
@@ -3698,7 +3698,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "xai/grok-4.20-multi-agent": {
@@ -3834,7 +3834,7 @@
       "matchingModel": "xai/grok-4.3",
       "overrides": {
         "maxTokens": 1000000,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
@@ -3900,7 +3900,7 @@
       "model": "mimo/mimo-m2-5",
       "matchingModel": "xiaomi/mimo-v2.5",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.000119,
         "costPer1kOutputTokens": 0.000238
@@ -4454,7 +4454,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "bfl/flux-2-klein-4b": {
@@ -4470,7 +4470,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       },
       "unset": [
         "knowledgeCutoffDate"
@@ -4484,7 +4484,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "bfl/flux-2-max": {
@@ -4503,7 +4503,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "bfl/flux-2-pro": {
@@ -4522,7 +4522,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "bytedance/seedance-2.0": {
@@ -4625,7 +4625,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "bytedance/seedream-4.5": {
@@ -4651,7 +4651,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "bytedance/seedream-5.0-lite": {
@@ -4663,7 +4663,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "cohere/rerank-v3.5": {
@@ -4674,7 +4674,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "cohere/rerank-v4-fast": {
@@ -4685,7 +4685,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "cohere/rerank-v4-pro": {
@@ -4696,7 +4696,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "google/veo-3.0-fast-generate-001": {
@@ -4911,7 +4911,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "openai/gpt-image-1.5": {
@@ -4937,7 +4937,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       },
       "unset": [
         "contextComplexity"
@@ -4967,7 +4967,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       },
       "unset": [
         "contextComplexity"
@@ -4981,7 +4981,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       },
       "unset": [
         "reliability"
@@ -4995,7 +4995,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "recraft/recraft-v4-pro": {
@@ -5006,7 +5006,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "recraft/recraft-v4.1": {
@@ -5017,7 +5017,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "recraft/recraft-v4.1-pro": {
@@ -5028,7 +5028,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "recraft/recraft-v4.1-utility": {
@@ -5039,7 +5039,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "recraft/recraft-v4.1-utility-pro": {
@@ -5051,7 +5051,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "voyage/rerank-2.5": {
@@ -5062,7 +5062,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "voyage/rerank-2.5-lite": {
@@ -5073,7 +5073,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "xai/grok-imagine-video": {
@@ -5520,7 +5520,6 @@
       "model": "gemini/gemini-omni-flash-preview",
       "matchingModel": "google/gemini-omni-flash-preview",
       "overrides": {
-        "description": "Omni-modal model for text, vision, audio, and multimodal agent tasks",
         "contextWindow": 1000000,
         "maxTokens": 57920,
         "modalities": {
@@ -5719,7 +5718,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "anthropic/claude-opus-4.7-fast": {
@@ -5790,7 +5789,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -6158,7 +6157,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "bfl/flux-3-video": {
@@ -6491,7 +6490,7 @@
       "model": "gpt/gpt-4-1-fast",
       "matchingModel": "openai/gpt-4.1-fast",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.0035,
         "costPer1kOutputTokens": 0.014
@@ -6531,7 +6530,7 @@
       "model": "gpt-mini/gpt-4o-mini-fast",
       "matchingModel": "openai/gpt-4o-mini-fast",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 18, 2024",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.001
@@ -6541,7 +6540,7 @@
       "model": "gpt/gpt-5-fast",
       "matchingModel": "openai/gpt-5-fast",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.02,
@@ -6586,7 +6585,7 @@
       "model": "gpt-codex/gpt-5-3-codex-fast",
       "matchingModel": "openai/gpt-5.3-codex-fast",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.0035,
         "costPer1kOutputTokens": 0.028
@@ -6684,7 +6683,7 @@
       "overrides": {
         "name": "GLM 5.3",
         "contextWindow": 1000000,
-        "maxTokens": 1000000,
+        "maxTokens": 262144,
         "speed": 3,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0012,
@@ -6956,7 +6955,7 @@
       "overrides": {
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
         "maxTokens": 1000000,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
@@ -7033,7 +7032,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "spacexai/grok-imagine-image-2.0": {
@@ -7045,7 +7044,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "spacexai/grok-imagine-video": {
@@ -7387,7 +7386,7 @@
         "lastUpdated": "July 7, 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       },
       "unset": [
         "supportsResponseFormat"
@@ -7742,7 +7741,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       },
       "unset": [
         "contextComplexity"
@@ -7770,7 +7769,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "deepseek/deepseek-v4.1-flash": {
@@ -8330,7 +8329,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "anthropic/claude-sonnet-5.5": {
@@ -8532,7 +8531,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "voyage/rerank-3-lite": {
@@ -8543,7 +8542,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "deepseek/deepseek-v4.1-flash-fast": {
@@ -8576,7 +8575,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "cohere/embed-v5.0-fast": {
@@ -8587,7 +8586,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "cohere/embed-v5.0-pro": {
@@ -8598,7 +8597,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "google/gemini-nano-banana-2.1": {
@@ -8659,7 +8658,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "anthropic/claude-haiku-5.5": {
@@ -8712,7 +8711,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "heygen/heygen-video-1": {
@@ -8824,7 +8823,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "microsoft/mai-image-2.6-flash": {
@@ -8837,7 +8836,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "bfl/flux-3-image-klein": {
@@ -8848,7 +8847,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "cohere/rerank-v5-fast": {
@@ -8859,7 +8858,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "cohere/rerank-v5-pro": {
@@ -8870,7 +8869,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false,
-        "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
+        "apiBaseUrl": "https://ai-gateway.vercel.sh/v1"
       }
     },
     "deepseek/deepseek-v4.1-flash-1017-fast": {
@@ -8948,6 +8947,7 @@
       "model": "minimax/minimax-m3-1-flash",
       "matchingModel": "minimax/minimax-m3.1-flash",
       "overrides": {
+        "description": "MiniMax multimodal coding model for long-context reasoning and agent tasks",
         "contextWindow": 1048576,
         "maxTokens": 1048576,
         "modalities": {
@@ -9127,6 +9127,27 @@
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
         "supportsAttachments": false
+      }
+    },
+    "openai/gpt-6.1-terra": {
+      "model": "gpt-terra/gpt-6-1-terra",
+      "matchingModel": "openai/gpt-6.1-terra",
+      "overrides": {
+        "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
+        "lastUpdated": "October 26, 2026",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005,
+        "supportsTemperature": false
+      }
+    },
+    "openai/gpt-6.1-terra-fast": {
+      "model": "gpt-terra/gpt-6-1-terra-fast",
+      "matchingModel": "openai/gpt-6.1-terra-fast",
+      "overrides": {
+        "lastUpdated": "October 26, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
       }
     }
   }
