@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-flags",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Feature flag mechanisms for Polychat hosts: an OpenFeature-shaped evaluation contract, deterministic bucketing from a targeting key, code-defined rules with weighted splits and targeting, a Cloudflare Flagship adapter and a layered provider that lets a dashboard override code",
   "license": "Apache-2.0",
   "files": [
