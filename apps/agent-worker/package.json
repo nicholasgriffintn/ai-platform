@@ -11,7 +11,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
-    "@earendil-works/pi-ai": "1.3.0",
+    "@earendil-works/pi-ai": "1.4.0",
     "@earendil-works/pi-durable": "1.1.0",
     "@ngriffin_uk/polychat-library-sandbox": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
