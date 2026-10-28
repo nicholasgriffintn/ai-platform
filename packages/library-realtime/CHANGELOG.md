@@ -1,5 +1,25 @@
 # @ngriffin_uk/polychat-library-realtime
 
+## 0.4.0
+
+### Minor Changes
+
+- 00f22ad: Workers AI Flux is now a realtime transcription provider. It runs Deepgram Flux on Cloudflare, needs no API key, and detects when you have finished speaking, so you can pick it for Live voice and dictation without any setup.
+
+  The model picker in Live now lists only live models from providers that are ready, including the transcription providers (Workers AI, GreenPT, Cartesia, Mistral and ElevenLabs), which were missing before. Leaving Live puts back the chat model you had before.
+
+  Verbatim's live line now streams from realtime transcription and builds as you speak, instead of refreshing every second. Each phrase is still checked word by word by Clef Omni once you pause.
+
+### Patch Changes
+
+- Updated dependencies [0af6a2b]
+- Updated dependencies [afe0236]
+- Updated dependencies [c79e769]
+- Updated dependencies [810eff4]
+- Updated dependencies [00f22ad]
+  - @ngriffin_uk/polychat-schemas@1.10.0
+  - @ngriffin_uk/polychat-utility-core@0.9.0
+
 ## 0.3.3
 
 ### Patch Changes

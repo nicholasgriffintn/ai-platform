@@ -1,5 +1,18 @@
 # @ngriffin_uk/polychat-ai-skills
 
+## 0.2.6
+
+### Patch Changes
+
+- Updated dependencies [0af6a2b]
+- Updated dependencies [afe0236]
+- Updated dependencies [c79e769]
+- Updated dependencies [810eff4]
+- Updated dependencies [00f22ad]
+  - @ngriffin_uk/polychat-schemas@1.10.0
+  - @ngriffin_uk/polychat-library-skills-catalogue@0.4.5
+  - @ngriffin_uk/polychat-utility-core@0.9.0
+
 ## 0.2.5
 
 ### Patch Changes

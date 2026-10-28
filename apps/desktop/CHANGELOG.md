@@ -1,5 +1,33 @@
 # @assistant/desktop
 
+## 0.6.4
+
+### Patch Changes
+
+- 701256c: Claude Code now runs as a proper session in the desktop app, like Codex: replies and steps stream in, tool use asks for your approval, and the conversation keeps its folder and session between messages. Both agents run with your own subscription login, and Polychat warns you when one is signed in with an API key that bills per token. Chats in Polychat on the web can now use the agents on your desktop with the same streaming and approvals. In Settings you can let your workspaces use your desktops, so Work tasks, teammate check-ins and lead routines run with Claude Code or Codex on members' machines instead of spending Polychat credits. Partner teammates work freely inside their workspace folder and only ask when they need to step outside it. Teammates working on someone's desktop can read and update tasks through Polychat, leave that person's own agent instructions out, and a desktop can work on up to three jobs at once. When a task is waiting for your approval, its page now offers Review request, and approving picks the agent up exactly where it paused.
+- Updated dependencies [0af6a2b]
+- Updated dependencies [766145d]
+- Updated dependencies [00f22ad]
+- Updated dependencies [afe0236]
+- Updated dependencies [701256c]
+- Updated dependencies [b91402a]
+- Updated dependencies [c79e769]
+- Updated dependencies [810eff4]
+- Updated dependencies [00f22ad]
+  - @ngriffin_uk/polychat-schemas@1.10.0
+  - @ngriffin_uk/polychat-component-shell@2.4.0
+  - @ngriffin_uk/polychat-component-conversation@2.2.0
+  - @ngriffin_uk/polychat-component-models@1.2.5
+  - @ngriffin_uk/polychat-library-client@0.9.0
+  - @ngriffin_uk/polychat-library-react@0.10.0
+  - @ngriffin_uk/polychat-component-experiences@0.7.0
+  - @ngriffin_uk/polychat-utility-core@0.9.0
+  - @ngriffin_uk/polychat-component-account@1.1.1
+  - @ngriffin_uk/polychat-component-ui@0.6.2
+  - @ngriffin_uk/polychat-component-content@1.3.4
+  - @ngriffin_uk/polychat-component-navigation@0.6.1
+  - @ngriffin_uk/polychat-library-chat@1.3.3
+
 ## 0.6.3
 
 ### Patch Changes

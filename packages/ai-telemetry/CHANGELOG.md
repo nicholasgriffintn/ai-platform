@@ -1,5 +1,22 @@
 # @ngriffin_uk/polychat-ai-telemetry
 
+## 0.3.0
+
+### Minor Changes
+
+- 701256c: AI observability now goes to Sentry instead of PostHog. Pass a `sentry` client to `createWorkerTelemetry` and every model and embedding call is recorded as a `gen_ai` span for Sentry AI agent monitoring, with prompt and response content only for users who allow training data. Response thumbs feedback becomes Sentry user feedback tagged with the chat trace. The PostHog sink, its configuration helpers and the `usePostHogClient` hook are removed, and product analytics events continue through Beacon and Analytics Engine.
+
+### Patch Changes
+
+- Updated dependencies [0af6a2b]
+- Updated dependencies [afe0236]
+- Updated dependencies [c79e769]
+- Updated dependencies [810eff4]
+- Updated dependencies [00f22ad]
+  - @ngriffin_uk/polychat-schemas@1.10.0
+  - @ngriffin_uk/polychat-utility-core@0.9.0
+  - @ngriffin_uk/polychat-utility-server@0.6.1
+
 ## 0.2.5
 
 ### Patch Changes

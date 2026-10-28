@@ -1,5 +1,22 @@
 # @ngriffin_uk/polychat-component-ui
 
+## 0.6.2
+
+### Patch Changes
+
+- Updated dependencies [0af6a2b]
+- Updated dependencies [766145d]
+- Updated dependencies [afe0236]
+- Updated dependencies [701256c]
+- Updated dependencies [c79e769]
+- Updated dependencies [810eff4]
+- Updated dependencies [00f22ad]
+  - @ngriffin_uk/polychat-schemas@1.10.0
+  - @ngriffin_uk/polychat-library-react@0.10.0
+  - @ngriffin_uk/polychat-utility-react@0.7.0
+  - @ngriffin_uk/polychat-utility-core@0.9.0
+  - @ngriffin_uk/polychat-library-chat@1.3.3
+
 ## 0.6.1
 
 ### Patch Changes

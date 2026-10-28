@@ -1,5 +1,97 @@
 # @ngriffin_uk/polychat-component-shell
 
+## 2.4.0
+
+### Minor Changes
+
+- 766145d: Live sessions now support push to talk. Turn it on with the hand button next to the microphone, then hold the microphone button or Space to speak and let go to hand the turn over. The microphone stays closed between turns, so background noise no longer interrupts replies. The setting is remembered across Live in chat and with teammates.
+- afe0236: Notes, Article Processor and Paperwork now live in Files instead of in their own apps.
+
+  - **Notes write where they live.** The Note tile in Files opens a blank note straight in the editor that the Note Taker app used to have: sepia or plain, your font and size, dictation, tab audio, notes from a recording link and AI assist. Every note opens ready to edit, including notes Poly saves for you and notes in notebooks. A blank note you close without writing is thrown away.
+  - **Note details are still there.** Metadata on a note shows its summary, topics, tags, type, sentiment and where it was captured from, plus word count and reading time. You can edit the details, or regenerate the summary. Details from your old notes come across with them.
+  - **Reading settings in one place.** The Aa button sets the typeface, sepia or app-matching paper and a text size from 12 to 40px. It applies to every note you open.
+  - **Quicker panels.** File info, Knowledge, and Reading or Framing (where they apply) have their own buttons beside Ask in the file viewer.
+  - **Version history and comments on notes.** Each editing session keeps a version you can read and bring back from Version history. Notes take comments and threads like documents do, and in a project you can mention a teammate to pick one up.
+  - **Safe across tabs.** If a note changes somewhere else while you are typing, Files tells you and lets you keep your edits or use the saved version.
+  - **How it's framed, for anything you file.** Links and pasted text in Files can be checked for slant, tone, sourcing, loaded wording and what they leave out. This is the same check Discover uses. Ask Poly to analyse an article and it files the piece and reads its framing in one go.
+  - **Make a report from a folder.** A folder's menu has Make a report, which writes a briefing, study guide, FAQ or post from the folder's files. The report lands in the folder as a document you can edit.
+  - **Read as receipt, invoice or damage claim.** Any photo, PDF or text in Files can be read as a receipt, invoice or damage claim. Doubtful figures are flagged and the source text is highlighted where each value came from.
+  - **Folders that read their own paperwork.** Set a folder's Read files as option and every file already in it, and every file added later, is read automatically, including files from connected syncs. The folder then shows a ledger with a running total, an Export CSV button and Save as sheet.
+  - Your existing notes and article reports have moved into Files. Each article session becomes a folder holding its articles and its report. The Note Taker, Article Processor and Paperwork apps are gone from Apps.
+
+- 810eff4: Work now runs on tasks instead of chats. Teammates manage the work between them: they assign each other, ask for review, escalate, raise cases and propose hires.
+
+  - **Projects open on their tasks.** Each task has a key such as BIL-41, an owner, a priority, a due date and a thread. Switch between List, Board, Tree, Timeline and Triage views. Type a request into the box at the top and the project's lead routes it. Your old project conversations are now done tasks, with their history kept.
+  - **One memory per workspace.** A teammate employed in a workspace keeps one working memory and one set of connection grants across all its projects, carried over from what it already knew in each project.
+  - **Tasks run where their owner runs.** A task follows its teammate's model onto Polychat, the sandbox or one of your machines. If that place can't take it, such as a machine that's offline, a sandbox with no repository or a provider that isn't ready, the task waits and says why instead of failing part way. Machine tasks start by themselves when the machine checks in.
+  - **Big tasks split into sub-tasks.** A teammate proposes how to break its task down, with owners and the order things must happen in. Once its manager or you accept that revision, the sub-tasks are created with their blockers and the ready ones start.
+  - **Teammates hand work to each other.** A teammate can split a task into sub-tasks, assign them to other teammates, ask someone to review, block a task on the person who can unblock it, and escalate up its reporting line. Everything it does runs on the authority of the person responsible for it.
+  - **The lead handles the team's questions first.** When a teammate gets stuck on a question or a failed run, its manager looks at it before you do. It answers what it can from the mission, the plan and earlier answers, sends work back to run again, and only comes to you with one combined request for what it genuinely can't know. Approvals and spending still come straight to you.
+  - **Mention a teammate to wake it.** Write @name in a task thread and that teammate picks the task up. Teammates also wake when they're assigned work, asked to review or unblocked, and on their own heartbeat if you give them one.
+  - **Team page.** See who reports to whom, where each teammate runs, how often it wakes and what it has spent this month. Heartbeat rails show when each teammate ran, what it is running now and where it got stuck.
+  - **Budgets that brake.** Give each teammate a monthly budget. Inbox warns you at 80%, and at 100% the teammate pauses until you raise its cap.
+  - **Hiring by proposal.** You or a teammate can propose a hire with a reason, a manager and a budget. Owners and admins approve or reject it in Inbox.
+  - **Cases.** Problems found by people, by teammates or in imported issues land in a project's Triage, linked to the tasks that fix them. A case closes itself when those tasks are done.
+  - **Channels and email can open cases.** Connect a Slack channel, Telegram chat or email address to a project and choose "Open a case in Triage". Each new thread becomes a case that records who wrote in, and follow-ups in the same thread join it. The teammate drafts a reply, and you read, edit and send it from the case.
+  - **Standups.** Turn on a standup in project settings and pick the days, time and questions. Each standup is a task: you answer in Inbox from a draft built from your own activity, teammates answer from theirs, and the lead posts a summary, which can also go to a connected channel. Skip a day with one click, or pause standups until a date for holidays.
+  - **Initiatives.** Set your workspace's mission and initiatives, link projects to them and watch progress add up from their tasks. Teammates see why their work matters when they run. The lead reviews the initiatives every week and can write you a daily brief, on the days and times you choose on its page.
+  - **One Inbox.** Hires, budget warnings, standups, escalations, setup plans, approvals, teammates waiting on you and tasks handed to you sit in a single list, newest decisions first. Cases stay in Triage. My tasks lists everything you own or are responsible for across workspaces.
+  - **Find tasks with ⌘K.** Search now finds tasks by key, such as BIL-41, or by what they're about.
+  - **Unstick a task.** If a queued or running task stops moving, open it and choose "Send to the queue again" from its menu.
+  - **Costs and Activity.** Each workspace shows spend by teammate, initiative, project and task for the period you pick, and a feed of everything people and teammates did. Usage and the audit log moved here from settings.
+  - **Setup works with what you've connected.** The setup plan only uses services you've already connected, and gives each project read or read-and-write access as it needs. Anything else the lead thinks would help is listed as a suggestion you can connect in Plugins, never a task.
+  - **New workspace starts with a lead.** Give the workspace a name, a mission, links the lead can read and a monthly budget. The lead proposes a setup plan covering projects, team, budgets, wake rules, standups and first tasks, and nothing starts until you approve it. If anything fails while the plan is applied, nothing it made is kept and the plan shows why. Existing workspaces can hire a lead from the Team page. Edit the plan yourself before approving it, or save a running team as a template and start the next workspace from it.
+  - **Inbox on iPhone.** Approve hires and setup plans and answer standups from Inbox on iOS.
+
+- 00f22ad: Workers AI Flux is now a realtime transcription provider. It runs Deepgram Flux on Cloudflare, needs no API key, and detects when you have finished speaking, so you can pick it for Live voice and dictation without any setup.
+
+  The model picker in Live now lists only live models from providers that are ready, including the transcription providers (Workers AI, GreenPT, Cartesia, Mistral and ElevenLabs), which were missing before. Leaving Live puts back the chat model you had before.
+
+  Verbatim's live line now streams from realtime transcription and builds as you speak, instead of refreshing every second. Each phrase is still checked word by word by Clef Omni once you pause.
+
+### Patch Changes
+
+- 0af6a2b: Discover researches the day's topics before it talks about them, and Reading keeps every useful link.
+
+  - **Research first.** Before The Perch and today's episode are written, Poly reads the full articles behind each topic the edition covers, searches wider around the lead stories and writes a briefing: what happened, how it got here, why it matters, the different views and what comes next.
+  - **Deeper conversations.** The Perch is now a ten minute conversation that goes deep on the two or three topics with the most to say, instead of a quick run through headlines. Neither The Perch nor the episode comments on scores, points or what an article does or doesn't say.
+  - **Researching, then recording.** Asking for The Perch queues the research first, and the player shows Researching until the recording starts.
+  - **Every useful link.** Reading no longer stops at six links or two per topic. After Poly's own picks it keeps every fresh link found for the day, with the topics the edition covers first, then the day's headlines and your services' feeds, and the same story only once.
+  - **Research adds to Reading.** Pages Poly reads while researching a topic join Reading next to that topic's other links, unless an earlier edition already showed them.
+
+- b91402a: Workspace setup now tells you when the lead stops, for example when a model provider is out of credits, with a button to run it again instead of an endless "drafting". Approving a setup plan keeps the setup task finished, so it no longer reappears in Inbox for review, and budget warnings in Inbox show when the budget was reached rather than when the teammate was hired.
+- c79e769: Tonight's story holds still. Tapping a story card in Worth a look makes its story once and plays the same one every time after, instead of writing a new one on each tap. If it didn't take, tapping again tries once more.
+
+  The story also keeps to itself: it opens in its own player and no longer takes over the Wind down tile, which keeps your own session.
+
+- Updated dependencies [0af6a2b]
+- Updated dependencies [766145d]
+- Updated dependencies [00f22ad]
+- Updated dependencies [afe0236]
+- Updated dependencies [701256c]
+- Updated dependencies [c79e769]
+- Updated dependencies [810eff4]
+- Updated dependencies [00f22ad]
+  - @ngriffin_uk/polychat-schemas@1.10.0
+  - @ngriffin_uk/polychat-component-conversation@2.2.0
+  - @ngriffin_uk/polychat-component-models@1.2.5
+  - @ngriffin_uk/polychat-library-client@0.9.0
+  - @ngriffin_uk/polychat-library-react@0.10.0
+  - @ngriffin_uk/polychat-utility-react@0.7.0
+  - @ngriffin_uk/polychat-component-experiences@0.7.0
+  - @ngriffin_uk/polychat-component-workspaces@1.1.0
+  - @ngriffin_uk/polychat-utility-core@0.9.0
+  - @ngriffin_uk/polychat-library-realtime@0.4.0
+  - @ngriffin_uk/polychat-component-account@1.1.1
+  - @ngriffin_uk/polychat-component-ui@0.6.2
+  - @ngriffin_uk/polychat-component-content@1.3.4
+  - @ngriffin_uk/polychat-component-navigation@0.6.1
+  - @ngriffin_uk/polychat-component-capabilities@1.0.4
+  - @ngriffin_uk/polychat-component-sites@0.2.6
+  - @ngriffin_uk/polychat-library-chat@1.3.3
+  - @ngriffin_uk/polychat-library-model-registry@0.3.5
+  - @ngriffin_uk/polychat-library-sites@0.3.5
+
 ## 2.3.0
 
 ### Minor Changes

@@ -1,5 +1,21 @@
 # @ngriffin_uk/polychat-utility-react
 
+## 0.7.0
+
+### Minor Changes
+
+- 766145d: Live sessions now support push to talk. Turn it on with the hand button next to the microphone, then hold the microphone button or Space to speak and let go to hand the turn over. The microphone stays closed between turns, so background noise no longer interrupts replies. The setting is remembered across Live in chat and with teammates.
+
+### Patch Changes
+
+- Updated dependencies [0af6a2b]
+- Updated dependencies [afe0236]
+- Updated dependencies [c79e769]
+- Updated dependencies [810eff4]
+- Updated dependencies [00f22ad]
+  - @ngriffin_uk/polychat-schemas@1.10.0
+  - @ngriffin_uk/polychat-utility-core@0.9.0
+
 ## 0.6.0
 
 ### Minor Changes
