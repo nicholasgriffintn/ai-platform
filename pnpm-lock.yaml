@@ -2499,8 +2499,8 @@ importers:
   packages/library-policy:
     dependencies:
       '@cedar-policy/cedar-wasm':
-        specifier: 4.13.0
-        version: 4.13.0
+        specifier: 4.14.0
+        version: 4.14.0
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^
@@ -3430,8 +3430,8 @@ packages:
   '@cacheable/utils@2.5.0':
     resolution: {integrity: sha512-buipgOVDkkPXNR5+xBpDw7Zk2n1EvU7qBJCNUcL7rhQ//kfpOXPAvQ511Os0vpLYJ1pZnvudNytkQt2hst3wqA==}
 
-  '@cedar-policy/cedar-wasm@4.13.0':
-    resolution: {integrity: sha512-1omEd/J0c7RjcfSUWiXZc6zk6XUs1IuY7Yk9TVysoKV/LpFWIk45RpjvRFVioPUR3RQmgA/DaqKhK3pucbBx1A==}
+  '@cedar-policy/cedar-wasm@4.14.0':
+    resolution: {integrity: sha512-TPyz3zMl5r7W5iSHq51IgG+NTILGoXB0VPrEcXnzCEpPUqL/7b+AtMPVVHB/UoJWuXA8YORjLuWxKHUW33ePAA==}
 
   '@cfworker/json-schema@4.1.1':
     resolution: {integrity: sha512-gAmrUZSGtKc3AiBL71iNWxDsyUC5uMaKKGdvzYsBoTW/xi42JQHl7eKV2OYzCUqvc+D2RCcf7EXY2iCyFIk6og==}
@@ -12481,7 +12481,7 @@ snapshots:
       hashery: 1.5.1
       keyv: 5.6.0
 
-  '@cedar-policy/cedar-wasm@4.13.0': {}
+  '@cedar-policy/cedar-wasm@4.14.0': {}
 
   '@cfworker/json-schema@4.1.1': {}
 

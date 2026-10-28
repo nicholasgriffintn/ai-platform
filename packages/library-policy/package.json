@@ -32,7 +32,7 @@
     "typecheck": "tsc -b tsconfig.typecheck.json"
   },
   "dependencies": {
-    "@cedar-policy/cedar-wasm": "4.13.0"
+    "@cedar-policy/cedar-wasm": "4.14.0"
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",
