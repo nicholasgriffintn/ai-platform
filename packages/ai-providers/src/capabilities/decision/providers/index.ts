@@ -1,2 +1,2 @@
 export * from "./openai.js";
-export * from "./typesafe.js";
+export * from "./system-one.js";

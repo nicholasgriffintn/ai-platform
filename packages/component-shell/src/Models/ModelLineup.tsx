@@ -3,6 +3,7 @@ import { Badge, cn, Skeleton } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   useModelCatalogue,
+  useModelChoices,
   useModels,
   formatProviderLabel,
   resolveLineupHeadline,
@@ -92,13 +93,19 @@ function EntryLine({
   entry,
   yours,
   compact = false,
+  emptyLabel = "No model in this slot",
+  yoursLabel = "On your plan",
+  unavailableLabel = "Not available on your plan yet",
 }: {
   entry: LineupEntryView | null;
   yours?: LineupEntryView | null;
   compact?: boolean;
+  emptyLabel?: string;
+  yoursLabel?: string;
+  unavailableLabel?: string;
 }) {
   if (!entry) {
-    return <span className="text-xs text-muted-foreground">Nothing configured</span>;
+    return <span className="text-xs text-muted-foreground">{emptyLabel}</span>;
   }
 
   const showYours = yours !== undefined && yours?.id !== entry.id;
@@ -124,11 +131,11 @@ function EntryLine({
         <span className="pl-7 text-[11px] text-muted-foreground">
           {yours ? (
             <>
-              On your plan: <span className="text-foreground">{yours.name}</span> via{" "}
+              {yoursLabel}: <span className="text-foreground">{yours.name}</span> via{" "}
               {formatProviderLabel(yours.provider)}
             </>
           ) : (
-            "Not available on your plan yet"
+            unavailableLabel
           )}
         </span>
       )}
@@ -267,22 +274,33 @@ function LocalRuntimeTable({ runtime }: { runtime: "browser" | "device" | "machi
 }
 
 function SystemModels() {
-  const { catalogueRecord, accountRecord } = useLineupModels();
-  const rows = useMemo(
-    () =>
-      SYSTEM_MODEL_LINEUP.map((role) => ({
-        role,
-        headline: resolveLineupHeadline(catalogueRecord, role.defaults),
-        yours: accountRecord
-          ? resolveLineupHeadline(
-              accountRecord,
-              role.defaults,
-              (model) => model.isExecutable === true,
-            )
-          : undefined,
-      })),
-    [accountRecord, catalogueRecord],
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+  const { catalogueRecord } = useLineupModels();
+  const choices = useModelChoices();
+  const activeByRole = new Map(
+    (isAuthenticated ? (choices.data?.roles ?? []) : []).map((view) => [view.role, view.active]),
   );
+  const rows = SYSTEM_MODEL_LINEUP.map((role) => {
+    const active = activeByRole.get(role.id);
+    const option = active ? choices.data?.models[active.id] : undefined;
+
+    return {
+      role,
+      headline: resolveLineupHeadline(catalogueRecord, role.defaults),
+      yours:
+        !isAuthenticated || !choices.data
+          ? undefined
+          : option
+            ? {
+                id: option.id,
+                name: option.name,
+                provider: option.provider,
+                model: catalogueRecord[option.id] ?? null,
+                candidateIndex: -1,
+              }
+            : null,
+    };
+  });
 
   return (
     <ul aria-label="System models" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -295,7 +313,18 @@ function SystemModels() {
             <h3 className="text-sm font-semibold text-foreground">{role.label}</h3>
             <p className="text-xs leading-relaxed text-muted-foreground">{role.description}</p>
           </div>
-          <EntryLine entry={headline} yours={yours} compact />
+          {!headline && yours ? (
+            <EntryLine entry={yours} compact />
+          ) : (
+            <EntryLine
+              entry={headline}
+              yours={yours}
+              compact
+              emptyLabel="No platform default. Choose your own under Model choices."
+              yoursLabel="Running for you"
+              unavailableLabel="Nothing on your account can run this yet"
+            />
+          )}
         </li>
       ))}
     </ul>

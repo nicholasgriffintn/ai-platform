@@ -2,8 +2,25 @@ import { capitaliseFirst, titleCaseSlug } from "@ngriffin_uk/polychat-utility-co
 
 const UPPERCASE_MODEL_SEGMENTS = new Set(["gpt", "glm", "oss", "tts", "ai", "o", "qvq", "mai"]);
 
+const PROVIDER_LABELS: Readonly<Record<string, string>> = {
+  deepseek: "DeepSeek",
+  deepinfra: "DeepInfra",
+  elevenlabs: "ElevenLabs",
+  "google-ai-studio": "Google AI Studio",
+  greenpt: "GreenPT",
+  lmstudio: "LM Studio",
+  minimax: "MiniMax",
+  openai: "OpenAI",
+  openrouter: "OpenRouter",
+  typesafe: "TypeSafe",
+  "web-llm": "WebLLM",
+  "workers-ai": "Workers AI",
+  xai: "xAI",
+  zai: "Z.ai",
+};
+
 export function formatProviderLabel(provider: string) {
-  return titleCaseSlug(provider);
+  return PROVIDER_LABELS[provider] ?? titleCaseSlug(provider);
 }
 
 export function formatModelFamilyLabel(family: string) {

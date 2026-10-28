@@ -1,5 +1,7 @@
 import type {
+  SuggestSystemModelChoicesInput,
   SystemModelChoicesResponse,
+  SystemModelSuggestionsResponse,
   UpdateSystemModelChoicesInput,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -13,4 +15,10 @@ export function updateModelChoices(
   input: UpdateSystemModelChoicesInput,
 ): Promise<SystemModelChoicesResponse> {
   return requestJson("/models/choices", "PATCH", input);
+}
+
+export function suggestModelChoices(
+  input: SuggestSystemModelChoicesInput,
+): Promise<SystemModelSuggestionsResponse> {
+  return requestJson("/models/choices/suggestions", "POST", input);
 }

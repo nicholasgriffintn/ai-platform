@@ -3,9 +3,10 @@ import {
   OpenAIDecisionProvider,
 } from "../capabilities/decision/providers/openai.js";
 import {
-  TYPESAFE_PROVIDER_NAME,
-  TypeSafeDecisionProvider,
-} from "../capabilities/decision/providers/typesafe.js";
+  GREENPT_SYSTEM_ONE,
+  SystemOneDecisionProvider,
+  TYPESAFE_SYSTEM_ONE,
+} from "../capabilities/decision/providers/system-one.js";
 import {
   WORKERS_AI_DECISION_PROVIDER_NAME,
   WorkersAiDecisionProvider,
@@ -48,17 +49,35 @@ function decisionProviders(runtime: ProviderRuntime): AiProviderRegistration<Dec
       },
     },
     {
-      name: TYPESAFE_PROVIDER_NAME,
+      name: TYPESAFE_SYSTEM_ONE.name,
       aliases: ["typesafe-ai", "jev"],
       lifecycle: "transient",
-      create: (context) => {
-        const env = ensureEnv(context);
-        const user = ensureUser(context, { optional: true });
-
-        return new TypeSafeDecisionProvider(env, user, runtime);
-      },
+      create: (context) =>
+        new SystemOneDecisionProvider(
+          TYPESAFE_SYSTEM_ONE,
+          ensureEnv(context),
+          ensureUser(context, { optional: true }),
+          runtime,
+        ),
       metadata: {
         vendor: "TypeSafe",
+        categories: ["decision"],
+        tags: ["system-one", "calibrated"],
+      },
+    },
+    {
+      name: GREENPT_SYSTEM_ONE.name,
+      aliases: ["metis"],
+      lifecycle: "transient",
+      create: (context) =>
+        new SystemOneDecisionProvider(
+          GREENPT_SYSTEM_ONE,
+          ensureEnv(context),
+          ensureUser(context, { optional: true }),
+          runtime,
+        ),
+      metadata: {
+        vendor: "GreenPT",
         categories: ["decision"],
         tags: ["system-one", "calibrated"],
       },

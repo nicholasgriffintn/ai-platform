@@ -273,6 +273,43 @@ describe("models.dev catalogue sync", () => {
     );
   });
 
+  it("keeps curated snapshots that models.dev has not listed yet", () => {
+    const flash = {
+      provider: "greenpt",
+      matchingModel: "deepseek-v4.1-flash",
+      name: "DeepSeek V4.1 Flash",
+      family: "deepseek-flash",
+      contextWindow: 1000,
+    };
+    const greenptRemote = {
+      greenpt: {
+        models: {
+          "deepseek-v4.1-flash": {
+            id: "deepseek-v4.1-flash",
+            name: "Flash",
+            family: "deepseek-flash",
+          },
+        },
+      },
+    };
+    const catalogue = convertCatalogue(
+      {
+        greenpt: {
+          "deepseek-v4.1-flash": flash,
+          "deepseek-v4.1-flash-1017": { ...flash, matchingModel: "deepseek-v4.1-flash-1017" },
+          "deepseek-v4.1-flash-0901": { ...flash, matchingModel: "deepseek-v4.1-flash-0901" },
+        },
+      },
+      greenptRemote,
+    );
+    const synced = resolveCatalogueProvider(
+      syncCatalogue(catalogue, greenptRemote, new Map(), new Set(["greenpt"])).catalogue,
+      "greenpt",
+    );
+
+    expect(Object.keys(synced).sort()).toEqual(["deepseek-v4.1-flash", "deepseek-v4.1-flash-1017"]);
+  });
+
   it("removes deprecated offerings without deleting another provider's same model", () => {
     const catalogue = convertCatalogue(providers, remote);
     const nextRemote = structuredClone(remote);

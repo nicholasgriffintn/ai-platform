@@ -1,0 +1,33 @@
+{
+  "defaults": {
+    "contextWindow": 32768,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "decision"
+      ]
+    },
+    "strengths": [
+      "decision",
+      "analysis"
+    ],
+    "contextComplexity": 3,
+    "reliability": 4,
+    "releaseDate": "October 7, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "GreenPT's System One decision model. Answers yes/no, choice and scale questions about a case with a probability for every answer and generates no text.",
+  "models": {
+    "metis": {
+      "defaults": {
+        "name": "Metis",
+        "description": "GreenPT's decision model. Reads a case once and answers up to 32 yes/no, choice and scale questions with calibrated probabilities. Served from GreenPT's EU endpoint."
+      }
+    }
+  }
+}

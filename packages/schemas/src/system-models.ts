@@ -57,14 +57,22 @@ export type SystemModelRequirement =
   | { kind: "capability"; capability: SystemModelCapability }
   | { kind: "anyOf"; options: readonly SystemModelRequirement[] };
 
+export type SystemModelRanking =
+  | { metric: "intelligence"; minContextWindow?: number }
+  | { metric: "media"; key: string; lowerIsBetter?: boolean }
+  | { metric: "cost" };
+
 export interface SystemModelRoleDefinition {
   id: SystemModelRole;
   label: string;
   description: string;
   group: SystemModelRoleGroup;
   requires: SystemModelRequirement;
+  ranking: SystemModelRanking;
   defaults: readonly ModelLineupCandidate[];
 }
+
+export const DOCUMENT_OCR_PROVIDERS = ["mistral", "greenpt"] as const;
 
 export const TRANSCRIPTION_MODEL_PROVIDERS = [
   "workers-ai",
@@ -86,6 +94,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     description: "Names conversations from their first exchange.",
     group: "writing",
     requires: { kind: "text" },
+    ranking: { metric: "cost" },
     defaults: [
       workersAi("@cf/zai-org/glm-4.7-flash", "low"),
       workersAi("@cf/google/gemma-4-26b-a4b-it"),
@@ -97,6 +106,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     description: "Summarises older history when a conversation nears its context limit.",
     group: "writing",
     requires: { kind: "text" },
+    ranking: { metric: "intelligence", minContextWindow: 200_000 },
     defaults: [
       workersAi("@cf/zai-org/glm-5.3-flash"),
       workersAi("@cf/deepseek-ai/deepseek-v4.1-flash-1017"),
@@ -110,6 +120,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
       "Memory, notes, document tidying, classification and other background work that never reaches a reply.",
     group: "writing",
     requires: { kind: "text" },
+    ranking: { metric: "cost" },
     defaults: [
       workersAi("@cf/zai-org/glm-4.7-flash", "low"),
       workersAi("@cf/google/gemma-4-26b-a4b-it"),
@@ -121,6 +132,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     description: "Summarises pages, articles and search results pulled in by tools.",
     group: "writing",
     requires: { kind: "text" },
+    ranking: { metric: "intelligence", minContextWindow: 200_000 },
     defaults: [
       workersAi("@cf/zai-org/glm-5.3-flash"),
       workersAi("@cf/deepseek-ai/deepseek-v4.1-flash-1017"),
@@ -134,6 +146,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
       "Longer pieces written for you: Discover editions and episodes, notebook drafts, podcast scripts and framing.",
     group: "writing",
     requires: { kind: "text" },
+    ranking: { metric: "intelligence" },
     defaults: [workersAi("@cf/moonshotai/kimi-k2.6"), workersAi("@cf/zai-org/glm-5.3")],
   },
   {
@@ -142,6 +155,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     description: "Describes pictures and sketches, such as guessing what a drawing shows.",
     group: "understanding",
     requires: { kind: "text", inputs: ["image"] },
+    ranking: { metric: "intelligence" },
     defaults: [workersAi("@cf/zai-org/glm-5.3-flash"), workersAi("@cf/google/gemma-4-26b-a4b-it")],
   },
   {
@@ -156,6 +170,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
       strengths: ["transcription"],
       providers: TRANSCRIPTION_MODEL_PROVIDERS,
     },
+    ranking: { metric: "media", key: "aaWerIndex", lowerIsBetter: true },
     defaults: [workersAi("@cf/openai/whisper-large-v3-turbo"), workersAi("@cf/deepgram/nova-3")],
   },
   {
@@ -167,10 +182,17 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     requires: {
       kind: "anyOf",
       options: [
-        { kind: "output", output: "ocr" },
+        {
+          kind: "output",
+          output: "text",
+          inputs: ["image"],
+          strengths: ["ocr"],
+          providers: DOCUMENT_OCR_PROVIDERS,
+        },
         { kind: "text", inputs: ["image"], providers: ["workers-ai"] },
       ],
     },
+    ranking: { metric: "cost" },
     defaults: [workersAi("@cf/google/gemma-4-26b-a4b-it")],
   },
   {
@@ -180,6 +202,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
       "Typed values pulled from text and images: amounts, dates, spans, estimates and forecasts with confidence.",
     group: "understanding",
     requires: { kind: "output", output: "extraction" },
+    ranking: { metric: "cost" },
     defaults: [workersAi("@cf/cloudflare/clairic")],
   },
   {
@@ -188,22 +211,24 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     description: "Reorders retrieved candidates by their relevance to the current query.",
     group: "understanding",
     requires: { kind: "output", output: "reranking" },
+    ranking: { metric: "cost" },
     defaults: [workersAi("@cf/baai/bge-reranker-base")],
   },
   {
     id: "guardrails",
     label: "Guardrails",
     description:
-      "Screens prompts and responses before they reach a person. Safety classifiers such as Llama Guard, TypeSafe's Jev and Mistral moderation all qualify.",
+      "Screens prompts and responses before they reach a person. Safety classifiers such as Llama Guard, TypeSafe's Jev, GreenPT's Metis and Mistral moderation all qualify.",
     group: "judgement",
     requires: {
       kind: "anyOf",
       options: [
         { kind: "output", output: "guardrails" },
-        { kind: "output", output: "decision", providers: ["typesafe"] },
+        { kind: "output", output: "decision", providers: ["typesafe", "greenpt"] },
         { kind: "output", output: "moderation", providers: ["mistral"] },
       ],
     },
+    ranking: { metric: "cost" },
     defaults: [workersAi("@cf/meta/llama-guard-3-8b")],
   },
   {
@@ -213,6 +238,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
       "Fast calibrated judgements: yes/no checks, classifications and ratings that gate other work.",
     group: "judgement",
     requires: { kind: "output", output: "decision" },
+    ranking: { metric: "cost" },
     defaults: [
       workersAi("@cf/cloudflare/clef-flash"),
       workersAi("@cf/cloudflare/clef-omni"),
@@ -225,6 +251,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     description: "Draws pictures for the image app, tools, covers and Discover.",
     group: "media",
     requires: { kind: "output", output: "image", inputs: ["text"] },
+    ranking: { metric: "media", key: "text_to_imageElo" },
     defaults: [
       workersAi("@cf/black-forest-labs/flux-2-dev"),
       workersAi("@cf/black-forest-labs/flux-2-klein-4b"),
@@ -236,6 +263,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     description: "Turns a sketch into a finished painting by editing the picture you drew.",
     group: "media",
     requires: { kind: "output", output: "image", inputs: ["image"], providers: ["workers-ai"] },
+    ranking: { metric: "media", key: "image_editingElo" },
     defaults: [
       workersAi("@cf/black-forest-labs/flux-2-klein-4b"),
       workersAi("@cf/black-forest-labs/flux-2-klein-9b"),
@@ -247,6 +275,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     description: "Generates short video clips.",
     group: "media",
     requires: { kind: "output", output: "video" },
+    ranking: { metric: "media", key: "text_to_videoElo" },
     defaults: [workersAi("google/veo-3.1-fast")],
   },
   {
@@ -255,6 +284,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     description: "Generates music and sound.",
     group: "media",
     requires: { kind: "output", output: "audio" },
+    ranking: { metric: "media", key: "music_with_vocalsElo" },
     defaults: [workersAi("minimax/music-2.6")],
   },
   {
@@ -263,6 +293,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     description: "Reads responses aloud, narrates and voices podcasts.",
     group: "media",
     requires: { kind: "output", output: "speech", inputs: ["text"], providers: SPEECH_PROVIDERS },
+    ranking: { metric: "media", key: "text_to_speechElo" },
     defaults: [
       workersAi("@cf/deepgram/aura-2-en"),
       workersAi("@cf/deepgram/aura-1"),
@@ -275,6 +306,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     description: "Fill-in-the-middle completions for editors.",
     group: "code",
     requires: { kind: "capability", capability: "supportsFim" },
+    ranking: { metric: "cost" },
     defaults: [],
   },
   {
@@ -283,6 +315,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     description: "Predicts the next edit in a file.",
     group: "code",
     requires: { kind: "capability", capability: "supportsNextEdit" },
+    ranking: { metric: "cost" },
     defaults: [],
   },
   {
@@ -291,6 +324,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     description: "Merges a proposed edit into a file.",
     group: "code",
     requires: { kind: "capability", capability: "supportsApplyEdit" },
+    ranking: { metric: "cost" },
     defaults: [],
   },
 ];
@@ -362,10 +396,31 @@ export type SystemModelChoicesResponse = z.infer<typeof systemModelChoicesRespon
 
 export const updateSystemModelChoicesSchema = z.object({
   workspace_id: z.string().min(1).optional(),
-  role: systemModelRoleSchema,
-  choices: z.array(systemModelChoiceSchema).max(SYSTEM_MODEL_CHOICE_LIMIT),
+  choices: systemModelChoicesSchema,
 });
 export type UpdateSystemModelChoicesInput = z.infer<typeof updateSystemModelChoicesSchema>;
+
+export const SYSTEM_MODEL_PRIORITIES = ["quality", "value"] as const;
+export const systemModelPrioritySchema = z.enum(SYSTEM_MODEL_PRIORITIES);
+export type SystemModelPriority = z.infer<typeof systemModelPrioritySchema>;
+
+export const suggestSystemModelChoicesSchema = z.object({
+  workspace_id: z.string().min(1).optional(),
+  provider: z.string().min(1).optional(),
+  priority: systemModelPrioritySchema.default("value"),
+});
+export type SuggestSystemModelChoicesInput = z.infer<typeof suggestSystemModelChoicesSchema>;
+
+export const systemModelSuggestionsResponseSchema = z.object({
+  providers: z.array(z.string()),
+  suggestions: z.array(
+    z.object({
+      role: systemModelRoleSchema,
+      choices: z.array(systemModelChoiceSchema),
+    }),
+  ),
+});
+export type SystemModelSuggestionsResponse = z.infer<typeof systemModelSuggestionsResponseSchema>;
 
 export function getSystemModelLineup(role: SystemModelRole): SystemModelRoleDefinition {
   const definition = SYSTEM_MODEL_LINEUP.find((entry) => entry.id === role);

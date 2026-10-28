@@ -1,7 +1,8 @@
-import type {
-  GuardrailInput,
-  GuardrailResult,
-  GuardrailsProvider,
+import {
+  SYSTEM_ONE_PROVIDER_NAMES,
+  type GuardrailInput,
+  type GuardrailResult,
+  type GuardrailsProvider,
 } from "@ngriffin_uk/polychat-ai-providers";
 import { DEFAULT_GUARDRAILS_PROVIDER } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -19,11 +20,11 @@ const DEFAULT_BEDROCK_GUARDRAIL_VERSION = "1";
 async function modelGuardrailsProvider(env: IEnv, user?: IUser): Promise<GuardrailsProvider> {
   const { model, provider } = await providerHost.models.getAuxiliaryGuardrailsModel(env, user);
 
-  if (provider === "typesafe") {
+  if (SYSTEM_ONE_PROVIDER_NAMES.includes(provider)) {
     return providerLibrary.resolve("guardrails", "typesafe", {
       env,
       user,
-      config: { env, user, model },
+      config: { env, user, provider, model },
     });
   }
 

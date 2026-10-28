@@ -1,4 +1,8 @@
-import { getModelDisplayName, type ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import {
+  formatProviderLabel,
+  getModelDisplayName,
+  type ModelConfigItem,
+} from "@ngriffin_uk/polychat-schemas";
 
 export interface ModelProviderGroup {
   provider: string;
@@ -10,13 +14,7 @@ export function isCatalogueModel(model: ModelConfigItem): boolean {
   return !model.deprecated && model.status !== "deprecated" && !model.hiddenFromDefaultList;
 }
 
-export function formatProviderLabel(provider: string): string {
-  return provider
-    .split(/[-_\s]+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
+export { formatProviderLabel };
 
 function compareModels(a: ModelConfigItem, b: ModelConfigItem): number {
   if (Boolean(a.isFeatured) !== Boolean(b.isFeatured)) {

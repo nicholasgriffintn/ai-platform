@@ -51,7 +51,7 @@ function SettingCard({
   children: ReactNode;
 }) {
   return (
-    <li className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4">
+    <li className="flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-surface p-4">
       <div>
         <h3 className="text-sm font-semibold text-foreground">{title}</h3>
         <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>

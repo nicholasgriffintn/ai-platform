@@ -605,6 +605,54 @@
       "unset": [
         "supportsResponseFormat"
       ]
+    },
+    "metis": {
+      "model": "greenpt/metis/metis",
+      "matchingModel": "metis",
+      "overrides": {
+        "hiddenFromDefaultList": true,
+        "lastUpdated": "October 7, 2026",
+        "costPer1kInputTokens": 0.0001368,
+        "costPer1kOutputTokens": 0
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "deepseek-v4.1-flash-1017": {
+      "model": "deepseek/deepseek-v4-1-flash-1017",
+      "matchingModel": "deepseek-v4.1-flash-1017",
+      "overrides": {
+        "contextWindow": 1000000,
+        "speed": 4,
+        "lastUpdated": "October 17, 2026",
+        "costPer1kInputTokens": 0.0004104,
+        "costPer1kOutputTokens": 0.001653,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "minimax-m3": {
+      "model": "minimax/minimax-m3",
+      "matchingModel": "minimax-m3",
+      "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 64000,
+        "speed": 3,
+        "lastUpdated": "July 2026",
+        "costPer1kInputTokens": 0.0005016,
+        "costPer1kOutputTokens": 0.002508,
+        "supportsAttachments": true
+      }
     }
   }
 }

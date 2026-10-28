@@ -84,7 +84,10 @@ describe("TypeSafeGuardProvider", () => {
       providers: { resolve: resolve as never },
     };
     const env = { TYPESAFE_API_KEY: "k" };
-    const provider = new TypeSafeGuardProvider({ env, blockThreshold: 0.5 }, runtime);
+    const provider = new TypeSafeGuardProvider(
+      { env, provider: "typesafe", model: "jev-latest", blockThreshold: 0.5 },
+      runtime,
+    );
 
     const result = await provider.validateContent(
       { text: "take 40mg", prompt: "what dose?" },
@@ -101,8 +104,12 @@ describe("TypeSafeGuardProvider", () => {
   it("rejects thresholds outside the unit interval", () => {
     const runtime = {} as ProviderRuntime;
 
-    expect(() => new TypeSafeGuardProvider({ env: {}, blockThreshold: 1.5 }, runtime)).toThrow(
-      "between 0 and 1",
-    );
+    expect(
+      () =>
+        new TypeSafeGuardProvider(
+          { env: {}, provider: "typesafe", model: "jev-latest", blockThreshold: 1.5 },
+          runtime,
+        ),
+    ).toThrow("between 0 and 1");
   });
 });

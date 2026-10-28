@@ -8,6 +8,7 @@ import {
 import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
+import { ModelChoicesPrefill } from "./ModelChoicesPrefill.js";
 import { RoleChoiceCard } from "./RoleChoiceCard.js";
 
 export interface ModelChoicesEditorProps {
@@ -28,6 +29,14 @@ function listOutdatedChoices(data: SystemModelChoicesResponse): string[] {
           : `${label}: ${name} is no longer available to you`;
       });
   });
+}
+
+function listProviders(data: SystemModelChoicesResponse): string[] {
+  const providers = new Set(
+    data.roles.flatMap((view) => view.options.flatMap((id) => data.models[id]?.provider ?? [])),
+  );
+
+  return [...providers].sort();
 }
 
 function OutdatedNotice({ notes }: { notes: string[] }) {
@@ -94,6 +103,23 @@ export function ModelChoicesEditor({ workspaceId }: ModelChoicesEditorProps) {
         </p>
       )}
       {outdated.length > 0 && <OutdatedNotice notes={outdated} />}
+      {data.editable && (
+        <ModelChoicesPrefill
+          workspaceId={workspaceId}
+          models={data.models}
+          providers={listProviders(data)}
+          applying={update.isPending}
+          onApply={(choices) =>
+            update.mutateAsync({ choices }).then(
+              () => toast.success("Choices applied"),
+              (mutationError: Error) =>
+                toast.error("Couldn't apply those choices", {
+                  description: mutationError.message,
+                }),
+            )
+          }
+        />
+      )}
       {SYSTEM_MODEL_ROLE_GROUPS.map((group) => {
         const definitions = SYSTEM_MODEL_LINEUP.filter(
           (definition) => definition.group === group.id,
@@ -123,10 +149,12 @@ export function ModelChoicesEditor({ workspaceId }: ModelChoicesEditorProps) {
                         view={view}
                         models={data.models}
                         editable={data.editable}
-                        saving={update.isPending && update.variables?.role === definition.id}
+                        saving={
+                          update.isPending && update.variables?.choices[definition.id] !== undefined
+                        }
                         onChange={(choices) =>
                           update.mutate(
-                            { role: definition.id, choices },
+                            { choices: { [definition.id]: choices } },
                             {
                               onError: (mutationError) =>
                                 toast.error("Couldn't save that choice", {

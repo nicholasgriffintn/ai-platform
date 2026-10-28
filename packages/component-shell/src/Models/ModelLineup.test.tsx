@@ -39,6 +39,7 @@ vi.mock("@ngriffin_uk/polychat-library-react", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@ngriffin_uk/polychat-library-react")>()),
   useModelCatalogue: () => ({ data: catalogue, isLoading: false }),
   useModels: () => ({ data: state.account, isLoading: false }),
+  useModelChoices: () => ({ data: undefined, isLoading: false }),
 }));
 
 describe("ModelLineup", () => {

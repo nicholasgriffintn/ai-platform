@@ -695,7 +695,8 @@
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 4.3
-        }
+        },
+        "name": "DeepSeek V4.1 Flash 1017"
       }
     },
     "deepseek-v4-1-flash-beta": {

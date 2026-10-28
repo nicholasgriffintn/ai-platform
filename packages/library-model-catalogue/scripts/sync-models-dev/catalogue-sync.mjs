@@ -5,7 +5,7 @@ import {
 } from "./artificial-analysis.mjs";
 import { convertCatalogue } from "./catalogue-conversion.mjs";
 import { modelIdentity } from "./catalogue-identity.mjs";
-import { PROVIDER_ALIASES } from "./constants.mjs";
+import { CURATED_MODEL_IDS, PROVIDER_ALIASES } from "./constants.mjs";
 import { buildUpdateValues } from "./model-values.mjs";
 import {
   remoteModelBelongsToProvider,
@@ -164,19 +164,20 @@ export function syncCatalogue(catalogue, remoteProviders, analysisLookup, select
       const remoteId = remote?.id ?? config.matchingModel;
 
       if (
-        hasDeprecatedStatus(remoteProvider) ||
-        hasDeprecatedStatus(remote) ||
-        status.outdatedModelIds.has(remoteId) ||
-        (status.latestModelIds.size > 0 &&
-          !status.latestModelIds.has(remoteId) &&
-          !isProtectedCurrentAliasEntry(entry, remoteProviderId)) ||
-        isStaleUnmatchedFamilyEntry({
-          remoteModel: remote,
-          remoteModelId: remoteId,
-          remoteModelFamilies: families,
-          provider: remoteProviderId,
-          currentAliasFamilies: aliases,
-        })
+        !(!remote && CURATED_MODEL_IDS[provider]?.has(modelKey)) &&
+        (hasDeprecatedStatus(remoteProvider) ||
+          hasDeprecatedStatus(remote) ||
+          status.outdatedModelIds.has(remoteId) ||
+          (status.latestModelIds.size > 0 &&
+            !status.latestModelIds.has(remoteId) &&
+            !isProtectedCurrentAliasEntry(entry, remoteProviderId)) ||
+          isStaleUnmatchedFamilyEntry({
+            remoteModel: remote,
+            remoteModelId: remoteId,
+            remoteModelFamilies: families,
+            provider: remoteProviderId,
+            currentAliasFamilies: aliases,
+          }))
       ) {
         stats.removedModels++;
         continue;

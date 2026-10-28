@@ -1,5 +1,12 @@
-import { getModelChoices, updateModelChoices } from "@ngriffin_uk/polychat-library-client";
-import type { UpdateSystemModelChoicesInput } from "@ngriffin_uk/polychat-schemas";
+import {
+  getModelChoices,
+  suggestModelChoices,
+  updateModelChoices,
+} from "@ngriffin_uk/polychat-library-client";
+import type {
+  SuggestSystemModelChoicesInput,
+  UpdateSystemModelChoicesInput,
+} from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { MODELS_QUERY_KEY } from "./useModels.js";
@@ -25,5 +32,12 @@ export function useUpdateModelChoices(workspaceId?: string) {
     onSuccess: (response) => {
       queryClient.setQueryData(modelChoicesQueryKey(workspaceId), response);
     },
+  });
+}
+
+export function useSuggestModelChoices(workspaceId?: string) {
+  return useMutation({
+    mutationFn: (input: Omit<SuggestSystemModelChoicesInput, "workspace_id">) =>
+      suggestModelChoices({ ...input, ...(workspaceId ? { workspace_id: workspaceId } : {}) }),
   });
 }

@@ -1,11 +1,7 @@
+import { isDocumentOcrModel } from "@ngriffin_uk/polychat-ai-models";
 import { requireOcrAccess } from "@ngriffin_uk/polychat-ai-providers";
 import type { OcrExtractionResult } from "@ngriffin_uk/polychat-ai-providers";
-import {
-  getModelDisplayName,
-  modelHasOutputModality,
-  ocrSchema,
-  type OcrRequest,
-} from "@ngriffin_uk/polychat-schemas";
+import { getModelDisplayName, ocrSchema, type OcrRequest } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -68,7 +64,7 @@ export async function performOcr(params: {
   const config = await findModelConfig(selected.model, params.context.env, selected.provider);
   const { document: _document, ...options } = request;
   const result =
-    config && !modelHasOutputModality(config, "ocr")
+    config && !isDocumentOcrModel(config)
       ? await readImageWithVisionModel(params.context, {
           model: {
             model: config.matchingModel,

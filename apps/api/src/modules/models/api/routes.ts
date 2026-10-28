@@ -7,6 +7,8 @@ import {
   modelTiersResponseSchema,
   systemModelChoicesQuerySchema,
   systemModelChoicesResponseSchema,
+  systemModelSuggestionsResponseSchema,
+  suggestSystemModelChoicesSchema,
   updateSystemModelChoicesSchema,
   type ModelConfig,
 } from "@ngriffin_uk/polychat-schemas";
@@ -28,6 +30,7 @@ import {
 } from "~/modules/models/application";
 import {
   getSystemModelChoices,
+  suggestSystemModelChoices,
   updateSystemModelChoices,
 } from "~/modules/models/application/choices";
 import { getLineupModelsForUser } from "~/modules/models/application/resolve";
@@ -74,6 +77,17 @@ defineSingleton(app, { path: "/choices", tags: ["models"] }, (choices) => {
         400: { description: "A model cannot be used for this job", schema: errorResponseSchema },
       },
       handler: ({ serviceContext, body }) => updateSystemModelChoices(serviceContext, body),
+    })
+    .action("suggestions", {
+      auth: true,
+      summary: "Suggest model choices",
+      description:
+        "Rank the models you can run for every background job by the benchmark that fits the job, optionally keeping to one provider. Nothing is saved until you update the choices.",
+      bodySchema: suggestSystemModelChoicesSchema,
+      responses: {
+        200: { description: "Suggested choices", schema: systemModelSuggestionsResponseSchema },
+      },
+      handler: ({ serviceContext, body }) => suggestSystemModelChoices(serviceContext, body),
     });
 });
 

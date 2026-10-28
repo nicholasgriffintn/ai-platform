@@ -23,6 +23,10 @@ export const VERSION_SUFFIX_REGEX = /^(.*?)[-_:]((?:19|20)\d{2}(?:[-_]?\d{2}){1,
 
 export const CURRENT_ALIAS_SUFFIX_REGEX = /^(.*?)[-_:](0|latest)$/i;
 
+export const CURATED_MODEL_IDS = {
+  greenpt: new Set(["deepseek-v4.1-flash-1017"]),
+};
+
 export const IGNORED_REMOTE_MODEL_IDS = {
   mistral: new Set(["mistral-nemo"]),
   "google-vertex": (modelId) => !modelId.startsWith("gemini-"),

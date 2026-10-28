@@ -1,6 +1,7 @@
 import {
   getModels,
   isSystemRoleModel,
+  rankSystemRoleModels,
   readSystemModelChoiceStatus,
   resolveSystemRoleModel,
 } from "@ngriffin_uk/polychat-ai-models";
@@ -18,6 +19,8 @@ import {
   type SystemModelOption,
   type SystemModelRole,
   type SystemModelRoleView,
+  type SuggestSystemModelChoicesInput,
+  type SystemModelSuggestionsResponse,
   type UpdateSystemModelChoicesInput,
   type WorkInboxItem,
 } from "@ngriffin_uk/polychat-schemas";
@@ -34,6 +37,9 @@ import {
 
 import { listSystemRoleModels } from "./resolve";
 import { readWorkspaceSystemModelChoices } from "./scope";
+
+const PROVIDER_SUGGESTION_COUNT = 2;
+const OPEN_SUGGESTION_COUNT = 3;
 
 interface ChoiceTarget {
   workspace: WorkspaceRow | null;
@@ -165,14 +171,40 @@ async function normaliseChoices(
   });
 }
 
-function withRoleChoices(
-  stored: SystemModelChoices,
-  role: SystemModelRole,
-  choices: SystemModelChoice[],
-): SystemModelChoices {
-  const { [role]: _replaced, ...rest } = stored;
+async function normaliseChoiceUpdates(
+  context: ServiceContext,
+  updates: SystemModelChoices,
+): Promise<[SystemModelRole, SystemModelChoice[]][]> {
+  return Promise.all(
+    SYSTEM_MODEL_LINEUP.flatMap((definition) => {
+      const choices = updates[definition.id];
 
-  return choices.length > 0 ? { ...rest, [role]: choices } : rest;
+      return choices
+        ? [
+            normaliseChoices(context, definition.id, choices).then(
+              (normalised): [SystemModelRole, SystemModelChoice[]] => [definition.id, normalised],
+            ),
+          ]
+        : [];
+    }),
+  );
+}
+
+function withChoiceUpdates(
+  stored: SystemModelChoices,
+  updates: readonly [SystemModelRole, SystemModelChoice[]][],
+): SystemModelChoices {
+  const next: SystemModelChoices = { ...stored };
+
+  for (const [role, choices] of updates) {
+    if (choices.length > 0) {
+      next[role] = choices;
+    } else {
+      delete next[role];
+    }
+  }
+
+  return next;
 }
 
 export async function updateSystemModelChoices(
@@ -180,17 +212,16 @@ export async function updateSystemModelChoices(
   input: UpdateSystemModelChoicesInput,
 ): Promise<SystemModelChoicesResponse> {
   const user = context.requireUser();
-  const choices = await normaliseChoices(context, input.role, input.choices);
+  const updates = await normaliseChoiceUpdates(context, input.choices);
 
   if (input.workspace_id) {
     const { workspace } = await requireWorkspaceAccess(context, input.workspace_id, [
       "owner",
       "admin",
     ]);
-    const next = withRoleChoices(
+    const next = withChoiceUpdates(
       readWorkspaceSystemModelChoices(workspace.system_models),
-      input.role,
-      choices,
+      updates,
     );
 
     await context.repositories
@@ -202,7 +233,11 @@ export async function updateSystemModelChoices(
       action: "workspace.model_choices_updated",
       targetType: "workspace",
       targetId: workspace.id,
-      metadata: { role: input.role, models: choices.map((choice) => choice.model) },
+      metadata: {
+        roles: Object.fromEntries(
+          updates.map(([role, choices]) => [role, choices.map((choice) => choice.model)]),
+        ),
+      },
     });
 
     return getSystemModelChoices(context, workspace.id);
@@ -211,9 +246,49 @@ export async function updateSystemModelChoices(
   const repository = context.repositories.get(UserSettingsRepository);
   const { choices: stored } = await repository.getSystemModelChoices(user.id);
 
-  await repository.replaceSystemModelChoices(user.id, withRoleChoices(stored, input.role, choices));
+  await repository.replaceSystemModelChoices(user.id, withChoiceUpdates(stored, updates));
 
   return getSystemModelChoices(context);
+}
+
+export async function suggestSystemModelChoices(
+  context: ServiceContext,
+  input: SuggestSystemModelChoicesInput,
+): Promise<SystemModelSuggestionsResponse> {
+  const user = context.requireUser();
+
+  await resolveChoiceTarget(context, input.workspace_id);
+
+  const providers = new Set<string>();
+  const suggestions = await Promise.all(
+    SYSTEM_MODEL_LINEUP.map(async (definition) => {
+      const accessible = await listSystemRoleModels(context.env, user, definition.id);
+
+      for (const model of Object.values(accessible)) {
+        providers.add(model.provider);
+      }
+
+      const pool = input.provider
+        ? Object.fromEntries(
+            Object.entries(accessible).filter(([, model]) => model.provider === input.provider),
+          )
+        : accessible;
+      const ranked = rankSystemRoleModels(pool, definition.id, input.priority).slice(
+        0,
+        input.provider ? PROVIDER_SUGGESTION_COUNT : OPEN_SUGGESTION_COUNT,
+      );
+
+      return {
+        role: definition.id,
+        choices: ranked.map(({ id, config }) => ({ model: id, provider: config.provider })),
+      };
+    }),
+  );
+
+  return {
+    providers: [...providers].sort(),
+    suggestions: suggestions.filter((suggestion) => suggestion.choices.length > 0),
+  };
 }
 
 async function describeOutdatedChoices(

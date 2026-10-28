@@ -10,7 +10,6 @@ import type {
   GuardrailsProvider,
   GuardrailSource,
 } from "../../../types/index.js";
-import { TYPESAFE_PROVIDER_NAME } from "../../decision/providers/typesafe.js";
 import { normaliseGuardrailInput } from "../content.js";
 
 const logger = getLogger({ prefix: "lib/guardrails/typesafe" });
@@ -18,7 +17,8 @@ const logger = getLogger({ prefix: "lib/guardrails/typesafe" });
 export interface TypeSafeGuardConfig {
   env: ProviderEnv;
   user?: ProviderUser;
-  model?: string;
+  provider: string;
+  model: string;
   blockThreshold?: number;
   severityBlockLevel?: number;
 }
@@ -133,7 +133,7 @@ export function evaluateTypeSafeGuardrail(
   const severityBlocked = violations.length === 0 && severityScore >= options.severityBlockLevel;
 
   return {
-    provider: TYPESAFE_PROVIDER_NAME,
+    provider: response.provider,
     isValid: violations.length === 0 && !severityBlocked,
     violations: severityBlocked
       ? [source === "INPUT" ? "unsafe_prompt" : "unsafe_response"]
@@ -167,7 +167,7 @@ export class TypeSafeGuardProvider implements GuardrailsProvider {
 
   async validateContent(input: GuardrailInput, source: GuardrailSource): Promise<GuardrailResult> {
     const content = normaliseGuardrailInput(input);
-    const decision = this.runtime.providers.resolve("decision", TYPESAFE_PROVIDER_NAME, {
+    const decision = this.runtime.providers.resolve("decision", this.config.provider, {
       env: this.config.env,
       user: this.config.user,
     });

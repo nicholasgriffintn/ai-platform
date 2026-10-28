@@ -117,7 +117,7 @@ export function RoleChoiceCard({
   const canAdd = editable && choices.length < SYSTEM_MODEL_CHOICE_LIMIT;
 
   return (
-    <li className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-4">
+    <li className="flex min-w-0 flex-col gap-4 rounded-xl border border-border bg-surface p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-foreground">{definition.label}</h3>
@@ -134,16 +134,16 @@ export function RoleChoiceCard({
       </div>
 
       {view.choices.length > 0 && (
-        <ol aria-label={`${definition.label} choices`} className="grid gap-2">
+        <ol aria-label={`${definition.label} choices`} className="grid min-w-0 gap-2">
           {view.choices.map((choice, index) => {
             const status = choice.status === "ready" ? null : STATUS_BADGES[choice.status];
 
             return (
               <li
                 key={`${choice.provider}:${choice.model}`}
-                className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2"
+                className="flex min-w-0 items-center gap-2 rounded-lg border border-border px-3 py-2"
               >
-                <div className="flex min-w-0 flex-col gap-1">
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
                   <ChoiceName choice={choice} models={models} />
                   <span className="flex flex-wrap gap-1 pl-7">
                     <Badge variant="outline" className="text-[10px]">
@@ -157,7 +157,7 @@ export function RoleChoiceCard({
                   </span>
                 </div>
                 {editable && (
-                  <div className="flex shrink-0 items-center">
+                  <div className="flex shrink-0 items-center gap-0.5">
                     <Button
                       variant="icon"
                       size="icon"

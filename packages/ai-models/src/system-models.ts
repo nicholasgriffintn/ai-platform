@@ -1,4 +1,5 @@
 import {
+  DOCUMENT_OCR_PROVIDERS,
   findModelByReference,
   getSystemModelLineup,
   isActiveModel,
@@ -50,6 +51,15 @@ export function meetsSystemModelRequirement(
     default:
       return false;
   }
+}
+
+export function isDocumentOcrModel(
+  model: Pick<ModelConfigItem, "provider" | "strengths">,
+): boolean {
+  return (
+    DOCUMENT_OCR_PROVIDERS.some((provider) => provider === model.provider) &&
+    model.strengths?.includes("ocr") === true
+  );
 }
 
 export function isSystemRoleModel(role: SystemModelRole, model: ModelConfigItem): boolean {

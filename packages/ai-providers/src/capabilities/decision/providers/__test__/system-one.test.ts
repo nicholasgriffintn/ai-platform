@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ProviderRuntime } from "../../../../runtime.js";
-import { TypeSafeDecisionProvider } from "../typesafe.js";
+import { SystemOneDecisionProvider, TYPESAFE_SYSTEM_ONE } from "../system-one.js";
 
 const { fetchProviderJson } = vi.hoisted(() => ({
   fetchProviderJson: vi.fn(),
@@ -38,7 +38,7 @@ const answers = {
   },
 };
 
-describe("TypeSafeDecisionProvider", () => {
+describe("SystemOneDecisionProvider", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -49,7 +49,9 @@ describe("TypeSafeDecisionProvider", () => {
       answers,
       usage: { input_tokens: 120, output_tokens: 9 },
     });
-    const provider = new TypeSafeDecisionProvider(
+    const provider = new SystemOneDecisionProvider(
+      TYPESAFE_SYSTEM_ONE,
+
       { TYPESAFE_API_KEY: "platform-key" },
       undefined,
       createRuntime(),
@@ -89,7 +91,9 @@ describe("TypeSafeDecisionProvider", () => {
 
   it("prefers the user's stored key and an explicit base URL", async () => {
     fetchProviderJson.mockResolvedValue({ answers, usage: {} });
-    const provider = new TypeSafeDecisionProvider(
+    const provider = new SystemOneDecisionProvider(
+      TYPESAFE_SYSTEM_ONE,
+
       { TYPESAFE_API_KEY: "platform-key", TYPESAFE_BASE_URL: "https://proxy.example/" },
       { id: 4 },
       createRuntime("user-key"),
@@ -112,7 +116,9 @@ describe("TypeSafeDecisionProvider", () => {
 
   it("rejects payloads whose answers do not match the contract", async () => {
     fetchProviderJson.mockResolvedValue({ answers: { urgent: { type: "noul", noul: 4 } } });
-    const provider = new TypeSafeDecisionProvider(
+    const provider = new SystemOneDecisionProvider(
+      TYPESAFE_SYSTEM_ONE,
+
       { TYPESAFE_API_KEY: "platform-key" },
       undefined,
       createRuntime(),
@@ -128,7 +134,12 @@ describe("TypeSafeDecisionProvider", () => {
   });
 
   it("fails clearly when no key is configured", async () => {
-    const provider = new TypeSafeDecisionProvider({}, undefined, createRuntime());
+    const provider = new SystemOneDecisionProvider(
+      TYPESAFE_SYSTEM_ONE,
+      {},
+      undefined,
+      createRuntime(),
+    );
 
     await expect(
       provider.decide({

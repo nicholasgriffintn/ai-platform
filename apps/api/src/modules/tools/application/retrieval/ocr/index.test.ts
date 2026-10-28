@@ -26,7 +26,8 @@ vi.mock("~/modules/models/application/resolve", () => ({
   findModelConfig: vi.fn().mockResolvedValue({
     matchingModel: "mistral-ocr-latest",
     provider: "mistral",
-    modalities: { input: ["image"], output: ["ocr"] },
+    modalities: { input: ["document", "image"], output: ["text"] },
+    strengths: ["ocr", "vision"],
   }),
 }));
 vi.mock("./input", () => ({ resolveOcrInput }));
