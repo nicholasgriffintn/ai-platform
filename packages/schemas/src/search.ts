@@ -14,6 +14,11 @@ export const searchProviderSchema = z.enum([
   "cloudflare-ai-search",
 ]);
 
+export const NEWS_SEARCH_PROVIDERS: readonly z.infer<typeof searchProviderSchema>[] = [
+  "tavily",
+  "serper",
+];
+
 export const cloudflareWebSearchProviderSchema = z.enum(["ceramic", "exa", "linkup"]);
 
 export const searchOptionsSchema = z.object({

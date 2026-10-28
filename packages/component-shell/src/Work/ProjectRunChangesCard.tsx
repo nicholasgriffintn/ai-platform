@@ -50,7 +50,9 @@ export function ProjectRunChangesCard({
             <span className="text-failure">−{deletions.toLocaleString()}</span>
           </span>
         ) : (
-          <span className="font-mono text-[11px] tabular-nums">{recordedFiles.length} files</span>
+          <span className="font-mono text-[11px] tabular-nums">
+            {recordedFiles.length} {recordedFiles.length === 1 ? "file" : "files"}
+          </span>
         )
       }
     >

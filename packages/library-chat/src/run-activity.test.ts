@@ -1,7 +1,8 @@
 import type { SandboxRunData } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import type { AgentTraceEntry } from "./agent-trace.js";
+import { buildAgentTraceEntries, type AgentTraceEntry } from "./agent-trace.js";
+import type { Message } from "./conversation-types.js";
 import { buildRunActivityEntries } from "./run-activity.js";
 
 const traceEntries = [
@@ -60,6 +61,32 @@ describe("buildRunActivityEntries", () => {
     ]);
     expect(entries.find(({ title }) => title.startsWith("Setup"))?.durationMs).toBe(250);
     expect(entries.find(({ title }) => title === "Run queued")?.durationMs).toBeUndefined();
+  });
+
+  it("shows approvals as waiting only until someone answers them", () => {
+    const approval = (id: string, data: Record<string, unknown>): Message => ({
+      id,
+      role: "tool",
+      name: "request_approval",
+      status: "success",
+      content: "Claude Code needs your approval",
+      data: { humanInTheLoop: { type: "approval" }, ...data },
+    });
+    const entries = buildRunActivityEntries({
+      traceEntries: buildAgentTraceEntries([
+        approval("waiting", {}),
+        approval("approved", { approval: { status: "resolved", resolution: "approved" } }),
+        approval("rejected", { approval: { status: "resolved", resolution: "rejected" } }),
+      ]),
+    });
+
+    expect(
+      entries.filter(({ kind }) => kind === "approval").map(({ id, status }) => [id, status]),
+    ).toEqual([
+      ["trace:approval:waiting", "waiting"],
+      ["trace:approval:approved", "completed"],
+      ["trace:approval:rejected", "failed"],
+    ]);
   });
 
   it("retains transport tool entries when no run evidence is available", () => {

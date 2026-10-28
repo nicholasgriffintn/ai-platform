@@ -218,7 +218,11 @@ function traceStatus(entry: AgentTraceEntry): RunActivityStatus | undefined {
   }
 
   if (entry.type === "approval") {
-    return "waiting";
+    if (entry.status === "rejected") {
+      return "failed";
+    }
+
+    return entry.status === "approved" ? "completed" : "waiting";
   }
 
   if (entry.status === "error" || entry.status === "failed") {

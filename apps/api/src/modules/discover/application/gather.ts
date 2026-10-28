@@ -6,7 +6,6 @@ import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   discoverInterestInferenceSchema,
-  DISCOVER_GATHER_HOUR,
   DISCOVER_JOB_TASK_TYPE,
   DISCOVER_RECIPE_ID,
   DISCOVER_RESEARCH_METADATA_KEY,
@@ -15,7 +14,6 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import {
   describeZonedInstant,
-  shiftCalendarDate,
   sha256Hex,
   zonedTimeToInstant,
 } from "@ngriffin_uk/polychat-utility-core";
@@ -30,6 +28,7 @@ import {
   isDiscoverGatherFresh,
   isDiscoverSignalCurrent,
 } from "~/modules/discover/domain/freshness";
+import { nextDiscoverGatherSlot } from "~/modules/discover/domain/gather-schedule";
 import {
   chooseResearchTopics,
   describeInterestMaterial,
@@ -247,6 +246,7 @@ async function researchTopic(
 ): Promise<boolean> {
   const user = context.requireUser();
   const sourceId = await researchSourceId(user.id, topic);
+  const attemptedAt = new Date().toISOString();
 
   try {
     const found = await findTopicArticles(
@@ -280,15 +280,35 @@ async function researchTopic(
       }),
       metadata: {
         [DISCOVER_RESEARCH_METADATA_KEY]: topic,
-        readAt: new Date().toISOString(),
+        attemptedAt,
+        ...(results.length > 0
+          ? { readAt: attemptedAt, error: null }
+          : { error: `No news on this in the last ${days} days` }),
       },
     });
 
-    return true;
+    return results.length > 0;
   } catch (error) {
-    logger.warn("A Discover topic could not be researched", {
-      topic,
-      error_message: getErrorMessage(error),
+    const message = getErrorMessage(error, "This topic could not be researched");
+
+    logger.warn("A Discover topic could not be researched", { topic, error_message: message });
+    await writeDiscoverDocument(context, notebookId, {
+      id: sourceId,
+      origin: "research",
+      kind: "text",
+      title: `Research: ${topic}`.slice(0, 200),
+      provider: "web",
+      content: undefined,
+      metadata: {
+        [DISCOVER_RESEARCH_METADATA_KEY]: topic,
+        attemptedAt,
+        error: message.slice(0, 200),
+      },
+    }).catch((writeError: unknown) => {
+      logger.warn("A Discover research error could not be recorded", {
+        topic,
+        error_message: getErrorMessage(writeError),
+      });
     });
 
     return false;
@@ -368,6 +388,11 @@ export async function runDiscoverGather(
   now = new Date(),
 ): Promise<DiscoverGatherSummary> {
   const settings = await readDiscoverRoutine(context);
+
+  if (!settings.enabled) {
+    return { read: [], stale: [], topics: [] };
+  }
+
   const timezone = settings.timezone ?? "UTC";
   const zoned = describeZonedInstant(now, timezone);
   const notebook = await ensureDiscoverNotebook(context);
@@ -416,6 +441,7 @@ export async function runDiscoverGather(
     }
   } finally {
     await closeComposioConnectorRun(context);
+    await scheduleNextDiscoverGather(context, settings, zoned, timezone);
   }
 
   return { read: [...new Set(read)], stale: [...new Set(stale)], topics };
@@ -455,21 +481,26 @@ export async function ensureDiscoverGathered(
   );
 }
 
-export async function scheduleNextDiscoverGather(
+async function scheduleNextDiscoverGather(
   context: ServiceContext,
-  date: string,
+  settings: Pick<DiscoverRoutineSettings, "evening">,
+  zoned: { date: string; time: string },
   timezone: string,
 ): Promise<void> {
   const user = context.requireUser();
-  const nextDate = shiftCalendarDate(date, 1);
+  const slot = nextDiscoverGatherSlot({
+    date: zoned.date,
+    hour: Number.parseInt(zoned.time.slice(0, 2), 10),
+    evening: settings.evening,
+  });
 
   await new TaskService(context.env, new TaskRepository(context.env)).enqueueTask({
-    id: `discover_gather_${user.id}_${nextDate}`,
+    id: `discover_gather_${user.id}_${slot.date}${slot.edition === "evening" ? "_evening" : ""}`,
     task_type: DISCOVER_JOB_TASK_TYPE,
     user_id: user.id,
     task_data: { job: "gather" },
     schedule_type: "scheduled",
-    scheduled_at: zonedTimeToInstant(nextDate, DISCOVER_GATHER_HOUR, timezone).toISOString(),
+    scheduled_at: zonedTimeToInstant(slot.date, slot.hour, timezone).toISOString(),
     priority: 6,
   });
 }

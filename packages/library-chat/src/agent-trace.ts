@@ -177,6 +177,22 @@ function hasApprovalRequest(message: Message): boolean {
   );
 }
 
+function readApprovalOutcome(message: Message): "pending" | "approved" | "rejected" {
+  const data = readDataRecord(message);
+  const approval = isRecord(data?.approval) ? data.approval : undefined;
+  const humanInTheLoop = isRecord(data?.humanInTheLoop) ? data.humanInTheLoop : undefined;
+  const resolved =
+    data?.resolved === true ||
+    approval?.status === "resolved" ||
+    humanInTheLoop?.status === "resolved";
+
+  if (!resolved) {
+    return "pending";
+  }
+
+  return approval?.resolution === "rejected" ? "rejected" : "approved";
+}
+
 function getLatencyMs(previous: Message | undefined, current: Message): number | undefined {
   const start = readMessageTime(previous);
   const end = readMessageTime(current);
@@ -291,7 +307,7 @@ export function buildAgentTraceEntries(messages: readonly Message[]): AgentTrace
           id: `approval:${message.id}`,
           type: "approval",
           label: message.name ?? "Tool approval",
-          status: "pending",
+          status: readApprovalOutcome(message),
         });
       }
     }

@@ -8,6 +8,7 @@ import {
 } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { getNewsSearchProvider } from "~/modules/models/application/resolve";
 
 import { handleWebSearch } from "./web";
 
@@ -81,10 +82,12 @@ export async function findNewsResults(
   query: string,
   { days, country, language, now = Date.now() }: NewsSearch,
 ): Promise<NewsResult[]> {
+  const user = context.requireUser();
   const response = await handleWebSearch({
     env: context.env,
-    user: context.requireUser(),
+    user,
     query,
+    provider: await getNewsSearchProvider(context.env, user),
     options: {
       topic: "news",
       days,

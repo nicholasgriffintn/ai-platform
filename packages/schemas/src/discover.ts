@@ -33,7 +33,8 @@ export const DISCOVER_COVERAGE_METADATA_KEY = "discoverCoverage";
 export const DISCOVER_COVERAGE_MIN_ARTICLES = 2;
 export const DISCOVER_BRIEFING_METADATA_KEY = "discoverBriefing";
 export const DISCOVER_GATHER_HOUR = 5;
-export const DISCOVER_FRESH_HOURS = 20;
+export const DISCOVER_EVENING_GATHER_HOUR = 17;
+export const DISCOVER_FRESH_HOURS = 10;
 export const DISCOVER_RESEARCH_DAYS_KEPT = 7;
 export const DISCOVER_LISTEN_RESEARCH_MINUTES = 30;
 
@@ -273,7 +274,9 @@ export const discoverInterestInferenceSchema = z
       .array(topicSchema)
       .min(1)
       .max(5)
-      .describe("Three to five interests to research overnight, strongest first."),
+      .describe(
+        "Three to five interests to research for the next edition, strongest evidence first.",
+      ),
   })
   .strict();
 

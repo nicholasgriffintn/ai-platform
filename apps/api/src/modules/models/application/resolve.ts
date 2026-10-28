@@ -23,6 +23,7 @@ import {
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
+  NEWS_SEARCH_PROVIDERS,
   searchProviderSchema,
   getModelDisplayName,
   getSystemModelLineup,
@@ -755,6 +756,33 @@ export const getAuxiliarySearchProvider = async (
   }
 
   return hasProEntitlement(user) ? "tavily" : "duckduckgo";
+};
+
+export const getNewsSearchProvider = async (
+  env: IEnv,
+  user?: IUser,
+): Promise<SearchProviderName> => {
+  const preferred = await getAuxiliarySearchProvider(env, user);
+
+  if (NEWS_SEARCH_PROVIDERS.includes(preferred)) {
+    return preferred;
+  }
+
+  for (const provider of NEWS_SEARCH_PROVIDERS) {
+    try {
+      return await getAuxiliarySearchProvider(env, user, provider);
+    } catch (error) {
+      if (!(error instanceof AssistantError && error.type === ErrorType.AUTHORISATION_ERROR)) {
+        throw error;
+      }
+    }
+  }
+
+  throw new AssistantError(
+    `News search needs ${NEWS_SEARCH_PROVIDERS.join(" or ")}; ${preferred} cannot search by publish date`,
+    ErrorType.CONFIGURATION_ERROR,
+    400,
+  );
 };
 
 export const getAuxiliaryResearchProvider = async (

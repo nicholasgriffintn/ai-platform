@@ -17,7 +17,7 @@ describe("isDiscoverGatherFresh", () => {
     expect(
       isDiscoverGatherFresh({
         signals: [],
-        research: [{ readAt: RECENT }],
+        research: [{ readAt: RECENT, attemptedAt: null }],
         expectedSignals: 3,
         now: NOW,
       }),
@@ -28,7 +28,7 @@ describe("isDiscoverGatherFresh", () => {
     expect(
       isDiscoverGatherFresh({
         signals: [{ providerId: "lastfm", readAt: null, attemptedAt: RECENT }],
-        research: [{ readAt: RECENT }],
+        research: [{ readAt: RECENT, attemptedAt: null }],
         expectedSignals: 1,
         now: NOW,
       }),
@@ -39,7 +39,7 @@ describe("isDiscoverGatherFresh", () => {
     expect(
       isDiscoverGatherFresh({
         signals: [{ providerId: "lastfm", readAt: OLD, attemptedAt: OLD }],
-        research: [{ readAt: OLD }],
+        research: [{ readAt: OLD, attemptedAt: null }],
         expectedSignals: 1,
         now: NOW,
       }),
@@ -50,7 +50,10 @@ describe("isDiscoverGatherFresh", () => {
     expect(
       isDiscoverGatherFresh({
         signals: [{ providerId: "lastfm", readAt: RECENT, attemptedAt: RECENT }],
-        research: [{ readAt: OLD }, { readAt: RECENT }],
+        research: [
+          { readAt: OLD, attemptedAt: null },
+          { readAt: RECENT, attemptedAt: null },
+        ],
         expectedSignals: 1,
         now: NOW,
       }),

@@ -4,11 +4,14 @@ import {
   isRecord,
   leadParagraphs,
   markdownToPlainText,
+  shiftCalendarDate,
 } from "@ngriffin_uk/polychat-utility-core";
 
 import { mergeDailyLog, parseDailyLog, renderDailyLog } from "./daily-log";
+import { discoverTopicKey } from "./edition";
 
 export const DISCOVER_HEADLINES_TOPIC = "Today's headlines";
+const RESEARCH_CURRENT_DAYS = 1;
 
 export interface DiscoverResearchResult {
   title: string;
@@ -21,6 +24,10 @@ export interface DiscoverResearchResult {
 export interface DiscoverResearchSection {
   date: string;
   results: DiscoverResearchResult[];
+}
+
+export interface DiscoverCurrentResearch extends DiscoverResearchSection {
+  topic: string;
 }
 
 const RESULT_LINE =
@@ -123,4 +130,21 @@ export function mergeResearchDocument(existing: string, section: DiscoverResearc
 
 export function latestResearchSection(content: string): DiscoverResearchSection | null {
   return parseResearchDocument(content)[0] ?? null;
+}
+
+export function selectCurrentResearch(
+  documents: ReadonlyArray<{ topic: string; content: string }>,
+  { today, hiddenTopics }: { today: string; hiddenTopics: ReadonlySet<string> },
+): DiscoverCurrentResearch[] {
+  const earliest = shiftCalendarDate(today, -RESEARCH_CURRENT_DAYS);
+
+  return documents.flatMap((document) => {
+    const section = hiddenTopics.has(discoverTopicKey(document.topic))
+      ? null
+      : latestResearchSection(document.content);
+
+    return section && section.date >= earliest && section.results.length > 0
+      ? [{ topic: document.topic, ...section }]
+      : [];
+  });
 }

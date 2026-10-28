@@ -32,7 +32,7 @@ import { summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
 import { isDiscoverSignalCurrent } from "~/modules/discover/domain/freshness";
 import type { DiscoverLink } from "~/modules/discover/domain/links";
 import { isActiveDiscoverReader } from "~/modules/discover/domain/listen";
-import { latestResearchSection } from "~/modules/discover/domain/research";
+import { selectCurrentResearch } from "~/modules/discover/domain/research";
 import { findDiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
 import { selectRecentChatTitles } from "~/modules/discover/domain/signals";
 import { collectParkedSince, describeRunningStory } from "~/modules/discover/domain/wind-down";
@@ -190,6 +190,7 @@ export async function readDiscoverEditionBasis(
 function describeDocuments(
   documents: DiscoverDocuments,
   now: number,
+  research: { today: string; hiddenTopics: ReadonlySet<string> },
 ): {
   signals: DiscoverSignalContext[];
   research: DiscoverResearchContext[];
@@ -208,13 +209,7 @@ function describeDocuments(
         lines: document.lines,
         note: deviceActivityContextNote(document.providerId),
       })),
-    research: documents.research.flatMap((document) => {
-      const section = latestResearchSection(document.content);
-
-      return section
-        ? [{ topic: document.topic, date: section.date, results: section.results }]
-        : [];
-    }),
+    research: selectCurrentResearch(documents.research, research),
   };
 }
 
@@ -224,7 +219,10 @@ export async function buildDiscoverContextSnapshot(
 ): Promise<DiscoverContextSnapshot> {
   const basis = await loadDiscoverBasis(context, now);
   const userId = basis.user.id;
-  const documents = describeDocuments(await ensureDiscoverGathered(context, now), now.getTime());
+  const documents = describeDocuments(await ensureDiscoverGathered(context, now), now.getTime(), {
+    today: basis.zoned.date,
+    hiddenTopics: new Set(basis.feedback.hiddenTopics.map(discoverTopicKey)),
+  });
   const [conversations, memorySummary, agenda, resurface, health, windDowns] = await Promise.all([
     context.repositories
       .get(ConversationRepository)

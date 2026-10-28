@@ -124,7 +124,9 @@ export function FileDropzone({
           })}
           {multiple && files.length > 1 && (
             <li className="flex justify-between px-3 py-2 text-xs text-muted-foreground">
-              <span>{files.length} files</span>
+              <span>
+                {files.length} {files.length === 1 ? "file" : "files"}
+              </span>
               <span className="tabular-nums">{formatBytes(total, 1)}</span>
             </li>
           )}

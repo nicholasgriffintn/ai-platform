@@ -135,4 +135,38 @@ describe("buildMachineModels", () => {
     expect(model.isExecutable).toBe(false);
     expect(model.description).toContain("Office desktop");
   });
+
+  it("keeps an offline desktop's models so chats on them say the desktop is offline", () => {
+    const machine: MachineRecord = {
+      machineId: "office-desktop",
+      label: "Office desktop",
+      platform: "macos",
+      appVersion: "0.1.0",
+      lastSeenAt: "2026-09-07T09:00:00.000Z",
+      online: false,
+      capabilities: ["agent-run"],
+      runtimes: [
+        {
+          kind: "agent",
+          vendor: "claude-code",
+          readiness: {
+            state: "ready",
+            checkedAt: "2026-09-07T09:00:00.000Z",
+            version: "2.1.0",
+            billing: "subscription",
+          },
+          supportsSessions: true,
+        },
+      ],
+    };
+
+    const model = buildMachineModels([machine])["machine/office-desktop/claude-code/claude-code"];
+
+    expect(model?.isExecutable).toBe(false);
+    expect(model?.readiness).toMatchObject({
+      state: "unavailable",
+      reasonCode: "machine_offline",
+      reason: expect.stringContaining("Office desktop is offline"),
+    });
+  });
 });

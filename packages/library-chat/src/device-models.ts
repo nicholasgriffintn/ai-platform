@@ -4,8 +4,11 @@ import type {
   MachineRecord,
   ModelConfig,
   ModelConfigItem,
+  Readiness,
 } from "@ngriffin_uk/polychat-schemas";
-import { agentModelConfig } from "@ngriffin_uk/polychat-schemas";
+import { agentModelConfig, READINESS_PROTOCOL_VERSION } from "@ngriffin_uk/polychat-schemas";
+
+const MACHINE_OFFLINE_READINESS_TTL_MS = 24 * 60 * 60 * 1000;
 
 export type DeviceModelSource = () => Promise<ModelConfig>;
 
@@ -33,7 +36,12 @@ type DeviceModelDetails = Pick<
 export function toDeviceModel(
   vendor: string,
   model: DeviceModelDetails,
-  options: { machineId?: string; machineLabel?: string; executable?: boolean } = {},
+  options: {
+    machineId?: string;
+    machineLabel?: string;
+    executable?: boolean;
+    readiness?: Readiness;
+  } = {},
 ): ModelConfigItem {
   const id = deviceModelId(vendor, model.nativeId, options.machineId);
   const isRemoteMachine = Boolean(options.machineId);
@@ -59,6 +67,7 @@ export function toDeviceModel(
     isExecutable: options.executable ?? !isRemoteMachine,
     isFeatured: false,
     isPlatformEnabled: true,
+    ...(options.readiness ? { readiness: options.readiness } : {}),
   };
 }
 
@@ -79,13 +88,25 @@ export function buildDeviceModels(
   return models;
 }
 
-export function buildMachineModels(machines: readonly MachineRecord[]): ModelConfig {
+function machineOfflineReadiness(machine: MachineRecord, now: Date): Readiness {
+  return {
+    protocolVersion: READINESS_PROTOCOL_VERSION,
+    state: "unavailable",
+    reasonCode: "machine_offline",
+    reason: `${machine.label} is offline. Open Polychat on it to carry on with this model.`,
+    checkedAt: now.toISOString(),
+    expiresAt: new Date(now.getTime() + MACHINE_OFFLINE_READINESS_TTL_MS).toISOString(),
+  };
+}
+
+export function buildMachineModels(
+  machines: readonly MachineRecord[],
+  now = new Date(),
+): ModelConfig {
   const models: ModelConfig = {};
 
   for (const machine of machines) {
-    if (!machine.online) {
-      continue;
-    }
+    const offline = machine.online ? undefined : machineOfflineReadiness(machine, now);
 
     for (const runtime of machine.runtimes) {
       if (runtime.kind === "local-tools") {
@@ -110,7 +131,8 @@ export function buildMachineModels(machines: readonly MachineRecord[]): ModelCon
           id,
           machineId: machine.machineId,
           description: `Runs on ${machine.label} through ${base.name ?? runtime.vendor}.`,
-          isExecutable: machine.capabilities.includes("agent-run"),
+          isExecutable: !offline && machine.capabilities.includes("agent-run"),
+          ...(offline ? { readiness: offline } : {}),
         };
 
         continue;
@@ -126,7 +148,8 @@ export function buildMachineModels(machines: readonly MachineRecord[]): ModelCon
         models[id] = toDeviceModel(runtime.vendor, model, {
           machineId: machine.machineId,
           machineLabel: machine.label,
-          executable: machine.capabilities.includes("model-relay"),
+          executable: !offline && machine.capabilities.includes("model-relay"),
+          readiness: offline,
         });
       }
     }

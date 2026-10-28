@@ -40,6 +40,8 @@ export interface DiscoverResearchDocument {
   sourceId: string;
   topic: string;
   readAt: string | null;
+  attemptedAt: string | null;
+  error: string | null;
   content: string;
 }
 
@@ -80,7 +82,7 @@ export async function ensureDiscoverNotebook(context: ServiceContext): Promise<N
 
   await updateNotebook(context, notebookId, {
     instructions:
-      "What Discover knows. Poly keeps this notebook: a document per connected service and a dated research document per followed topic. The morning edition is written from these.",
+      "What Discover knows. Poly keeps this notebook: a document per connected service and a dated research document per followed topic. Each edition is written from these.",
     settings: { discover: true },
   });
 
@@ -119,6 +121,8 @@ export function readDiscoverDocuments(sources: readonly SourceRecord[]): Discove
         sourceId: source.id,
         topic,
         readAt: readNonEmptyString(metadata.readAt) ?? null,
+        attemptedAt: readNonEmptyString(metadata.attemptedAt) ?? null,
+        error: readNonEmptyString(metadata.error) ?? null,
         content: source.content ?? "",
       });
     }

@@ -209,7 +209,9 @@ export function RunChangesView({
           aria-label="Find changed file"
           className="min-w-48 flex-1"
         />
-        <Badge variant="outline">{files.length} files</Badge>
+        <Badge variant="outline">
+          {files.length} {files.length === 1 ? "file" : "files"}
+        </Badge>
         <Button
           type="button"
           variant="icon"

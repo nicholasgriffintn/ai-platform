@@ -417,7 +417,7 @@ export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
     operation: "GMAIL_FETCH_EMAILS",
     parameters: () => ({
       user_id: "me",
-      query: "newer_than:1d (list:* OR unsubscribe) -category:personal",
+      query: "newer_than:1d list:* -category:personal -category:social",
       max_results: 15,
       include_payload: false,
       verbose: true,

@@ -11,7 +11,7 @@ export interface DiscoverFreshnessInput {
     readAt: string | null;
     attemptedAt: string | null;
   }>;
-  research: ReadonlyArray<{ readAt: string | null }>;
+  research: ReadonlyArray<{ readAt: string | null; attemptedAt: string | null }>;
   expectedSignals: number;
   now: number;
 }
@@ -51,7 +51,11 @@ export function isDiscoverGatherFresh(input: DiscoverFreshnessInput): boolean {
     );
   const researchFresh =
     research.length === 0 ||
-    research.some((document) => isDiscoverTimestampFresh(document.readAt, now));
+    research.some(
+      (document) =>
+        isDiscoverTimestampFresh(document.readAt, now) ||
+        isDiscoverTimestampFresh(document.attemptedAt, now),
+    );
 
   return signalsFresh && researchFresh;
 }

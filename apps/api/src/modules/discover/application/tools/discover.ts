@@ -5,7 +5,7 @@ import {
   type ComposeDiscoverEditionInput,
   type CreateDiscoverWindDown,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId, shiftCalendarDate } from "@ngriffin_uk/polychat-utility-core";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { attachDiscoverArticles } from "~/modules/discover/domain/articles";
@@ -15,7 +15,7 @@ import { buildDiscoverEdition } from "~/modules/discover/domain/edition";
 import { buildDiscoverFeedGroups } from "~/modules/discover/domain/feed";
 import {
   DISCOVER_HEADLINES_TOPIC,
-  latestResearchSection,
+  selectCurrentResearch,
 } from "~/modules/discover/domain/research";
 import { isSundayEdition } from "~/modules/discover/domain/week";
 import type { IFunctionResponse } from "~/types";
@@ -25,7 +25,6 @@ import { listDiscoverArticleSources } from "../articles";
 import { buildDiscoverContextSnapshot, readDiscoverEditionBasis } from "../context";
 import { canAffordDiscoverListen } from "../cost";
 import { saveDiscoverEdition } from "../editions";
-import { scheduleNextDiscoverGather } from "../gather";
 import { enqueueDiscoverJob } from "../jobs";
 import { queueDiscoverResearch } from "../listen";
 import { listDiscoverDocuments } from "../notebook";
@@ -93,12 +92,9 @@ export const compose_discover_edition: ApiToolDefinition = {
       resurfaceHrefs: basis.resurfaceHrefs,
       seenLinks: [...basis.seenLinks, ...browsed.flatMap((document) => document.items)],
       feed: buildDiscoverFeedGroups({
-        research: documents.research.flatMap((document) => {
-          const section = latestResearchSection(document.content);
-
-          return section && section.date >= shiftCalendarDate(basis.date, -1)
-            ? [{ topic: document.topic, results: section.results }]
-            : [];
+        research: selectCurrentResearch(documents.research, {
+          today: basis.date,
+          hiddenTopics: basis.hiddenTopics,
         }),
         signals: shared.map((document) => ({ title: document.title, items: document.items })),
         headlinesTopic: DISCOVER_HEADLINES_TOPIC,
@@ -131,8 +127,6 @@ export const compose_discover_edition: ApiToolDefinition = {
         ],
       },
     });
-
-    await scheduleNextDiscoverGather(context, edition.date, edition.timezone);
 
     if (edition.cards.some((card) => card.kind === "topic")) {
       await enqueueDiscoverJob(context, { job: "covers", editionId: saved.id });
