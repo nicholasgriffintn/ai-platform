@@ -726,12 +726,6 @@ export const getNewsSearchProvider = async (
   env: IEnv,
   user?: IUser,
 ): Promise<SearchProviderName> => {
-  const preferred = await getAuxiliarySearchProvider(env, user);
-
-  if (NEWS_SEARCH_PROVIDERS.includes(preferred)) {
-    return preferred;
-  }
-
   for (const provider of NEWS_SEARCH_PROVIDERS) {
     try {
       return await getAuxiliarySearchProvider(env, user, provider);
@@ -743,7 +737,7 @@ export const getNewsSearchProvider = async (
   }
 
   throw new AssistantError(
-    `News search needs ${NEWS_SEARCH_PROVIDERS.join(" or ")}; ${preferred} cannot search by publish date`,
+    `News search needs ${NEWS_SEARCH_PROVIDERS.join(" or ")} on this account`,
     ErrorType.CONFIGURATION_ERROR,
     400,
   );
