@@ -7,12 +7,13 @@ import {
 import { sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { callMachineRun } from "~/modules/machines/application/runs";
 import { machineModelId } from "~/modules/machines/domain/model-id";
 import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
 import type { StoredMachine } from "~/modules/machines/infrastructure/MachineRepository";
 import { findModelConfig } from "~/modules/models/application/resolve";
 import { resolveExecutionRoute } from "~/modules/models/domain/execution-route";
+
+import { callMachineRun } from "./runs";
 
 const WORK_AGENT_PREFERENCE: readonly AgentRuntimeVendor[] = ["claude-code", "codex"];
 

@@ -7,8 +7,6 @@ import {
 import {
   isTerminalResponseStatus,
   JSON_RPC_ERRORS,
-  PROJECT_TASK_TOOL_IDS,
-  WORK_TASK_TOOL_IDS,
   type PlatformResponse,
   type TeammateSummary,
 } from "@ngriffin_uk/polychat-schemas";
@@ -34,10 +32,6 @@ const MCP_PLATFORM = "mcp";
 const TEAMMATE_TOOL_PREFIX = "teammate.";
 const MCP_AUTHORITY: DirectToolRunAuthority = { trigger: "channel", autonomyLevel: "assistant" };
 const WORK_AUTHORITY: DirectToolRunAuthority = { trigger: "handle", autonomyLevel: "partner" };
-const WORK_MCP_TOOL_IDS: ReadonlySet<string> = new Set([
-  ...PROJECT_TASK_TOOL_IDS,
-  ...WORK_TASK_TOOL_IDS,
-]);
 
 const teammateMessageSchema = z.object({
   message: z.string().trim().min(1).describe("What you want the teammate to do"),
@@ -95,8 +89,8 @@ async function listRegistryTools(context: ServiceContext): Promise<McpPortTool[]
   return listToolsWhere((name) => available.has(name));
 }
 
-export function listWorkMcpTools(): McpPortTool[] {
-  return listToolsWhere((name) => WORK_MCP_TOOL_IDS.has(name));
+export function listWorkMcpTools(access: WorkRunAccess): McpPortTool[] {
+  return listToolsWhere((name) => access.toolIds.includes(name));
 }
 
 function teammateTool(teammate: TeammateSummary): McpPortTool {
@@ -236,7 +230,7 @@ export async function callWorkMcpTool(
   access: WorkRunAccess,
   call: McpPortToolCall,
 ): Promise<McpPortToolResult> {
-  if (!WORK_MCP_TOOL_IDS.has(call.name)) {
+  if (!access.toolIds.includes(call.name)) {
     throw new JsonRpcError(JSON_RPC_ERRORS.invalidParams, `Unknown tool: ${call.name}`);
   }
 

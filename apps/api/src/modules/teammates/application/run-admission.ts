@@ -18,6 +18,7 @@ import { createServiceContext, type ServiceContext } from "~/infrastructure/cont
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { resolveDelegationContinuation } from "~/modules/delegations/application/continuation";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
+import { chooseWorkMachineModel } from "~/modules/machines/application/work-placement";
 import { findModelConfig, getDefaultChatModel } from "~/modules/models/application/resolve";
 import { recordPolyApprovalOutcome } from "~/modules/poly/application/earned-trust";
 import { buildWorkRunTools, grantWorkBoardTools } from "~/modules/project-tasks/domain/work-tools";
@@ -58,6 +59,7 @@ export interface TeammateRunAdmissionInput {
   resumeConfiguration?: TeammateRunConfiguration;
   executionPolicy?: {
     model?: string | null;
+    hostedOnly?: boolean;
     mode?: string;
     skillIds?: string[];
     enabledTools?: string[];
@@ -243,13 +245,32 @@ export async function enqueueTeammateRun({
       ? { approved_tools: grantWorkBoardTools(body.settings?.approved_tools) }
       : {}),
   };
+  const policyModel = resumeConfiguration?.model ?? executionPolicy?.model;
+  const configuredModel =
+    (policyModel !== undefined ? policyModel : teammate.model) || effectiveSettings.model || null;
+  const workspaceId = isWorkspaceRun ? preparedInvocation?.resolution.context?.scope.id : undefined;
+  const desktopModel =
+    workspaceId &&
+    user &&
+    !resumeConfiguration &&
+    !continuationRun &&
+    !executionPolicy?.hostedOnly &&
+    mcpServers.length === 0
+      ? await chooseWorkMachineModel(serviceContext, {
+          workspaceId,
+          runnerIdentityUserId: user.id,
+          modelId: configuredModel,
+        }).catch(() => null)
+      : null;
   const effectiveTeammate = {
     ...teammate,
-    ...(resumeConfiguration?.model
-      ? { model: resumeConfiguration.model }
-      : executionPolicy?.model !== undefined
-        ? { model: executionPolicy.model }
-        : {}),
+    ...(desktopModel
+      ? { model: desktopModel }
+      : resumeConfiguration?.model
+        ? { model: resumeConfiguration.model }
+        : executionPolicy?.model !== undefined
+          ? { model: executionPolicy.model }
+          : {}),
     enabled_tools: effectiveEnabledTools,
     skill_ids: effectiveSkillIds,
   };
@@ -262,7 +283,7 @@ export async function enqueueTeammateRun({
   const modelDetails = await findModelConfig(
     modelToUse || "",
     env,
-    effectiveSettings.provider ?? fallbackModel?.provider,
+    desktopModel ? undefined : (effectiveSettings.provider ?? fallbackModel?.provider),
     user?.id,
   );
 

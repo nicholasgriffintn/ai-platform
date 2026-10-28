@@ -211,6 +211,7 @@ export interface AgentLoopExecutionParams {
   onToolResult?: (result: Message) => Promise<void> | void;
   shouldReserveGoalFinalisation?: () => boolean;
   contextWindow?: number;
+  ownsContext?: boolean;
   contextSkills?: readonly ContextBudgetSkill[];
   contextDocuments?: readonly ChatContextDocument[];
   contextSystemSections?: readonly ContextBudgetSystemSection[];
@@ -541,32 +542,38 @@ async function runChatAgentLoop(
             ]
           : messages;
 
-      const contextBudget = fitMessagesToContextBudget({
-        messages: budgetMessages,
-        contextWindow: params.contextWindow,
-        systemPrompt:
-          typeof params.requestParams.system_prompt === "string"
-            ? params.requestParams.system_prompt
-            : "",
-        maxOutputTokens: params.requestParams.max_tokens,
-        runId: params.runId ?? params.completionId,
-        conversationId: params.completionId,
-        attempt: params.runAttempt ?? 1,
-        step,
-        model: activeModel.model,
-        provider: activeModel.provider,
-        skills: params.contextSkills,
-        documents: params.contextDocuments,
-        systemSections: params.contextSystemSections,
-        toolDefinitionTokens: estimateToolDefinitionTokens({
-          ...params.requestParams,
-          enabled_tools: [...state.enabledToolNames],
-        }),
-      });
+      const contextBudget = params.ownsContext
+        ? null
+        : fitMessagesToContextBudget({
+            messages: budgetMessages,
+            contextWindow: params.contextWindow,
+            systemPrompt:
+              typeof params.requestParams.system_prompt === "string"
+                ? params.requestParams.system_prompt
+                : "",
+            maxOutputTokens: params.requestParams.max_tokens,
+            runId: params.runId ?? params.completionId,
+            conversationId: params.completionId,
+            attempt: params.runAttempt ?? 1,
+            step,
+            model: activeModel.model,
+            provider: activeModel.provider,
+            skills: params.contextSkills,
+            documents: params.contextDocuments,
+            systemSections: params.contextSystemSections,
+            toolDefinitionTokens: estimateToolDefinitionTokens({
+              ...params.requestParams,
+              enabled_tools: [...state.enabledToolNames],
+            }),
+          });
 
-      await params.onContextSnapshot?.(contextBudget.snapshot);
+      const turnMessages = contextBudget?.messages ?? budgetMessages;
 
-      const providerMessages = providerIO.providerMessages(contextBudget.messages);
+      if (contextBudget) {
+        await params.onContextSnapshot?.(contextBudget.snapshot);
+      }
+
+      const providerMessages = providerIO.providerMessages(turnMessages);
 
       await writeTurnActivity(sink, { kind: "model_step_started", step });
 
@@ -645,7 +652,7 @@ async function runChatAgentLoop(
                   ...request,
                   disable_functions: true,
                   messages: providerIO.providerMessages([
-                    ...contextBudget.messages,
+                    ...turnMessages,
                     {
                       role: "user" as const,
                       content: EMPTY_REPLY_REPAIR_NOTICE,
@@ -723,9 +730,11 @@ async function runChatAgentLoop(
 
       totalUsage = sumTokenUsage(totalUsage, turn.usage) ?? totalUsage;
 
-      await params.onContextSnapshot?.(
-        applyReportedContextUsage(contextBudget.snapshot, turn.usage?.input_tokens),
-      );
+      if (contextBudget) {
+        await params.onContextSnapshot?.(
+          applyReportedContextUsage(contextBudget.snapshot, turn.usage?.input_tokens),
+        );
+      }
 
       if (turn.stopped) {
         await writeTurnActivity(sink, {

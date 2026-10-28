@@ -116,11 +116,15 @@ export class WorkPage extends BasePage {
     await this.page.getByRole("heading", { name, exact: true }).first().waitFor();
   }
 
-  async openNewProjectConversation() {
-    await this.clickElement(
-      this.page.getByRole("link", { name: "New conversation", exact: true }).first(),
-    );
-    await this.page.getByRole("textbox", { name: "Message input" }).waitFor();
+  async runNewProjectTask(objective: string) {
+    const composer = this.page.getByRole("textbox", { name: "New task" });
+
+    await composer.fill(objective);
+    await composer.press("Enter");
+    await this.clickElement(this.page.getByRole("link", { name: objective }).first());
+    await this.clickElement(this.page.getByRole("button", { name: "Run", exact: true }));
+    await this.clickElement(this.page.getByRole("link", { name: "Open run", exact: true }));
+    await this.page.waitForURL(/\/projects\/[^/]+\/chat\/[^/?]+/);
   }
 
   async returnToChat() {

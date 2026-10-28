@@ -1,3 +1,8 @@
+import {
+  PROJECT_TASK_TOOL_IDS,
+  WORK_DESKTOP_SHARED_TOOL_IDS,
+  WORK_TASK_TOOL_IDS,
+} from "@ngriffin_uk/polychat-schemas";
 import { randomHex, sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
@@ -15,9 +20,18 @@ const workRunAccessSchema = z.object({
   projectId: z.string().min(1),
   teammateContextId: z.string().min(1),
   conversationId: z.string().min(1),
+  toolIds: z.array(z.string().min(1)).max(64),
 });
 
 export type WorkRunAccess = z.infer<typeof workRunAccessSchema>;
+
+export function workRunToolIds(enabledTools: readonly string[]): string[] {
+  return [
+    ...PROJECT_TASK_TOOL_IDS,
+    ...WORK_TASK_TOOL_IDS,
+    ...WORK_DESKTOP_SHARED_TOOL_IDS.filter((toolId) => enabledTools.includes(toolId)),
+  ];
+}
 
 function tokenKey(token: string): Promise<string> {
   return sha256Hex(`work-run:${token}`);

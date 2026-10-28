@@ -1,5 +1,4 @@
 import {
-  MACHINE_MAX_ACTIVE_RUNS,
   machineRunDecideSchema,
   machineRunRequestSchema,
   machineRunStopSchema,
@@ -13,6 +12,7 @@ import {
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { Agent } from "agents";
 
+import { availableRunSlots, isOpenRun, isWorkingRun } from "~/modules/machines/domain/run-capacity";
 import {
   appendRunRecords,
   isAgentRunRequest,
@@ -31,6 +31,7 @@ interface StoredRun {
   updatedAt: number;
   records?: AgentHarnessEventRecord[];
   decisions?: MachineRunDecision[];
+  awaiting?: string[];
 }
 
 function settle(run: StoredRun): void {
@@ -41,10 +42,6 @@ function settle(run: StoredRun): void {
   if (event) {
     run.records = appendRunRecords(run.records ?? [], [event]);
   }
-}
-
-function isOpen(run: StoredRun): boolean {
-  return run.snapshot.state === "pending" || run.snapshot.state === "running";
 }
 
 function cancel(run: StoredRun): void {
@@ -66,7 +63,7 @@ export class MachineRunCoordinator extends Agent<IEnv> {
         if (run.expiresAt <= now) {
           await this.ctx.storage.delete(key);
           runs.delete(key);
-        } else if (isOpen(run) && now - run.updatedAt > CONNECTION_TIMEOUT_MS) {
+        } else if (isOpenRun(run) && now - run.updatedAt > CONNECTION_TIMEOUT_MS) {
           run.snapshot.state = "failed";
           run.snapshot.error =
             "The desktop stopped responding. Open Polychat on that machine and try again.";
@@ -76,9 +73,10 @@ export class MachineRunCoordinator extends Agent<IEnv> {
       }
 
       if (path === "/capacity") {
-        const active = [...runs.values()].filter(isOpen).length;
-
-        return Response.json({ active, available: Math.max(0, MACHINE_MAX_ACTIVE_RUNS - active) });
+        return Response.json({
+          active: [...runs.values()].filter(isWorkingRun).length,
+          available: availableRunSlots(runs.values()),
+        });
       }
 
       if (path === "/claim") {
@@ -125,26 +123,24 @@ export class MachineRunCoordinator extends Agent<IEnv> {
           : undefined;
         const superseded = supersededId ? runs.get(`run:${supersededId}`) : undefined;
 
-        if (superseded && isOpen(superseded)) {
+        if (superseded && isOpenRun(superseded)) {
           cancel(superseded);
           await this.ctx.storage.put(`run:${superseded.snapshot.id}`, superseded);
         }
 
-        const active = [...runs.values()].filter(isOpen);
-
-        if (active.length >= MACHINE_MAX_ACTIVE_RUNS) {
+        if (availableRunSlots(runs.values()) === 0) {
           return Response.json(
             {
-              error: `This machine is already running ${MACHINE_MAX_ACTIVE_RUNS} jobs. Try again when one finishes.`,
+              error: "This desktop is busy with other jobs. Try again when one finishes.",
             },
             { status: 409 },
           );
         }
 
         if (runs.size >= 20) {
-          const oldest = [...runs.entries()].sort(
-            (left, right) => left[1].expiresAt - right[1].expiresAt,
-          )[0];
+          const oldest = [...runs.entries()]
+            .filter(([, run]) => !isOpenRun(run))
+            .sort((left, right) => left[1].expiresAt - right[1].expiresAt)[0];
 
           if (oldest) {
             await this.ctx.storage.delete(oldest[0]);
@@ -199,6 +195,12 @@ export class MachineRunCoordinator extends Agent<IEnv> {
         } else {
           run.snapshot.text += input.text;
           run.records = records;
+          run.awaiting = [
+            ...(run.awaiting ?? []),
+            ...input.events.flatMap((event) =>
+              event.type === "approval-requested" ? [event.approvalId] : [],
+            ),
+          ];
           run.snapshot.state = input.state;
           run.snapshot.error = input.error;
         }
@@ -234,7 +236,7 @@ export class MachineRunCoordinator extends Agent<IEnv> {
         }
 
         if (stop) {
-          const open = isOpen(run);
+          const open = isOpenRun(run);
 
           if (open) {
             cancel(run);
@@ -245,13 +247,16 @@ export class MachineRunCoordinator extends Agent<IEnv> {
         }
 
         if (decide) {
-          const open = isOpen(run);
+          const open = isOpenRun(run);
 
           if (open) {
             run.decisions = [
               ...(run.decisions ?? []),
               { approvalId: decide.approvalId, approved: decide.approved },
             ];
+            run.awaiting = (run.awaiting ?? []).filter(
+              (approvalId) => approvalId !== decide.approvalId,
+            );
             run.expiresAt = now + RETENTION_MS;
             await this.ctx.storage.put(`run:${run.snapshot.id}`, run);
           }
@@ -273,7 +278,7 @@ export class MachineRunCoordinator extends Agent<IEnv> {
         return Response.json({ error: "Run unavailable or expired" }, { status: 404 });
       }
 
-      if (path.startsWith("/cancel/") && isOpen(run)) {
+      if (path.startsWith("/cancel/") && isOpenRun(run)) {
         cancel(run);
         await this.ctx.storage.put(`run:${id}`, run);
       }

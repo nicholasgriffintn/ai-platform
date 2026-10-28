@@ -57,6 +57,7 @@ class ChatExecutionRequest {
       mode: prepared.currentMode,
       tool_policy_mode: chatOptions.tool_policy_mode,
       permission_mode: chatOptions.permission_mode,
+      autonomy_level: chatOptions.autonomy_level,
       should_think: chatOptions.should_think,
       response_format: chatOptions.response_format,
       lang: chatOptions.lang,

@@ -27,6 +27,8 @@ pub struct SessionStartRequest {
     #[serde(default)]
     pub isolated: bool,
     #[serde(default)]
+    pub sandboxed: bool,
+    #[serde(default)]
     pub mcp_config: Option<String>,
 }
 
@@ -220,6 +222,7 @@ pub async fn start(
             id,
             resume: request.resume,
             isolated: request.isolated,
+            sandboxed: request.sandboxed,
             mcp_config: mcp_config.as_ref().map(|file| file.0.as_path()),
         });
     let argv = process::session_argv(request.driver, session.as_ref())

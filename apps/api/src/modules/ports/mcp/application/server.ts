@@ -63,11 +63,11 @@ function workMcpHandlers(
       capabilities: { tools: {} },
       serverInfo: MCP_SERVER_INFO,
       instructions:
-        "Polychat Work for the task you are running: read and update tasks, post to their threads, raise cases and ask for review. Anything that needs a person waits in their Inbox.",
+        "Polychat Work for the teammate you are acting as: read and update tasks, post to their threads, raise cases, ask for review, and use the workspace's documents and memory. Anything that needs a person waits in their Inbox.",
     }),
     "notifications/initialized": () => undefined,
     ping: () => ({}),
-    "tools/list": () => ({ tools: listWorkMcpTools() }),
+    "tools/list": () => ({ tools: listWorkMcpTools(access) }),
     "tools/call": (params) =>
       callWorkMcpTool(context, access, { ...readCallParams(params), appUrl }),
   };

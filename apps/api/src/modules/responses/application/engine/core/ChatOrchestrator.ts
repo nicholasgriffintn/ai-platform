@@ -369,7 +369,7 @@ export class ChatOrchestrator {
     let didCompact = false;
     let compactionMessage: Message | undefined;
 
-    if (chatOptions.completion_id && messages.length > 0) {
+    if (chatOptions.completion_id && messages.length > 0 && primaryModelConfig?.kind !== "agent") {
       const sessionManager = new SessionManager({
         env: chatOptions.env,
         conversationManager,
@@ -527,6 +527,7 @@ export class ChatOrchestrator {
         chatOptions.max_steps === undefined && (goalFinishGate?.hasActiveGoal() ?? false),
       executionCtx: chatOptions.executionCtx,
       contextWindow: primaryModelConfig?.contextWindow,
+      ownsContext: primaryModelConfig?.kind === "agent",
       modelFallback:
         tierSelection &&
         modelConfigs.length === 1 &&

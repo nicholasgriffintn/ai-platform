@@ -8,7 +8,7 @@ import {
 } from "~/modules/machines/infrastructure/MachineRepository";
 import { findModelConfig } from "~/modules/models/application/resolve";
 
-import { chooseWorkMachineModel } from "../machine-routing";
+import { chooseWorkMachineModel } from "../work-placement";
 
 vi.mock("~/modules/models/application/resolve", () => ({ findModelConfig: vi.fn() }));
 

@@ -77,7 +77,7 @@ export function createMachineAgentEvents() {
         type: "approval-requested",
         approvalId: approval.requestId,
         toolName: approval.kind,
-        description: approval.command ? `${approval.title}: ${approval.command}` : approval.title,
+        description: approval.command ? `Run ${approval.command}` : approval.title,
         ...(approval.detail ? { input: { detail: approval.detail } } : {}),
       });
     },

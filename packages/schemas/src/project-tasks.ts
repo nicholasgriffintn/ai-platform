@@ -70,6 +70,16 @@ export const WORK_AGENT_TOOL_IDS = [
 
 export const WORK_RUN_EXCLUDED_TOOL_IDS: readonly string[] = ["delegate"];
 
+export const WORK_DESKTOP_SHARED_TOOL_IDS: readonly string[] = [
+  "search_documents",
+  "get_document",
+  "write_document",
+  "write_sheet",
+  "write_deck",
+  "store_memory",
+  "search_memories",
+];
+
 export type WorkTaskToolId = (typeof WORK_TASK_TOOL_IDS)[number];
 
 export const PROJECT_TASK_KINDS = ["task", "case", "standup"] as const;

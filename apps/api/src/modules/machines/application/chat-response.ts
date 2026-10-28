@@ -4,6 +4,7 @@ import {
   machineRunRequestSchema,
   modelRuntimeVendorSchema,
   teammateRunConfigurationSchema,
+  type AgentRuntimeVendor,
   type MachineRunMessages,
   type MachineRunRequest,
   type ModelConfigItem,
@@ -25,7 +26,8 @@ import {
 } from "~/modules/agents/application/harness-stream";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { parseMachineModelId } from "~/modules/machines/domain/model-id";
-import { mintWorkRunAccess } from "~/modules/ports/mcp/application/work-access";
+import { workPermissionMode } from "~/modules/machines/domain/work-permissions";
+import { mintWorkRunAccess, workRunToolIds } from "~/modules/ports/mcp/application/work-access";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { ChatCompletionParameters } from "~/types";
 
@@ -91,8 +93,37 @@ async function workAccessFor(
           projectId,
           teammateContextId: run.teammateContextId,
           conversationId,
+          toolIds: workRunToolIds(params.enabled_tools ?? []),
         })
       : null,
+  };
+}
+
+async function agentTurnRequest(
+  context: ServiceContext,
+  params: ChatCompletionParameters,
+  turn: { driver: AgentRuntimeVendor; conversationId: string; messages: MachineRunMessages },
+): Promise<MachineRunRequest> {
+  const continuation = params.delegation_context?.continuation;
+  const workAccess = await workAccessFor(context, params, turn.conversationId);
+
+  return {
+    id: generateId(),
+    kind: "agent",
+    driver: turn.driver,
+    conversationId: turn.conversationId,
+    bindingConversationId:
+      continuation?.bindingConversationId ??
+      params.delegation_context?.rootConversationId ??
+      turn.conversationId,
+    continuationMode: continuation ? (continuation.mode === "resume" ? "resume" : "fresh") : "auto",
+    ...workAccess,
+    messages: turn.messages,
+    selectedModel: null,
+    reasoningEffort: params.reasoning_effort ?? params.reasoning?.effort ?? null,
+    permissionMode: workAccess.workFolder
+      ? workPermissionMode(params.autonomy_level)
+      : (params.permission_mode ?? "auto_accept_edits"),
   };
 }
 
@@ -114,7 +145,6 @@ export async function executeMachineChatResponse(
   }
 
   const messages = machineMessages(params.messages);
-  const continuation = params.delegation_context?.continuation;
 
   if (!params.completion_id) {
     throw new AssistantError("Machine execution requires a conversation", ErrorType.PARAMS_ERROR);
@@ -131,26 +161,11 @@ export async function executeMachineChatResponse(
       ...(resume
         ? { resume }
         : {
-            request: {
-              id: generateId(),
-              kind: "agent",
+            request: await agentTurnRequest(context, params, {
               driver,
               conversationId: params.completion_id,
-              bindingConversationId:
-                continuation?.bindingConversationId ??
-                params.delegation_context?.rootConversationId ??
-                params.completion_id,
-              continuationMode: continuation
-                ? continuation.mode === "resume"
-                  ? "resume"
-                  : "fresh"
-                : "auto",
-              ...(await workAccessFor(context, params, params.completion_id)),
               messages,
-              selectedModel: null,
-              reasoningEffort: params.reasoning_effort ?? params.reasoning?.effort ?? null,
-              permissionMode: params.permission_mode ?? "auto_accept_edits",
-            },
+            }),
           }),
     });
 

@@ -214,7 +214,23 @@ pub struct SessionSpec<'a> {
     pub id: &'a str,
     pub resume: bool,
     pub isolated: bool,
+    pub sandboxed: bool,
     pub mcp_config: Option<&'a Path>,
+}
+
+fn isolated_claude_settings(sandboxed: bool) -> String {
+    let mut settings = serde_json::json!({
+        "claudeMdExcludes": [format!("{}/.claude/**", dirs_home().to_string_lossy())],
+    });
+
+    if sandboxed {
+        settings["sandbox"] = serde_json::json!({
+            "enabled": true,
+            "autoAllowBashIfSandboxed": true,
+        });
+    }
+
+    settings.to_string()
 }
 
 const CLAUDE_SESSION_ARGS: &[&str] = &[
@@ -258,7 +274,12 @@ pub fn session_argv(driver: AgentDriver, session: Option<&SessionSpec>) -> Optio
             argv.push(session.id.to_string());
 
             if session.isolated {
-                argv.extend(["--setting-sources".to_string(), "project,local".to_string()]);
+                argv.extend([
+                    "--setting-sources".to_string(),
+                    "project,local".to_string(),
+                    "--settings".to_string(),
+                    isolated_claude_settings(session.sandboxed),
+                ]);
             }
 
             if let Some(path) = session.mcp_config {
@@ -766,6 +787,7 @@ mod tests {
                 id,
                 resume: false,
                 isolated: false,
+                sandboxed: false,
                 mcp_config: None,
             }),
         )
@@ -782,6 +804,7 @@ mod tests {
                 id,
                 resume: true,
                 isolated: false,
+                sandboxed: false,
                 mcp_config: None,
             }),
         )
@@ -795,6 +818,7 @@ mod tests {
                 id,
                 resume: false,
                 isolated: true,
+                sandboxed: true,
                 mcp_config: Some(config),
             }),
         )
@@ -802,6 +826,17 @@ mod tests {
         assert!(work
             .windows(2)
             .any(|pair| pair == ["--setting-sources", "project,local"]));
+        let settings = work
+            .windows(2)
+            .find(|pair| pair[0] == "--settings")
+            .map(|pair| serde_json::from_str::<serde_json::Value>(&pair[1]).expect("settings"))
+            .expect("settings");
+        assert_eq!(
+            settings["claudeMdExcludes"][0],
+            format!("{}/.claude/**", dirs_home().to_string_lossy())
+        );
+        assert_eq!(settings["sandbox"]["autoAllowBashIfSandboxed"], true);
+        assert!(!fresh.contains(&"--settings".to_string()));
         assert!(work.ends_with(&[
             "--mcp-config".to_string(),
             "/tmp/polychat-mcp.json".to_string(),
@@ -818,6 +853,7 @@ mod tests {
                     id: "--dangerously-skip-permissions",
                     resume: false,
                     isolated: false,
+                    sandboxed: false,
                     mcp_config: None,
                 })
             ),

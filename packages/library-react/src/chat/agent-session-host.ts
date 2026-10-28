@@ -38,6 +38,7 @@ function describeSessionSpec(input: HostKeyInput): string {
   return JSON.stringify([
     input.session?.sessionId ?? null,
     input.session?.isolated ?? false,
+    input.session?.sandboxed ?? false,
     input.session?.mcpConfig ?? null,
   ]);
 }

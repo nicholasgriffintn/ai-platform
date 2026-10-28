@@ -147,10 +147,14 @@ describe("MCP port tools", () => {
     projectId: "project-1",
     teammateContextId: "context-1",
     conversationId: "task-conversation",
+    toolIds: ["list_tasks", "post_update"],
   };
 
-  it("offers a desktop Work run only the Work tools", () => {
-    expect(listWorkMcpTools().map((tool) => tool.name)).toEqual(["list_tasks", "post_update"]);
+  it("offers a desktop Work run only the tools granted to that run", () => {
+    expect(listWorkMcpTools(access).map((tool) => tool.name)).toEqual([
+      "list_tasks",
+      "post_update",
+    ]);
   });
 
   it("runs Work tools as the run's teammate in its project and refuses anything else", async () => {

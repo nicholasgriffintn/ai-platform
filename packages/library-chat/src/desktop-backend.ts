@@ -26,6 +26,7 @@ export interface AgentSessionSpec {
   sessionId: string;
   resume: boolean;
   isolated?: boolean;
+  sandboxed?: boolean;
   mcpConfig?: string | null;
 }
 

@@ -53,11 +53,9 @@ test.describe("Release smoke", { tag: "@release" }, () => {
   test.describe("Pro account", () => {
     test.use({ persona: "pro" });
 
-    test("completes and restores a Work conversation", async ({ homePage, page, workPage }) => {
+    test("completes and restores a Work task run", async ({ homePage, page, workPage }) => {
       await workPage.openProjectFromWorkspace("Release Workspace", "Release Project");
-      await workPage.openNewProjectConversation();
-      await homePage.selectModel(TEXT_MODEL);
-      await homePage.sendMessageAndRequireCompletion("Check the Pro Work release path");
+      await workPage.runNewProjectTask("Check the Pro Work release path");
       await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
 
       await homePage.reload();

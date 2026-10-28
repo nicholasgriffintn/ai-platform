@@ -126,6 +126,7 @@ async function startAgentSession(
         sessionId: session?.sessionId ?? null,
         resume: session?.resume ?? false,
         isolated: session?.isolated ?? false,
+        sandboxed: session?.sandboxed ?? false,
         mcpConfig: session?.mcpConfig ?? null,
       },
       onEvent: channel,

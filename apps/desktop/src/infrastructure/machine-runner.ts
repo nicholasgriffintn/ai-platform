@@ -10,7 +10,11 @@ import type {
   MachineRunUpdate,
   ModelConfigItem,
 } from "@ngriffin_uk/polychat-schemas";
-import { buildDeviceSyncTopic, MACHINE_MAX_ACTIVE_RUNS } from "@ngriffin_uk/polychat-schemas";
+import {
+  buildDeviceSyncTopic,
+  MACHINE_MAX_ACTIVE_RUNS,
+  MACHINE_MAX_OPEN_RUNS,
+} from "@ngriffin_uk/polychat-schemas";
 import { delay, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
 import { createMachineAgentEvents } from "./machine-agent-events";
@@ -71,6 +75,7 @@ async function executeClaim(
   machineId: string,
   claim: Claim,
   signal: AbortSignal,
+  onWaiting: (waiting: boolean) => void,
 ) {
   let run: DesktopRun | undefined;
   let sequence = 0;
@@ -117,6 +122,10 @@ async function executeClaim(
 
       answers.delete(decision.approvalId);
       void answer?.(decision.approved ? "accept" : "decline").catch(() => undefined);
+    }
+
+    if (snapshot.decisions.length > 0 && answers.size === 0) {
+      onWaiting(false);
     }
 
     if (snapshot.state === "cancelled" || snapshot.state === "failed") {
@@ -199,6 +208,7 @@ async function executeClaim(
         onStatus: () => undefined,
         onApproval: (approval, answer) => {
           answers.set(approval.requestId, answer);
+          onWaiting(true);
           events.approval(approval);
           nudge();
         },
@@ -325,6 +335,12 @@ export async function runMachineConsumer(options: {
   const { backend, client, machineId, signal, onError } = options;
   const topic = buildDeviceSyncTopic("machine", machineId);
   const active = new Set<Promise<void>>();
+  const waiting = new Set<object>();
+  let nudgeLoop: (() => void) | undefined;
+  const stateChanged = () =>
+    new Promise<void>((resolve) => {
+      nudgeLoop = resolve;
+    });
   const report = (error: unknown) => {
     if (!signal.aborted) {
       onError?.(error);
@@ -332,8 +348,11 @@ export async function runMachineConsumer(options: {
   };
 
   while (!signal.aborted) {
-    if (active.size >= MACHINE_MAX_ACTIVE_RUNS) {
-      await Promise.race(active);
+    if (
+      active.size - waiting.size >= MACHINE_MAX_ACTIVE_RUNS ||
+      active.size >= MACHINE_MAX_OPEN_RUNS
+    ) {
+      await Promise.race([...active, stateChanged()]);
       continue;
     }
 
@@ -344,9 +363,28 @@ export async function runMachineConsumer(options: {
     });
 
     if (claim) {
-      const job: Promise<void> = executeClaim(backend, client, machineId, claim, signal)
+      const token = {};
+      const job: Promise<void> = executeClaim(
+        backend,
+        client,
+        machineId,
+        claim,
+        signal,
+        (isWaiting) => {
+          if (isWaiting) {
+            waiting.add(token);
+          } else {
+            waiting.delete(token);
+          }
+
+          nudgeLoop?.();
+        },
+      )
         .catch(report)
-        .finally(() => active.delete(job));
+        .finally(() => {
+          waiting.delete(token);
+          active.delete(job);
+        });
 
       active.add(job);
       continue;

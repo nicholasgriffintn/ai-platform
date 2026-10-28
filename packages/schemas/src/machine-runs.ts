@@ -6,6 +6,7 @@ import { permissionModeSchema } from "./providers.js";
 import { reasoningEffortSchema } from "./reasoning.js";
 
 export const MACHINE_MAX_ACTIVE_RUNS = 3;
+export const MACHINE_MAX_OPEN_RUNS = 8;
 
 const machineRunMessagesSchema = z
   .array(

@@ -159,9 +159,7 @@ function approvalFor(
       : isOneOf(CLAUDE_CODE_FILE_TOOLS, name)
         ? "file_change"
         : "permissions",
-    title: (
-      request.request.title ?? `Claude wants to use ${request.request.display_name ?? name}`
-    ).slice(0, 200),
+    title: (request.request.title ?? `Use ${request.request.display_name ?? name}`).slice(0, 200),
     detail:
       (
         request.request.description ??

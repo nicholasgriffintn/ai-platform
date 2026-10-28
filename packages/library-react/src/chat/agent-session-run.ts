@@ -174,7 +174,11 @@ export async function streamAgentSessionRun(options: AgentSessionRunOptions): Pr
               sessionId: threadId ?? crypto.randomUUID(),
               resume: resumed,
               ...(options.isolation
-                ? { isolated: true, mcpConfig: options.isolation.mcpConfig }
+                ? {
+                    isolated: true,
+                    sandboxed: options.permissionMode === "auto_accept_edits",
+                    mcpConfig: options.isolation.mcpConfig,
+                  }
                 : {}),
             },
           }
