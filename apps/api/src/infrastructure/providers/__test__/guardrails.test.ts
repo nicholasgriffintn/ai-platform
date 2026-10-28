@@ -3,12 +3,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { IEnv, IUserSettings } from "~/types";
 
 const mocks = vi.hoisted(() => ({
-  getAuxiliaryDecisionModel: vi.fn(),
+  getAuxiliaryGuardrailsModel: vi.fn(),
   resolve: vi.fn(),
 }));
 
 vi.mock("../host", () => ({
-  providerHost: { models: { getAuxiliaryDecisionModel: mocks.getAuxiliaryDecisionModel } },
+  providerHost: { models: { getAuxiliaryGuardrailsModel: mocks.getAuxiliaryGuardrailsModel } },
 }));
 
 vi.mock("../library", () => ({
@@ -36,30 +36,30 @@ describe("getGuardrailsProvider", () => {
     expect(mocks.resolve).not.toHaveBeenCalled();
   });
 
-  it("uses TypeSafe by default when the account has a decision model", async () => {
-    mocks.getAuxiliaryDecisionModel.mockResolvedValue({
-      model: "jev-latest",
-      provider: "typesafe",
-    });
+  it.each([
+    [{ model: "jev-latest", provider: "typesafe" }, "typesafe"],
+    [{ model: "mistral-moderation-latest", provider: "mistral" }, "mistral"],
+    [{ model: "@cf/meta/llama-guard-3-8b", provider: "workers-ai" }, "llamaguard"],
+  ])("runs the chosen Guardrails model %o through %s", async (chosen, service) => {
+    mocks.getAuxiliaryGuardrailsModel.mockResolvedValue(chosen);
 
     await expect(
-      getGuardrailsProvider(env, undefined, settings({ guardrails_provider: undefined })),
-    ).resolves.toEqual({ name: "typesafe" });
-    expect(mocks.resolve).toHaveBeenCalledWith("guardrails", "typesafe", expect.anything());
+      getGuardrailsProvider(env, undefined, settings({ guardrails_provider: "model" })),
+    ).resolves.toEqual({ name: service });
+
+    if (service !== "llamaguard") {
+      expect(mocks.resolve).toHaveBeenCalledWith(
+        "guardrails",
+        service,
+        expect.objectContaining({ config: expect.objectContaining({ model: chosen.model }) }),
+      );
+    }
   });
 
-  it("falls back to LlamaGuard when TypeSafe is selected but no key resolves", async () => {
-    mocks.getAuxiliaryDecisionModel.mockResolvedValue(null);
-
+  it("uses an external service without consulting the Guardrails model", async () => {
     await expect(
-      getGuardrailsProvider(env, undefined, settings({ guardrails_provider: "typesafe" })),
-    ).resolves.toEqual({ name: "llamaguard" });
-  });
-
-  it("honours an explicit non-default choice without consulting the decision model", async () => {
-    await expect(
-      getGuardrailsProvider(env, undefined, settings({ guardrails_provider: "mistral" })),
-    ).resolves.toEqual({ name: "mistral" });
-    expect(mocks.getAuxiliaryDecisionModel).not.toHaveBeenCalled();
+      getGuardrailsProvider(env, undefined, settings({ guardrails_provider: "shieldstral" })),
+    ).resolves.toEqual({ name: "shieldstral" });
+    expect(mocks.getAuxiliaryGuardrailsModel).not.toHaveBeenCalled();
   });
 });

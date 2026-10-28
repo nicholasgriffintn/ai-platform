@@ -1,4 +1,3 @@
-import { DEFAULT_OCR_PROVIDER } from "@ngriffin_uk/polychat-ai-providers";
 import type { OcrInput, OcrRequest } from "@ngriffin_uk/polychat-schemas";
 
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
@@ -56,8 +55,6 @@ export const extract_text_from_document: ApiToolDefinition = {
     });
     const ocrRequest: OcrRequest = {
       document: resolveToolInput(args),
-      provider: args.provider,
-      model: args.model,
       pages: args.pages,
       include_image_base64: args.include_image_base64,
       image_limit: args.image_limit,
@@ -72,7 +69,6 @@ export const extract_text_from_document: ApiToolDefinition = {
       document_annotation_prompt: args.document_annotation_prompt,
       output_format: args.output_format,
     };
-    const provider = ocrRequest.provider ?? DEFAULT_OCR_PROVIDER;
     const response = await performOcr({
       context: serviceContext,
       userId: user.id,
@@ -89,7 +85,6 @@ export const extract_text_from_document: ApiToolDefinition = {
       content: `OCR completed for ${title}. Full result: [download](${response.url})\n\n${extractedText}`,
       data: {
         model: response.model,
-        provider,
         outputId: response.outputId,
         url: response.url,
         key: response.key,

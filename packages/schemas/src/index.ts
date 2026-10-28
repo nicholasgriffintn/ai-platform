@@ -138,7 +138,7 @@ export * from "./model-makers.js";
 export * from "./model-region-variants.js";
 export * from "./model-selection.js";
 export * from "./model-continuity.js";
-export * from "./model-defaults.js";
+export * from "./system-models.js";
 export * from "./model-tool-configuration.js";
 export * from "./mobile-push.js";
 export * from "./provider-display.js";

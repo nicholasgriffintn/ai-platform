@@ -33,7 +33,7 @@ export class WorkersTranscriptionProvider extends BaseTranscriptionProvider {
     }
 
     const { model: modelToUse, provider: providerToUse } =
-      await this.runtime.host.models.getAuxiliarySpeechModel(env, user);
+      await this.runtime.host.models.getTranscriptionModel(env, user);
 
     if (!modelToUse || !providerToUse) {
       throw new AssistantError("Missing model or provider", ErrorType.PARAMS_ERROR);

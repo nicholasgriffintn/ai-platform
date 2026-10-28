@@ -10,10 +10,8 @@ import {
 import { useAnalytics } from "@ngriffin_uk/polychat-library-react";
 import {
   computeSiteSchema,
-  modelTierSchema,
   responseStyleSchema,
   type ResponseStyleSettings,
-  speechProviderSchema,
   type SpeechModelOption,
 } from "@ngriffin_uk/polychat-schemas";
 import { type FormEvent, type ReactNode, useState } from "react";
@@ -24,23 +22,11 @@ import { DynamoDbVectorSettings } from "./DynamoDbVectorSettings";
 import { SettingsSection } from "./SettingsSection";
 import type { SpeechVoiceLibraryActions } from "./SpeechVoiceLibrary";
 import {
-  getTranscriptionModelOptions,
-  getTranscriptionProviderOption,
-} from "./transcription-settings";
-import {
   prepareUserSettingsPayload,
   resolveGuardrailsProviderId,
   type UserSettings,
 } from "./user-settings";
 import { useUserSettingsForm } from "./useUserSettingsForm";
-
-const MODEL_TIER_OPTIONS: FormSelectOption[] = [
-  { value: "", label: "Use the standard tier" },
-  { value: "low", label: "Low" },
-  { value: "medium", label: "Medium" },
-  { value: "high", label: "High" },
-  { value: "ultra", label: "Ultra" },
-];
 
 const COMPUTE_SITE_OPTIONS: FormSelectOption[] = [
   { value: "", label: "Hosted compute" },
@@ -50,13 +36,10 @@ const COMPUTE_SITE_OPTIONS: FormSelectOption[] = [
 ];
 
 const GUARDRAILS_PROVIDER_OPTIONS: FormSelectOption[] = [
-  { value: "typesafe", label: "TypeSafe (Jev)" },
-  { value: "llamaguard", label: "LlamaGuard" },
-  { value: "bedrock", label: "Bedrock" },
-  { value: "mistral", label: "Mistral" },
+  { value: "model", label: "Your Guardrails model" },
+  { value: "bedrock", label: "Bedrock Guardrails" },
   { value: "shieldstral", label: "Shieldstral (self-hosted)" },
 ];
-
 const EMBEDDING_PROVIDER_OPTIONS: FormSelectOption[] = [
   { value: "vectorize", label: "Vectorize" },
   { value: "s3vectors", label: "S3 Vectors" },
@@ -207,41 +190,6 @@ export function UserSettingsForm({
       name: "response_style_changed",
       category: "ui_interaction",
       properties: { control: key, value },
-    });
-  };
-
-  const handleTranscriptionProviderChange = (value: string) => {
-    const newProvider = getTranscriptionProviderOption(value).id;
-    const [firstModelForProvider] = getTranscriptionModelOptions(newProvider);
-
-    updateFormData({
-      transcription_provider: newProvider,
-      transcription_model: firstModelForProvider.id,
-    });
-
-    analytics.track({
-      name: "transcription_provider_changed",
-      category: "ui_interaction",
-      properties: {
-        provider: newProvider,
-        auto_selected_model: firstModelForProvider.id,
-      },
-    });
-  };
-
-  const handleSpeechProviderChange = (value: string) => {
-    const provider = speechProviderSchema.safeParse(value);
-
-    updateFormData({
-      speech_provider: provider.success ? provider.data : null,
-      speech_model: null,
-      speech_voice: null,
-    });
-
-    analytics.track({
-      name: "speech_provider_changed",
-      category: "ui_interaction",
-      properties: { provider: provider.success ? provider.data : "automatic" },
     });
   };
 
@@ -447,51 +395,6 @@ export function UserSettingsForm({
         <div className="space-y-4">
           <div>
             <label
-              htmlFor="default_model_id"
-              className="mb-1 block text-sm font-medium text-foreground"
-            >
-              Default model
-            </label>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Use this model for new conversations. Leave blank to use the selected model tier.
-            </p>
-            <FormInput
-              id="default_model_id"
-              name="default_model_id"
-              value={formData.default_model_id}
-              onChange={handleChange}
-              placeholder="Optional model ID"
-              className="w-full"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="default_model_tier"
-              className="mb-1 block text-sm font-medium text-foreground"
-            >
-              Default model tier
-            </label>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Used for new conversations when no default model is set.
-            </p>
-            <FormSelect
-              id="default_model_tier"
-              name="default_model_tier"
-              value={formData.default_model_tier}
-              options={MODEL_TIER_OPTIONS}
-              onValueChange={(value) => {
-                const parsed = modelTierSchema.safeParse(value);
-
-                updateFormData({
-                  default_model_tier: parsed.success ? parsed.data : "",
-                });
-              }}
-            />
-          </div>
-
-          <div>
-            <label
               htmlFor="default_compute_site"
               className="mb-1 block text-sm font-medium text-foreground"
             >
@@ -513,42 +416,6 @@ export function UserSettingsForm({
                   default_compute_site: parsed.success ? parsed.data : "",
                 });
               }}
-            />
-          </div>
-        </div>
-      </SettingsSection>
-
-      <SettingsSection title="Sandbox Worker">
-        <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="sandbox_model"
-              className="mb-1 block text-sm font-medium text-foreground"
-            >
-              Default Sandbox Model
-            </label>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Used for sandbox worker runs when no model override is provided in the request.
-            </p>
-            <FormInput
-              id="sandbox_model"
-              name="sandbox_model"
-              value={formData.sandbox_model}
-              onChange={(e) => {
-                updateFormData({
-                  sandbox_model: e.target.value,
-                });
-
-                analytics.track({
-                  name: "sandbox_model_changed",
-                  category: "ui_interaction",
-                  properties: {
-                    has_value: e.target.value.trim().length > 0 ? "true" : "false",
-                  },
-                });
-              }}
-              placeholder="e.g. mistral-large"
-              className="w-full"
             />
           </div>
         </div>
@@ -586,6 +453,11 @@ export function UserSettingsForm({
             >
               Guardrails Provider
             </label>
+            <p className="mb-2 text-sm text-muted-foreground">
+              Your Guardrails model is chosen under Profile, Model choices, where Llama Guard,
+              TypeSafe&apos;s Jev and Mistral moderation are all options. Bedrock and Shieldstral
+              are separate services configured here.
+            </p>
             <FormSelect
               id="guardrails_provider"
               name="guardrails_provider"
@@ -910,8 +782,6 @@ export function UserSettingsForm({
       <AudioSettings
         formData={formData}
         updateFormData={updateFormData}
-        onTranscriptionProviderChange={handleTranscriptionProviderChange}
-        onSpeechProviderChange={handleSpeechProviderChange}
         speechModels={speechModels}
         speechVoiceLibrary={speechVoiceLibrary}
       />

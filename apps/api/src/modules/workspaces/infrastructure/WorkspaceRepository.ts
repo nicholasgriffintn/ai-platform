@@ -29,6 +29,7 @@ export interface WorkspaceRow {
   setup_task_id?: string | null;
   setup_plan?: string | null;
   lead_routines?: string | null;
+  system_models?: string | null;
   created_by: number;
   created_at: string;
   updated_at: string | null;
@@ -253,6 +254,16 @@ export class WorkspaceRepository extends BaseRepository {
     return this.runQuery<WorkspaceRow>("SELECT * FROM workspace WHERE id = ?", [workspaceId], true);
   }
 
+  async findConversationWorkspaceId(conversationId: string): Promise<string | null> {
+    const row = await this.runQuery<{ workspace_id: string }>(
+      `SELECT p.workspace_id FROM conversation c JOIN project p ON p.id = c.project_id WHERE c.id = ?`,
+      [conversationId],
+      true,
+    );
+
+    return row?.workspace_id ?? null;
+  }
+
   async getMembership(
     workspaceId: string,
     userId: number,
@@ -340,6 +351,7 @@ export class WorkspaceRepository extends BaseRepository {
         "setup_task_id",
         "setup_plan",
         "lead_routines",
+        "system_models",
       ],
       "id = ?",
       [workspaceId],

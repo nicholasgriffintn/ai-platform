@@ -1,21 +1,10 @@
-import { getModelsByOutputModality } from "@ngriffin_uk/polychat-ai-models";
 import { extractionFieldsSchema } from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
 import type { FunctionToolDescriptor } from "~/types/functions";
 
 function buildInputSchema() {
-  const extractionModels = Object.entries(getModelsByOutputModality("extraction"));
-
   return z.object({
-    model: z
-      .enum(["auto", ...extractionModels.map(([id]) => id)])
-      .optional()
-      .describe("Choose an extraction model, or use Automatic to let the account select one.")
-      .meta({
-        title: "Extraction model",
-        enumNames: ["Automatic", ...extractionModels.map(([id, model]) => model.name || id)],
-      }),
     state: z
       .string()
       .min(1)

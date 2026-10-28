@@ -331,6 +331,7 @@ export const WORK_INBOX_KINDS = [
   "paused",
   "waiting",
   "breakdown",
+  "models",
 ] as const;
 export const workInboxKindSchema = z.enum(WORK_INBOX_KINDS);
 export type WorkInboxKind = z.infer<typeof workInboxKindSchema>;

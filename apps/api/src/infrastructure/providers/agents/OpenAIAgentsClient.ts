@@ -32,7 +32,7 @@ export class OpenAIAgentsClient {
         Accept: "text/event-stream",
       },
       body: JSON.stringify(body),
-      redirect: "error",
+      redirect: "manual",
     });
   }
 
@@ -88,7 +88,7 @@ export class OpenAIAgentsClient {
         ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
       },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-      redirect: "error",
+      redirect: "manual",
       signal: AbortSignal.timeout(30_000),
     });
 
@@ -131,7 +131,7 @@ export class OpenAIAgentsClient {
   }): Promise<{ result?: string; diff?: string }> {
     const response = await fetch(
       `${OPENAI_API_BASE_URL}/agents/sessions/${encodeURIComponent(params.sessionId)}/artifacts?limit=100&order=desc`,
-      { headers: this.headers(), redirect: "error" },
+      { headers: this.headers(), redirect: "manual" },
     );
 
     if (!response.ok) {
@@ -167,7 +167,7 @@ export class OpenAIAgentsClient {
   ): Promise<string> {
     const response = await fetch(
       `${OPENAI_API_BASE_URL}/agents/sessions/${encodeURIComponent(sessionId)}/artifacts/${encodeURIComponent(artifactId)}/content`,
-      { headers: this.headers(), redirect: "error" },
+      { headers: this.headers(), redirect: "manual" },
     );
 
     if (!response.ok) {
@@ -184,7 +184,7 @@ export class OpenAIAgentsClient {
         {
           method: "DELETE",
           headers: this.headers(),
-          redirect: "error",
+          redirect: "manual",
           signal: AbortSignal.timeout(30_000),
         },
       );

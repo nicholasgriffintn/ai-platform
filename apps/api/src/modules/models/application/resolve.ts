@@ -7,10 +7,12 @@ import {
   getModels,
   getModelsByOutputModality,
   getExecutableModelsForAccount,
+  isSystemRoleModel,
+  listSystemModelLayers,
   rankPolicyModelsByMediaScore,
   readMediaScore,
   resolveDefaultChatModel,
-  resolvePolicyModel,
+  resolveSystemRoleModels,
   resolveTierModel,
   TEXT_TO_SPEECH_ARENA_SCORE,
 } from "@ngriffin_uk/polychat-ai-models";
@@ -18,6 +20,7 @@ import {
   isProviderPlatformEnabled,
   selectRerankingModel,
   isModelRuntimeAvailable,
+  toTranscriptionProvider,
   type RerankingModelSelection,
 } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
@@ -29,6 +32,7 @@ import {
   getSystemModelLineup,
   speechProviderSchema,
   modelHasInputModalities,
+  resolveLineupCandidates,
   type ModelConfigItem,
   type ModelModality,
   type ModelTier,
@@ -45,8 +49,9 @@ import {
   parseProviderQuotaState,
 } from "~/modules/user/domain/provider-quota";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
-import type { IEnv, IUser, IUserSettings, ResearchProviderName, SearchProviderName } from "~/types";
+import type { IEnv, IUser, ResearchProviderName, SearchProviderName } from "~/types";
 
+import { loadSystemModelLayers, type SystemModelScope } from "./scope";
 import { findSourcedModel, findSourcedModelByMatchingModel, listSourcedModels } from "./sources";
 
 const logger = getLogger({ prefix: "services/models/resolve" });
@@ -64,7 +69,8 @@ export interface ResolveModelProviderOptions {
 }
 
 export interface ResolvedSystemModel {
-  id?: string;
+  id: string;
+  name: string;
   model: string;
   provider: string;
   effort?: ReasoningEffort;
@@ -357,157 +363,127 @@ export async function filterModelsForUserAccess(
   }
 }
 
-type ChatSystemModelRole = "housekeeping" | "titling" | "compaction" | "retrieval";
-
-const MODALITY_SYSTEM_ROLE_MODALITIES: Partial<Record<SystemModelRole, ModelModality>> = {
-  guardrails: "guardrails",
-  decision: "decision",
-  extraction: "extraction",
-  reranking: "reranking",
-  transcription: "transcription",
-  ocr: "ocr",
-  image: "image",
-  video: "video",
-  music: "audio",
-};
-
-const CAPABILITY_SYSTEM_ROLE_KEYS: Partial<Record<SystemModelRole, keyof ModelConfigItem>> = {
-  fim: "supportsFim",
-  nextEdit: "supportsNextEdit",
-  applyEdit: "supportsApplyEdit",
-};
-
-async function resolveSystemModel(
-  env: IEnv,
-  user: IUser | undefined,
-  role: ChatSystemModelRole,
-): Promise<ResolvedSystemModel> {
-  const availableModels = await getLineupModelsForUser(env, user);
-  const lineup = getSystemModelLineup(role);
-  const candidate = resolvePolicyModel(availableModels, lineup.candidates, user);
-  const selected = candidate ?? resolveDefaultChatModel(availableModels, user);
-
-  return {
-    model: selected.config.matchingModel,
-    provider: selected.config.provider,
-    effort: candidate?.effort,
-  };
+export interface SystemModelOptions extends ModelAccessOptions {
+  inputs?: readonly ModelModality[];
 }
 
-async function resolveModalitySystemModel(
+function listRoleSourceModels(role: SystemModelRole, user: IUser | undefined) {
+  const requirement = getSystemModelLineup(role).requires;
+
+  if (requirement.kind === "text") {
+    return user?.id ? getLineupModels() : getLineupFreeModels();
+  }
+
+  if (requirement.kind === "output") {
+    return getModelsByOutputModality(requirement.output);
+  }
+
+  return getModels();
+}
+
+export async function listSystemRoleModels(
   env: IEnv,
   user: IUser | undefined,
   role: SystemModelRole,
-  options: ModelAccessOptions = {},
-  inputs: readonly ModelModality[] = [],
-): Promise<ResolvedSystemModel | null> {
-  const modality = MODALITY_SYSTEM_ROLE_MODALITIES[role];
-
-  if (!modality) {
-    return null;
-  }
-
-  const candidates = getSystemModelLineup(role).candidates;
-  const accessibleModels = await filterModelsForUserAccess(
-    getModelsByOutputModality(modality),
+  options: SystemModelOptions = {},
+): Promise<Record<string, ModelConfigItem>> {
+  const accessible = await filterModelsForUserAccess(
+    listRoleSourceModels(role, user),
     env,
     user?.id,
     { shouldUseCache: true, ...options },
   );
-  const executableModels = getExecutableModelsForAccount(accessibleModels, user);
-  const availableModels = Object.fromEntries(
-    Object.entries(executableModels).filter(
-      ([, model]) => isModelRuntimeAvailable(model, env) && modelHasInputModalities(model, inputs),
+
+  return Object.fromEntries(
+    Object.entries(getExecutableModelsForAccount(accessible, user)).filter(
+      ([, model]) =>
+        isModelRuntimeAvailable(model, env) &&
+        isSystemRoleModel(role, model) &&
+        modelHasInputModalities(model, options.inputs ?? []),
     ),
   );
-  const selected = resolvePolicyModel(availableModels, candidates, user);
-
-  return selected
-    ? {
-        id: selected.id,
-        model: selected.config.matchingModel,
-        provider: selected.config.provider,
-        effort: selected.effort,
-      }
-    : null;
 }
 
-async function resolveCapabilitySystemModel(
+export type { SystemModelScope };
+
+export async function listSystemModels(
   env: IEnv,
   user: IUser | undefined,
   role: SystemModelRole,
-): Promise<ResolvedSystemModel | null> {
-  const capability = CAPABILITY_SYSTEM_ROLE_KEYS[role];
+  scope: SystemModelScope = {},
+  options: SystemModelOptions = {},
+): Promise<ResolvedSystemModel[]> {
+  const [models, layers] = await Promise.all([
+    listSystemRoleModels(env, user, role, options),
+    loadSystemModelLayers(env, user, scope),
+  ]);
 
-  if (!capability) {
-    return null;
-  }
-
-  const candidates = getSystemModelLineup(role).candidates;
-  const accessibleModels = await filterModelsForUserAccess(getModels(), env, user?.id);
-  const executableModels = getExecutableModelsForAccount(accessibleModels, user);
-  const availableModels = Object.fromEntries(
-    Object.entries(executableModels).filter(
-      ([, model]) => isModelRuntimeAvailable(model, env) && Boolean(model[capability]),
-    ),
-  );
-  const selected = resolvePolicyModel(availableModels, candidates, user);
-
-  return selected
-    ? {
-        model: selected.config.matchingModel,
-        provider: selected.config.provider,
-        effort: selected.effort,
-      }
-    : null;
+  return resolveSystemRoleModels(models, role, layers, user).map((selected) => ({
+    id: selected.id,
+    name: getModelDisplayName(selected.config),
+    model: selected.config.matchingModel,
+    provider: selected.config.provider,
+    effort: selected.effort,
+  }));
 }
 
 export async function getSystemModel(
   env: IEnv,
   user: IUser | undefined,
   role: SystemModelRole,
+  scope: SystemModelScope = {},
+  options: SystemModelOptions = {},
 ): Promise<ResolvedSystemModel | null> {
-  if (
-    role === "housekeeping" ||
-    role === "titling" ||
-    role === "compaction" ||
-    role === "retrieval"
-  ) {
-    return resolveSystemModel(env, user, role);
+  return (await listSystemModels(env, user, role, scope, options))[0] ?? null;
+}
+
+export async function runWithSystemModel<T>(
+  env: IEnv,
+  user: IUser | undefined,
+  role: SystemModelRole,
+  run: (model: ResolvedSystemModel) => Promise<T>,
+  scope: SystemModelScope = {},
+  options: SystemModelOptions = {},
+): Promise<T> {
+  const candidates = await listSystemModels(env, user, role, scope, options);
+  let lastError: unknown = new AssistantError(
+    `No ${getSystemModelLineup(role).label.toLowerCase()} model is available. Choose one in your model choices.`,
+    ErrorType.CONFIGURATION_ERROR,
+  );
+
+  for (const candidate of candidates) {
+    try {
+      return await run(candidate);
+    } catch (error) {
+      logger.warn("System model failed, trying the next choice", {
+        role,
+        model: candidate.id,
+        error,
+      });
+      lastError = error;
+    }
   }
 
-  if (role === "guardrails") {
-    return getAuxiliaryGuardrailsModel(env, user);
+  throw lastError;
+}
+
+export async function requireSystemModel(
+  env: IEnv,
+  user: IUser | undefined,
+  role: SystemModelRole,
+  scope: SystemModelScope = {},
+  options: SystemModelOptions = {},
+): Promise<ResolvedSystemModel> {
+  const selected = await getSystemModel(env, user, role, scope, options);
+
+  if (!selected) {
+    throw new AssistantError(
+      `No ${getSystemModelLineup(role).label.toLowerCase()} model is available. Choose one in your model choices.`,
+      ErrorType.CONFIGURATION_ERROR,
+    );
   }
 
-  if (role === "decision") {
-    return getAuxiliaryDecisionModel(env, user);
-  }
-
-  if (role === "reranking") {
-    return resolveRerankingModel(env, user);
-  }
-
-  if (role === "speech") {
-    const speech = await getSpeechModel(env, user).catch(() => null);
-
-    return speech && { id: speech.id, model: speech.model, provider: speech.provider };
-  }
-
-  if (role === "transcription") {
-    const transcription = await getAuxiliarySpeechModel(env, undefined, user);
-
-    return {
-      model: transcription.model,
-      provider: transcription.provider,
-    };
-  }
-
-  if (CAPABILITY_SYSTEM_ROLE_KEYS[role]) {
-    return resolveCapabilitySystemModel(env, user, role);
-  }
-
-  return resolveModalitySystemModel(env, user, role);
+  return selected;
 }
 
 export async function getTierModel(
@@ -527,79 +503,70 @@ export async function getTierModel(
 
   return {
     id: selected.id,
+    name: getModelDisplayName(selected.config),
     model: selected.config.matchingModel,
     provider: selected.config.provider,
     effort: selected.effort,
   };
 }
 
-export async function getAuxiliaryModel(env: IEnv, user?: IUser): Promise<ResolvedSystemModel> {
-  return resolveSystemModel(env, user, "housekeeping");
-}
+export const getAuxiliaryModel = (env: IEnv, user?: IUser, scope?: SystemModelScope) =>
+  requireSystemModel(env, user, "housekeeping", scope);
 
-export const getTitlingModel = async (env: IEnv, user?: IUser) =>
-  resolveSystemModel(env, user, "titling");
+export const getTitlingModel = (env: IEnv, user?: IUser, scope?: SystemModelScope) =>
+  requireSystemModel(env, user, "titling", scope);
 
-export const getCompactionModel = async (env: IEnv, user?: IUser) =>
-  resolveSystemModel(env, user, "compaction");
+export const getCompactionModel = (env: IEnv, user?: IUser, scope?: SystemModelScope) =>
+  requireSystemModel(env, user, "compaction", scope);
 
-export const getAuxiliaryModelForRetrieval = async (env: IEnv, user?: IUser) =>
-  resolveSystemModel(env, user, "retrieval");
+export const getAuxiliaryModelForRetrieval = (env: IEnv, user?: IUser, scope?: SystemModelScope) =>
+  requireSystemModel(env, user, "retrieval", scope);
 
-export const getAuxiliaryGuardrailsModel = async (
-  env: IEnv,
-  user?: IUser,
-): Promise<ResolvedSystemModel> => {
-  const selected = await resolveModalitySystemModel(env, user, "guardrails", {
-    shouldUseCache: false,
-  });
+export const getAuxiliaryGuardrailsModel = (env: IEnv, user?: IUser, scope?: SystemModelScope) =>
+  requireSystemModel(env, user, "guardrails", scope, { shouldUseCache: false });
 
-  if (!selected) {
-    throw new AssistantError(
-      "No active guardrails model is available for this account",
-      ErrorType.CONFIGURATION_ERROR,
-    );
-  }
-
-  return selected;
-};
-
-export const getAuxiliaryDecisionModel = async (
+export const getAuxiliaryDecisionModel = (
   env: IEnv,
   user?: IUser,
   inputs: readonly ModelModality[] = [],
-): Promise<ResolvedSystemModel | null> => {
-  return resolveModalitySystemModel(env, user, "decision", {}, inputs);
-};
+  scope?: SystemModelScope,
+): Promise<ResolvedSystemModel | null> => getSystemModel(env, user, "decision", scope, { inputs });
 
 export const resolveRerankingModel = async (
   env: IEnv,
   user?: IUser,
   selection: RerankingModelSelection = {},
-): Promise<ResolvedSystemModel | null> => {
-  const accessibleModels = await filterModelsForUserAccess(
-    getModelsByOutputModality("reranking"),
-    env,
-    user?.id,
-  );
-  const executableModels = getExecutableModelsForAccount(accessibleModels, user);
+  scope?: SystemModelScope,
+): Promise<Pick<ResolvedSystemModel, "model" | "provider"> | null> => {
+  if (!selection.model && !selection.provider) {
+    return getSystemModel(env, user, "reranking", scope);
+  }
 
-  return selectRerankingModel(executableModels, env, selection);
+  return selectRerankingModel(await listSystemRoleModels(env, user, "reranking"), env, selection);
 };
 
 export const getAuxiliaryRerankingModel = resolveRerankingModel;
 
-export const getOcrModel = async (env: IEnv, user?: IUser): Promise<ResolvedSystemModel | null> =>
-  resolveModalitySystemModel(env, user, "ocr");
+export const getOcrModel = (env: IEnv, user?: IUser, scope?: SystemModelScope) =>
+  getSystemModel(env, user, "ocr", scope);
 
-export const getImageModel = async (env: IEnv, user?: IUser): Promise<ResolvedSystemModel | null> =>
-  resolveModalitySystemModel(env, user, "image");
+export const getImageModel = (env: IEnv, user?: IUser, scope?: SystemModelScope) =>
+  getSystemModel(env, user, "image", scope);
 
-export const getVideoModel = async (env: IEnv, user?: IUser): Promise<ResolvedSystemModel | null> =>
-  resolveModalitySystemModel(env, user, "video");
+export const getVideoModel = (env: IEnv, user?: IUser, scope?: SystemModelScope) =>
+  getSystemModel(env, user, "video", scope);
 
-export const getMusicModel = async (env: IEnv, user?: IUser): Promise<ResolvedSystemModel | null> =>
-  resolveModalitySystemModel(env, user, "music");
+export const getMusicModel = (env: IEnv, user?: IUser, scope?: SystemModelScope) =>
+  getSystemModel(env, user, "music", scope);
+
+export const getFimModel = (env: IEnv, user?: IUser, scope?: SystemModelScope) =>
+  getSystemModel(env, user, "fim", scope);
+
+export const getNextEditModel = (env: IEnv, user?: IUser, scope?: SystemModelScope) =>
+  getSystemModel(env, user, "nextEdit", scope);
+
+export const getApplyEditModel = (env: IEnv, user?: IUser, scope?: SystemModelScope) =>
+  getSystemModel(env, user, "applyEdit", scope);
 
 export interface ResolvedSpeechModel {
   id: string;
@@ -609,41 +576,50 @@ export interface ResolvedSpeechModel {
   arenaScore: number | null;
 }
 
-export async function rankSpeechModels(env: IEnv, user?: IUser): Promise<ResolvedSpeechModel[]> {
-  const accessible = await filterModelsForUserAccess(
-    getModelsByOutputModality("speech"),
-    env,
-    user?.id,
-    { shouldUseCache: false },
-  );
-  const voices = Object.fromEntries(
-    Object.entries(accessible).filter(
-      ([, model]) =>
-        isModelRuntimeAvailable(model, env) &&
-        modelHasInputModalities(model, ["text"]) &&
-        speechProviderSchema.safeParse(model.provider).success,
-    ),
-  );
+function toResolvedSpeechModel(id: string, config: ModelConfigItem): ResolvedSpeechModel[] {
+  const provider = speechProviderSchema.safeParse(config.provider);
 
-  return rankPolicyModelsByMediaScore(
+  return provider.success
+    ? [
+        {
+          id,
+          name: getModelDisplayName(config),
+          model: config.matchingModel,
+          provider: provider.data,
+          arenaScore: readMediaScore(config, TEXT_TO_SPEECH_ARENA_SCORE) ?? null,
+        },
+      ]
+    : [];
+}
+
+export async function rankSpeechModels(
+  env: IEnv,
+  user?: IUser,
+  scope?: SystemModelScope,
+): Promise<ResolvedSpeechModel[]> {
+  const [voices, layers] = await Promise.all([
+    listSystemRoleModels(env, user, "speech", { shouldUseCache: false }),
+    loadSystemModelLayers(env, user, scope),
+  ]);
+  const chosen = listSystemModelLayers("speech", layers).flatMap((layer) =>
+    resolveLineupCandidates(getExecutableModelsForAccount(voices, user), layer.candidates),
+  );
+  const ranked = rankPolicyModelsByMediaScore(
     voices,
     TEXT_TO_SPEECH_ARENA_SCORE,
-    getSystemModelLineup("speech").candidates,
+    getSystemModelLineup("speech").defaults,
     user,
-  ).flatMap(({ id, config }) => {
-    const provider = speechProviderSchema.safeParse(config.provider);
+  );
+  const seen = new Set<string>();
 
-    return provider.success
-      ? [
-          {
-            id,
-            name: getModelDisplayName(config),
-            model: config.matchingModel,
-            provider: provider.data,
-            arenaScore: readMediaScore(config, TEXT_TO_SPEECH_ARENA_SCORE) ?? null,
-          },
-        ]
-      : [];
+  return [...chosen, ...ranked].flatMap(({ id, config }) => {
+    if (seen.has(id)) {
+      return [];
+    }
+
+    seen.add(id);
+
+    return toResolvedSpeechModel(id, config);
   });
 }
 
@@ -657,8 +633,9 @@ export async function getSpeechModel(
   env: IEnv,
   user: IUser | undefined,
   preference: SpeechModelPreference = {},
+  scope?: SystemModelScope,
 ): Promise<ResolvedSpeechModel> {
-  const ranked = await rankSpeechModels(env, user);
+  const ranked = await rankSpeechModels(env, user, scope);
   const preferred =
     ranked.find(
       (entry) =>
@@ -677,26 +654,13 @@ export async function getSpeechModel(
 
   if (!selected) {
     throw new AssistantError(
-      "No voice is available for this account. Add a speech provider key in settings.",
+      "No voice is available for this account. Choose one in your model choices.",
       ErrorType.CONFIGURATION_ERROR,
     );
   }
 
   return selected;
 }
-
-export const getFimModel = async (env: IEnv, user?: IUser): Promise<ResolvedSystemModel | null> =>
-  resolveCapabilitySystemModel(env, user, "fim");
-
-export const getNextEditModel = async (
-  env: IEnv,
-  user?: IUser,
-): Promise<ResolvedSystemModel | null> => resolveCapabilitySystemModel(env, user, "nextEdit");
-
-export const getApplyEditModel = async (
-  env: IEnv,
-  user?: IUser,
-): Promise<ResolvedSystemModel | null> => resolveCapabilitySystemModel(env, user, "applyEdit");
 
 export const getAuxiliarySearchProvider = async (
   env: IEnv,
@@ -833,47 +797,16 @@ export const getAuxiliaryResearchProvider = async (
   return providerToUse;
 };
 
-export const getAuxiliarySpeechModel = async (
+export async function getTranscriptionModel(
   env: IEnv,
-  userSettings?: IUserSettings,
   user?: IUser,
-): Promise<{
-  model: string;
-  provider: string;
-  transcriptionProvider: string;
-}> => {
-  const transcriptionProvider = userSettings?.transcription_provider || "workers";
-  const transcriptionModel = userSettings?.transcription_model || "whisper";
-  const configured = await findModelConfig(transcriptionModel, env, undefined, user?.id);
+  scope?: SystemModelScope,
+): Promise<{ model: string; provider: string; transcriptionProvider: string }> {
+  const selected = await requireSystemModel(env, user, "transcription", scope);
 
-  if (configured && isModelRuntimeAvailable(configured, env)) {
-    return {
-      model: configured.matchingModel,
-      provider: configured.provider,
-      transcriptionProvider,
-    };
-  }
-
-  const fallback = await resolveModalitySystemModel(env, user, "transcription");
-
-  if (fallback) {
-    return {
-      model: fallback.model,
-      provider: fallback.provider,
-      transcriptionProvider,
-    };
-  }
-
-  if (configured) {
-    return {
-      model: configured.matchingModel,
-      provider: configured.provider,
-      transcriptionProvider,
-    };
-  }
-
-  throw new AssistantError(
-    "No active transcription model is available for this account",
-    ErrorType.CONFIGURATION_ERROR,
-  );
-};
+  return {
+    model: selected.model,
+    provider: selected.provider,
+    transcriptionProvider: toTranscriptionProvider(selected.provider),
+  };
+}

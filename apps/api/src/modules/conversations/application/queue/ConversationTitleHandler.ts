@@ -60,7 +60,7 @@ export class ConversationTitleHandler implements TaskHandler {
       return { status: "skipped", message: "The opening message already carries enough context" };
     }
 
-    const title = await generateConversationTitle(context, messages);
+    const title = await generateConversationTitle(context, conversationId, messages);
     const currentTitle = typeof conversation.title === "string" ? conversation.title : null;
 
     if (!title || title === currentTitle) {

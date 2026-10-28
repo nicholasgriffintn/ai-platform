@@ -216,6 +216,7 @@ export * from "./chat/useLiveConversationMessages.js";
 export * from "./chat/useMessageOperations.js";
 export * from "./chat/useModels.js";
 export * from "./chat/useModelTiers.js";
+export * from "./chat/useModelChoices.js";
 export * from "./chat/useModelRuntimeOptions.js";
 export * from "./chat/useModelSelection.js";
 export * from "./chat/useRuntimeEndpoints.js";

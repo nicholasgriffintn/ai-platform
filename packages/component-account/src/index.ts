@@ -27,7 +27,7 @@ export * from "./Pets/petModelTargets";
 export * from "./Pets/PetSettings";
 export * from "./Pets/PetUploadDialog";
 export * from "./ProviderApiKeyModal";
-export * from "./transcription-settings";
+export * from "./speech-voice-options";
 export * from "./user-settings";
 export * from "./UserSettingsForm";
 export * from "./Providers/ProviderCatalogue";

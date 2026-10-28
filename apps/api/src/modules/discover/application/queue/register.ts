@@ -33,11 +33,11 @@ const discoverJob = defineTask<DiscoverJobTaskData>({
     const context = job.runId ? withExecutionRunContext(owner, job.runId) : owner;
 
     if (job.job === "gather") {
-      const gathered = await runDiscoverGather(context);
+      const gathered = await runDiscoverGather(context, { scope: job.scope });
 
       return {
         status: "success",
-        message: `Read ${gathered.read.length} services and researched ${gathered.topics.length} topics`,
+        message: `Read ${gathered.read.length} services, researched ${gathered.topics.length} topics and added ${gathered.added} feed items`,
       };
     }
 

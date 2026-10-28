@@ -16,15 +16,29 @@ export type { GuardrailInput, GuardrailResult, GuardrailsProvider };
 
 const DEFAULT_BEDROCK_GUARDRAIL_VERSION = "1";
 
-function llamaGuardProvider(env: IEnv, user?: IUser): GuardrailsProvider {
+async function modelGuardrailsProvider(env: IEnv, user?: IUser): Promise<GuardrailsProvider> {
+  const { model, provider } = await providerHost.models.getAuxiliaryGuardrailsModel(env, user);
+
+  if (provider === "typesafe") {
+    return providerLibrary.resolve("guardrails", "typesafe", {
+      env,
+      user,
+      config: { env, user, model },
+    });
+  }
+
+  if (provider === "mistral") {
+    return providerLibrary.resolve("guardrails", "mistral", {
+      env,
+      user,
+      config: { ai: env.AI, env, user, model },
+    });
+  }
+
   return providerLibrary.resolve("guardrails", "llamaguard", {
     env,
     user,
-    config: {
-      ai: env.AI,
-      env,
-      user,
-    },
+    config: { ai: env.AI, env, user },
   });
 }
 
@@ -59,18 +73,6 @@ export async function getGuardrailsProvider(
     });
   }
 
-  if (providerId === "mistral") {
-    return providerLibrary.resolve("guardrails", "mistral", {
-      env,
-      user,
-      config: {
-        ai: env.AI,
-        env,
-        user,
-      },
-    });
-  }
-
   if (providerId === "shieldstral") {
     return providerLibrary.resolve("guardrails", "shieldstral", {
       env,
@@ -87,19 +89,7 @@ export async function getGuardrailsProvider(
     });
   }
 
-  if (providerId === "typesafe") {
-    const decisionModel = await providerHost.models.getAuxiliaryDecisionModel(env, user);
-
-    if (decisionModel) {
-      return providerLibrary.resolve("guardrails", "typesafe", {
-        env,
-        user,
-        config: { env, user },
-      });
-    }
-  }
-
-  return llamaGuardProvider(env, user);
+  return modelGuardrailsProvider(env, user);
 }
 
 export class Guardrails {

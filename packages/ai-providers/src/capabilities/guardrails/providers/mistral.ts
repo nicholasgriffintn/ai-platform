@@ -28,6 +28,7 @@ export interface MistralGuardConfig {
   ai: Ai;
   env: ProviderEnv;
   user?: ProviderUser;
+  model: string;
 }
 
 export class MistralGuardProvider implements GuardrailsProvider {
@@ -45,7 +46,7 @@ export class MistralGuardProvider implements GuardrailsProvider {
       logger.debug("Validating content with Mistral Guard");
       const content = normaliseGuardrailInput(input).text;
 
-      const model = "mistral-moderation-latest";
+      const model = this.config.model;
       const modelConfig = await this.runtime.host.models.getModelConfig(model);
 
       if (!modelConfig) {

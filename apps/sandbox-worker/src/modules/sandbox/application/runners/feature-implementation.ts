@@ -1,6 +1,5 @@
 import { redactSandboxOutput } from "@ngriffin_uk/polychat-library-sandbox";
 import {
-  DEFAULT_SANDBOX_MODEL as DEFAULT_MODEL,
   SANDBOX_RUN_PROOF_MAX_CHANGED_FILES,
   resolveSandboxDeliveryPolicy,
   sandboxDeliveryPolicyCreatesCommit,
@@ -198,7 +197,7 @@ export async function executeFeatureImplementation(
       type: "task_started",
       task: params.task,
       repo: params.repo,
-      model: params.model || DEFAULT_MODEL,
+      model: params.model,
       trustLevel: params.trustLevel ?? "balanced",
       installationId: params.installationId,
       polychatUri: params.polychatApiUrl,
@@ -212,7 +211,12 @@ export async function executeFeatureImplementation(
 
     const taskType = params.taskType || "feature-implementation";
 
-    const model = params.model || DEFAULT_MODEL;
+    const model = params.model;
+
+    if (!model) {
+      throw new Error("A sandbox model is required");
+    }
+
     const repo = resolveGitHubRepo(params.repo, params.credentialBroker);
     const egressPolicy = (declaredHosts?: readonly string[]) =>
       buildSandboxEgressPolicy({

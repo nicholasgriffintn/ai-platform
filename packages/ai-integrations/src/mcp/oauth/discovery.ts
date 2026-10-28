@@ -32,7 +32,7 @@ async function fetchMetadata<T extends z.ZodType>(
     try {
       const response = await fetchImpl(url, {
         headers: { Accept: "application/json" },
-        redirect: "error",
+        redirect: "manual",
         signal: AbortSignal.timeout(DISCOVERY_TIMEOUT_MS),
       });
 

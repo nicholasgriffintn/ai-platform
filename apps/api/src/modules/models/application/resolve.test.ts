@@ -1,7 +1,7 @@
 import {
   applyModelResponseDefaults,
   getModels,
-  getModelsByOutputModality,
+  isSystemRoleModel,
   type ModelResponseSettings,
 } from "@ngriffin_uk/polychat-ai-models";
 import {
@@ -70,15 +70,19 @@ describe("model response defaults", () => {
 });
 
 describe("central model policy catalogue", () => {
-  it("classifies every reranking lineup candidate as a reranking model", () => {
-    const rerankingModels = getModelsByOutputModality("reranking");
-    const lineup = SYSTEM_MODEL_LINEUP.find((role) => role.id === "reranking");
+  it("keeps every platform default on a Workers AI model that qualifies for its role", () => {
+    const models = getModels();
+    const problems = SYSTEM_MODEL_LINEUP.flatMap((role) =>
+      role.defaults.flatMap((candidate) => {
+        const entry = findModelByReference(models, candidate);
 
-    expect(lineup).toBeDefined();
+        return entry?.config.provider === "workers-ai" && isSystemRoleModel(role.id, entry.config)
+          ? []
+          : [`${role.id}: ${candidate.provider}/${candidate.model}`];
+      }),
+    );
 
-    for (const candidate of lineup?.candidates ?? []) {
-      expect(findModelByReference(rerankingModels, candidate)).not.toBeNull();
-    }
+    expect(problems).toEqual([]);
   });
 
   it("keeps every served lineup candidate on an active catalogue model that supports its effort", () => {
@@ -95,7 +99,7 @@ describe("central model policy catalogue", () => {
         ),
       ),
       ...SYSTEM_MODEL_LINEUP.flatMap((role) =>
-        role.candidates.map((candidate) => ({ ...candidate, location: `system/${role.id}` })),
+        role.defaults.map((candidate) => ({ ...candidate, location: `system/${role.id}` })),
       ),
     ];
     const problems: string[] = [];

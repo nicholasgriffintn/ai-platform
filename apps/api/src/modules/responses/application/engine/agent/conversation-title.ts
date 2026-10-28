@@ -80,7 +80,7 @@ export function startConversationTitle(params: ConversationTitleRunParams): Conv
       return null;
     }
 
-    return apply(await generateConversationTitle(context, params.messages));
+    return apply(await generateConversationTitle(context, params.completionId, params.messages));
   })().catch((error) => {
     logger.warn("Failed to title the conversation", {
       error,

@@ -1,5 +1,4 @@
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
-import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
 import { randomUint32 } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
@@ -10,6 +9,7 @@ import {
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
 import { hasUserProviderApiKey } from "~/infrastructure/providers/credentials";
+import { requireSystemModel } from "~/modules/models/application/resolve";
 import type { IEnv, IUser } from "~/types";
 
 export interface ImageGenerationParams {
@@ -30,8 +30,6 @@ export interface ImageResponse {
   content: string;
   data: any;
 }
-
-const DEFAULT_PROVIDER = MODEL_DEFAULTS.image.workersAi.provider;
 
 export async function generateImage({
   completion_id,
@@ -80,10 +78,12 @@ export async function generateImage({
       };
     }
 
+    const selected = args.model
+      ? { id: args.model, provider: args.provider }
+      : await requireSystemModel(runtimeEnv, runtimeUser, "image");
     const { providerName } = await ai.resolveMediaProvider(
-      "image",
-      { env: runtimeEnv, model: args.model },
-      { provider: args.provider, defaultProvider: DEFAULT_PROVIDER },
+      { env: runtimeEnv, model: selected.id },
+      { provider: selected.provider },
     );
 
     if (
@@ -113,7 +113,7 @@ export async function generateImage({
       height: args.height,
       steps: diffusionSteps,
       seed,
-      model: args.model,
+      model: selected.id,
       metadata: {
         steps: diffusionSteps,
       },
@@ -121,8 +121,6 @@ export async function generateImage({
 
     const imageData = await ai.image(request, {
       provider: providerName,
-      defaultProvider: DEFAULT_PROVIDER,
-      allowFallback: hasProEntitlement(runtimeUser),
     });
 
     return {

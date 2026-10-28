@@ -32,26 +32,6 @@ describe("getRunnableTool", () => {
     expect(getRunnableTool("not_a_tool")).toBeNull();
   });
 
-  it("offers Clef models in the Decide form with readable labels", () => {
-    const field = getRunnableTool("decide")?.formSchema.steps[0]?.fields.find(
-      (candidate) => candidate.id === "model",
-    );
-
-    expect(field).toMatchObject({
-      type: "select",
-      label: "Decision model",
-      required: false,
-    });
-    expect(field?.validation?.options).toEqual(
-      expect.arrayContaining([
-        { value: "auto", label: "Automatic" },
-        { value: "@cf/cloudflare/clef", label: "Clef" },
-        { value: "@cf/cloudflare/clef-flash", label: "Clef Flash" },
-        { value: "typesafe/jev-latest", label: "Jev" },
-      ]),
-    );
-  });
-
   it("converts the Decide form's JSON text into valid execution arguments", () => {
     const tool = runnableToolSchema.parse(getRunnableTool("decide"));
     const state = ["Checkout has failed for every customer. There is no workaround."];
@@ -69,13 +49,11 @@ describe("getRunnableTool", () => {
       },
     };
     const data = prepareToolFormData(tool.formSchema, {
-      model: "@cf/cloudflare/clef",
       state: JSON.stringify(state),
       questions: JSON.stringify(questions),
     });
 
     expect(decide.inputSchema.parse(data)).toEqual({
-      model: "@cf/cloudflare/clef",
       state,
       questions,
     });

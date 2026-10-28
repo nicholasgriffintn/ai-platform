@@ -11,7 +11,6 @@ export interface ProviderMetadata {
   description?: string;
   website?: string;
   models?: string[];
-  defaultModel?: string;
   categories?: string[];
   tags?: string[];
 }

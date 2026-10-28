@@ -66,7 +66,6 @@ describe("Workers AI decisions", () => {
     ["@cf/cloudflare/clef", "clef"],
     ["@cf/cloudflare/clef-flash", "clef-flash"],
     ["clef", "clef"],
-    [undefined, "clef-flash"],
   ])("routes %s to the model selector and retains usage for billing", async (model, selector) => {
     run.mockResolvedValue({ model: selector, answers, usage: { input_tokens: 120 } });
     const result = await provider("workers").decide({
@@ -126,14 +125,16 @@ describe("Workers AI decisions", () => {
     { q: { type: "choice", instructions: "?", criteria: { only: "One" } } },
   ])("rejects requests outside Clef limits before inference", async (invalidQuestions) => {
     await expect(
-      provider().decide({ state: "x", questions: invalidQuestions }),
+      provider().decide({ model: "clef-flash", state: "x", questions: invalidQuestions }),
     ).rejects.toMatchObject({ type: "PARAMS_ERROR" });
     expect(run).not.toHaveBeenCalled();
   });
 
   it("rejects invalid provider probabilities", async () => {
     run.mockResolvedValue({ answers: { urgent: { type: "noul", noul: 4 } } });
-    await expect(provider().decide({ state: "x", questions })).rejects.toMatchObject({
+    await expect(
+      provider().decide({ model: "clef-flash", state: "x", questions }),
+    ).rejects.toMatchObject({
       type: "PROVIDER_ERROR",
       statusCode: 502,
     });
@@ -142,7 +143,9 @@ describe("Workers AI decisions", () => {
   it("reports missing bindings clearly", async () => {
     const noBinding = library.resolve("decision", "workers-ai", { env: {} });
 
-    await expect(noBinding.decide({ state: "x", questions })).rejects.toMatchObject({
+    await expect(
+      noBinding.decide({ model: "clef-flash", state: "x", questions }),
+    ).rejects.toMatchObject({
       type: "CONFIGURATION_ERROR",
     });
     expect(run).not.toHaveBeenCalled();
@@ -150,23 +153,27 @@ describe("Workers AI decisions", () => {
 
   it("sanitises provider failures", async () => {
     run.mockRejectedValue(new Error("private request data"));
-    await expect(provider().decide({ state: "x", questions })).rejects.toMatchObject({
+    await expect(
+      provider().decide({ model: "clef-flash", state: "x", questions }),
+    ).rejects.toMatchObject({
       message: "Workers AI decisions failed",
       type: "EXTERNAL_API_ERROR",
     });
   });
 
-  it("preserves Jev selection and uses Flash only with its binding", async () => {
+  it("picks only Workers AI defaults, whatever other credentials exist", async () => {
     const models = createCatalogueModelResolver();
 
     await expect(
-      models.getAuxiliaryDecisionModel({ TYPESAFE_API_KEY: "test", AI: binding }),
-    ).resolves.toEqual({ model: "jev-latest", provider: "typesafe" });
-    await expect(models.getAuxiliaryDecisionModel({ AI: binding })).resolves.toEqual({
-      model: "@cf/cloudflare/clef-flash",
-      provider: "workers-ai",
-    });
-    await expect(models.getAuxiliaryDecisionModel({})).resolves.toBeNull();
+      models.getAuxiliaryDecisionModel({
+        TYPESAFE_API_KEY: "test",
+        OPENAI_API_KEY: "key",
+        AI: binding,
+      }),
+    ).resolves.toEqual({ model: "@cf/cloudflare/clef-flash", provider: "workers-ai" });
+    await expect(
+      models.getAuxiliaryDecisionModel({ TYPESAFE_API_KEY: "test", OPENAI_API_KEY: "key" }),
+    ).resolves.toBeNull();
   });
 
   it("selects Clef Omni from the lineup only when media needs judging", async () => {

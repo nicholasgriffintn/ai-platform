@@ -72,8 +72,8 @@ const annotationFormatSchema = z
 
 export const ocrSchema = z
   .object({
-    provider: z.enum(["mistral", "greenpt"]).optional(),
-    model: z.enum(["mistral-ocr-latest", "mistral-ocr-4-1"]).optional(),
+    provider: z.string().min(1).optional(),
+    model: z.string().min(1).optional(),
     document: ocrInputSchema,
     pages: z
       .union([

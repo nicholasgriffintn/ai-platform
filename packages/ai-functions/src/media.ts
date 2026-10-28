@@ -1,25 +1,22 @@
-import {
-  generateWithProviderFallback,
-  type AudioSynthesisRequest,
-  type AudioSynthesisResult,
-  type ImageGenerationRequest,
-  type ImageGenerationResult,
-  type MusicGenerationRequest,
-  type MusicGenerationResult,
-  type OcrExtractionRequest,
-  type OcrExtractionResult,
-  type ProviderRuntime,
-  type TranscriptionRequest,
-  type TranscriptionResult,
-  type VideoGenerationRequest,
-  type VideoGenerationResult,
+import type {
+  AudioSynthesisRequest,
+  AudioSynthesisResult,
+  ImageGenerationRequest,
+  ImageGenerationResult,
+  MusicGenerationRequest,
+  MusicGenerationResult,
+  OcrExtractionRequest,
+  OcrExtractionResult,
+  ProviderRuntime,
+  TranscriptionRequest,
+  TranscriptionResult,
+  VideoGenerationRequest,
+  VideoGenerationResult,
 } from "@ngriffin_uk/polychat-ai-providers";
-import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 export interface MediaRoutingOptions {
   provider?: string;
-  defaultProvider?: string;
-  allowFallback?: boolean;
 }
 
 type GenerationRequest = ImageGenerationRequest | MusicGenerationRequest | VideoGenerationRequest;
@@ -28,67 +25,54 @@ async function resolveMediaProvider(
   runtime: ProviderRuntime,
   request: Pick<GenerationRequest, "env" | "model">,
   routing: MediaRoutingOptions,
-  defaultProvider: string,
-): Promise<{ providerName: string; defaultProvider: string }> {
-  const resolvedDefault = routing.defaultProvider ?? defaultProvider;
+): Promise<{ providerName: string }> {
+  if (!request.model) {
+    throw new AssistantError("A model is required for media generation", ErrorType.PARAMS_ERROR);
+  }
+
   const providerName = await runtime.host.models.resolveModelProvider({
     model: request.model,
     provider: routing.provider,
-    defaultProvider: resolvedDefault,
+    defaultProvider: routing.provider ?? "",
     env: request.env,
   });
 
-  return { providerName, defaultProvider: resolvedDefault };
+  return { providerName };
 }
 
 export function createMediaFunctions(runtime: ProviderRuntime) {
   const route = async <TRequest extends GenerationRequest, TResult>(
     request: TRequest,
     routing: MediaRoutingOptions,
-    defaultProvider: string,
     getProvider: (name: string) => { generate(input: TRequest): Promise<TResult> },
   ): Promise<TResult> => {
-    const resolved = await resolveMediaProvider(runtime, request, routing, defaultProvider);
+    const { providerName } = await resolveMediaProvider(runtime, request, routing);
 
-    return generateWithProviderFallback({
-      providerName: resolved.providerName,
-      defaultProvider: resolved.defaultProvider,
-      request,
-      getProvider,
-      allowFallback: routing.allowFallback ?? true,
-    });
+    return getProvider(providerName).generate(request);
   };
 
   const scope = (request: GenerationRequest) => ({ env: request.env, user: request.user });
 
   return {
     resolveMediaProvider: (
-      category: "image" | "music" | "video",
       request: Pick<GenerationRequest, "env" | "model">,
       routing: MediaRoutingOptions = {},
-    ) =>
-      resolveMediaProvider(runtime, request, routing, MODEL_DEFAULTS[category].workersAi.provider),
+    ) => resolveMediaProvider(runtime, request, routing),
     image: (
       request: ImageGenerationRequest,
       routing: MediaRoutingOptions = {},
     ): Promise<ImageGenerationResult> =>
-      route(request, routing, MODEL_DEFAULTS.image.workersAi.provider, (name) =>
-        runtime.providers.resolve("image", name, scope(request)),
-      ),
+      route(request, routing, (name) => runtime.providers.resolve("image", name, scope(request))),
     music: (
       request: MusicGenerationRequest,
       routing: MediaRoutingOptions = {},
     ): Promise<MusicGenerationResult> =>
-      route(request, routing, MODEL_DEFAULTS.music.workersAi.provider, (name) =>
-        runtime.providers.resolve("music", name, scope(request)),
-      ),
+      route(request, routing, (name) => runtime.providers.resolve("music", name, scope(request))),
     video: (
       request: VideoGenerationRequest,
       routing: MediaRoutingOptions = {},
     ): Promise<VideoGenerationResult> =>
-      route(request, routing, MODEL_DEFAULTS.video.workersAi.provider, (name) =>
-        runtime.providers.resolve("video", name, scope(request)),
-      ),
+      route(request, routing, (name) => runtime.providers.resolve("video", name, scope(request))),
     synthesise: (
       providerName: string,
       request: AudioSynthesisRequest,
@@ -107,7 +91,7 @@ export function createMediaFunctions(runtime: ProviderRuntime) {
       const providerName = await runtime.host.models.resolveModelProvider({
         model: request.model,
         provider: request.provider,
-        defaultProvider: MODEL_DEFAULTS.ocr.provider,
+        defaultProvider: request.provider ?? "",
         env: request.env,
       });
 

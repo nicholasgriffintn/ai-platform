@@ -29,3 +29,4 @@ export interface TranscriptionProvider {
 }
 
 export { BaseTranscriptionProvider } from "./base.js";
+export { toTranscriptionProvider } from "./provider-names.js";

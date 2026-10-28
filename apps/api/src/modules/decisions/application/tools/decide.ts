@@ -34,7 +34,6 @@ export const decide = extendPreservingAccessors(decideDescriptor, {
       request: {
         state: args.state,
         questions: args.questions,
-        model: args.model === "auto" ? undefined : args.model,
       },
       completionId: context.completionId,
     });

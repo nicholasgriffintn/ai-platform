@@ -1,21 +1,18 @@
-import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { buildInputSchemaInput } from "../../../input-schema.js";
 import type { ProviderRuntime } from "../../../runtime.js";
 import { extractGeneratedAsset } from "../../../utils/helpers.js";
+import { requireRequestModel } from "../../../utils/required-model.js";
 import type { MusicGenerationRequest, MusicGenerationResult, MusicProvider } from "../index.js";
-
-const DEFAULT_MODEL = MODEL_DEFAULTS.music.workersAi.model;
 
 export class WorkersAiMusicProvider implements MusicProvider {
   constructor(protected readonly runtime: ProviderRuntime) {}
 
   name = "workers-ai";
-  models = [DEFAULT_MODEL];
 
   async generate(request: MusicGenerationRequest): Promise<MusicGenerationResult> {
-    const modelId = request.model || DEFAULT_MODEL;
+    const modelId = requireRequestModel(request.model, "music");
     const modelConfig = await this.runtime.host.models.getModelConfigByModel(modelId);
 
     if (!modelConfig) {

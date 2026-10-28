@@ -7,10 +7,10 @@ import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastruct
 
 import { rememberInDocument, rememberInScope } from "../application/remember";
 
-const generateTierObject = vi.hoisted(() => vi.fn());
+const generateSystemObject = vi.hoisted(() => vi.fn());
 const enqueueTask = vi.hoisted(() => vi.fn());
 
-vi.mock("~/modules/models/application/tier-object", () => ({ generateTierObject }));
+vi.mock("~/modules/models/application/system-object", () => ({ generateSystemObject }));
 vi.mock("~/modules/queue/infrastructure/TaskRepository", () => ({
   TaskRepository: vi.fn(function TaskRepository() {
     return {};
@@ -50,7 +50,7 @@ function row(overrides: Partial<MemoryDocumentRow>): MemoryDocumentRow {
 }
 
 function setup(documents: MemoryDocumentRow[], placed: string) {
-  generateTierObject.mockImplementation(async (_context: unknown, { name }: { name: string }) =>
+  generateSystemObject.mockImplementation(async (_context: unknown, { name }: { name: string }) =>
     name === "memory_placement" ? { name: placed } : DRAFT,
   );
   const repository = {
@@ -79,7 +79,7 @@ describe("rememberInScope", () => {
 
     await rememberInScope(context, SCOPE, 7, { text: "Prefers British English" });
 
-    const write = generateTierObject.mock.calls.find(
+    const write = generateSystemObject.mock.calls.find(
       ([, request]) => request.name === "memory_document",
     );
 
@@ -127,7 +127,7 @@ describe("rememberInScope", () => {
     expect(repository.appendRevision).toHaveBeenLastCalledWith(
       expect.objectContaining({ expectedRevision: 5 }),
     );
-    expect(generateTierObject.mock.calls.at(-1)?.[1].material).toContain("Uses Oxford commas.");
+    expect(generateSystemObject.mock.calls.at(-1)?.[1].material).toContain("Uses Oxford commas.");
   });
 });
 
@@ -146,7 +146,7 @@ describe("rememberInDocument", () => {
 
     await rememberInDocument(context, pending, 7, { text: "Prefers British English" });
 
-    expect(generateTierObject).not.toHaveBeenCalled();
+    expect(generateSystemObject).not.toHaveBeenCalled();
     expect(repository.appendRevision).toHaveBeenCalledWith(
       expect.objectContaining({
         content: expect.stringContaining("Prefers British English"),

@@ -303,19 +303,22 @@ describe("createAiFunctions", () => {
     expect(result.tags[0]).toBe("birds");
   });
 
-  it("falls back to the default media provider when the requested one fails", async () => {
+  it("routes media to the requested provider and rejects requests without a model", async () => {
     const { runtime, image, replicate } = createRuntime(vi.fn<GetResponse>());
     const ai = createAiFunctions(runtime);
 
     await expect(
-      ai.image({ env, user, prompt: "a parrot" }, { provider: "replicate" }),
+      ai.image({ env, user, prompt: "a parrot", model: "flux-2-dev" }, { provider: "workers-ai" }),
     ).resolves.toEqual({ url: "https://img" });
-    expect(replicate.generate).toHaveBeenCalledTimes(1);
-    expect(image.generate).toHaveBeenCalledTimes(1);
-
     await expect(
-      ai.image({ env, user, prompt: "a parrot" }, { provider: "replicate", allowFallback: false }),
+      ai.image({ env, user, prompt: "a parrot", model: "flux-pro" }, { provider: "replicate" }),
     ).rejects.toThrow("replicate down");
+    expect(image.generate).toHaveBeenCalledTimes(1);
+    expect(replicate.generate).toHaveBeenCalledTimes(1);
+
+    await expect(ai.image({ env, user, prompt: "a parrot" })).rejects.toThrow(
+      "A model is required for media generation",
+    );
   });
 
   it("embeds text through the chat provider and returns ordered vectors", async () => {

@@ -16,7 +16,6 @@ import {
   getAuxiliaryModel,
   getAuxiliaryModelForRetrieval,
   getAuxiliaryRerankingModel,
-  getAuxiliarySpeechModel,
   getCompactionModel,
   getDefaultChatModel,
   getFimModel,
@@ -29,6 +28,7 @@ import {
   getOcrModel,
   getSystemModel,
   getTitlingModel,
+  getTranscriptionModel,
   getVideoModel,
   resolveModelConfig,
   resolveModelProvider,
@@ -85,7 +85,7 @@ export const providerHost: ProviderHost = {
     resolveModelProvider: ({ env, ...options }) =>
       resolveModelProvider({ ...options, env: env ? asEnv(env) : undefined }),
     getDefaultChatModel: (env, user) => getDefaultChatModel(asEnv(env), asUser(user)),
-    getSystemModel: (env, user, role) => getSystemModel(asEnv(env), asUser(user), role as never),
+    getSystemModel: (env, user, role) => getSystemModel(asEnv(env), asUser(user), role),
     getAuxiliaryModel: (env, user) => getAuxiliaryModel(asEnv(env), asUser(user)),
     getTitlingModel: (env, user) => getTitlingModel(asEnv(env), asUser(user)),
     getCompactionModel: (env, user) => getCompactionModel(asEnv(env), asUser(user)),
@@ -99,14 +99,7 @@ export const providerHost: ProviderHost = {
       resolveRerankingModel(asEnv(env), asUser(user), selection),
     getAuxiliaryRerankingModel: (env, user, selection) =>
       getAuxiliaryRerankingModel(asEnv(env), asUser(user), selection),
-    getAuxiliarySpeechModel: async (env, user) => {
-      const apiUser = asUser(user);
-      const userSettings = apiUser?.id
-        ? await new UserSettingsRepository(asEnv(env)).getUserSettings(apiUser.id)
-        : null;
-
-      return getAuxiliarySpeechModel(asEnv(env), userSettings ?? undefined, apiUser);
-    },
+    getTranscriptionModel: (env, user) => getTranscriptionModel(asEnv(env), asUser(user)),
     getOcrModel: (env, user) => getOcrModel(asEnv(env), asUser(user)),
     getImageModel: (env, user) => getImageModel(asEnv(env), asUser(user)),
     getVideoModel: (env, user) => getVideoModel(asEnv(env), asUser(user)),

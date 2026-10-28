@@ -16,6 +16,19 @@ vi.mock("~/infrastructure/providers/capabilities/ocr", () => ({
   resolveOcrProviderName: vi.fn().mockResolvedValue("mistral"),
   getOcrProvider: vi.fn(() => ({ extractText })),
 }));
+vi.mock("~/modules/models/application/resolve", () => ({
+  requireSystemModel: vi.fn().mockResolvedValue({
+    id: "mistral-ocr-latest",
+    name: "Mistral OCR",
+    model: "mistral-ocr-latest",
+    provider: "mistral",
+  }),
+  findModelConfig: vi.fn().mockResolvedValue({
+    matchingModel: "mistral-ocr-latest",
+    provider: "mistral",
+    modalities: { input: ["image"], output: ["ocr"] },
+  }),
+}));
 vi.mock("./input", () => ({ resolveOcrInput }));
 vi.mock("~/modules/workspaces/application/access", () => ({ requireProjectAccess }));
 vi.mock("~/modules/outputs/application/access", () => ({ requireConversationScope }));

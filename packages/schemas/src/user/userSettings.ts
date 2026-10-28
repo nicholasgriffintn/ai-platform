@@ -7,23 +7,16 @@ import { modelTierSchema } from "../model-lineup.js";
 import { petModelOverridesSchema } from "../pets.js";
 import { responseStyleSchema } from "../response-style.js";
 import { searchProviderSchema } from "../search.js";
-import { speechProviderSchema } from "../speech-voices.js";
 import { toolRulesSchema } from "../tool-rules.js";
 
 export const MEMORY_PROVIDERS = ["documents", "hindsight", "honcho"] as const;
 export const memoryProviderSchema = z.enum(MEMORY_PROVIDERS);
 
-export const guardrailsProviderIds = [
-  "llamaguard",
-  "bedrock",
-  "mistral",
-  "shieldstral",
-  "typesafe",
-] as const;
+export const guardrailsProviderIds = ["model", "bedrock", "shieldstral"] as const;
 
 export const guardrailsProviderSchema = z.enum(guardrailsProviderIds);
 export type GuardrailsProviderId = z.infer<typeof guardrailsProviderSchema>;
-export const DEFAULT_GUARDRAILS_PROVIDER: GuardrailsProviderId = "typesafe";
+export const DEFAULT_GUARDRAILS_PROVIDER: GuardrailsProviderId = "model";
 export const DEFAULT_GUARDRAILS_ENABLED = true;
 
 export const updateUserSettingsResponseSchema = z.object({
@@ -110,11 +103,7 @@ export const updateUserSettingsSchema = z
     web_search_enabled: z.boolean().optional(),
     source_search_enabled: z.boolean().optional(),
     memory_provider: memoryProviderSchema.optional(),
-    transcription_provider: z.string().optional(),
-    transcription_model: z.string().optional(),
     transcription_vocabulary: transcriptionVocabularySchema.optional(),
-    speech_provider: speechProviderSchema.nullable().optional(),
-    speech_model: z.string().trim().min(1).nullable().optional(),
     speech_voice: z.string().trim().min(1).max(128).nullable().optional(),
     speech_expressiveness: speechExpressivenessSchema.nullable().optional(),
     search_provider: z.union([searchProviderSchema, z.literal("")]).optional(),

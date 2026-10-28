@@ -1,7 +1,6 @@
 import {
   notebookGuideSchema,
   notebookSettingsSchema,
-  type ModelTier,
   type Notebook,
   type NotebookGuide,
   type NotebookSettings,
@@ -10,8 +9,6 @@ import {
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { NotebookRecord } from "~/modules/notebooks/infrastructure/NotebookRepository";
-
-export const NOTEBOOK_MODEL_TIER: ModelTier = "medium";
 
 const NOTEBOOK_CONTEXT_SHARE = 3;
 const CHARACTERS_PER_TOKEN = 4;

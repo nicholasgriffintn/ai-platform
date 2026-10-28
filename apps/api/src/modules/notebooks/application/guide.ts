@@ -2,12 +2,8 @@ import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { notebookGuideDraftSchema, type NotebookGuide } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { generateTierObject } from "~/modules/models/application/tier-object";
-import {
-  isGuideCurrent,
-  NOTEBOOK_MODEL_TIER,
-  readNotebookGuide,
-} from "~/modules/notebooks/domain/notebook";
+import { generateSystemObject } from "~/modules/models/application/system-object";
+import { isGuideCurrent, readNotebookGuide } from "~/modules/notebooks/domain/notebook";
 import { NotebookRepository } from "~/modules/notebooks/infrastructure/NotebookRepository";
 import { buildSourceMaterial } from "~/modules/sources/application/material";
 
@@ -33,8 +29,8 @@ export async function writeNotebookGuide(
     return null;
   }
 
-  const object = await generateTierObject(context, {
-    tier: NOTEBOOK_MODEL_TIER,
+  const object = await generateSystemObject(context, {
+    role: "writing",
     name: "notebook_guide",
     schema: notebookGuideDraftSchema,
     system: renderPrompt("notebooks/guide", { notebookName: access.notebook.title }),

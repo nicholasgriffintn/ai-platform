@@ -25,7 +25,7 @@ async function postOAuth(params: {
   try {
     response = await params.fetch(params.url, {
       method: "POST",
-      redirect: "error",
+      redirect: "manual",
       signal: AbortSignal.timeout(OAUTH_TIMEOUT_MS),
       headers: { "Content-Type": params.contentType, Accept: "application/json" },
       body: params.body,

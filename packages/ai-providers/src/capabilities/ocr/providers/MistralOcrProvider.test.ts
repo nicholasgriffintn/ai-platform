@@ -66,6 +66,7 @@ describe("MistralOcrProvider", () => {
     await new MistralOcrProvider(runtime).extractText({
       env,
       user,
+      model: "mistral-ocr-latest",
       id: "request-1",
       document: {
         type: "document_url",
@@ -148,7 +149,12 @@ describe("MistralOcrProvider", () => {
       file_id: "123e4567-e89b-12d3-a456-426614174000",
     },
   ])("passes $type inputs to Mistral", async (document) => {
-    await new MistralOcrProvider(runtime).extractText({ env, user, document });
+    await new MistralOcrProvider(runtime).extractText({
+      env,
+      user,
+      model: "mistral-ocr-latest",
+      document,
+    });
 
     expect(mocks.fetchAIResponse.mock.calls[0]?.[4]).toMatchObject({ document });
   });
@@ -157,6 +163,7 @@ describe("MistralOcrProvider", () => {
     await new MistralOcrProvider(runtime).extractText({
       env,
       user,
+      model: "mistral-ocr-latest",
       id: "request-1",
       projectId: "project-1",
       conversationId: "conversation-1",
@@ -205,6 +212,7 @@ describe("MistralOcrProvider", () => {
     const result = await new MistralOcrProvider(runtime).extractText({
       env,
       user,
+      model: "mistral-ocr-latest",
       document: {
         type: "document_url",
         document_url: "data:application/pdf;base64,cGRm",

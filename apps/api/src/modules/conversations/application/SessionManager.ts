@@ -16,7 +16,8 @@ import {
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { ai } from "~/infrastructure/ai";
-import { getCompactionModel } from "~/modules/models/application/resolve";
+import { runWithSystemModel } from "~/modules/models/application/resolve";
+import { resolveConversationModelScope } from "~/modules/models/application/scope";
 import type { ChatMode, IEnv, Message, IUser } from "~/types";
 
 const logger = getLogger({ prefix: "services/conversations/SessionManager" });
@@ -108,6 +109,7 @@ export class SessionManager {
       plan.summaryInput,
       plan.messagesToArchive,
       input.mode,
+      input.completionId,
     );
     const coverage: CompactionCoverage = {
       coveredMessageIds: plan.messagesToArchive.flatMap((message) =>
@@ -176,7 +178,11 @@ export class SessionManager {
     }
   }
 
-  public async summarise(messages: Message[], mode?: ChatMode): Promise<string> {
+  public async summarise(
+    messages: Message[],
+    mode?: ChatMode,
+    conversationId?: string,
+  ): Promise<string> {
     if (messages.length === 0) {
       return "Conversation snapshot recorded.";
     }
@@ -187,27 +193,36 @@ export class SessionManager {
       return "Conversation snapshot recorded.";
     }
 
-    return (await this.createSummary(selection.input, selection.representedMessages, mode)).summary;
+    return (
+      await this.createSummary(selection.input, selection.representedMessages, mode, conversationId)
+    ).summary;
   }
 
   private async createSummary(
     summaryInput: string,
     representedMessages: Message[],
     mode?: ChatMode,
+    conversationId?: string,
   ): Promise<SessionSummaryResult> {
     try {
-      const { model, provider, effort } = await getCompactionModel(this.env, this.user);
       const modeHint = mode ? `The conversation was in "${mode}" mode.` : "";
-      const summary = await ai.generateText({
-        env: this.env,
-        user: this.user,
-        model,
-        provider,
-        system: buildConversationSummarisePrompt({ modeHint }),
-        prompt: summaryInput,
-        reasoning_effort: effort,
-        disable_functions: true,
-      });
+      const summary = await runWithSystemModel(
+        this.env,
+        this.user,
+        "compaction",
+        ({ model, provider, effort }) =>
+          ai.generateText({
+            env: this.env,
+            user: this.user,
+            model,
+            provider,
+            system: buildConversationSummarisePrompt({ modeHint }),
+            prompt: summaryInput,
+            reasoning_effort: effort,
+            disable_functions: true,
+          }),
+        await resolveConversationModelScope(this.env, conversationId),
+      );
 
       if (summary.trim()) {
         return {

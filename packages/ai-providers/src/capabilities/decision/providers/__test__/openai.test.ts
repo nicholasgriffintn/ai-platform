@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestHost } from "../../../../__test__/test-runtime.js";
 import { createProviderLibrary } from "../../../../create-library.js";
-import { createCatalogueModelResolver } from "../../../../model-resolver.js";
 
 const { fetchAIResponse } = vi.hoisted(() => ({ fetchAIResponse: vi.fn() }));
 
@@ -252,18 +251,5 @@ describe("OpenAI decisions", () => {
       type: "PROVIDER_ERROR",
       statusCode: 502,
     });
-  });
-
-  it("selects OpenAI with existing credentials while preserving the earlier providers' priority", async () => {
-    const models = createCatalogueModelResolver();
-
-    await expect(models.getAuxiliaryDecisionModel({ OPENAI_API_KEY: "key" })).resolves.toEqual({
-      model: "gpt-6-luna",
-      provider: "openai",
-    });
-    await expect(
-      models.getAuxiliaryDecisionModel({ OPENAI_API_KEY: "key", TYPESAFE_API_KEY: "key" }),
-    ).resolves.toEqual({ model: "jev-latest", provider: "typesafe" });
-    await expect(models.getAuxiliaryDecisionModel({})).resolves.toBeNull();
   });
 });

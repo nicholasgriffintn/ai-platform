@@ -1,26 +1,19 @@
 import { validateReplicatePayload } from "@ngriffin_uk/polychat-ai-models";
-import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { omitNullishValues } from "@ngriffin_uk/polychat-utility-server/objects";
 
 import type { ProviderRuntime } from "../../../runtime.js";
 import { extractGeneratedAsset } from "../../../utils/helpers.js";
+import { requireRequestModel } from "../../../utils/required-model.js";
 import type { MusicGenerationRequest, MusicGenerationResult, MusicProvider } from "../index.js";
-
-const DEFAULT_MODEL = MODEL_DEFAULTS.music.replicate.model;
 
 export class ReplicateMusicProvider implements MusicProvider {
   constructor(protected readonly runtime: ProviderRuntime) {}
 
   name = "replicate";
-  models = [DEFAULT_MODEL];
-
-  protected getDefaultModel(): string {
-    return DEFAULT_MODEL;
-  }
 
   async generate(request: MusicGenerationRequest): Promise<MusicGenerationResult> {
-    const modelId = request.model || this.getDefaultModel();
+    const modelId = requireRequestModel(request.model, "music");
     const modelConfig = await this.runtime.host.models.getModelConfigByModel(modelId);
 
     if (!modelConfig) {

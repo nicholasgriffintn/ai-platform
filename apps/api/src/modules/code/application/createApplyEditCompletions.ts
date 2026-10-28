@@ -2,7 +2,6 @@ import {
   handleCreateEditCompletions,
   type HandleCreateEditCompletionsRequest,
 } from "~/modules/code/application/edit-completions";
-import { resolveSystemModelId } from "~/modules/responses/domain/system-models";
 
 export const handleCreateApplyEditCompletions = async ({
   env,
@@ -16,7 +15,7 @@ export const handleCreateApplyEditCompletions = async ({
     { env, model, provider: requestedProvider, messages, stream, user },
     {
       capability: "supportsApplyEdit",
-      defaultModel: () => resolveSystemModelId("applyEdit"),
+      role: "applyEdit",
       missingMessagesMessage: "Messages are required for apply edit completions",
       operation: "apply",
       unsupportedMessage: (selectedModel) =>

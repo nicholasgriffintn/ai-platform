@@ -35,7 +35,6 @@ export const extract_values = extendPreservingAccessors(extractValuesDescriptor,
         state: args.state,
         fields: args.fields,
         reference_date: args.reference_date,
-        model: args.model === "auto" ? undefined : args.model,
       },
       completionId: context.completionId,
     });

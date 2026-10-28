@@ -75,6 +75,7 @@ describe("Workers AI extractions", () => {
       usage: { input_tokens: 655, output_tokens: 0, passes: 3 },
     });
     const result = await provider().extract({
+      model: "clairic",
       state: "Order A-88412",
       fields,
       images,
@@ -117,7 +118,9 @@ describe("Workers AI extractions", () => {
 
     run.mockResolvedValue({ model: "clairic", answers: minimal, truncated: false, usage: {} });
 
-    await expect(provider().extract({ state: "x", fields })).resolves.toMatchObject({
+    await expect(
+      provider().extract({ model: "clairic", state: "x", fields }),
+    ).resolves.toMatchObject({
       answers: minimal,
     });
   });
@@ -129,7 +132,9 @@ describe("Workers AI extractions", () => {
       usage: { input_tokens: 10 },
     });
 
-    await expect(provider().extract({ state: "x", fields })).rejects.toMatchObject({
+    await expect(
+      provider().extract({ model: "clairic", state: "x", fields }),
+    ).rejects.toMatchObject({
       type: "PROVIDER_ERROR",
       statusCode: 502,
     });

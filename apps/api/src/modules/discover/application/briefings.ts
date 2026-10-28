@@ -29,7 +29,6 @@ import {
 import { discoverTopicKey, listEditionLinks } from "~/modules/discover/domain/edition";
 import { pickEpisodeTopic } from "~/modules/discover/domain/episodes";
 import { DISCOVER_HEADLINES_TOPIC } from "~/modules/discover/domain/research";
-import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
 import {
   gatherKnowledgeArticles,
   type GatheredArticle,
@@ -37,7 +36,7 @@ import {
 import { withKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { findTopicArticles } from "~/modules/knowledge/application/syncs/topics";
 import type { KnowledgeArticleCandidate } from "~/modules/knowledge/domain/item";
-import { generateTierObject } from "~/modules/models/application/tier-object";
+import { generateSystemObject } from "~/modules/models/application/system-object";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { affordableEpisodeLength, canAffordDiscoverListen } from "./cost";
@@ -258,8 +257,8 @@ async function researchBriefing(
     return null;
   }
 
-  const briefing = await generateTierObject(withEditionRun(context, edition), {
-    tier: DISCOVER_MODEL_TIER,
+  const briefing = await generateSystemObject(withEditionRun(context, edition), {
+    role: "writing",
     name: "discover_briefing",
     schema: discoverBriefingDraftSchema,
     system: renderPrompt("discover/briefing", { topic }),

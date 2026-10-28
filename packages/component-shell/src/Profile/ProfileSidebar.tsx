@@ -10,6 +10,7 @@ import { ProfileBillingTab } from "./Tabs/ProfileBillingTab.js";
 import { ProfileChannelsTab } from "./Tabs/ProfileChannelsTab.js";
 import { ProfileCustomisationTab } from "./Tabs/ProfileCustomisationTab.js";
 import { ProfileHistoryTab } from "./Tabs/ProfileHistoryTab.js";
+import { ProfileModelChoicesTab } from "./Tabs/ProfileModelChoicesTab.js";
 import { ProfilePasskeysTab } from "./Tabs/ProfilePasskeysTab.js";
 import { ProfilePetsTab } from "./Tabs/ProfilePetsTab.js";
 import { ProfileProvidersTab } from "./Tabs/ProfileProvidersTab.js";
@@ -59,6 +60,12 @@ export const profileSidebarItems: ProfileSidebarItem[] = [
     group: MODELS_GROUP,
     pageTitle: "Available Providers",
     component: ProfileProvidersTab,
+  },
+  {
+    id: "models",
+    label: "Model choices",
+    group: MODELS_GROUP,
+    component: ProfileModelChoicesTab,
   },
   { id: "api-keys", label: "API keys", group: MODELS_GROUP, component: ProfileApiKeysTab },
   { id: "tool-rules", label: "Tool rules", group: ADVANCED_GROUP, component: ProfileToolRulesTab },

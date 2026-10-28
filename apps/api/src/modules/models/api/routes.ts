@@ -5,13 +5,16 @@ import {
   listPageOf,
   modelParamsSchema,
   modelTiersResponseSchema,
+  systemModelChoicesQuerySchema,
+  systemModelChoicesResponseSchema,
+  updateSystemModelChoicesSchema,
   type ModelConfig,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 import z from "zod/v4";
 
-import { defineResource } from "~/infrastructure/http/resource";
+import { defineResource, defineSingleton } from "~/infrastructure/http/resource";
 import { ArtificialAnalysisRepository } from "~/modules/model-analysis/infrastructure/ArtificialAnalysisRepository";
 import {
   getModelDetails,
@@ -23,6 +26,10 @@ import {
   listModelsByStrength,
   listStrengths,
 } from "~/modules/models/application";
+import {
+  getSystemModelChoices,
+  updateSystemModelChoices,
+} from "~/modules/models/application/choices";
 import { getLineupModelsForUser } from "~/modules/models/application/resolve";
 import { resolveTierLineup } from "~/modules/models/application/tiers";
 
@@ -40,6 +47,35 @@ function modelPage(models: ModelConfig) {
     (model) => model.id,
   );
 }
+
+defineSingleton(app, { path: "/choices", tags: ["models"] }, (choices) => {
+  choices
+    .read({
+      auth: true,
+      summary: "Get model choices",
+      description:
+        "The models you, or a workspace, chose for each background job, with fallbacks, the platform defaults and whether each choice still runs.",
+      cache: "no-store",
+      querySchema: systemModelChoicesQuerySchema,
+      responses: {
+        200: { description: "Model choices", schema: systemModelChoicesResponseSchema },
+      },
+      handler: ({ serviceContext, query }) =>
+        getSystemModelChoices(serviceContext, query.workspace_id),
+    })
+    .update({
+      auth: true,
+      summary: "Update model choices",
+      description:
+        "Replace the ordered choices for one job. The first model runs; the rest are fallbacks. An empty list returns the job to the platform defaults.",
+      bodySchema: updateSystemModelChoicesSchema,
+      responses: {
+        200: { description: "Model choices", schema: systemModelChoicesResponseSchema },
+        400: { description: "A model cannot be used for this job", schema: errorResponseSchema },
+      },
+      handler: ({ serviceContext, body }) => updateSystemModelChoices(serviceContext, body),
+    });
+});
 
 defineResource(app, { idParam: "model_id", tags: ["models"] }, (models) => {
   models

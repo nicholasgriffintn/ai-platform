@@ -3,8 +3,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ExtractionRequest } from "../types/extraction.js";
 
-export const WORKERS_AI_DEFAULT_EXTRACTION_MODEL = "@cf/cloudflare/clairic";
-
 interface WorkersExtractionModel {
   model: string;
   selector: string;
@@ -14,9 +12,7 @@ const WORKERS_EXTRACTION_MODELS: WorkersExtractionModel[] = [
   { model: "@cf/cloudflare/clairic", selector: "clairic" },
 ];
 
-export function resolveWorkersExtractionModel(
-  model = WORKERS_AI_DEFAULT_EXTRACTION_MODEL,
-): WorkersExtractionModel {
+export function resolveWorkersExtractionModel(model: string | undefined): WorkersExtractionModel {
   const resolved = WORKERS_EXTRACTION_MODELS.find(
     (candidate) => candidate.model === model || candidate.selector === model,
   );

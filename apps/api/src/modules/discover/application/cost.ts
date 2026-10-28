@@ -17,12 +17,11 @@ import {
   type MediaUsagePlan,
   type PaidEpisodeLength,
 } from "~/modules/discover/domain/cost";
-import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
 import {
   findModelConfig,
   getImageModel,
   getSpeechModel,
-  getTierModel,
+  requireSystemModel,
 } from "~/modules/models/application/resolve";
 import { getRecipeInstallationSpend } from "~/modules/recipes/application/installation-budget";
 
@@ -66,7 +65,7 @@ function pricePlan(models: PricedModels, plan: MediaUsagePlan): number {
 async function resolvePricedModels(context: ServiceContext): Promise<PricedModels> {
   const user = context.requireUser();
   const [text, speech, image] = await Promise.all([
-    getTierModel(context.env, user, DISCOVER_MODEL_TIER),
+    requireSystemModel(context.env, user, "writing"),
     getSpeechModel(context.env, user),
     getImageModel(context.env, user),
   ]);

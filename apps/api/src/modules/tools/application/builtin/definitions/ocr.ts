@@ -1,4 +1,3 @@
-import { DEFAULT_OCR_MODEL, DEFAULT_OCR_PROVIDER } from "@ngriffin_uk/polychat-ai-providers";
 import { jsonSchemaToZod } from "@ngriffin_uk/polychat-library-tools";
 
 import type { FunctionToolDescriptor } from "~/types/functions";
@@ -32,18 +31,6 @@ export const extract_text_from_document: FunctionToolDescriptor = {
       source_id: { type: "string", description: "Private Polychat Source file ID" },
       output_id: { type: "string", description: "Private Polychat Output file ID" },
       document_name: { type: "string", description: "Optional source filename" },
-      model: {
-        type: "string",
-        description: "OCR model",
-        enum: [DEFAULT_OCR_MODEL, "mistral-ocr-4-1"],
-        default: DEFAULT_OCR_MODEL,
-      },
-      provider: {
-        type: "string",
-        description: "OCR provider",
-        enum: [DEFAULT_OCR_PROVIDER],
-        default: DEFAULT_OCR_PROVIDER,
-      },
       pages: {
         description: "Zero-based pages as an integer list or comma-separated ranges such as 0-2,4",
         anyOf: [

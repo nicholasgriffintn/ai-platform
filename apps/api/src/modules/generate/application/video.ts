@@ -1,5 +1,4 @@
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
-import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
@@ -9,6 +8,7 @@ import {
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
 import { hasUserProviderApiKey } from "~/infrastructure/providers/credentials";
+import { requireSystemModel } from "~/modules/models/application/resolve";
 import type { IEnv, IUser } from "~/types";
 
 export interface VideoGenerationParams {
@@ -30,8 +30,6 @@ export interface VideoResponse {
   content: string;
   data: any;
 }
-
-const DEFAULT_PROVIDER = MODEL_DEFAULTS.video.replicate.provider;
 
 export async function generateVideo({
   completion_id,
@@ -73,10 +71,12 @@ export async function generateVideo({
       };
     }
 
+    const selected = args.model
+      ? { id: args.model, provider: args.provider }
+      : await requireSystemModel(runtimeEnv, runtimeUser, "video");
     const { providerName } = await ai.resolveMediaProvider(
-      "video",
-      { env: runtimeEnv, model: args.model },
-      { provider: args.provider, defaultProvider: DEFAULT_PROVIDER },
+      { env: runtimeEnv, model: selected.id },
+      { provider: selected.provider },
     );
 
     if (
@@ -107,13 +107,11 @@ export async function generateVideo({
       height: args.height,
       width: args.width,
       aspectRatio: args.aspect_ratio,
-      model: args.model,
+      model: selected.id,
     };
 
     const videoData = await ai.video(request, {
       provider: providerName,
-      defaultProvider: DEFAULT_PROVIDER,
-      allowFallback: hasProEntitlement(runtimeUser),
     });
 
     const isAsync = videoData?.status === "in_progress";

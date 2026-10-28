@@ -188,6 +188,21 @@ export function readArray(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
 }
 
+export function containsRecordList(value: unknown, depth = 4): boolean {
+  if (Array.isArray(value)) {
+    return (
+      value.some(isRecord) ||
+      (depth > 0 && value.some((item) => containsRecordList(item, depth - 1)))
+    );
+  }
+
+  return (
+    isRecord(value) &&
+    depth > 0 &&
+    Object.values(value).some((item) => containsRecordList(item, depth - 1))
+  );
+}
+
 export function readFiniteNumber(value: unknown): number | undefined {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;

@@ -1,6 +1,5 @@
 import z from "zod/v4";
 
-import { MODEL_DEFAULTS, type ModelPolicyReference } from "./model-defaults.js";
 import { isActiveModel, isStealthModel } from "./model-selection.js";
 import type { ModelConfig, ModelConfigItem, ModelModality } from "./models.js";
 import { reasoningEffortSchema, type ReasoningEffort } from "./reasoning.js";
@@ -16,6 +15,11 @@ export type ModelLineupRuntime = (typeof MODEL_LINEUP_RUNTIMES)[number];
 
 export const MODEL_TIER_ROLES = ["agent", "coding"] as const;
 export type ModelTierRole = (typeof MODEL_TIER_ROLES)[number];
+
+export interface ModelPolicyReference {
+  model: string;
+  provider: string;
+}
 
 export interface ModelLineupCandidate extends ModelPolicyReference {
   effort?: ReasoningEffort;
@@ -347,216 +351,12 @@ const DEVICE_LINEUP: TierLineup = {
   },
 };
 
-export const DEFAULT_SANDBOX_MODEL = hostedFreeCoding.medium[0].model;
-
 export const MODEL_TIER_LINEUP: Record<ModelLineupRuntime, TierLineup> = {
   hosted: HOSTED_LINEUP,
   browser: BROWSER_LINEUP,
   device: DEVICE_LINEUP,
   machine: DEVICE_LINEUP,
 };
-
-export const SYSTEM_MODEL_ROLES = [
-  "titling",
-  "compaction",
-  "housekeeping",
-  "retrieval",
-  "guardrails",
-  "decision",
-  "extraction",
-  "reranking",
-  "transcription",
-  "ocr",
-  "image",
-  "video",
-  "music",
-  "speech",
-  "fim",
-  "nextEdit",
-  "applyEdit",
-] as const;
-export type SystemModelRole = (typeof SYSTEM_MODEL_ROLES)[number];
-
-export interface SystemModelRoleDefinition {
-  id: SystemModelRole;
-  label: string;
-  description: string;
-  candidates: readonly ModelLineupCandidate[];
-}
-
-const platformHousekeeping: readonly ModelLineupCandidate[] = [
-  { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "low" },
-  { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai", effort: "low" },
-  { model: "groq-openai-gpt-oss-120b", provider: "groq", effort: "low" },
-  { model: "deepseek-flash", provider: "deepseek", effort: "low" },
-  { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "minimal" },
-];
-
-export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
-  {
-    id: "titling",
-    label: "Titling",
-    description: "Names conversations from their first exchange.",
-    candidates: [
-      { model: "gpt-5.6-luna", provider: "openai", effort: "low" },
-      { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai", effort: "low" },
-      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai", effort: "low" },
-      { model: "groq-openai-gpt-oss-20b", provider: "groq", effort: "low" },
-      {
-        model: "google-ai-studio/gemini-3.1-flash-lite",
-        provider: "google-ai-studio",
-        effort: "minimal",
-      },
-    ],
-  },
-  {
-    id: "compaction",
-    label: "Compaction",
-    description: "Summarises older history when a conversation nears its context limit.",
-    candidates: [
-      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai" },
-      { model: "@cf/zai-org/glm-4.7-flash", provider: "workers-ai" },
-      { model: "gpt-5.6-sol", provider: "openai", effort: "low" },
-      { model: "deepseek-flash", provider: "deepseek", effort: "low" },
-      { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "low" },
-    ],
-  },
-  {
-    id: "housekeeping",
-    label: "Housekeeping",
-    description: "Memory synthesis, notes, panels, search summaries and other background work.",
-    candidates: platformHousekeeping,
-  },
-  {
-    id: "retrieval",
-    label: "Reading",
-    description: "Article analysis, reports, summaries and content extraction.",
-    candidates: [
-      { model: "gpt-6-luna", provider: "openai", effort: "low" },
-      { model: "@cf/zai-org/glm-5.3-flash", provider: "workers-ai" },
-      { model: "groq-openai-gpt-oss-120b", provider: "groq", effort: "low" },
-      { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "low" },
-    ],
-  },
-  {
-    id: "guardrails",
-    label: "Guardrails",
-    description: "Screens prompts and responses before they reach a person.",
-    candidates: [
-      { model: "openai/gpt-oss-safeguard-20b", provider: "groq" },
-      { model: "@cf/meta/llama-guard-3-8b", provider: "workers-ai" },
-    ],
-  },
-  {
-    id: "decision",
-    label: "Decisions",
-    description:
-      "Fast calibrated judgements: yes/no checks, classifications and ratings that gate other work.",
-    candidates: [
-      { model: "jev-latest", provider: "typesafe" },
-      { model: "@cf/cloudflare/clef-flash", provider: "workers-ai" },
-      { model: "@cf/cloudflare/clef", provider: "workers-ai" },
-      { model: "@cf/cloudflare/clef-omni", provider: "workers-ai" },
-      { model: "gpt-6-luna", provider: "openai" },
-    ],
-  },
-  {
-    id: "extraction",
-    label: "Extraction",
-    description:
-      "Typed values pulled from text and images: amounts, dates, spans, estimates and forecasts with confidence.",
-    candidates: [{ model: "@cf/cloudflare/clairic", provider: "workers-ai" }],
-  },
-  {
-    id: "reranking",
-    label: "Reranking",
-    description: "Reorders retrieved candidates by their relevance to the current query.",
-    candidates: [
-      { model: "@cf/baai/bge-reranker-base", provider: "workers-ai" },
-      { model: "green-rerank", provider: "greenpt" },
-      { model: "rerank-v4.0-fast", provider: "cohere" },
-      { model: "rerank-v4.0-pro", provider: "cohere" },
-      { model: "rerank-v3.5", provider: "cohere" },
-    ],
-  },
-  {
-    id: "transcription",
-    label: "Dictation",
-    description: "Turns recorded speech into text. Your transcription setting overrides this.",
-    candidates: [
-      { model: "whisper", provider: "workers-ai" },
-      { model: "whisper-large-v3-turbo", provider: "groq" },
-      { model: "gpt-transcribe", provider: "openai" },
-    ],
-  },
-  {
-    id: "ocr",
-    label: "Documents",
-    description: "Reads scanned pages and images into text.",
-    candidates: [MODEL_DEFAULTS.ocr],
-  },
-  {
-    id: "image",
-    label: "Painter",
-    description: "Generates images for the image app and tools.",
-    candidates: [MODEL_DEFAULTS.image.workersAi, MODEL_DEFAULTS.image.replicate],
-  },
-  {
-    id: "video",
-    label: "Video",
-    description: "Generates short video clips.",
-    candidates: [MODEL_DEFAULTS.video.replicate, MODEL_DEFAULTS.video.workersAi],
-  },
-  {
-    id: "music",
-    label: "Music",
-    description: "Generates music and sound.",
-    candidates: [MODEL_DEFAULTS.music.replicate, MODEL_DEFAULTS.music.workersAi],
-  },
-  {
-    id: "speech",
-    label: "Voice",
-    description:
-      "Reads responses aloud, narrates and voices podcasts. Scored voices rank by the text-to-speech arena; these order the unscored ones.",
-    candidates: [
-      { model: "aura-1", provider: "workers-ai" },
-      { model: "@cf/deepgram/aura-2-en", provider: "workers-ai" },
-      { model: "melotts", provider: "workers-ai" },
-    ],
-  },
-  {
-    id: "fim",
-    label: "Code completion",
-    description: "Fill-in-the-middle completions for editors.",
-    candidates: [
-      { model: "mercury-coder", provider: "inception" },
-      { model: "codestral", provider: "mistral" },
-      { model: "mistral-large", provider: "mistral" },
-    ],
-  },
-  {
-    id: "nextEdit",
-    label: "Next edit",
-    description: "Predicts the next edit in a file.",
-    candidates: [{ model: "mercury-coder", provider: "inception" }],
-  },
-  {
-    id: "applyEdit",
-    label: "Apply edit",
-    description: "Merges a proposed edit into a file.",
-    candidates: [{ model: "mercury-coder", provider: "inception" }],
-  },
-];
-
-export function getSystemModelLineup(role: SystemModelRole): SystemModelRoleDefinition {
-  const definition = SYSTEM_MODEL_LINEUP.find((entry) => entry.id === role);
-
-  if (!definition) {
-    throw new Error(`Unknown system model role: ${role}`);
-  }
-
-  return definition;
-}
 
 export function getModelTierDefinition(tier: ModelTier): ModelTierDefinition {
   return (

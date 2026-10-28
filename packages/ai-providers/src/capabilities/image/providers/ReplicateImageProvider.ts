@@ -1,14 +1,12 @@
 import { validateReplicatePayload } from "@ngriffin_uk/polychat-ai-models";
 import { getTextToImageSystemPrompt, isImagePromptStyle } from "@ngriffin_uk/polychat-ai-prompts";
-import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { omitNullishValues } from "@ngriffin_uk/polychat-utility-server/objects";
 
 import type { ProviderRuntime } from "../../../runtime.js";
 import { extractGeneratedAsset } from "../../../utils/helpers.js";
+import { requireRequestModel } from "../../../utils/required-model.js";
 import type { ImageGenerationRequest, ImageGenerationResult, ImageProvider } from "../index.js";
-
-const DEFAULT_MODEL = MODEL_DEFAULTS.image.replicate.model;
 
 function resolveStylePrompt(style?: string): string {
   const styleKey = style && isImagePromptStyle(style) ? style : "default";
@@ -20,10 +18,9 @@ export class ReplicateImageProvider implements ImageProvider {
   constructor(protected readonly runtime: ProviderRuntime) {}
 
   name = "replicate";
-  models = [DEFAULT_MODEL];
 
   async generate(request: ImageGenerationRequest): Promise<ImageGenerationResult> {
-    const modelId = request.model || DEFAULT_MODEL;
+    const modelId = requireRequestModel(request.model, "image");
     const modelConfig = await this.runtime.host.models.findModelConfig(
       modelId,
       request.env,

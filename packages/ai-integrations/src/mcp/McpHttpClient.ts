@@ -190,7 +190,7 @@ export class McpHttpClient {
     try {
       response = await this.fetchImpl(this.url.toString(), {
         method: "POST",
-        redirect: "error",
+        redirect: "manual",
         ...(bounded ? { signal: AbortSignal.timeout(this.timeoutMs) } : {}),
         headers: {
           ...this.headers,

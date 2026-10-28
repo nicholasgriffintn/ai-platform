@@ -10,9 +10,10 @@ import {
   parseToolRules,
   savedSpeechVoiceSchema,
   speechExpressivenessSchema,
-  speechProviderSchema,
+  systemModelChoicesSchema,
   transcriptionVocabularyTermSchema,
   type SavedSpeechVoice,
+  type SystemModelChoices,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
@@ -276,6 +277,31 @@ export class UserSettingsRepository extends BaseRepository {
     });
   }
 
+  public async getSystemModelChoices(
+    userId: number,
+  ): Promise<{ choices: SystemModelChoices; updatedAt: string | null }> {
+    const result = await this.runQuery<{ system_models: string | null; updated_at: string | null }>(
+      `SELECT json_extract(payload, '$.system_models') AS system_models, updated_at FROM scoped_configuration WHERE kind = 'preferences' AND user_id = ?`,
+      [userId],
+      true,
+    );
+    const parsed = systemModelChoicesSchema.safeParse(
+      result?.system_models ? safeParseJson(result.system_models) : {},
+    );
+
+    return { choices: parsed.success ? parsed.data : {}, updatedAt: result?.updated_at ?? null };
+  }
+
+  public async replaceSystemModelChoices(
+    userId: number,
+    choices: SystemModelChoices,
+  ): Promise<void> {
+    await this.patchPreferences(userId, {
+      expression: "json_set(payload, ?, json(?))",
+      values: ["$.system_models", JSON.stringify(choices)],
+    });
+  }
+
   private async patchPreferences(
     userId: number,
     patch: { expression: string; values: string[] },
@@ -315,7 +341,6 @@ export class UserSettingsRepository extends BaseRepository {
         : result.onboarding_seen,
     );
     const speechExpressiveness = speechExpressivenessSchema.safeParse(result.speech_expressiveness);
-    const speechProvider = speechProviderSchema.safeParse(result.speech_provider);
     const memoryProvider = memoryProviderSchema.safeParse(result.memory_provider);
 
     return {
@@ -340,7 +365,6 @@ export class UserSettingsRepository extends BaseRepository {
       transcription_vocabulary:
         parseJsonArrayColumn(result.transcription_vocabulary, transcriptionVocabularyTermSchema) ??
         [],
-      speech_provider: speechProvider.success ? speechProvider.data : null,
       memory_provider: memoryProvider.success ? memoryProvider.data : "documents",
       speech_expressiveness: speechExpressiveness.success ? speechExpressiveness.data : null,
       speech_voices: parseJsonArrayColumn(result.speech_voices, savedSpeechVoiceSchema) ?? [],

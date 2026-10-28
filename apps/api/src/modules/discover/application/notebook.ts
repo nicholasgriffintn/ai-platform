@@ -7,11 +7,13 @@ import { readNonEmptyString, readStringArray } from "@ngriffin_uk/polychat-utili
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { readDeviceActivitySource } from "~/modules/discover/domain/device-activity";
 import { discoverTopicKey } from "~/modules/discover/domain/edition";
 import {
   readResearchResults,
   type DiscoverResearchResult,
 } from "~/modules/discover/domain/research";
+import { findDiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
 import { withKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { createNotebook, updateNotebook } from "~/modules/notebooks/application/notebooks";
 import { readNotebookSettings } from "~/modules/notebooks/domain/notebook";
@@ -105,6 +107,10 @@ export function readDiscoverDocuments(sources: readonly SourceRecord[]): Discove
     const topic = metadata[DISCOVER_RESEARCH_METADATA_KEY];
 
     if (typeof signal === "string" && signal) {
+      if (!findDiscoverSignal(signal) && !readDeviceActivitySource(source.provider ?? "")) {
+        continue;
+      }
+
       signals.push({
         sourceId: source.id,
         signalId: signal,

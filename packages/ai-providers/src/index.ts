@@ -44,12 +44,6 @@ export {
   resolveHostProviderApiKey,
   type HostProviderApiKeyOptions,
 } from "./credentials.js";
-export {
-  generateWithProviderFallback,
-  type GenerateWithProviderFallbackOptions,
-  type GenerationProvider,
-  type GenerationProviderResult,
-} from "./fallback.js";
 export type { ProviderEnv, ProviderRequestContext, ProviderUser } from "./env.js";
 export type {
   PrivateAssetOptions,

@@ -3,6 +3,7 @@ export * from "./chat/response-replay.js";
 export * from "./activity.js";
 export * from "./agentApprovalStore.js";
 export * from "./discover.js";
+export * from "./model-choices.js";
 export * from "./age-gate.js";
 export * from "./auth-service.js";
 export * from "./bounded-response.js";

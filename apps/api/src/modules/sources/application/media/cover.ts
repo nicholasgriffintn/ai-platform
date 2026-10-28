@@ -1,23 +1,23 @@
-import { resolveAiGatewayId } from "@ngriffin_uk/polychat-ai-providers";
 import type { CreateSourceCoverInput, Source } from "@ngriffin_uk/polychat-schemas";
-import { readStreamBytes } from "@ngriffin_uk/polychat-utility-core";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
+import { storeDrawnImage, TEXTLESS_PICTURE } from "~/modules/generate/application/stored-image";
 import { formatSource, requireSourceAccess } from "~/modules/sources/application/sources";
 import type { SourceRecord } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { readSourceRecordMedia, updateSourceRecord } from "./metadata";
 
-const COVER_MODEL = "@cf/bytedance/stable-diffusion-xl-lightning";
 const COVER_MIME_TYPE = "image/png";
+const COVER_SIZE = 1024;
 
 function describeCover(source: SourceRecord, prompt?: string): string {
   const summary = readSourceRecordMedia(source).notes?.summary;
   const subject = prompt || summary || source.title;
 
-  return `Square cover artwork for an episode titled "${source.title}". ${subject}. Bold, simple composition with no text.`;
+  return `Square cover artwork for an episode titled "${source.title}". ${subject}. Bold, simple composition. ${TEXTLESS_PICTURE}`;
 }
 
 export async function storeSourceCover(
@@ -25,29 +25,19 @@ export async function storeSourceCover(
   source: SourceRecord,
   prompt?: string,
 ): Promise<SourceRecord> {
-  const user = context.requireUser();
-  const image = await context.env.AI.run(
-    COVER_MODEL,
-    { prompt: describeCover(source, prompt) },
-    {
-      gateway: {
-        id: resolveAiGatewayId(),
-        skipCache: false,
-        cacheTtl: 3360,
-        metadata: { email: user.email },
-      },
-    },
-  );
+  const coverId = generateId();
+  const key = `sources/${source.id}/cover-${coverId}.png`;
+  const stored = await storeDrawnImage(context, key, {
+    completionId: `source-cover-${coverId}`,
+    prompt: describeCover(source, prompt),
+    aspectRatio: "1:1",
+    width: COVER_SIZE,
+    height: COVER_SIZE,
+  });
 
-  if (!(image instanceof ReadableStream)) {
+  if (!stored) {
     throw new AssistantError("Cover image was not generated", ErrorType.PROVIDER_ERROR);
   }
-
-  const key = `sources/${source.id}/cover.png`;
-
-  await StorageService.forPrivateAssets(context).uploadObject(key, await readStreamBytes(image), {
-    httpMetadata: { contentType: COVER_MIME_TYPE },
-  });
 
   return updateSourceRecord(context, source, {
     media: { cover: { key, mimeType: COVER_MIME_TYPE } },

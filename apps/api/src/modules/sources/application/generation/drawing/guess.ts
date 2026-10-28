@@ -1,7 +1,7 @@
-import { resolveAiGatewayId } from "@ngriffin_uk/polychat-ai-providers";
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { describePicture } from "~/modules/generate/application/vision";
 
 import { guessDrawingPrompt } from "./prompts";
 
@@ -18,29 +18,15 @@ export async function guessDrawingFromImage(
   const userId = `${user.id}:${projectId ?? "personal"}`;
   const userGuesses = userGuessesCache.get(userId) || new Set<string>();
 
-  const guessRequest = await context.env.AI.run(
-    "@cf/llava-hf/llava-1.5-7b-hf",
-    {
-      prompt: guessDrawingPrompt(userGuesses),
-      image: [...new Uint8Array(arrayBuffer)],
-    },
-    {
-      gateway: {
-        id: resolveAiGatewayId(),
-        skipCache: false,
-        cacheTtl: 3360,
-        metadata: {
-          email: user?.email,
-        },
-      },
-    },
-  );
+  const guess = await describePicture(context, {
+    prompt: guessDrawingPrompt(userGuesses),
+    image: arrayBuffer,
+    mimeType: drawing.type || "image/png",
+  });
 
-  if (!guessRequest.description) {
+  if (!guess) {
     throw new AssistantError("Failed to generate description");
   }
-
-  const guess = guessRequest.description.trim();
 
   userGuesses.add(guess.toLowerCase());
   userGuessesCache.set(userId, userGuesses);

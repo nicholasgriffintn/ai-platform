@@ -41,10 +41,6 @@ Failures throw `ProviderError` with a `code`:
 
 `resolveProviderApiKey` prefers a user's stored key, read through the host's `ProviderKeyStore`, and falls back to the platform key named by `envKeyName`, unless `credentialAuthority` is `"byok"`. `isProviderPlatformEnabled` and `getPlatformEnabledProviders` answer whether the platform holds credentials for a provider id, using `PROVIDER_PLATFORM_ENV_KEYS`, where each provider lists alternative groups of environment keys that must all be present.
 
-## Fallback
-
-`generateWithProviderFallback` calls the requested provider and, when no model was pinned and fallback is allowed, retries once on the default provider.
-
 ## Decisions
 
 The `decision` category wraps typed decision models: a `DecisionProvider` takes a `state` and a map of typed questions (`choice`, `score`, `noul`) from `@ngriffin_uk/polychat-schemas` and returns calibrated answers, never text. TypeSafe's Jev is the first implementation (`typesafe`, aliases `typesafe-ai` and `jev`), authenticated with `TYPESAFE_API_KEY` or a user's stored key; `TYPESAFE_BASE_URL` overrides the endpoint. Workers AI implements the same contract (`workers-ai`, alias `workers`) through the `AI` binding with Clef and Clef Flash. Pass `@cf/cloudflare/clef` or `@cf/cloudflare/clef-flash` as the model; the adapter also accepts `clef` and `clef-flash`, defaults to Flash, and records the canonical model ID. Workers AI requests support text or structured state, with at most 64 questions and 100-character question IDs. OpenAI (`openai`) uses `/v1/decisions` with `gpt-6-luna` by default and reuses `OPENAI_API_KEY` or the user's stored OpenAI key. It maps the shared text and structured-state contract to OpenAI questions, preserves score rubrics and usage, and rejects refusals or mismatched answers. Questions in one request are independent and run in parallel, so ask everything that might matter in one call. `ProviderHost.models.getAuxiliaryDecisionModel` tells the package whether a decision model is available for the account. The `typesafe` guardrails provider is built on it and screens with four hazard nouls plus a severity score.

@@ -6,6 +6,7 @@ export const MODEL_PLACES = [
   "deployments",
   "evaluations",
   "governance",
+  "choices",
 ] as const;
 
 export type ModelPlace = (typeof MODEL_PLACES)[number];

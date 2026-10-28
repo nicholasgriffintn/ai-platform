@@ -4,7 +4,6 @@ import {
   memoryDocumentDraftSchema,
   memoryPlacementSchema,
   type MemoryDocumentDraft,
-  type ModelTier,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -24,11 +23,10 @@ import {
   MemoryDocumentRepository,
   type MemoryDocumentScopeKey,
 } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
-import { generateTierObject } from "~/modules/models/application/tier-object";
+import { generateSystemObject } from "~/modules/models/application/system-object";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 
-const MEMORY_WRITER_TIER: ModelTier = "low";
 const MAX_WRITE_ATTEMPTS = 3;
 const MEMORY_CONSOLIDATION_DELAY_MS = 10 * 60 * 1000;
 
@@ -68,8 +66,8 @@ async function placeMemory(
   documents: readonly MemoryDocumentRow[],
   note: MemoryNote,
 ): Promise<string> {
-  const { name } = await generateTierObject(context, {
-    tier: MEMORY_WRITER_TIER,
+  const { name } = await generateSystemObject(context, {
+    role: "housekeeping",
     name: "memory_placement",
     schema: memoryPlacementSchema,
     system: getPromptText("memory/documents/placement"),
@@ -96,8 +94,8 @@ function draftMemoryDocument(
       ].join("\n")
     : "This document is new.";
 
-  return generateTierObject(context, {
-    tier: MEMORY_WRITER_TIER,
+  return generateSystemObject(context, {
+    role: "housekeeping",
     name: "memory_document",
     schema: memoryDocumentDraftSchema,
     system: renderPrompt("memory/documents/write", {

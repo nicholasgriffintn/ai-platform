@@ -4,7 +4,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { getTranscriptionProvider } from "~/infrastructure/providers/capabilities/transcription";
 import { hasUserProviderApiKey } from "~/infrastructure/providers/credentials";
-import { getAuxiliarySpeechModel } from "~/modules/models/application/resolve";
+import { getTranscriptionModel } from "~/modules/models/application/resolve";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IEnv, IUser } from "~/types";
 
@@ -42,7 +42,7 @@ export const handleTranscribe = async (req: TranscribeRequest): Promise<Transcri
       : null;
 
     if (!selectedProvider) {
-      const speechModel = await getAuxiliarySpeechModel(env, userSettings, user);
+      const speechModel = await getTranscriptionModel(env, user);
 
       if (!isTranscriptionProvider(speechModel.transcriptionProvider)) {
         throw new AssistantError(

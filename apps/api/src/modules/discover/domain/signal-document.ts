@@ -1,3 +1,8 @@
+import { truncateSingleLine } from "@ngriffin_uk/polychat-utility-core";
+
+const SIGNAL_CONTEXT_LINES = 12;
+const SIGNAL_CONTEXT_LINE_CHARACTERS = 280;
+
 export interface SignalDocumentInput {
   title: string;
   readAt: string | null;
@@ -21,4 +26,10 @@ export function renderSignalDocument(input: SignalDocumentInput): string {
   }
 
   return parts.join("\n\n");
+}
+
+export function condenseSignalLines(lines: readonly string[]): string[] {
+  return [...new Set(lines.map((line) => truncateSingleLine(line, SIGNAL_CONTEXT_LINE_CHARACTERS)))]
+    .filter(Boolean)
+    .slice(0, SIGNAL_CONTEXT_LINES);
 }

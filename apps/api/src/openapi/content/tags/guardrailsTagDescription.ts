@@ -9,9 +9,7 @@ Content safety checks on input and output. Guardrails are on by default and conf
 
 Set \`guardrails_provider\` in user settings:
 
-- \`typesafe\` (default) judges content with the account's decision model and falls back to LlamaGuard when none is available.
-- \`llamaguard\` runs Meta's Llama Guard on Workers AI.
-- \`mistral\` uses Mistral's hosted moderation, including jailbreak detection.
+- \`model\` (default) runs the Guardrails model from your model choices: Llama Guard on Workers AI unless you pick another, such as TypeSafe's Jev or Mistral moderation.
 - \`shieldstral\` calls an operator-managed Shieldstral endpoint for text, images and prompt-response pairs. It needs \`SHIELDSTRAL_BASE_URL\`, and optionally \`SHIELDSTRAL_API_KEY\`, \`SHIELDSTRAL_MODEL\`, \`SHIELDSTRAL_POLICY\`, \`SHIELDSTRAL_POLICY_VERSION\` and \`SHIELDSTRAL_THRESHOLD\`.
 - \`bedrock\` uses AWS Bedrock Guardrails with \`bedrock_guardrail_id\` and \`bedrock_guardrail_version\` from user settings.
 

@@ -16,8 +16,7 @@ import {
   type DiscoverCoverageArticle,
 } from "~/modules/discover/domain/coverage";
 import { findDiscoverCard } from "~/modules/discover/domain/edition";
-import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
-import { generateTierObject } from "~/modules/models/application/tier-object";
+import { generateSystemObject } from "~/modules/models/application/system-object";
 import { formatSource, requireSourceAccess } from "~/modules/sources/application/sources";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
@@ -80,8 +79,8 @@ export async function compareDiscoverCoverage(
 
   await requireDiscoverBudgetLeft(context, (await readDiscoverRoutine(context)).installationId);
 
-  const coverage = await generateTierObject(withEditionRun(context, edition), {
-    tier: DISCOVER_MODEL_TIER,
+  const coverage = await generateSystemObject(withEditionRun(context, edition), {
+    role: "writing",
     name: "discover_coverage",
     schema: discoverCoverageDraftSchema,
     system: getPromptText("discover/coverage"),

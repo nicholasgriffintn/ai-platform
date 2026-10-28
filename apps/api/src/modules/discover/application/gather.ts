@@ -2,58 +2,55 @@ import {
   connectorOperationRequiresApproval,
   getConnectorOperationConfig,
 } from "@ngriffin_uk/polychat-ai-integrations";
-import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
-  discoverInterestInferenceSchema,
   DISCOVER_JOB_TASK_TYPE,
   DISCOVER_RECIPE_ID,
   DISCOVER_RESEARCH_METADATA_KEY,
   DISCOVER_SIGNAL_METADATA_KEY,
   recipeConnectorProviderSchema,
+  type DiscoverGatherScope,
 } from "@ngriffin_uk/polychat-schemas";
 import {
+  containsRecordList,
   describeZonedInstant,
   sha256Hex,
   zonedTimeToInstant,
 } from "@ngriffin_uk/polychat-utility-core";
-import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { closeComposioConnectorRun } from "~/modules/connectors/application/composio-run";
 import { executeRecipeConnectorOperation } from "~/modules/connectors/application/operations";
 import { discoverTopicKey } from "~/modules/discover/domain/edition";
-import { summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
+import { isDiscoverGatherFresh } from "~/modules/discover/domain/freshness";
 import {
-  isDiscoverGatherFresh,
-  isDiscoverSignalCurrent,
-} from "~/modules/discover/domain/freshness";
-import { nextDiscoverGatherSlot } from "~/modules/discover/domain/gather-schedule";
-import {
-  chooseResearchTopics,
-  describeInterestMaterial,
-} from "~/modules/discover/domain/interests";
+  discoverGatherTaskId,
+  nextDiscoverGatherSlot,
+} from "~/modules/discover/domain/gather-schedule";
+import { chooseResearchTopics } from "~/modules/discover/domain/interests";
 import {
   DISCOVER_HEADLINES_TOPIC,
   mergeResearchDocument,
 } from "~/modules/discover/domain/research";
-import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
 import { DISCOVER_SIGNALS, type DiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
 import { renderSignalDocument } from "~/modules/discover/domain/signal-document";
 import { selectDiscoverSignals } from "~/modules/discover/domain/signal-selection";
 import { readKnowledgeText, withKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { findTopicArticles } from "~/modules/knowledge/application/syncs/topics";
-import { generateTierObject } from "~/modules/models/application/tier-object";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { getAssistantRecipe } from "~/modules/recipes/application";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { readDiscoverArticles } from "./articles";
-import { listRecentDiscoverChatTitles, readMemorySummary } from "./context";
-import { listRecentDiscoverEditions } from "./editions";
-import { listDiscoverFeedback } from "./feedback";
+import { topUpDiscoverFeed } from "./feed-top-up";
 import { listDiscoverFollows } from "./follows";
+import { chooseDiscoverInterests } from "./interests";
 import {
   ensureDiscoverNotebook,
   listDiscoverDocuments,
@@ -74,6 +71,7 @@ export interface DiscoverGatherSummary {
   read: string[];
   stale: string[];
   topics: string[];
+  added: number;
 }
 
 function supportsSignal(providerId: string, operation: string): boolean {
@@ -159,6 +157,14 @@ async function readSignal(
     });
     const lines = signal.digest(result);
     const feedItems = signal.items?.(result) ?? [];
+
+    if (lines.length === 0 && feedItems.length === 0 && containsRecordList(result)) {
+      throw new AssistantError(
+        `${signal.title} answered, but its reply was not in the shape Discover reads`,
+        ErrorType.PROVIDER_ERROR,
+        502,
+      );
+    }
 
     await writeDiscoverDocument(context, notebookId, {
       id: sourceId,
@@ -335,79 +341,70 @@ export async function listDiscoverTopics(
   return topics;
 }
 
-async function inferDiscoverInterests(
+async function listSignalTopics(
   context: ServiceContext,
   notebookId: string,
-  now: Date,
-): Promise<{ inferred: string[]; more: string[]; hidden: string[] }> {
-  const user = context.requireUser();
-  const [sources, chatTitles, memorySummary, feedback, [latest]] = await Promise.all([
-    context.repositories.get(SourceRepository).listCollectionSources(notebookId),
-    listRecentDiscoverChatTitles(context, user.id, now.getTime()),
-    readMemorySummary(context, user.id),
-    listDiscoverFeedback(context, user.id),
-    listRecentDiscoverEditions(context, user.id, 1),
+  input: { curate: string; today: string; now: Date },
+): Promise<string[]> {
+  const [follows, interests] = await Promise.all([
+    listDiscoverFollows(context, context.requireUser().id),
+    chooseDiscoverInterests(context, notebookId, {
+      today: input.today,
+      now: input.now,
+      refresh: false,
+    }),
   ]);
-  const summary = summariseDiscoverFeedback(feedback);
-  const signals = readDiscoverDocuments(sources).signals.filter(
-    (document) =>
-      !document.error &&
-      document.lines.length > 0 &&
-      isDiscoverSignalCurrent(document.readAt, now.getTime()),
-  );
-  const hidden = [...summary.hiddenTopics, ...summary.lessTopics];
 
-  try {
-    const { interests } = await generateTierObject(context, {
-      tier: DISCOVER_MODEL_TIER,
-      name: "discover_interests",
-      schema: discoverInterestInferenceSchema,
-      system: renderPrompt("discover/interests"),
-      material: describeInterestMaterial({
-        signals,
-        chatTitles,
-        memorySummary,
-        more: summary.moreTopics,
-        less: hidden,
-        previous: latest?.content.interests.map((interest) => interest.topic) ?? [],
-      }),
-    });
-
-    return { inferred: interests, more: summary.moreTopics, hidden };
-  } catch (error) {
-    logger.warn("Discover interests could not be inferred", {
-      error_message: getErrorMessage(error),
-    });
-
-    return { inferred: [], more: summary.moreTopics, hidden };
-  }
+  return chooseResearchTopics({
+    followed: follows.map((follow) => follow.topic),
+    asked: curateTopics(input.curate),
+    more: interests.more,
+    inferred: interests.ranked,
+    hidden: interests.hidden,
+  });
 }
 
 export async function runDiscoverGather(
   context: ServiceContext,
-  now = new Date(),
+  { now = new Date(), scope = "full" }: { now?: Date; scope?: DiscoverGatherScope } = {},
 ): Promise<DiscoverGatherSummary> {
   const settings = await readDiscoverRoutine(context);
 
   if (!settings.enabled) {
-    return { read: [], stale: [], topics: [] };
+    return { read: [], stale: [], topics: [], added: 0 };
   }
 
   const timezone = settings.timezone ?? "UTC";
   const zoned = describeZonedInstant(now, timezone);
   const notebook = await ensureDiscoverNotebook(context);
-  const { selected } = await resolveDiscoverSignals(context, settings);
+  const { selected } =
+    scope === "full" ? await resolveDiscoverSignals(context, settings) : { selected: [] };
   const read: string[] = [];
   const stale: string[] = [];
   let topics: string[] = [];
+  let added = 0;
 
   try {
+    const signalTopics =
+      selected.length > 0
+        ? await listSignalTopics(context, notebook.id, {
+            curate: settings.curate,
+            today: zoned.date,
+            now,
+          })
+        : [];
+
     for (const signal of selected) {
+      if (signal.needsTopics && signalTopics.length === 0) {
+        continue;
+      }
+
       const ok = await readSignal(context, notebook.id, signal, {
         date: zoned.date,
         timezone,
         now,
         location: settings.location,
+        topics: signalTopics,
       });
 
       (ok ? read : stale).push(signal.providerId);
@@ -422,13 +419,17 @@ export async function runDiscoverGather(
     });
 
     const follows = await listDiscoverFollows(context, context.requireUser().id);
-    const interests = await inferDiscoverInterests(context, notebook.id, now);
+    const interests = await chooseDiscoverInterests(context, notebook.id, {
+      today: zoned.date,
+      now,
+      refresh: scope === "full",
+    });
 
     topics = chooseResearchTopics({
       followed: follows.map((follow) => follow.topic),
       asked: curateTopics(settings.curate),
       more: interests.more,
-      inferred: interests.inferred,
+      inferred: interests.ranked,
       hidden: interests.hidden,
     });
 
@@ -439,12 +440,14 @@ export async function runDiscoverGather(
         country: settings.country,
       });
     }
+
+    added = await topUpDiscoverFeed(context, { today: zoned.date, curate: settings.curate });
   } finally {
     await closeComposioConnectorRun(context);
     await scheduleNextDiscoverGather(context, settings, zoned, timezone);
   }
 
-  return { read: [...new Set(read)], stale: [...new Set(stale)], topics };
+  return { read: [...new Set(read)], stale: [...new Set(stale)], topics, added };
 }
 
 export async function ensureDiscoverGathered(
@@ -469,7 +472,7 @@ export async function ensureDiscoverGathered(
     return documents;
   }
 
-  await runDiscoverGather(context, now);
+  await runDiscoverGather(context, { now });
 
   const notebook = await ensureDiscoverNotebook(context);
 
@@ -495,10 +498,10 @@ async function scheduleNextDiscoverGather(
   });
 
   await new TaskService(context.env, new TaskRepository(context.env)).enqueueTask({
-    id: `discover_gather_${user.id}_${slot.date}${slot.edition === "evening" ? "_evening" : ""}`,
+    id: discoverGatherTaskId(user.id, slot),
     task_type: DISCOVER_JOB_TASK_TYPE,
     user_id: user.id,
-    task_data: { job: "gather" },
+    task_data: { job: "gather", scope: slot.scope },
     schedule_type: "scheduled",
     scheduled_at: zonedTimeToInstant(slot.date, slot.hour, timezone).toISOString(),
     priority: 6,

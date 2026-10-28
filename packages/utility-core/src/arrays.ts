@@ -104,3 +104,14 @@ export function shuffleCopy<T>(values: readonly T[]): T[] {
 export function isOneOf<T extends string>(values: readonly T[], value: string): value is T {
   return values.some((candidate) => candidate === value);
 }
+
+export function moveCopy<T>(values: readonly T[], from: number, to: number): T[] {
+  const next = [...values];
+  const [item] = next.splice(from, 1);
+
+  if (item !== undefined) {
+    next.splice(to, 0, item);
+  }
+
+  return next;
+}

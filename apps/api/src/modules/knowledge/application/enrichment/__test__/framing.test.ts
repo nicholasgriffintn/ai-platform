@@ -4,9 +4,9 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
 import { analyseArticleFraming } from "../framing";
 
-const generateTierObject = vi.hoisted(() => vi.fn());
+const generateSystemObject = vi.hoisted(() => vi.fn());
 
-vi.mock("~/modules/models/application/tier-object", () => ({ generateTierObject }));
+vi.mock("~/modules/models/application/system-object", () => ({ generateSystemObject }));
 vi.mock("~/modules/documents/application/editorial-quality", () => ({
   gradeEditorialQuality: vi.fn(async () => null),
 }));
@@ -15,7 +15,7 @@ const ARTICLE = "Ministers unveiled a reckless plan to scrap the tax on Tuesday,
 
 describe("analyseArticleFraming", () => {
   it("keeps only loaded wording that appears in the article and reports the rest", async () => {
-    generateTierObject.mockResolvedValue({
+    generateSystemObject.mockResolvedValue({
       overview: "Frames the plan through its critics.",
       slant: "leans",
       tone: "disapproving",

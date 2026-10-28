@@ -1,16 +1,21 @@
 import { resolveAiGatewayId } from "@ngriffin_uk/polychat-ai-providers";
 import type { SourceGeneration } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { buildMultipartInput } from "@ngriffin_uk/polychat-utility-server/multipart-input";
+import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { describePicture } from "~/modules/generate/application/vision";
 import { storeKnowledgeFile } from "~/modules/knowledge/application/intake/file";
+import { requireSystemModel } from "~/modules/models/application/resolve";
 import { getSource } from "~/modules/sources/application/sources";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 import { drawingDescriptionPrompt } from "./prompts";
 
-const PAINTING_MODEL = "@cf/runwayml/stable-diffusion-v1-5-img2img";
+const paintingResponseSchema = z.object({ image: z.string().min(1) });
 
 function gatewayOptions(email: string | undefined) {
   return {
@@ -45,37 +50,40 @@ export async function paintDrawing(
     filename: "sketch.png",
     byteSize: sketch.byteLength,
   });
-  const description = await context.env.AI.run(
-    "@cf/llava-hf/llava-1.5-7b-hf",
-    { prompt: drawingDescriptionPrompt(), image: [...new Uint8Array(sketch)] },
-    gatewayOptions(user.email),
-  );
-  const prompt = description?.description?.trim() || "Convert this drawing into a painting.";
-  const painting = await context.env.AI.run(
-    // @ts-ignore img2img is not in the generated binding types
-    PAINTING_MODEL,
+  const [description, repaint] = await Promise.all([
+    describePicture(context, {
+      prompt: drawingDescriptionPrompt(),
+      image: sketch,
+      mimeType: drawing.type || "image/png",
+    }),
+    requireSystemModel(context.env, user, "repaint", {}, { inputs: ["image"] }),
+  ]);
+  const prompt = description || "Convert this drawing into a painting.";
+  const { multipart } = await buildMultipartInput({ prompt }, [
     {
-      prompt,
-      image: [...new Uint8Array(sketch)],
-      guidance: 8,
-      strength: 0.85,
-      // @ts-ignore
-      num_inference_steps: 50,
+      field: "input_image_0",
+      data: sketch,
+      filename: "sketch.png",
+      contentType: drawing.type || "image/png",
     },
+  ]);
+  const painting = await context.env.AI.run(
+    repaint.model,
+    { multipart },
     gatewayOptions(user.email),
   );
+  const paintingImage = paintingResponseSchema.safeParse(painting);
 
-  if (!painting) {
+  if (!paintingImage.success) {
     throw new AssistantError("The painting was not generated", ErrorType.PROVIDER_ERROR);
   }
 
-  // @ts-expect-error the binding returns a stream for image models
-  const paintingData = await new Response(painting).arrayBuffer();
+  const paintingData = base64ToBuffer(paintingImage.data.image).buffer;
   const generation: SourceGeneration = {
     type: "drawing",
-    modelId: PAINTING_MODEL,
-    modelName: "Stable Diffusion img2img",
-    provider: "workers-ai",
+    modelId: repaint.id,
+    modelName: repaint.name,
+    provider: repaint.provider,
     mode: "image",
     prompt,
     sourceIds: [storedSketch.id],

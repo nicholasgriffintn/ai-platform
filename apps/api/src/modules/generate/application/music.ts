@@ -1,5 +1,4 @@
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
-import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
@@ -9,6 +8,7 @@ import {
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
 import { hasUserProviderApiKey } from "~/infrastructure/providers/credentials";
+import { requireSystemModel } from "~/modules/models/application/resolve";
 import type { IEnv, IUser } from "~/types";
 
 export interface MusicGenerationParams {
@@ -25,8 +25,6 @@ export interface MusicResponse {
   content: string;
   data: any;
 }
-
-const DEFAULT_PROVIDER = MODEL_DEFAULTS.music.replicate.provider;
 
 export async function generateMusic({
   completion_id,
@@ -68,10 +66,12 @@ export async function generateMusic({
       };
     }
 
+    const selected = args.model
+      ? { id: args.model, provider: args.provider }
+      : await requireSystemModel(runtimeEnv, runtimeUser, "music");
     const { providerName } = await ai.resolveMediaProvider(
-      "music",
-      { env: runtimeEnv, model: args.model },
-      { provider: args.provider, defaultProvider: DEFAULT_PROVIDER },
+      { env: runtimeEnv, model: selected.id },
+      { provider: selected.provider },
     );
 
     if (
@@ -97,13 +97,11 @@ export async function generateMusic({
       app_url,
       inputAudio: args.input_audio,
       duration: args.duration,
-      model: args.model,
+      model: selected.id,
     };
 
     const musicData = await ai.music(request, {
       provider: providerName,
-      defaultProvider: DEFAULT_PROVIDER,
-      allowFallback: hasProEntitlement(runtimeUser),
     });
 
     return {

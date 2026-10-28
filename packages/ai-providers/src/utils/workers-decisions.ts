@@ -3,8 +3,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { DecisionRequest } from "../types/decision.js";
 
-export const WORKERS_AI_DEFAULT_DECISION_MODEL = "@cf/cloudflare/clef-flash";
-
 interface WorkersDecisionModel {
   model: string;
   selector: string;
@@ -17,9 +15,7 @@ const WORKERS_DECISION_MODELS: WorkersDecisionModel[] = [
   { model: "@cf/cloudflare/clef-omni", selector: "clef-omni", acceptsMedia: true },
 ];
 
-export function resolveWorkersDecisionModel(
-  model = WORKERS_AI_DEFAULT_DECISION_MODEL,
-): WorkersDecisionModel {
+export function resolveWorkersDecisionModel(model: string | undefined): WorkersDecisionModel {
   const resolved = WORKERS_DECISION_MODELS.find(
     (candidate) => candidate.model === model || candidate.selector === model,
   );

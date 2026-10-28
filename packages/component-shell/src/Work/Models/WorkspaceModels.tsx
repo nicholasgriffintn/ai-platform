@@ -12,6 +12,7 @@ import { PageShell } from "../../Shell/PageShell.js";
 import { useWorkData } from "../WorkDataContext.js";
 import { type ModelPlace, MODEL_PLACES } from "./modelPaths.js";
 import { ModelsScopeProvider, useModelsScope } from "./ModelsScope.js";
+import { ChoicesPlace } from "./places/ChoicesPlace.js";
 import { DatasetsPlace } from "./places/DatasetsPlace.js";
 import { DeploymentsPlace } from "./places/DeploymentsPlace.js";
 import { EvaluationsPlace } from "./places/EvaluationsPlace.js";
@@ -28,6 +29,7 @@ const PLACE_LABELS: Record<ModelPlace, string> = {
   deployments: "Deployments",
   evaluations: "Evaluations",
   governance: "Governance",
+  choices: "Model choices",
 };
 
 const PLACES: Record<ModelPlace, () => ReactNode> = {
@@ -38,6 +40,7 @@ const PLACES: Record<ModelPlace, () => ReactNode> = {
   deployments: () => <DeploymentsPlace />,
   evaluations: () => <EvaluationsPlace />,
   governance: () => <GovernancePlace />,
+  choices: () => <ChoicesPlace />,
 };
 
 function PlaceTabs({ place }: { place: ModelPlace }) {

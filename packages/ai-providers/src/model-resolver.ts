@@ -2,8 +2,8 @@ import {
   findModelConfigByMatchingModel,
   getModelConfigById,
   getModels,
-  getModelsByOutputModality,
   resolveDefaultChatModel,
+  resolveSystemRoleModel,
 } from "@ngriffin_uk/polychat-ai-models";
 import {
   getSystemModelLineup,
@@ -16,6 +16,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { toTranscriptionProvider } from "./capabilities/transcription/provider-names.js";
 import type { AuxiliaryModelRef, ProviderModelResolver, RerankingModelSelection } from "./host.js";
 import { isModelRuntimeAvailable } from "./utils/model-runtime.js";
 
@@ -39,19 +40,13 @@ export function selectRerankingModel(
     return selected ? { model: selected[1].matchingModel, provider: selected[1].provider } : null;
   }
 
-  for (const candidate of getSystemModelLineup("reranking").candidates) {
-    const match = availableModels.find(
-      ([id, model]) =>
-        model.provider === candidate.provider &&
-        (id === candidate.model || model.matchingModel === candidate.model),
-    );
+  const available = Object.fromEntries(availableModels);
+  const preferred = getSystemModelLineup("reranking")
+    .defaults.map((candidate) => findModelByReference(available, candidate))
+    .find((match) => match !== null);
+  const selected = preferred?.config ?? availableModels[0]?.[1];
 
-    if (match) {
-      return { model: match[1].matchingModel, provider: match[1].provider };
-    }
-  }
-
-  return null;
+  return selected ? { model: selected.matchingModel, provider: selected.provider } : null;
 }
 
 export function createCatalogueModelResolver(): ProviderModelResolver {
@@ -85,106 +80,54 @@ export function createCatalogueModelResolver(): ProviderModelResolver {
 
   const defaultChatModel = () => resolveDefaultChatModel(getModels(), undefined);
 
-  const resolveChatRole = (
-    env: Record<string, unknown>,
-    role: "housekeeping" | "titling" | "compaction" | "retrieval",
-  ): AuxiliaryModelRef => {
-    for (const candidate of getSystemModelLineup(role).candidates) {
-      const config = findModelByReference(getModels(), candidate)?.config;
-
-      if (config && isModelRuntimeAvailable(config, env)) {
-        return { model: config.matchingModel, provider: config.provider, effort: candidate.effort };
-      }
-    }
-
-    const selected = defaultChatModel();
-
-    return { model: selected.config.matchingModel, provider: selected.config.provider };
-  };
-
-  const resolveModalityRole = (
+  const resolveRole = (
     env: Record<string, unknown>,
     role: SystemModelRole,
-    modality:
-      | "guardrails"
-      | "decision"
-      | "extraction"
-      | "ocr"
-      | "image"
-      | "video"
-      | "audio"
-      | "speech"
-      | "transcription",
     inputs: readonly ModelModality[] = [],
   ): AuxiliaryModelRef | null => {
-    const models = getModelsByOutputModality(modality);
+    const available = Object.fromEntries(
+      Object.entries(getModels()).filter(
+        ([, config]) =>
+          isModelRuntimeAvailable(config, env) && modelHasInputModalities(config, inputs),
+      ),
+    );
+    const selected = resolveSystemRoleModel(available, role);
 
-    for (const candidate of getSystemModelLineup(role).candidates) {
-      const config = findModelByReference(models, candidate)?.config;
+    return selected
+      ? {
+          model: selected.config.matchingModel,
+          provider: selected.config.provider,
+          effort: selected.effort,
+        }
+      : null;
+  };
 
-      if (
-        config &&
-        isModelRuntimeAvailable(config, env) &&
-        modelHasInputModalities(config, inputs)
-      ) {
-        return { model: config.matchingModel, provider: config.provider, effort: candidate.effort };
-      }
+  const requireRole = (env: Record<string, unknown>, role: SystemModelRole): AuxiliaryModelRef => {
+    const selected = resolveRole(env, role);
+
+    if (!selected) {
+      throw new AssistantError(
+        `No ${getSystemModelLineup(role).label.toLowerCase()} model is configured`,
+        ErrorType.CONFIGURATION_ERROR,
+      );
     }
 
-    return null;
+    return selected;
   };
 
   const resolveTranscriptionModel = (env: Record<string, unknown>) => {
-    const configured =
-      getModelConfigById("whisper") ?? findModelConfigByMatchingModel("whisper", undefined);
+    const selected = requireRole(env, "transcription");
 
-    if (configured && isModelRuntimeAvailable(configured, env)) {
-      return {
-        model: configured.matchingModel,
-        provider: configured.provider,
-        transcriptionProvider: "workers",
-      };
-    }
-
-    const fallback = resolveModalityRole(env, "transcription", "transcription");
-
-    if (fallback) {
-      return {
-        model: fallback.model,
-        provider: fallback.provider,
-        transcriptionProvider: "workers",
-      };
-    }
-
-    throw new AssistantError("No transcription model is configured", ErrorType.CONFIGURATION_ERROR);
+    return { ...selected, transcriptionProvider: toTranscriptionProvider(selected.provider) };
   };
 
   const resolveReranking = (
     env: Record<string, unknown>,
     selection: RerankingModelSelection = {},
-  ) => selectRerankingModel(getModelsByOutputModality("reranking"), env, selection);
-
-  const resolveCapabilityRole = (
-    env: Record<string, unknown>,
-    role: "fim" | "nextEdit" | "applyEdit",
-  ): AuxiliaryModelRef | null => {
-    const capability =
-      role === "fim"
-        ? "supportsFim"
-        : role === "nextEdit"
-          ? "supportsNextEdit"
-          : "supportsApplyEdit";
-
-    for (const candidate of getSystemModelLineup(role).candidates) {
-      const config = findModelByReference(getModels(), candidate)?.config;
-
-      if (config && Boolean(config[capability]) && isModelRuntimeAvailable(config, env)) {
-        return { model: config.matchingModel, provider: config.provider, effort: candidate.effort };
-      }
-    }
-
-    return null;
-  };
+  ) =>
+    selection.model || selection.provider
+      ? selectRerankingModel(getModels(), env, selection)
+      : resolveRole(env, "reranking");
 
   return {
     getModelConfig,
@@ -217,92 +160,22 @@ export function createCatalogueModelResolver(): ProviderModelResolver {
 
       return { model: selected.config.matchingModel, provider: selected.config.provider };
     },
-    getSystemModel: async (env, _user, role) => {
-      if (
-        role === "housekeeping" ||
-        role === "titling" ||
-        role === "compaction" ||
-        role === "retrieval"
-      ) {
-        return resolveChatRole(env, role);
-      }
-
-      if (role === "guardrails") {
-        return (
-          resolveModalityRole(env, "guardrails", "guardrails") ?? {
-            model: defaultChatModel().config.matchingModel,
-            provider: defaultChatModel().config.provider,
-          }
-        );
-      }
-
-      if (role === "decision") {
-        return resolveModalityRole(env, "decision", "decision");
-      }
-
-      if (role === "extraction") {
-        return resolveModalityRole(env, "extraction", "extraction");
-      }
-
-      if (role === "reranking") {
-        return resolveReranking(env);
-      }
-
-      if (role === "transcription") {
-        const transcription = resolveTranscriptionModel(env);
-
-        return { model: transcription.model, provider: transcription.provider };
-      }
-
-      if (role === "ocr") {
-        return resolveModalityRole(env, "ocr", "ocr");
-      }
-
-      if (role === "image") {
-        return resolveModalityRole(env, "image", "image");
-      }
-
-      if (role === "video") {
-        return resolveModalityRole(env, "video", "video");
-      }
-
-      if (role === "music") {
-        return resolveModalityRole(env, "music", "audio");
-      }
-
-      if (role === "speech") {
-        return resolveModalityRole(env, "speech", "speech");
-      }
-
-      if (role === "fim" || role === "nextEdit" || role === "applyEdit") {
-        return resolveCapabilityRole(env, role);
-      }
-
-      return null;
-    },
-    getAuxiliaryModel: async (env) => resolveChatRole(env, "housekeeping"),
-    getTitlingModel: async (env) => resolveChatRole(env, "titling"),
-    getCompactionModel: async (env) => resolveChatRole(env, "compaction"),
-    getAuxiliaryModelForRetrieval: async (env) => resolveChatRole(env, "retrieval"),
-    getAuxiliaryGuardrailsModel: async (env) => {
-      return (
-        resolveModalityRole(env, "guardrails", "guardrails") ?? {
-          model: defaultChatModel().config.matchingModel,
-          provider: defaultChatModel().config.provider,
-        }
-      );
-    },
-    getAuxiliaryDecisionModel: async (env, _user, inputs) =>
-      resolveModalityRole(env, "decision", "decision", inputs),
+    getSystemModel: async (env, _user, role) => resolveRole(env, role),
+    getAuxiliaryModel: async (env) => requireRole(env, "housekeeping"),
+    getTitlingModel: async (env) => requireRole(env, "titling"),
+    getCompactionModel: async (env) => requireRole(env, "compaction"),
+    getAuxiliaryModelForRetrieval: async (env) => requireRole(env, "retrieval"),
+    getAuxiliaryGuardrailsModel: async (env) => requireRole(env, "guardrails"),
+    getAuxiliaryDecisionModel: async (env, _user, inputs) => resolveRole(env, "decision", inputs),
     resolveRerankingModel: async (env, _user, selection) => resolveReranking(env, selection),
     getAuxiliaryRerankingModel: async (env, _user, selection) => resolveReranking(env, selection),
-    getAuxiliarySpeechModel: async (env) => resolveTranscriptionModel(env),
-    getOcrModel: async (env) => resolveModalityRole(env, "ocr", "ocr"),
-    getImageModel: async (env) => resolveModalityRole(env, "image", "image"),
-    getVideoModel: async (env) => resolveModalityRole(env, "video", "video"),
-    getMusicModel: async (env) => resolveModalityRole(env, "music", "audio"),
-    getFimModel: async (env) => resolveCapabilityRole(env, "fim"),
-    getNextEditModel: async (env) => resolveCapabilityRole(env, "nextEdit"),
-    getApplyEditModel: async (env) => resolveCapabilityRole(env, "applyEdit"),
+    getTranscriptionModel: async (env) => resolveTranscriptionModel(env),
+    getOcrModel: async (env) => resolveRole(env, "ocr"),
+    getImageModel: async (env) => resolveRole(env, "image"),
+    getVideoModel: async (env) => resolveRole(env, "video"),
+    getMusicModel: async (env) => resolveRole(env, "music"),
+    getFimModel: async (env) => resolveRole(env, "fim"),
+    getNextEditModel: async (env) => resolveRole(env, "nextEdit"),
+    getApplyEditModel: async (env) => resolveRole(env, "applyEdit"),
   };
 }

@@ -1,5 +1,9 @@
 import type { R2PutOptions } from "@cloudflare/workers-types";
-import type { ModelConfigItem, ModelModality } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ModelConfigItem,
+  ModelModality,
+  SystemModelRole,
+} from "@ngriffin_uk/polychat-schemas";
 
 import type { ProviderKeyStore } from "./api-keys";
 import type { ProviderEnv, ProviderRequestContext, ProviderUser } from "./env";
@@ -49,7 +53,7 @@ export interface ProviderModelResolver {
   getSystemModel(
     env: ProviderEnv,
     user: ProviderUser | undefined,
-    role: string,
+    role: SystemModelRole,
   ): Promise<AuxiliaryModelRef | null>;
   getAuxiliaryModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef>;
   getTitlingModel(env: ProviderEnv, user?: ProviderUser): Promise<AuxiliaryModelRef>;
@@ -74,7 +78,7 @@ export interface ProviderModelResolver {
     user?: ProviderUser,
     selection?: RerankingModelSelection,
   ): Promise<{ model: string; provider: string } | null>;
-  getAuxiliarySpeechModel(
+  getTranscriptionModel(
     env: ProviderEnv,
     user?: ProviderUser,
   ): Promise<{ model: string; provider: string; transcriptionProvider: string }>;

@@ -30,9 +30,8 @@ import {
   seasonNeedsReplacing,
 } from "~/modules/discover/domain/episodes";
 import { buildDiscoverListenMaterial } from "~/modules/discover/domain/listen";
-import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
 import { withKnowledgeText } from "~/modules/knowledge/application/intake/body";
-import { generateTierObject } from "~/modules/models/application/tier-object";
+import { generateSystemObject } from "~/modules/models/application/system-object";
 import { requireNotebookAccess } from "~/modules/notebooks/application/access";
 import { resolveNotebookSources } from "~/modules/notebooks/application/notebooks";
 import { readOutputContent } from "~/modules/outputs/application/content";
@@ -88,8 +87,8 @@ async function ensureSeason(
     return { id: existing.id, revision: existing.revision, season: current };
   }
 
-  const plan = await generateTierObject(context, {
-    tier: DISCOVER_MODEL_TIER,
+  const plan = await generateSystemObject(context, {
+    role: "writing",
     name: "discover_season_plan",
     schema: discoverSeasonPlanDraftSchema,
     system: renderPrompt("discover/season/plan", {
@@ -196,8 +195,8 @@ async function scriptDiscoverEpisode(
   const season = await ensureSeason(context, topic, settings.style, material);
   const target = episodeTarget(length);
   const part = season.season.nextPart;
-  const script = await generateTierObject(context, {
-    tier: DISCOVER_MODEL_TIER,
+  const script = await generateSystemObject(context, {
+    role: "writing",
     name: "discover_episode_outline",
     schema: discoverEpisodeOutlineDraftSchema,
     system: renderPrompt("discover/episode/outline", {

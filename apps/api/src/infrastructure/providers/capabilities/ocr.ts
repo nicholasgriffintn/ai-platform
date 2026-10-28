@@ -1,4 +1,4 @@
-import { DEFAULT_OCR_PROVIDER, type OcrProvider } from "@ngriffin_uk/polychat-ai-providers";
+import type { OcrProvider } from "@ngriffin_uk/polychat-ai-providers";
 
 import { resolveModelProvider } from "~/modules/models/application/resolve";
 import type { IEnv } from "~/types";
@@ -12,15 +12,10 @@ export async function resolveOcrProviderName({
   provider,
 }: {
   env?: IEnv;
-  model?: string;
+  model: string;
   provider?: string;
 }): Promise<string> {
-  return resolveModelProvider({
-    env,
-    model,
-    provider,
-    defaultProvider: DEFAULT_OCR_PROVIDER,
-  });
+  return resolveModelProvider({ env, model, provider, defaultProvider: provider ?? "" });
 }
 
 export function getOcrProvider(

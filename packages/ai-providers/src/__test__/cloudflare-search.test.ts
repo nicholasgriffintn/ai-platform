@@ -43,7 +43,7 @@ describe("Cloudflare web search", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "https://api.cloudflare.com/client/v4/accounts/account/ai/websearch/",
       expect.objectContaining({
-        redirect: "error",
+        redirect: "manual",
         headers: { "Content-Type": "application/json", Authorization: "Bearer web-token" },
         body: JSON.stringify({
           query: "fresh evidence",

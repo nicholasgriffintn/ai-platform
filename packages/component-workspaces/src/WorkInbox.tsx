@@ -20,6 +20,7 @@ const DECISION_LABELS: Record<WorkInboxItem["kind"], { label: string; tone: Tone
   paused: { label: "Paused", tone: "failure" },
   waiting: { label: "Waiting", tone: "info" },
   breakdown: { label: "Breakdown", tone: "info" },
+  models: { label: "Models", tone: "warning" },
 };
 
 const TASK_LABELS: Record<ProjectTaskAttentionKind, { label: string; tone: Tone }> = {

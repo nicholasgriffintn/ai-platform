@@ -196,9 +196,8 @@ function nextExcludedSources(
 async function readUserLocation(context: ServiceContext): Promise<string | null> {
   const user = context.requireUser();
   const settings = await getUserSettings(context.repositories, user.id);
-  const location = (settings?.location ?? user.location)?.trim();
 
-  return location ? location : null;
+  return settings?.location?.trim() || user.location?.trim() || null;
 }
 
 export async function readDiscoverRoutine(

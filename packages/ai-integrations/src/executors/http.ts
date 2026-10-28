@@ -62,6 +62,7 @@ export function createConnectorJsonClient(baseUrl: string) {
       headers: {
         Authorization: `Bearer ${params.token}`,
         Accept: "application/json",
+        "User-Agent": "Polychat",
         ...(params.body ? { "Content-Type": "application/json" } : {}),
         ...params.headers,
       },

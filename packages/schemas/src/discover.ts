@@ -28,12 +28,14 @@ export const DISCOVER_JOB_TASK_TYPE = "discover_job";
 export const DISCOVER_NOTEBOOK_NAME = "Discover";
 export const DISCOVER_SIGNAL_METADATA_KEY = "discoverSignal";
 export const DISCOVER_RESEARCH_METADATA_KEY = "discoverResearch";
+export const DISCOVER_INTERESTS_METADATA_KEY = "discoverInterests";
 export const DISCOVER_ARTICLE_METADATA_KEY = "discoverArticle";
 export const DISCOVER_COVERAGE_METADATA_KEY = "discoverCoverage";
 export const DISCOVER_COVERAGE_MIN_ARTICLES = 2;
 export const DISCOVER_BRIEFING_METADATA_KEY = "discoverBriefing";
 export const DISCOVER_GATHER_HOUR = 5;
 export const DISCOVER_EVENING_GATHER_HOUR = 17;
+export const DISCOVER_FEED_GATHER_HOURS = [10, 13] as const;
 export const DISCOVER_FRESH_HOURS = 10;
 export const DISCOVER_RESEARCH_DAYS_KEPT = 7;
 export const DISCOVER_LISTEN_RESEARCH_MINUTES = 30;
@@ -268,17 +270,46 @@ export const DISCOVER_CARD_KINDS = [
   "wind_down",
 ] as const;
 
+export const DISCOVER_INTEREST_EVIDENCE_LIMIT = 3;
+
+const discoverInterestEvidenceSchema = z
+  .array(text().max(200))
+  .min(1)
+  .max(DISCOVER_INTEREST_EVIDENCE_LIMIT);
+
 export const discoverInterestInferenceSchema = z
   .object({
     interests: z
-      .array(topicSchema)
+      .array(
+        z
+          .object({
+            topic: topicSchema,
+            evidence: discoverInterestEvidenceSchema.describe(
+              "The lines from today's material that show this interest, each starting with the service it came from.",
+            ),
+          })
+          .strict(),
+      )
       .min(1)
-      .max(5)
-      .describe(
-        "Three to five interests to research for the next edition, strongest evidence first.",
-      ),
+      .max(DISCOVER_MAX_INTERESTS)
+      .describe("The interests today's material supports, strongest evidence first."),
   })
   .strict();
+
+export const discoverInterestProfileSchema = z.object({
+  updatedOn: z.iso.date(),
+  interests: z.array(
+    z.object({
+      topic: text(),
+      evidence: z.array(z.string()).max(DISCOVER_INTEREST_EVIDENCE_LIMIT),
+      firstSeen: z.iso.date(),
+      lastSeen: z.iso.date(),
+      days: z.number().int().positive(),
+    }),
+  ),
+});
+
+export type DiscoverInterestProfile = z.infer<typeof discoverInterestProfileSchema>;
 
 export type DiscoverInterestInference = z.infer<typeof discoverInterestInferenceSchema>;
 
@@ -556,11 +587,20 @@ export type DiscoverBriefingDraft = z.infer<typeof discoverBriefingDraftSchema>;
 
 const discoverJobRun = { runId: z.string().min(1).optional() };
 
+export const discoverGatherScopeSchema = z.enum(["full", "feed"]);
+export type DiscoverGatherScope = z.infer<typeof discoverGatherScopeSchema>;
+
 export const discoverJobTaskDataSchema = z.discriminatedUnion("job", [
   z.object({ ...discoverJobRun, job: z.literal("covers"), editionId: z.string().min(1) }).strict(),
   z.object({ ...discoverJobRun, job: z.literal("links"), editionId: z.string().min(1) }).strict(),
   z.object({ ...discoverJobRun, job: z.literal("tidy"), today: z.iso.date() }).strict(),
-  z.object({ ...discoverJobRun, job: z.literal("gather") }).strict(),
+  z
+    .object({
+      ...discoverJobRun,
+      job: z.literal("gather"),
+      scope: discoverGatherScopeSchema.optional(),
+    })
+    .strict(),
   z
     .object({ ...discoverJobRun, job: z.literal("your_week"), editionId: z.string().min(1) })
     .strict(),

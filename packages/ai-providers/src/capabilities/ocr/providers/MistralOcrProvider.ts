@@ -7,8 +7,8 @@ import { fetchAIResponse } from "../../../fetch.js";
 import { getAiGatewayMetadataHeaders } from "../../../gateway.js";
 import type { ProviderRuntime } from "../../../runtime.js";
 import { formatProviderError } from "../../../utils/errors.js";
+import { requireRequestModel } from "../../../utils/required-model.js";
 import { requireOcrAccess } from "../access.js";
-import { DEFAULT_OCR_MODEL } from "../constants.js";
 import {
   buildOcrMarkdown,
   getOcrResponseModel,
@@ -47,11 +47,13 @@ interface MistralOcrPayload {
   bbox_annotation_format?: OcrJsonSchemaFormat;
 }
 
+export const MISTRAL_OCR_MODELS = ["mistral-ocr-latest", "mistral-ocr-4-1"] as const;
+
 export class MistralOcrProvider implements OcrProvider {
   constructor(protected readonly runtime: ProviderRuntime) {}
 
   name = "mistral";
-  models = [DEFAULT_OCR_MODEL, "mistral-ocr-4-1"];
+  models = [...MISTRAL_OCR_MODELS];
 
   async extractText(request: OcrExtractionRequest): Promise<OcrExtractionResult> {
     try {
@@ -63,7 +65,7 @@ export class MistralOcrProvider implements OcrProvider {
       });
 
       const modelConfig = await this.runtime.host.models.resolveModelConfig(
-        request.model ?? DEFAULT_OCR_MODEL,
+        requireRequestModel(request.model, "OCR"),
         request.env,
         this.name,
         request.user?.id,

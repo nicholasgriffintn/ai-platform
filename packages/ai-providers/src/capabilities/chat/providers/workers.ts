@@ -146,7 +146,7 @@ function toMultipartImage(
     view[index] = typeof source === "string" ? source.charCodeAt(index) : (source[index] ?? 0);
   }
 
-  return { field: "image", data: buffer, filename: "image.png", contentType: "image/png" };
+  return { field: "input_image_0", data: buffer, filename: "image.png", contentType: "image/png" };
 }
 
 export class WorkersProvider extends BaseProvider {

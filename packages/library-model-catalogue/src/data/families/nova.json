@@ -92,18 +92,16 @@
       "defaults": {
         "name": "Deepgram Nova 3",
         "description": "Transcribe audio using Deepgram's speech-to-text model with advanced features like language detection, speaker diarization, and sentiment analysis.",
-        "contextWindow": 128000,
-        "maxTokens": 16384,
         "modalities": {
           "input": [
-            "text"
+            "audio"
           ],
           "output": [
             "text"
           ]
         },
         "strengths": [
-          "audio"
+          "transcription"
         ],
         "contextComplexity": 4,
         "reliability": 5,

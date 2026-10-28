@@ -4,7 +4,6 @@ import {
   readSourceFraming,
   SOURCE_FRAMING_METADATA_KEY,
   type ArticleFramingDraft,
-  type ModelTier,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
@@ -14,11 +13,9 @@ import {
   type EditorialQualityResult,
 } from "~/modules/documents/application/editorial-quality";
 import { verifyQuotes } from "~/modules/knowledge/domain/quotes";
-import { generateTierObject } from "~/modules/models/application/tier-object";
+import { generateSystemObject } from "~/modules/models/application/system-object";
 
 import type { KnowledgeEnricher } from "./types";
-
-const FRAMING_TIER: ModelTier = "medium";
 
 export interface ArticleFramingResult {
   framing: ArticleFramingDraft;
@@ -31,8 +28,8 @@ export async function analyseArticleFraming(
   article: string,
 ): Promise<ArticleFramingResult> {
   const [draft, editorial] = await Promise.all([
-    generateTierObject(context, {
-      tier: FRAMING_TIER,
+    generateSystemObject(context, {
+      role: "writing",
       name: "article_framing",
       schema: articleFramingDraftSchema,
       system: getPromptText("knowledge/framing"),

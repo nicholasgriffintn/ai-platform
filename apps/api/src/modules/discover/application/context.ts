@@ -34,9 +34,11 @@ import type { DiscoverLink } from "~/modules/discover/domain/links";
 import { isActiveDiscoverReader } from "~/modules/discover/domain/listen";
 import { selectCurrentResearch } from "~/modules/discover/domain/research";
 import { findDiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
+import { condenseSignalLines } from "~/modules/discover/domain/signal-document";
 import { selectRecentChatTitles } from "~/modules/discover/domain/signals";
 import { collectParkedSince, describeRunningStory } from "~/modules/discover/domain/wind-down";
-import { MemorySynthesisRepository } from "~/modules/memory/infrastructure/MemorySynthesisRepository";
+import { describeMemoryDocument } from "~/modules/memory-documents/domain/details";
+import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { loadPolyAgenda } from "~/modules/poly/application/read-agenda";
 
 import { listRecentDiscoverEditions } from "./editions";
@@ -82,12 +84,17 @@ export async function readMemorySummary(
     return null;
   }
 
-  const synthesis = await context.repositories
-    .get(MemorySynthesisRepository)
-    .getActiveSynthesis(userId);
+  const documents = await context.repositories
+    .get(MemoryDocumentRepository)
+    .listDocuments({ scopeType: "personal", scopeId: String(userId) });
 
-  return synthesis?.synthesis_text
-    ? truncateText(synthesis.synthesis_text, MEMORY_SUMMARY_LIMIT)
+  return documents.length > 0
+    ? truncateText(
+        documents
+          .map((document) => `- ${document.name}: ${describeMemoryDocument(document)}`)
+          .join("\n"),
+        MEMORY_SUMMARY_LIMIT,
+      )
     : null;
 }
 
@@ -206,7 +213,7 @@ function describeDocuments(
           "signal",
         readAt: document.readAt,
         error: document.error,
-        lines: document.lines,
+        lines: condenseSignalLines(document.lines),
         note: deviceActivityContextNote(document.providerId),
       })),
     research: selectCurrentResearch(documents.research, research),

@@ -101,6 +101,7 @@ struct WorkDecisionRow: View {
         case "paused": return "Paused"
         case "waiting": return "Waiting"
         case "breakdown": return "Breakdown"
+        case "models": return "Models"
         default: return "Inbox"
         }
     }

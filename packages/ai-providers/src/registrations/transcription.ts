@@ -34,7 +34,6 @@ function transcriptionProviders(
         vendor: "GreenPT",
         categories: ["transcription"],
         models: [...GREENPT_TRANSCRIPTION_MODELS],
-        defaultModel: "green-s",
       },
     },
   ];

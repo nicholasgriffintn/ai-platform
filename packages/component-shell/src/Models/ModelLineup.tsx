@@ -272,11 +272,11 @@ function SystemModels() {
     () =>
       SYSTEM_MODEL_LINEUP.map((role) => ({
         role,
-        headline: resolveLineupHeadline(catalogueRecord, role.candidates),
+        headline: resolveLineupHeadline(catalogueRecord, role.defaults),
         yours: accountRecord
           ? resolveLineupHeadline(
               accountRecord,
-              role.candidates,
+              role.defaults,
               (model) => model.isExecutable === true,
             )
           : undefined,
@@ -347,7 +347,7 @@ export function ModelLineup() {
 
       <ModelsSection
         section={MODELS_SECTIONS.system}
-        description="Specialist jobs use fixed, inexpensive models rather than the conversation tier. Each list is a hierarchy too, so a Free plan still gets a working default."
+        description="Specialist jobs use inexpensive Workers AI models by default rather than the conversation tier. Choose your own, with fallbacks, under Model choices in your profile, or for a whole workspace under its Models page."
       >
         <SystemModels />
       </ModelsSection>

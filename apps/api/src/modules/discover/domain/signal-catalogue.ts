@@ -29,6 +29,7 @@ export interface DiscoverSignalRead {
   timezone: string;
   now: Date;
   location: string | null;
+  topics: readonly string[];
 }
 
 export interface DiscoverSignal {
@@ -42,6 +43,7 @@ export interface DiscoverSignal {
   digest: (result: unknown) => string[];
   items?: (result: unknown) => DiscoverResearchResult[];
   needsLocation?: boolean;
+  needsTopics?: boolean;
 }
 
 export const DISCOVER_SIGNAL_LINE_LIMIT = 12;
@@ -125,6 +127,67 @@ function lines(
 
 function joinParts(...parts: readonly string[]): string {
   return parts.filter(Boolean).join(" · ");
+}
+
+const REDDIT_TOPIC_LIMIT = 5;
+
+function redditPosts(result: unknown): Record<string, unknown>[] {
+  return items(
+    result,
+    ["data", "posts"],
+    ["posts"],
+    ["data", "data", "children"],
+    ["data", "children"],
+    ["children"],
+  ).flatMap((child) => {
+    const post = isRecord(child) && isRecord(child.data) ? child.data : child;
+
+    return isRecord(post) && post.over_18 !== true && post.stickied !== true ? [post] : [];
+  });
+}
+
+function redditPostUrl(post: Record<string, unknown>): string {
+  const permalink = first(post, ["permalink"]);
+
+  if (!permalink || /^https?:\/\//u.test(permalink)) {
+    return permalink;
+  }
+
+  return `https://www.reddit.com${permalink.startsWith("/") ? "" : "/"}${permalink}`;
+}
+
+function redditSubreddit(post: Record<string, unknown>): string {
+  const subreddit = first(post, ["subreddit_name_prefixed"], ["subreddit_prefixed"], ["subreddit"]);
+
+  return subreddit.startsWith("r/") || !subreddit ? subreddit : `r/${subreddit}`;
+}
+
+function redditPostItems(posts: readonly Record<string, unknown>[]): DiscoverResearchResult[] {
+  return posts.flatMap((post) => {
+    const title = first(post, ["title"]);
+    const url = redditPostUrl(post);
+    const score = first(post, ["score"]);
+
+    return title && url
+      ? [
+          {
+            title,
+            url,
+            snippet: first(post, ["selftext"]).slice(0, 1_200),
+            source: [redditSubreddit(post), score ? `${score} points` : ""]
+              .filter(Boolean)
+              .join(", "),
+            date: epochSecondsToIso(post.created_utc)?.slice(0, 10) ?? "",
+          },
+        ]
+      : [];
+  });
+}
+
+function redditPostLines(posts: Record<string, unknown>[]): string[] {
+  return lines(posts, (post) =>
+    joinParts(first(post, ["title"]), redditSubreddit(post), redditPostUrl(post)),
+  );
 }
 
 export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
@@ -250,6 +313,44 @@ export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
           first(item, ["article", "title"], ["title"]),
           first(item, ["article", "user", "name"]),
           first(item, ["article", "url"], ["url"]),
+        ),
+      ),
+  },
+  {
+    id: "devto-top-today",
+    providerId: "devto",
+    group: "reading",
+    title: "DEV today",
+    description: "Reads the most liked DEV articles from the last day.",
+    operation: "DEVTO_LIST_ARTICLES",
+    parameters: () => ({ top: 1, per_page: 20 }),
+    items: (result) =>
+      items(result, ["data", "articles"], ["articles"]).flatMap((article) => {
+        const title = first(article, ["title"]);
+        const url = first(article, ["url"]);
+        const reactions = first(article, ["positive_reactions_count"]);
+
+        return title && url
+          ? [
+              {
+                title,
+                url,
+                snippet: first(article, ["description"]),
+                source: ["DEV", reactions ? `${reactions} reactions` : ""]
+                  .filter(Boolean)
+                  .join(", "),
+                date: first(article, ["published_at"]).slice(0, 10),
+              },
+            ]
+          : [];
+      }),
+    digest: (result) =>
+      lines(items(result, ["data", "articles"], ["articles"]), (article) =>
+        joinParts(
+          first(article, ["title"]),
+          first(article, ["tags"]),
+          first(article, ["user", "name"]),
+          first(article, ["url"]),
         ),
       ),
   },
@@ -618,70 +719,29 @@ export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
     description: "Reads the best posts from the communities you subscribe to.",
     operation: "REDDIT_GET",
     parameters: () => ({ sort: "best", limit: 25 }),
-    items: (result) =>
-      items(result, ["data", "data", "children"], ["data", "children"], ["children"]).flatMap(
-        (child) => {
-          const post = isRecord(child) && isRecord(child.data) ? child.data : child;
-
-          if (!isRecord(post) || post.over_18 === true || post.stickied === true) {
-            return [];
-          }
-
-          const title = first(post, ["title"]);
-          const permalink = first(post, ["permalink"]);
-          const subreddit = first(post, ["subreddit_name_prefixed"], ["subreddit"]);
-          const score = first(post, ["score"]);
-
-          if (!title || !permalink) {
-            return [];
-          }
-
-          return [
-            {
-              title,
-              url: `https://www.reddit.com${permalink.startsWith("/") ? "" : "/"}${permalink}`,
-              snippet: first(post, ["selftext"]).slice(0, 1_200),
-              source: [
-                subreddit.startsWith("r/") || !subreddit ? subreddit : `r/${subreddit}`,
-                score ? `${score} points` : "",
-              ]
-                .filter(Boolean)
-                .join(", "),
-              date: epochSecondsToIso(post.created_utc)?.slice(0, 10) ?? "",
-            },
-          ];
-        },
-      ),
-    digest: (result) =>
-      lines(
-        items(result, ["data", "data", "children"], ["data", "children"], ["children"]),
-        (post) =>
-          joinParts(
-            first(post, ["data", "title"], ["title"]),
-            first(post, ["data", "subreddit_name_prefixed"], ["data", "subreddit"], ["subreddit"]),
-            first(post, ["data", "permalink"], ["permalink"]).replace(
-              /^\//u,
-              "https://www.reddit.com/",
-            ),
-          ),
-      ),
+    items: (result) => redditPostItems(redditPosts(result)),
+    digest: (result) => redditPostLines(redditPosts(result)),
   },
   {
-    id: "nasa-apod",
-    providerId: "nasa",
-    group: "pictures",
-    title: "NASA",
-    description: "Reads today's astronomy picture of the day.",
-    operation: "NASA_GET_APOD",
-    parameters: () => ({ hd: false }),
-    digest: (result) =>
-      lines([isRecord(result) && isRecord(result.data) ? result.data : result], (picture) =>
-        joinParts(
-          first(picture, ["title"]),
-          first(picture, ["url"]),
-          first(picture, ["explanation"]).slice(0, 160),
-        ),
-      ),
+    id: "reddit-topics",
+    providerId: "reddit",
+    group: "social",
+    title: "Reddit on your topics",
+    description:
+      "Reads this week's top Reddit posts about the topics you follow and keep coming back to.",
+    operation: "REDDIT_SEARCH_ACROSS_SUBREDDITS",
+    needsTopics: true,
+    parameters: ({ topics }) => ({
+      search_query: topics
+        .slice(0, REDDIT_TOPIC_LIMIT)
+        .map((topic) => `"${topic.replace(/"/gu, "")}"`)
+        .join(" OR "),
+      sort: "top",
+      time_filter: "week",
+      limit: 25,
+    }),
+    items: (result) => redditPostItems(redditPosts(result)),
+    digest: (result) => redditPostLines(redditPosts(result)),
   },
   {
     id: "artificial-analysis-models",

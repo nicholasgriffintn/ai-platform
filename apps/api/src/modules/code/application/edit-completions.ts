@@ -3,6 +3,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { getChatProvider } from "~/infrastructure/providers/capabilities/chat";
 import { resolveExecutableModelForRequest } from "~/modules/models/application/access";
+import { requireSystemModel } from "~/modules/models/application/resolve";
 import { toProviderMessages } from "~/modules/responses/application/engine/messages/provider-mapping";
 import type { ChatCompletionParameters, ChatRole, IEnv, IUser, Message } from "~/types";
 
@@ -20,7 +21,7 @@ type EditCapability = "supportsNextEdit" | "supportsApplyEdit";
 
 interface CreateEditCompletionsOptions {
   capability: EditCapability;
-  defaultModel: () => string;
+  role: "nextEdit" | "applyEdit";
   missingMessagesMessage: string;
   operation: EditOperation;
   unsupportedMessage: (model: string) => string;
@@ -64,7 +65,7 @@ export async function handleCreateEditCompletions(
     throw new AssistantError(options.missingMessagesMessage, ErrorType.PARAMS_ERROR);
   }
 
-  const selectedModel = model ?? options.defaultModel();
+  const selectedModel = model ?? (await requireSystemModel(env, user, options.role)).id;
   const { config: modelConfig, credentialAuthority } = await resolveExecutableModelForRequest({
     env,
     user,

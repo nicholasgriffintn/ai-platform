@@ -81,7 +81,7 @@ export async function postCloudflareSearch(
 ): Promise<unknown> {
   const response = await fetch(endpoint, {
     method: "POST",
-    redirect: "error",
+    redirect: "manual",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify(body),
   });

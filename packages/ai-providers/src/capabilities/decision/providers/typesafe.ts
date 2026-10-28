@@ -11,11 +11,11 @@ import {
   assertTextOnlyDecisionRequest,
   normaliseDecisionResponse,
 } from "../../../utils/decisions.js";
+import { requireRequestModel } from "../../../utils/required-model.js";
 
 const logger = getLogger({ prefix: "lib/decision/typesafe" });
 
 export const TYPESAFE_PROVIDER_NAME = "typesafe";
-export const TYPESAFE_DEFAULT_MODEL = "jev-latest";
 export const TYPESAFE_API_BASE_URL = "https://api.typesafe.ai";
 
 export class TypeSafeDecisionProvider implements DecisionProvider {
@@ -29,7 +29,7 @@ export class TypeSafeDecisionProvider implements DecisionProvider {
 
   async decide(request: DecisionRequest): Promise<DecisionResponse> {
     assertTextOnlyDecisionRequest(request, "TypeSafe");
-    const model = request.model ?? TYPESAFE_DEFAULT_MODEL;
+    const model = requireRequestModel(request.model, "decision");
     const apiKey = await resolveHostProviderApiKey(this.runtime.host, {
       env: this.env,
       providerName: this.name,

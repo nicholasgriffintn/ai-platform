@@ -13,7 +13,7 @@ import {
   type ClassificationCollection,
   type KnowledgeLinkScope,
 } from "~/modules/knowledge/infrastructure/KnowledgeLinkRepository";
-import { generateTierObject } from "~/modules/models/application/tier-object";
+import { generateSystemObject } from "~/modules/models/application/system-object";
 import { readSourceSummary, renderSourceSummary } from "~/modules/sources/domain/summary";
 
 import type { KnowledgeEnricher } from "./types";
@@ -72,8 +72,8 @@ export const classifyEnricher: KnowledgeEnricher = {
     const existing = await context.repositories
       .get(KnowledgeLinkRepository)
       .listClassificationTitles(scope, "topic");
-    const classification = await generateTierObject(context, {
-      tier: "low",
+    const classification = await generateSystemObject(context, {
+      role: "housekeeping",
       name: "knowledge_classify",
       schema: knowledgeClassificationSchema,
       system: getPromptText("knowledge/classify"),

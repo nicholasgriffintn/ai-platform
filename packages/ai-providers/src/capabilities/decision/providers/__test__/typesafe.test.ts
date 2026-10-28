@@ -56,6 +56,7 @@ describe("TypeSafeDecisionProvider", () => {
     );
 
     const result = await provider.decide({
+      model: "jev-latest",
       state: { message: "Charged twice, fix it now" },
       questions: {
         urgent: { type: "noul", instructions: "Is `message` urgent?" },
@@ -118,7 +119,11 @@ describe("TypeSafeDecisionProvider", () => {
     );
 
     await expect(
-      provider.decide({ state: "x", questions: { urgent: { type: "noul", instructions: "?" } } }),
+      provider.decide({
+        model: "jev-latest",
+        state: "x",
+        questions: { urgent: { type: "noul", instructions: "?" } },
+      }),
     ).rejects.toMatchObject({ type: "PROVIDER_ERROR" });
   });
 
@@ -126,7 +131,11 @@ describe("TypeSafeDecisionProvider", () => {
     const provider = new TypeSafeDecisionProvider({}, undefined, createRuntime());
 
     await expect(
-      provider.decide({ state: "x", questions: { urgent: { type: "noul", instructions: "?" } } }),
+      provider.decide({
+        model: "jev-latest",
+        state: "x",
+        questions: { urgent: { type: "noul", instructions: "?" } },
+      }),
     ).rejects.toMatchObject({ code: "credential_missing" });
     expect(fetchProviderJson).not.toHaveBeenCalled();
   });

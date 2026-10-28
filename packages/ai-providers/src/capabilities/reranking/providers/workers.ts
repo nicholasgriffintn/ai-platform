@@ -8,6 +8,7 @@ import { resolveAiGatewayId } from "../../../gateway.js";
 import { trackProviderMetrics } from "../../../metrics.js";
 import type { ProviderRuntime } from "../../../runtime.js";
 import type { RerankingProvider } from "../../../types/reranking.js";
+import { requireRequestModel } from "../../../utils/required-model.js";
 import {
   assertRerankingResultCount,
   normaliseIndexedRerankingResponse,
@@ -17,7 +18,6 @@ import {
 const logger = getLogger({ prefix: "lib/reranking/workers" });
 
 export const WORKERS_AI_RERANKING_PROVIDER_NAME = "workers-ai";
-export const WORKERS_AI_DEFAULT_RERANKING_MODEL = "@cf/baai/bge-reranker-base";
 
 function readResults(
   raw: unknown,
@@ -57,7 +57,7 @@ export class WorkersAiRerankingProvider implements RerankingProvider {
 
   async rerank(unvalidatedRequest: RerankingRequest): Promise<RerankingResponse> {
     const request = validateRerankingRequest(unvalidatedRequest);
-    const model = request.model ?? WORKERS_AI_DEFAULT_RERANKING_MODEL;
+    const model = requireRequestModel(request.model, "reranking");
 
     if (!this.env.AI) {
       throw new AssistantError(

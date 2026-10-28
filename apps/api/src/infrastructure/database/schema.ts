@@ -595,6 +595,7 @@ export const workspace = sqliteTable(
     setup_task_id: text(),
     setup_plan: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
     lead_routines: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
+    system_models: text({ mode: "json" }).$type<Record<string, unknown> | null>(),
     created_by: integer()
       .notNull()
       .references(() => user.id),

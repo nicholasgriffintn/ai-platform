@@ -26,9 +26,8 @@ import {
   shotImageKey,
   wordsForMinutes,
 } from "~/modules/discover/domain/episodes";
-import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
 import { storeDrawnImage, TEXTLESS_PICTURE } from "~/modules/generate/application/stored-image";
-import { generateTierObject } from "~/modules/models/application/tier-object";
+import { generateSystemObject } from "~/modules/models/application/system-object";
 import { VIDEO_STYLE_PROMPTS } from "~/modules/notebooks/domain/studio-guidance";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 
@@ -155,8 +154,8 @@ async function scriptChapter(
     words: String(chapterWordTarget(wordsForMinutes(content.minutes), content.chapters.length)),
     plan: describeSeasonPlan(season),
   });
-  let draft = await generateTierObject(context, {
-    tier: DISCOVER_MODEL_TIER,
+  let draft = await generateSystemObject(context, {
+    role: "writing",
     name: "discover_episode_chapter",
     schema: discoverChapterScriptDraftSchema,
     system,
@@ -164,8 +163,8 @@ async function scriptChapter(
   });
 
   for (let attempt = 0; attempt < GROUNDING_REWRITES; attempt += 1) {
-    const check = await generateTierObject(context, {
-      tier: DISCOVER_MODEL_TIER,
+    const check = await generateSystemObject(context, {
+      role: "writing",
       name: "discover_episode_check",
       schema: discoverChapterCheckSchema,
       system: renderPrompt("discover/episode/check"),
@@ -178,8 +177,8 @@ async function scriptChapter(
       break;
     }
 
-    draft = await generateTierObject(context, {
-      tier: DISCOVER_MODEL_TIER,
+    draft = await generateSystemObject(context, {
+      role: "writing",
       name: "discover_episode_chapter",
       schema: discoverChapterScriptDraftSchema,
       system: `${system}\n\nAn earlier draft made claims the material does not support. Leave these out or say plainly that the material does not cover them:\n${check.unsupported

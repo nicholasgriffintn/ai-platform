@@ -6,7 +6,8 @@ import { stripSurroundingQuotes } from "@ngriffin_uk/polychat-utility-server/str
 import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { createInitialConversationTitle } from "~/modules/conversations/application/title-source";
-import { getTitlingModel } from "~/modules/models/application/resolve";
+import { runWithSystemModel } from "~/modules/models/application/resolve";
+import { resolveConversationModelScope } from "~/modules/models/application/scope";
 import { toProviderMessages } from "~/modules/responses/application/engine/messages/provider-mapping";
 import { sanitiseMessages } from "~/modules/responses/application/engine/messages/sanitise";
 import type { Message } from "~/types";
@@ -19,6 +20,7 @@ const TITLE_MAX_OUTPUT_TOKENS = 64;
 
 export async function generateConversationTitle(
   context: ServiceContext,
+  conversationId: string,
   messages: Message[],
 ): Promise<string> {
   const runtimeEnv = context.env;
@@ -31,24 +33,25 @@ export async function generateConversationTitle(
     return DEFAULT_CONVERSATION_TITLE;
   }
 
-  const {
-    model: modelToUse,
-    provider: providerToUse,
-    effort,
-  } = await getTitlingModel(runtimeEnv, user);
-
   try {
     const title = stripSurroundingQuotes(
-      await ai.generateText({
-        env: runtimeEnv,
+      await runWithSystemModel(
+        runtimeEnv,
         user,
-        model: modelToUse,
-        provider: providerToUse,
-        prompt: buildConversationTitlePrompt({ messages: messagesToUse }),
-        max_tokens: TITLE_MAX_OUTPUT_TOKENS,
-        reasoning_effort: effort,
-        disable_functions: true,
-      }),
+        "titling",
+        ({ model, provider, effort }) =>
+          ai.generateText({
+            env: runtimeEnv,
+            user,
+            model,
+            provider,
+            prompt: buildConversationTitlePrompt({ messages: messagesToUse }),
+            max_tokens: TITLE_MAX_OUTPUT_TOKENS,
+            reasoning_effort: effort,
+            disable_functions: true,
+          }),
+        await resolveConversationModelScope(runtimeEnv, conversationId),
+      ),
     );
 
     if (!title) {
@@ -59,11 +62,7 @@ export async function generateConversationTitle(
       ? `${title.substring(0, TITLE_MAX_LENGTH - 3)}...`
       : title;
   } catch (error) {
-    logger.warn("Titling model failed, falling back to excerpt", {
-      error,
-      model: modelToUse,
-      provider: providerToUse,
-    });
+    logger.warn("Every titling model failed, falling back to excerpt", { error });
 
     return createInitialConversationTitle(messages);
   }

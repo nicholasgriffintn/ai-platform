@@ -29,10 +29,13 @@ vi.mock("~/modules/conversations/infrastructure/coordinator/client", async (impo
 }));
 
 vi.mock("~/modules/models/application/resolve", () => ({
-  getCompactionModel: vi.fn().mockResolvedValue({
-    model: "summary-model",
-    provider: "test-provider",
-  }),
+  runWithSystemModel: (
+    ...args: [unknown, unknown, unknown, (model: unknown) => Promise<unknown>]
+  ) => args[3]({ model: "summary-model", provider: "test-provider" }),
+}));
+
+vi.mock("~/modules/models/application/scope", () => ({
+  resolveConversationModelScope: async () => ({}),
 }));
 
 vi.mock("~/infrastructure/providers/capabilities/chat", () => ({

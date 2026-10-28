@@ -66,6 +66,20 @@ Example output structure:
 [A single sentence describing the main elements of the image]`,
   },
   {
+    id: "apps/documents/read-image",
+    task: "image-description",
+    title: "Read an image as a document",
+    description: "Transcribes every piece of text in an image into Markdown for OCR.",
+    text: `Transcribe all of the text in this image exactly as written.
+
+- Keep the reading order, headings, lists and paragraphs.
+- Write tables as Markdown tables.
+- Mark handwriting you cannot read as [illegible].
+- Do not describe, summarise or comment on the image.
+
+Reply with the Markdown transcription only.`,
+  },
+  {
     id: "apps/drawing/guess",
     task: "drawing-guess",
     title: "Drawing guess",

@@ -29,7 +29,7 @@ const DEVICE_SOURCE_DETAILS: Record<
     description: "Claude Code and Codex sessions from the desktop app.",
     group: "work",
     contextNote:
-      "Each session is work they already handed to a coding agent, so treat it as done or in hand and never suggest it as an action card, unless the agent's reply says it is blocked or unfinished",
+      "Each session is work they already handed to a coding agent, so treat it as done or in hand: never an interest and never an action card",
   },
   apps: {
     name: "Apps on your Mac",

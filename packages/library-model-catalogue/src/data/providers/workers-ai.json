@@ -229,6 +229,7 @@
       "model": "stable-diffusion/stable-diffusion-1-5-img2img",
       "matchingModel": "@cf/runwayml/stable-diffusion-v1-5-img2img",
       "overrides": {
+        "deprecated": true,
         "speed": 3
       },
       "unset": [

@@ -1,13 +1,11 @@
 import { getTextToImageSystemPrompt, isImagePromptStyle } from "@ngriffin_uk/polychat-ai-prompts";
-import { MODEL_DEFAULTS } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { buildInputSchemaInput } from "../../../input-schema.js";
 import type { ProviderRuntime } from "../../../runtime.js";
 import { extractGeneratedAsset } from "../../../utils/helpers.js";
+import { requireRequestModel } from "../../../utils/required-model.js";
 import type { ImageGenerationRequest, ImageGenerationResult, ImageProvider } from "../index.js";
-
-const DEFAULT_MODEL = MODEL_DEFAULTS.image.workersAi.model;
 
 function resolveStylePrompt(style?: string): string {
   const styleKey = style && isImagePromptStyle(style) ? style : "default";
@@ -19,10 +17,9 @@ export class WorkersAiImageProvider implements ImageProvider {
   constructor(protected readonly runtime: ProviderRuntime) {}
 
   name = "workers-ai";
-  models = [DEFAULT_MODEL];
 
   async generate(request: ImageGenerationRequest): Promise<ImageGenerationResult> {
-    const modelId = request.model || DEFAULT_MODEL;
+    const modelId = requireRequestModel(request.model, "image");
     const modelConfig = await this.runtime.host.models.findModelConfig(
       modelId,
       request.env,

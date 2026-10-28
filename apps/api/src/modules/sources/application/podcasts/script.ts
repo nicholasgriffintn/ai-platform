@@ -2,7 +2,6 @@ import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import {
   PODCAST_FORMATS,
   podcastScriptSchema,
-  type ModelTier,
   type PodcastFormat,
   type PodcastLength,
   type PodcastScript,
@@ -10,13 +9,11 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { generateTierObject } from "~/modules/models/application/tier-object";
+import { generateSystemObject } from "~/modules/models/application/system-object";
 import { buildSourceMaterial } from "~/modules/sources/application/material";
 import type { SourceRecord } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { PODCAST_HOSTS } from "./audio";
-
-const PODCAST_SCRIPT_MODEL_TIER: ModelTier = "medium";
 
 const LENGTH_GUIDANCE: Record<PodcastLength, string> = {
   short: "About 600 words, a five minute listen.",
@@ -44,8 +41,8 @@ export async function writePodcastScript(
     );
   }
 
-  return generateTierObject(context, {
-    tier: PODCAST_SCRIPT_MODEL_TIER,
+  return generateSystemObject(context, {
+    role: "writing",
     name: "podcast_script",
     schema: podcastScriptSchema,
     system: renderPrompt("sources/podcast/script", {

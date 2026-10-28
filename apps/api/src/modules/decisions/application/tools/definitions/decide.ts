@@ -1,21 +1,10 @@
-import { getModelsByOutputModality } from "@ngriffin_uk/polychat-ai-models";
 import { decisionQuestionsSchema, decisionStateSchema } from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
 import type { FunctionToolDescriptor } from "~/types/functions";
 
 function buildInputSchema() {
-  const decisionModels = Object.entries(getModelsByOutputModality("decision"));
-
   return z.object({
-    model: z
-      .enum(["auto", ...decisionModels.map(([id]) => id)])
-      .optional()
-      .describe("Choose a decision model, or use Automatic to let the account select one.")
-      .meta({
-        title: "Decision model",
-        enumNames: ["Automatic", ...decisionModels.map(([id, model]) => model.name || id)],
-      }),
     state: decisionStateSchema.describe(
       "Enter the content to judge as plain text, a JSON object with named fields, or a JSON array of text.",
     ),

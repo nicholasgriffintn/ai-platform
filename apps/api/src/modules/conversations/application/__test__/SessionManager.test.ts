@@ -10,7 +10,13 @@ const mockGetAuxiliaryModel = vi.fn();
 const mockGenerateText = vi.fn();
 
 vi.mock("~/modules/models/application/resolve", () => ({
-  getCompactionModel: (...args: unknown[]) => mockGetAuxiliaryModel(...args),
+  runWithSystemModel: async (
+    ...args: [unknown, unknown, unknown, (model: unknown) => Promise<unknown>]
+  ) => args[3](await mockGetAuxiliaryModel(...args)),
+}));
+
+vi.mock("~/modules/models/application/scope", () => ({
+  resolveConversationModelScope: async () => ({}),
 }));
 
 vi.mock("~/infrastructure/ai", () => ({

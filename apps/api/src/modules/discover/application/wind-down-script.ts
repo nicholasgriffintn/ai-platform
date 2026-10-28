@@ -9,9 +9,8 @@ import { humaniseIdentifier } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { DISCOVER_MODEL_TIER } from "~/modules/discover/domain/settings";
 import { describeWindDownMaterial, planWindDownStory } from "~/modules/discover/domain/wind-down";
-import { generateTierObject } from "~/modules/models/application/tier-object";
+import { generateSystemObject } from "~/modules/models/application/system-object";
 
 import { readWindDownDay, readWindDownHighlights } from "./wind-down-context";
 import { listRecentWindDowns } from "./wind-down-history";
@@ -49,8 +48,8 @@ export async function writeWindDownScript(
     case "story": {
       const plan = planWindDownStory(content.topic ?? null, recent);
 
-      return generateTierObject(context, {
-        tier: DISCOVER_MODEL_TIER,
+      return generateSystemObject(context, {
+        role: "writing",
         name: "discover_wind_down_story",
         schema: discoverWindDownDraftSchema,
         system: renderPrompt("discover/wind-down/story", { minutes }),
@@ -73,8 +72,8 @@ export async function writeWindDownScript(
         );
       }
 
-      return generateTierObject(context, {
-        tier: DISCOVER_MODEL_TIER,
+      return generateSystemObject(context, {
+        role: "writing",
         name: "discover_wind_down_read_back",
         schema: discoverWindDownDraftSchema,
         system: renderPrompt("discover/wind-down/read-back", { minutes }),
@@ -83,8 +82,8 @@ export async function writeWindDownScript(
     }
 
     case "park":
-      return generateTierObject(context, {
-        tier: DISCOVER_MODEL_TIER,
+      return generateSystemObject(context, {
+        role: "writing",
         name: "discover_wind_down_park",
         schema: discoverWindDownParkDraftSchema,
         system: renderPrompt("discover/wind-down/park", { minutes }),
@@ -95,8 +94,8 @@ export async function writeWindDownScript(
         }),
       });
     default:
-      return generateTierObject(context, {
-        tier: DISCOVER_MODEL_TIER,
+      return generateSystemObject(context, {
+        role: "writing",
         name: "discover_wind_down",
         schema: discoverWindDownDraftSchema,
         system: renderPrompt("discover/wind-down/script", {

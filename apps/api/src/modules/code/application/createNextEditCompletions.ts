@@ -2,7 +2,6 @@ import {
   handleCreateEditCompletions,
   type HandleCreateEditCompletionsRequest,
 } from "~/modules/code/application/edit-completions";
-import { resolveSystemModelId } from "~/modules/responses/domain/system-models";
 
 export const handleCreateNextEditCompletions = async ({
   env,
@@ -16,7 +15,7 @@ export const handleCreateNextEditCompletions = async ({
     { env, model, provider: requestedProvider, messages, stream, user },
     {
       capability: "supportsNextEdit",
-      defaultModel: () => resolveSystemModelId("nextEdit"),
+      role: "nextEdit",
       missingMessagesMessage: "Messages are required for next edit completions",
       operation: "next",
       unsupportedMessage: (selectedModel) =>

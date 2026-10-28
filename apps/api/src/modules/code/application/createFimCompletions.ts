@@ -1,7 +1,7 @@
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { getChatProvider } from "~/infrastructure/providers/capabilities/chat";
 import { resolveExecutableModelForRequest } from "~/modules/models/application/access";
-import { resolveSystemModelId } from "~/modules/responses/domain/system-models";
+import { requireSystemModel } from "~/modules/models/application/resolve";
 import type { IEnv, IUser, ChatCompletionParameters } from "~/types";
 
 interface HandleCreateFimCompletionsRequest {
@@ -33,7 +33,7 @@ export const handleCreateFimCompletions = async ({
   stop,
   user,
 }: HandleCreateFimCompletionsRequest) => {
-  const selectedModel = model ?? resolveSystemModelId("fim");
+  const selectedModel = model ?? (await requireSystemModel(env, user, "fim")).id;
   const { config: modelConfig, credentialAuthority } = await resolveExecutableModelForRequest({
     env,
     user,

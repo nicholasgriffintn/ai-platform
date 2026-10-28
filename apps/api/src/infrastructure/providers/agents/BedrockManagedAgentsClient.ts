@@ -39,7 +39,7 @@ export class BedrockManagedAgentsClient {
       method: "POST",
       headers: { Accept: "text/event-stream", "Content-Type": "application/json" },
       body: JSON.stringify(body),
-      redirect: "error",
+      redirect: "manual",
     });
 
     if (!response.ok || !response.body) {
@@ -55,7 +55,7 @@ export class BedrockManagedAgentsClient {
       async () => {
         const response = await this.signer.fetch(
           `${this.baseUrl}/${encodeURIComponent(sessionId)}`,
-          { method: "DELETE", redirect: "error", signal: AbortSignal.timeout(30_000) },
+          { method: "DELETE", redirect: "manual", signal: AbortSignal.timeout(30_000) },
         );
 
         await response.body?.cancel();

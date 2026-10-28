@@ -48,7 +48,7 @@ export const handleGenerateChatCompletionTitle = async (
     return { title: DEFAULT_CONVERSATION_TITLE };
   }
 
-  const title = await generateConversationTitle(context, messagesToUse);
+  const title = await generateConversationTitle(context, completion_id, messagesToUse);
 
   await conversationManager.updateConversation(completion_id, { title });
 

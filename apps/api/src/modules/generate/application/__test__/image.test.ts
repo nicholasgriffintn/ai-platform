@@ -10,6 +10,14 @@ vi.mock("~/infrastructure/ai", () => ({
     resolveMediaProvider: async () => ({ providerName: "workers-ai" }),
   },
 }));
+vi.mock("~/modules/models/application/resolve", () => ({
+  requireSystemModel: async () => ({
+    id: "flux-2-dev",
+    name: "Flux 2 Dev",
+    model: "@cf/black-forest-labs/flux-2-dev",
+    provider: "workers-ai",
+  }),
+}));
 vi.mock("~/infrastructure/context/serviceContext", () => ({
   resolveServiceContext: ({ env, user }: { env: IEnv; user: IUser }) => ({ env, user }),
 }));

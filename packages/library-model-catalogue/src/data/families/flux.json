@@ -74,7 +74,7 @@
     "black-forest-labs-flux-2-klein-4b": {
       "defaults": {
         "name": "Black Forest Labs Flux 2 Klein 4B",
-        "description": "Black Forest Labs Flux 2 Klein 4B accepts text and produces image.",
+        "description": "Black Forest Labs Flux 2 Klein 4B generates images from text and edits up to four reference images.",
         "strengths": [
           "creative",
           "image"
@@ -95,13 +95,22 @@
               "confidenceInterval95": 12
             }
           ]
+        },
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
         }
       }
     },
     "black-forest-labs-flux-2-klein-9b": {
       "defaults": {
         "name": "Black Forest Labs Flux 2 Klein 9B",
-        "description": "Black Forest Labs Flux 2 Klein 9B accepts text and produces image.",
+        "description": "Black Forest Labs Flux 2 Klein 9B generates images from text and edits up to four reference images.",
         "strengths": [
           "creative",
           "image"
@@ -121,6 +130,15 @@
               "max": 1400,
               "confidenceInterval95": 10
             }
+          ]
+        },
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
           ]
         }
       }
