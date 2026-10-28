@@ -19,7 +19,7 @@ describe("createMachineAgentEvents", () => {
       body: { kind: "command", command: "ls", output: "README.md", exitCode: 0 },
     });
 
-    expect(events.take(10)).toEqual([
+    expect(events.peek(10)).toEqual([
       { type: "text-delta", partId: "message", delta: "Che" },
       { type: "text-delta", partId: "message", delta: "cking" },
       {
@@ -47,7 +47,7 @@ describe("createMachineAgentEvents", () => {
     usage(100, 10);
     usage(150, 30);
 
-    expect(events.take(10)).toEqual([
+    expect(events.peek(10)).toEqual([
       { type: "usage", inputTokens: 100, outputTokens: 10 },
       { type: "usage", inputTokens: 50, outputTokens: 20 },
     ]);

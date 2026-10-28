@@ -2,6 +2,7 @@ import {
   MACHINE_MAX_ACTIVE_RUNS,
   machineRunDecideSchema,
   machineRunRequestSchema,
+  machineRunStopSchema,
   machineRunUpdateSchema,
   type AgentHarnessEventRecord,
   type MachineRunDecision,
@@ -218,17 +219,29 @@ export class MachineRunCoordinator extends Agent<IEnv> {
         return Response.json({ ...run.snapshot, decisions });
       }
 
-      if (path.startsWith("/events/") || path === "/decide") {
-        const decide =
-          path === "/decide" ? machineRunDecideSchema.parse(await request.json()) : null;
+      if (path.startsWith("/events/") || path === "/decide" || path === "/stop") {
+        const body = path.startsWith("/events/") ? null : await request.json();
+        const decide = path === "/decide" ? machineRunDecideSchema.parse(body) : null;
+        const stop = path === "/stop" ? machineRunStopSchema.parse(body) : null;
         const [, , conversationId = "", after = "0"] = path.split("/");
         const runId = await this.ctx.storage.get<string>(
-          `conversation:${decide?.conversationId ?? decodeURIComponent(conversationId)}`,
+          `conversation:${decide?.conversationId ?? stop?.conversationId ?? decodeURIComponent(conversationId)}`,
         );
         const run = runId ? runs.get(`run:${runId}`) : undefined;
 
         if (!run) {
           return Response.json({ error: "No agent run for this conversation" }, { status: 404 });
+        }
+
+        if (stop) {
+          const open = isOpen(run);
+
+          if (open) {
+            cancel(run);
+            await this.ctx.storage.put(`run:${run.snapshot.id}`, run);
+          }
+
+          return Response.json({ stopped: open });
         }
 
         if (decide) {

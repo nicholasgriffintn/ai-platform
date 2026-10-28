@@ -1,6 +1,7 @@
 import { machineRunSnapshotSchema, type MachineRunSnapshot } from "@ngriffin_uk/polychat-schemas";
-import { abortableDelay } from "@ngriffin_uk/polychat-utility-core";
+import { abortableDelay, safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { getProviderErrorMessage } from "@ngriffin_uk/polychat-utility-server/provider-errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
@@ -12,7 +13,8 @@ const MACHINE_RUN_POLL_INTERVAL_MS = 1000;
 export async function parseMachineSnapshot(response: Response): Promise<MachineRunSnapshot> {
   if (!response.ok) {
     throw new AssistantError(
-      `Machine execution failed (${response.status})`,
+      getProviderErrorMessage(safeParseJson(await response.text())) ??
+        `Machine execution failed (${response.status})`,
       ErrorType.PROVIDER_ERROR,
       response.status,
     );

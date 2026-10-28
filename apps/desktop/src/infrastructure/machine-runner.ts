@@ -16,8 +16,9 @@ import { delay, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 import { createMachineAgentEvents } from "./machine-agent-events";
 
 const MACHINE_CLAIM_FALLBACK_MS = 30_000;
-const HEARTBEAT_MS = 2000;
-const EVENT_FLUSH_MS = 150;
+const HEARTBEAT_MS = 10_000;
+const EVENT_FLUSH_MS = 1000;
+const UPDATE_RETRY_WINDOW_MS = 30_000;
 const EVENTS_PER_UPDATE = 200;
 
 type MachineRunnerBackend = Pick<
@@ -89,11 +90,10 @@ async function executeClaim(
   const nudge = () => wake?.();
 
   signal.addEventListener("abort", cancel, { once: true });
-  const flush = async () => {
+  let failingSince: number | undefined;
+  const send = async () => {
     const text = pendingText.slice(0, 32_000);
-
-    pendingText = pendingText.slice(text.length);
-    const batch = events.take(EVENTS_PER_UPDATE);
+    const batch = events.peek(EVENTS_PER_UPDATE);
     const snapshot = await client.update(
       machineId,
       {
@@ -102,12 +102,15 @@ async function executeClaim(
         sequence,
         text,
         events: batch,
-        state: pendingText || events.pending > 0 ? "running" : state,
+        state:
+          pendingText.length > text.length || events.pending > batch.length ? "running" : state,
         error,
       },
       signal,
     );
 
+    pendingText = pendingText.slice(text.length);
+    events.drop(batch.length);
     sequence += 1;
     for (const decision of snapshot.decisions) {
       const answer = answers.get(decision.approvalId);
@@ -118,6 +121,21 @@ async function executeClaim(
 
     if (snapshot.state === "cancelled" || snapshot.state === "failed") {
       cancel();
+    }
+  };
+
+  const flush = async () => {
+    try {
+      await send();
+      failingSince = undefined;
+    } catch (cause) {
+      failingSince ??= Date.now();
+
+      if (Date.now() - failingSince > UPDATE_RETRY_WINDOW_MS) {
+        throw cause;
+      }
+
+      await delay(EVENT_FLUSH_MS, controller.signal);
     }
   };
 

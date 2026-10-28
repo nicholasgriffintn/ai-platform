@@ -97,8 +97,11 @@ export function createMachineAgentEvents() {
         };
       }
     },
-    take(limit: number): AgentHarnessEvent[] {
-      return events.splice(0, limit);
+    peek(limit: number): AgentHarnessEvent[] {
+      return events.slice(0, limit);
+    },
+    drop(count: number) {
+      events.splice(0, count);
     },
     get pending(): number {
       return events.length;

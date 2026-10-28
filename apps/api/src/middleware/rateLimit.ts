@@ -6,6 +6,7 @@ import { timeServerPhase } from "@ngriffin_uk/polychat-utility-server/server-tim
 import type { Context, Next } from "hono";
 
 import { createMetrics } from "~/infrastructure/telemetry";
+import { isMachineRunReportPath } from "~/modules/machines/domain/run-paths";
 
 const logger = getLogger({ prefix: "middleware/rateLimit" });
 
@@ -33,11 +34,13 @@ export async function rateLimit(context: Context, next: Next) {
 
   const key = isCredentialBroker
     ? `sandbox-broker-${clientAddress}`
-    : userId
-      ? `authenticated-${userId}`
-      : anonymousUserId
-        ? `unauthenticated-${anonymousUserId}`
-        : `unauthenticated-${clientAddress}`;
+    : userId && isMachineRunReportPath(pathname)
+      ? `machine-runs-${userId}`
+      : userId
+        ? `authenticated-${userId}`
+        : anonymousUserId
+          ? `unauthenticated-${anonymousUserId}`
+          : `unauthenticated-${clientAddress}`;
 
   const rateLimiter: RateLimit =
     userId || isCredentialBroker ? context.env.PRO_RATE_LIMITER : context.env.FREE_RATE_LIMITER;

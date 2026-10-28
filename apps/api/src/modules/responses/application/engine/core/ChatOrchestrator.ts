@@ -438,9 +438,10 @@ export class ChatOrchestrator {
         .map((message) => updatesById.get(message.id) ?? message);
     }
 
-    const continuedRequestOptions = approvalReplay
-      ? { ...prepared.requestOptions, toolInteraction: undefined, toolInteractions: undefined }
-      : prepared.requestOptions;
+    const continuedRequestOptions =
+      approvalReplay && !primaryModelConfig?.agent?.capabilities.reportsApprovals
+        ? { ...prepared.requestOptions, toolInteraction: undefined, toolInteractions: undefined }
+        : prepared.requestOptions;
 
     if (approvalReplay) {
       if (!toolRequestContext.request) {

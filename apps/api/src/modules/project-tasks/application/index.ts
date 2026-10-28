@@ -35,6 +35,7 @@ import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infra
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { createGoalService } from "~/modules/goals/application/createGoalService";
 import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
+import { stopMachineAgentTurn } from "~/modules/machines/application/agent-turn";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { ListProjectTaskFilters } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
@@ -81,6 +82,22 @@ async function settleCancelledTaskResources(
       new TaskService(context.env, context.repositories.get(TaskRepository)).cancelTask(
         dispatchTaskId,
       ),
+    );
+  }
+
+  const runId = task.runId;
+  const conversationId = task.conversationId;
+
+  if (runId && conversationId) {
+    settlements.push(
+      (async () => {
+        const run = await context.repositories.get(ConversationRunRepository).getById(runId);
+        const machineId = run?.provenance?.machineId;
+
+        if (machineId) {
+          await stopMachineAgentTurn(context, machineId, conversationId);
+        }
+      })(),
     );
   }
 

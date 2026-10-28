@@ -205,6 +205,10 @@ export const machineRunDecideSchema = machineRunDecisionSchema
   .extend({ conversationId: z.string().min(1).max(128) })
   .strict();
 
+export const machineRunStopSchema = z
+  .object({ conversationId: z.string().min(1).max(128) })
+  .strict();
+
 export const machineRunClaimSchema = z
   .object({
     request: machineRunRequestSchema,

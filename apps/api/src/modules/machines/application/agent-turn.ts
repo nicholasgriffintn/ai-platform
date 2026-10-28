@@ -136,3 +136,11 @@ export async function startMachineAgentTurn(
     },
   });
 }
+
+export async function stopMachineAgentTurn(
+  context: ServiceContext,
+  machineId: string,
+  conversationId: string,
+): Promise<void> {
+  await callMachineRun(context, machineId, "/stop", { conversationId });
+}
