@@ -1,5 +1,16 @@
 # @ngriffin_uk/polychat-library-client
 
+## 0.9.1
+
+### Patch Changes
+
+- b85014a: Pages Discover reads for you now show when they will be removed: a week for articles and a month for links filed into notebooks you follow. Saving or opening the card keeps the page. Knowledge documents now get a sensitivity when they are read, including a new Public level for published pages, and anything you set yourself is left alone. Administrators can see every account's queued, running and failed background work under Profile, Background tasks.
+- Updated dependencies [f9945b6]
+- Updated dependencies [cc332ae]
+- Updated dependencies [b85014a]
+  - @ngriffin_uk/polychat-utility-core@0.9.1
+  - @ngriffin_uk/polychat-schemas@1.10.1
+
 ## 0.9.0
 
 ### Minor Changes
