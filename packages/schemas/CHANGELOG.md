@@ -1,5 +1,14 @@
 # @ngriffin_uk/polychat-schemas
 
+## 1.10.1
+
+### Patch Changes
+
+- cc332ae: Discover research finds news again when your chosen web search cannot search by date: news lookups now use a search service that can. Discover now keeps an Interests document in your Discover notebook that lists what you keep coming back to and the activity that shows it, so research builds on the same interests instead of picking new ones every day. Today's edition gains fresh feed items through the day, and Discover gathers again before the evening edition. Editions leave out topics you hid, news older than yesterday and stale memories, and read only real newsletters from Gmail.
+- b85014a: Pages Discover reads for you now show when they will be removed: a week for articles and a month for links filed into notebooks you follow. Saving or opening the card keeps the page. Knowledge documents now get a sensitivity when they are read, including a new Public level for published pages, and anything you set yourself is left alone. Administrators can see every account's queued, running and failed background work under Profile, Background tasks.
+- Updated dependencies [f9945b6]
+  - @ngriffin_uk/polychat-utility-core@0.9.1
+
 ## 1.10.0
 
 ### Minor Changes
