@@ -60,6 +60,7 @@ export const USER_SETTINGS_DEFAULTS: Record<string, unknown> = {
   onboarding_seen: [],
   tracking_enabled: 1,
   advertise_machines: 1,
+  share_machines_with_work: 0,
 };
 
 export function prepareUserSettingsUpdates(
@@ -76,6 +77,12 @@ export function prepareUserSettingsUpdates(
       settings.tracking_enabled !== undefined ? (settings.tracking_enabled ? 1 : 0) : null,
     advertise_machines:
       settings.advertise_machines !== undefined ? (settings.advertise_machines ? 1 : 0) : null,
+    share_machines_with_work:
+      settings.share_machines_with_work !== undefined
+        ? settings.share_machines_with_work
+          ? 1
+          : 0
+        : null,
     guardrails_enabled:
       settings.guardrails_enabled !== undefined ? (settings.guardrails_enabled ? 1 : 0) : null,
     guardrails_provider: settings.guardrails_provider ?? null,

@@ -38,6 +38,7 @@ import { ConversationRepository } from "~/modules/conversations/infrastructure/C
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { acquireThread } from "~/modules/conversations/infrastructure/coordinator/client";
 import { createGoalService } from "~/modules/goals/application/createGoalService";
+import { isMachineModelId } from "~/modules/machines/domain/model-id";
 import { notifyMobileProjectTask } from "~/modules/mobile-push/application";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
@@ -69,6 +70,8 @@ import { selectReleasableDependents } from "./dependents";
 import { findExecutionRouteBlocker } from "./execution-route";
 import { buildStageInstructions, resolveTaskRuntime } from "./flow";
 import { recoverPendingProjectTaskInteraction } from "./interaction-recovery";
+import { settleMachineAgentGoal } from "./machine-goal";
+import { chooseWorkMachineModel } from "./machine-routing";
 import { findMetKillCondition, recordProjectTaskRetrospective } from "./plan-checks";
 import { buildWorkPurpose } from "./purpose";
 import { getPendingProjectTaskQuestions } from "./questions";
@@ -615,6 +618,19 @@ export async function runProjectTaskDispatch(params: {
     return { status: "blocked", detail };
   }
 
+  const machineModel =
+    claimed.kind === "task" && runtime.teammate && claimed.executionProfile !== "diff_review"
+      ? await chooseWorkMachineModel(context, {
+          workspaceId: claimed.workspaceId,
+          runnerIdentityUserId,
+          modelId: runtime.model ?? null,
+        }).catch(() => null)
+      : null;
+
+  if (machineModel) {
+    runtime = { ...runtime, model: machineModel };
+  }
+
   const goalService = createGoalService(context);
   let goalId = claimed.goalId;
   let previousRun: ChatRun | null = null;
@@ -733,6 +749,7 @@ export async function runProjectTaskDispatch(params: {
   let responseTokens = 0;
   let responseOutput = "";
   let completedRun: ChatRun | null = null;
+  let executedModel = runtime.model ?? null;
 
   try {
     await params.executionLease.assertOwned();
@@ -814,6 +831,9 @@ export async function runProjectTaskDispatch(params: {
           usedSteps: previousConfiguration.data.usedSteps + (previousRun?.context?.step ?? 0),
         }
       : undefined;
+
+    executedModel = resumeConfiguration?.model ?? executedModel;
+
     const remainingSteps = resumeConfiguration
       ? resumeConfiguration.maxSteps - resumeConfiguration.usedSteps
       : undefined;
@@ -961,6 +981,13 @@ export async function runProjectTaskDispatch(params: {
     completedRun = executedTask?.runId
       ? await context.repositories.get(ConversationRunRepository).getById(executedTask.runId)
       : null;
+  }
+
+  if (goal?.status === "active" && isMachineModelId(executedModel)) {
+    goal = await settleMachineAgentGoal(goalService, goal, {
+      run: completedRun,
+      output: responseOutput,
+    });
   }
 
   if (goal?.status === "active") {

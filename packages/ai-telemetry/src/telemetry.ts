@@ -6,7 +6,7 @@ import { createSpanId, createTraceId } from "./ids.js";
 import { createAiGatewaySink } from "./sinks/ai-gateway.js";
 import { createAnalyticsEngineSink } from "./sinks/analytics-engine.js";
 import { createBeaconSink } from "./sinks/beacon.js";
-import { createPostHogSink } from "./sinks/posthog.js";
+import { createSentrySink } from "./sinks/sentry.js";
 import type {
   AiEmbeddingSignal,
   AiFeedbackSignal,
@@ -118,14 +118,24 @@ export function createTelemetry(options: CreateTelemetryOptions): Telemetry {
         return;
       }
 
-      capture(buildAiGenerationEvent({ ...signal, ...resolveAiEventIdentity(signal) }));
+      const identity = resolveAiEventIdentity(signal);
+
+      capture(buildAiGenerationEvent({ ...signal, ...identity }));
+      eachSink(sinks, onSinkError, (sink) =>
+        sink.captureAiGeneration?.({ ...signal, captureContent: identity.captureContent }),
+      );
     },
     captureAiEmbedding: (signal) => {
       if (!observability.enabled) {
         return;
       }
 
-      capture(buildAiEmbeddingEvent({ ...signal, ...resolveAiEventIdentity(signal) }));
+      const identity = resolveAiEventIdentity(signal);
+
+      capture(buildAiEmbeddingEvent({ ...signal, ...identity }));
+      eachSink(sinks, onSinkError, (sink) =>
+        sink.captureAiEmbedding?.({ ...signal, captureContent: identity.captureContent }),
+      );
     },
     captureAiFeedback: async (signal) => {
       const { distinctId, personProperties } = resolveAiEventIdentity(signal);
@@ -205,14 +215,14 @@ export function createTelemetry(options: CreateTelemetryOptions): Telemetry {
 export function createWorkerTelemetrySinks({
   env,
   executionCtx,
-  createPostHogClient,
+  sentry,
   fetcher = fetch,
   now = Date.now,
   resolveAiGatewayId,
 }: Omit<CreateWorkerTelemetryOptions, "sinks">): TelemetrySink[] {
   return [
     createAnalyticsEngineSink(env, now),
-    createPostHogSink(env, createPostHogClient, executionCtx),
+    createSentrySink(sentry, now),
     createBeaconSink(env, fetcher, executionCtx, now),
     resolveAiGatewayId ? createAiGatewaySink(env, resolveAiGatewayId) : null,
   ].filter((sink): sink is TelemetrySink => sink !== null);
@@ -225,7 +235,7 @@ export function createWorkerTelemetry(options: CreateWorkerTelemetryOptions): Te
     sinks: [...createWorkerTelemetrySinks(options), ...(options.sinks ?? [])],
     now: options.now,
     aiObservability: {
-      enabled: shouldCaptureAiObservability(env),
+      enabled: shouldCaptureAiObservability(env, { sentry: Boolean(options.sentry) }),
     },
   });
 }

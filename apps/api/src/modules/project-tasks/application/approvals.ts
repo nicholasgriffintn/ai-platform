@@ -84,48 +84,52 @@ export async function resolveProjectTaskToolApproval(params: {
     );
   }
 
-  const resolved = await resolvePendingInteraction<ProjectTaskToolApproval>({
-    context,
-    task,
-    conversationId,
-    expectedInteractionId: input.interactionId,
-    interactionIdOf: (approval) => approval.interactionId,
-    conflictMessage: "This approval is no longer pending. Refresh the conversation.",
-    readPending: (id) => getPendingApprovalMessage(context, id),
-    buildResolution: (current) => ({
-      data: {
-        ...current.data,
-        resolved: true,
-        resolvedAt: new Date().toISOString(),
-        resolution: input.resolution,
-        approval: {
-          ...current.interaction,
-          status: input.resolution,
-        },
-        humanInTheLoop: mergeHumanInTheLoop(current.data.humanInTheLoop, {
-          status: "resolved",
-          interactionId: input.interactionId,
-          toolName: current.interaction.toolName,
+  const settledByReplay = pending.interaction.toolName === "request_approval";
+
+  if (!settledByReplay) {
+    await resolvePendingInteraction<ProjectTaskToolApproval>({
+      context,
+      task,
+      conversationId,
+      expectedInteractionId: input.interactionId,
+      interactionIdOf: (approval) => approval.interactionId,
+      conflictMessage: "This approval is no longer pending. Refresh the conversation.",
+      readPending: (id) => getPendingApprovalMessage(context, id),
+      buildResolution: (current) => ({
+        data: {
+          ...current.data,
+          resolved: true,
+          resolvedAt: new Date().toISOString(),
           resolution: input.resolution,
-          requires_user_action: false,
-        }),
-      },
-      toolName: current.interaction.toolName,
-      toolContent:
-        input.resolution === "approved" ? "Tool access approved." : "Tool access rejected.",
-      userContent:
-        input.resolution === "approved"
-          ? `Approved access to ${current.interaction.toolName}. Continue the task.`
-          : `Rejected access to ${current.interaction.toolName}. Continue without it.`,
-      userData: {
-        toolApprovalResponse: {
-          interactionId: input.interactionId,
-          resolution: input.resolution,
-          toolName: current.interaction.toolName,
+          approval: {
+            ...current.interaction,
+            status: input.resolution,
+          },
+          humanInTheLoop: mergeHumanInTheLoop(current.data.humanInTheLoop, {
+            status: "resolved",
+            interactionId: input.interactionId,
+            toolName: current.interaction.toolName,
+            resolution: input.resolution,
+            requires_user_action: false,
+          }),
         },
-      },
-    }),
-  });
+        toolName: current.interaction.toolName,
+        toolContent:
+          input.resolution === "approved" ? "Tool access approved." : "Tool access rejected.",
+        userContent:
+          input.resolution === "approved"
+            ? `Approved access to ${current.interaction.toolName}. Continue the task.`
+            : `Rejected access to ${current.interaction.toolName}. Continue without it.`,
+        userData: {
+          toolApprovalResponse: {
+            interactionId: input.interactionId,
+            resolution: input.resolution,
+            toolName: current.interaction.toolName,
+          },
+        },
+      }),
+    });
+  }
 
   if (pending.timestamp !== undefined) {
     recordChatRunOperationalMetric(context.env, {
@@ -138,5 +142,8 @@ export async function resolveProjectTaskToolApproval(params: {
     });
   }
 
-  return { toolName: resolved.interaction.toolName, resolution: input.resolution };
+  return {
+    toolName: pending.interaction.toolName,
+    resolution: input.resolution,
+  };
 }

@@ -25,7 +25,9 @@ export type {
   AiGenerationSignal,
   BeaconFetcher,
   CreateWorkerTelemetryOptions,
+  ResolvedAiEmbedding,
   ResolvedAiFeedback,
+  ResolvedAiGeneration,
   TelemetryEnv,
   TelemetryEvent,
   TelemetryIdentity,
@@ -55,7 +57,6 @@ export {
 } from "./identity.js";
 export { buildAiEmbeddingEvent, type AiEmbeddingEventInput } from "./ai-embedding.js";
 export { buildAiEmbeddingProperties } from "./ai-embedding-properties.js";
-export { buildAiFeedbackProperties } from "./ai-feedback-properties.js";
 export { buildAiGenerationEvent, type AiGenerationEventInput } from "./ai-generation.js";
 export { buildAiGenerationProperties } from "./ai-generation-properties.js";
 export {
@@ -65,19 +66,20 @@ export {
 } from "./embedding.js";
 export {
   getBeaconAnalyticsConfig,
-  getPostHogAnalyticsConfig,
-  getPostHogFeedbackConfig,
   shouldCaptureAiObservability,
   type BeaconAnalyticsConfig,
-  type PostHogAnalyticsConfig,
-  type PostHogFeedbackConfig,
 } from "./config.js";
 export * from "./constants.js";
 export { createAiGatewaySink } from "./sinks/ai-gateway.js";
 export { createAnalyticsEngineSink, writeAnalyticsEngineMetric } from "./sinks/analytics-engine.js";
 export * from "./sinks/dataset-layout.js";
 export { createBeaconSink } from "./sinks/beacon.js";
-export { createPostHogSink } from "./sinks/posthog.js";
+export {
+  createSentrySink,
+  type SentrySpanAttributes,
+  type SentryTelemetryClient,
+  type SentryTelemetrySpan,
+} from "./sinks/sentry.js";
 export * from "./otel.js";
 export * from "./usage/extract-usage.js";
 export * from "./usage/impact.js";

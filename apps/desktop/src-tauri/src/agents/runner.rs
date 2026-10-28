@@ -84,7 +84,7 @@ async fn run_command(
             },
         );
     }
-    let child_result = command
+    let child_result = crate::programs::scrub_agent_environment(&mut command)
         .kill_on_drop(true)
         .args(argv)
         .current_dir(&directory)

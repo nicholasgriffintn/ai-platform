@@ -90,10 +90,17 @@ export const request_approval: ApiToolDefinition = {
               approval: {
                 interactionId: context.toolCallId,
                 toolName: "request_approval",
+                reason: message,
               },
             }
           : {}),
-        humanInTheLoop: pendingApproval({ message, options: approvalOptions }),
+        humanInTheLoop: pendingApproval({
+          message,
+          options: approvalOptions,
+          ...(context.toolCallId
+            ? { interactionId: context.toolCallId, toolName: "request_approval" }
+            : {}),
+        }),
       },
     };
   },

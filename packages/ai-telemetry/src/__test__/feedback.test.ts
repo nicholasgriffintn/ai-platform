@@ -1,50 +1,20 @@
-import type { PostHog } from "posthog-node";
 import { describe, expect, it, vi } from "vitest";
 
-import { buildAiFeedbackProperties } from "../ai-feedback-properties.js";
 import { createAiGatewaySink } from "../sinks/ai-gateway.js";
-import { createPostHogSink } from "../sinks/posthog.js";
+import { createSentrySink, type SentryTelemetryClient } from "../sinks/sentry.js";
 import { createTelemetry } from "../telemetry.js";
 import type { ResolvedAiFeedback, TelemetryEnv, TelemetrySink } from "../types.js";
 
-const POSTHOG_FEEDBACK_ENV: TelemetryEnv = {
-  POSTHOG_BACKEND_ENABLED: "true",
-  POSTHOG_PROJECT_API_KEY: "phc_test",
-  POSTHOG_HOST: "https://eu.i.posthog.com",
-  POSTHOG_FEEDBACK_SURVEY_ID: "survey-1",
-};
+function fakeSentryClient(activeSpan?: { isRecording(): boolean }) {
+  const span = { setStatus: vi.fn(), end: vi.fn() };
+  const client: SentryTelemetryClient = {
+    getActiveSpan: () => activeSpan,
+    startInactiveSpan: vi.fn(() => span),
+    captureFeedback: vi.fn(() => "feedback-1"),
+  };
 
-function fakePostHogClient() {
-  const capture = vi.fn();
-  const flush = vi.fn().mockResolvedValue(undefined);
-
-  return { capture, flush };
+  return { client, span };
 }
-
-describe("buildAiFeedbackProperties", () => {
-  it("maps thumbs to survey properties and keeps the trace and log identifiers", () => {
-    expect(
-      buildAiFeedbackProperties({
-        surveyId: "survey-1",
-        submissionId: "submission-1",
-        traceId: "conversation-1",
-        feedback: -1,
-        logId: "log-1",
-        messageId: "message-1",
-        conversationId: "conversation-1",
-      }),
-    ).toEqual({
-      $survey_id: "survey-1",
-      $survey_response: "2",
-      $survey_completed: true,
-      $survey_submission_id: "submission-1",
-      $ai_trace_id: "conversation-1",
-      log_id: "log-1",
-      message_id: "message-1",
-      conversation_id: "conversation-1",
-    });
-  });
-});
 
 describe("captureAiFeedback", () => {
   it("resolves identity before fanning feedback out to sinks", async () => {
@@ -88,45 +58,95 @@ describe("captureAiFeedback", () => {
   });
 });
 
-describe("posthog feedback sink", () => {
-  it("captures a survey response linked to the conversation trace", async () => {
-    const client = fakePostHogClient();
-    const sink = createPostHogSink(POSTHOG_FEEDBACK_ENV, () => client as unknown as PostHog);
+describe("sentry sink", () => {
+  it("captures feedback linked to the conversation trace", async () => {
+    const { client } = fakeSentryClient();
+    const sink = createSentrySink(client);
 
     await sink?.captureAiFeedback?.({
       traceId: "conversation-1",
       logId: "log-1",
-      feedback: 1,
+      feedback: -1,
       messageId: "message-1",
-      conversationId: "conversation-1",
       distinctId: "user:7",
-      personProperties: { user_id: "7" },
     });
 
-    expect(client.capture).toHaveBeenCalledWith({
-      distinctId: "user:7",
-      event: "survey sent",
-      properties: expect.objectContaining({
-        category: "ai_observability",
-        $survey_id: "survey-1",
-        $survey_response: "1",
-        $survey_completed: true,
-        $survey_submission_id: expect.any(String),
-        $ai_trace_id: "conversation-1",
+    expect(client.captureFeedback).toHaveBeenCalledWith({
+      message: "Negative response feedback",
+      source: "ai_response",
+      tags: {
+        ai_feedback: "negative",
+        ai_trace_id: "conversation-1",
+        distinct_id: "user:7",
         log_id: "log-1",
         message_id: "message-1",
-        $set: { user_id: "7" },
-      }),
+      },
     });
   });
 
-  it("does not handle feedback when no survey is configured", () => {
-    const sink = createPostHogSink(
-      { ...POSTHOG_FEEDBACK_ENV, POSTHOG_FEEDBACK_SURVEY_ID: undefined },
-      () => fakePostHogClient() as unknown as PostHog,
-    );
+  it("records generations as agent spans and only attaches content with consent", () => {
+    const { client, span } = fakeSentryClient();
+    const sink = createSentrySink(client, () => 10_000);
+    const telemetry = createTelemetry({
+      sinks: sink ? [sink] : [],
+      aiObservability: { enabled: true },
+    });
+    const signal = {
+      traceId: "t1",
+      model: "gpt-5",
+      provider: "openai",
+      latencyMs: 1_500,
+      usage: { prompt_tokens: 12, completion_tokens: 3 },
+      input: [{ role: "user", content: "secret" }],
+      output: { role: "assistant", content: "answer" },
+      user: { id: 7 },
+      error: { message: "rate limited" },
+    };
 
-    expect(sink?.captureAiFeedback).toBeUndefined();
+    telemetry.captureAiGeneration({ ...signal, userTrackingEnabled: false });
+    telemetry.captureAiGeneration({ ...signal, userTrackingEnabled: true });
+
+    const [withoutConsent, withConsent] = vi
+      .mocked(client.startInactiveSpan)
+      .mock.calls.map((call) => call[0]);
+
+    expect(withoutConsent).toMatchObject({
+      name: "chat gpt-5",
+      op: "gen_ai.chat",
+      startTime: 8_500,
+      forceTransaction: true,
+      attributes: {
+        "gen_ai.operation.name": "chat",
+        "gen_ai.system": "openai",
+        "gen_ai.request.model": "gpt-5",
+        "gen_ai.usage.input_tokens": 12,
+        "gen_ai.usage.output_tokens": 3,
+      },
+    });
+    expect(JSON.stringify(withoutConsent)).not.toContain("secret");
+    expect(withConsent?.attributes["gen_ai.input.messages"]).toContain("secret");
+    expect(span.setStatus).toHaveBeenCalledWith({ code: 2, message: "rate limited" });
+    expect(span.end).toHaveBeenCalledWith(10_000);
+  });
+
+  it("nests generations under a recording agent run and starts their own trace otherwise", () => {
+    const agentRun = fakeSentryClient({ isRecording: () => true });
+    const unsampledRequest = fakeSentryClient({ isRecording: () => false });
+
+    for (const { client } of [agentRun, unsampledRequest]) {
+      createSentrySink(client)?.captureAiGeneration?.({ traceId: "t1", captureContent: false });
+    }
+
+    expect(vi.mocked(agentRun.client.startInactiveSpan).mock.calls[0]?.[0].forceTransaction).toBe(
+      false,
+    );
+    expect(
+      vi.mocked(unsampledRequest.client.startInactiveSpan).mock.calls[0]?.[0].forceTransaction,
+    ).toBe(true);
+  });
+
+  it("is disabled without a Sentry client", () => {
+    expect(createSentrySink(undefined)).toBeNull();
   });
 });
 

@@ -223,6 +223,10 @@ export const desktopModelRunRequestSchema = z.object({
 
 export type DesktopModelRunRequest = z.infer<typeof desktopModelRunRequestSchema>;
 
+export const AGENT_BILLING_KINDS = ["subscription", "api_key", "unknown"] as const;
+export const agentBillingSchema = z.enum(AGENT_BILLING_KINDS);
+export type AgentBilling = z.infer<typeof agentBillingSchema>;
+
 export const agentToolStateSchema = z.discriminatedUnion("state", [
   z.object({ state: z.literal("missing"), checkedAt: z.string() }),
   z.object({ state: z.literal("present"), checkedAt: z.string(), version: z.string().nullable() }),
@@ -231,7 +235,12 @@ export const agentToolStateSchema = z.discriminatedUnion("state", [
     checkedAt: z.string(),
     version: z.string().nullable(),
   }),
-  z.object({ state: z.literal("ready"), checkedAt: z.string(), version: z.string() }),
+  z.object({
+    state: z.literal("ready"),
+    checkedAt: z.string(),
+    version: z.string(),
+    billing: agentBillingSchema.default("unknown"),
+  }),
   z.object({
     state: z.literal("unsupported_version"),
     checkedAt: z.string(),

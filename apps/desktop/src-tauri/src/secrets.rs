@@ -7,7 +7,11 @@ static CACHE: LazyLock<Mutex<HashMap<String, Option<String>>>> =
 
 pub const SESSION: &str = "authenticated-session";
 
-const SERVICE: &str = "uk.co.nicholasgriffin.polychat.desktop";
+const SERVICE: &str = if cfg!(debug_assertions) {
+    "uk.co.nicholasgriffin.polychat.desktop.dev"
+} else {
+    "uk.co.nicholasgriffin.polychat.desktop"
+};
 
 pub fn pairing_key(endpoint_id: &str) -> String {
     format!("pairing:{endpoint_id}")

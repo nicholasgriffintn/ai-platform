@@ -542,7 +542,10 @@ export function isProjectTaskRetryable(
 export function isProjectTaskAwaitingInput(
   task: Pick<ProjectTask, "status" | "blockedReason">,
 ): boolean {
-  return task.status === "blocked" && task.blockedReason === "awaiting_input";
+  return (
+    task.status === "blocked" &&
+    (task.blockedReason === "awaiting_input" || task.blockedReason === "awaiting_approval")
+  );
 }
 
 export const projectFlowAdvanceSchema = z.enum([

@@ -89,12 +89,7 @@ export default defineConfig(({ command }) => ({
 
 const browserOnlyStub = fileURLToPath(new URL("./workers/browser-only-stub.ts", import.meta.url));
 
-const browserOnlyModules = [
-  /^@mlc-ai\/web-llm$/,
-  /^@babel\/standalone$/,
-  /^@strudel\/[a-z-]+$/,
-  /^posthog-js$/,
-];
+const browserOnlyModules = [/^@mlc-ai\/web-llm$/, /^@babel\/standalone$/, /^@strudel\/[a-z-]+$/];
 
 function stubBrowserOnlyModules(): Plugin {
   return {

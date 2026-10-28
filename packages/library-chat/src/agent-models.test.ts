@@ -11,7 +11,12 @@ describe("agent discovery", () => {
         }
 
         if (driver === "opencode") {
-          return { state: "ready", checkedAt: "2026-09-08T10:00:00Z", version: "1.0.0" };
+          return {
+            state: "ready",
+            checkedAt: "2026-09-08T10:00:00Z",
+            version: "1.0.0",
+            billing: "subscription",
+          };
         }
 
         return { state: "missing", checkedAt: "2026-09-08T10:00:00Z" };

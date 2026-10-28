@@ -72,11 +72,12 @@ export async function findExecutionRouteBlocker(
     };
   }
 
-  const [machines, owner] = await Promise.all([
-    context.repositories.get(MachineRepository).listForUser(runnerIdentityUserId),
-    context.repositories.get(UserRepository).getUserById(runnerIdentityUserId),
-  ]);
-  const machine = machines.find((candidate) => candidate.machineId === model.machineId);
+  const machine = await context.repositories
+    .get(MachineRepository)
+    .findAccessible(runnerIdentityUserId, model.machineId);
+  const owner = await context.repositories
+    .get(UserRepository)
+    .getUserById(machine?.userId ?? runnerIdentityUserId);
 
   return machine && isMachineOnline(machine)
     ? null

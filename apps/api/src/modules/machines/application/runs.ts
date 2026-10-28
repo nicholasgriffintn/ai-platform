@@ -10,6 +10,8 @@ import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepo
 import { publishMachineEvent } from "~/modules/sync/application/conversation-events";
 import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 
+const OWNER_ONLY_PATHS: ReadonlySet<string> = new Set(["/claim", "/update"]);
+
 export async function callMachineRun(
   context: ServiceContext,
   machineId: string,
@@ -18,11 +20,16 @@ export async function callMachineRun(
 ): Promise<Response> {
   const user = context.requireUser();
   const settings = await getRequestUserSettings(context);
-  const machine = (await context.repositories.get(MachineRepository).listForUser(user.id)).find(
-    (item) => item.machineId === machineId,
-  );
+  const machine = await context.repositories
+    .get(MachineRepository)
+    .findAccessible(user.id, machineId);
+  const owned = machine?.userId === user.id;
 
-  if (settings?.advertise_machines === false || !machine) {
+  if (
+    !machine ||
+    (owned && settings?.advertise_machines === false) ||
+    (!owned && OWNER_ONLY_PATHS.has(path))
+  ) {
     throw new AssistantError("Machine unavailable", ErrorType.NOT_FOUND);
   }
 
@@ -59,7 +66,7 @@ export async function callMachineRun(
 
     if (!isMachineOnline(machine)) {
       throw new AssistantError(
-        `Waiting for ${user.name ?? "its owner"} to bring ${machine.label} back online. Open Polychat on that machine to carry on.`,
+        `Waiting for ${owned ? (user.name ?? "you") : "its owner"} to bring ${machine.label} back online. Open Polychat on that machine to carry on.`,
         ErrorType.PARAMS_ERROR,
       );
     }
@@ -74,7 +81,10 @@ export async function callMachineRun(
     }
   }
 
-  const stub = getDurableObjectStub(context.env.MACHINE_RUN_COORDINATOR, `${user.id}:${machineId}`);
+  const stub = getDurableObjectStub(
+    context.env.MACHINE_RUN_COORDINATOR,
+    `${machine.userId}:${machineId}`,
+  );
 
   if (!stub) {
     throw new AssistantError(
@@ -86,7 +96,7 @@ export async function callMachineRun(
   const response = await postDurableObjectJson(stub, `https://machine-runs${path}`, body);
 
   if (path === "/create" && response.ok) {
-    publishMachineEvent(context, user.id, machineId, { queued: true });
+    publishMachineEvent(context, machine.userId, machineId, { queued: true });
   }
 
   return response;

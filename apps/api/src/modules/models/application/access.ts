@@ -16,6 +16,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import {
   filterModelsForUserAccess,
+  findModelConfig,
   getLineupModelsForUser,
 } from "~/modules/models/application/resolve";
 import type { Attachment, CredentialAuthority, IEnv, IUser } from "~/types";
@@ -79,7 +80,14 @@ export async function resolveExecutableModelForRequest({
     shouldUseCache: false,
     includePlatformModels: true,
   });
-  const executableModels = getExecutableModelsForAccount(visibleModels, user);
+  const sourcedModel =
+    user && !visibleModels[model]
+      ? await findModelConfig(model, env, provider, user.id)
+      : undefined;
+  const executableModels = getExecutableModelsForAccount(
+    sourcedModel ? { ...visibleModels, [model]: sourcedModel } : visibleModels,
+    user,
+  );
   const resolved = resolveExecutableModelFromCatalogue(executableModels, model, provider);
 
   if (!resolved || (capability && !resolved.config[capability])) {

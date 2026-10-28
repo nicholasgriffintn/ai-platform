@@ -1,7 +1,6 @@
 import { extractTextFromMessageContent, type AIProvider } from "@ngriffin_uk/polychat-ai-providers";
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
-  AGENT_HARNESS_APPROVAL_TOOL,
   AGENT_HARNESS_DEFINITIONS,
   AGENT_HARNESS_PROVIDER,
   agentHarnessIdSchema,
@@ -15,7 +14,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
   collectHarnessProviderStream,
-  parseApprovalToolCallId,
+  readHarnessApprovalResolution,
 } from "~/modules/agents/application/harness-stream";
 import {
   startHostedHarnessTurn,
@@ -47,27 +46,6 @@ function requireHarnessAccess(
   return { context, user };
 }
 
-function readApprovalResolution(options: ChatCompletionParameters["options"]) {
-  const interaction = options?.toolInteraction;
-
-  if (interaction?.toolName !== AGENT_HARNESS_APPROVAL_TOOL) {
-    return undefined;
-  }
-
-  const reference = parseApprovalToolCallId(interaction.response.interactionId);
-  const resolution = interaction.response.resolution;
-
-  if (!reference || (resolution !== "approved" && resolution !== "rejected")) {
-    throw new AssistantError(
-      "This approval request is no longer valid",
-      ErrorType.CONFLICT_ERROR,
-      409,
-    );
-  }
-
-  return { ...reference, approved: resolution === "approved" };
-}
-
 export class AgentHarnessChatProvider implements AIProvider {
   readonly name = AGENT_HARNESS_PROVIDER;
   readonly supportsStreaming = true;
@@ -82,7 +60,7 @@ export class AgentHarnessChatProvider implements AIProvider {
       throw new AssistantError(`${definition.name} needs a conversation`, ErrorType.PARAMS_ERROR);
     }
 
-    const resume = readApprovalResolution(params.options);
+    const resume = readHarnessApprovalResolution(params.options);
     const input = resume
       ? undefined
       : extractTextFromMessageContent(params.messages?.at(-1)?.content).trim();

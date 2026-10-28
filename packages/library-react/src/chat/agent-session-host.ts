@@ -1,6 +1,8 @@
 import {
+  createClaudeCodeAdapter,
   createCodexAdapter,
   type AgentSessionAdapter,
+  type AgentSessionSpec,
   type DesktopAgentSession,
   type DesktopBackend,
 } from "@ngriffin_uk/polychat-library-chat";
@@ -17,6 +19,8 @@ export interface AgentSessionHost {
   readonly adapter: AgentSessionAdapter;
   readonly directoryPath: string;
   readonly directoryId: string;
+  readonly sessionId: string | null;
+  readonly sessionSpec: string;
   listen: (listener: (event: AgentSessionEvent) => void) => () => void;
   stop: () => Promise<void>;
 }
@@ -27,6 +31,15 @@ interface HostKeyInput {
   conversationId: string;
   driver: AgentRuntimeVendor;
   directoryId: string;
+  session?: AgentSessionSpec;
+}
+
+function describeSessionSpec(input: HostKeyInput): string {
+  return JSON.stringify([
+    input.session?.sessionId ?? null,
+    input.session?.isolated ?? false,
+    input.session?.mcpConfig ?? null,
+  ]);
 }
 
 export function agentSessionHostKey(input: HostKeyInput): string {
@@ -34,20 +47,22 @@ export function agentSessionHostKey(input: HostKeyInput): string {
 }
 
 function createAdapter(
-  driver: AgentRuntimeVendor,
+  input: HostKeyInput,
   session: DesktopAgentSession,
   clientVersion: string | undefined,
   emit: (event: AgentSessionEvent) => void,
 ): AgentSessionAdapter {
-  if (driver !== "codex") {
-    throw new AgentSessionUnavailableError(driver);
+  const transport = { send: (payload: string) => session.send(payload) };
+
+  if (input.driver === "codex") {
+    return createCodexAdapter({ transport, emit, clientVersion });
   }
 
-  return createCodexAdapter({
-    transport: { send: (payload) => session.send(payload) },
-    emit,
-    clientVersion,
-  });
+  if (input.driver === "claude-code" && input.session) {
+    return createClaudeCodeAdapter({ transport, emit, sessionId: input.session.sessionId });
+  }
+
+  throw new AgentSessionUnavailableError(input.driver);
 }
 
 export function createAgentSessionRegistry() {
@@ -82,6 +97,7 @@ export function createAgentSessionRegistry() {
       input.driver,
       input.directoryId,
       input.conversationId,
+      input.session,
     );
     const listeners = new Set<(event: AgentSessionEvent) => void>();
     const emit = (event: AgentSessionEvent) => {
@@ -90,12 +106,14 @@ export function createAgentSessionRegistry() {
       }
     };
 
-    const adapter = createAdapter(input.driver, session, clientVersion, emit);
+    const adapter = createAdapter(input, session, clientVersion, emit);
 
     const host: AgentSessionHost = {
       adapter,
       directoryPath: session.directoryPath,
       directoryId: input.directoryId,
+      sessionId: input.session?.sessionId ?? null,
+      sessionSpec: describeSessionSpec(input),
       listen: (listener) => {
         listeners.add(listener);
 
@@ -139,7 +157,10 @@ export function createAgentSessionRegistry() {
         hosts.get(key) ?? Promise.resolve(undefined);
       const next: Promise<AgentSessionHost> = existing.then(
         async (host) => {
-          if (host?.directoryId === input.directoryId) {
+          if (
+            host?.directoryId === input.directoryId &&
+            host.sessionSpec === describeSessionSpec(input)
+          ) {
             return host;
           }
 

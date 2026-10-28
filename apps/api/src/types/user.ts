@@ -80,6 +80,7 @@ export interface IUserSettings {
   search_provider: string | null;
   tracking_enabled: boolean;
   advertise_machines: boolean;
+  share_machines_with_work: boolean;
   sandbox_model: string | null;
   default_model_tier: ModelTier | null;
   default_model_id: string | null;

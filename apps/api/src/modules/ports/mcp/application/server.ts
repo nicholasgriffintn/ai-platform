@@ -12,8 +12,9 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
-import { callMcpPortTool, listMcpPortTools } from "./tools";
+import { callMcpPortTool, callWorkMcpTool, listMcpPortTools, listWorkMcpTools } from "./tools";
 import { prefersEventStream, toEventStreamResponse } from "./transport";
+import type { WorkRunAccess } from "./work-access";
 
 export const MCP_SERVER_PROTOCOL_VERSION = "2025-06-18";
 export const MCP_SERVER_INFO = { name: "polychat", version: "1.0.0" } as const;
@@ -51,13 +52,33 @@ function mcpHandlers(context: ServiceContext, appUrl: string): JsonRpcHandlers {
   };
 }
 
-export async function handleMcpRequest({
-  context,
-  payload,
-  accept,
-  appUrl,
-}: McpPortRequest): Promise<JsonRpcResponse | JsonRpcResponse[] | Response | null> {
-  const responses = await dispatchJsonRpcPayload(payload, mcpHandlers(context, appUrl));
+function workMcpHandlers(
+  context: ServiceContext,
+  access: WorkRunAccess,
+  appUrl: string,
+): JsonRpcHandlers {
+  return {
+    initialize: () => ({
+      protocolVersion: MCP_SERVER_PROTOCOL_VERSION,
+      capabilities: { tools: {} },
+      serverInfo: MCP_SERVER_INFO,
+      instructions:
+        "Polychat Work for the task you are running: read and update tasks, post to their threads, raise cases and ask for review. Anything that needs a person waits in their Inbox.",
+    }),
+    "notifications/initialized": () => undefined,
+    ping: () => ({}),
+    "tools/list": () => ({ tools: listWorkMcpTools() }),
+    "tools/call": (params) =>
+      callWorkMcpTool(context, access, { ...readCallParams(params), appUrl }),
+  };
+}
+
+async function respond(
+  payload: JsonRpcPayload,
+  accept: string | null,
+  handlers: JsonRpcHandlers,
+): Promise<JsonRpcResponse | JsonRpcResponse[] | Response | null> {
+  const responses = await dispatchJsonRpcPayload(payload, handlers);
 
   if (responses.length === 0) {
     return null;
@@ -68,4 +89,23 @@ export async function handleMcpRequest({
   }
 
   return Array.isArray(payload) ? responses : (responses[0] ?? null);
+}
+
+export function handleMcpRequest({
+  context,
+  payload,
+  accept,
+  appUrl,
+}: McpPortRequest): Promise<JsonRpcResponse | JsonRpcResponse[] | Response | null> {
+  return respond(payload, accept, mcpHandlers(context, appUrl));
+}
+
+export function handleWorkMcpRequest(
+  request: McpPortRequest & { access: WorkRunAccess },
+): Promise<JsonRpcResponse | JsonRpcResponse[] | Response | null> {
+  return respond(
+    request.payload,
+    request.accept,
+    workMcpHandlers(request.context, request.access, request.appUrl),
+  );
 }

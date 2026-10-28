@@ -176,6 +176,7 @@ export interface AssistantPersona {
 
 export type ProviderExecutionParams = {
   credentialAuthority?: CredentialAuthority;
+  run_attempt?: number;
   conversation_type?: ConversationType;
   trigger?: ChatRunTrigger;
   dry_run?: boolean;

@@ -1,7 +1,6 @@
 export * from "./AppInitializer.js";
 export * from "./state/stores/petStore.js";
 export * from "./hooks/use-analytics-identity.js";
-export * from "./hooks/use-posthog-client.js";
 export * from "./hooks/use-track-event.js";
 export * from "./hooks/useActivity.js";
 export * from "./hooks/useAgentApprovals.js";

@@ -231,6 +231,7 @@ export * from "./agent-harness.js";
 export * from "./bedrock-managed-agents.js";
 export * from "./agent-model-id.js";
 export * from "./agent-sessions.js";
+export * from "./claude-code-protocol.js";
 export * from "./codex-protocol.js";
 export * from "./agent-output.js";
 

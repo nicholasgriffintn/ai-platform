@@ -17,6 +17,10 @@ export {
   type JsonRpcTransport,
 } from "./agents/jsonrpc.js";
 export {
+  createClaudeCodeAdapter,
+  type ClaudeCodeAdapterOptions,
+} from "./agents/claude-code-adapter.js";
+export {
   createCodexAdapter,
   type AgentSessionAdapter,
   type CodexAdapterOptions,
@@ -44,6 +48,7 @@ export {
   type RetentionReason,
 } from "./conversation-storage-policy.js";
 export {
+  type AgentSessionSpec,
   type DesktopAgentSession,
   type DesktopBackend,
   type DesktopRun,

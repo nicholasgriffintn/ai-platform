@@ -1,8 +1,11 @@
 import z from "zod/v4";
 
+import { agentHarnessEventRecordSchema, agentHarnessEventSchema } from "./agent-harness.js";
 import { agentRuntimeVendorSchema, modelRuntimeVendorSchema } from "./desktop-runtimes.js";
 import { permissionModeSchema } from "./providers.js";
 import { reasoningEffortSchema } from "./reasoning.js";
+
+export const MACHINE_MAX_ACTIVE_RUNS = 3;
 
 const machineRunMessagesSchema = z
   .array(
@@ -35,7 +38,9 @@ export const machineAgentRunRequestSchema = z
     driver: agentRuntimeVendorSchema,
     conversationId: z.string().min(1).max(128),
     bindingConversationId: z.string().min(1).max(128),
-    continuationMode: z.enum(["resume", "fresh"]),
+    continuationMode: z.enum(["resume", "fresh", "auto"]),
+    workFolder: z.string().trim().min(1).max(80).nullable().default(null),
+    workToken: z.string().min(1).max(200).nullable().default(null),
     messages: machineRunMessagesSchema,
     selectedModel: z.string().min(1).nullable(),
     reasoningEffort: reasoningEffortSchema.nullable(),
@@ -164,9 +169,14 @@ export const machineRunUpdateSchema = z
     token: z.uuid(),
     sequence: z.number().int().nonnegative(),
     text: z.string().max(32_000),
+    events: z.array(agentHarnessEventSchema).max(500).default([]),
     state: z.enum(["running", "completed", "failed"]),
     error: z.string().max(1000).optional(),
   })
+  .strict();
+
+export const machineRunDecisionSchema = z
+  .object({ approvalId: z.string().min(1).max(200), approved: z.boolean() })
   .strict();
 
 export const machineRunSnapshotSchema = z
@@ -175,7 +185,24 @@ export const machineRunSnapshotSchema = z
     state: z.enum(["pending", "running", "completed", "failed", "cancelled"]),
     text: z.string().max(1_000_000),
     error: z.string().optional(),
+    decisions: z.array(machineRunDecisionSchema).default([]),
   })
+  .strict();
+
+export const machineRunEventsSchema = z
+  .object({
+    id: z.uuid(),
+    state: z.enum(["pending", "running", "completed", "failed", "cancelled"]),
+    records: z.array(agentHarnessEventRecordSchema),
+  })
+  .strict();
+
+export const machineCapacitySchema = z
+  .object({ active: z.number().int().nonnegative(), available: z.number().int().nonnegative() })
+  .strict();
+
+export const machineRunDecideSchema = machineRunDecisionSchema
+  .extend({ conversationId: z.string().min(1).max(128) })
   .strict();
 
 export const machineRunClaimSchema = z
@@ -191,3 +218,5 @@ export type MachineToolRunRequest = z.infer<typeof machineToolRunRequestSchema>;
 export type MachineRunUpdate = z.infer<typeof machineRunUpdateSchema>;
 export type MachineRunSnapshot = z.infer<typeof machineRunSnapshotSchema>;
 export type MachineRunClaim = z.infer<typeof machineRunClaimSchema>;
+export type MachineRunDecision = z.infer<typeof machineRunDecisionSchema>;
+export type MachineRunEvents = z.infer<typeof machineRunEventsSchema>;

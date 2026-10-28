@@ -3,6 +3,7 @@ import {
   DEFAULT_GUARDRAILS_ENABLED,
   DEFAULT_GUARDRAILS_PROVIDER,
   lastModelSelectionSchema,
+  memoryProviderSchema,
   onboardingSeenSchema,
   parsePetModelOverrides,
   parseResponseStyle,
@@ -315,11 +316,13 @@ export class UserSettingsRepository extends BaseRepository {
     );
     const speechExpressiveness = speechExpressivenessSchema.safeParse(result.speech_expressiveness);
     const speechProvider = speechProviderSchema.safeParse(result.speech_provider);
+    const memoryProvider = memoryProviderSchema.safeParse(result.memory_provider);
 
     return {
       ...result,
       tracking_enabled: Boolean(result.tracking_enabled),
       advertise_machines: result.advertise_machines !== 0,
+      share_machines_with_work: result.share_machines_with_work === 1,
       guardrails_enabled: Boolean(result.guardrails_enabled),
       memories_save_enabled: Boolean(result.memories_save_enabled),
       memories_chat_history_enabled: Boolean(result.memories_chat_history_enabled),
@@ -338,6 +341,7 @@ export class UserSettingsRepository extends BaseRepository {
         parseJsonArrayColumn(result.transcription_vocabulary, transcriptionVocabularyTermSchema) ??
         [],
       speech_provider: speechProvider.success ? speechProvider.data : null,
+      memory_provider: memoryProvider.success ? memoryProvider.data : "documents",
       speech_expressiveness: speechExpressiveness.success ? speechExpressiveness.data : null,
       speech_voices: parseJsonArrayColumn(result.speech_voices, savedSpeechVoiceSchema) ?? [],
       tool_rules: parseToolRules(result.tool_rules),

@@ -15,9 +15,21 @@ import {
 } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import {
+  withExecutionRunContext,
+  type ServiceContext,
+} from "~/infrastructure/context/serviceContext";
+import {
+  collectHarnessProviderStream,
+  readHarnessApprovalResolution,
+} from "~/modules/agents/application/harness-stream";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { parseMachineModelId } from "~/modules/machines/domain/model-id";
+import { mintWorkRunAccess } from "~/modules/ports/mcp/application/work-access";
+import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { ChatCompletionParameters } from "~/types";
 
+import { startMachineAgentTurn } from "./agent-turn";
 import { parseMachineSnapshot, pollMachineRun } from "./machine-run-polling";
 import { callMachineRun } from "./runs";
 
@@ -46,11 +58,52 @@ async function machineRunDeadline(params: ChatCompletionParameters): Promise<num
   return Number.isFinite(configuredDeadline) ? configuredDeadline : undefined;
 }
 
+async function workAccessFor(
+  context: ServiceContext,
+  params: ChatCompletionParameters,
+  conversationId: string,
+): Promise<{ workFolder: string | null; workToken: string | null }> {
+  const projectId = params.metadata?.project_id;
+
+  if (typeof projectId !== "string") {
+    return { workFolder: null, workToken: null };
+  }
+
+  const workspaces = context.repositories.get(WorkspaceRepository);
+  const project = await workspaces.getProject(projectId);
+  const workspace = project?.workspace_id
+    ? await workspaces.getWorkspace(project.workspace_id)
+    : null;
+
+  if (!workspace) {
+    return { workFolder: null, workToken: null };
+  }
+
+  const run = context.executionRunId
+    ? await context.repositories.get(ConversationRunRepository).getById(context.executionRunId)
+    : null;
+
+  return {
+    workFolder: workspace.name.slice(0, 80),
+    workToken: run?.teammateContextId
+      ? await mintWorkRunAccess(context, {
+          userId: context.requireUser().id,
+          projectId,
+          teammateContextId: run.teammateContextId,
+          conversationId,
+        })
+      : null,
+  };
+}
+
 export async function executeMachineChatResponse(
   params: ChatCompletionParameters,
   model: ModelConfigItem & { machineId: string },
 ): Promise<{ response: string } | ReadableStream<Uint8Array>> {
-  const context = params.context;
+  const context =
+    params.context && params.run_id
+      ? withExecutionRunContext(params.context, params.run_id, params.run_attempt)
+      : params.context;
 
   if (!context?.user) {
     throw new AssistantError(
@@ -62,46 +115,65 @@ export async function executeMachineChatResponse(
 
   const messages = machineMessages(params.messages);
   const continuation = params.delegation_context?.continuation;
-  let request: MachineRunRequest;
 
   if (!params.completion_id) {
     throw new AssistantError("Machine execution requires a conversation", ErrorType.PARAMS_ERROR);
   }
 
   if (model.agent) {
-    const bindingConversationId =
-      continuation?.bindingConversationId ?? params.delegation_context?.rootConversationId;
+    const driver = agentRuntimeVendorSchema.parse(model.provider);
+    const resume = readHarnessApprovalResolution(params.options);
+    const stream = await startMachineAgentTurn({
+      context,
+      machineId: model.machineId,
+      conversationId: params.completion_id,
+      harnessName: model.name ?? driver,
+      ...(resume
+        ? { resume }
+        : {
+            request: {
+              id: generateId(),
+              kind: "agent",
+              driver,
+              conversationId: params.completion_id,
+              bindingConversationId:
+                continuation?.bindingConversationId ??
+                params.delegation_context?.rootConversationId ??
+                params.completion_id,
+              continuationMode: continuation
+                ? continuation.mode === "resume"
+                  ? "resume"
+                  : "fresh"
+                : "auto",
+              ...(await workAccessFor(context, params, params.completion_id)),
+              messages,
+              selectedModel: null,
+              reasoningEffort: params.reasoning_effort ?? params.reasoning?.effort ?? null,
+              permissionMode: params.permission_mode ?? "auto_accept_edits",
+            },
+          }),
+    });
 
-    if (!continuation || !bindingConversationId) {
-      throw new AssistantError(
-        "A background native agent needs an existing compatible session binding",
-        ErrorType.CONFLICT_ERROR,
-        409,
-      );
+    if (params.stream) {
+      return stream;
     }
 
-    request = {
-      id: generateId(),
-      kind: "agent",
-      driver: agentRuntimeVendorSchema.parse(model.matchingModel),
-      conversationId: params.completion_id,
-      bindingConversationId,
-      continuationMode: continuation.mode === "resume" ? "resume" : "fresh",
-      messages,
-      selectedModel: null,
-      reasoningEffort: params.reasoning_effort ?? params.reasoning?.effort ?? null,
-      permissionMode: params.permission_mode ?? "auto_accept_edits",
-    };
-  } else {
-    request = {
-      id: generateId(),
-      vendor: modelRuntimeVendorSchema.parse(model.provider),
-      nativeModelId: model.matchingModel,
-      conversationId: params.completion_id,
-      messages,
-    };
+    const collected = await collectHarnessProviderStream(stream);
+
+    if (collected.error && !collected.response && collected.toolCalls.length === 0) {
+      throw new AssistantError(collected.error, ErrorType.PROVIDER_ERROR);
+    }
+
+    return { response: collected.response };
   }
 
+  const request: MachineRunRequest = {
+    id: generateId(),
+    vendor: modelRuntimeVendorSchema.parse(model.provider),
+    nativeModelId: parseMachineModelId(model.matchingModel)?.nativeId ?? model.matchingModel,
+    conversationId: params.completion_id,
+    messages,
+  };
   const parsedRequest = machineRunRequestSchema.parse(request);
   const created = await parseMachineSnapshot(
     await callMachineRun(context, model.machineId, "/create", parsedRequest),

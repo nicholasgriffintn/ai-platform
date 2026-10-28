@@ -529,6 +529,7 @@ export async function respondToProjectTaskToolApproval(
         response: {
           interactionId: input.interactionId,
           resolution: input.resolution,
+          option: input.resolution === "approved" ? "Approve" : "Reject",
         },
       },
     });

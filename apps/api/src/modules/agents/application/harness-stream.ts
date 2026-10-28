@@ -11,6 +11,9 @@ import {
   readServerSentEvents,
   safeParseJson,
 } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
+import type { ChatCompletionParameters } from "~/types";
 
 const APPROVAL_TOOL_CALL_PATTERN = /^hx-(\d+)-([A-Za-z0-9_-]+)$/u;
 
@@ -27,6 +30,29 @@ export function parseApprovalToolCallId(value: unknown): HarnessApprovalReferenc
   const match = typeof value === "string" ? APPROVAL_TOOL_CALL_PATTERN.exec(value) : null;
 
   return match ? { seq: Number.parseInt(match[1], 10), approvalId: match[2] } : null;
+}
+
+export function readHarnessApprovalResolution(
+  options: ChatCompletionParameters["options"],
+): (HarnessApprovalReference & { approved: boolean }) | undefined {
+  const interaction = options?.toolInteraction;
+
+  if (interaction?.toolName !== AGENT_HARNESS_APPROVAL_TOOL) {
+    return undefined;
+  }
+
+  const reference = parseApprovalToolCallId(interaction.response.interactionId);
+  const resolution = interaction.response.resolution;
+
+  if (!reference || (resolution !== "approved" && resolution !== "rejected")) {
+    throw new AssistantError(
+      "This approval request is no longer valid",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  return { ...reference, approved: resolution === "approved" };
 }
 
 export function agentHarnessSessionKey(userId: number, conversationId: string): string {

@@ -1,6 +1,7 @@
 import type { AnalyticsEngineDataset, ExecutionContext } from "@cloudflare/workers-types";
 import type { AnalyticsEvent } from "@ngriffin_uk/polychat-schemas";
-import type { PostHog, PostHogOptions } from "posthog-node";
+
+import type { SentryTelemetryClient } from "./sinks/sentry.js";
 
 export type TelemetryProperties = Record<string, unknown>;
 
@@ -126,6 +127,14 @@ export type AiFeedbackSignal = TelemetryIdentity & {
   properties?: TelemetryProperties;
 };
 
+export type ResolvedAiGeneration = AiGenerationSignal & {
+  captureContent: boolean;
+};
+
+export type ResolvedAiEmbedding = AiEmbeddingSignal & {
+  captureContent: boolean;
+};
+
 export type ResolvedAiFeedback = AiFeedbackSignal & {
   distinctId: string;
   personProperties?: TelemetryPersonProperties;
@@ -164,11 +173,6 @@ export type TelemetryEnv = {
   AI?: AiGatewayBinding;
   ACCOUNT_ID?: string;
   AI_GATEWAY_TOKEN?: string;
-  POSTHOG_PROJECT_API_KEY?: string;
-  POSTHOG_HOST?: string;
-  POSTHOG_BACKEND_ENABLED?: string;
-  POSTHOG_AI_OBSERVABILITY_ENABLED?: string;
-  POSTHOG_FEEDBACK_SURVEY_ID?: string;
   AI_OBSERVABILITY_ENABLED?: string;
   BEACON_BACKEND_ENABLED?: string;
   BEACON_ENDPOINT?: string;
@@ -180,7 +184,8 @@ export interface TelemetrySink {
   name: string;
   capture?: (event: TelemetryEvent) => void;
   recordMetric?: (metric: TelemetryMetric) => void;
-  captureAiGeneration?: (signal: AiGenerationSignal) => void;
+  captureAiGeneration?: (signal: ResolvedAiGeneration) => void;
+  captureAiEmbedding?: (signal: ResolvedAiEmbedding) => void;
   captureAiFeedback?: (feedback: ResolvedAiFeedback) => void | Promise<void>;
   captureTrainingExample?: (signal: TrainingExampleSignal) => void | Promise<void>;
   log?: (record: TelemetryLogRecord) => void;
@@ -191,7 +196,7 @@ export interface TelemetrySink {
 export type CreateWorkerTelemetryOptions = {
   env: TelemetryEnv;
   executionCtx?: ExecutionContext;
-  createPostHogClient?: (apiKey: string, options: PostHogOptions) => PostHog;
+  sentry?: SentryTelemetryClient;
   fetcher?: BeaconFetcher;
   now?: () => number;
   sinks?: TelemetrySink[];

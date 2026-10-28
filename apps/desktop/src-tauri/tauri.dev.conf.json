@@ -1,4 +1,6 @@
 {
+  "identifier": "uk.co.nicholasgriffin.polychat.desktop.dev",
+  "productName": "Polychat Dev",
   "app": {
     "security": {
       "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' polychat-media: http://polychat-media.localhost data: blob: https://api.polychat.app https://assets.polychat.app https://avatars.githubusercontent.com https://imagedelivery.net https://icons.duckduckgo.com https://logos.composio.dev https://openweathermap.org https://pashi.app http://localhost:8787; font-src 'self'; media-src 'self' polychat-media: http://polychat-media.localhost blob: https://api.polychat.app https://assets.polychat.app http://localhost:8787; connect-src 'self' ipc: http://ipc.localhost https://api.polychat.app wss://api.polychat.app https://assets.polychat.app http://localhost:5183 ws://localhost:5183 http://localhost:8787 ws://localhost:8787; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"

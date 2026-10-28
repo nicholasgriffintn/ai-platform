@@ -22,6 +22,13 @@ export interface DesktopRun {
   cancel: () => void;
 }
 
+export interface AgentSessionSpec {
+  sessionId: string;
+  resume: boolean;
+  isolated?: boolean;
+  mcpConfig?: string | null;
+}
+
 export interface DesktopAgentSession {
   sessionKey: string;
   directoryPath: string;
@@ -50,6 +57,7 @@ export interface DesktopBackend {
     driver: AgentRuntimeVendor,
     directoryId: string,
     conversationId: string,
+    session?: AgentSessionSpec,
   ) => Promise<DesktopAgentSession>;
   readAgentThread: (conversationId: string) => Promise<AgentThreadBinding | null>;
   saveAgentThread: (binding: AgentThreadBinding) => Promise<void>;
@@ -57,6 +65,7 @@ export interface DesktopBackend {
   listAgentDirectories: () => Promise<AgentDirectory[]>;
   runLocalTool: (request: DesktopLocalToolRequest) => Promise<DesktopToolResult>;
   pickAgentDirectory: () => Promise<string | null>;
+  ensureWorkDirectory: (name: string) => Promise<AgentDirectory>;
   saveAgentDirectory: (path: string) => Promise<AgentDirectory>;
   revokeAgentDirectory: (directoryId: string) => Promise<void>;
   listConversations: (accountId: string) => Promise<LocalConversation[]>;

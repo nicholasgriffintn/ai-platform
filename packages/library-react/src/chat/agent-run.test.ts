@@ -15,6 +15,7 @@ it.each(["cancel-picker", "abort-run"])(
       state: "ready",
       checkedAt: "2026-09-08T10:00:00Z",
       version: "1.0.0",
+      billing: "subscription",
     });
     backend.pickAgentDirectory = async () => {
       expect(onStatus).toHaveBeenCalledOnce();

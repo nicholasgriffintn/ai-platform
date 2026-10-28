@@ -10,6 +10,9 @@ import { searchProviderSchema } from "../search.js";
 import { speechProviderSchema } from "../speech-voices.js";
 import { toolRulesSchema } from "../tool-rules.js";
 
+export const MEMORY_PROVIDERS = ["documents", "hindsight", "honcho"] as const;
+export const memoryProviderSchema = z.enum(MEMORY_PROVIDERS);
+
 export const guardrailsProviderIds = [
   "llamaguard",
   "bedrock",
@@ -85,6 +88,7 @@ export const updateUserSettingsSchema = z
     response_style: responseStyleSchema.optional(),
     tracking_enabled: z.boolean().optional(),
     advertise_machines: z.boolean().optional(),
+    share_machines_with_work: z.boolean().optional(),
     guardrails_enabled: z.boolean().optional(),
     guardrails_provider: guardrailsProviderSchema.optional(),
     bedrock_guardrail_id: z.string().optional(),
@@ -105,7 +109,7 @@ export const updateUserSettingsSchema = z
     temporary_chats_default: z.boolean().optional(),
     web_search_enabled: z.boolean().optional(),
     source_search_enabled: z.boolean().optional(),
-    memory_provider: z.enum(["documents", "hindsight", "honcho"]).optional(),
+    memory_provider: memoryProviderSchema.optional(),
     transcription_provider: z.string().optional(),
     transcription_model: z.string().optional(),
     transcription_vocabulary: transcriptionVocabularySchema.optional(),

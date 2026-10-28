@@ -16,6 +16,12 @@ Shared activity is a separate, opt-in channel, not part of the heartbeat. When t
 
 The desktop keeps its local discovery source authoritative for itself, including while offline. Other signed-in clients fetch the account machines and merge ready model metadata into the catalogue with `machineId`. This advertises availability only; the control plane does not route execution, and clients must not send a machine model's prompt to the hosted API when no local execution path exists.
 
+## Amendment: workspaces may use a member's desktops
+
+A person can switch on "Let my workspaces use my desktops", which is off by default and has no effect while their desktops are hidden. Their online desktops then serve Work task runs for any workspace they belong to, for teammates whose model would otherwise run on hosted API models. Only agents signed in with a subscription are chosen, and the run owner's own desktops come first. A shared run works in a `Polychat Work/<workspace>` folder the desktop creates, never in the person's own granted folders, and every action outside the agent's auto-accepted edits asks for approval in the task's Inbox. Only the machine's owner may claim or report its runs; other members can start, follow, answer and cancel them, and the coordinator is keyed by the owner. Advertising itself stays account-scoped: shared machines are resolved for execution, never listed on workspace routes.
+
+A shared run starts without the member's own agent settings and instructions, so their personal preferences never shape workspace work. It reaches Polychat only through `/mcp/work`, authenticated by a token minted for that one task run: it names the person, project, teammate context and conversation, expires within hours, and offers only the Work task tools, run with the teammate's authority and policy. A desktop runs at most three jobs at once, and routing passes over a desktop that is full.
+
 ## Consequences
 
 Browsers can show which account machines and models are currently reachable without learning how to reach a customer's network. The API has a small, inspectable persistence boundary and can forget a machine without touching conversations or provider credentials.

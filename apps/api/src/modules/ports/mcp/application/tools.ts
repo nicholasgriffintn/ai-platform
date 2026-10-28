@@ -7,6 +7,8 @@ import {
 import {
   isTerminalResponseStatus,
   JSON_RPC_ERRORS,
+  PROJECT_TASK_TOOL_IDS,
+  WORK_TASK_TOOL_IDS,
   type PlatformResponse,
   type TeammateSummary,
 } from "@ngriffin_uk/polychat-schemas";
@@ -26,9 +28,16 @@ import {
 import { formatFunctionName } from "~/modules/tools/application/functions";
 import { getScopedAvailableTools } from "~/modules/tools/application/toolsOperations";
 
+import type { WorkRunAccess } from "./work-access";
+
 const MCP_PLATFORM = "mcp";
 const TEAMMATE_TOOL_PREFIX = "teammate.";
 const MCP_AUTHORITY: DirectToolRunAuthority = { trigger: "channel", autonomyLevel: "assistant" };
+const WORK_AUTHORITY: DirectToolRunAuthority = { trigger: "handle", autonomyLevel: "partner" };
+const WORK_MCP_TOOL_IDS: ReadonlySet<string> = new Set([
+  ...PROJECT_TASK_TOOL_IDS,
+  ...WORK_TASK_TOOL_IDS,
+]);
 
 const teammateMessageSchema = z.object({
   message: z.string().trim().min(1).describe("What you want the teammate to do"),
@@ -64,11 +73,9 @@ function annotationsFor(effects: ToolEffects | undefined): McpPortTool["annotati
   return { readOnlyHint: hints.readOnly === true, destructiveHint: hints.destructive === true };
 }
 
-async function listRegistryTools(context: ServiceContext): Promise<McpPortTool[]> {
-  const available = new Set((await getScopedAvailableTools(context)).map((tool) => tool.id));
-
+function listToolsWhere(include: (name: string) => boolean): McpPortTool[] {
   return listFunctionToolDefinitions()
-    .filter((tool) => available.has(tool.name))
+    .filter((tool) => include(tool.name))
     .map((tool) => {
       const annotations = annotationsFor(tool.effects);
 
@@ -80,6 +87,16 @@ async function listRegistryTools(context: ServiceContext): Promise<McpPortTool[]
         ...(annotations ? { annotations } : {}),
       };
     });
+}
+
+async function listRegistryTools(context: ServiceContext): Promise<McpPortTool[]> {
+  const available = new Set((await getScopedAvailableTools(context)).map((tool) => tool.id));
+
+  return listToolsWhere((name) => available.has(name));
+}
+
+export function listWorkMcpTools(): McpPortTool[] {
+  return listToolsWhere((name) => WORK_MCP_TOOL_IDS.has(name));
 }
 
 function teammateTool(teammate: TeammateSummary): McpPortTool {
@@ -169,16 +186,14 @@ function functionResultText(result: unknown): string {
   return JSON.stringify(result.data ?? result);
 }
 
-async function callRegistryTool(
+async function runRegistryTool(
   context: ServiceContext,
   call: McpPortToolCall,
+  scope: Pick<
+    Parameters<typeof runToolDirectly>[0],
+    "authority" | "projectId" | "teammateContextId"
+  >,
 ): Promise<McpPortToolResult> {
-  const available = await listRegistryTools(context);
-
-  if (!available.some((tool) => tool.name === call.name)) {
-    throw new JsonRpcError(JSON_RPC_ERRORS.invalidParams, `Unknown tool: ${call.name}`);
-  }
-
   try {
     const run = await runToolDirectly({
       context,
@@ -186,7 +201,7 @@ async function callRegistryTool(
       args: isRecord(call.arguments) ? call.arguments : {},
       appUrl: call.appUrl,
       platform: MCP_PLATFORM,
-      authority: MCP_AUTHORITY,
+      ...scope,
     });
     const result = run.data.result;
 
@@ -201,6 +216,35 @@ async function callRegistryTool(
 
     throw error;
   }
+}
+
+async function callRegistryTool(
+  context: ServiceContext,
+  call: McpPortToolCall,
+): Promise<McpPortToolResult> {
+  const available = await listRegistryTools(context);
+
+  if (!available.some((tool) => tool.name === call.name)) {
+    throw new JsonRpcError(JSON_RPC_ERRORS.invalidParams, `Unknown tool: ${call.name}`);
+  }
+
+  return runRegistryTool(context, call, { authority: MCP_AUTHORITY });
+}
+
+export async function callWorkMcpTool(
+  context: ServiceContext,
+  access: WorkRunAccess,
+  call: McpPortToolCall,
+): Promise<McpPortToolResult> {
+  if (!WORK_MCP_TOOL_IDS.has(call.name)) {
+    throw new JsonRpcError(JSON_RPC_ERRORS.invalidParams, `Unknown tool: ${call.name}`);
+  }
+
+  return runRegistryTool(context, call, {
+    authority: WORK_AUTHORITY,
+    projectId: access.projectId,
+    teammateContextId: access.teammateContextId,
+  });
 }
 
 export function callMcpPortTool(

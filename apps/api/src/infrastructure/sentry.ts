@@ -30,7 +30,7 @@ export function getSentryOptions(
     environment: env.ENV,
     sampleRate: 1,
     enableLogs: false,
-    tracesSampleRate: 0,
+    tracesSampler: ({ attributes }) => (attributes?.["gen_ai.operation.name"] ? 1 : 0),
     beforeSend(event) {
       if (!event.exception?.values?.length) {
         return null;
@@ -45,9 +45,6 @@ export function getSentryOptions(
       }
 
       return event;
-    },
-    beforeSendTransaction() {
-      return null;
     },
     enableRpcTracePropagation: true,
   };

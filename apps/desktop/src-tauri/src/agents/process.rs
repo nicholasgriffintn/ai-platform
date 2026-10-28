@@ -106,6 +106,15 @@ impl DirectoryGrants {
         Ok(grant)
     }
 
+    pub fn find_by_path(&self, path: &Path) -> Option<DirectoryGrant> {
+        self.grants
+            .lock()
+            .ok()?
+            .values()
+            .find(|grant| grant.path == path)
+            .cloned()
+    }
+
     pub fn get(&self, id: &str) -> Result<DirectoryGrant, ProcessRefusal> {
         self.grants
             .lock()
@@ -149,6 +158,14 @@ pub struct ProcessRunRequest {
     pub acknowledge_dirty: bool,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum AgentBilling {
+    Subscription,
+    ApiKey,
+    Unknown,
+}
+
 #[derive(Clone, Debug, Serialize)]
 #[serde(
     tag = "state",
@@ -170,6 +187,7 @@ pub enum AgentToolState {
     Ready {
         checked_at: String,
         version: String,
+        billing: AgentBilling,
     },
     UnsupportedVersion {
         checked_at: String,
@@ -192,15 +210,94 @@ pub enum ProcessRefusal {
     SessionsUnsupported,
 }
 
-pub fn session_argv(driver: AgentDriver) -> Option<Vec<String>> {
+pub struct SessionSpec<'a> {
+    pub id: &'a str,
+    pub resume: bool,
+    pub isolated: bool,
+    pub mcp_config: Option<&'a Path>,
+}
+
+const CLAUDE_SESSION_ARGS: &[&str] = &[
+    "-p",
+    "--input-format",
+    "stream-json",
+    "--output-format",
+    "stream-json",
+    "--verbose",
+    "--include-partial-messages",
+    "--permission-prompt-tool",
+    "stdio",
+];
+
+fn is_session_id(value: &str) -> bool {
+    !value.is_empty()
+        && value.len() <= 64
+        && !value.starts_with('-')
+        && value
+            .chars()
+            .all(|character| character.is_ascii_alphanumeric() || character == '-')
+}
+
+pub fn session_argv(driver: AgentDriver, session: Option<&SessionSpec>) -> Option<Vec<String>> {
     match driver {
         AgentDriver::Codex => Some(vec!["app-server".to_string()]),
+        AgentDriver::ClaudeCode => {
+            let session = session.filter(|session| is_session_id(session.id))?;
+            let mut argv: Vec<String> = CLAUDE_SESSION_ARGS
+                .iter()
+                .map(|value| value.to_string())
+                .collect();
+            argv.push(
+                if session.resume {
+                    "--resume"
+                } else {
+                    "--session-id"
+                }
+                .to_string(),
+            );
+            argv.push(session.id.to_string());
+
+            if session.isolated {
+                argv.extend(["--setting-sources".to_string(), "project,local".to_string()]);
+            }
+
+            if let Some(path) = session.mcp_config {
+                argv.extend([
+                    "--mcp-config".to_string(),
+                    path.to_string_lossy().into_owned(),
+                    "--strict-mcp-config".to_string(),
+                    "--allowedTools".to_string(),
+                    "mcp__polychat".to_string(),
+                ]);
+            }
+
+            Some(argv)
+        }
         _ => None,
     }
 }
 
 pub fn supports_sessions(driver: AgentDriver) -> bool {
-    session_argv(driver).is_some()
+    matches!(driver, AgentDriver::Codex | AgentDriver::ClaudeCode)
+}
+
+pub fn read_billing(driver: AgentDriver, readiness: &str) -> AgentBilling {
+    match driver {
+        AgentDriver::ClaudeCode => {
+            let method = serde_json::from_str::<serde_json::Value>(readiness)
+                .ok()
+                .and_then(|value| value.get("authMethod")?.as_str().map(str::to_string));
+
+            match method.as_deref() {
+                Some("claude.ai") | Some("oauth_token") => AgentBilling::Subscription,
+                Some("api_key") => AgentBilling::ApiKey,
+                _ => AgentBilling::Unknown,
+            }
+        }
+        AgentDriver::Codex if readiness.contains("ChatGPT") => AgentBilling::Subscription,
+        AgentDriver::Codex if readiness.contains("API key") => AgentBilling::ApiKey,
+        _ => AgentBilling::Unknown,
+    }
 }
 
 pub fn program_for(driver: AgentDriver) -> AgentProgram {
@@ -298,15 +395,27 @@ pub async fn probe(driver: AgentDriver, checked_at: String) -> AgentToolState {
         };
     }
 
+    let mut billing = AgentBilling::Unknown;
+
     if let Some(readiness_args) = program.readiness_args {
-        let readiness = crate::programs::probe_output(program.program, readiness_args).await;
-        if readiness.is_err()
-            || !readiness.is_ok_and(|output| {
-                output.status.success()
-                    && (driver != AgentDriver::OpenCode
-                        || opencode_has_credentials(&String::from_utf8_lossy(&output.stdout)))
-            })
-        {
+        let ready = match crate::programs::probe_output(program.program, readiness_args).await {
+            Ok(output) if output.status.success() => {
+                let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+                let text = format!("{stdout}{}", String::from_utf8_lossy(&output.stderr));
+                billing = read_billing(
+                    driver,
+                    if driver == AgentDriver::ClaudeCode {
+                        &stdout
+                    } else {
+                        &text
+                    },
+                );
+                driver != AgentDriver::OpenCode || opencode_has_credentials(&stdout)
+            }
+            _ => false,
+        };
+
+        if !ready {
             return AgentToolState::SignedOut {
                 checked_at,
                 version: Some(version),
@@ -317,6 +426,7 @@ pub async fn probe(driver: AgentDriver, checked_at: String) -> AgentToolState {
     AgentToolState::Ready {
         checked_at,
         version,
+        billing,
     }
 }
 
@@ -466,6 +576,37 @@ fn codex_sandbox_argument(mode: PermissionMode) -> &'static str {
     }
 }
 
+pub fn work_folder_name(name: &str) -> Option<String> {
+    let cleaned: String = name
+        .chars()
+        .map(|character| {
+            if character.is_alphanumeric()
+                || character == ' '
+                || character == '-'
+                || character == '_'
+            {
+                character
+            } else {
+                '-'
+            }
+        })
+        .collect::<String>()
+        .trim_matches(|character: char| character == '-' || character.is_whitespace())
+        .chars()
+        .take(60)
+        .collect();
+
+    (!cleaned.is_empty()).then_some(cleaned)
+}
+
+pub fn work_directory(name: &str) -> Option<PathBuf> {
+    Some(
+        dirs_home()
+            .join("Polychat Work")
+            .join(work_folder_name(name)?),
+    )
+}
+
 pub fn canonical_directory(path: &Path) -> Result<PathBuf, ProcessRefusal> {
     let canonical = path
         .canonicalize()
@@ -556,11 +697,13 @@ mod tests {
         let probe = super::AgentToolState::Ready {
             checked_at: "2026-09-08T10:00:00Z".to_string(),
             version: "1.0.0".to_string(),
+            billing: super::AgentBilling::Subscription,
         };
         assert_eq!(
             serde_json::to_value(probe).unwrap(),
             serde_json::json!({
-                "state": "ready", "checkedAt": "2026-09-08T10:00:00Z", "version": "1.0.0"
+                "state": "ready", "checkedAt": "2026-09-08T10:00:00Z", "version": "1.0.0",
+                "billing": "subscription"
             })
         );
         assert_eq!(
@@ -586,6 +729,111 @@ mod tests {
         assert!(argv.contains(&"session id".to_string()));
         assert!(argv.contains(&"model --bad".to_string()));
         assert!(!argv.iter().any(|value| value == "sh" || value == "-c"));
+    }
+
+    #[test]
+    fn reads_which_login_an_agent_bills_against() {
+        assert_eq!(
+            read_billing(
+                AgentDriver::ClaudeCode,
+                r#"{"loggedIn":true,"authMethod":"api_key"}"#
+            ),
+            AgentBilling::ApiKey
+        );
+        assert_eq!(
+            read_billing(
+                AgentDriver::ClaudeCode,
+                r#"{"loggedIn":true,"authMethod":"claude.ai"}"#
+            ),
+            AgentBilling::Subscription
+        );
+        assert_eq!(
+            read_billing(AgentDriver::Codex, "Logged in using ChatGPT"),
+            AgentBilling::Subscription
+        );
+        assert_eq!(
+            read_billing(AgentDriver::Codex, "Logged in using an API key - sk-***"),
+            AgentBilling::ApiKey
+        );
+    }
+
+    #[test]
+    fn starts_or_resumes_a_claude_session_with_stdio_permissions() {
+        let id = "0c1cf83d-5060-4e59";
+        let fresh = session_argv(
+            AgentDriver::ClaudeCode,
+            Some(&SessionSpec {
+                id,
+                resume: false,
+                isolated: false,
+                mcp_config: None,
+            }),
+        )
+        .expect("argv");
+        assert!(!fresh.contains(&"--setting-sources".to_string()));
+        assert!(fresh
+            .windows(2)
+            .any(|pair| pair == ["--permission-prompt-tool", "stdio"]));
+        assert!(fresh.ends_with(&["--session-id".to_string(), id.to_string()]));
+
+        let resumed = session_argv(
+            AgentDriver::ClaudeCode,
+            Some(&SessionSpec {
+                id,
+                resume: true,
+                isolated: false,
+                mcp_config: None,
+            }),
+        )
+        .expect("argv");
+        assert!(resumed.ends_with(&["--resume".to_string(), id.to_string()]));
+
+        let config = Path::new("/tmp/polychat-mcp.json");
+        let work = session_argv(
+            AgentDriver::ClaudeCode,
+            Some(&SessionSpec {
+                id,
+                resume: false,
+                isolated: true,
+                mcp_config: Some(config),
+            }),
+        )
+        .expect("argv");
+        assert!(work
+            .windows(2)
+            .any(|pair| pair == ["--setting-sources", "project,local"]));
+        assert!(work.ends_with(&[
+            "--mcp-config".to_string(),
+            "/tmp/polychat-mcp.json".to_string(),
+            "--strict-mcp-config".to_string(),
+            "--allowedTools".to_string(),
+            "mcp__polychat".to_string()
+        ]));
+
+        assert_eq!(session_argv(AgentDriver::ClaudeCode, None), None);
+        assert_eq!(
+            session_argv(
+                AgentDriver::ClaudeCode,
+                Some(&SessionSpec {
+                    id: "--dangerously-skip-permissions",
+                    resume: false,
+                    isolated: false,
+                    mcp_config: None,
+                })
+            ),
+            None
+        );
+    }
+
+    #[test]
+    fn keeps_work_folders_inside_one_named_folder() {
+        assert_eq!(
+            work_folder_name("Northstar Studio").as_deref(),
+            Some("Northstar Studio")
+        );
+        assert_eq!(work_folder_name("../../etc").as_deref(), Some("etc"));
+        assert_eq!(work_folder_name("a/b\\c").as_deref(), Some("a-b-c"));
+        assert_eq!(work_folder_name(" .. "), None);
     }
 
     #[test]

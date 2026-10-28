@@ -8,6 +8,7 @@ export interface ChatExecutionRequestInput {
   messages: Message[];
   resolvedMaxSteps?: number;
   runId?: string;
+  runAttempt?: number;
 }
 
 class ChatExecutionRequest {
@@ -29,7 +30,7 @@ class ChatExecutionRequest {
   }
 
   private providerBase() {
-    const { chatOptions, prepared, messages, resolvedMaxSteps, runId } = this.input;
+    const { chatOptions, prepared, messages, resolvedMaxSteps, runId, runAttempt } = this.input;
     const stop = chatOptions.stop;
 
     return {
@@ -44,6 +45,7 @@ class ChatExecutionRequest {
       disable_functions: chatOptions.disable_functions,
       completion_id: chatOptions.completion_id,
       run_id: runId,
+      run_attempt: runAttempt,
       trigger: chatOptions.trigger,
       conversation_type: prepared.conversationType ?? chatOptions.conversation_type,
       messages: toProviderMessages(

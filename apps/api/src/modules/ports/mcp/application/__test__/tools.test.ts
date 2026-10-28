@@ -4,7 +4,7 @@ import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
-import { callMcpPortTool, listMcpPortTools } from "../tools";
+import { callMcpPortTool, callWorkMcpTool, listMcpPortTools, listWorkMcpTools } from "../tools";
 
 const mocks = vi.hoisted(() => ({
   runToolDirectly: vi.fn(),
@@ -37,6 +37,18 @@ vi.mock("~/modules/tools/application/catalogue", () => ({
       name: "create_image",
       description: "Premium only",
       inputSchema: z.object({}),
+      effects: { effectClass: "draft" },
+    },
+    {
+      name: "list_tasks",
+      description: "List the project's tasks",
+      inputSchema: z.object({}),
+      effects: { effectClass: "read" },
+    },
+    {
+      name: "post_update",
+      description: "Post to a task thread",
+      inputSchema: z.object({ taskId: z.string(), body: z.string() }),
       effects: { effectClass: "draft" },
     },
   ],
@@ -128,5 +140,47 @@ describe("MCP port tools", () => {
       text: "Draft the brief",
       platform: "mcp",
     });
+  });
+
+  const access = {
+    userId: 1,
+    projectId: "project-1",
+    teammateContextId: "context-1",
+    conversationId: "task-conversation",
+  };
+
+  it("offers a desktop Work run only the Work tools", () => {
+    expect(listWorkMcpTools().map((tool) => tool.name)).toEqual(["list_tasks", "post_update"]);
+  });
+
+  it("runs Work tools as the run's teammate in its project and refuses anything else", async () => {
+    mocks.runToolDirectly.mockResolvedValueOnce({
+      output_id: null,
+      data: { result: { status: "success", content: "LNCH-1 Ship quoted selections" } },
+    });
+
+    await expect(
+      callWorkMcpTool(context, access, {
+        name: "list_tasks",
+        arguments: {},
+        appUrl: "https://app",
+      }),
+    ).resolves.toMatchObject({ content: [{ text: "LNCH-1 Ship quoted selections" }] });
+    expect(mocks.runToolDirectly).toHaveBeenCalledWith(
+      expect.objectContaining({
+        toolId: "list_tasks",
+        projectId: "project-1",
+        teammateContextId: "context-1",
+        authority: { trigger: "handle", autonomyLevel: "partner" },
+      }),
+    );
+
+    await expect(
+      callWorkMcpTool(context, access, {
+        name: "web_search",
+        arguments: { query: "x" },
+        appUrl: "https://app",
+      }),
+    ).rejects.toThrow("Unknown tool: web_search");
   });
 });

@@ -8,12 +8,43 @@ pub fn run_checked(command: &mut std::process::Command) -> Result<(), String> {
     Ok(())
 }
 
+const HOST_SESSION_VARIABLES: &[&str] = &[
+    "CLAUDECODE",
+    "CLAUDE_CODE_ENTRYPOINT",
+    "CLAUDE_CODE_SESSION_ID",
+    "CLAUDE_CODE_CHILD_SESSION",
+    "CLAUDE_CODE_HOST_SESSION_ID",
+    "CLAUDE_CODE_MESSAGING_SOCKET",
+    "CLAUDE_CODE_MESSAGING_TOKEN",
+    "CLAUDE_CODE_SDK_HAS_HOST_AUTH_REFRESH",
+    "CLAUDE_AGENT_SDK_VERSION",
+    "CLAUDE_AGENT_SDK_MCP_NO_PREFIX",
+];
+
+const METERED_KEY_VARIABLES: &[&str] = &[
+    "ANTHROPIC_API_KEY",
+    "ANTHROPIC_AUTH_TOKEN",
+    "OPENAI_API_KEY",
+    "CODEX_API_KEY",
+];
+
+pub fn scrub_agent_environment(
+    command: &mut tokio::process::Command,
+) -> &mut tokio::process::Command {
+    for name in HOST_SESSION_VARIABLES.iter().chain(METERED_KEY_VARIABLES) {
+        command.env_remove(name);
+    }
+
+    command.env("NO_COLOR", "1")
+}
+
 pub async fn probe_output(program: &str, args: &[&str]) -> std::io::Result<std::process::Output> {
+    let mut command = tokio::process::Command::new(resolve_program(program));
+
     tokio::time::timeout(
         std::time::Duration::from_secs(10),
-        tokio::process::Command::new(resolve_program(program))
+        scrub_agent_environment(&mut command)
             .args(args)
-            .env("NO_COLOR", "1")
             .stdin(std::process::Stdio::null())
             .kill_on_drop(true)
             .output(),

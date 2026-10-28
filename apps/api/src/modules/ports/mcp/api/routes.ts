@@ -3,12 +3,16 @@ import {
   jsonRpcPayloadSchema,
   jsonRpcResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
+import { parseBearerToken } from "@ngriffin_uk/polychat-utility-server/http";
 import { Hono } from "hono";
 import z from "zod/v4";
 
+import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { defineSingleton } from "~/infrastructure/http/resource";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
-import { handleMcpRequest } from "../application/server";
+import { handleMcpRequest, handleWorkMcpRequest } from "../application/server";
+import { resolveWorkRunAccess } from "../application/work-access";
 
 const app = new Hono();
 
@@ -51,6 +55,50 @@ defineSingleton(app, { tags: ["mcp"] }, (endpoint) => {
           { Allow: "POST" },
         ),
     });
+});
+
+defineSingleton(app, { tags: ["mcp"], path: "/work" }, (endpoint) => {
+  endpoint.create({
+    auth: false,
+    summary: "Polychat Work as an MCP server for one task run",
+    description:
+      "Streamable HTTP endpoint a coding agent on a member's desktop uses while it runs a Work task. Authenticate with the short-lived run token Polychat gave that run; it reaches only the Work tools for that task's project, as that teammate.",
+    bodySchema: jsonRpcPayloadSchema,
+    responses: {
+      200: {
+        description: "JSON-RPC response or batch, or an event stream",
+        schema: z.union([jsonRpcResponseSchema, z.array(jsonRpcResponseSchema)]),
+      },
+      202: { description: "Notifications accepted" },
+      401: { description: "Missing or expired run token", schema: errorResponseSchema },
+    },
+    handler: async ({ serviceContext, body, raw }) => {
+      const access = await resolveWorkRunAccess(
+        serviceContext,
+        parseBearerToken(raw.req.header("authorization")) ?? null,
+      );
+      const user = access
+        ? await serviceContext.repositories.get(UserRepository).getUserById(access.userId)
+        : null;
+
+      if (!access || !user) {
+        return raw.json(
+          { error: "This run token is missing or has expired", type: "AUTHENTICATION_ERROR" },
+          401,
+        );
+      }
+
+      return (
+        (await handleWorkMcpRequest({
+          context: createServiceContext({ env: serviceContext.env, user }),
+          access,
+          payload: body,
+          accept: raw.req.header("accept") ?? null,
+          appUrl: new URL(raw.req.url).origin,
+        })) ?? raw.body(null, 202)
+      );
+    },
+  });
 });
 
 export default app;

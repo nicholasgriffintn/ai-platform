@@ -604,6 +604,28 @@ fn save_agent_directory(
 }
 
 #[tauri::command]
+fn ensure_work_directory(
+    name: String,
+    directories: State<'_, DirectoryGrants>,
+    store: State<'_, Store>,
+) -> Result<process::DirectoryGrant, String> {
+    let path = process::work_directory(&name)
+        .ok_or_else(|| "The workspace name cannot be used as a folder.".to_string())?;
+    std::fs::create_dir_all(&path).map_err(|cause| cause.to_string())?;
+    let canonical = process::canonical_directory(&path).map_err(|cause| format!("{cause:?}"))?;
+
+    if let Some(existing) = directories.find_by_path(&canonical) {
+        return Ok(existing);
+    }
+
+    let directory = directories
+        .add(&canonical)
+        .map_err(|cause| format!("{cause:?}"))?;
+    store.save_agent_directory(&directory)?;
+    Ok(directory)
+}
+
+#[tauri::command]
 async fn pick_agent_directory(app: tauri::AppHandle) -> Result<Option<String>, String> {
     tauri::async_runtime::spawn_blocking(move || {
         app.dialog()
@@ -928,6 +950,7 @@ fn main() {
             probe_agent_tool,
             start_agent_process_run,
             start_agent_session,
+            ensure_work_directory,
             send_agent_session,
             stop_agent_session,
             agent_supports_sessions,

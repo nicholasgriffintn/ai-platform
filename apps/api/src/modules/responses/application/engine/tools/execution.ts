@@ -6,6 +6,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { approvalsInARow } from "~/modules/poly/domain/earned-trust";
+import { withToolSpan } from "~/modules/responses/application/engine/agent/agent-spans";
 import { buildMessageParts } from "~/modules/responses/application/engine/messages/parts";
 import { createPendingToolApprovalMessage } from "~/modules/responses/application/engine/tools/approval";
 import {
@@ -387,38 +388,40 @@ export const handleToolCalls = async (
       let result: any;
 
       try {
-        result = await handleFunctions({
-          completion_id,
-          tool_call_id: toolCall.id,
-          app_url: req.app_url,
-          functionName,
-          args: functionArgs,
-          request: req,
-          conversationManager,
-          emitToolResult: async (toolResult) => {
-            const toolResultName = toolResult.name || functionName;
-            const formattedResponse = formatToolResponse(
-              toolResultName,
-              toolResult.content || "",
-              toolResult.data,
-            );
+        result = await withToolSpan({ name: functionName, callId: toolCall.id }, () =>
+          handleFunctions({
+            completion_id,
+            tool_call_id: toolCall.id,
+            app_url: req.app_url,
+            functionName,
+            args: functionArgs,
+            request: req,
+            conversationManager,
+            emitToolResult: async (toolResult) => {
+              const toolResultName = toolResult.name || functionName;
+              const formattedResponse = formatToolResponse(
+                toolResultName,
+                toolResult.content || "",
+                toolResult.data,
+              );
 
-            await recordToolResult({
-              role: toolResult.role || "tool",
-              name: toolResultName,
-              content: formattedResponse.content,
-              status: toolResult.status || "success",
-              data: formattedResponse.data,
-              log_id: toolResult.log_id || modelResponseLogId || "",
-              id: toolResult.id || generateId(),
-              tool_call_id: toolCall.id,
-              tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
-              timestamp: toolResult.timestamp || Date.now(),
-              model: toolResult.model || req.request?.model || "unknown",
-              platform: toolResult.platform || req.request?.platform || "api",
-            });
-          },
-        });
+              await recordToolResult({
+                role: toolResult.role || "tool",
+                name: toolResultName,
+                content: formattedResponse.content,
+                status: toolResult.status || "success",
+                data: formattedResponse.data,
+                log_id: toolResult.log_id || modelResponseLogId || "",
+                id: toolResult.id || generateId(),
+                tool_call_id: toolCall.id,
+                tool_call_arguments: toolCall.arguments || toolCall.function?.arguments,
+                timestamp: toolResult.timestamp || Date.now(),
+                model: toolResult.model || req.request?.model || "unknown",
+                platform: toolResult.platform || req.request?.platform || "api",
+              });
+            },
+          }),
+        );
 
         if (result?.status !== "error" || result?.data?.retryable === true) {
           recordToolCallAttempt?.();

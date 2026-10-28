@@ -8,6 +8,7 @@ import {
   type TelemetryEnv,
   type TelemetryIdentityInput,
 } from "@ngriffin_uk/polychat-ai-telemetry";
+import * as Sentry from "@sentry/cloudflare";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
@@ -16,6 +17,7 @@ export function createTelemetry(env: TelemetryEnv, executionCtx?: ExecutionConte
     env,
     executionCtx,
     resolveAiGatewayId,
+    sentry: Sentry.isInitialized() ? Sentry : undefined,
   });
 }
 
@@ -24,6 +26,7 @@ export function createMetrics(env: TelemetryEnv, executionCtx?: ExecutionContext
     env,
     executionCtx,
     resolveAiGatewayId,
+    sentry: Sentry.isInitialized() ? Sentry : undefined,
   });
 }
 

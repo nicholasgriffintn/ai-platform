@@ -38,13 +38,6 @@ export const WS_API_URL =
   (IS_PRODUCTION && !IS_E2E_BUILD ? "wss://api.polychat.app" : "ws://localhost:8787");
 export const APPLE_SIGN_IN_CLIENT_ID = import.meta.env?.VITE_APPLE_CLIENT_ID || "com.polychat.web";
 
-export const POSTHOG_CONFIG = {
-  apiKey: import.meta.env?.VITE_PUBLIC_POSTHOG_KEY || "disabled",
-  apiHost: import.meta.env?.VITE_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",
-  debug: BUILD_MODE === "development",
-  disabled: IS_E2E_BUILD || !import.meta.env?.VITE_PUBLIC_POSTHOG_KEY,
-};
-
 export const BEACON_CONFIG = {
   enabled: !IS_E2E_BUILD && import.meta.env?.VITE_ENABLE_BEACON === "true",
   experimentsEnabled: !IS_E2E_BUILD && import.meta.env?.VITE_ENABLE_BEACON_EXPERIMENTS === "true",
@@ -96,10 +89,6 @@ const COMMON_CSP = {
     API_BASE_URL,
     WS_API_URL,
     "cas-bridge.xethub.hf.co",
-    "https://eu.i.posthog.com",
-    "https://eu-assets.i.posthog.com",
-    "https://us.i.posthog.com",
-    "https://us-assets.i.posthog.com",
     "beacon.polychat.app",
     "beacon-cdn.polychat.app",
     "https://appleid.apple.com",
@@ -122,10 +111,6 @@ const COMMON_CSP = {
 } as const;
 
 const SCRIPT_SRC = [
-  "https://eu.i.posthog.com",
-  "https://eu-assets.i.posthog.com",
-  "https://us.i.posthog.com",
-  "https://us-assets.i.posthog.com",
   "beacon.polychat.app",
   "https://appleid.cdn-apple.com",
   "https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js",
@@ -159,7 +144,6 @@ export function generateCSP(): string {
     .join("; ");
 }
 
-export const getAnalyticsConfig = () => POSTHOG_CONFIG;
 export const getBeaconConfig = () => BEACON_CONFIG;
 export const shouldShowDevTools = () => SHOW_DEV_TOOLS;
 export const shouldEnableCaptcha = () =>

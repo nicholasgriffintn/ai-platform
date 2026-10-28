@@ -20,6 +20,7 @@ export interface DirectToolRunInput {
   appUrl: string;
   platform: string;
   projectId?: string;
+  teammateContextId?: string;
   authority?: DirectToolRunAuthority;
 }
 
@@ -30,6 +31,7 @@ export function runToolDirectly({
   appUrl,
   platform,
   projectId,
+  teammateContextId,
   authority,
 }: DirectToolRunInput) {
   if (!getRunnableTool(toolId)) {
@@ -45,6 +47,8 @@ export function runToolDirectly({
       date: new Date().toISOString(),
       platform,
       ...(authority ? { trigger: authority.trigger, autonomy_level: authority.autonomyLevel } : {}),
+      ...(projectId ? { metadata: { project_id: projectId } } : {}),
+      ...(teammateContextId ? { teammate_context_id: teammateContextId } : {}),
     },
     user: context.requireUser(),
     context,

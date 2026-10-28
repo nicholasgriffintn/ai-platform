@@ -27,6 +27,7 @@ import {
   recordGoalMarker,
 } from "~/modules/goals/application/goalMarker";
 import { captureTrainingExample } from "~/modules/model-datasets/application/capture";
+import { resolveExecutionRoute } from "~/modules/models/domain/execution-route";
 import { runAgentLoop } from "~/modules/responses/application/engine/agent/agent-loop";
 import { createGoalFinishGate } from "~/modules/responses/application/engine/agent/goal-gate";
 import {
@@ -475,14 +476,18 @@ export class ChatOrchestrator {
         hasActiveGoal: Boolean(prepared.activeGoal),
       }),
       runId: runLifecycle?.run.id,
+      runAttempt: runLifecycle?.run.attempt,
     });
 
-    const goalFinishGate = this.resolveGoalFinishGate(
-      chatOptions,
-      currentMode,
-      conversationManager,
-      prepared.activeGoal,
-    );
+    const goalFinishGate =
+      resolveExecutionRoute(primaryModelConfig) === "machine"
+        ? undefined
+        : this.resolveGoalFinishGate(
+            chatOptions,
+            currentMode,
+            conversationManager,
+            prepared.activeGoal,
+          );
     const runParams = {
       requestParams: executionRequest.providerRequest(),
       completionId: chatOptions.completion_id,

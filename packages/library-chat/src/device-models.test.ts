@@ -76,6 +76,7 @@ describe("buildMachineModels", () => {
             state: "ready",
             checkedAt: "2026-09-07T09:00:00.000Z",
             version: "1.0.0",
+            billing: "subscription",
           },
           supportsSessions: true,
         },

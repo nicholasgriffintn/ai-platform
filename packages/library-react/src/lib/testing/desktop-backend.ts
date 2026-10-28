@@ -181,6 +181,14 @@ export function createFakeDesktopBackend(seed: FakeDesktopBackendSeed = {}): Fak
       lastUsedAt: null,
       isGitRepo: false,
     }),
+    ensureWorkDirectory: async (name) => ({
+      id: `fake-work-directory-${name}`,
+      path: `/Polychat Work/${name}`,
+      label: name,
+      approvedAt: new Date(0).toISOString(),
+      lastUsedAt: null,
+      isGitRepo: false,
+    }),
     revokeAgentDirectory: async () => {},
 
     listConversations: async (accountId) =>

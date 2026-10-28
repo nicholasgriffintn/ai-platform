@@ -44,6 +44,15 @@ export function buildModelReadinessBanner(
     return null;
   }
 
+  if (readiness.state === "ready" && readiness.reasonCode === "agent_metered") {
+    return {
+      id: `model-readiness:${model.id || requestedModelId}:agent_metered`,
+      tone: "warning",
+      title: "Billed per token",
+      message: readiness.reason,
+    };
+  }
+
   if (readiness.state === "ready") {
     return null;
   }

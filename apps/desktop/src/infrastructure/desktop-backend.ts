@@ -1,6 +1,7 @@
 import {
   parseAgentProcessOutput,
   setDesktopExecutionBackend,
+  type AgentSessionSpec,
   type DesktopAgentSession,
   type DesktopBackend,
   type DesktopRun,
@@ -81,6 +82,7 @@ async function startAgentSession(
   driver: AgentRuntimeVendor,
   directoryId: string,
   conversationId: string,
+  session?: AgentSessionSpec,
 ): Promise<DesktopAgentSession> {
   const queue = createAsyncEventQueue<AgentSessionEvent>();
   const lines = createAsyncEventQueue<string>();
@@ -117,7 +119,15 @@ async function startAgentSession(
 
   const descriptor = sessionDescriptorSchema.parse(
     await invoke("start_agent_session", {
-      request: { driver, directoryId, conversationId },
+      request: {
+        driver,
+        directoryId,
+        conversationId,
+        sessionId: session?.sessionId ?? null,
+        resume: session?.resume ?? false,
+        isolated: session?.isolated ?? false,
+        mcpConfig: session?.mcpConfig ?? null,
+      },
       onEvent: channel,
     }),
   );
@@ -222,6 +232,8 @@ export const tauriDesktopBackend: ConnectedDesktopBackend = {
       .parse(await invoke("pick_agent_directory")),
   saveAgentDirectory: async (path) =>
     agentDirectorySchema.parse(await invoke("save_agent_directory", { path })),
+  ensureWorkDirectory: async (name) =>
+    agentDirectorySchema.parse(await invoke("ensure_work_directory", { name })),
   revokeAgentDirectory: async (directoryId) => {
     await invoke("revoke_agent_directory", { directoryId });
   },

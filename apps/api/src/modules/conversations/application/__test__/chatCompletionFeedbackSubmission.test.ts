@@ -74,7 +74,7 @@ describe("handleChatCompletionFeedbackSubmission", () => {
     });
   });
 
-  it("keeps posthog feedback without a log id and rejects unknown targets", async () => {
+  it("keeps feedback without a log id and rejects unknown targets", async () => {
     const signals: AiFeedbackSignal[] = [];
     const context = createContext({
       messages: [{ id: "message-1", role: "assistant" }],

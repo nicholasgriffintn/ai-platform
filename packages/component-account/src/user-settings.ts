@@ -30,6 +30,7 @@ export interface UserSettings {
   response_style?: ResponseStyleSettings;
   tracking_enabled?: boolean;
   advertise_machines?: boolean;
+  share_machines_with_work?: boolean;
   guardrails_enabled?: boolean;
   guardrails_provider?: GuardrailsProviderId;
   bedrock_guardrail_id?: string;
@@ -162,6 +163,7 @@ export function buildUserSettingsFormData(userSettings: UserSettings | null): Us
     memory_provider: userSettings?.memory_provider || "documents",
     tracking_enabled: userSettings?.tracking_enabled ?? true,
     advertise_machines: userSettings?.advertise_machines ?? true,
+    share_machines_with_work: userSettings?.share_machines_with_work ?? false,
     transcription_provider: transcriptionSettings.transcription_provider,
     transcription_model: transcriptionSettings.transcription_model,
     transcription_vocabulary: userSettings?.transcription_vocabulary ?? [],

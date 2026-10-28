@@ -47,6 +47,7 @@ export interface UserSettings {
   response_style?: ResponseStyleSettings;
   tracking_enabled?: boolean;
   advertise_machines?: boolean;
+  share_machines_with_work?: boolean;
   guardrails_enabled?: boolean;
   guardrails_provider?: GuardrailsProviderId;
   bedrock_guardrail_id?: string;

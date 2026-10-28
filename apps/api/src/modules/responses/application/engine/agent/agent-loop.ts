@@ -36,6 +36,7 @@ import {
   runWithModelFallback,
   type ModelFallback,
 } from "~/modules/models/application/model-fallback";
+import { withAgentRunSpan } from "~/modules/responses/application/engine/agent/agent-spans";
 import {
   finaliseAssistantTurn,
   type TurnOutput,
@@ -238,7 +239,20 @@ export interface AgentLoopExecutionResult {
   postTurn?: () => Promise<AgentLoopPostTurnResult>;
 }
 
-export async function runAgentLoop(
+export function runAgentLoop(params: AgentLoopExecutionParams): Promise<AgentLoopExecutionResult> {
+  return withAgentRunSpan(
+    {
+      model: params.model,
+      provider: params.provider,
+      mode: params.mode,
+      conversationId: params.completionId,
+      runId: params.runId,
+    },
+    () => runChatAgentLoop(params),
+  );
+}
+
+async function runChatAgentLoop(
   params: AgentLoopExecutionParams,
 ): Promise<AgentLoopExecutionResult> {
   const sink = params.sink ?? DISCARDING_EVENT_SINK;

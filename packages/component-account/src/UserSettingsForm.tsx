@@ -880,6 +880,30 @@ export function UserSettingsForm({
               Prompts, responses, and endpoint addresses stay on this desktop.
             </p>
           </div>
+
+          <div>
+            <label
+              htmlFor="share_machines_with_work"
+              className="mb-1 block text-sm font-medium text-foreground"
+            >
+              Let my workspaces use my desktops
+            </label>
+            <Switch
+              id="share_machines_with_work"
+              checked={formData.share_machines_with_work}
+              disabled={!formData.advertise_machines}
+              onChange={(e) =>
+                updateFormData({
+                  share_machines_with_work: e.target.checked,
+                })
+              }
+            />
+            <p className="text-sm text-muted-foreground">
+              Teammates in workspaces you belong to can run tasks with Claude Code or Codex on your
+              online desktops, using your subscription instead of Polychat credits. Work stays in a
+              Polychat Work folder on that desktop, and anything outside it asks first in Inbox.
+            </p>
+          </div>
         </div>
       </SettingsSection>
 

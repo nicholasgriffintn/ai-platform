@@ -26,6 +26,7 @@ export const READINESS_REASON_CODES = [
   "agent_workspace_required",
   "agent_not_installed",
   "agent_signed_out",
+  "agent_metered",
 ] as const;
 
 export const readinessReasonCodeSchema = z.enum(READINESS_REASON_CODES);

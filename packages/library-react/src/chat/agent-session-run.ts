@@ -9,6 +9,7 @@ import {
   type PermissionMode,
   type ReasoningEffort,
 } from "@ngriffin_uk/polychat-schemas";
+import { reverseCopy } from "@ngriffin_uk/polychat-utility-core";
 
 export { AgentSessionUnavailableError } from "./agent-session-host.js";
 
@@ -26,6 +27,8 @@ export interface AgentSessionRunOptions extends Omit<DeviceModelRunOptions, "bac
     bindingConversationId: string;
     requireBinding: boolean;
   };
+  defaultDirectoryId?: string | null;
+  isolation?: { mcpConfig: string | null };
   clientVersion?: string;
   onStatus: (message: string) => void;
   onItem?: (item: AgentItem) => void;
@@ -52,6 +55,19 @@ export type SessionBackend = Pick<
   | "probeAgentTool"
 >;
 
+function sessionStartsWithProcess(driver: AgentThreadBinding["driver"]): boolean {
+  return driver === "claude-code";
+}
+
+function turnPrompt(messages: DeviceModelRunOptions["messages"], resumed: boolean): string {
+  const runMessages = toRunMessages(messages);
+  const latest = reverseCopy(runMessages).find((message) => message.role === "user");
+
+  return resumed && latest
+    ? latest.content
+    : runMessages.map((message) => message.content).join("\n\n");
+}
+
 function isAgentThreadBindingCompatible(
   binding: AgentThreadBinding | null,
   params: {
@@ -75,9 +91,14 @@ async function resolveDirectoryId(
   binding: AgentThreadBinding | null,
   onStatus: (message: string) => void,
   modelName: string,
+  defaultDirectoryId: string | null,
 ): Promise<string> {
   if (binding) {
     return binding.directoryId;
+  }
+
+  if (defaultDirectoryId) {
+    return defaultDirectoryId;
   }
 
   onStatus(`Choose the project folder where ${modelName} should work with your files.`);
@@ -134,18 +155,35 @@ export async function streamAgentSessionRun(options: AgentSessionRunOptions): Pr
     directoryBinding,
     options.onStatus,
     modelName,
+    options.defaultDirectoryId ?? null,
   );
 
   options.signal.throwIfAborted();
+  let threadId =
+    options.sessionContinuation?.mode === "fresh" ? null : (resumableBinding?.threadId ?? null);
+  const resumed = threadId !== null;
   const host = await agentSessions.acquire(
     options.backend,
-    { conversationId: options.conversationId, driver, directoryId },
+    {
+      conversationId: options.conversationId,
+      driver,
+      directoryId,
+      ...(sessionStartsWithProcess(driver)
+        ? {
+            session: {
+              sessionId: threadId ?? crypto.randomUUID(),
+              resume: resumed,
+              ...(options.isolation
+                ? { isolated: true, mcpConfig: options.isolation.mcpConfig }
+                : {}),
+            },
+          }
+        : {}),
+    },
     options.clientVersion,
   );
 
   let text = "";
-  let threadId =
-    options.sessionContinuation?.mode === "fresh" ? null : (resumableBinding?.threadId ?? null);
   let failure: string | null = null;
   let settled = false;
   let resolveTurn: (() => void) | undefined;
@@ -250,9 +288,7 @@ export async function streamAgentSessionRun(options: AgentSessionRunOptions): Pr
     options.onStatus(`${modelName} is working in ${host.directoryPath}.`);
     await host.adapter.sendTurn(
       threadId,
-      toRunMessages(options.messages)
-        .map((message) => message.content)
-        .join("\n\n"),
+      turnPrompt(options.messages, resumed),
       options.reasoningEffort,
     );
 

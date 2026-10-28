@@ -20,6 +20,14 @@ pub struct SessionStartRequest {
     pub driver: AgentDriver,
     pub directory_id: String,
     pub conversation_id: String,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub resume: bool,
+    #[serde(default)]
+    pub isolated: bool,
+    #[serde(default)]
+    pub mcp_config: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -54,9 +62,42 @@ pub enum SessionEvent {
     },
 }
 
+struct PrivateFile(std::path::PathBuf);
+
+impl PrivateFile {
+    fn write(name: &str, contents: &str) -> Result<Self, String> {
+        let nanos = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_err(|cause| cause.to_string())?
+            .as_nanos();
+        let path = std::env::temp_dir().join(format!(
+            "polychat-{name}-{}-{nanos}.json",
+            std::process::id()
+        ));
+        let mut options = std::fs::OpenOptions::new();
+        options.write(true).create_new(true);
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            options.mode(0o600);
+        }
+        let mut file = options.open(&path).map_err(|cause| cause.to_string())?;
+        std::io::Write::write_all(&mut file, contents.as_bytes())
+            .map_err(|cause| cause.to_string())?;
+        Ok(Self(path))
+    }
+}
+
+impl Drop for PrivateFile {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_file(&self.0);
+    }
+}
+
 struct SessionHandle {
     child: Child,
     stdin: ChildStdin,
+    _mcp_config: Option<PrivateFile>,
 }
 
 #[derive(Default, Clone)]
@@ -162,13 +203,32 @@ pub async fn start(
         registry.remove(&key);
     }
 
-    let argv = process::session_argv(request.driver)
+    let mcp_config = match request.mcp_config.as_deref() {
+        Some(config) => {
+            serde_json::from_str::<serde_json::Value>(config)
+                .ok()
+                .filter(serde_json::Value::is_object)
+                .ok_or_else(|| "The MCP configuration is not valid.".to_string())?;
+            Some(PrivateFile::write("mcp", config)?)
+        }
+        None => None,
+    };
+    let session = request
+        .session_id
+        .as_deref()
+        .map(|id| process::SessionSpec {
+            id,
+            resume: request.resume,
+            isolated: request.isolated,
+            mcp_config: mcp_config.as_ref().map(|file| file.0.as_path()),
+        });
+    let argv = process::session_argv(request.driver, session.as_ref())
         .ok_or_else(|| format!("{:?}", ProcessRefusal::SessionsUnsupported))?;
     let program = process::program_for(request.driver);
-    let mut child = Command::new(crate::programs::resolve_program(program.program))
+    let mut command = Command::new(crate::programs::resolve_program(program.program));
+    let mut child = crate::programs::scrub_agent_environment(&mut command)
         .args(argv)
         .current_dir(&directory)
-        .env("NO_COLOR", "1")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -195,7 +255,11 @@ pub async fn start(
         .take()
         .ok_or_else(|| "The agent produced no diagnostic stream.".to_string())?;
 
-    let handle = Arc::new(AsyncMutex::new(SessionHandle { child, stdin }));
+    let handle = Arc::new(AsyncMutex::new(SessionHandle {
+        child,
+        stdin,
+        _mcp_config: mcp_config,
+    }));
     registry.insert(key.clone(), handle.clone())?;
 
     spawn_stdout_pump(
@@ -355,7 +419,11 @@ mod exit_tests {
             .unwrap();
         let stdin = child.stdin.take().unwrap();
         let stdout = child.stdout.take().unwrap();
-        let handle = Arc::new(AsyncMutex::new(SessionHandle { child, stdin }));
+        let handle = Arc::new(AsyncMutex::new(SessionHandle {
+            child,
+            stdin,
+            _mcp_config: None,
+        }));
         registry.insert(key.clone(), handle.clone()).unwrap();
         let on_event = Channel::<SessionEvent>::new(|body| {
             let _: InvokeResponseBody = body;

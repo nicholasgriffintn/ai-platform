@@ -6,7 +6,6 @@ import {
 import { useCallback } from "react";
 
 import { captureClientException, trackClientEvent } from "../lib/analytics/client.js";
-import { usePostHogClient } from "./use-posthog-client.js";
 
 export const EventCategory = ANALYTICS_EVENT_CATEGORIES;
 
@@ -21,7 +20,6 @@ export type TrackEventProps = {
 
 export function useTrackEvent() {
   const { isAuthenticated, user } = useChatStore();
-  const posthog = usePostHogClient();
 
   const trackEvent = useCallback(
     (event: TrackEventProps) => {
@@ -40,12 +38,11 @@ export function useTrackEvent() {
           properties: enhancedProperties,
         },
         {
-          posthog,
           beacon: typeof window !== "undefined" ? window.Beacon : undefined,
         },
       );
     },
-    [isAuthenticated, user, posthog],
+    [isAuthenticated, user],
   );
 
   const trackException = useCallback(
@@ -58,12 +55,11 @@ export function useTrackEvent() {
           ...properties,
         },
         {
-          posthog,
           beacon: typeof window !== "undefined" ? window.Beacon : undefined,
         },
       );
     },
-    [posthog, isAuthenticated, user],
+    [isAuthenticated, user],
   );
 
   const trackAuth = useCallback(

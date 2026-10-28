@@ -1,7 +1,7 @@
 {
   "name": "@ngriffin_uk/polychat-ai-telemetry",
   "version": "0.2.5",
-  "description": "Telemetry primitives for Polychat: the logger, events, metrics, spans, AI generation and training-example signals fanned out to pluggable sinks (Analytics Engine, PostHog, Beacon, OpenTelemetry), plus token usage normalisation",
+  "description": "Telemetry primitives for Polychat: the logger, events, metrics, spans, AI generation and training-example signals fanned out to pluggable sinks (Analytics Engine, Sentry, Beacon, OpenTelemetry), plus token usage normalisation",
   "license": "Apache-2.0",
   "files": [
     "dist",
@@ -28,8 +28,7 @@
   "dependencies": {
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
-    "@ngriffin_uk/polychat-utility-server": "workspace:^",
-    "posthog-node": "^5.48.1"
+    "@ngriffin_uk/polychat-utility-server": "workspace:^"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",

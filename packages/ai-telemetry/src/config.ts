@@ -1,47 +1,13 @@
 import { readBooleanEnv, readEnvString } from "@ngriffin_uk/polychat-utility-server/env";
 import { normaliseHttpOrigin } from "@ngriffin_uk/polychat-utility-server/urls";
 
-import { BEACON_DEFAULT_ENDPOINT, POSTHOG_DEFAULT_HOST } from "./constants.js";
+import { BEACON_DEFAULT_ENDPOINT } from "./constants.js";
 import type { TelemetryEnv } from "./types.js";
-
-export type PostHogAnalyticsConfig = {
-  apiKey: string;
-  host: string;
-};
-
-export type PostHogFeedbackConfig = {
-  surveyId: string;
-};
 
 export type BeaconAnalyticsConfig = {
   endpoint: string;
   siteId: string;
 };
-
-export function getPostHogAnalyticsConfig(env: TelemetryEnv): PostHogAnalyticsConfig | null {
-  if (!readBooleanEnv(env.POSTHOG_BACKEND_ENABLED, true)) {
-    return null;
-  }
-
-  const apiKey = readEnvString(env.POSTHOG_PROJECT_API_KEY);
-  const host = normaliseHttpOrigin(env.POSTHOG_HOST || POSTHOG_DEFAULT_HOST);
-
-  if (!apiKey || !host) {
-    return null;
-  }
-
-  return { apiKey, host };
-}
-
-export function getPostHogFeedbackConfig(env: TelemetryEnv): PostHogFeedbackConfig | null {
-  if (!getPostHogAnalyticsConfig(env)) {
-    return null;
-  }
-
-  const surveyId = readEnvString(env.POSTHOG_FEEDBACK_SURVEY_ID);
-
-  return surveyId ? { surveyId } : null;
-}
 
 export function getBeaconAnalyticsConfig(env: TelemetryEnv): BeaconAnalyticsConfig | null {
   if (!readBooleanEnv(env.BEACON_BACKEND_ENABLED, false)) {
@@ -58,16 +24,16 @@ export function getBeaconAnalyticsConfig(env: TelemetryEnv): BeaconAnalyticsConf
   return { endpoint, siteId };
 }
 
-export function shouldCaptureAiObservability(env: TelemetryEnv): boolean {
+export function shouldCaptureAiObservability(
+  env: TelemetryEnv,
+  { sentry = false }: { sentry?: boolean } = {},
+): boolean {
   if (!readBooleanEnv(env.AI_OBSERVABILITY_ENABLED, true)) {
     return false;
   }
 
-  const posthogEnabled =
-    readBooleanEnv(env.POSTHOG_AI_OBSERVABILITY_ENABLED, true) && !!getPostHogAnalyticsConfig(env);
-
   return (
-    posthogEnabled ||
+    sentry ||
     !!getBeaconAnalyticsConfig(env) ||
     (!!env.ANALYTICS && typeof env.ANALYTICS.writeDataPoint === "function")
   );
