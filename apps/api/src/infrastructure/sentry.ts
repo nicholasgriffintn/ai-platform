@@ -12,6 +12,8 @@ const NON_REPORTABLE_AUTH_ERROR_TYPES = new Set<ErrorType>([
   ErrorType.UNAUTHORIZED,
 ]);
 
+const WARNING_ERROR_TYPES = new Set<ErrorType>([ErrorType.RATE_LIMIT_ERROR]);
+
 export function getSentryOptions(
   env: Pick<IEnv, "ENV" | "SENTRY_DSN">,
 ): CloudflareOptions | undefined {
@@ -55,7 +57,7 @@ export function shouldCaptureApiError(error: AssistantError): boolean {
     return false;
   }
 
-  return (error.statusCode ?? 500) >= 500;
+  return WARNING_ERROR_TYPES.has(error.type) || (error.statusCode ?? 500) >= 500;
 }
 
 export function captureApiError(error: AssistantError, originalError: Error = error): void {
@@ -64,6 +66,7 @@ export function captureApiError(error: AssistantError, originalError: Error = er
   }
 
   Sentry.withScope((scope) => {
+    scope.setLevel(WARNING_ERROR_TYPES.has(error.type) ? "warning" : "error");
     scope.setTag("error.type", error.type);
     scope.setTag("http.status_code", String(error.statusCode ?? 500));
 

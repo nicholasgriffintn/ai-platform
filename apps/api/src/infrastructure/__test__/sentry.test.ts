@@ -1,6 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { describe, expect, it, vi } from "vitest";
 
-import { getSentryOptions } from "../sentry";
+import { captureApiError, getSentryOptions } from "../sentry";
+
+const scope = vi.hoisted(() => ({ setLevel: vi.fn(), setTag: vi.fn() }));
+const captureException = vi.hoisted(() => vi.fn());
+
+vi.mock("@sentry/cloudflare", () => ({
+  withScope: (callback: (value: typeof scope) => void) => callback(scope),
+  captureException,
+}));
 
 describe("getSentryOptions", () => {
   it("traces AI calls and leaves request traces unsampled", () => {
@@ -25,5 +34,16 @@ describe("getSentryOptions", () => {
         inheritOrSampleWith,
       }),
     ).toBe(0);
+  });
+});
+
+describe("captureApiError", () => {
+  it("reports rate limits as warnings and server failures as errors", () => {
+    captureApiError(new AssistantError("Rate limit exceeded", ErrorType.RATE_LIMIT_ERROR, 429));
+    captureApiError(new AssistantError("Database down", ErrorType.DATABASE_ERROR));
+    captureApiError(new AssistantError("Bad input", ErrorType.PARAMS_ERROR, 400));
+
+    expect(scope.setLevel.mock.calls).toEqual([["warning"], ["error"]]);
+    expect(captureException).toHaveBeenCalledTimes(2);
   });
 });

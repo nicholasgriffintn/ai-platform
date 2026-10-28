@@ -173,7 +173,7 @@ export function handleAIServiceError(error: AssistantError): Response {
         { status: 500 },
       );
     case ErrorType.RATE_LIMIT_ERROR:
-      logger.error("Rate limit exceeded", logContext);
+      logger.warn("Rate limit exceeded", logContext);
 
       return Response.json(
         {

@@ -60,7 +60,7 @@ export async function rateLimit(context: Context, next: Next) {
       isAuthenticated: !!userId,
     });
 
-    throw new AssistantError(errorMessage, ErrorType.RATE_LIMIT_ERROR);
+    throw new AssistantError(errorMessage, ErrorType.RATE_LIMIT_ERROR, 429);
   }
 
   const routeName = pathname.split("/").pop() || "unknown";
