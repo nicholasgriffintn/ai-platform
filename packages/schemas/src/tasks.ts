@@ -242,6 +242,40 @@ export const getTaskResponseSchema = taskSchema;
 
 export const listTasksResponseSchema = listSchema(taskSchema);
 
+export const adminTaskViewSchema = z.enum(["active", "failed", "all"]);
+
+export const adminTasksQuerySchema = z.object({
+  view: adminTaskViewSchema.default("active"),
+});
+
+export const adminTaskSchema = z.object({
+  id: z.string(),
+  task_type: z.string(),
+  status: taskStatusSchema,
+  user_id: z.number().nullable(),
+  priority: z.number(),
+  attempts: z.number(),
+  recovery_count: z.number(),
+  scheduled_at: z.string().nullable(),
+  last_attempted_at: z.string().nullable(),
+  lease_expires_at: z.string().nullable(),
+  error_message: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string().nullable(),
+});
+
+export const adminTaskCountSchema = z.object({
+  task_type: z.string(),
+  status: taskStatusSchema,
+  count: z.number(),
+  oldest: z.string(),
+});
+
+export const adminTasksResponseSchema = z.object({
+  counts: z.array(adminTaskCountSchema),
+  tasks: z.array(adminTaskSchema),
+});
+
 export const memorySynthesisListSchema = listSchema(memorySynthesisSchema);
 
 export const getMemorySynthesisResponseSchema = z.object({
@@ -263,6 +297,9 @@ export type CreateTaskRequest = z.infer<typeof createTaskRequestSchema>;
 export type CreateTaskResponse = z.infer<typeof createTaskResponseSchema>;
 export type GetTaskResponse = z.infer<typeof getTaskResponseSchema>;
 export type ListTasksResponse = z.infer<typeof listTasksResponseSchema>;
+export type AdminTaskView = z.infer<typeof adminTaskViewSchema>;
+export type AdminTask = z.infer<typeof adminTaskSchema>;
+export type AdminTasksResponse = z.infer<typeof adminTasksResponseSchema>;
 export type GetMemorySynthesisResponse = z.infer<typeof getMemorySynthesisResponseSchema>;
 export type TriggerMemorySynthesisRequest = z.infer<typeof triggerMemorySynthesisRequestSchema>;
 export type RecipeExecutionTaskData = z.infer<typeof recipeExecutionTaskDataSchema>;

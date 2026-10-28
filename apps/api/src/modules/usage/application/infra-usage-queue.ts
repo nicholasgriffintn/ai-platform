@@ -1,36 +1,22 @@
 import {
+  applyUsageRollup,
   buildInfraUsageDrafts,
   emitInfraUsage,
   emitUsageEvents,
   type UsageEventDraft,
+  type UsageEventRecord,
 } from "@ngriffin_uk/polychat-ai-billing";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { usageUnitSchema } from "@ngriffin_uk/polychat-schemas";
-import { z } from "zod/v4";
 
+import {
+  usageQueueMessageSchema,
+  type InfraUsageQueueMessage,
+} from "~/modules/usage/domain/queue-messages";
 import type { IEnv } from "~/types";
 
 import { createUsageRuntime } from "./runtime";
 
 const logger = getLogger({ prefix: "usage/infra-usage-queue" });
-
-const INFRA_USAGE_QUEUE_MESSAGE_KIND = "infra_usage";
-
-const infraUsageQueueMessageSchema = z.object({
-  kind: z.literal(INFRA_USAGE_QUEUE_MESSAGE_KIND),
-  userId: z.number().int().positive(),
-  scopeKey: z.string().min(1),
-  occurredAt: z.string().min(1),
-  quantities: z.array(z.object({ unit: usageUnitSchema, quantity: z.number() })),
-});
-
-export type InfraUsageQueueMessage = z.infer<typeof infraUsageQueueMessageSchema>;
-
-export function isInfraUsageQueueMessage<T extends object>(
-  body: T | InfraUsageQueueMessage,
-): body is InfraUsageQueueMessage {
-  return "kind" in body && body.kind === INFRA_USAGE_QUEUE_MESSAGE_KIND;
-}
 
 export async function meterRequestInfraUsage(
   env: IEnv,
@@ -42,36 +28,46 @@ export async function meterRequestInfraUsage(
     return;
   }
 
-  await env.USAGE_QUEUE.send({ kind: INFRA_USAGE_QUEUE_MESSAGE_KIND, ...usage });
+  await env.USAGE_QUEUE.send({ kind: "infra_usage", ...usage } satisfies InfraUsageQueueMessage);
 }
 
-export async function rollUpInfraUsageMessages(
-  env: IEnv,
-  messages: readonly Message[],
-): Promise<void> {
+export async function rollUpUsageMessages(env: IEnv, messages: readonly Message[]): Promise<void> {
   const accepted: Message[] = [];
   const drafts: UsageEventDraft[] = [];
+  const events: UsageEventRecord[] = [];
 
   for (const message of messages) {
-    const parsed = infraUsageQueueMessageSchema.safeParse(message.body);
+    const parsed = usageQueueMessageSchema.safeParse(message.body);
 
     if (!parsed.success) {
-      logger.warn("Dropped a malformed infrastructure usage message", { id: message.id });
+      logger.warn("Dropped a malformed usage message", { id: message.id });
       message.ack();
       continue;
     }
 
     accepted.push(message);
-    drafts.push(...buildInfraUsageDrafts(parsed.data));
+
+    if (parsed.data.kind === "infra_usage") {
+      drafts.push(...buildInfraUsageDrafts(parsed.data));
+    } else {
+      events.push(...parsed.data.events);
+    }
   }
 
-  const outcome = await emitUsageEvents(createUsageRuntime({ env }), {
-    drafts,
-    delivery: "inline",
-  });
+  const runtime = createUsageRuntime({ env });
+  let failed = (await emitUsageEvents(runtime, { drafts, delivery: "inline" })) === "failed";
+
+  if (events.length > 0) {
+    try {
+      await applyUsageRollup(runtime, events);
+    } catch (error) {
+      logger.error("Failed to roll up usage events", { error });
+      failed = true;
+    }
+  }
 
   for (const message of accepted) {
-    if (outcome === "failed") {
+    if (failed) {
       message.retry();
     } else {
       message.ack();

@@ -43,7 +43,7 @@ import { SandboxRunCoordinator } from "./modules/sandbox/infrastructure/run-coor
 import "./models";
 import "./tools";
 import { UserSyncCoordinator } from "./modules/sync/infrastructure/coordinator/object";
-import type { InfraUsageQueueMessage } from "./modules/usage/application/infra-usage-queue";
+import type { UsageQueueMessage } from "./modules/usage/domain/queue-messages";
 import { apiInfoDescription } from "./openapi/content/apiDescription";
 import { tagDescriptions } from "./openapi/documentation";
 import type { IEnv } from "./types";
@@ -329,7 +329,7 @@ const handler = {
     await workflows.runCron(env, event);
   },
   async queue(batch: MessageBatch, env: IEnv): Promise<void> {
-    await consumeQueueBatch(env, batch.messages as Message<TaskMessage | InfraUsageQueueMessage>[]);
+    await consumeQueueBatch(env, batch.messages as Message<TaskMessage | UsageQueueMessage>[]);
   },
 } satisfies ExportedHandler<IEnv>;
 

@@ -1,5 +1,5 @@
 import { recordD1ResultMeta } from "@ngriffin_uk/polychat-ai-billing";
-import type { TaskType, ScheduleType } from "@ngriffin_uk/polychat-schemas";
+import type { TaskType, ScheduleType, TaskStatus } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
@@ -7,6 +7,29 @@ import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { Task, TaskExecution } from "~/infrastructure/database/schema";
 import { publishUserEvent } from "~/modules/sync/application/conversation-events";
 import type { IEnv } from "~/types";
+
+export interface TaskCountRow {
+  task_type: string;
+  status: TaskStatus;
+  count: number;
+  oldest: string;
+}
+
+export interface TaskOverviewRow {
+  id: string;
+  task_type: string;
+  status: TaskStatus;
+  user_id: number | null;
+  priority: number;
+  attempts: number;
+  recovery_count: number;
+  scheduled_at: string | null;
+  last_attempted_at: string | null;
+  execution_lease_expires_at: string | null;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string | null;
+}
 
 export interface CreateTaskParams {
   id?: string;
@@ -154,6 +177,32 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
     }
 
     return Array.isArray(result) ? result.map((task) => this.parseTask(task)) : [];
+  }
+
+  public async countTasksByTypeAndStatus(statuses: readonly TaskStatus[]): Promise<TaskCountRow[]> {
+    return this.runQuery<TaskCountRow>(
+      `SELECT task_type, status, COUNT(*) AS count, MIN(created_at) AS oldest
+       FROM tasks
+       WHERE status IN (${statuses.map(() => "?").join(", ")})
+       GROUP BY task_type, status
+       ORDER BY count DESC`,
+      [...statuses],
+    );
+  }
+
+  public async listRecentTasksByStatus(
+    statuses: readonly TaskStatus[],
+    limit: number,
+  ): Promise<TaskOverviewRow[]> {
+    return this.runQuery<TaskOverviewRow>(
+      `SELECT id, task_type, status, user_id, priority, attempts, recovery_count, scheduled_at,
+              last_attempted_at, execution_lease_expires_at, error_message, created_at, updated_at
+       FROM tasks
+       WHERE status IN (${statuses.map(() => "?").join(", ")})
+       ORDER BY updated_at DESC
+       LIMIT ?`,
+      [...statuses, limit],
+    );
   }
 
   public async getPendingTasks(limit: number, sentBefore: Date, now = new Date()): Promise<Task[]> {

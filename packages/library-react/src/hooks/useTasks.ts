@@ -1,5 +1,7 @@
 import { taskService } from "@ngriffin_uk/polychat-library-client";
 import type {
+  AdminTasksResponse,
+  AdminTaskView,
   CreateTaskResponse,
   GetMemorySynthesisResponse,
   ListPage,
@@ -19,6 +21,7 @@ export const TASK_QUERY_KEYS = {
 };
 
 const ACTIVE_TASK_STATUSES = new Set(["pending", "queued", "running"]);
+const ADMIN_TASK_REFRESH_MS = 10_000;
 
 export function useTasks({ shouldRefetch = true }) {
   const queryClient = useQueryClient();
@@ -125,4 +128,13 @@ export function useMemorySynthesis() {
       });
     },
   };
+}
+
+export function useAdminTasks(view: AdminTaskView, enabled: boolean) {
+  return useQuery<AdminTasksResponse>({
+    queryKey: ["admin-tasks", view],
+    queryFn: () => taskService.listAdminTasks(view),
+    enabled,
+    refetchInterval: ADMIN_TASK_REFRESH_MS,
+  });
 }

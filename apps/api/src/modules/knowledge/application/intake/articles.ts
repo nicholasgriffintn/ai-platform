@@ -1,6 +1,6 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { KnowledgeOrigin } from "@ngriffin_uk/polychat-schemas";
-import { resolveHttpUrl, truncateForModel } from "@ngriffin_uk/polychat-utility-core";
+import { DAY_MS, resolveHttpUrl, truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 import { paginate } from "@ngriffin_uk/polychat-utility-server/arrays";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
@@ -12,6 +12,7 @@ import {
   commitKnowledgeDocument,
   knowledgeSourceId,
 } from "~/modules/knowledge/application/intake/commit";
+import { extendKnowledgeExpiry } from "~/modules/knowledge/domain/envelope";
 import {
   dedupeArticleCandidates,
   knowledgeArticleKey,
@@ -35,6 +36,7 @@ export interface GatherArticlesOptions {
   readLimit: number;
   metadata: (candidate: KnowledgeArticleCandidate) => Record<string, unknown>;
   summarise: boolean;
+  keepDays?: number;
 }
 
 async function readArticlePages(
@@ -103,6 +105,9 @@ export async function gatherKnowledgeArticles(
       .map((entry) => entry.candidate.url),
   );
   const readAt = new Date().toISOString();
+  const expiresAt = options.keepDays
+    ? new Date(Date.now() + options.keepDays * DAY_MS).toISOString()
+    : null;
   const gathered: GatheredArticle[] = [];
 
   for (const { candidate, sourceId } of keyed) {
@@ -129,6 +134,15 @@ export async function gatherKnowledgeArticles(
           title: stored?.title ?? candidate.title.slice(0, 200),
           provider: "web",
           externalUri: url,
+          ...(expiresAt
+            ? {
+                expiresAt: extendKnowledgeExpiry(
+                  stored ? parseJsonRecord(stored.metadata) : null,
+                  expiresAt,
+                  stored !== undefined,
+                ),
+              }
+            : {}),
           content:
             content === undefined ? undefined : truncateForModel(content, MAX_ARTICLE_CHARACTERS),
           metadata: {

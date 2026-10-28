@@ -521,7 +521,6 @@ function taskDefinitions({ threads }) {
       owner: "release-bot",
       stage: "build",
       created: at({ hours: 5 }),
-      dispatch: true,
     },
     {
       project: "launch",
@@ -860,7 +859,7 @@ export function workTaskStatements({ flow, releaseBot, threads }) {
         created_by_user_id: OWNER.id,
         assignee_user_id: definition.person ?? null,
         conversation_id: null,
-        dispatch_task_id: definition.dispatch ? seedId("dispatch", id) : null,
+        dispatch_task_id: null,
         run_id: null,
         goal_id: null,
         completions,
@@ -879,23 +878,6 @@ export function workTaskStatements({ flow, releaseBot, threads }) {
     if (conversationId) {
       after.push(
         `UPDATE "project_task" SET "conversation_id" = ${sqlValue(conversationId)}, "run_id" = ${sqlValue(runId)}, "goal_id" = ${sqlValue(completions ? seedId("goal", id) : null)} WHERE "id" = ${sqlValue(id)};`,
-      );
-    }
-
-    if (definition.dispatch) {
-      after.push(
-        insert("tasks", {
-          id: seedId("dispatch", id),
-          task_type: "project_task_dispatch",
-          status: "queued",
-          priority: 4,
-          user_id: OWNER.id,
-          project_id: projectId,
-          task_data: JSON.stringify({ projectTaskId: id, projectId }),
-          created_by: "user",
-          created_at: definition.created,
-          updated_at: definition.created,
-        }),
       );
     }
   }

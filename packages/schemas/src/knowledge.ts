@@ -62,6 +62,14 @@ export const knowledgeEnrichmentStateSchema = z
 
 export const knowledgeRetrievalSchema = z.enum(["included", "excluded"]);
 
+export const knowledgeSensitivitySchema = z.enum([
+  "public",
+  "personal",
+  "internal",
+  "confidential",
+]);
+export type KnowledgeSensitivity = z.infer<typeof knowledgeSensitivitySchema>;
+
 export const knowledgeClassificationSchema = z
   .object({
     topics: z
@@ -95,6 +103,9 @@ export const knowledgeClassificationSchema = z
       ])
       .describe("What sort of document this is."),
     language: z.string().trim().min(2).max(12).describe("The main language as a BCP 47 tag."),
+    sensitivity: knowledgeSensitivitySchema.describe(
+      "Who it is fit for: public if published for anyone, personal if about the owner's own life, internal if meant for their team, confidential if it must stay with the owner.",
+    ),
   })
   .strict();
 
@@ -121,7 +132,7 @@ export const knowledgeDocumentControlsSchema = z
   .object({
     retrieval: knowledgeRetrievalSchema.optional(),
     expiresAt: z.iso.datetime().nullable().optional(),
-    sensitivity: z.enum(["personal", "internal", "confidential"]).nullable().optional(),
+    sensitivity: knowledgeSensitivitySchema.nullable().optional(),
   })
   .strict()
   .refine((value) => Object.keys(value).length > 0, {
@@ -135,7 +146,7 @@ export const knowledgeDocumentStateSchema = z
     upstream: knowledgeUpstreamSchema.nullable(),
     retrieval: knowledgeRetrievalSchema,
     expiresAt: z.string().nullable(),
-    sensitivity: z.enum(["personal", "internal", "confidential"]).nullable(),
+    sensitivity: knowledgeSensitivitySchema.nullable(),
     stored: z.enum(["inline", "body"]),
     characters: z.number().int().nonnegative(),
     indexed: z.enum(["pending", "lexical", "active"]),

@@ -1,6 +1,7 @@
 import {
   SOURCE_READ_AS_METADATA_KEY,
   type KnowledgeEnrichmentState,
+  type KnowledgeSensitivity,
   type SourceKind,
   type SourceStatus,
 } from "@ngriffin_uk/polychat-schemas";
@@ -198,7 +199,7 @@ export class KnowledgeDocumentRepository extends BaseRepository {
     controls: {
       retrieval?: "included" | "excluded";
       expiresAt?: string | null;
-      sensitivity?: "personal" | "internal" | "confidential" | null;
+      sensitivity?: KnowledgeSensitivity | null;
     },
   ): Promise<void> {
     const statements = [];
@@ -250,9 +251,7 @@ export class KnowledgeDocumentRepository extends BaseRepository {
     );
   }
 
-  getSensitivity(
-    sourceId: string,
-  ): Promise<{ sensitivity: "personal" | "internal" | "confidential" | null } | null> {
+  getSensitivity(sourceId: string): Promise<{ sensitivity: KnowledgeSensitivity | null } | null> {
     return this.runQuery(
       "SELECT sensitivity FROM resource WHERE resource_type = 'source' AND id = ?",
       [sourceId],

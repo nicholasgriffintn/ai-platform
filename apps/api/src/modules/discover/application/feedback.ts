@@ -21,6 +21,7 @@ import {
 } from "~/modules/discover/domain/edition";
 import { collectCardSignals, type DiscoverFeedbackEntry } from "~/modules/discover/domain/feedback";
 
+import { keepDiscoverPage } from "./articles";
 import { requireDiscoverEdition } from "./editions";
 
 const FEEDBACK_SCAN_LIMIT = 300;
@@ -82,6 +83,7 @@ export async function recordDiscoverFeedback(
   }
 
   const title = describeDiscoverCard(card);
+  const url = discoverCardUrl(card);
 
   await context.repositories.get(ActivityRepository).createActivity({
     createdByUserId: user.id,
@@ -96,9 +98,13 @@ export async function recordDiscoverFeedback(
       signal: input.signal,
       topic: discoverCardTopic(card),
       title,
-      url: discoverCardUrl(card),
+      url,
     },
   });
+
+  if (url && (input.signal === "saved" || input.signal === "opened")) {
+    await keepDiscoverPage(context, url);
+  }
 
   const signals = collectCardSignals(await listDiscoverFeedback(context, user.id), edition.id);
 

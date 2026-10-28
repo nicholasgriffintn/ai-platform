@@ -52,6 +52,7 @@ const REMOVAL_OPTIONS = [
 
 const SENSITIVITY_OPTIONS = [
   { value: "none", label: "Not set" },
+  { value: "public", label: "Public" },
   { value: "personal", label: "Personal" },
   { value: "internal", label: "Internal" },
   { value: "confidential", label: "Confidential, never for teammates" },

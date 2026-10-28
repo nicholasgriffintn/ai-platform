@@ -8,6 +8,7 @@ import { sha256Hex, truncateForModel } from "@ngriffin_uk/polychat-utility-core"
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { knowledgeScopeKey } from "~/modules/knowledge/domain/item";
+import { KnowledgeDocumentRepository } from "~/modules/knowledge/infrastructure/KnowledgeDocumentRepository";
 import {
   KnowledgeLinkRepository,
   type ClassificationCollection,
@@ -62,7 +63,7 @@ async function fileClassification(
 export const classifyEnricher: KnowledgeEnricher = {
   name: "classify",
   label: "Topics",
-  version: 1,
+  version: 2,
   trigger: "commit",
   setting: "classify",
   metadataKey: KNOWLEDGE_CLASSIFICATION_METADATA_KEY,
@@ -89,6 +90,12 @@ export const classifyEnricher: KnowledgeEnricher = {
     });
 
     await fileClassification(context, source.id, scope, classification);
+
+    const documents = context.repositories.get(KnowledgeDocumentRepository);
+
+    if ((await documents.getSensitivity(source.id))?.sensitivity === null) {
+      await documents.setControls(source.id, { sensitivity: classification.sensitivity });
+    }
 
     return { status: "done", value: classification };
   },

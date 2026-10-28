@@ -4,15 +4,13 @@ import type {
   UsageRuntime,
   UsageStore,
 } from "@ngriffin_uk/polychat-ai-billing";
-import { USAGE_ROLLUP_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 
 import { createRepositories, type Repositories } from "~/infrastructure/database/repositories";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { getModelConfig } from "~/modules/models/application/resolve";
 import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
-import { TaskService } from "~/modules/queue/application/TaskService";
-import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type { SyncPublisher } from "~/modules/sync/application/publish";
+import type { UsageQueueMessage } from "~/modules/usage/domain/queue-messages";
 import { UsageBalanceRepository } from "~/modules/usage/infrastructure/UsageBalanceRepository";
 import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 import { UsageReservationRepository } from "~/modules/usage/infrastructure/UsageReservationRepository";
@@ -98,14 +96,12 @@ export function createUsageRuntime(options: CreateUsageRuntimeOptions): UsageRun
   return {
     store,
     publisher: publisher ? createUsagePublisher(publisher, store) : undefined,
-    enqueueRollup: env.TASK_QUEUE
-      ? async (payload: UsageRollupPayload, userId) => {
-          await new TaskService(env, repositories.get(TaskRepository)).enqueueTask({
-            task_type: USAGE_ROLLUP_TASK_TYPE,
-            user_id: userId,
-            task_data: payload,
-            priority: 2,
-          });
+    enqueueRollup: env.USAGE_QUEUE
+      ? async (payload: UsageRollupPayload) => {
+          await env.USAGE_QUEUE?.send({
+            kind: "usage_events",
+            events: payload.events,
+          } satisfies UsageQueueMessage);
         }
       : undefined,
     resolveModelConfig: async (model, provider, userId) =>

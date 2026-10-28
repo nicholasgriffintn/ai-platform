@@ -6,6 +6,7 @@ import { SidebarHeader } from "../Sidebar/SidebarHeader.js";
 import { useSidebarPeekPanel } from "../Sidebar/SidebarPeekContext.js";
 import { ProfileAccountTab } from "./Tabs/ProfileAccountTab.js";
 import { ProfileApiKeysTab } from "./Tabs/ProfileApiKeysTab.js";
+import { ProfileBackgroundTasksTab } from "./Tabs/ProfileBackgroundTasksTab.js";
 import { ProfileBillingTab } from "./Tabs/ProfileBillingTab.js";
 import { ProfileChannelsTab } from "./Tabs/ProfileChannelsTab.js";
 import { ProfileCustomisationTab } from "./Tabs/ProfileCustomisationTab.js";
@@ -22,6 +23,7 @@ export interface ProfileSidebarItem {
   label: string;
   group: string;
   pageTitle?: string;
+  adminOnly?: boolean;
   component: React.ComponentType;
 }
 
@@ -71,6 +73,13 @@ export const profileSidebarItems: ProfileSidebarItem[] = [
   { id: "tool-rules", label: "Tool rules", group: ADVANCED_GROUP, component: ProfileToolRulesTab },
   { id: "channels", label: "Channels", group: ADVANCED_GROUP, component: ProfileChannelsTab },
   { id: "sandbox", label: "Sandbox", group: ADVANCED_GROUP, component: ProfileSandboxTab },
+  {
+    id: "background-tasks",
+    label: "Background tasks",
+    group: ADVANCED_GROUP,
+    adminOnly: true,
+    component: ProfileBackgroundTasksTab,
+  },
 ];
 
 export function extendProfileSidebarItems(

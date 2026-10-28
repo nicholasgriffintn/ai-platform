@@ -1,5 +1,9 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { DISCOVER_LINK_METADATA_KEY, type DiscoverFollow } from "@ngriffin_uk/polychat-schemas";
+import {
+  DISCOVER_LINK_METADATA_KEY,
+  DISCOVER_LINK_RETENTION_DAYS,
+  type DiscoverFollow,
+} from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -98,7 +102,10 @@ export async function fileDiscoverLinks(context: ServiceContext, editionId: stri
         context,
         follow.notebookId,
         { results },
-        { [DISCOVER_LINK_METADATA_KEY]: true },
+        {
+          metadata: { [DISCOVER_LINK_METADATA_KEY]: true },
+          keepDays: DISCOVER_LINK_RETENTION_DAYS,
+        },
       );
       filed += results.length;
     } catch (error) {

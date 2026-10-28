@@ -28,12 +28,9 @@ import { registerSourcesQueue } from "~/modules/sources/application/queue/regist
 import { registerSubscriptionQueue } from "~/modules/subscription/application/queue/register";
 import { registerTaskNotificationsQueue } from "~/modules/task-notifications/application/queue/register";
 import { registerTeammatesQueue } from "~/modules/teammates/application/queue/register";
-import {
-  isInfraUsageQueueMessage,
-  rollUpInfraUsageMessages,
-  type InfraUsageQueueMessage,
-} from "~/modules/usage/application/infra-usage-queue";
+import { rollUpUsageMessages } from "~/modules/usage/application/infra-usage-queue";
 import { registerUsageQueue } from "~/modules/usage/application/queue/register";
+import { isUsageQueueMessage, type UsageQueueMessage } from "~/modules/usage/domain/queue-messages";
 import { registerUserQueue } from "~/modules/user/application/queue/register";
 import { registerWebhookEndpointsQueue } from "~/modules/webhook-endpoints/application/queue/register";
 import type { IEnv } from "~/types";
@@ -70,14 +67,14 @@ registerUserQueue(workflows);
 registerWebhookEndpointsQueue(workflows);
 
 function isTaskQueueMessage(
-  message: Message<TaskMessage | InfraUsageQueueMessage>,
+  message: Message<TaskMessage | UsageQueueMessage>,
 ): message is Message<TaskMessage> {
-  return !isInfraUsageQueueMessage(message.body);
+  return !isUsageQueueMessage(message.body);
 }
 
 export async function consumeQueueBatch(
   env: IEnv,
-  messages: readonly Message<TaskMessage | InfraUsageQueueMessage>[],
+  messages: readonly Message<TaskMessage | UsageQueueMessage>[],
 ): Promise<void> {
   const taskMessages = messages.filter(isTaskQueueMessage);
 
@@ -85,18 +82,18 @@ export async function consumeQueueBatch(
     await QueueExecutor.respondToCronQueue(env, taskMessages, workflows);
   }
 
-  const infraUsageMessages = messages.filter((message) => !isTaskQueueMessage(message));
+  const usageMessages = messages.filter((message) => !isTaskQueueMessage(message));
 
-  if (infraUsageMessages.length === 0) {
+  if (usageMessages.length === 0) {
     return;
   }
 
   try {
-    await rollUpInfraUsageMessages(env, infraUsageMessages);
+    await rollUpUsageMessages(env, usageMessages);
   } catch (error) {
-    logger.error("Failed to roll up infrastructure usage", { error });
+    logger.error("Failed to roll up usage", { error });
 
-    for (const message of infraUsageMessages) {
+    for (const message of usageMessages) {
       message.retry();
     }
   }

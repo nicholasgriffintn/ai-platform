@@ -737,7 +737,7 @@ export const resource = sqliteTable(
     parent_output_id: text(),
     capability_id: text(),
     group_id: text(),
-    sensitivity: text({ enum: ["personal", "internal", "confidential"] }),
+    sensitivity: text({ enum: ["public", "personal", "internal", "confidential"] }),
     provenance_json: text({ mode: "json" }).$type<OutputProvenance>(),
     revision_created_by_user_id: integer().references(() => user.id),
     revision_created_at: text(),

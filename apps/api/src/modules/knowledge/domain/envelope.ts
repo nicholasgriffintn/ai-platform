@@ -45,6 +45,20 @@ export function readKnowledgeExpiry(metadata: Metadata): string | null {
   return readNonEmptyString(metadata?.[KNOWLEDGE_EXPIRES_METADATA_KEY]) ?? null;
 }
 
+export function extendKnowledgeExpiry(
+  metadata: Metadata,
+  expiresAt: string,
+  stored: boolean,
+): string | undefined {
+  if (!stored) {
+    return expiresAt;
+  }
+
+  const current = readKnowledgeExpiry(metadata);
+
+  return current && current < expiresAt ? expiresAt : undefined;
+}
+
 export function readKnowledgeEnrichments(
   metadata: Metadata,
 ): Record<string, KnowledgeEnrichmentState> {

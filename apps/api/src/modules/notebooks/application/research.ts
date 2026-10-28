@@ -58,7 +58,7 @@ export async function importNotebookResearch(
   context: ServiceContext,
   notebookId: string,
   input: ImportNotebookResearchInput,
-  metadata: Record<string, unknown> = {},
+  filing: { metadata?: Record<string, unknown>; keepDays?: number } = {},
 ): Promise<NotebookDetail> {
   const gathered = await gatherKnowledgeArticles(
     context,
@@ -68,7 +68,8 @@ export async function importNotebookResearch(
       origin: "research",
       readLimit: input.results.length,
       summarise: false,
-      metadata: () => metadata,
+      keepDays: filing.keepDays,
+      metadata: () => filing.metadata ?? {},
     },
   );
 

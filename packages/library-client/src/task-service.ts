@@ -1,4 +1,6 @@
 import type {
+  AdminTasksResponse,
+  AdminTaskView,
   ListTasksResponse,
   GetTaskResponse,
   CreateTaskResponse,
@@ -39,6 +41,18 @@ class TaskService {
       console.error("Error listing tasks:", error);
       throw error;
     }
+  }
+
+  public async listAdminTasks(view: AdminTaskView): Promise<AdminTasksResponse> {
+    const response = await fetchApi(`/admin/tasks?view=${encodeURIComponent(view)}`, {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch background tasks");
+    }
+
+    return await returnFetchedData<AdminTasksResponse>(response);
   }
 
   public async getTask(taskId: string): Promise<GetTaskResponse> {

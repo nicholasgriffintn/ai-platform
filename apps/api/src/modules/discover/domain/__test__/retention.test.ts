@@ -1,12 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { DiscoverFeedbackEntry } from "../feedback";
-import {
-  openedLinkUrls,
-  savedEditionIds,
-  selectExpiredEditions,
-  selectStaleLinks,
-} from "../retention";
+import { savedEditionIds, selectExpiredEditions } from "../retention";
 
 function entry(
   signal: DiscoverFeedbackEntry["signal"],
@@ -40,28 +35,5 @@ describe("selectExpiredEditions", () => {
         "2026-10-24",
       ),
     ).toEqual(["old_opened"]);
-  });
-});
-
-describe("selectStaleLinks", () => {
-  const now = Date.parse("2026-10-24T08:00:00Z");
-
-  it("prunes links filed more than thirty days ago that were never opened", () => {
-    const opened = openedLinkUrls([
-      entry("opened", "edition_1", "https://example.com/rye/"),
-      entry("more", "edition_1", "https://example.com/ignored"),
-    ]);
-
-    expect(
-      selectStaleLinks(
-        [
-          { id: "fresh", url: "https://example.com/new", createdAt: "2026-10-20T08:00:00Z" },
-          { id: "read", url: "http://example.com/rye", createdAt: "2026-09-01T08:00:00Z" },
-          { id: "stale", url: "https://example.com/ignored", createdAt: "2026-09-01T08:00:00Z" },
-        ],
-        opened,
-        now,
-      ),
-    ).toEqual(["stale"]);
   });
 });

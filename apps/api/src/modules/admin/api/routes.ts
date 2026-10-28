@@ -1,10 +1,15 @@
-import { createTaskResponseSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  adminTasksQuerySchema,
+  adminTasksResponseSchema,
+  createTaskResponseSchema,
+} from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import { z } from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { requireStrictAdmin } from "~/middleware/adminMiddleware";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { listAdminTasks } from "~/modules/admin/application/tasks";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
@@ -60,6 +65,20 @@ addRoute(app, "post", "/model_analysis/ingestions", {
       message: "Artificial Analysis ingestion task queued",
     };
   },
+});
+
+addRoute(app, "get", "/tasks", {
+  tags: ["admin"],
+  summary: "See background tasks across every account",
+  description:
+    "Counts open and failed tasks by type, and lists the most recently updated tasks for the chosen view.",
+  querySchema: adminTasksQuerySchema,
+  auth: true,
+  middleware: [requireStrictAdmin],
+  responses: {
+    "200": { description: "Background tasks", schema: adminTasksResponseSchema },
+  },
+  handler: async ({ query, serviceContext }) => listAdminTasks(serviceContext, query.view),
 });
 
 export default app;

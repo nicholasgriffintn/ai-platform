@@ -18,9 +18,12 @@ export interface ProfilePageProps {
 const NO_ADDITIONAL_ITEMS: readonly ProfileSidebarItem[] = [];
 
 export function ProfilePage({ additionalItems = NO_ADDITIONAL_ITEMS }: ProfilePageProps) {
-  const { isAuthenticated, isLoading } = useAuthStatus();
+  const { isAuthenticated, isLoading, user } = useAuthStatus();
   const [searchParams, setSearchParams] = useSearchParams();
-  const sidebarItems = extendProfileSidebarItems(additionalItems);
+  const isAdmin = user?.role === "admin";
+  const sidebarItems = extendProfileSidebarItems(additionalItems).filter(
+    (item) => isAdmin || !item.adminOnly,
+  );
 
   const activeTabId = searchParams.get("tab") || sidebarItems[0].id;
   const activeItem = sidebarItems.find((item) => item.id === activeTabId);

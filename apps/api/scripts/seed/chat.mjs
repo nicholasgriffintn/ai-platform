@@ -591,7 +591,7 @@ Everything else, including the section order and the destructive action styling,
     ],
   );
 
-  const mediaPending = thread(
+  thread(
     statements,
     {
       id: seedId("chat", "media-pending"),
@@ -636,27 +636,6 @@ Everything else, including the section order and the destructive action styling,
         },
       },
     ],
-  );
-
-  statements.push(
-    insert("tasks", {
-      id: seedId("task", "replicate-poster"),
-      task_type: "replicate_polling",
-      status: "running",
-      priority: 3,
-      user_id: OWNER.id,
-      task_data: JSON.stringify({
-        predictionId: seedId("prediction", "poster"),
-        userId: OWNER.id,
-        conversationId: mediaPending.conversationId,
-        messageId: mediaPending.messageIds[1],
-      }),
-      created_by: "system",
-      attempts: 3,
-      last_attempted_at: at({ minutes: 55 }),
-      created_at: at({ hours: 1 }),
-      updated_at: at({ minutes: 55 }),
-    }),
   );
 
   thread(
@@ -1391,23 +1370,6 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
   }
 
   statements.push(
-    insert("tasks", {
-      id: `delegation_task_${seedId("delegation", "editor")}`,
-      task_type: "delegation_run",
-      status: "running",
-      priority: 4,
-      user_id: OWNER.id,
-      task_data: JSON.stringify({
-        delegationId: seedId("delegation", "editor"),
-        projectId: null,
-        enabledTools: [],
-      }),
-      created_by: "system",
-      attempts: 1,
-      last_attempted_at: at({ hours: 1, minutes: 57 }),
-      created_at: at({ hours: 1, minutes: 59 }),
-      updated_at: at({ hours: 1, minutes: 57 }),
-    }),
     insert("resource", {
       resource_type: "output",
       id: seedId("output", "backpressure-sources"),
@@ -1889,20 +1851,6 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       error_message: "Embedding provider timed out after 30s",
       created_at: at({ days: 5, hours: 1 }),
       updated_at: at({ days: 5 }),
-    }),
-    insert("tasks", {
-      id: seedId("task", "synthesis-scheduled"),
-      task_type: "memory_synthesis",
-      status: "pending",
-      priority: 6,
-      user_id: OWNER.id,
-      task_data: JSON.stringify({ userId: OWNER.id, namespace: "personal" }),
-      schedule_type: "recurring",
-      cron_expression: "0 3 * * *",
-      scheduled_at: ahead({ hours: 9 }),
-      created_by: "user",
-      created_at: at({ days: 20 }),
-      updated_at: at({ days: 1 }),
     }),
   );
 

@@ -106,7 +106,7 @@ const discoverJob = defineTask<DiscoverJobTaskData>({
 
       return {
         status: "success",
-        message: `Archived ${tidied.editions} editions and ${tidied.links} unopened links`,
+        message: `Archived ${tidied.editions} editions`,
       };
     }
 
