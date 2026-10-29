@@ -141,7 +141,8 @@
       },
       "unset": [
         "contextComplexity",
-        "supportsTopP"
+        "supportsTopP",
+        "artificialAnalysis"
       ]
     },
     "anthropic/claude-opus-4-5": {
@@ -388,7 +389,7 @@
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 131072,
         "maxTokens": 131072,
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "July 2024",
         "lastUpdated": "August 21, 2025",
         "dataRetention": {
@@ -803,7 +804,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 3,
+        "speed": 2,
         "releaseDate": "January 14, 2026",
         "lastUpdated": "January 14, 2026",
         "dataRetention": {
@@ -870,7 +871,7 @@
       "model": "grok/grok-4",
       "matchingModel": "grok-4",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 9, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -1589,7 +1590,7 @@
       "overrides": {
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -1675,7 +1676,7 @@
       "model": "gpt/gpt-5-4",
       "matchingModel": "gpt-5.4",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 5, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -1933,7 +1934,7 @@
           "coding",
           "document"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 20, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -2616,7 +2617,7 @@
         "status": "beta",
         "contextWindow": 1000000,
         "maxTokens": 128000,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,

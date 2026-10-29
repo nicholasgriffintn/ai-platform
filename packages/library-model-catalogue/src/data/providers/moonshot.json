@@ -145,7 +145,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004

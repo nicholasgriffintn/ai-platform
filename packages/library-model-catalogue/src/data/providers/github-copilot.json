@@ -46,7 +46,7 @@
         "costPer1kOutputTokens": 0.015,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 26,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -109,6 +109,7 @@
         "contextComplexity",
         "supportsResponseFormat",
         "supportsTopP",
+        "artificialAnalysis",
         "reasoningConfig"
       ]
     },
@@ -214,6 +215,7 @@
         "contextComplexity",
         "supportsResponseFormat",
         "supportsTopP",
+        "artificialAnalysis",
         "reasoningConfig"
       ]
     },
@@ -476,7 +478,7 @@
       "matchingModel": "gpt-5.2-codex",
       "overrides": {
         "name": "GPT-5.2-Codex",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -531,7 +533,7 @@
           ]
         },
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -801,7 +803,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 8, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006

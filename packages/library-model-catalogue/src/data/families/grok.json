@@ -663,8 +663,8 @@
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 42.2,
-          "agenticIndex": 15.5,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -706,8 +706,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 72.4,
-          "agenticIndex": 41.2,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -750,8 +750,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 76.8,
-          "agenticIndex": 53,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -794,8 +794,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 76.8,
-          "agenticIndex": 53,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -838,8 +838,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 76.8,
-          "agenticIndex": 53,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -1325,7 +1325,7 @@
           "video",
           "creative"
         ],
-        "reliability": 5,
+        "reliability": 3,
         "releaseDate": "May 30, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false,
@@ -1339,10 +1339,10 @@
             {
               "key": "image_to_videoElo",
               "label": "Image-to-video arena",
-              "value": 1331,
+              "value": 1051,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 11
+              "confidenceInterval95": 19
             }
           ]
         }
@@ -1367,7 +1367,7 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 974,
+              "value": 978,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 17

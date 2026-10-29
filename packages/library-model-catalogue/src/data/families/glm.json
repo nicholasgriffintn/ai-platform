@@ -320,7 +320,7 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 45.3,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -424,8 +424,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 55.8,
-          "agenticIndex": 23.9,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -454,8 +454,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 55.8,
-          "agenticIndex": 23.9,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -505,8 +505,8 @@
         "releaseDate": "June 13, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 68.8,
-          "agenticIndex": 38.4,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -584,7 +584,7 @@
           "coding",
           "tool_use"
         ],
-        "contextComplexity": 4,
+        "contextComplexity": 2,
         "reliability": 3,
         "releaseDate": "June 13, 2026",
         "supportsToolCalls": false,
@@ -598,8 +598,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 68.8,
-          "agenticIndex": 38.4,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -743,7 +743,7 @@
           "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 1,
         "releaseDate": "August 14, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -755,8 +755,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 31.7,
-          "codingIndex": 74.8,
-          "agenticIndex": 53.1,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -773,7 +773,7 @@
           "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 1,
         "releaseDate": "August 18, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -784,8 +784,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 31.7,
-          "codingIndex": 74.8,
-          "agenticIndex": 53.1,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -801,7 +801,7 @@
           "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 1,
         "releaseDate": "August 14, 2026",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -816,8 +816,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 31.7,
-          "codingIndex": 74.8,
-          "agenticIndex": 53.1,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -897,7 +897,7 @@
           "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 1,
         "releaseDate": "August 14, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -911,8 +911,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 31.7,
-          "codingIndex": 74.8,
-          "agenticIndex": 53.1,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -947,7 +947,7 @@
           "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 1,
         "releaseDate": "August 14, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -961,8 +961,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 31.7,
-          "codingIndex": 74.8,
-          "agenticIndex": 53.1,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

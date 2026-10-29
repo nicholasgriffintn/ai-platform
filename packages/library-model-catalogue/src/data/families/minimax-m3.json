@@ -20,7 +20,7 @@
       "document"
     ],
     "contextComplexity": 5,
-    "reliability": 2,
+    "reliability": 1,
     "knowledgeCutoffDate": "January 2025",
     "releaseDate": "June 1, 2026",
     "supportsToolCalls": true,
@@ -35,8 +35,8 @@
     },
     "artificialAnalysis": {
       "intelligenceIndex": 18.7,
-      "codingIndex": 58.6,
-      "agenticIndex": 29.5,
+      "codingIndex": null,
+      "agenticIndex": null,
       "intelligenceIndexVersion": 5
     }
   },

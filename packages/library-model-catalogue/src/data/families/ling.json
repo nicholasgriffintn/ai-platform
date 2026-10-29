@@ -38,8 +38,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 50.6,
-          "agenticIndex": 19.3,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -74,8 +74,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 55.6,
-          "agenticIndex": 27.9,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -142,8 +142,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 57,
-          "agenticIndex": 28.7,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -197,13 +197,13 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "July 15, 2026",
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 12.5,
-          "codingIndex": 52.1,
-          "agenticIndex": 22.5,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -250,7 +250,7 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "July 15, 2026",
         "supportsResponseFormat": false,
         "supportsAttachments": true,
@@ -267,8 +267,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 12.5,
-          "codingIndex": 52.1,
-          "agenticIndex": 22.5,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -293,13 +293,13 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "July 30, 2026",
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 12.9,
-          "codingIndex": 52.9,
-          "agenticIndex": 23.5,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -328,7 +328,7 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "July 30, 2026",
         "supportsResponseFormat": false,
         "supportsAttachments": true,
@@ -345,8 +345,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 12.9,
-          "codingIndex": 52.9,
-          "agenticIndex": 23.5,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -554,7 +554,7 @@
         "releaseDate": "April 21, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 25.3,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -589,8 +589,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 50.6,
-          "agenticIndex": 19.3,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -622,8 +622,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 55.6,
-          "agenticIndex": 27.9,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -654,8 +654,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 55.6,
-          "agenticIndex": 27.9,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -691,8 +691,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 50.6,
-          "agenticIndex": 19.3,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -745,8 +745,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 57,
-          "agenticIndex": 28.7,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -767,8 +767,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 57,
-          "agenticIndex": 28.7,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -806,8 +806,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 26.5,
-          "agenticIndex": 4.4,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -838,8 +838,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 26.5,
-          "agenticIndex": 4.4,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

@@ -9,6 +9,7 @@
         "text"
       ]
     },
+    "reliability": 1,
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
@@ -25,7 +26,6 @@
         "strengths": [
           "tool_use"
         ],
-        "reliability": 1,
         "releaseDate": "August 12, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -46,7 +46,6 @@
           "tool_use"
         ],
         "contextComplexity": 3,
-        "reliability": 1,
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "January 20, 2025",
         "reasoningConfig": {
@@ -72,7 +71,6 @@
         "strengths": [
           "tool_use"
         ],
-        "reliability": 1,
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "May 28, 2025",
         "artificialAnalysis": {
@@ -110,7 +108,6 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "December 29, 2025",
         "reasoningConfig": {
@@ -135,7 +132,6 @@
         "contextWindow": 80000,
         "maxTokens": 80000,
         "contextComplexity": 3,
-        "reliability": 1,
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "January 20, 2025",
         "supportsToolCalls": false,
@@ -186,18 +182,18 @@
       "defaults": {
         "name": "DeepSeek V4 Pro",
         "description": "Open MoE flagship with million-token context for coding and long agent runs",
+        "contextWindow": 1048576,
         "strengths": [
           "tool_use",
           "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 2,
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "April 24, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": 23.1,
-          "codingIndex": 68.8,
-          "agenticIndex": 41.3,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -212,12 +208,11 @@
           "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 2,
         "releaseDate": "August 13, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": 23.1,
-          "codingIndex": 68.8,
-          "agenticIndex": 41.3,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -233,7 +228,6 @@
           "coding"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
         "releaseDate": "August 13, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -247,8 +241,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 23.1,
-          "codingIndex": 68.8,
-          "agenticIndex": 41.3,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -264,7 +258,6 @@
           "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 2,
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "April 24, 2026",
         "reasoningConfig": {
@@ -279,8 +272,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 23.1,
-          "codingIndex": 68.8,
-          "agenticIndex": 41.3,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -296,7 +289,6 @@
           "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 2,
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "April 24, 2026",
         "reasoningConfig": {
@@ -308,8 +300,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 23.1,
-          "codingIndex": 68.8,
-          "agenticIndex": 41.3,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -321,7 +313,6 @@
         "contextWindow": 8192,
         "maxTokens": 7372,
         "contextComplexity": 1,
-        "reliability": 1,
         "knowledgeCutoffDate": "July 31, 2024",
         "releaseDate": "January 23, 2025",
         "supportsToolCalls": false,

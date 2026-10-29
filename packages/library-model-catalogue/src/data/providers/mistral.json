@@ -273,7 +273,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 5,
+        "speed": 4,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -287,8 +287,8 @@
         "costPer1kOutputTokens": 0.0001,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 4.8,
-          "agenticIndex": 0.8,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -450,6 +450,7 @@
       "matchingModel": "zai-glm-5-3-flash",
       "overrides": {
         "contextWindow": 1048576,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

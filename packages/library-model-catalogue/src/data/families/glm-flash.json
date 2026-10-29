@@ -115,14 +115,13 @@
       "defaults": {
         "name": "GLM-5.3-Flash",
         "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
-        "maxTokens": 131072,
         "contextComplexity": 5,
         "reliability": 4,
         "releaseDate": "August 26, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 71.5,
-          "agenticIndex": 50.9,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -166,8 +165,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 71.5,
-          "agenticIndex": 50.9,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

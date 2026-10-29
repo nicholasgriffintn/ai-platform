@@ -962,7 +962,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "deprecated": true,
         "lastUpdated": "December 11, 2025",
         "dataRetention": {
@@ -1327,7 +1327,7 @@
           "document",
           "search"
         ],
-        "speed": 3,
+        "speed": 2,
         "multimodal": true,
         "lastUpdated": "March 5, 2026",
         "dataRetention": {

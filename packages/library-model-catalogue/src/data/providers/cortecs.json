@@ -44,7 +44,7 @@
       "matchingModel": "claude-4-6-sonnet",
       "overrides": {
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003196,
         "costPer1kOutputTokens": 0.01594,
@@ -567,7 +567,7 @@
           "document",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.000475,
         "costPer1kOutputTokens": 0.00297
@@ -624,7 +624,7 @@
       "overrides": {
         "contextWindow": 196000,
         "maxTokens": 196000,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.000359,
         "costPer1kOutputTokens": 0.001435,
@@ -804,7 +804,7 @@
       "overrides": {
         "name": "Qwen3 Coder 30B A3B Instruct",
         "maxTokens": 262144,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "July 31, 2025",
         "costPer1kInputTokens": 0.000179,
         "costPer1kOutputTokens": 0.000697,
@@ -1203,7 +1203,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.002898,
         "costPer1kOutputTokens": 0.015453,
@@ -1279,7 +1279,7 @@
       "overrides": {
         "name": "Mistral Small 2603",
         "maxTokens": 256000,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.000156,
         "costPer1kOutputTokens": 0.000625,
@@ -1426,7 +1426,8 @@
       },
       "unset": [
         "strengths",
-        "knowledgeCutoffDate"
+        "knowledgeCutoffDate",
+        "artificialAnalysis"
       ]
     },
     "ministral-8b-2512": {
@@ -1518,7 +1519,7 @@
       "model": "cortecs/magistral-small-2509/magistral-small-2509",
       "matchingModel": "magistral-small-2509",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "18 September 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015
@@ -1576,7 +1577,7 @@
         "contextWindow": 131000,
         "maxTokens": 131000,
         "contextComplexity": 4,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.000045,
         "costPer1kOutputTokens": 0.000167,
@@ -2603,10 +2604,10 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "maxTokens": 393216,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
-        "costPer1kInputTokens": 0.000201,
-        "costPer1kOutputTokens": 0.0006,
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2721,7 +2722,6 @@
       "overrides": {
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "contextWindow": 1000000,
-        "contextComplexity": 5,
         "speed": 4,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.000765,

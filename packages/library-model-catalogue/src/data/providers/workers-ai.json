@@ -68,7 +68,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -556,7 +556,8 @@
       },
       "unset": [
         "contextComplexity",
-        "reliability"
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "@cf/meta/llama-3.1-8b-instruct-fp8": {
@@ -679,7 +680,7 @@
           "coding",
           "tool_use"
         ],
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0003
@@ -826,6 +827,7 @@
       "matchingModel": "@cf/qwen/qwen3.8-27b",
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 262144,
         "maxTokens": 262144,
         "speed": 2,
         "lastUpdated": "August 14, 2026",

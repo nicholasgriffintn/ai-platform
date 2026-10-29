@@ -176,7 +176,8 @@
       },
       "unset": [
         "strengths",
-        "knowledgeCutoffDate"
+        "knowledgeCutoffDate",
+        "artificialAnalysis"
       ]
     },
     "openai.gpt-oss-safeguard-20b": {
@@ -197,7 +198,8 @@
       },
       "unset": [
         "strengths",
-        "knowledgeCutoffDate"
+        "knowledgeCutoffDate",
+        "artificialAnalysis"
       ]
     },
     "anthropic.claude-3-5-haiku": {
@@ -245,7 +247,8 @@
       "unset": [
         "openWeights",
         "supportsResponseFormat",
-        "supportsTopP"
+        "supportsTopP",
+        "artificialAnalysis"
       ]
     },
     "anthropic.claude-3-7-sonnet": {
@@ -772,6 +775,7 @@
         "contextComplexity",
         "supportsResponseFormat",
         "supportsTopP",
+        "artificialAnalysis",
         "reasoningConfig"
       ]
     },
@@ -1148,7 +1152,7 @@
       "model": "ministral/ministral-3-8b",
       "matchingModel": "mistral.ministral-3-8b-instruct",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "December 2, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1251,7 +1255,7 @@
         "name": "gpt-oss-20b",
         "maxTokens": 128000,
         "contextComplexity": 4,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1269,7 +1273,7 @@
         "name": "Qwen3 235B A22B 2507",
         "maxTokens": 131072,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "April 2024",
         "lastUpdated": "September 18, 2025",
         "dataRetention": {
@@ -1278,13 +1282,7 @@
         },
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00088,
-        "supportsAttachments": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": 22.1,
-          "agenticIndex": 1.3,
-          "intelligenceIndexVersion": 5
-        }
+        "supportsAttachments": false
       }
     },
     "qwen.qwen3-32b-v1:0": {
@@ -1415,7 +1413,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6",
       "matchingModel": "anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1462,7 +1460,8 @@
       },
       "unset": [
         "contextComplexity",
-        "supportsTopP"
+        "supportsTopP",
+        "artificialAnalysis"
       ]
     },
     "au.anthropic.claude-sonnet-4-6": {
@@ -1527,7 +1526,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-eu",
       "matchingModel": "eu.anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1566,7 +1565,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-global",
       "matchingModel": "global.anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1595,7 +1594,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-jp",
       "matchingModel": "jp.anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1627,7 +1626,7 @@
       "model": "magistral/magistral-small-1-2",
       "matchingModel": "mistral.magistral-small-2509",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "September 18, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1641,7 +1640,7 @@
       "model": "ministral/ministral-3-3b",
       "matchingModel": "mistral.ministral-3-3b-instruct",
       "overrides": {
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "December 2, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1773,7 +1772,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6-us",
       "matchingModel": "us.anthropic.claude-sonnet-4-6",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2714,7 +2713,7 @@
       "model": "gpt-oss/gpt-oss-20b-govcloud",
       "matchingModel": "us-gov.openai.gpt-oss-20b-1:0",
       "overrides": {
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",

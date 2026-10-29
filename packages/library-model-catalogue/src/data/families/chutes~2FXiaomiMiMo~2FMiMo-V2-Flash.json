@@ -10,7 +10,7 @@
         "text"
       ]
     },
-    "contextComplexity": 3,
+    "contextComplexity": 2,
     "reliability": 3,
     "releaseDate": "December 29, 2025",
     "supportsToolCalls": false,
@@ -19,7 +19,7 @@
     "supportsTemperature": true,
     "artificialAnalysis": {
       "intelligenceIndex": null,
-      "codingIndex": 49.8,
+      "codingIndex": null,
       "agenticIndex": null,
       "intelligenceIndexVersion": 5
     }

@@ -46,8 +46,8 @@
         "releaseDate": "April 22, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 56.8,
-          "agenticIndex": 15.8,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -80,8 +80,8 @@
         "releaseDate": "April 22, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 56.8,
-          "agenticIndex": 15.8,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -108,8 +108,8 @@
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 60.2,
-          "agenticIndex": 21.3,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -253,7 +253,7 @@
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 49.8,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }

@@ -460,8 +460,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 52.6,
-          "agenticIndex": 15.3,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -486,8 +486,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 52.6,
-          "agenticIndex": 15.3,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -572,7 +572,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "June 1, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
@@ -585,8 +585,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 18.7,
-          "codingIndex": 58.6,
-          "agenticIndex": 29.5,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -706,7 +706,7 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "June 1, 2026",
         "supportsResponseFormat": true,
         "supportsAttachments": true,
@@ -722,8 +722,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 18.7,
-          "codingIndex": 58.6,
-          "agenticIndex": 29.5,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -734,7 +734,7 @@
         "description": "MiniMax multimodal coding model for long-context reasoning and agent tasks",
         "contextWindow": 1048576,
         "contextComplexity": 5,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "June 1, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
@@ -746,8 +746,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 18.7,
-          "codingIndex": 58.6,
-          "agenticIndex": 29.5,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

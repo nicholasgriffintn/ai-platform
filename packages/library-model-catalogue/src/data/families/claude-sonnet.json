@@ -351,8 +351,8 @@
         "supportsTopP": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 71.5,
-          "agenticIndex": 43.6,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -531,8 +531,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 71.5,
-          "agenticIndex": 43.6,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -553,8 +553,8 @@
         "supportsTopP": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 71.5,
-          "agenticIndex": 43.6,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -586,8 +586,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 71.5,
-          "agenticIndex": 43.6,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -620,8 +620,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 71.5,
-          "agenticIndex": 43.6,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -653,8 +653,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 71.5,
-          "agenticIndex": 43.6,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -686,8 +686,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 71.5,
-          "agenticIndex": 43.6,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

@@ -85,8 +85,8 @@
         "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 4.8,
-          "agenticIndex": 0.8,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -129,8 +129,8 @@
         "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 9.7,
-          "agenticIndex": 0.6,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

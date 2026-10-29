@@ -169,7 +169,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -369,7 +369,8 @@
       },
       "unset": [
         "strengths",
-        "knowledgeCutoffDate"
+        "knowledgeCutoffDate",
+        "artificialAnalysis"
       ]
     },
     "whisper-large-v3": {
@@ -416,6 +417,7 @@
         "status": "beta",
         "contextWindow": 131072,
         "maxTokens": 16384,
+        "contextComplexity": 3,
         "speed": 2,
         "isFeatured": true,
         "lastUpdated": "August 14, 2026",
