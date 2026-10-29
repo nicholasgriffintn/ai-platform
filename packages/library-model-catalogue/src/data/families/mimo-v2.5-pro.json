@@ -17,7 +17,7 @@
       "tool_use"
     ],
     "contextComplexity": 5,
-    "reliability": 2,
+    "reliability": 3,
     "knowledgeCutoffDate": "December 2024",
     "releaseDate": "April 22, 2026",
     "supportsToolCalls": true,
@@ -31,10 +31,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 26,
+      "intelligenceIndex": null,
       "codingIndex": 60.2,
       "agenticIndex": 21.3,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The mimo v2.5 pro family includes models that produce text.",

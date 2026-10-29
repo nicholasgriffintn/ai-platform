@@ -66,10 +66,10 @@
         "supportsResponseFormat": true,
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 6.7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -90,10 +90,10 @@
         "knowledgeCutoffDate": "September 2024",
         "releaseDate": "March 1, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 7.1,
+          "intelligenceIndex": null,
           "codingIndex": 26.3,
           "agenticIndex": 1.2,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -142,10 +142,10 @@
         "knowledgeCutoffDate": "March 2025",
         "releaseDate": "June 20, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 7,
+          "intelligenceIndex": null,
           "codingIndex": 12.5,
           "agenticIndex": 1,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -191,10 +191,10 @@
         "releaseDate": "March 16, 2026",
         "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 11.3,
+          "intelligenceIndex": null,
           "codingIndex": 26.6,
           "agenticIndex": 0.8,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -242,10 +242,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 11.3,
+          "intelligenceIndex": null,
           "codingIndex": 26.6,
           "agenticIndex": 0.8,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -257,10 +257,10 @@
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "March 16, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 5.8,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     }

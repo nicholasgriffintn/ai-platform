@@ -200,10 +200,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 28.2,
+          "intelligenceIndex": null,
           "codingIndex": 59.1,
           "agenticIndex": 23.7,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

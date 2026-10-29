@@ -110,7 +110,7 @@
           ]
         },
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "releaseDate": "June 17, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -120,10 +120,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 16.1,
+          "intelligenceIndex": null,
           "codingIndex": 33.3,
           "agenticIndex": 1.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -153,7 +153,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "releaseDate": "June 17, 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -166,10 +166,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 16.1,
+          "intelligenceIndex": null,
           "codingIndex": 33.3,
           "agenticIndex": 1.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -249,7 +249,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 3,
         "releaseDate": "February 19, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -260,10 +260,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 29.7,
+          "intelligenceIndex": null,
           "codingIndex": 68.8,
           "agenticIndex": 8.2,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -351,10 +351,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 28,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -394,10 +394,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 28,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

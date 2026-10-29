@@ -23,10 +23,10 @@
     "supportsAttachments": false,
     "supportsTemperature": true,
     "artificialAnalysis": {
-      "intelligenceIndex": 5.9,
+      "intelligenceIndex": null,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "Efficient model for low-latency assistance, extraction, and routine automation",

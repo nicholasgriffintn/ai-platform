@@ -116,10 +116,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 15.3,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -202,10 +202,10 @@
         "releaseDate": "February 17, 2026",
         "supportsTemperature": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 24.7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -224,10 +224,10 @@
         "releaseDate": "February 17, 2026",
         "supportsTemperature": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 24.7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -256,10 +256,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 24.7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -288,10 +288,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 24.7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -320,10 +320,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 24.7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -350,10 +350,10 @@
         "releaseDate": "June 30, 2026",
         "supportsTopP": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 38.2,
+          "intelligenceIndex": null,
           "codingIndex": 71.5,
           "agenticIndex": 43.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -382,10 +382,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 56,
+          "intelligenceIndex": 54.2,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -413,10 +413,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 56,
+          "intelligenceIndex": 54.2,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -433,10 +433,10 @@
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 28, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 56,
+          "intelligenceIndex": 54.2,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -465,10 +465,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 56,
+          "intelligenceIndex": 54.2,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -497,10 +497,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 56,
+          "intelligenceIndex": 54.2,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -530,10 +530,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 38.2,
+          "intelligenceIndex": null,
           "codingIndex": 71.5,
           "agenticIndex": 43.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -552,10 +552,10 @@
         "releaseDate": "June 30, 2026",
         "supportsTopP": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 38.2,
+          "intelligenceIndex": null,
           "codingIndex": 71.5,
           "agenticIndex": 43.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -585,10 +585,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 38.2,
+          "intelligenceIndex": null,
           "codingIndex": 71.5,
           "agenticIndex": 43.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -619,10 +619,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 38.2,
+          "intelligenceIndex": null,
           "codingIndex": 71.5,
           "agenticIndex": 43.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -652,10 +652,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 38.2,
+          "intelligenceIndex": null,
           "codingIndex": 71.5,
           "agenticIndex": 43.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -685,10 +685,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 38.2,
+          "intelligenceIndex": null,
           "codingIndex": 71.5,
           "agenticIndex": 43.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -740,10 +740,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 24.7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     }

@@ -230,7 +230,7 @@
       "matchingModel": "kimi-k3.1-pro",
       "overrides": {
         "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01

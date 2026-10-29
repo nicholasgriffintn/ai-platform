@@ -24,10 +24,10 @@
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 10.2,
+          "intelligenceIndex": null,
           "codingIndex": 20.2,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -50,10 +50,10 @@
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 10.2,
+          "intelligenceIndex": null,
           "codingIndex": 20.2,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -76,10 +76,10 @@
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 10.2,
+          "intelligenceIndex": null,
           "codingIndex": 20.2,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -102,10 +102,10 @@
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "July 18, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 6.7,
+          "intelligenceIndex": null,
           "codingIndex": 11.4,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -129,10 +129,10 @@
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "July 18, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 6.7,
+          "intelligenceIndex": null,
           "codingIndex": 11.4,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -156,10 +156,10 @@
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "July 18, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 6.7,
+          "intelligenceIndex": null,
           "codingIndex": 11.4,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -223,10 +223,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 24.1,
+          "intelligenceIndex": null,
           "codingIndex": 56.1,
           "agenticIndex": 17.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -261,10 +261,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 24.1,
+          "intelligenceIndex": null,
           "codingIndex": 56.1,
           "agenticIndex": 17.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -296,10 +296,10 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 16.8,
+          "intelligenceIndex": null,
           "codingIndex": 15.6,
           "agenticIndex": 6.8,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -332,10 +332,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 16.8,
+          "intelligenceIndex": null,
           "codingIndex": 15.6,
           "agenticIndex": 6.8,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -368,10 +368,10 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 16.8,
+          "intelligenceIndex": null,
           "codingIndex": 15.6,
           "agenticIndex": 6.8,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

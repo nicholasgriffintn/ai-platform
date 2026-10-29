@@ -9,7 +9,13 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": false
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
   },
   "description": "The o mini family includes models that produce audio, text.",
   "models": {
@@ -60,12 +66,6 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 9.8,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -85,13 +85,7 @@
           "document",
           "tool_use"
         ],
-        "releaseDate": "December 20, 2024",
-        "artificialAnalysis": {
-          "intelligenceIndex": 12.5,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "December 20, 2024"
       }
     },
     "o4-mini": {
@@ -116,12 +110,6 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 16.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -166,12 +154,6 @@
             "max"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 16.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -202,12 +184,6 @@
             "high"
           ],
           "defaultEffort": "low"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 16.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     }

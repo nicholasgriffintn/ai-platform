@@ -32,7 +32,7 @@
           "tool_use"
         ],
         "contextComplexity": 3,
-        "speed": 4,
+        "speed": 5,
         "releaseDate": "August 5, 2025",
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00005,
@@ -114,7 +114,6 @@
         "name": "DeepSeek V3.1",
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "maxTokens": 163840,
-        "contextComplexity": 4,
         "speed": 3,
         "knowledgeCutoffDate": "July 2025",
         "lastUpdated": "August 21, 2025",
@@ -219,7 +218,7 @@
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 32768,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.0003,
@@ -335,7 +334,6 @@
       "overrides": {
         "name": "GLM 5.1",
         "contextWindow": 202800,
-        "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "April 1, 2026",
         "lastUpdated": "April 1, 2026",
@@ -354,7 +352,7 @@
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196608,
         "maxTokens": 196608,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -603,7 +601,9 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "low",
+            "medium",
+            "xhigh"
           ],
           "defaultEffort": "none"
         }
@@ -636,7 +636,6 @@
       "overrides": {
         "name": "GLM 5.3 Flash",
         "contextWindow": 1048573,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -679,7 +678,16 @@
         "speed": 2,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.006
+        "costPer1kOutputTokens": 0.006,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "accounts/fireworks/routers/glm-5p3-fast": {
@@ -698,7 +706,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "speed": 4,
+        "speed": 5,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -747,8 +755,7 @@
         }
       },
       "unset": [
-        "contextComplexity",
-        "reliability"
+        "contextComplexity"
       ]
     },
     "accounts/fireworks/routers/deepseek-pro-latest": {
@@ -880,7 +887,6 @@
       "matchingModel": "accounts/fireworks/models/muse-spark-open",
       "overrides": {
         "description": "Muse Spark Open is an 816B total / 42B active open-weight multimodal reasoning model from Meta for coding and long-horizon agentic work, with 1M-token context.",
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

@@ -18,10 +18,10 @@
     "contextComplexity": 1,
     "reliability": 1,
     "artificialAnalysis": {
-      "intelligenceIndex": 6.4,
+      "intelligenceIndex": null,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The perplexity ai/r1 1776 family includes models that produce text.",

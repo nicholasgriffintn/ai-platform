@@ -14,7 +14,6 @@
       ]
     },
     "contextComplexity": 5,
-    "reliability": 3,
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
@@ -123,10 +122,10 @@
         "releaseDate": "November 24, 2025",
         "supportsTemperature": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 23.7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -156,10 +155,10 @@
           "thinkingApi": "budget"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 23.7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -189,10 +188,10 @@
           "thinkingApi": "budget"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 23.7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -213,10 +212,10 @@
         "releaseDate": "November 24, 2025",
         "supportsTemperature": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 23.7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -247,10 +246,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 23.7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -280,10 +279,10 @@
           "thinkingApi": "budget"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 23.7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -301,10 +300,10 @@
         "releaseDate": "February 5, 2026",
         "supportsTemperature": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 26.4,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -322,10 +321,10 @@
         "releaseDate": "February 5, 2026",
         "supportsTemperature": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 26.4,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -349,10 +348,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 26.4,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -380,10 +379,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 26.4,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -411,10 +410,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 26.4,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -428,13 +427,14 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 16, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 40.7,
+          "intelligenceIndex": null,
           "codingIndex": 73.6,
           "agenticIndex": 38.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -448,6 +448,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 16, 2026",
         "reasoningConfig": {
@@ -462,10 +463,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 40.7,
+          "intelligenceIndex": null,
           "codingIndex": 73.6,
           "agenticIndex": 38.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -479,13 +480,14 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 16, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 40.7,
+          "intelligenceIndex": null,
           "codingIndex": 73.6,
           "agenticIndex": 38.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -499,13 +501,14 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 16, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 40.7,
+          "intelligenceIndex": null,
           "codingIndex": 73.6,
           "agenticIndex": 38.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -519,6 +522,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 16, 2026",
         "reasoningConfig": {
@@ -533,10 +537,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 40.7,
+          "intelligenceIndex": null,
           "codingIndex": 73.6,
           "agenticIndex": 38.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -550,6 +554,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 16, 2026",
         "reasoningConfig": {
@@ -564,10 +569,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 40.7,
+          "intelligenceIndex": null,
           "codingIndex": 73.6,
           "agenticIndex": 38.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -581,6 +586,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "January 31, 2026",
         "releaseDate": "April 16, 2026",
         "reasoningConfig": {
@@ -595,10 +601,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 40.7,
+          "intelligenceIndex": null,
           "codingIndex": 73.6,
           "agenticIndex": 38.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -612,13 +618,14 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "January 2026",
         "releaseDate": "May 28, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
+          "intelligenceIndex": null,
           "codingIndex": 74.3,
           "agenticIndex": 41.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -632,6 +639,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "January 2026",
         "releaseDate": "May 28, 2026",
         "reasoningConfig": {
@@ -646,10 +654,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
+          "intelligenceIndex": null,
           "codingIndex": 74.3,
           "agenticIndex": 41.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -663,13 +671,14 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "January 2026",
         "releaseDate": "May 28, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
+          "intelligenceIndex": null,
           "codingIndex": 74.3,
           "agenticIndex": 41.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -677,13 +686,14 @@
       "defaults": {
         "name": "Claude Opus 4.8 (Fast)",
         "description": "Top Claude Opus tier for the hardest reasoning, coding, and long-horizon agents",
+        "reliability": 3,
         "knowledgeCutoffDate": "January 2026",
         "releaseDate": "May 28, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
+          "intelligenceIndex": null,
           "codingIndex": 74.3,
           "agenticIndex": 41.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -697,6 +707,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "January 2026",
         "releaseDate": "May 28, 2026",
         "reasoningConfig": {
@@ -711,10 +722,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
+          "intelligenceIndex": null,
           "codingIndex": 74.3,
           "agenticIndex": 41.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -728,6 +739,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "January 2026",
         "releaseDate": "May 28, 2026",
         "reasoningConfig": {
@@ -742,10 +754,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
+          "intelligenceIndex": null,
           "codingIndex": 74.3,
           "agenticIndex": 41.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -759,6 +771,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "January 2026",
         "releaseDate": "May 28, 2026",
         "reasoningConfig": {
@@ -773,10 +786,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
+          "intelligenceIndex": null,
           "codingIndex": 74.3,
           "agenticIndex": 41.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -811,13 +824,14 @@
           "tool_use",
           "coding"
         ],
+        "reliability": 4,
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "July 24, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 50.8,
+          "intelligenceIndex": null,
           "codingIndex": 78,
           "agenticIndex": 56.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -830,6 +844,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 22, 2026",
         "reasoningConfig": {
@@ -844,10 +859,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 57.6,
+          "intelligenceIndex": 58.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -860,6 +875,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 22, 2026",
         "reasoningConfig": {
@@ -874,10 +890,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 57.6,
+          "intelligenceIndex": 58.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -890,13 +906,14 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 22, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 57.6,
+          "intelligenceIndex": 58.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -909,6 +926,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 22, 2026",
         "reasoningConfig": {
@@ -923,10 +941,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 57.6,
+          "intelligenceIndex": 58.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -939,6 +957,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 22, 2026",
         "reasoningConfig": {
@@ -953,10 +972,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 57.6,
+          "intelligenceIndex": 58.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -969,6 +988,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 22, 2026",
         "reasoningConfig": {
@@ -983,10 +1003,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 57.6,
+          "intelligenceIndex": 58.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -999,6 +1019,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 22, 2026",
         "reasoningConfig": {
@@ -1013,10 +1034,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 57.6,
+          "intelligenceIndex": 58.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1030,6 +1051,7 @@
           "tool_use",
           "coding"
         ],
+        "reliability": 4,
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "July 24, 2026",
         "reasoningConfig": {
@@ -1044,10 +1066,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 50.8,
+          "intelligenceIndex": null,
           "codingIndex": 78,
           "agenticIndex": 56.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1061,13 +1083,14 @@
           "tool_use",
           "coding"
         ],
+        "reliability": 4,
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "July 24, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 50.8,
+          "intelligenceIndex": null,
           "codingIndex": 78,
           "agenticIndex": 56.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1081,13 +1104,14 @@
           "tool_use",
           "coding"
         ],
+        "reliability": 4,
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "July 24, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 50.8,
+          "intelligenceIndex": null,
           "codingIndex": 78,
           "agenticIndex": 56.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1101,6 +1125,7 @@
           "tool_use",
           "coding"
         ],
+        "reliability": 4,
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "July 24, 2026",
         "reasoningConfig": {
@@ -1115,10 +1140,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 50.8,
+          "intelligenceIndex": null,
           "codingIndex": 78,
           "agenticIndex": 56.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1132,6 +1157,7 @@
           "tool_use",
           "coding"
         ],
+        "reliability": 4,
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "July 24, 2026",
         "supportsResponseFormat": false,
@@ -1147,10 +1173,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 50.8,
+          "intelligenceIndex": null,
           "codingIndex": 78,
           "agenticIndex": 56.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1164,6 +1190,7 @@
           "tool_use",
           "coding"
         ],
+        "reliability": 4,
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "July 24, 2026",
         "reasoningConfig": {
@@ -1178,10 +1205,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 50.8,
+          "intelligenceIndex": null,
           "codingIndex": 78,
           "agenticIndex": 56.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1195,6 +1222,7 @@
           "tool_use",
           "coding"
         ],
+        "reliability": 4,
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "July 24, 2026",
         "reasoningConfig": {
@@ -1209,10 +1237,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 50.8,
+          "intelligenceIndex": null,
           "codingIndex": 78,
           "agenticIndex": 56.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1257,10 +1285,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 26.4,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1274,6 +1302,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "releaseDate": "August 26, 2025",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -1288,10 +1317,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 40.7,
+          "intelligenceIndex": null,
           "codingIndex": 73.6,
           "agenticIndex": 38.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1305,6 +1334,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 3,
         "releaseDate": "August 26, 2025",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -1319,10 +1349,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
+          "intelligenceIndex": null,
           "codingIndex": 74.3,
           "agenticIndex": 41.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     }

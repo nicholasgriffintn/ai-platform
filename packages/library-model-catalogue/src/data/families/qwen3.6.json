@@ -56,7 +56,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 3,
         "releaseDate": "August 26, 2025",
         "supportsAttachments": true,
         "supportsTemperature": true,
@@ -71,10 +71,10 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 27,
+          "intelligenceIndex": null,
           "codingIndex": 54.5,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

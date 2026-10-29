@@ -60,7 +60,7 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
+        "reliability": 4,
         "knowledgeCutoffDate": "January 31, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -73,10 +73,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 49.6,
+          "intelligenceIndex": null,
           "codingIndex": 76.5,
           "agenticIndex": 50.7,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -90,14 +90,14 @@
           "tool_use",
           "coding"
         ],
-        "reliability": 4,
+        "reliability": 3,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 1, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 53.4,
+          "intelligenceIndex": 49,
           "codingIndex": 81.6,
           "agenticIndex": 57.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -111,7 +111,7 @@
           "tool_use",
           "coding"
         ],
-        "reliability": 4,
+        "reliability": 3,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 1, 2026",
         "reasoningConfig": {
@@ -126,10 +126,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 53.4,
+          "intelligenceIndex": 49,
           "codingIndex": 81.6,
           "agenticIndex": 57.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -143,14 +143,14 @@
           "tool_use",
           "coding"
         ],
-        "reliability": 4,
+        "reliability": 3,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 1, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 53.4,
+          "intelligenceIndex": 49,
           "codingIndex": 81.6,
           "agenticIndex": 57.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -164,14 +164,14 @@
           "tool_use",
           "coding"
         ],
-        "reliability": 4,
+        "reliability": 3,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 1, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 53.4,
+          "intelligenceIndex": 49,
           "codingIndex": 81.6,
           "agenticIndex": 57.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -185,13 +185,13 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
+        "reliability": 4,
         "knowledgeCutoffDate": "January 31, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 49.6,
+          "intelligenceIndex": null,
           "codingIndex": 76.5,
           "agenticIndex": 50.7,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -214,13 +214,13 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
+        "reliability": 4,
         "knowledgeCutoffDate": "January 31, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 49.6,
+          "intelligenceIndex": null,
           "codingIndex": 76.5,
           "agenticIndex": 50.7,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -243,13 +243,13 @@
           "document",
           "tool_use"
         ],
-        "reliability": 3,
+        "reliability": 4,
         "knowledgeCutoffDate": "January 31, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 49.6,
+          "intelligenceIndex": null,
           "codingIndex": 76.5,
           "agenticIndex": 50.7,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

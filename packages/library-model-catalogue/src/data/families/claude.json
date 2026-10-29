@@ -28,10 +28,10 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 5.5,
+          "intelligenceIndex": null,
           "codingIndex": 12.9,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -55,10 +55,10 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 5.6,
+          "intelligenceIndex": null,
           "codingIndex": 14,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -90,10 +90,10 @@
         "releaseDate": "November 4, 2024",
         "supportsResponseFormat": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 8.9,
+          "intelligenceIndex": null,
           "codingIndex": 15.9,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -131,10 +131,10 @@
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "October 22, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 8.9,
+          "intelligenceIndex": null,
           "codingIndex": 15.9,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -170,10 +170,10 @@
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "February 19, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 15.3,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -203,10 +203,10 @@
         "releaseDate": "March 13, 2024",
         "supportsResponseFormat": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 5.6,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -259,10 +259,10 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 5,
+          "intelligenceIndex": null,
           "codingIndex": 7.8,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -309,10 +309,10 @@
         "knowledgeCutoffDate": "March 2025",
         "releaseDate": "May 22, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 16.6,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

@@ -38,10 +38,10 @@
       "defaultEffort": "low"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 52.7,
+      "intelligenceIndex": 56.9,
       "codingIndex": 76.9,
       "agenticIndex": 51,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The gpt astra family includes models that produce text.",

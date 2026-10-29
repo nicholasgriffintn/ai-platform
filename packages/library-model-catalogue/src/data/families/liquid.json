@@ -29,10 +29,10 @@
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 5.9,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -46,10 +46,10 @@
         "releaseDate": "January 20, 2026",
         "supportsToolCalls": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 5.2,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -72,10 +72,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 5.2,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -96,10 +96,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 8.4,
+          "intelligenceIndex": null,
           "codingIndex": 7.7,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -120,10 +120,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 8.4,
+          "intelligenceIndex": null,
           "codingIndex": 7.7,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

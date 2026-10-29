@@ -10,7 +10,6 @@
       "model": "gemini-flash/nano-banana",
       "matchingModel": "gemini-2.5-flash-image",
       "overrides": {
-        "name": "Nano Banana",
         "maxTokens": 32768,
         "modalities": {
           "input": [

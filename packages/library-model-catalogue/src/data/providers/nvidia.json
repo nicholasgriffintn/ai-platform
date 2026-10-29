@@ -61,7 +61,6 @@
           "vision",
           "document"
         ],
-        "contextComplexity": 4,
         "lastUpdated": "January 15, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -87,7 +86,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -366,10 +365,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 10.3,
+          "intelligenceIndex": null,
           "codingIndex": 13.8,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -383,7 +382,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "speed": 4,
         "knowledgeCutoffDate": "April 2024",
         "lastUpdated": "March 11, 2026",
@@ -392,10 +391,10 @@
         "supportsToolCalls": true,
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 12.8,
+          "intelligenceIndex": null,
           "codingIndex": 37.7,
           "agenticIndex": 1.7,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -529,7 +528,7 @@
       "matchingModel": "openai/gpt-oss-20b",
       "overrides": {
         "maxTokens": 32768,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -621,7 +620,6 @@
       "matchingModel": "z-ai/glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

@@ -13,7 +13,6 @@
     "strengths": [
       "tool_use"
     ],
-    "reliability": 1,
     "knowledgeCutoffDate": "June 2024",
     "releaseDate": "August 5, 2025",
     "supportsToolCalls": true,
@@ -36,11 +35,12 @@
         "name": "GPT OSS 120B",
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "contextComplexity": 4,
+        "reliability": 2,
         "artificialAnalysis": {
-          "intelligenceIndex": 11.6,
+          "intelligenceIndex": null,
           "codingIndex": 30.4,
           "agenticIndex": 3.7,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -50,6 +50,7 @@
         "description": "gpt-oss-120b (free) accepts text and produces text.",
         "maxTokens": 131072,
         "contextComplexity": 4,
+        "reliability": 2,
         "knowledgeCutoffDate": "June 30, 2024",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -60,10 +61,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 11.6,
+          "intelligenceIndex": null,
           "codingIndex": 30.4,
           "agenticIndex": 3.7,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -74,11 +75,12 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "contextComplexity": 3,
+        "reliability": 2,
         "artificialAnalysis": {
-          "intelligenceIndex": 11.6,
+          "intelligenceIndex": null,
           "codingIndex": 30.4,
           "agenticIndex": 3.7,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -102,11 +104,12 @@
         "name": "GPT OSS 20B",
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "contextComplexity": 3,
+        "reliability": 1,
         "artificialAnalysis": {
-          "intelligenceIndex": 9,
+          "intelligenceIndex": null,
           "codingIndex": 20.7,
           "agenticIndex": 1.2,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -116,6 +119,7 @@
         "description": "gpt-oss-20b (free) accepts text and produces text.",
         "maxTokens": 32768,
         "contextComplexity": 3,
+        "reliability": 1,
         "knowledgeCutoffDate": "June 30, 2024",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -125,10 +129,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 9,
+          "intelligenceIndex": null,
           "codingIndex": 20.7,
           "agenticIndex": 1.2,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -139,11 +143,12 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "contextComplexity": 3,
+        "reliability": 1,
         "artificialAnalysis": {
-          "intelligenceIndex": 9,
+          "intelligenceIndex": null,
           "codingIndex": 20.7,
           "agenticIndex": 1.2,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -218,6 +223,7 @@
         "contextWindow": 128072,
         "maxTokens": 128072,
         "contextComplexity": 4,
+        "reliability": 2,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -231,10 +237,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 11.6,
+          "intelligenceIndex": null,
           "codingIndex": 30.4,
           "agenticIndex": 3.7,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

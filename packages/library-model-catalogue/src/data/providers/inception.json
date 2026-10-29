@@ -52,8 +52,7 @@
         "supportsToolCalls": false
       },
       "unset": [
-        "strengths",
-        "reliability"
+        "strengths"
       ]
     },
     "mercury-2.5": {

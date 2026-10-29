@@ -32,10 +32,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 8.6,
+      "intelligenceIndex": null,
       "codingIndex": 14.7,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The magistral family includes models that produce text.",

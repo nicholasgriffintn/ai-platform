@@ -41,10 +41,10 @@
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "July 11, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 12.7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -71,7 +71,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 3,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "January 27, 2026",
         "supportsAttachments": true,
@@ -83,10 +83,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 23.5,
+          "intelligenceIndex": null,
           "codingIndex": 46.8,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -131,7 +131,7 @@
           "coding"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 3,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "April 21, 2026",
         "supportsResponseFormat": false,
@@ -145,10 +145,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 27,
+          "intelligenceIndex": null,
           "codingIndex": 61.8,
           "agenticIndex": 20.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -166,10 +166,10 @@
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "July 11, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 12.7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -208,10 +208,10 @@
         "reliability": 1,
         "releaseDate": "November 6, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 22,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

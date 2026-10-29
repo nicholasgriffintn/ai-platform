@@ -119,7 +119,7 @@
         "description": "High-capacity instruction-tuned Qwen3 model.",
         "maxTokens": 131072,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "lastUpdated": "July 21, 2025",
@@ -424,7 +424,6 @@
       },
       "unset": [
         "strengths",
-        "reliability",
         "knowledgeCutoffDate"
       ]
     },
@@ -438,7 +437,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 5,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00002,
@@ -835,7 +834,7 @@
       "model": "glm/glm-4-7-flash",
       "matchingModel": "zai-org/GLM-4.7-Flash",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00035
@@ -960,7 +959,6 @@
         "costPer1kOutputTokens": 0.00029
       },
       "unset": [
-        "reliability",
         "reasoningConfig"
       ]
     },
@@ -1058,8 +1056,7 @@
         "costPer1kOutputTokens": 0.00132
       },
       "unset": [
-        "contextComplexity",
-        "reliability"
+        "contextComplexity"
       ]
     },
     "Qwen/Qwen3.8-27B-TEE": {
@@ -1077,7 +1074,7 @@
       "model": "deepseek/deepseek-v4-pro-0813",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro-0813",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "October 25, 2026",
         "costPer1kInputTokens": 0.00132,
         "costPer1kOutputTokens": 0.00396,
@@ -1096,16 +1093,24 @@
       "model": "deepseek/deepseek-v4-1-flash-1017",
       "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
       "overrides": {
-        "name": "DeepSeek V4.1 Flash 1017",
         "contextWindow": 0,
         "maxTokens": 0,
-        "contextComplexity": 2,
+        "contextComplexity": 1,
         "speed": 4,
         "releaseDate": "October 26, 2026",
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "moonshotai/Kimi-K2.7-Code": {

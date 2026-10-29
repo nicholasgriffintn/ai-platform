@@ -30,6 +30,12 @@
         "xhigh"
       ],
       "defaultEffort": "medium"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The gpt pro family includes models that produce text.",
@@ -42,13 +48,7 @@
         "reliability": 1,
         "releaseDate": "December 11, 2025",
         "supportsResponseFormat": false,
-        "supportsTemperature": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": 30.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "supportsTemperature": true
       }
     },
     "gpt-5-2-pro": {
@@ -65,13 +65,7 @@
         "contextWindow": 1050000,
         "contextComplexity": 5,
         "releaseDate": "March 5, 2026",
-        "supportsResponseFormat": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "supportsResponseFormat": false
       }
     },
     "gpt-5-5-pro": {
@@ -81,13 +75,7 @@
         "contextWindow": 1050000,
         "contextComplexity": 5,
         "knowledgeCutoffDate": "December 1, 2025",
-        "releaseDate": "April 23, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "April 23, 2026"
       }
     },
     "gpt-5-pro": {

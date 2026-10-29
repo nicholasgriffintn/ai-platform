@@ -36,10 +36,10 @@
       "defaultEffort": "low"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 19.5,
+      "intelligenceIndex": null,
       "codingIndex": 39.6,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The kilo/stepfun/step 3.7 flash family includes models that produce text.",

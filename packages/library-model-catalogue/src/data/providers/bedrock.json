@@ -176,7 +176,6 @@
       },
       "unset": [
         "strengths",
-        "reliability",
         "knowledgeCutoffDate"
       ]
     },
@@ -198,7 +197,6 @@
       },
       "unset": [
         "strengths",
-        "reliability",
         "knowledgeCutoffDate"
       ]
     },
@@ -774,7 +772,6 @@
         "contextComplexity",
         "supportsResponseFormat",
         "supportsTopP",
-        "reliability",
         "reasoningConfig"
       ]
     },
@@ -1254,7 +1251,7 @@
         "name": "gpt-oss-20b",
         "maxTokens": 128000,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "August 5, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1283,10 +1280,10 @@
         "costPer1kOutputTokens": 0.00088,
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 12.7,
+          "intelligenceIndex": null,
           "codingIndex": 22.1,
           "agenticIndex": 1.3,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1465,8 +1462,7 @@
       },
       "unset": [
         "contextComplexity",
-        "supportsTopP",
-        "reliability"
+        "supportsTopP"
       ]
     },
     "au.anthropic.claude-sonnet-4-6": {
@@ -1616,7 +1612,7 @@
         "name": "MiniMax M2.5",
         "contextWindow": 196608,
         "maxTokens": 98304,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 18, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -2718,7 +2714,7 @@
       "model": "gpt-oss/gpt-oss-20b-govcloud",
       "matchingModel": "us-gov.openai.gpt-oss-20b-1:0",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "August 5, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3250,6 +3246,28 @@
         "lastUpdated": "September 28, 2026",
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.011,
+        "supportsTemperature": false
+      }
+    },
+    "global.openai.gpt-6.1-terra": {
+      "model": "gpt-terra/gpt-6-1-terra-global",
+      "matchingModel": "global.openai.gpt-6.1-terra",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "October 26, 2026",
+        "costPer1kInputTokens": 0.001,
+        "costPer1kOutputTokens": 0.005,
+        "supportsTemperature": false
+      }
+    },
+    "us.openai.gpt-6.1-terra": {
+      "model": "gpt-terra/gpt-6-1-terra-us",
+      "matchingModel": "us.openai.gpt-6.1-terra",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "October 26, 2026",
+        "costPer1kInputTokens": 0.0011,
+        "costPer1kOutputTokens": 0.0055,
         "supportsTemperature": false
       }
     }

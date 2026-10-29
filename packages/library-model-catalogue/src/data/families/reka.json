@@ -48,10 +48,10 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 5.6,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     }
