@@ -139,7 +139,11 @@ export async function indexKnowledgeResource(
   const index = context.repositories.get(KnowledgeIndexRepository);
   const resource = await index.getResource(resourceType, resourceId);
 
-  if (!resource || resource.kind === "memory" || resource.status !== "available") {
+  if (
+    !resource ||
+    (resource.resource_type === "source" && resource.kind === "memory") ||
+    resource.status !== "available"
+  ) {
     return;
   }
 
