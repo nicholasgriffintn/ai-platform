@@ -11,7 +11,6 @@ import {
   listSystemModelLayers,
   rankPolicyModelsByMediaScore,
   readMediaScore,
-  resolveDefaultChatModel,
   resolveSystemRoleModels,
   resolveTierModel,
   TEXT_TO_SPEECH_ARENA_SCORE,
@@ -261,18 +260,6 @@ export async function getLineupModelsForUser(
   const visibleModels = await filterModelsForUserAccess(lineupModels, env, user.id, options);
 
   return getExecutableModelsForAccount(visibleModels, user);
-}
-
-export async function getDefaultChatModel(
-  env: IEnv,
-  user?: IUser,
-): Promise<{ model: string; provider: string }> {
-  const availableModels = await getLineupModelsForUser(env, user, {
-    shouldUseCache: false,
-  });
-  const selected = resolveDefaultChatModel(availableModels, user);
-
-  return { model: selected.id, provider: selected.config.provider };
 }
 
 export async function filterModelsForUserAccess(

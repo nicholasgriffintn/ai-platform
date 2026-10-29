@@ -8,6 +8,7 @@ import { trackProviderMetrics } from "../../../metrics.js";
 import type { ProviderRuntime } from "../../../runtime.js";
 import type { RerankingProvider } from "../../../types/reranking.js";
 import { greenPtJsonRequest, resolveGreenPtApiKey } from "../../../utils/greenpt.js";
+import { requireRequestModel } from "../../../utils/required-model.js";
 import {
   assertRerankingResultCount,
   normaliseIndexedRerankingResponse,
@@ -17,7 +18,7 @@ import {
 const logger = getLogger({ prefix: "lib/reranking/greenpt" });
 
 export const GREENPT_RERANKING_PROVIDER_NAME = "greenpt";
-export const GREENPT_DEFAULT_RERANKING_MODEL = "green-rerank";
+const GREENPT_RERANKING_MODEL = "green-rerank";
 
 function readResults(
   raw: unknown,
@@ -66,9 +67,9 @@ export class GreenPtRerankingProvider implements RerankingProvider {
 
   async rerank(unvalidatedRequest: RerankingRequest): Promise<RerankingResponse> {
     const request = validateRerankingRequest(unvalidatedRequest);
-    const model = request.model ?? GREENPT_DEFAULT_RERANKING_MODEL;
+    const model = requireRequestModel(request.model, "reranking");
 
-    if (model !== GREENPT_DEFAULT_RERANKING_MODEL) {
+    if (model !== GREENPT_RERANKING_MODEL) {
       throw new AssistantError(
         `Model ${model} is not supported by the GreenPT reranking provider`,
         ErrorType.PARAMS_ERROR,

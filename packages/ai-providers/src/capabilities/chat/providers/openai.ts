@@ -32,6 +32,7 @@ import {
   shouldUseOpenAIResponsesApi,
 } from "../../../utils/openaiResponses.js";
 import { resolvePrivateAssetUrls } from "../../../utils/privateAssets.js";
+import { requireRequestModel } from "../../../utils/required-model.js";
 import { BaseProvider } from "./base.js";
 import {
   getOpenAIImageRequestInput,
@@ -110,7 +111,7 @@ export class OpenAIProvider extends BaseProvider {
   private buildImageEditFormData(params: OpenAIImageParams, imageBlob: Blob): FormData {
     const formData = new FormData();
 
-    formData.append("model", params.model || "gpt-image-1");
+    formData.append("model", requireRequestModel(params.model, "image"));
     formData.append("prompt", params.prompt);
     formData.append("image", imageBlob, this.getImageFileName(imageBlob));
 

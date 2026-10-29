@@ -167,6 +167,7 @@ describe("GreenPtRerankingProvider", () => {
         { id: "doc-2", text: "second" },
       ],
       topK: 2,
+      model: "green-rerank",
     });
     const { url, init } = lastRequest();
 
@@ -249,6 +250,7 @@ describe("GreenPtTranscriptionProvider", () => {
         env,
         user,
         audio: { kind: "file", file: new Blob(["audio"]) },
+        model: "green-s",
       }),
     ).rejects.toThrow("No transcription text returned from GreenPT");
   });

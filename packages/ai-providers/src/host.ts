@@ -46,10 +46,6 @@ export interface ProviderModelResolver {
     defaultProvider: string;
     env?: ProviderEnv;
   }): Promise<string>;
-  getDefaultChatModel(
-    env: ProviderEnv,
-    user?: ProviderUser,
-  ): Promise<{ model: string; provider: string }>;
   getSystemModel(
     env: ProviderEnv,
     user: ProviderUser | undefined,

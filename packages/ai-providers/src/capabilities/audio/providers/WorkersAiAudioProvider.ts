@@ -4,12 +4,12 @@ import { base64ToBuffer, bufferToBase64 } from "@ngriffin_uk/polychat-utility-se
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { resolveAiGatewayId } from "../../../gateway.js";
+import { requireRequestModel } from "../../../utils/required-model.js";
 import { BaseAudioProvider } from "../base.js";
 import type { AudioProvider, AudioSynthesisRequest, AudioSynthesisResult } from "../index.js";
 
-const DEFAULT_MODEL = "@cf/deepgram/aura-1";
 const MELOTTS_MODEL = "@cf/myshell-ai/melotts";
-const ENGLISH_ONLY_MODELS = new Set([DEFAULT_MODEL, "@cf/deepgram/aura-2-en"]);
+const ENGLISH_ONLY_MODELS = new Set(["@cf/deepgram/aura-1", "@cf/deepgram/aura-2-en"]);
 
 async function readSpeechBytes(result: unknown): Promise<Uint8Array> {
   if (result instanceof ReadableStream) {
@@ -39,7 +39,7 @@ export class WorkersAiAudioProvider extends BaseAudioProvider implements AudioPr
       throw new AssistantError("Workers AI is not configured", ErrorType.CONFIGURATION_ERROR);
     }
 
-    const requested = request.model ?? DEFAULT_MODEL;
+    const requested = requireRequestModel(request.model, "speech");
     const english = (request.locale ?? "en").toLowerCase().startsWith("en");
     const model = !english && ENGLISH_ONLY_MODELS.has(requested) ? MELOTTS_MODEL : requested;
     const voice = request.voice ?? SPEECH_PROVIDER_VOICES["workers-ai"].roles.narrator;

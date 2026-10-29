@@ -11,11 +11,11 @@ import type {
   GuardrailsProvider,
   GuardrailSource,
 } from "../../../types/index.js";
+import { requireRequestModel } from "../../../utils/required-model.js";
 import { normaliseGuardrailInput } from "../content.js";
 
 const logger = getLogger({ prefix: "lib/guardrails/shieldstral" });
 
-const DEFAULT_MODEL = "mistralai/Shieldstral-1.0-3B";
 const DEFAULT_POLICY_VERSION = "default-v1";
 const DEFAULT_THRESHOLD = 0.5;
 const MAX_POLICY_LENGTH = 8_000;
@@ -187,7 +187,7 @@ export class ShieldstralGuardProvider implements GuardrailsProvider {
     const threshold = resolveThreshold(this.config.threshold);
     const policy = resolvePolicy(this.config.policy);
     const content = normaliseGuardrailInput(input);
-    const model = this.config.model?.trim() || DEFAULT_MODEL;
+    const model = requireRequestModel(this.config.model?.trim(), "guardrails");
     const policyVersion = this.config.policyVersion?.trim() || DEFAULT_POLICY_VERSION;
 
     logger.debug("Validating content with Shieldstral", {

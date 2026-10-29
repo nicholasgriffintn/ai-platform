@@ -19,7 +19,7 @@ import { ConversationRunRepository } from "~/modules/conversations/infrastructur
 import { resolveDelegationContinuation } from "~/modules/delegations/application/continuation";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { chooseWorkMachineModel } from "~/modules/machines/application/work-placement";
-import { findModelConfig, getDefaultChatModel } from "~/modules/models/application/resolve";
+import { findModelConfig, requireSystemModel } from "~/modules/models/application/resolve";
 import { recordPolyApprovalOutcome } from "~/modules/poly/application/earned-trust";
 import { buildWorkRunTools, grantWorkBoardTools } from "~/modules/project-tasks/domain/work-tools";
 import {
@@ -278,7 +278,7 @@ export async function enqueueTeammateRun({
   const requestedModel = effectiveTeammate.model || effectiveSettings.model || undefined;
   const fallbackModel = requestedModel
     ? undefined
-    : await getDefaultChatModel(serviceContext.env, user);
+    : await requireSystemModel(serviceContext.env, user, "routines", { workspaceId });
   const modelToUse = requestedModel ?? fallbackModel?.model;
   const modelDetails = await findModelConfig(
     modelToUse || "",

@@ -2,7 +2,6 @@ import {
   findModelConfigByMatchingModel,
   getModelConfigById,
   getModels,
-  resolveDefaultChatModel,
   resolveSystemRoleModel,
 } from "@ngriffin_uk/polychat-ai-models";
 import {
@@ -78,8 +77,6 @@ export function createCatalogueModelResolver(): ProviderModelResolver {
     (await getModelConfigByMatchingModel(model, env, provider, userId)) ??
     null;
 
-  const defaultChatModel = () => resolveDefaultChatModel(getModels(), undefined);
-
   const resolveRole = (
     env: Record<string, unknown>,
     role: SystemModelRole,
@@ -154,11 +151,6 @@ export function createCatalogueModelResolver(): ProviderModelResolver {
       }
 
       return provider || defaultProvider;
-    },
-    getDefaultChatModel: async () => {
-      const selected = defaultChatModel();
-
-      return { model: selected.config.matchingModel, provider: selected.config.provider };
     },
     getSystemModel: async (env, _user, role) => resolveRole(env, role),
     getAuxiliaryModel: async (env) => requireRole(env, "housekeeping"),

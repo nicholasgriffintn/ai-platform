@@ -41,6 +41,7 @@ export async function executeComputerTask(
       input,
       conversationId,
       toolContext.toolCallId,
+      toolContext.request.request?.model,
     );
 
     return {

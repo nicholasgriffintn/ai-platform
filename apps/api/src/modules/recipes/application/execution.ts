@@ -15,7 +15,6 @@ import {
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
-import { getDefaultChatModel } from "~/modules/models/application/resolve";
 import { recoverAcceptedChatCompletionResponse } from "~/modules/responses/application/runs/completion-recovery";
 import { startResponse } from "~/modules/responses/application/start";
 import type { ResponseCommand } from "~/modules/responses/domain/command";
@@ -24,6 +23,7 @@ import type { CreateChatCompletionsResponse, IEnv, IUser, Message } from "~/type
 import type { ChatRequestOptions } from "~/types/chat";
 
 import { assertRecipeInstallationWithinBudget } from "./installation-budget";
+import { resolveRecipeModel } from "./recipe-model";
 
 const logger = getLogger({ prefix: "services/apps/recipes/execution" });
 
@@ -68,12 +68,17 @@ export async function recordRecipeInvocationFailure(params: {
   projectId?: string;
   error: unknown;
 }): Promise<string> {
-  const defaultModel = await getDefaultChatModel(params.env, params.user);
+  const recipeModel = await resolveRecipeModel(
+    params.context,
+    params.user,
+    params.invocation,
+    params.projectId,
+  );
   const conversationManager = ConversationManager.getInstance({
     repositories: params.context.repositories,
     user: params.user,
-    model: defaultModel.model,
-    provider: defaultModel.provider,
+    model: recipeModel.model,
+    provider: recipeModel.provider,
     platform: "api",
     store: true,
     env: params.env,
@@ -143,6 +148,12 @@ export async function executeRecipeInvocationChat(params: {
     });
   }
 
+  const recipeModel = await resolveRecipeModel(
+    params.context,
+    params.user,
+    params.invocation,
+    params.projectId,
+  );
   const conversationId = params.conversationId ?? `recipe_${generateId()}`;
   const shouldTitleGeneratedConversation = params.titleConversation ?? !params.conversationId;
   const request: ResponseCommand = {
@@ -159,9 +170,11 @@ export async function executeRecipeInvocationChat(params: {
     store: true,
     settings: {
       mode: "agent",
+      model: recipeModel.model,
+      provider: recipeModel.provider,
       enabled_tools: params.invocation.enabledTools,
       tool_choice: "auto",
-      reasoning: { effort: "none" },
+      reasoning: { effort: recipeModel.effort ?? "none" },
       metadata: params.projectId ? { project_id: params.projectId } : undefined,
       options: buildRecipeExecutionOptions(params),
     },

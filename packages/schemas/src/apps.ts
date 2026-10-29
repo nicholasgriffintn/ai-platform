@@ -6,6 +6,7 @@ import { externalHttpUrlSchema, internalNavigationPathSchema } from "./navigatio
 import { listSchema } from "./platform/list.js";
 import { searchOptionsSchema, searchProviderSchema } from "./search.js";
 import { skillSummarySchema } from "./skills.js";
+import { systemModelRoleSchema } from "./system-models.js";
 import { teammateSummarySchema } from "./teammates.js";
 import { parseToolFormValue } from "./utils/tool-form-values.js";
 
@@ -975,6 +976,7 @@ export const assistantRecipeSchema = z.object({
     .boolean()
     .optional()
     .describe("Runs as a teammate routine only read and draft, whatever the teammate's dial says"),
+  modelRole: systemModelRoleSchema.optional(),
   capability: assistantCapabilityDescriptorSchema.optional(),
 });
 

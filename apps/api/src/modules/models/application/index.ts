@@ -6,7 +6,6 @@ import {
   getModelsByModality,
   getModelsByOutputModality,
   getExecutableModelsForAccount,
-  tryResolveDefaultChatModel,
 } from "@ngriffin_uk/polychat-ai-models";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { ModelBenchmarkStanding, ModelConfig } from "@ngriffin_uk/polychat-schemas";
@@ -75,14 +74,12 @@ export async function listModels(env: IEnv, user?: IUser): Promise<ModelConfig> 
   const executableModelIds = new Set(
     Object.keys(getExecutableModelsForAccount(filteredModels, user)),
   );
-  const defaultModel = tryResolveDefaultChatModel(filteredModels, user)?.id;
   const benchmarks = await loadBenchmarkStandings(env, user?.id);
 
   return Object.fromEntries(
     Object.entries(includeModelIds(filteredModels)).map(([id, model]) => {
       const enrichedModel = {
         ...model,
-        isDefault: id === defaultModel,
         isExecutable: executableModelIds.has(id),
         ...(benchmarks.has(id) ? { benchmarks: benchmarks.get(id) } : {}),
       };

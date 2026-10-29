@@ -46,6 +46,7 @@ describe("ShieldstralGuardProvider", () => {
     fetchAIResponse.mockResolvedValue(response(-3, -0.1));
     const provider = new ShieldstralGuardProvider({
       baseUrl: "https://shieldstral.example",
+      model: "mistralai/Shieldstral-1.0-3B",
       apiKey: "test-token",
       policy: "Apply the project safety policy.",
       policyVersion: "project-v2",
@@ -88,6 +89,7 @@ describe("ShieldstralGuardProvider", () => {
     fetchAIResponse.mockResolvedValue(response(-0.1, -3));
     const provider = new ShieldstralGuardProvider({
       baseUrl: "https://shieldstral.example/",
+      model: "mistralai/Shieldstral-1.0-3B",
     });
 
     const result = await provider.validateContent(
@@ -125,6 +127,7 @@ describe("ShieldstralGuardProvider", () => {
     });
     const provider = new ShieldstralGuardProvider({
       baseUrl: "https://shieldstral.example",
+      model: "mistralai/Shieldstral-1.0-3B",
     });
 
     await expect(provider.validateContent("content", "INPUT")).rejects.toBeInstanceOf(
@@ -136,6 +139,7 @@ describe("ShieldstralGuardProvider", () => {
     const missingEndpoint = new ShieldstralGuardProvider({});
     const invalidThreshold = new ShieldstralGuardProvider({
       baseUrl: "https://shieldstral.example",
+      model: "mistralai/Shieldstral-1.0-3B",
       threshold: 1.1,
     });
 

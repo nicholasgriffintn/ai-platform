@@ -102,7 +102,6 @@ describe("GPT-Live brokered calls", () => {
         model: "gpt-live-1",
         instructions: "Be brief.",
         audio: { output: { voice: "cedar" } },
-        delegation: { type: "responses", responses: { model: "gpt-6-sol" } },
       },
       transport: { type: "webrtc", sdp: "offer-sdp" },
     });

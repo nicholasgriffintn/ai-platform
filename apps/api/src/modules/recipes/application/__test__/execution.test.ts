@@ -12,6 +12,15 @@ vi.mock("~/modules/responses/application/start", () => ({
   startResponse: mocks.startResponse,
 }));
 
+vi.mock("../recipe-model", () => ({
+  resolveRecipeModel: vi.fn().mockResolvedValue({
+    id: "glm-5.3-flash",
+    name: "GLM 5.3 Flash",
+    model: "@cf/zai-org/glm-5.3-flash",
+    provider: "workers-ai",
+  }),
+}));
+
 vi.mock("@ngriffin_uk/polychat-utility-core", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@ngriffin_uk/polychat-utility-core")>()),
   generateId: mocks.generateId,

@@ -12,11 +12,11 @@ import {
   buildOpenAIDecisionRequest,
   normaliseOpenAIDecisionResponse,
 } from "../../../utils/openai-decisions.js";
+import { requireRequestModel } from "../../../utils/required-model.js";
 
 const logger = getLogger({ prefix: "lib/decision/openai" });
 
 export const OPENAI_DECISION_PROVIDER_NAME = "openai";
-export const OPENAI_DEFAULT_DECISION_MODEL = "gpt-6-luna";
 
 export class OpenAIDecisionProvider implements DecisionProvider {
   readonly name = OPENAI_DECISION_PROVIDER_NAME;
@@ -29,7 +29,7 @@ export class OpenAIDecisionProvider implements DecisionProvider {
 
   async decide(request: DecisionRequest): Promise<DecisionResponse> {
     assertTextOnlyDecisionRequest(request, "OpenAI");
-    const model = request.model ?? OPENAI_DEFAULT_DECISION_MODEL;
+    const model = requireRequestModel(request.model, "decision");
     const body = buildOpenAIDecisionRequest(request, model);
     const apiKey = await resolveHostProviderApiKey(this.runtime.host, {
       env: this.env,

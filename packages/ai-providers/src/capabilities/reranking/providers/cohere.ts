@@ -9,6 +9,7 @@ import { fetchAIResponse } from "../../../fetch.js";
 import { trackProviderMetrics } from "../../../metrics.js";
 import type { ProviderRuntime } from "../../../runtime.js";
 import type { RerankingProvider } from "../../../types/reranking.js";
+import { requireRequestModel } from "../../../utils/required-model.js";
 import {
   assertRerankingResultCount,
   normaliseIndexedRerankingResponse,
@@ -18,7 +19,6 @@ import {
 const logger = getLogger({ prefix: "lib/reranking/cohere" });
 
 export const COHERE_RERANKING_PROVIDER_NAME = "cohere";
-export const COHERE_DEFAULT_RERANKING_MODEL = "rerank-v4.0-fast";
 export const COHERE_API_BASE_URL = "https://api.cohere.com";
 
 function readResponse(
@@ -73,7 +73,7 @@ export class CohereRerankingProvider implements RerankingProvider {
 
   async rerank(unvalidatedRequest: RerankingRequest): Promise<RerankingResponse> {
     const request = validateRerankingRequest(unvalidatedRequest);
-    const model = request.model ?? COHERE_DEFAULT_RERANKING_MODEL;
+    const model = requireRequestModel(request.model, "reranking");
     const apiKey = await resolveHostProviderApiKey(this.runtime.host, {
       env: this.env,
       providerName: this.name,

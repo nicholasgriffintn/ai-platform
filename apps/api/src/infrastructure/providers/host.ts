@@ -17,7 +17,6 @@ import {
   getAuxiliaryModelForRetrieval,
   getAuxiliaryRerankingModel,
   getCompactionModel,
-  getDefaultChatModel,
   getFimModel,
   getImageModel,
   getModelConfig,
@@ -84,7 +83,6 @@ export const providerHost: ProviderHost = {
       resolveModelConfig(model, env ? asEnv(env) : undefined, provider, userId),
     resolveModelProvider: ({ env, ...options }) =>
       resolveModelProvider({ ...options, env: env ? asEnv(env) : undefined }),
-    getDefaultChatModel: (env, user) => getDefaultChatModel(asEnv(env), asUser(user)),
     getSystemModel: (env, user, role) => getSystemModel(asEnv(env), asUser(user), role),
     getAuxiliaryModel: (env, user) => getAuxiliaryModel(asEnv(env), asUser(user)),
     getTitlingModel: (env, user) => getTitlingModel(asEnv(env), asUser(user)),

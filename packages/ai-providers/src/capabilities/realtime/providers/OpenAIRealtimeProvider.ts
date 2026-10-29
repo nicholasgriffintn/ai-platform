@@ -40,7 +40,6 @@ export const OPENAI_LIVE_MODEL = "gpt-live-1";
 export const OPENAI_LIVE_PROTOCOL = "openai-live";
 export const OPENAI_LIVE_SESSIONS_URL = "https://api.openai.com/v1/live/sessions";
 const OPENAI_LIVE_PROXY_PATH = "/realtime/openai/live/calls";
-const DEFAULT_LIVE_DELEGATION_MODEL = "gpt-6-sol";
 const API_KEY_ENVIRONMENT_VARIABLE = "OPENAI_API_KEY";
 const DEFAULT_TRANSLATION_MODEL = "gpt-realtime-translate";
 const DEFAULT_TRANSCRIPTION_MODEL = "gpt-live-transcribe";
@@ -108,19 +107,20 @@ export function buildOpenAILiveSessionConfig({
   model,
   instructions,
   voice,
+  delegationModel,
 }: {
   model: string;
   instructions?: string;
   voice?: string;
+  delegationModel?: string;
 }): Record<string, unknown> {
   return {
     model,
     ...(instructions ? { instructions } : {}),
     audio: { output: { voice: voice ?? DEFAULT_VOICE } },
-    delegation: {
-      type: "responses",
-      responses: { model: DEFAULT_LIVE_DELEGATION_MODEL },
-    },
+    ...(delegationModel
+      ? { delegation: { type: "responses", responses: { model: delegationModel } } }
+      : {}),
   };
 }
 

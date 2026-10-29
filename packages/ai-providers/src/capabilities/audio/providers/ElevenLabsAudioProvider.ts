@@ -1,10 +1,9 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { requireRequestModel } from "../../../utils/required-model.js";
 import { ElevenLabsProvider } from "../../chat/providers/elevenlabs.js";
 import { BaseAudioProvider } from "../base.js";
 import type { AudioProvider, AudioSynthesisRequest, AudioSynthesisResult } from "../index.js";
-
-const DEFAULT_MODEL = "eleven_v4";
 
 export class ElevenLabsAudioProvider extends BaseAudioProvider implements AudioProvider {
   name = "elevenlabs";
@@ -15,7 +14,7 @@ export class ElevenLabsAudioProvider extends BaseAudioProvider implements AudioP
     const objectKey = this.buildObjectKey(slugBase);
 
     const response = await this.provider.getResponse({
-      model: request.model ?? DEFAULT_MODEL,
+      model: requireRequestModel(request.model, "speech"),
       voice: request.voice,
       message: request.input,
       env: request.env,

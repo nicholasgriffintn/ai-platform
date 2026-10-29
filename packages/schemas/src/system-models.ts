@@ -10,6 +10,7 @@ export const SYSTEM_MODEL_ROLES = [
   "housekeeping",
   "retrieval",
   "writing",
+  "routines",
   "vision",
   "guardrails",
   "decision",
@@ -148,6 +149,16 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     requires: { kind: "text" },
     ranking: { metric: "intelligence" },
     defaults: [workersAi("@cf/moonshotai/kimi-k2.6"), workersAi("@cf/zai-org/glm-5.3")],
+  },
+  {
+    id: "routines",
+    label: "Teammates and routines",
+    description:
+      "Teammates without a model of their own, and routines that run on a schedule or an event: delegations, wakes, channel replies and recipes.",
+    group: "writing",
+    requires: { kind: "text" },
+    ranking: { metric: "intelligence" },
+    defaults: [workersAi("@cf/zai-org/glm-5.3-flash"), workersAi("@cf/moonshotai/kimi-k2.6")],
   },
   {
     id: "vision",

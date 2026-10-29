@@ -65,7 +65,11 @@ describe("OpenAI decisions", () => {
   });
 
   it("translates all question types and retains the original rubric and usage", async () => {
-    const result = await provider.decide({ state: { message: "Checkout is down" }, questions });
+    const result = await provider.decide({
+      model: "gpt-6-luna",
+      state: { message: "Checkout is down" },
+      questions,
+    });
 
     expect(fetchAIResponse).toHaveBeenCalledWith(
       false,
@@ -156,7 +160,9 @@ describe("OpenAI decisions", () => {
   it("rejects missing credentials before inference", async () => {
     const unconfigured = library.resolve("decision", "openai", { env: {} });
 
-    await expect(unconfigured.decide({ state: "x", questions })).rejects.toMatchObject({
+    await expect(
+      unconfigured.decide({ model: "gpt-6-luna", state: "x", questions }),
+    ).rejects.toMatchObject({
       code: "credential_missing",
     });
     expect(fetchAIResponse).not.toHaveBeenCalled();
@@ -176,14 +182,18 @@ describe("OpenAI decisions", () => {
       user: { id: 7 },
     });
 
-    await expect(userProvider.decide({ state: "x", questions })).rejects.toMatchObject({
+    await expect(
+      userProvider.decide({ model: "gpt-6-luna", state: "x", questions }),
+    ).rejects.toMatchObject({
       code: "credential_unavailable",
     });
     expect(fetchAIResponse).not.toHaveBeenCalled();
   });
 
   it("rejects invalid questions before inference", async () => {
-    await expect(provider.decide({ state: "x", questions: {} })).rejects.toMatchObject({
+    await expect(
+      provider.decide({ model: "gpt-6-luna", state: "x", questions: {} }),
+    ).rejects.toMatchObject({
       type: "PARAMS_ERROR",
       statusCode: 400,
     });
@@ -196,7 +206,9 @@ describe("OpenAI decisions", () => {
       answers: [{ type: "refusal", name: "urgent" }, ...answers.slice(1)],
     });
 
-    await expect(provider.decide({ state: "x", questions })).rejects.toMatchObject({
+    await expect(
+      provider.decide({ model: "gpt-6-luna", state: "x", questions }),
+    ).rejects.toMatchObject({
       message: "OpenAI refused a decision question",
       type: "PROVIDER_ERROR",
       statusCode: 422,
@@ -247,7 +259,9 @@ describe("OpenAI decisions", () => {
   ])("rejects missing, misidentified or invalid answers (%#)", async (...invalidAnswers) => {
     fetchAIResponse.mockResolvedValue({ ...response, answers: invalidAnswers });
 
-    await expect(provider.decide({ state: "x", questions })).rejects.toMatchObject({
+    await expect(
+      provider.decide({ model: "gpt-6-luna", state: "x", questions }),
+    ).rejects.toMatchObject({
       type: "PROVIDER_ERROR",
       statusCode: 502,
     });

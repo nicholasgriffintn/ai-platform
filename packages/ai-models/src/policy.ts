@@ -1,8 +1,6 @@
 import { authorise, createAuthorisationPass } from "@ngriffin_uk/polychat-library-policy";
 import {
-  DEFAULT_MODEL_TIER,
   findModelByReference,
-  getModelDisplayName,
   isActiveModel,
   isLineupEligibleModel,
   isTextInputChatModel,
@@ -17,7 +15,6 @@ import {
   type ResolvedLineupCandidate,
   type ResolvedModelReference,
 } from "@ngriffin_uk/polychat-schemas";
-import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { AccountPlan, CredentialAuthority } from "./types.js";
 
@@ -142,53 +139,6 @@ export function resolveTierAlternateModel(
     primary,
     { isEligible: tierEligibility(options) },
   );
-}
-
-function firstConversationModel(
-  models: ModelConfig,
-  options: TierModelOptions,
-): { id: string; config: ModelConfigItem } | null {
-  const isEligible = tierEligibility(options);
-  const selected = Object.entries(models)
-    .filter(([, model]) => isEligible(model))
-    .sort(([, left], [, right]) => {
-      const byokDelta = Number(right.isByokEnabled === true) - Number(left.isByokEnabled === true);
-
-      return byokDelta || getModelDisplayName(left).localeCompare(getModelDisplayName(right));
-    })[0];
-
-  return selected ? { id: selected[0], config: selected[1] } : null;
-}
-
-export function tryResolveDefaultChatModel(
-  models: ModelConfig,
-  user?: AccountPlan,
-  options: TierModelOptions = {},
-): { id: string; config: ModelConfigItem } | null {
-  const tierModel = resolveTierModel(models, user, DEFAULT_MODEL_TIER, "agent", options);
-
-  if (tierModel) {
-    return { id: tierModel.id, config: tierModel.config };
-  }
-
-  return firstConversationModel(getExecutableModelsForAccount(models, user), options);
-}
-
-export function resolveDefaultChatModel(
-  models: ModelConfig,
-  user?: AccountPlan,
-  options: TierModelOptions = {},
-): { id: string; config: ModelConfigItem } {
-  const selected = tryResolveDefaultChatModel(models, user, options);
-
-  if (!selected) {
-    throw new AssistantError(
-      "No active chat model is available for this account",
-      ErrorType.CONFIGURATION_ERROR,
-    );
-  }
-
-  return selected;
 }
 
 export function resolvePolicyModel(

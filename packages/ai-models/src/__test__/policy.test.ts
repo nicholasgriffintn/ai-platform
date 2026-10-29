@@ -5,7 +5,6 @@ import {
   getExecutableModelsForAccount,
   getModelCredentialAuthority,
   rankPolicyModelsByMediaScore,
-  resolveDefaultChatModel,
   resolveHostedAgentModel,
   resolveTierModel,
 } from "../policy.js";
@@ -18,74 +17,6 @@ function model(overrides: Partial<ModelConfigItem> = {}): ModelConfigItem {
     ...overrides,
   };
 }
-
-describe("resolveDefaultChatModel", () => {
-  it("selects the Medium tier model each account can execute", () => {
-    const models: ModelConfig = {
-      "google-ai-studio/gemini-3.5-flash": model({
-        matchingModel: "gemini-3.5-flash",
-        provider: "google-ai-studio",
-        isFree: true,
-      }),
-      "gpt-6.1-sol": model({
-        matchingModel: "gpt-6.1-sol",
-        provider: "openai",
-      }),
-    };
-
-    expect(resolveDefaultChatModel(models, { plan_id: "free" }).id).toBe(
-      "google-ai-studio/gemini-3.5-flash",
-    );
-    expect(resolveDefaultChatModel(models, { plan_id: "pro" }).id).toBe("gpt-6.1-sol");
-  });
-
-  it("falls back to an enabled BYOK provider when nothing in the lineup is executable", () => {
-    const models: ModelConfig = {
-      "platform-free": model({
-        matchingModel: "platform-free",
-        isFree: true,
-      }),
-      "configured-byok": model({
-        matchingModel: "configured-byok",
-        isByokEnabled: true,
-      }),
-      "unconfigured-paid": model({
-        matchingModel: "unconfigured-paid",
-      }),
-    };
-
-    expect(resolveDefaultChatModel(models, { plan_id: "free" }).id).toBe("configured-byok");
-  });
-
-  it("never selects inactive or non-chat entries", () => {
-    const models: ModelConfig = {
-      deprecated: model({ deprecated: true, isFree: true }),
-      "status-deprecated": model({ status: "deprecated", isFree: true }),
-      image: model({
-        isFree: true,
-        modalities: { input: ["image"], output: ["image"] },
-      }),
-      realtime: model({ isFree: true, supportsRealtimeSession: true }),
-      eligible: model({
-        matchingModel: "eligible",
-        isFree: true,
-      }),
-    };
-
-    expect(resolveDefaultChatModel(models, { plan_id: "free" }).id).toBe("eligible");
-  });
-
-  it("fails closed when no executable chat model is available", () => {
-    const models: ModelConfig = {
-      paid: model(),
-      deprecated: model({ deprecated: true, isFree: true }),
-    };
-
-    expect(() => resolveDefaultChatModel(models, { plan_id: "free" })).toThrow(
-      "No active chat model is available for this account",
-    );
-  });
-});
 
 describe("resolveTierModel", () => {
   it("resolves the coding role separately from the agent role", () => {

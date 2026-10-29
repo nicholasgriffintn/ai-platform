@@ -1,10 +1,9 @@
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
+import { requireRequestModel } from "../../../utils/required-model.js";
 import { CertesiaProvider } from "../../chat/providers/certesia.js";
 import { BaseAudioProvider } from "../base.js";
 import type { AudioProvider, AudioSynthesisRequest, AudioSynthesisResult } from "../index.js";
-
-const DEFAULT_MODEL = "sonic-3.6";
 
 export class CartesiaAudioProvider extends BaseAudioProvider implements AudioProvider {
   name = "cartesia";
@@ -15,7 +14,7 @@ export class CartesiaAudioProvider extends BaseAudioProvider implements AudioPro
     const objectKey = this.buildObjectKey(slugBase);
 
     const response = await this.provider.getResponse({
-      model: request.model ?? DEFAULT_MODEL,
+      model: requireRequestModel(request.model, "speech"),
       voice: request.voice,
       lang: request.locale,
       message: request.input,

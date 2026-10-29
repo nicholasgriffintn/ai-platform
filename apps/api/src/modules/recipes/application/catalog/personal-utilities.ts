@@ -47,6 +47,7 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
     category: "Productivity",
     featured: false,
     readOnly: true,
+    modelRole: "writing",
     resultPath: "/discover",
     enabledTools: [DISCOVER_CONTEXT_TOOL_NAME, ON_THIS_DAY_TOOL, DISCOVER_COMPOSE_TOOL_NAME],
     connectorPolicy: { access: "read" },

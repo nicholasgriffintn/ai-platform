@@ -36,6 +36,7 @@ export async function startBrowserSession(
   },
   conversationId: string,
   toolCallId: string,
+  runModel?: string,
 ): Promise<string> {
   const user = context.requireUser();
   const conversation = await requireConversationAccess(context, conversationId);
@@ -56,7 +57,7 @@ export async function startBrowserSession(
     );
   }
 
-  const model = await getModelConfig(input.model ?? "gpt-6-astra", context.env, "openai", user.id);
+  const model = await getModelConfig(input.model ?? runModel ?? "", context.env, "openai", user.id);
 
   if (!model || model.provider !== "openai") {
     throw new AssistantError("Choose an OpenAI model for browser use", ErrorType.PARAMS_ERROR, 400);
