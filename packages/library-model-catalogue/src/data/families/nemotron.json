@@ -158,9 +158,9 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": 26.8,
-          "agenticIndex": 3.5,
+          "intelligenceIndex": 5.5,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -372,7 +372,7 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 13.8,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -482,8 +482,8 @@
         "releaseDate": "March 11, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 37.7,
-          "agenticIndex": 1.7,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -521,13 +521,13 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "June 4, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": 11.8,
-          "codingIndex": 49.3,
-          "agenticIndex": 20.1,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -721,7 +721,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "June 4, 2026",
         "reasoningConfig": {
@@ -733,8 +733,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 11.8,
-          "codingIndex": 49.3,
-          "agenticIndex": 20.1,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -969,8 +969,8 @@
         "releaseDate": "March 11, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 37.7,
-          "agenticIndex": 1.7,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

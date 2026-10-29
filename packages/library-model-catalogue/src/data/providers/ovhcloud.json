@@ -43,7 +43,7 @@
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 131072,
         "contextComplexity": 4,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.00018
@@ -120,7 +120,7 @@
         "name": "Qwen3-Coder-30B-A3B-Instruct",
         "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
         "maxTokens": 262144,
-        "speed": 5,
+        "speed": 4,
         "releaseDate": "October 28, 2025",
         "lastUpdated": "October 28, 2025",
         "costPer1kInputTokens": 0.00007,
@@ -278,6 +278,7 @@
       "overrides": {
         "name": "Qwen3.8-27B",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 262144,
         "maxTokens": 262144,
         "speed": 2,
         "isFeatured": true,

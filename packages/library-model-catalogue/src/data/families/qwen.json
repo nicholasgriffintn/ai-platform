@@ -113,8 +113,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 48.2,
-          "agenticIndex": 8.3,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -220,8 +220,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 53.7,
-          "agenticIndex": 18.5,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -333,8 +333,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 66,
-          "agenticIndex": 22.5,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -411,8 +411,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 73.1,
-          "agenticIndex": 53.6,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -440,7 +440,7 @@
           "coding"
         ],
         "contextComplexity": 4,
-        "reliability": 3,
+        "reliability": 1,
         "releaseDate": "July 19, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
@@ -453,8 +453,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 33.6,
-          "codingIndex": 76.2,
-          "agenticIndex": 56,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -936,8 +936,8 @@
         "releaseDate": "July 21, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 22.1,
-          "agenticIndex": 1.3,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -2028,8 +2028,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 45.7,
-          "agenticIndex": 7.6,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -2102,7 +2102,7 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 2.9,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -2194,8 +2194,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 48.2,
-          "agenticIndex": 8.3,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -2257,7 +2257,7 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 22.6,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -2296,8 +2296,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 28.7,
-          "agenticIndex": 1.2,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -2422,8 +2422,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 53.7,
-          "agenticIndex": 18.5,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -2486,8 +2486,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 41.9,
-          "agenticIndex": 13.1,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -2585,7 +2585,7 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 54.5,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -2649,8 +2649,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 66,
-          "agenticIndex": 22.5,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -2686,8 +2686,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 55.9,
-          "agenticIndex": 17.5,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -2722,8 +2722,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 71.9,
-          "agenticIndex": 50.1,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -2761,8 +2761,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 71.9,
-          "agenticIndex": 50.1,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -2771,7 +2771,6 @@
       "defaults": {
         "name": "Qwen3.8 27B",
         "description": "Dense 27B vision-language model for coding, agent tasks, and image and video understanding",
-        "contextWindow": 262144,
         "modalities": {
           "input": [
             "text",
@@ -2788,13 +2787,13 @@
           "coding"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "August 14, 2026",
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 20.1,
-          "codingIndex": 68.1,
-          "agenticIndex": 45.8,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -2823,7 +2822,7 @@
           "coding"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "August 14, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
@@ -2836,8 +2835,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 20.1,
-          "codingIndex": 68.1,
-          "agenticIndex": 45.8,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -2900,8 +2899,8 @@
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 73.1,
-          "agenticIndex": 53.6,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -2945,8 +2944,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 73.1,
-          "agenticIndex": 53.6,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -2958,13 +2957,13 @@
         "description": "2.4-trillion-parameter MoE flagship for coding, professional work, multimodal understanding, and long-horizon agentic workflows",
         "maxTokens": 131072,
         "contextComplexity": 4,
-        "reliability": 3,
+        "reliability": 1,
         "releaseDate": "August 3, 2026",
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 33.6,
-          "codingIndex": 76.2,
-          "agenticIndex": 56,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -3344,8 +3343,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 36.2,
-          "agenticIndex": 0.9,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

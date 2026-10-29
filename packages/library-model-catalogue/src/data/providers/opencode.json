@@ -149,7 +149,7 @@
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -409,7 +409,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -478,7 +478,7 @@
       "model": "gpt/gpt-5-4",
       "matchingModel": "gpt-5.4",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.015
@@ -626,7 +626,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004
@@ -840,7 +840,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 8, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
@@ -1079,6 +1079,7 @@
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -1120,7 +1121,7 @@
       "overrides": {
         "description": "Muse Spark 1.3 is a multimodal reasoning model from Meta for long-running agentic, multi-agent, and coding workflows. It improves long-horizon agent collaboration, instruction following, and coding efficiency relative to Muse Spark 1.2.",
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425,
@@ -1169,7 +1170,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -1320,6 +1321,7 @@
       "overrides": {
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "contextWindow": 524288,
+        "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.00068,
@@ -1408,7 +1410,7 @@
       "overrides": {
         "description": "Muse Wonder is a frontier multimodal reasoning model from Meta for personal and professional agents, long-horizon coding, and computer use. It combines Active Memory, which carries relevant context across conversations, with Active Focus, which keeps it working through blockers toward a goal.",
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "October 12, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02

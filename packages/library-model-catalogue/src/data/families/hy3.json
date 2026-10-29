@@ -30,8 +30,8 @@
     },
     "artificialAnalysis": {
       "intelligenceIndex": null,
-      "codingIndex": 58.8,
-      "agenticIndex": 24.1,
+      "codingIndex": null,
+      "agenticIndex": null,
       "intelligenceIndexVersion": 5
     }
   },

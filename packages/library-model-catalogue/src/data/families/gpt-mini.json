@@ -11,7 +11,13 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
   },
   "description": "The gpt mini family includes models that produce text.",
   "models": {
@@ -22,13 +28,7 @@
         "maxTokens": 32768,
         "multimodal": true,
         "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "April 14, 2025",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": 20.2,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
+        "releaseDate": "April 14, 2025"
       }
     },
     "gpt-4-1-mini-eu": {
@@ -48,13 +48,7 @@
           ]
         },
         "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "April 14, 2025",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": 20.2,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
+        "releaseDate": "April 14, 2025"
       }
     },
     "gpt-4-1-mini-fast": {
@@ -74,13 +68,7 @@
           ]
         },
         "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "April 14, 2025",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": 20.2,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
+        "releaseDate": "April 14, 2025"
       }
     },
     "gpt-4o-mini": {
@@ -100,13 +88,7 @@
         },
         "contextComplexity": 3,
         "knowledgeCutoffDate": "September 2023",
-        "releaseDate": "July 18, 2024",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": 11.4,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
+        "releaseDate": "July 18, 2024"
       }
     },
     "gpt-4o-mini-eu": {
@@ -127,13 +109,7 @@
         },
         "contextComplexity": 3,
         "knowledgeCutoffDate": "September 2023",
-        "releaseDate": "July 18, 2024",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": 11.4,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
+        "releaseDate": "July 18, 2024"
       }
     },
     "gpt-4o-mini-fast": {
@@ -154,13 +130,7 @@
         },
         "contextComplexity": 3,
         "knowledgeCutoffDate": "September 2023",
-        "releaseDate": "July 18, 2024",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": 11.4,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
+        "releaseDate": "July 18, 2024"
       }
     },
     "gpt-4o-mini-search-preview": {
@@ -221,12 +191,6 @@
             "xhigh"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": 56.1,
-          "agenticIndex": 17.9,
-          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -259,12 +223,6 @@
             "xhigh"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": 56.1,
-          "agenticIndex": 17.9,
-          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -294,12 +252,6 @@
             "high"
           ],
           "defaultEffort": "minimal"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": 15.6,
-          "agenticIndex": 6.8,
-          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -330,12 +282,6 @@
             "max"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": 15.6,
-          "agenticIndex": 6.8,
-          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -366,12 +312,6 @@
             "high"
           ],
           "defaultEffort": "minimal"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": 15.6,
-          "agenticIndex": 6.8,
-          "intelligenceIndexVersion": 5
         }
       }
     },

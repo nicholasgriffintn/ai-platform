@@ -2,8 +2,7 @@
   "defaults": {
     "supportsToolCalls": false,
     "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsAttachments": true
   },
   "models": {
     "baai/bge-m3": {
@@ -13,8 +12,7 @@
         "lastUpdated": "April 30, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsAttachments": false,
-        "supportsTemperature": false
+        "supportsAttachments": false
       }
     },
     "black-forest-labs/flux_1-kontext-dev": {
@@ -24,7 +22,6 @@
         "lastUpdated": "May 29, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsTemperature": false,
         "apiBaseUrl": "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-kontext-dev"
       }
     },
@@ -37,7 +34,6 @@
         "costPer1kOutputTokens": 0,
         "supportsResponseFormat": false,
         "supportsAttachments": false,
-        "supportsTemperature": false,
         "apiBaseUrl": "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell"
       }
     },
@@ -64,7 +60,6 @@
         "lastUpdated": "January 15, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsTemperature": false,
         "apiBaseUrl": "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.2-klein-4b"
       }
     },
@@ -76,7 +71,6 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsAttachments": false,
-        "supportsTemperature": false,
         "apiBaseUrl": "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-dev"
       }
     },
@@ -86,7 +80,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -226,8 +220,7 @@
       "overrides": {
         "lastUpdated": "April 16, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0
       }
     },
     "nvidia/bevformer": {
@@ -236,8 +229,7 @@
       "overrides": {
         "lastUpdated": "July 20, 2025",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0
       }
     },
     "nvidia/cosmos-predict1-5b": {
@@ -246,8 +238,7 @@
       "overrides": {
         "lastUpdated": "March 18, 2025",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0
       }
     },
     "nvidia/cosmos-transfer1-7b": {
@@ -256,8 +247,7 @@
       "overrides": {
         "lastUpdated": "June 30, 2025",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0
       }
     },
     "nvidia/cosmos-transfer2_5-2b": {
@@ -266,8 +256,7 @@
       "overrides": {
         "lastUpdated": "February 26, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0
       }
     },
     "nvidia/llama-3_2-nemoretriever-300m-embed-v1": {
@@ -277,8 +266,7 @@
         "lastUpdated": "July 24, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsAttachments": false,
-        "supportsTemperature": false
+        "supportsAttachments": false
       }
     },
     "nvidia/llama-3.1-nemotron-safety-guard-8b-v3": {
@@ -288,8 +276,7 @@
         "lastUpdated": "October 28, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsAttachments": false,
-        "supportsTemperature": false
+        "supportsAttachments": false
       }
     },
     "nvidia/llama-nemotron-embed-vl-1b-v2": {
@@ -298,8 +285,7 @@
       "overrides": {
         "lastUpdated": "December 18, 2025",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0
       }
     },
     "nvidia/llama-nemotron-rerank-vl-1b-v2": {
@@ -309,7 +295,6 @@
         "lastUpdated": "December 18, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsTemperature": false,
         "apiBaseUrl": "https://ai.api.nvidia.com/v1/retrieval/nvidia/llama-nemotron-rerank-vl-1b-v2/reranking"
       }
     },
@@ -319,8 +304,7 @@
       "overrides": {
         "lastUpdated": "June 12, 2025",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0
       }
     },
     "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning": {
@@ -366,7 +350,7 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 13.8,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -392,8 +376,8 @@
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 37.7,
-          "agenticIndex": 1.7,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -468,8 +452,7 @@
         "lastUpdated": "July 22, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsAttachments": false,
-        "supportsTemperature": false
+        "supportsAttachments": false
       }
     },
     "nvidia/nv-embedcode-7b-v1": {
@@ -479,8 +462,7 @@
         "lastUpdated": "May 29, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsAttachments": false,
-        "supportsTemperature": false
+        "supportsAttachments": false
       }
     },
     "nvidia/sparsedrive": {
@@ -489,8 +471,7 @@
       "overrides": {
         "lastUpdated": "July 20, 2025",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0
       }
     },
     "nvidia/streampetr": {
@@ -499,8 +480,7 @@
       "overrides": {
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0
       }
     },
     "nvidia/studiovoice": {
@@ -509,8 +489,7 @@
       "overrides": {
         "lastUpdated": "June 13, 2025",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0
       }
     },
     "nvidia/synthetic-video-detector": {
@@ -519,8 +498,7 @@
       "overrides": {
         "lastUpdated": "April 16, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0
       }
     },
     "openai/gpt-oss-20b": {
@@ -528,7 +506,7 @@
       "matchingModel": "openai/gpt-oss-20b",
       "overrides": {
         "maxTokens": 32768,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -597,22 +575,7 @@
         "lastUpdated": "August 19, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsResponseFormat": false,
-        "supportsTemperature": false
-      }
-    },
-    "z-ai/glm-5.3": {
-      "model": "glm/glm-5-3",
-      "matchingModel": "z-ai/glm-5.3",
-      "overrides": {
-        "contextWindow": 1000000,
-        "maxTokens": 131072,
-        "speed": 3,
-        "lastUpdated": "August 14, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsToolCalls": true,
-        "supportsAttachments": false
+        "supportsResponseFormat": false
       }
     },
     "z-ai/glm-5.3-flash": {
@@ -620,6 +583,7 @@
       "matchingModel": "z-ai/glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

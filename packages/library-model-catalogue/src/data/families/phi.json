@@ -125,7 +125,7 @@
         "supportsToolCalls": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 3.8,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -142,7 +142,7 @@
         "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 3.8,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }

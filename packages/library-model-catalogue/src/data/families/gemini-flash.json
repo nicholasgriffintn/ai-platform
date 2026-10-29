@@ -269,8 +269,8 @@
         "releaseDate": "May 19, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 70.1,
-          "agenticIndex": 26,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -316,8 +316,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 70.1,
-          "agenticIndex": 26,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -363,8 +363,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 69.2,
-          "agenticIndex": 29,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -409,8 +409,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 76.1,
-          "agenticIndex": 35.2,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -457,8 +457,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 76.1,
-          "agenticIndex": 35.2,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -489,7 +489,7 @@
           "coding"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "September 2, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -501,8 +501,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 30.5,
-          "codingIndex": 76.3,
-          "agenticIndex": 40.2,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -534,7 +534,7 @@
           "coding"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "September 2, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -548,8 +548,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 30.5,
-          "codingIndex": 76.3,
-          "agenticIndex": 40.2,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

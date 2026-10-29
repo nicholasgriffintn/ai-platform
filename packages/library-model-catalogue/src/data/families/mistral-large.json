@@ -79,8 +79,8 @@
         "releaseDate": "December 2, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 20.1,
-          "agenticIndex": 1,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -110,11 +110,13 @@
       "defaults": {
         "name": "Mistral Large 4",
         "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
+        "contextWindow": 1048576,
         "strengths": [
           "vision",
           "document",
           "tool_use"
         ],
+        "contextComplexity": 5,
         "releaseDate": "October 6, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -124,7 +126,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 25.3,
+          "intelligenceIndex": 26,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -153,7 +155,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 25.3,
+          "intelligenceIndex": 26,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5

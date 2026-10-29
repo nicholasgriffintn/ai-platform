@@ -68,7 +68,7 @@
         "releaseDate": "March 27, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 59.5,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }

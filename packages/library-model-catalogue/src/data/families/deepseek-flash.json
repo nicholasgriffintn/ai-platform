@@ -228,8 +228,8 @@
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 69.1,
-          "agenticIndex": 41,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -255,8 +255,8 @@
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 69.1,
-          "agenticIndex": 41,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -293,8 +293,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 69.1,
-          "agenticIndex": 41,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -329,8 +329,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 69.1,
-          "agenticIndex": 41,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

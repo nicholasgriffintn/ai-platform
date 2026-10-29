@@ -20,8 +20,8 @@
       "supportedEffortLevels": [
         "none",
         "low",
-        "medium",
-        "high"
+        "high",
+        "max"
       ],
       "defaultEffort": "none"
     }

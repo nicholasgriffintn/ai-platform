@@ -218,7 +218,10 @@
         "lastUpdated": "May 29, 2025",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.00215
-      }
+      },
+      "unset": [
+        "reliability"
+      ]
     },
     "deepseek-ai/DeepSeek-R1-TEE": {
       "model": "deepseek/deepseek-r1-tee",
@@ -237,7 +240,7 @@
         "name": "DeepSeek V3",
         "maxTokens": 163840,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -424,7 +427,8 @@
       },
       "unset": [
         "strengths",
-        "knowledgeCutoffDate"
+        "knowledgeCutoffDate",
+        "artificialAnalysis"
       ]
     },
     "openai/gpt-oss-20b": {
@@ -437,7 +441,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "speed": 5,
+        "speed": 4,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00002,
@@ -1173,7 +1177,7 @@
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 0,
         "maxTokens": 0,
-        "contextComplexity": 4,
+        "contextComplexity": 1,
         "speed": 3,
         "releaseDate": "October 26, 2026",
         "lastUpdated": "October 26, 2026",

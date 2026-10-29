@@ -29,7 +29,7 @@
           "value": 909,
           "min": 800,
           "max": 1400,
-          "confidenceInterval95": 18
+          "confidenceInterval95": 17
         }
       ]
     }

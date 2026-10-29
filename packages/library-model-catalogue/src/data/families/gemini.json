@@ -108,7 +108,7 @@
         "releaseDate": "February 15, 2024",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 23.6,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -482,8 +482,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 34.7,
-          "agenticIndex": 1.6,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

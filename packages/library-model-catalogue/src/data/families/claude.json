@@ -29,7 +29,7 @@
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 12.9,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -56,7 +56,7 @@
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 14,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -91,7 +91,7 @@
         "supportsResponseFormat": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 15.9,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -132,7 +132,7 @@
         "releaseDate": "October 22, 2024",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 15.9,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -260,7 +260,7 @@
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 7.8,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }

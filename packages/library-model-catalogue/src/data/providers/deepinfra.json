@@ -168,7 +168,7 @@
         "name": "MiniMax M2.1",
         "contextWindow": 196608,
         "maxTokens": 196608,
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "June 2025",
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.00028,
@@ -225,7 +225,7 @@
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 16384,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00003,
         "costPer1kOutputTokens": 0.00014,
@@ -272,7 +272,6 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro",
       "overrides": {
-        "contextWindow": 1048576,
         "maxTokens": 16384,
         "contextComplexity": 4,
         "speed": 3,
@@ -320,8 +319,8 @@
         "costPer1kOutputTokens": 0.0004,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 43.4,
-          "agenticIndex": 4.2,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -429,7 +428,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.0035
@@ -790,7 +789,7 @@
       "model": "deepseek/deepseek-v3",
       "matchingModel": "deepseek-ai/DeepSeek-V3",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "December 26, 2024",
         "costPer1kInputTokens": 0.00032,
         "costPer1kOutputTokens": 0.00089,
@@ -803,7 +802,7 @@
       "overrides": {
         "maxTokens": 8192,
         "contextComplexity": 3,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "August 21, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00095,
@@ -928,6 +927,7 @@
       "model": "qwen/qwen3-8-27b",
       "matchingModel": "Qwen/Qwen3.8-27B",
       "overrides": {
+        "contextWindow": 262144,
         "maxTokens": 32768,
         "speed": 2,
         "lastUpdated": "August 14, 2026",
@@ -961,6 +961,7 @@
       "matchingModel": "zai-org/GLM-5.3-Flash",
       "overrides": {
         "contextWindow": 1048576,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -1013,7 +1014,7 @@
       "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash",
       "overrides": {
         "maxTokens": 384000,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0006,
@@ -1144,16 +1145,6 @@
         "costPer1kInputTokens": 0.00018,
         "costPer1kOutputTokens": 0.00018,
         "supportsToolCalls": false
-      }
-    },
-    "stepfun-ai/Step-5-Preview": {
-      "model": "deepinfra/stepfun-ai/Step-5-Preview/step-5-preview",
-      "matchingModel": "stepfun-ai/Step-5-Preview",
-      "overrides": {
-        "speed": 4,
-        "lastUpdated": "September 20, 2026",
-        "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.0027
       }
     }
   }

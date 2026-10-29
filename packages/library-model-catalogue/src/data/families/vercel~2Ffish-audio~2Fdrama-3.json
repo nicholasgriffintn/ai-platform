@@ -11,10 +11,31 @@
         "audio"
       ]
     },
+    "strengths": [
+      "audio",
+      "creative"
+    ],
+    "reliability": 5,
     "releaseDate": "October 13, 2026",
     "supportsToolCalls": false,
     "supportsAttachments": false,
-    "supportsTemperature": false
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_speechElo",
+          "label": "Text-to-speech arena",
+          "value": 1278,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 18
+        }
+      ]
+    }
   },
   "description": "The vercel/fish audio/drama 3 family includes models that produce audio.",
   "models": {

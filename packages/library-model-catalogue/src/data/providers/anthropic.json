@@ -242,6 +242,7 @@
         "contextComplexity",
         "supportsResponseFormat",
         "supportsTopP",
+        "artificialAnalysis",
         "supportsCodeExecution"
       ]
     },
@@ -334,7 +335,7 @@
           "search",
           "research"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "dataRetention": {
           "maxDays": 30,

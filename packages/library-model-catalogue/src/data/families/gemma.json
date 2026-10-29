@@ -168,8 +168,8 @@
         "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 5.8,
-          "agenticIndex": 0.1,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -191,8 +191,8 @@
         "supportsToolCalls": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 5.8,
-          "agenticIndex": 0.1,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -233,8 +233,8 @@
         "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 10.1,
-          "agenticIndex": 0.1,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -256,8 +256,8 @@
         "releaseDate": "March 12, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 10.1,
-          "agenticIndex": 0.1,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -297,7 +297,7 @@
         "supportsToolCalls": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 2.7,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -320,7 +320,7 @@
         "supportsToolCalls": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 2.7,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -433,7 +433,7 @@
         "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 3.2,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -476,8 +476,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 39.3,
-          "agenticIndex": 2.9,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -536,8 +536,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 43.4,
-          "agenticIndex": 4.2,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

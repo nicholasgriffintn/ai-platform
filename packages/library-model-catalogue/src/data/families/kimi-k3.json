@@ -50,8 +50,8 @@
         "reliability": 4,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 76.2,
-          "agenticIndex": 50,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -176,8 +176,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 76.2,
-          "agenticIndex": 50,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -211,8 +211,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 76.2,
-          "agenticIndex": 50,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -264,8 +264,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 76.2,
-          "agenticIndex": 50,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

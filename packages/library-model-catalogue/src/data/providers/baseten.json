@@ -33,7 +33,7 @@
       "overrides": {
         "maxTokens": 32768,
         "contextComplexity": 4,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -100,7 +100,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "releaseDate": "April 21, 2026",
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.00095,
@@ -418,6 +418,7 @@
         "name": "GLM 5.3 Flash",
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
         "contextWindow": 1048576,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

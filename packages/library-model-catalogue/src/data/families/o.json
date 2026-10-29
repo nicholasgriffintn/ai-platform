@@ -129,7 +129,7 @@
         "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 39.7,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -273,8 +273,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 16.3,
-          "agenticIndex": 0.9,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -339,8 +339,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 16.3,
-          "agenticIndex": 0.9,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -626,7 +626,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1088,
+              "value": 1089,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10
@@ -662,7 +662,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1104,
+              "value": 1106,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11

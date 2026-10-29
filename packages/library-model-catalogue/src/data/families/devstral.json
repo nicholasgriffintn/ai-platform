@@ -15,7 +15,13 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
   },
   "description": "The devstral family includes models that produce text.",
   "models": {
@@ -26,13 +32,7 @@
         "description": "Mistral coding agent model for repository tasks and software engineering workflows",
         "reliability": 2,
         "knowledgeCutoffDate": "December 2025",
-        "releaseDate": "December 9, 2025",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": 31.3,
-          "agenticIndex": 2.3,
-          "intelligenceIndexVersion": 5
-        }
+        "releaseDate": "December 9, 2025"
       }
     },
     "devstral-latest": {
@@ -80,13 +80,7 @@
         ],
         "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "May 21, 2025",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
+        "releaseDate": "May 21, 2025"
       }
     },
     "devstral-small-2": {
@@ -98,13 +92,7 @@
         ],
         "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "December 9, 2025",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": 29.3,
-          "agenticIndex": 2,
-          "intelligenceIndexVersion": 5
-        }
+        "releaseDate": "December 9, 2025"
       }
     }
   }

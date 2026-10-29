@@ -57,7 +57,7 @@
         "releaseDate": "November 4, 2024",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 15.9,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -117,7 +117,7 @@
         "releaseDate": "October 22, 2024",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 15.9,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }

@@ -34,8 +34,8 @@
         "releaseDate": "June 30, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 45.3,
-          "agenticIndex": 14,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -103,8 +103,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 45.3,
-          "agenticIndex": 14,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

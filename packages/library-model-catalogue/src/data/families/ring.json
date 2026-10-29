@@ -21,8 +21,8 @@
     "supportsAttachments": false,
     "artificialAnalysis": {
       "intelligenceIndex": null,
-      "codingIndex": 42.8,
-      "agenticIndex": 10.7,
+      "codingIndex": null,
+      "agenticIndex": null,
       "intelligenceIndexVersion": 5
     }
   },

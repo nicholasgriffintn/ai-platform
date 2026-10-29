@@ -89,7 +89,7 @@
       "overrides": {
         "contextWindow": 96000,
         "maxTokens": 96000,
-        "contextComplexity": 4,
+        "contextComplexity": 3,
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "June 13, 2026",
@@ -113,7 +113,7 @@
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "contextWindow": 128000,
         "maxTokens": 16384,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00011215,
         "costPer1kOutputTokens": 0.00047103,

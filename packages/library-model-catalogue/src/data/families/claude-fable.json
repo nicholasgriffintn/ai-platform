@@ -74,8 +74,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 76.5,
-          "agenticIndex": 50.7,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -90,13 +90,13 @@
           "tool_use",
           "coding"
         ],
-        "reliability": 3,
+        "reliability": 2,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 1, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": 49,
-          "codingIndex": 81.6,
-          "agenticIndex": 57.9,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -111,7 +111,7 @@
           "tool_use",
           "coding"
         ],
-        "reliability": 3,
+        "reliability": 2,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 1, 2026",
         "reasoningConfig": {
@@ -127,8 +127,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 49,
-          "codingIndex": 81.6,
-          "agenticIndex": 57.9,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -143,13 +143,13 @@
           "tool_use",
           "coding"
         ],
-        "reliability": 3,
+        "reliability": 2,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 1, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": 49,
-          "codingIndex": 81.6,
-          "agenticIndex": 57.9,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -164,13 +164,13 @@
           "tool_use",
           "coding"
         ],
-        "reliability": 3,
+        "reliability": 2,
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 1, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": 49,
-          "codingIndex": 81.6,
-          "agenticIndex": 57.9,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -189,8 +189,8 @@
         "knowledgeCutoffDate": "January 31, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 76.5,
-          "agenticIndex": 50.7,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -218,8 +218,8 @@
         "knowledgeCutoffDate": "January 31, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 76.5,
-          "agenticIndex": 50.7,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -247,8 +247,8 @@
         "knowledgeCutoffDate": "January 31, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 76.5,
-          "agenticIndex": 50.7,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

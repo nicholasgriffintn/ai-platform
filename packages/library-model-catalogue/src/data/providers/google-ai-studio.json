@@ -809,8 +809,8 @@
         "costPer1kOutputTokens": 0.0004,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 43.4,
-          "agenticIndex": 4.2,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       },

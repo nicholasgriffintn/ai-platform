@@ -49,7 +49,7 @@
           "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 1,
         "releaseDate": "August 3, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -61,8 +61,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": 33.6,
-          "codingIndex": 76.2,
-          "agenticIndex": 56,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

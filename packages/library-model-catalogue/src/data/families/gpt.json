@@ -62,7 +62,7 @@
         "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 10.7,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -161,7 +161,7 @@
         "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 13.1,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -292,7 +292,7 @@
         "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 21.5,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -323,7 +323,7 @@
         "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 21.5,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -534,7 +534,7 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 37.8,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -576,7 +576,7 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 49.4,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -619,7 +619,7 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 49.4,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -877,7 +877,7 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 71.1,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -922,7 +922,7 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 71.1,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -968,7 +968,7 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 71.1,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -1044,8 +1044,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 74.9,
-          "agenticIndex": 36.4,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -1089,8 +1089,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 74.9,
-          "agenticIndex": 36.4,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -1135,8 +1135,8 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 74.9,
-          "agenticIndex": 36.4,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -1207,7 +1207,7 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 37.8,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -1250,7 +1250,7 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 37.8,
+          "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
@@ -1648,8 +1648,8 @@
         "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 30.4,
-          "agenticIndex": 3.7,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -1678,8 +1678,8 @@
         "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 30.4,
-          "agenticIndex": 3.7,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
@@ -1701,8 +1701,8 @@
         "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": 20.7,
-          "agenticIndex": 1.2,
+          "codingIndex": null,
+          "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }

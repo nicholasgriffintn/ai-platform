@@ -223,7 +223,8 @@
         "supportsAttachments": true
       },
       "unset": [
-        "strengths"
+        "strengths",
+        "artificialAnalysis"
       ]
     },
     "green-r-raw": {
@@ -236,7 +237,8 @@
         "supportsAttachments": true
       },
       "unset": [
-        "strengths"
+        "strengths",
+        "artificialAnalysis"
       ]
     },
     "green-s-pro": {
@@ -270,7 +272,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.0007524,
         "costPer1kOutputTokens": 0.004275,
@@ -488,7 +490,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "speed": 5,
+        "speed": 4,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.000255552,
@@ -534,6 +536,7 @@
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text"
