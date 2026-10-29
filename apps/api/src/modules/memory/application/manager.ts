@@ -6,7 +6,11 @@ import { z } from "zod/v4";
 import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getMemoryProvider } from "~/infrastructure/providers/capabilities/memory";
-import type { MemoryProviderId } from "~/infrastructure/providers/capabilities/memory/types";
+import type {
+  MemoryProviderId,
+  MemoryStoreInput,
+} from "~/infrastructure/providers/capabilities/memory/types";
+import { conversationEvidence } from "~/modules/memory-documents/domain/evidence";
 import { gateMemoryClassification } from "~/modules/memory/application/gate";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { getRequestUserSettings } from "~/modules/user/application/request-settings";
@@ -19,6 +23,7 @@ const memoryClassificationSchema = z.object({
   storeMemory: z.boolean().optional(),
   category: z.string().optional(),
   summary: z.string().optional(),
+  quote: z.string().optional(),
 });
 
 export interface MemoryEvent {
@@ -54,29 +59,15 @@ export class MemoryManager {
     return new MemoryManager(env, user, serviceContext, memoryScope);
   }
 
-  public async storeMemory(
-    text: string,
-    metadata: Record<string, string>,
-    conversationId?: string,
-    userSettings?: IUserSettings,
-    operationId?: string,
-    documentId?: string,
-  ): Promise<string | null> {
+  public async storeMemory(input: MemoryStoreInput): Promise<string | null> {
     const provider = getMemoryProvider({
       env: this.env,
       user: this.user,
-      userSettings,
+      userSettings: input.userSettings,
       serviceContext: this.serviceContext,
       memoryScope: this.memoryScope,
     });
-    const result = await provider.storeMemory({
-      text,
-      metadata,
-      conversationId,
-      userSettings,
-      operationId,
-      documentId,
-    });
+    const result = await provider.storeMemory(input);
 
     if (result.id && this.memoryScope.type === "project" && this.serviceContext && this.user?.id) {
       await recordProjectAudit(this.serviceContext, this.memoryScope.projectId, {
@@ -149,7 +140,7 @@ export class MemoryManager {
   }
 
   public async handleMemory(
-    lastUser: string,
+    lastUser: { text: string; id?: string },
     completionId: string,
     userSettings: IUserSettings,
     operationPrefix: string,
@@ -158,11 +149,11 @@ export class MemoryManager {
 
     if (userSettings?.memories_save_enabled) {
       try {
-        const gate = lastUser.trim()
+        const gate = lastUser.text.trim()
           ? await gateMemoryClassification({
               env: this.env,
               user: this.user,
-              message: lastUser,
+              message: lastUser.text,
               completionId,
             })
           : null;
@@ -190,26 +181,32 @@ export class MemoryManager {
           const { object: classification } = await ai.generateObject({
             ...scope,
             system: buildMemoryClassifierPrompt(),
-            prompt: lastUser,
+            prompt: lastUser.text,
             schema: memoryClassificationSchema,
             name: "memory_classification",
           });
 
           if (classification.storeMemory) {
-            const summaryText = classification.summary || lastUser;
+            const summaryText = classification.summary || lastUser.text;
             const category = classification.category || "general";
 
-            await this.storeMemory(
-              summaryText,
-              {
+            await this.storeMemory({
+              text: summaryText,
+              metadata: {
                 conversationId: completionId,
                 timestamp: Date.now().toString(),
                 category,
               },
-              completionId,
+              conversationId: completionId,
               userSettings,
-              `${operationPrefix}:classified`,
-            );
+              operationId: `${operationPrefix}:classified`,
+              evidence: conversationEvidence({
+                conversationId: completionId,
+                messageId: lastUser.id,
+                message: lastUser.text,
+                quote: classification.quote,
+              }),
+            });
 
             events.push({ type: "store", text: summaryText, category });
           }

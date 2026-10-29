@@ -1,5 +1,6 @@
 import {
   MEMORY_CONSOLIDATION_TASK_TYPE,
+  MEMORY_IMPORT_TASK_TYPE,
   MEMORY_REFLECTION_TASK_TYPE,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -8,6 +9,7 @@ import { evaluateServerFlag, taskFlags } from "~/modules/experiments/application
 import { defineSchedule, type AppWorkflows } from "~/modules/queue/application/workflows";
 
 import { memoryConsolidation } from "./memory-consolidation";
+import { memoryImport } from "./memory-import";
 import { memoryReflection, memorySynthesis } from "./memory-synthesis";
 import { scheduleDailySynthesis } from "./schedule";
 
@@ -15,6 +17,7 @@ export function registerMemoryQueue(workflows: AppWorkflows): void {
   workflows.on("memory_synthesis", memorySynthesis);
   workflows.on(MEMORY_REFLECTION_TASK_TYPE, memoryReflection);
   workflows.on(MEMORY_CONSOLIDATION_TASK_TYPE, memoryConsolidation);
+  workflows.on(MEMORY_IMPORT_TASK_TYPE, memoryImport);
 
   workflows.every(
     SCHEDULES.MEMORIES_SYNTHESIS,

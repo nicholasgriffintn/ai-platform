@@ -42,11 +42,37 @@ export const memoryDocumentSummarySchema = memoryDocumentSchema.omit({ content: 
   excerpt: z.string(),
 });
 
+export const MEMORY_IMPORT_SOURCES = ["chatgpt", "claude", "summary"] as const;
+export const memoryImportSourceSchema = z.enum(MEMORY_IMPORT_SOURCES);
+export const MEMORY_IMPORT_SOURCE_LABELS: Record<(typeof MEMORY_IMPORT_SOURCES)[number], string> = {
+  chatgpt: "ChatGPT",
+  claude: "Claude",
+  summary: "a pasted summary",
+};
+export const MEMORY_EVIDENCE_EXCERPT_CHARACTERS = 500;
+
+export const memoryEvidenceSchema = z.discriminatedUnion("origin", [
+  z.object({
+    origin: z.literal("conversation"),
+    conversationId: z.string().min(1),
+    messageId: z.string().min(1).optional(),
+    quote: z.string().min(1),
+  }),
+  z.object({
+    origin: z.literal("import"),
+    source: memoryImportSourceSchema,
+    conversationTitle: z.string().optional(),
+    occurredAt: z.string().optional(),
+    quote: z.string().min(1),
+  }),
+]);
+
 export const memoryDocumentRevisionSchema = z.object({
   id: z.string(),
   revision: z.number().int().positive(),
   content: z.string(),
   changeNote: z.string().nullable(),
+  evidence: z.array(memoryEvidenceSchema),
   createdAt: z.string(),
 });
 
@@ -93,14 +119,83 @@ export const memoryDocumentPageSchema = z.object({
   offset: z.number().int().nonnegative(),
   nextOffset: z.number().int().nonnegative().nullable(),
   totalCharacters: z.number().int().nonnegative(),
+  evidence: z.array(memoryEvidenceSchema),
 });
 
 export type MemoryDocumentPage = z.infer<typeof memoryDocumentPageSchema>;
 
 export const memoryPlacementSchema = z.object({
-  name: memoryDocumentNameSchema.describe(
-    "The name of the existing memory document this belongs in, or a new short kebab-case name when none covers it.",
+  placements: z
+    .array(
+      z.object({
+        memory: z.number().int().nonnegative().describe("The number of the memory being placed."),
+        name: memoryDocumentNameSchema.describe(
+          "The name of the existing memory document this belongs in, or a new short kebab-case name when none covers it.",
+        ),
+      }),
+    )
+    .min(1),
+});
+
+export const memoryImportMessageSchema = z.object({
+  text: z.string().min(1),
+  createdAt: z.string().optional(),
+});
+
+export const memoryImportConversationSchema = z.object({
+  title: z.string(),
+  createdAt: z.string().optional(),
+  messages: z.array(memoryImportMessageSchema).min(1),
+});
+
+export const createMemoryImportSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("summary"), text: z.string().trim().min(1) }),
+  z.object({
+    kind: z.literal("conversations"),
+    source: memoryImportSourceSchema.exclude(["summary"]),
+    conversations: z.array(memoryImportConversationSchema).min(1),
+  }),
+]);
+
+export const memoryImportResponseSchema = z.object({
+  importId: z.string(),
+  taskId: z.string(),
+  conversations: z.number().int().nonnegative(),
+  messages: z.number().int().nonnegative(),
+});
+
+export const memoryImportExtractionSchema = z.object({
+  memories: z.array(
+    z.object({
+      text: z
+        .string()
+        .trim()
+        .min(1)
+        .describe(
+          "One lasting fact, preference, goal or commitment about the user, with the reason when the messages give one.",
+        ),
+      evidence: z
+        .array(
+          z.object({
+            messageId: z.string().min(1).describe("The id of the message that shows this."),
+            quote: z
+              .string()
+              .min(1)
+              .describe("The exact words from that message, copied character for character."),
+          }),
+        )
+        .min(1),
+    }),
   ),
+});
+
+export const MEMORY_IMPORT_TASK_TYPE = "memory_import";
+export const memoryImportTaskDataSchema = z.object({
+  importId: z.string().min(1),
+  source: memoryImportSourceSchema,
+  key: z.string().min(1),
+  offsets: z.array(z.number().int().nonnegative()).min(2),
+  batch: z.number().int().nonnegative(),
 });
 
 export const memoryDocumentDraftSchema = z.object({
@@ -155,6 +250,13 @@ export const memoryReflectionProposalSchema = z.object({
 });
 export type MemoryReflectionProposal = z.infer<typeof memoryReflectionProposalSchema>;
 
+export type MemoryEvidence = z.infer<typeof memoryEvidenceSchema>;
+export type MemoryImportSource = z.infer<typeof memoryImportSourceSchema>;
+export type MemoryImportConversation = z.infer<typeof memoryImportConversationSchema>;
+export type CreateMemoryImportInput = z.infer<typeof createMemoryImportSchema>;
+export type MemoryImportResponse = z.infer<typeof memoryImportResponseSchema>;
+export type MemoryImportExtraction = z.infer<typeof memoryImportExtractionSchema>;
+export type MemoryImportTaskData = z.infer<typeof memoryImportTaskDataSchema>;
 export type MemoryDocumentSummary = z.infer<typeof memoryDocumentSummarySchema>;
 export type MemoryDocumentType = z.infer<typeof memoryDocumentTypeSchema>;
 export type MemoryDocumentDraft = z.infer<typeof memoryDocumentDraftSchema>;

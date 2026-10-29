@@ -1,9 +1,11 @@
 import type {
   CreateMemoryDocumentInput,
+  CreateMemoryImportInput,
   ListPage,
   MemoryDocument,
   MemoryDocumentRevision,
   MemoryDocumentSummary,
+  MemoryImportResponse,
   UpdateMemoryDocumentInput,
 } from "@ngriffin_uk/polychat-schemas";
 
@@ -56,4 +58,8 @@ export async function listMemoryDocumentRevisions(
   );
 
   return page.data;
+}
+
+export function importMemory(input: CreateMemoryImportInput): Promise<MemoryImportResponse> {
+  return requestJson<MemoryImportResponse>("/memory/imports", "POST", input);
 }

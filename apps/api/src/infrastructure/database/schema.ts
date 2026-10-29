@@ -867,6 +867,7 @@ export const resourceRevision = sqliteTable(
     content: text({ mode: "json" }).$type<Record<string, unknown>>(),
     created_by_user_id: integer().references(() => user.id),
     provenance_json: text({ mode: "json" }).$type<OutputProvenance>(),
+    evidence_json: text(),
     operation: text({ enum: ["created", "updated", "restored"] }),
     restored_from_revision: integer(),
     resource_type: text({ enum: ["memory", "skill", "output", "source"] }).notNull(),
@@ -916,6 +917,7 @@ export type MemoryDocumentRevisionRow = {
   content: string;
   change_note: string | null;
   operation_id: string | null;
+  evidence_json: string | null;
   created_by: number;
   created_at: string;
 };

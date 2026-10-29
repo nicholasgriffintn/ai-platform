@@ -1,4 +1,4 @@
-import type { MemoryDocumentType } from "@ngriffin_uk/polychat-schemas";
+import type { MemoryDocumentType, MemoryEvidence } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -9,6 +9,7 @@ import type {
   MemoryDocumentRevisionRow,
   MemoryReflectionResultRow,
 } from "~/infrastructure/database/schema";
+import { serialiseMemoryEvidence } from "~/modules/memory-documents/domain/evidence";
 
 export interface MemoryDocumentScopeKey {
   scopeType: "personal" | "project";
@@ -27,6 +28,7 @@ export interface CreateMemoryDocumentRecord extends MemoryDocumentScopeKey {
   details?: MemoryDocumentDetails;
   createdByUserId: number;
   operationId?: string;
+  evidence?: readonly MemoryEvidence[];
 }
 
 export interface AppendMemoryDocumentRevision {
@@ -37,6 +39,7 @@ export interface AppendMemoryDocumentRevision {
   createdByUserId: number;
   expectedRevision: number;
   operationId?: string;
+  evidence?: readonly MemoryEvidence[];
 }
 
 export interface CommitMemoryReflection {
@@ -49,6 +52,7 @@ export interface CommitMemoryReflection {
   content: string;
   changeNote: string;
   evidenceJson: string;
+  evidence: readonly MemoryEvidence[];
   userId: number;
   taskId: string;
   ownerToken: string;
@@ -104,9 +108,16 @@ export class MemoryDocumentRepository extends BaseRepository {
       ),
       this.env.DB.prepare(
         `INSERT INTO resource_revision
-           (resource_type, id, document_id, revision, text_content, change_note, created_by, operation_id)
-         VALUES ('memory', ?, ?, 1, ?, 'Created', ?, ?)`,
-      ).bind(generateId(), id, record.content, record.createdByUserId, record.operationId ?? null),
+           (resource_type, id, document_id, revision, text_content, change_note, created_by, operation_id, evidence_json)
+         VALUES ('memory', ?, ?, 1, ?, 'Created', ?, ?, ?)`,
+      ).bind(
+        generateId(),
+        id,
+        record.content,
+        record.createdByUserId,
+        record.operationId ?? null,
+        serialiseMemoryEvidence(record.evidence),
+      ),
     ]);
 
     const created = await this.getDocumentById(id);
@@ -147,6 +158,18 @@ export class MemoryDocumentRepository extends BaseRepository {
        ORDER BY revision DESC`,
       [documentId],
     );
+  }
+
+  public async listRecentEvidence(documentId: string, revisions: number): Promise<string[]> {
+    const rows = await this.runQuery<{ evidence_json: string }>(
+      `SELECT evidence_json FROM resource_revision
+       WHERE resource_type = 'memory' AND document_id = ? AND evidence_json IS NOT NULL
+       ORDER BY revision DESC
+       LIMIT ?`,
+      [documentId, revisions],
+    );
+
+    return rows.map((row) => row.evidence_json);
   }
 
   async reflectionCheckpoint(contextId: string, conversationId: string): Promise<string | null> {
@@ -205,6 +228,7 @@ export class MemoryDocumentRepository extends BaseRepository {
               changeNote: input.changeNote,
               createdByUserId: input.userId,
               operationId: input.operationId,
+              evidence: input.evidence,
             },
             input.operationId,
           )
@@ -250,8 +274,8 @@ export class MemoryDocumentRepository extends BaseRepository {
       ),
       this.env.DB.prepare(
         `INSERT INTO resource_revision
-           (resource_type, id, document_id, revision, text_content, change_note, created_by, operation_id)
-         SELECT 'memory', ?, ?, ?, ?, ?, ?, ?
+           (resource_type, id, document_id, revision, text_content, change_note, created_by, operation_id, evidence_json)
+         SELECT 'memory', ?, ?, ?, ?, ?, ?, ?, ?
          WHERE changes() > 0`,
       ).bind(
         generateId(),
@@ -261,6 +285,7 @@ export class MemoryDocumentRepository extends BaseRepository {
         input.changeNote ?? null,
         input.createdByUserId,
         operationId,
+        serialiseMemoryEvidence(input.evidence),
       ),
     ];
   }

@@ -1,3 +1,5 @@
+import type { MemoryEvidence } from "@ngriffin_uk/polychat-schemas";
+
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { IEnv, IUser, IUserSettings } from "~/types";
 
@@ -17,6 +19,7 @@ export interface MemoryStoreInput {
   documentId?: string;
   operationId?: string;
   userSettings?: IUserSettings | null;
+  evidence?: readonly MemoryEvidence[];
 }
 
 export interface MemoryStoreResult {

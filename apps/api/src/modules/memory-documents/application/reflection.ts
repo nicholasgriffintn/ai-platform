@@ -209,6 +209,14 @@ export async function reflectTeammateMemory(
     content,
     changeNote: proposal.changeNote,
     evidenceJson: JSON.stringify(proposal.edits),
+    evidence: proposal.edits.flatMap((edit) =>
+      edit.evidence.map((cited) => ({
+        origin: "conversation" as const,
+        conversationId: input.conversationId,
+        messageId: cited.messageId,
+        quote: cited.quote,
+      })),
+    ),
     userId: user.id,
     ownerToken: execution.lease.ownerToken,
   });

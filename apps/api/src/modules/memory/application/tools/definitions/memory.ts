@@ -49,6 +49,11 @@ export const store_memory: FunctionToolDescriptor = {
         type: "string",
         description: "Optional memory category such as preference, fact, schedule, or general.",
       },
+      quote: {
+        type: "string",
+        description:
+          "The exact words from the user's latest message that show this, copied character for character. Kept as the memory's evidence.",
+      },
       document_id: {
         type: "string",
         description:
@@ -71,7 +76,7 @@ export const store_memory: FunctionToolDescriptor = {
 export const read_memory_document: FunctionToolDescriptor = {
   name: MEMORY_READ_TOOL_NAME,
   description:
-    "Read a bounded page of a memory document in this run's memory scope. Use the documentId and revision from the memory index or search_memories results, then nextOffset for further pages. Bound teammate and delegated runs can only read explicitly granted documents. If the revision changes, refresh the index or search before combining pages.",
+    "Read a bounded page of a memory document in this run's memory scope. Use the documentId and revision from the memory index or search_memories results, then nextOffset for further pages. Bound teammate and delegated runs can only read explicitly granted documents. If the revision changes, refresh the index or search before combining pages. The last page ends with where the memory came from: the quoted words and the chat or import they were taken from, which is how to answer why something is remembered.",
   inputSchema: readMemoryDocumentSchema,
   type: "normal",
   permissions: ["read"],

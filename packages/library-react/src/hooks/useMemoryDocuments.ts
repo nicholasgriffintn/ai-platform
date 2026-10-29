@@ -2,14 +2,17 @@ import {
   createMemoryDocument,
   deleteMemoryDocument,
   fetchMemoryDocument,
+  importMemory,
   listMemoryDocumentRevisions,
   listMemoryDocuments,
   updateMemoryDocument,
 } from "@ngriffin_uk/polychat-library-client";
 import type {
   CreateMemoryDocumentInput,
+  CreateMemoryImportInput,
   MemoryDocument,
   MemoryDocumentSummary,
+  MemoryImportResponse,
   UpdateMemoryDocumentInput,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -74,5 +77,11 @@ export function useMemoryDocumentRevisions(name: string | undefined, projectId?:
     queryKey: [MEMORY_DOCUMENT_QUERY_KEY, projectId, name, "revisions"],
     queryFn: () => listMemoryDocumentRevisions(name ?? "", projectId),
     enabled: Boolean(name),
+  });
+}
+
+export function useImportMemory() {
+  return useMutation<MemoryImportResponse, Error, CreateMemoryImportInput>({
+    mutationFn: (input) => importMemory(input),
   });
 }

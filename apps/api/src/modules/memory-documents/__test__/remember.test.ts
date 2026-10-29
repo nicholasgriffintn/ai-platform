@@ -51,7 +51,7 @@ function row(overrides: Partial<MemoryDocumentRow>): MemoryDocumentRow {
 
 function setup(documents: MemoryDocumentRow[], placed: string) {
   generateSystemObject.mockImplementation(async (_context: unknown, { name }: { name: string }) =>
-    name === "memory_placement" ? { name: placed } : DRAFT,
+    name === "memory_placement" ? { placements: [{ memory: 0, name: placed }] } : DRAFT,
   );
   const repository = {
     listDocuments: vi.fn(async () => documents),
@@ -74,10 +74,18 @@ describe("rememberInScope", () => {
     vi.clearAllMocks();
   });
 
-  it("rewrites the document the memory belongs to as a whole", async () => {
+  it("rewrites the document the memory belongs to as a whole, keeping its evidence", async () => {
     const { context, repository } = setup([row({})], "writing-style");
+    const evidence = [
+      {
+        origin: "conversation" as const,
+        conversationId: "conversation-1",
+        messageId: "message-1",
+        quote: "please use British English",
+      },
+    ];
 
-    await rememberInScope(context, SCOPE, 7, { text: "Prefers British English" });
+    await rememberInScope(context, SCOPE, 7, { text: "Prefers British English", evidence });
 
     const write = generateSystemObject.mock.calls.find(
       ([, request]) => request.name === "memory_document",
@@ -92,6 +100,7 @@ describe("rememberInScope", () => {
       createdByUserId: 7,
       expectedRevision: 2,
       operationId: undefined,
+      evidence,
     });
     expect(repository.createDocument).not.toHaveBeenCalled();
   });
@@ -108,6 +117,7 @@ describe("rememberInScope", () => {
       details: { description: DRAFT.description, type: "feedback" },
       createdByUserId: 7,
       operationId: "op-1",
+      evidence: [],
     });
     expect(repository.appendRevision).not.toHaveBeenCalled();
   });

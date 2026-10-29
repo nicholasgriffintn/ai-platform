@@ -1,11 +1,16 @@
 import { MemoizedMarkdown, ViewerStatus } from "@ngriffin_uk/polychat-component-content";
-import { EmptyState } from "@ngriffin_uk/polychat-component-ui";
+import { EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
 import {
+  getPersonalConversationPath,
   useMemoryDocument,
   useMemoryDocumentRevisions,
   useUpdateMemoryDocument,
 } from "@ngriffin_uk/polychat-library-react";
-import type { MemoryDocumentType } from "@ngriffin_uk/polychat-schemas";
+import {
+  MEMORY_IMPORT_SOURCE_LABELS,
+  type MemoryDocumentType,
+  type MemoryEvidence,
+} from "@ngriffin_uk/polychat-schemas";
 import { formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
 import { History, Info } from "lucide-react";
 import { useState } from "react";
@@ -26,6 +31,24 @@ const MEMORY_TYPE_LABELS: Record<MemoryDocumentType, string> = {
   project: "Ongoing work",
   reference: "Where to find things",
 };
+
+function EvidenceOrigin({ evidence, linkChats }: { evidence: MemoryEvidence; linkChats: boolean }) {
+  if (evidence.origin === "conversation") {
+    return linkChats ? (
+      <Link href={getPersonalConversationPath(evidence.conversationId)}>from a chat</Link>
+    ) : (
+      <>from a chat</>
+    );
+  }
+
+  return (
+    <>
+      from {MEMORY_IMPORT_SOURCE_LABELS[evidence.source]}
+      {evidence.conversationTitle ? `, “${evidence.conversationTitle}”` : ""}
+      {evidence.occurredAt ? `, ${evidence.occurredAt.slice(0, 10)}` : ""}
+    </>
+  );
+}
 
 function MemoryHistory({ name, projectId }: { name: string; projectId?: string }) {
   const revisions = useMemoryDocumentRevisions(name, projectId);
@@ -58,6 +81,16 @@ function MemoryHistory({ name, projectId }: { name: string; projectId?: string }
                 {formatRelativeTime(revision.createdAt)}
               </span>
             </summary>
+            {revision.evidence.length > 0 ? (
+              <ul className="space-y-1 border-t border-border px-3 py-2 text-xs text-muted-foreground">
+                {revision.evidence.map((evidence, index) => (
+                  <li key={`${revision.id}-${index}`}>
+                    <q className="text-foreground">{evidence.quote}</q>{" "}
+                    <EvidenceOrigin evidence={evidence} linkChats={!projectId} />
+                  </li>
+                ))}
+              </ul>
+            ) : null}
             <div className="prose prose-sm max-w-none border-t border-border px-3 py-2 dark:prose-invert">
               <MemoizedMarkdown>{revision.content}</MemoizedMarkdown>
             </div>

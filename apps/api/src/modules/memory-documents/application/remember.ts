@@ -4,6 +4,7 @@ import {
   memoryDocumentDraftSchema,
   memoryPlacementSchema,
   type MemoryDocumentDraft,
+  type MemoryEvidence,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -35,6 +36,7 @@ export interface MemoryNote {
   category?: string;
   conversationId?: string;
   operationId?: string;
+  evidence?: readonly MemoryEvidence[];
 }
 
 function renderMemoryIndex(documents: readonly MemoryDocumentRow[]): string {
@@ -51,30 +53,52 @@ function renderMemoryIndex(documents: readonly MemoryDocumentRow[]): string {
     .join("\n");
 }
 
-function renderMemoryNote(note: MemoryNote): string {
-  return [
-    `New memory: ${note.text.trim()}`,
-    note.category ? `Category: ${note.category}` : "",
-    note.conversationId ? `From conversation: ${note.conversationId}` : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
+function renderMemoryNotes(notes: readonly MemoryNote[]): string {
+  return notes
+    .map((note, index) =>
+      [
+        `Memory ${index}: ${note.text.trim()}`,
+        note.category ? `Category: ${note.category}` : "",
+        note.conversationId ? `From conversation: ${note.conversationId}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    )
+    .join("\n\n");
 }
 
-async function placeMemory(
+function collectEvidence(notes: readonly MemoryNote[]): MemoryEvidence[] {
+  return notes.flatMap((note) => note.evidence ?? []);
+}
+
+async function placeMemories(
   context: ServiceContext,
   documents: readonly MemoryDocumentRow[],
-  note: MemoryNote,
-): Promise<string> {
-  const { name } = await generateSystemObject(context, {
+  notes: readonly MemoryNote[],
+): Promise<Map<string, MemoryNote[]>> {
+  const { placements } = await generateSystemObject(context, {
     role: "housekeeping",
     name: "memory_placement",
     schema: memoryPlacementSchema,
     system: getPromptText("memory/documents/placement"),
-    material: `## Memory documents\n\n${renderMemoryIndex(documents)}\n\n## To remember\n\n${renderMemoryNote(note)}`,
+    material: `## Memory documents\n\n${renderMemoryIndex(documents)}\n\n## To remember\n\n${renderMemoryNotes(notes)}`,
+  });
+  const groups = new Map<string, MemoryNote[]>();
+
+  notes.forEach((note, index) => {
+    const name = placements.find((placement) => placement.memory === index)?.name;
+
+    if (!name) {
+      throw new AssistantError(
+        "Memory placement left a memory without a document",
+        ErrorType.PROVIDER_ERROR,
+      );
+    }
+
+    groups.set(name, [...(groups.get(name) ?? []), note]);
   });
 
-  return name;
+  return groups;
 }
 
 function draftMemoryDocument(
@@ -82,7 +106,7 @@ function draftMemoryDocument(
   name: string,
   existing: MemoryDocumentRow | null,
   others: readonly MemoryDocumentRow[],
-  note: MemoryNote,
+  notes: readonly MemoryNote[],
 ): Promise<MemoryDocumentDraft> {
   const details = existing ? readMemoryDocumentDetails(existing) : null;
   const current = existing
@@ -105,7 +129,7 @@ function draftMemoryDocument(
       `## Document: ${name}`,
       current,
       `## Other memory documents\n\n${renderMemoryIndex(others.filter((other) => other.name !== name))}`,
-      `## To remember\n\n${renderMemoryNote(note)}`,
+      `## To remember\n\n${renderMemoryNotes(notes)}`,
     ].join("\n\n"),
   });
 }
@@ -116,6 +140,7 @@ async function writeIntoDocument(
   draft: MemoryDocumentDraft,
   userId: number,
   operationId: string | undefined,
+  evidence: readonly MemoryEvidence[],
 ): Promise<MemoryDocumentRow | null> {
   return context.repositories.get(MemoryDocumentRepository).appendRevision({
     documentId: document.id,
@@ -125,6 +150,7 @@ async function writeIntoDocument(
     createdByUserId: userId,
     expectedRevision: document.revision,
     operationId,
+    evidence,
   });
 }
 
@@ -132,15 +158,24 @@ async function appendIntoDocument(
   context: ServiceContext,
   document: MemoryDocumentRow,
   userId: number,
-  note: MemoryNote,
+  notes: readonly MemoryNote[],
+  operationId: string | undefined,
 ): Promise<MemoryDocumentRow | null> {
+  const date = new Date().toISOString().slice(0, 10);
   const written = await context.repositories.get(MemoryDocumentRepository).appendRevision({
     documentId: document.id,
-    content: appendRecentNote(document.content, note.text, new Date().toISOString().slice(0, 10)),
-    changeNote: `Noted: ${note.text.trim().slice(0, 120)}`,
+    content: notes.reduce(
+      (content, note) => appendRecentNote(content, note.text, date),
+      document.content,
+    ),
+    changeNote:
+      notes.length === 1
+        ? `Noted: ${notes[0].text.trim().slice(0, 120)}`
+        : `Noted ${notes.length} things`,
     createdByUserId: userId,
     expectedRevision: document.revision,
-    operationId: note.operationId,
+    operationId,
+    evidence: collectEvidence(notes),
   });
 
   if (written) {
@@ -168,20 +203,21 @@ async function scheduleMemoryConsolidation(
   });
 }
 
-async function saveNote(
+async function saveNotes(
   context: ServiceContext,
   document: MemoryDocumentRow,
   others: readonly MemoryDocumentRow[],
   userId: number,
-  note: MemoryNote,
+  notes: readonly MemoryNote[],
+  operationId: string | undefined,
 ): Promise<MemoryDocumentRow | null> {
   if (shouldAppendMemory(document.content)) {
-    return appendIntoDocument(context, document, userId, note);
+    return appendIntoDocument(context, document, userId, notes, operationId);
   }
 
-  const draft = await draftMemoryDocument(context, document.name, document, others, note);
+  const draft = await draftMemoryDocument(context, document.name, document, others, notes);
 
-  return writeIntoDocument(context, document, draft, userId, note.operationId);
+  return writeIntoDocument(context, document, draft, userId, operationId, collectEvidence(notes));
 }
 
 export async function consolidateMemoryDocument(
@@ -211,9 +247,9 @@ export async function consolidateMemoryDocument(
       document.name,
       { ...document, content: body },
       others,
-      { text: notes },
+      [{ text: notes }],
     );
-    const written = await writeIntoDocument(context, document, draft, userId, undefined);
+    const written = await writeIntoDocument(context, document, draft, userId, undefined, []);
 
     if (written) {
       return written;
@@ -231,21 +267,22 @@ function conflict(): AssistantError {
   );
 }
 
-export async function rememberInScope(
+async function fileIntoDocument(
   context: ServiceContext,
   scope: MemoryDocumentScopeKey,
+  documents: readonly MemoryDocumentRow[],
+  name: string,
   userId: number,
-  note: MemoryNote,
+  notes: readonly MemoryNote[],
+  operationId: string | undefined,
 ): Promise<MemoryDocumentRow> {
   const repository = context.repositories.get(MemoryDocumentRepository);
-  const documents = await repository.listDocuments(scope);
-  const name = await placeMemory(context, documents, note);
 
   for (let attempt = 0; attempt < MAX_WRITE_ATTEMPTS; attempt += 1) {
     const existing = await repository.getDocumentByName(scope, name);
 
     if (existing) {
-      const written = await saveNote(context, existing, documents, userId, note);
+      const written = await saveNotes(context, existing, documents, userId, notes, operationId);
 
       if (written) {
         return written;
@@ -254,7 +291,7 @@ export async function rememberInScope(
       continue;
     }
 
-    const draft = await draftMemoryDocument(context, name, null, documents, note);
+    const draft = await draftMemoryDocument(context, name, null, documents, notes);
 
     try {
       return await repository.createDocument({
@@ -263,7 +300,8 @@ export async function rememberInScope(
         content: draft.content,
         details: { description: draft.description, type: draft.type },
         createdByUserId: userId,
-        operationId: note.operationId,
+        operationId,
+        evidence: collectEvidence(notes),
       });
     } catch (error) {
       if (!(await repository.getDocumentByName(scope, name))) {
@@ -273,6 +311,36 @@ export async function rememberInScope(
   }
 
   throw conflict();
+}
+
+export async function rememberNotesInScope(
+  context: ServiceContext,
+  scope: MemoryDocumentScopeKey,
+  userId: number,
+  notes: readonly MemoryNote[],
+  operationId?: string,
+): Promise<MemoryDocumentRow[]> {
+  const documents = await context.repositories.get(MemoryDocumentRepository).listDocuments(scope);
+  const written: MemoryDocumentRow[] = [];
+
+  for (const [name, placed] of await placeMemories(context, documents, notes)) {
+    written.push(
+      await fileIntoDocument(context, scope, documents, name, userId, placed, operationId),
+    );
+  }
+
+  return written;
+}
+
+export async function rememberInScope(
+  context: ServiceContext,
+  scope: MemoryDocumentScopeKey,
+  userId: number,
+  note: MemoryNote,
+): Promise<MemoryDocumentRow> {
+  const [written] = await rememberNotesInScope(context, scope, userId, [note], note.operationId);
+
+  return written;
 }
 
 export async function rememberInDocument(
@@ -285,7 +353,7 @@ export async function rememberInDocument(
   let current: MemoryDocumentRow | null = document;
 
   for (let attempt = 0; attempt < MAX_WRITE_ATTEMPTS && current; attempt += 1) {
-    const written = await saveNote(context, current, [], userId, note);
+    const written = await saveNotes(context, current, [], userId, [note], note.operationId);
 
     if (written) {
       return written;

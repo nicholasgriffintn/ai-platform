@@ -7,8 +7,13 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/errors";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
-import { readRunMemoryDocument } from "~/modules/memory-documents/application/pages";
+import { findLatestUserMessage } from "~/modules/conversations/domain/latest-user-message";
+import {
+  memoryDocumentPageText,
+  readRunMemoryDocument,
+} from "~/modules/memory-documents/application/pages";
 import { queueTeammateMemoryCorrection } from "~/modules/memory-documents/application/reflection";
+import { conversationEvidence } from "~/modules/memory-documents/domain/evidence";
 import { MemoryManager } from "~/modules/memory/application/manager";
 import {
   MEMORY_READ_TOOL_NAME,
@@ -159,21 +164,34 @@ export const store_memory: ApiToolDefinition = {
       context.request.context,
       context.request.memoryScope,
     );
-    const id = await memoryManager.storeMemory(
+    const latest =
+      completionId && context.conversationManager
+        ? findLatestUserMessage(await context.conversationManager.get(completionId))
+        : null;
+    const id = await memoryManager.storeMemory({
       text,
-      {
+      metadata: {
         category,
         conversationId: completionId || "",
         timestamp: Date.now().toString(),
         source: "memory_tool",
       },
-      completionId,
+      conversationId: completionId,
       userSettings,
-      completionId && context.toolCallId
-        ? `memory-tool:${completionId}:${context.toolCallId}`
-        : undefined,
-      typeof args.document_id === "string" ? args.document_id : undefined,
-    );
+      operationId:
+        completionId && context.toolCallId
+          ? `memory-tool:${completionId}:${context.toolCallId}`
+          : undefined,
+      documentId: typeof args.document_id === "string" ? args.document_id : undefined,
+      evidence: latest
+        ? conversationEvidence({
+            conversationId: completionId,
+            messageId: latest.id,
+            message: latest.text,
+            quote: typeof args.quote === "string" ? args.quote : undefined,
+          })
+        : [],
+    });
 
     if (!id) {
       return toolErrorResponse(MEMORY_STORE_TOOL_NAME, "Memory could not be stored.");
@@ -216,6 +234,11 @@ export const read_memory_document: ApiToolDefinition = {
       readMemoryDocumentSchema.parse(args),
     );
 
-    return { status: "success", name: MEMORY_READ_TOOL_NAME, content: page.content, data: page };
+    return {
+      status: "success",
+      name: MEMORY_READ_TOOL_NAME,
+      content: memoryDocumentPageText(page),
+      data: page,
+    };
   },
 };

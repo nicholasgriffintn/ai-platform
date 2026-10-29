@@ -58,6 +58,7 @@ export class DocumentsMemoryProvider implements MemoryProvider {
       category: input.metadata.category,
       conversationId: input.conversationId,
       operationId: input.operationId,
+      evidence: input.evidence,
     };
 
     if (memoryScope?.type === "bound") {

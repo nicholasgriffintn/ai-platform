@@ -2319,6 +2319,12 @@ importers:
       '@ngriffin_uk/polychat-utility-core':
         specifier: workspace:^
         version: link:../utility-core
+      fflate:
+        specifier: ^0.8.3
+        version: 0.8.3
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^

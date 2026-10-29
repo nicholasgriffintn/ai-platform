@@ -98,7 +98,7 @@ export function hasMemoryReflectionSources(rows: readonly Record<string, unknown
   return rows.some((row) => memoryReflectionSourceText(row) !== null);
 }
 
-function boundedMemoryReflectionSource(id: string, text: string, tokenBudget: number) {
+export function boundedMemoryReflectionSource(id: string, text: string, tokenBudget: number) {
   const source: MemoryReflectionSource = { id, text };
   let tokens = estimateTextTokens(JSON.stringify(source)) + 1;
 

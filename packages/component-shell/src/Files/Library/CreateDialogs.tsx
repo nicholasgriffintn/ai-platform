@@ -1,4 +1,4 @@
-import { FormCheckbox, FormDialog, FormInput } from "@ngriffin_uk/polychat-component-ui";
+import { Button, FormCheckbox, FormDialog, FormInput } from "@ngriffin_uk/polychat-component-ui";
 import {
   getFilesPath,
   useMemoryDocuments,
@@ -12,6 +12,7 @@ import { toast } from "sonner";
 
 import { NewEpisodeDialog } from "../Sources/NewEpisodeDialog.js";
 import { FollowDialog } from "./FollowDialog.js";
+import { ImportMemoryDialog } from "./ImportMemoryDialog.js";
 import type { FileCreation } from "./useFileCreation.js";
 
 interface DialogProps {
@@ -29,7 +30,12 @@ async function withFailureToast(work: () => Promise<void>, failure: string) {
   }
 }
 
-function MemoryDialog({ basePath, projectId, onClose }: DialogProps) {
+function MemoryDialog({
+  basePath,
+  projectId,
+  onClose,
+  onImport,
+}: DialogProps & { onImport: () => void }) {
   const navigate = useNavigate();
   const { create } = useMemoryDocuments(projectId);
   const [label, setLabel] = useState("");
@@ -59,6 +65,11 @@ function MemoryDialog({ basePath, projectId, onClose }: DialogProps) {
         description={name ? `Saved as ${name}` : "Polychat refers to it by this name."}
         onChange={(event) => setLabel(event.target.value)}
       />
+      {projectId ? null : (
+        <Button type="button" variant="link" size="sm" onClick={onImport}>
+          Bring memory over from another assistant
+        </Button>
+      )}
     </FormDialog>
   );
 }
@@ -125,7 +136,12 @@ export function CreateDialogs({
 
   return (
     <>
-      {creation.dialog === "memory" ? <MemoryDialog {...props} /> : null}
+      {creation.dialog === "memory" ? (
+        <MemoryDialog {...props} onImport={() => creation.openDialog("memory-import")} />
+      ) : null}
+      {creation.dialog === "memory-import" && !projectId ? (
+        <ImportMemoryDialog onClose={creation.closeDialog} />
+      ) : null}
       {creation.dialog === "folder" ? <FolderDialog {...props} /> : null}
       {creation.dialog === "follow" ? (
         <FollowDialog projectId={projectId} onClose={creation.closeDialog} />

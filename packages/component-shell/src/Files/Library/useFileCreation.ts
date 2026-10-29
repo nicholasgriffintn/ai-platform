@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import { NEW_NOTE_TITLE } from "../Notes/note-text.js";
 
-export type CreateDialog = "memory" | "folder" | "podcast" | "follow";
+export type CreateDialog = "memory" | "memory-import" | "folder" | "podcast" | "follow";
 
 export const UPLOAD_ACCEPT = "image/*,audio/*,video/*,.pdf,.md,.csv,.txt,.docx,.xlsx,.html,.json";
 

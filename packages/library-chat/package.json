@@ -17,6 +17,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./assistant-exports": {
+      "polychat-source": "./src/assistant-exports.ts",
+      "types": "./dist/assistant-exports.d.ts",
+      "import": "./dist/assistant-exports.js"
+    },
     "./agent-trace": {
       "polychat-source": "./src/agent-trace.ts",
       "types": "./dist/agent-trace.d.ts",
@@ -219,7 +224,9 @@
     "@ngriffin_uk/polychat-library-goals": "workspace:^",
     "@ngriffin_uk/polychat-library-interactions": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
-    "@ngriffin_uk/polychat-utility-core": "workspace:^"
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "fflate": "^0.8.3",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",

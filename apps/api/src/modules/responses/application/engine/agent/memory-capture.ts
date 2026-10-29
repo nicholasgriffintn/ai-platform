@@ -1,10 +1,10 @@
-import { extractTextFromMessageContent } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { hasToolCallNamed } from "@ngriffin_uk/polychat-utility-server/tool-calls";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
+import { findLatestUserMessage } from "~/modules/conversations/domain/latest-user-message";
 import { queueTeammateMemoryCorrection } from "~/modules/memory-documents/application/reflection";
 import { MemoryManager, type MemoryEvent } from "~/modules/memory/application/manager";
 import { MEMORY_STORE_TOOL_NAME, resolveMemoryPolicy } from "~/modules/responses/domain/memory";
@@ -63,7 +63,7 @@ export async function captureRunMemories(params: CaptureRunMemoriesParams): Prom
     }
 
     const history = await params.conversationManager.get(params.completionId);
-    const lastUser = getLastUser(history);
+    const lastUser = findLatestUserMessage(history);
 
     if (!lastUser?.text.trim()) {
       return [];
@@ -76,10 +76,10 @@ export async function captureRunMemories(params: CaptureRunMemoriesParams): Prom
       params.memoryScope,
     );
     const events = await memoryManager.handleMemory(
-      lastUser.text,
+      lastUser,
       params.completionId,
       params.userSettings,
-      `memory-capture:${params.completionId}:${lastUser.identity}`,
+      `memory-capture:${params.completionId}:${lastUser.id ?? `user-${lastUser.index}`}`,
     );
     const messages = events.map((event) => buildMemoryMessage(event, params));
 
@@ -111,23 +111,4 @@ function buildMemoryMessage(event: MemoryEvent, params: CaptureRunMemoriesParams
     model: params.model,
     platform: params.platform,
   };
-}
-
-function getLastUser(
-  history: readonly { id?: string; role: string; content: unknown }[],
-): { identity: string; text: string } | null {
-  for (let index = history.length - 1; index >= 0; index--) {
-    const message = history[index];
-
-    if (message.role !== "user") {
-      continue;
-    }
-
-    return {
-      identity: message.id ?? `user-${index}`,
-      text: extractTextFromMessageContent(message.content),
-    };
-  }
-
-  return null;
 }

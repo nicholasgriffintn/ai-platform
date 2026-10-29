@@ -1,19 +1,31 @@
 import { estimateTextTokens } from "@ngriffin_uk/polychat-ai-providers";
-import type { MemoryDocumentPage, ReadMemoryDocumentInput } from "@ngriffin_uk/polychat-schemas";
+import type {
+  MemoryDocumentPage,
+  MemoryEvidence,
+  ReadMemoryDocumentInput,
+} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { sliceTextAtCodePointBoundaries } from "@ngriffin_uk/polychat-utility-server/strings";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { MemoryDocumentRow } from "~/infrastructure/database/schema";
 import { readMemoryDocumentDetails } from "~/modules/memory-documents/domain/details";
+import {
+  describeMemoryEvidence,
+  readMemoryEvidence,
+} from "~/modules/memory-documents/domain/evidence";
+import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import type { MemoryScope } from "~/types";
 
 import { requireRunMemoryDocument } from "./run-access";
+
+const EVIDENCE_REVISIONS = 10;
 
 export function memoryDocumentPage(
   document: MemoryDocumentRow,
   offset: number,
   maxCharacters = 4000,
+  evidence: readonly MemoryEvidence[] = [],
 ): MemoryDocumentPage {
   if (
     !Number.isInteger(offset) ||
@@ -46,7 +58,18 @@ export function memoryDocumentPage(
     offset: page.start,
     nextOffset: page.end < document.content.length ? page.end : null,
     totalCharacters: document.content.length,
+    evidence: page.end < document.content.length ? [] : [...evidence],
   };
+}
+
+export function memoryDocumentPageText(page: MemoryDocumentPage): string {
+  if (page.evidence.length === 0) {
+    return page.content;
+  }
+
+  return `${page.content}\n\n## Where this came from\n\n${page.evidence
+    .map((evidence) => `- ${describeMemoryEvidence(evidence)}`)
+    .join("\n")}`;
 }
 
 export async function readRunMemoryDocument(
@@ -64,7 +87,13 @@ export async function readRunMemoryDocument(
     );
   }
 
-  return memoryDocumentPage(document, input.offset, input.maxCharacters);
+  const evidence = (
+    await context.repositories
+      .get(MemoryDocumentRepository)
+      .listRecentEvidence(document.id, EVIDENCE_REVISIONS)
+  ).flatMap(readMemoryEvidence);
+
+  return memoryDocumentPage(document, input.offset, input.maxCharacters, evidence);
 }
 
 export function memoryPassageResult(

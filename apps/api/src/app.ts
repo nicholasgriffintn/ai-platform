@@ -24,6 +24,7 @@ import extractions from "~/modules/extractions/api/routes";
 import githubConnections from "~/modules/github/api/connections";
 import jobs from "~/modules/jobs/api/routes";
 import machines from "~/modules/machines/api/routes";
+import memoryImports from "~/modules/memory-documents/api/imports";
 import memoryDocuments from "~/modules/memory-documents/api/routes";
 import memorySyntheses from "~/modules/memory/api/syntheses";
 import devices from "~/modules/mobile-push/api/routes";
@@ -121,6 +122,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/benchmarks", benchmarks);
   app.route("/sites", sites);
   app.route("/memory/documents", memoryDocuments);
+  app.route("/memory/imports", memoryImports);
   app.route("/memory/corrections", corrections);
   app.route("/memory/syntheses", memorySyntheses);
   app.route("/channels", channels);

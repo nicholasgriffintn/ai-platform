@@ -17,6 +17,7 @@ import {
   describeMemoryDocument,
   readMemoryDocumentDetails,
 } from "~/modules/memory-documents/domain/details";
+import { readMemoryEvidence } from "~/modules/memory-documents/domain/evidence";
 import type { MemoryDocumentScopeKey } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
@@ -332,6 +333,7 @@ export async function listMemoryDocumentRevisions(
       revision: row.revision,
       content: row.content,
       changeNote: row.change_note,
+      evidence: readMemoryEvidence(row.evidence_json),
       createdAt: row.created_at,
     })),
   };
