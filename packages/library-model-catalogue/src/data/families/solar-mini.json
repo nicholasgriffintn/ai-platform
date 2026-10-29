@@ -32,10 +32,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 24.1,
+      "intelligenceIndex": null,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The solar mini family includes models that produce text.",
@@ -54,13 +54,7 @@
         ],
         "contextComplexity": 2,
         "knowledgeCutoffDate": "September 2024",
-        "releaseDate": "June 12, 2024",
-        "artificialAnalysis": {
-          "intelligenceIndex": 6.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "June 12, 2024"
       }
     },
     "solar-mini-4": {

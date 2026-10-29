@@ -109,10 +109,7 @@
         "releaseDate": "July 6, 2026",
         "lastUpdated": "July 30, 2026",
         "supportsAttachments": true
-      },
-      "unset": [
-        "reliability"
-      ]
+      }
     },
     "deepseek-pro-latest": {
       "model": "deepseek/deepseek-pro-latest",

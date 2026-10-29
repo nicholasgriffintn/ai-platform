@@ -25,10 +25,10 @@
     "supportsAttachments": false,
     "supportsTemperature": true,
     "artificialAnalysis": {
-      "intelligenceIndex": 5.1,
+      "intelligenceIndex": null,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The mixtral family includes models that produce text.",

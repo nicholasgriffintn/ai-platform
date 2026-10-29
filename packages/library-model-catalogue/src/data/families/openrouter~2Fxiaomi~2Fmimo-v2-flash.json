@@ -14,7 +14,7 @@
       "tool_use"
     ],
     "contextComplexity": 4,
-    "reliability": 2,
+    "reliability": 3,
     "knowledgeCutoffDate": "December 1, 2024",
     "releaseDate": "December 16, 2025",
     "supportsToolCalls": true,
@@ -29,10 +29,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 16,
+      "intelligenceIndex": null,
       "codingIndex": 49.8,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The openrouter/xiaomi/mimo v2 flash family includes models that produce text.",

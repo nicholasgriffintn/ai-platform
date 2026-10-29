@@ -20,7 +20,7 @@
       "tool_use"
     ],
     "contextComplexity": 5,
-    "reliability": 2,
+    "reliability": 1,
     "releaseDate": "September 16, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -35,10 +35,10 @@
       "defaultEffort": "low"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 43.7,
+      "intelligenceIndex": 28.5,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The deepinfra/stepfun ai/Step 5 Preview family includes models that produce text.",

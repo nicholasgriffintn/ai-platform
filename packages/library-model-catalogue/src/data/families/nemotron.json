@@ -158,10 +158,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 12.9,
+          "intelligenceIndex": null,
           "codingIndex": 26.8,
           "agenticIndex": 3.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -230,10 +230,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 26.5,
+          "intelligenceIndex": 13.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -301,10 +301,10 @@
         "knowledgeCutoffDate": "June 25, 2025",
         "releaseDate": "December 15, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 6.8,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -371,10 +371,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 10.3,
+          "intelligenceIndex": null,
           "codingIndex": 13.8,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -472,19 +472,19 @@
       "defaults": {
         "name": "Nemotron 3 Super 120B A12B",
         "description": "Nemotron middle tier for collaborative agents and high-volume reasoning workloads",
-        "contextWindow": 262144,
+        "maxTokens": 262144,
         "strengths": [
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "March 11, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 12.8,
+          "intelligenceIndex": null,
           "codingIndex": 37.7,
           "agenticIndex": 1.7,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -525,19 +525,30 @@
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "June 4, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 22.9,
+          "intelligenceIndex": 11.8,
           "codingIndex": 49.3,
           "agenticIndex": 20.1,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
     "nemotron-3-ultra-free": {
       "defaults": {
+        "name": "Nemotron 3 Ultra (free)",
         "description": "Largest Nemotron 3 model for maximum open-weight reasoning and agent accuracy",
         "contextWindow": 1000000,
+        "maxTokens": 65536,
         "knowledgeCutoffDate": "September 2025",
-        "releaseDate": "June 4, 2026"
+        "releaseDate": "June 4, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "medium"
+        }
       }
     },
     "nemotron-3-ultra-nvfp4": {
@@ -632,10 +643,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 6.8,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -721,10 +732,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 22.9,
+          "intelligenceIndex": 11.8,
           "codingIndex": 49.3,
           "agenticIndex": 20.1,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -829,10 +840,10 @@
         "releaseDate": "October 15, 2026",
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 26.5,
+          "intelligenceIndex": 13.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -885,10 +896,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 6.8,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -953,14 +964,14 @@
         "name": "NVIDIA Nemotron 3 Super 120B A12B",
         "description": "Nemotron middle tier for collaborative agents and high-volume reasoning workloads",
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "March 11, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 12.8,
+          "intelligenceIndex": null,
           "codingIndex": 37.7,
           "agenticIndex": 1.7,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1036,10 +1047,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 5.8,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1083,10 +1094,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 6.8,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     }

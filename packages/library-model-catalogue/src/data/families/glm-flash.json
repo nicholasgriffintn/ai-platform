@@ -87,10 +87,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 14.9,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -115,14 +115,15 @@
       "defaults": {
         "name": "GLM-5.3-Flash",
         "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
+        "maxTokens": 131072,
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 4,
         "releaseDate": "August 26, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
+          "intelligenceIndex": null,
           "codingIndex": 71.5,
           "agenticIndex": 50.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -151,7 +152,7 @@
           "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 4,
         "releaseDate": "August 26, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -164,10 +165,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
+          "intelligenceIndex": null,
           "codingIndex": 71.5,
           "agenticIndex": 50.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

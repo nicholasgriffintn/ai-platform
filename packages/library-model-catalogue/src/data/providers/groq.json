@@ -169,7 +169,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "August 5, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -369,7 +369,6 @@
       },
       "unset": [
         "strengths",
-        "reliability",
         "knowledgeCutoffDate"
       ]
     },

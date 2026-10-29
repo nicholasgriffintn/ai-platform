@@ -20,7 +20,7 @@
       "tool_use"
     ],
     "contextComplexity": 4,
-    "reliability": 2,
+    "reliability": 1,
     "releaseDate": "September 16, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -37,10 +37,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 43.7,
+      "intelligenceIndex": 28.5,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The requesty/step 5 preview family includes models that produce text.",

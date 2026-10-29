@@ -12,7 +12,6 @@
     "strengths": [
       "tool_use"
     ],
-    "reliability": 1,
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
@@ -36,12 +35,13 @@
         "contextWindow": 128000,
         "maxTokens": 50000,
         "contextComplexity": 3,
+        "reliability": 2,
         "releaseDate": "February 24, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 10.8,
+          "intelligenceIndex": null,
           "codingIndex": 31.1,
           "agenticIndex": 1.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -52,12 +52,13 @@
         "contextWindow": 260000,
         "maxTokens": 65536,
         "contextComplexity": 4,
+        "reliability": 1,
         "releaseDate": "September 8, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 12.3,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -67,6 +68,7 @@
         "description": "Mercury 3 is a diffusion-based language model from Inception, and the lab's most capable model to date. It is suited for agentic workflows and real-time applications where latency compounds, such...",
         "contextWindow": 1000000,
         "maxTokens": 131072,
+        "reliability": 1,
         "releaseDate": "October 16, 2026"
       }
     },
@@ -77,6 +79,7 @@
         "contextWindow": 128000,
         "maxTokens": 50000,
         "contextComplexity": 3,
+        "reliability": 2,
         "releaseDate": "February 24, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -87,10 +90,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 10.8,
+          "intelligenceIndex": null,
           "codingIndex": 31.1,
           "agenticIndex": 1.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -101,12 +104,13 @@
         "contextWindow": 260000,
         "maxTokens": 65536,
         "contextComplexity": 4,
+        "reliability": 1,
         "releaseDate": "September 8, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 12.3,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -125,6 +129,7 @@
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 1000000,
         "maxTokens": 131072,
+        "reliability": 1,
         "releaseDate": "October 16, 2026"
       }
     },

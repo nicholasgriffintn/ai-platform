@@ -73,10 +73,10 @@
         "releaseDate": "November 6, 2025",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 22,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

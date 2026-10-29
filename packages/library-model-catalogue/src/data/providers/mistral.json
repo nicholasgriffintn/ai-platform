@@ -286,10 +286,10 @@
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0001,
         "artificialAnalysis": {
-          "intelligenceIndex": 4.8,
+          "intelligenceIndex": null,
           "codingIndex": 4.8,
           "agenticIndex": 0.8,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -450,7 +450,6 @@
       "matchingModel": "zai-glm-5-3-flash",
       "overrides": {
         "contextWindow": 1048576,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -480,6 +479,39 @@
       "matchingModel": "voxtral-mini-tts-3",
       "overrides": {
         "hiddenFromDefaultList": true
+      }
+    },
+    "deepseek-v4-1-flash-1017": {
+      "model": "deepseek-flash/deepseek-v4-1-flash-1017",
+      "matchingModel": "deepseek-v4-1-flash-1017",
+      "overrides": {
+        "name": "DeepSeek V4.1 Flash 1017",
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "speed": 4,
+        "lastUpdated": "October 17, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

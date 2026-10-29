@@ -12,7 +12,6 @@
       ]
     },
     "contextComplexity": 5,
-    "reliability": 2,
     "knowledgeCutoffDate": "May 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -54,19 +53,27 @@
           "document",
           "tool_use"
         ],
+        "reliability": 2,
         "releaseDate": "September 10, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 39.5,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
     "deepseek-v4-1-flash-1017": {
       "defaults": {
         "description": "October 17 update of DeepSeek V4.1 Flash with improved reasoning, coding, agentic tasks, and visual understanding",
-        "releaseDate": "October 17, 2026"
+        "reliability": 1,
+        "releaseDate": "October 17, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 32.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "deepseek-v4-1-flash-1017-eu": {
@@ -79,6 +86,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 1,
         "releaseDate": "October 17, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -91,10 +99,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 45.1,
+          "intelligenceIndex": 32.5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -103,6 +111,7 @@
         "name": "DeepSeek V4.1 Flash 1017 Fast",
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
         "maxTokens": 262144,
+        "reliability": 2,
         "releaseDate": "October 17, 2026"
       }
     },
@@ -112,6 +121,7 @@
         "description": "October 17 update of DeepSeek V4.1 Flash with improved reasoning, coding, agentic tasks, and visual understanding",
         "contextWindow": 1000000,
         "maxTokens": 384000,
+        "reliability": 2,
         "releaseDate": "October 17, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -133,6 +143,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 2,
         "releaseDate": "September 10, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -145,10 +156,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 39.5,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -166,6 +177,7 @@
         "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
         "contextWindow": 200000,
         "maxTokens": 32000,
+        "reliability": 2,
         "releaseDate": "September 10, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -183,6 +195,7 @@
         "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
         "contextWindow": 1000000,
         "maxTokens": 384000,
+        "reliability": 2,
         "releaseDate": "September 10, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -210,13 +223,14 @@
           "tool_use",
           "coding"
         ],
+        "reliability": 3,
         "releaseDate": "April 24, 2026",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 34.3,
+          "intelligenceIndex": null,
           "codingIndex": 69.1,
           "agenticIndex": 41,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -236,13 +250,14 @@
           "tool_use",
           "coding"
         ],
+        "reliability": 3,
         "releaseDate": "July 31, 2026",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 34.3,
+          "intelligenceIndex": null,
           "codingIndex": 69.1,
           "agenticIndex": 41,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -263,6 +278,7 @@
           "tool_use",
           "coding"
         ],
+        "reliability": 3,
         "releaseDate": "July 31, 2026",
         "supportsAttachments": false,
         "reasoningConfig": {
@@ -276,10 +292,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 34.3,
+          "intelligenceIndex": null,
           "codingIndex": 69.1,
           "agenticIndex": 41,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -300,6 +316,7 @@
           "tool_use",
           "coding"
         ],
+        "reliability": 3,
         "releaseDate": "July 31, 2026",
         "supportsAttachments": false,
         "reasoningConfig": {
@@ -311,10 +328,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 34.3,
+          "intelligenceIndex": null,
           "codingIndex": 69.1,
           "agenticIndex": 41,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

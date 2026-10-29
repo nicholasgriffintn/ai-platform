@@ -51,7 +51,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 5,
+        "speed": 4,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -189,7 +189,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 5,
+        "speed": 4,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -665,208 +665,6 @@
         "supportsResponseFormat"
       ]
     },
-    "gpt-image-1-mini": {
-      "model": "gpt-image/gpt-image-1-mini",
-      "matchingModel": "gpt-image-1-mini",
-      "overrides": {
-        "name": "gpt-image-1-mini",
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text",
-            "image"
-          ]
-        },
-        "strengths": [
-          "creative",
-          "vision",
-          "document",
-          "image"
-        ],
-        "contextComplexity": 4,
-        "speed": 4,
-        "isFeatured": false,
-        "releaseDate": "September 26, 2025",
-        "lastUpdated": "September 26, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://developers.openai.com/api/docs/guides/your-data"
-        },
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.001,
-        "supportsToolCalls": false,
-        "supportsImageEdits": true,
-        "timeout": 1000000,
-        "inputSchema": {
-          "fields": [
-            {
-              "name": "prompt",
-              "type": "string",
-              "description": "Text prompt for image generation or editing.",
-              "required": true
-            },
-            {
-              "name": "size",
-              "type": "string",
-              "description": "Output size."
-            },
-            {
-              "name": "quality",
-              "type": "string",
-              "description": "Rendering quality.",
-              "enum": [
-                "low",
-                "medium",
-                "high",
-                "auto"
-              ]
-            },
-            {
-              "name": "output_format",
-              "type": "string",
-              "description": "Output image format.",
-              "enum": [
-                "png",
-                "jpeg",
-                "webp"
-              ]
-            },
-            {
-              "name": "output_compression",
-              "type": "integer",
-              "description": "Compression level for JPEG and WebP outputs."
-            },
-            {
-              "name": "background",
-              "type": "string",
-              "description": "Background handling. Transparent backgrounds are not supported.",
-              "enum": [
-                "auto",
-                "opaque",
-                "transparent"
-              ]
-            },
-            {
-              "name": "moderation",
-              "type": "string",
-              "description": "Image moderation strictness.",
-              "enum": [
-                "auto",
-                "low"
-              ]
-            },
-            {
-              "name": "n",
-              "type": "integer",
-              "description": "Number of images to generate."
-            }
-          ],
-          "reference": "https://developers.openai.com/api/docs/guides/image-generation"
-        }
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
-    },
-    "gpt-image-1.5": {
-      "model": "gpt-image/gpt-image-1-5",
-      "matchingModel": "gpt-image-1.5",
-      "overrides": {
-        "name": "gpt-image-1.5",
-        "strengths": [
-          "creative",
-          "vision",
-          "document",
-          "image"
-        ],
-        "speed": 3,
-        "isFeatured": false,
-        "lastUpdated": "November 25, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://developers.openai.com/api/docs/guides/your-data"
-        },
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.001,
-        "supportsToolCalls": false,
-        "supportsImageEdits": true,
-        "timeout": 1000000,
-        "inputSchema": {
-          "fields": [
-            {
-              "name": "prompt",
-              "type": "string",
-              "description": "Text prompt for image generation or editing.",
-              "required": true
-            },
-            {
-              "name": "size",
-              "type": "string",
-              "description": "Output size."
-            },
-            {
-              "name": "quality",
-              "type": "string",
-              "description": "Rendering quality.",
-              "enum": [
-                "low",
-                "medium",
-                "high",
-                "auto"
-              ]
-            },
-            {
-              "name": "output_format",
-              "type": "string",
-              "description": "Output image format.",
-              "enum": [
-                "png",
-                "jpeg",
-                "webp"
-              ]
-            },
-            {
-              "name": "output_compression",
-              "type": "integer",
-              "description": "Compression level for JPEG and WebP outputs."
-            },
-            {
-              "name": "background",
-              "type": "string",
-              "description": "Background handling. Transparent backgrounds are not supported.",
-              "enum": [
-                "auto",
-                "opaque",
-                "transparent"
-              ]
-            },
-            {
-              "name": "moderation",
-              "type": "string",
-              "description": "Image moderation strictness.",
-              "enum": [
-                "auto",
-                "low"
-              ]
-            },
-            {
-              "name": "n",
-              "type": "integer",
-              "description": "Number of images to generate."
-            }
-          ],
-          "reference": "https://developers.openai.com/api/docs/guides/image-generation"
-        }
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
-    },
     "codex-mini-latest": {
       "model": "openai/codex-mini-latest/codex-mini",
       "matchingModel": "codex-mini-latest",
@@ -921,7 +719,8 @@
       },
       "unset": [
         "contextComplexity",
-        "reliability"
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "gpt-5-codex": {
@@ -933,7 +732,7 @@
           "vision",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "deprecated": true,
         "lastUpdated": "September 15, 2025",
         "dataRetention": {
@@ -1010,7 +809,8 @@
         }
       },
       "unset": [
-        "strengths"
+        "strengths",
+        "artificialAnalysis"
       ]
     },
     "gpt-5.1": {
@@ -1105,7 +905,8 @@
       },
       "unset": [
         "contextComplexity",
-        "reliability"
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "gpt-5.1-codex-max": {
@@ -1142,7 +943,8 @@
       },
       "unset": [
         "contextComplexity",
-        "reliability"
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "gpt-5.2-codex": {
@@ -1235,7 +1037,8 @@
         }
       },
       "unset": [
-        "strengths"
+        "strengths",
+        "artificialAnalysis"
       ]
     },
     "gpt-5.3-codex": {
@@ -1249,7 +1052,7 @@
           "search",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 5, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -1441,7 +1244,8 @@
       "unset": [
         "supportsResponseFormat",
         "contextComplexity",
-        "reliability"
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "text-embedding-3-large": {
@@ -1502,22 +1306,6 @@
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
         "supportsAttachments": false
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
-    },
-    "chatgpt-image-latest": {
-      "model": "gpt-image/chatgpt-image-latest",
-      "matchingModel": "chatgpt-image-latest",
-      "overrides": {
-        "lastUpdated": "December 16, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://developers.openai.com/api/docs/guides/your-data"
-        },
-        "supportsToolCalls": false
       },
       "unset": [
         "supportsResponseFormat"
@@ -2689,6 +2477,7 @@
       "model": "gpt-terra/gpt-6-1-terra",
       "matchingModel": "gpt-6.1-terra",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005

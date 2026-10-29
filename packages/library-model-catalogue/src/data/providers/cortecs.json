@@ -32,10 +32,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 19.3,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -248,7 +248,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.0017,
         "costPer1kOutputTokens": 0.0034,
@@ -381,7 +381,7 @@
       "overrides": {
         "contextWindow": 203000,
         "maxTokens": 203000,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.00008,
         "costPer1kOutputTokens": 0.000478,
@@ -436,7 +436,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.002192,
         "costPer1kOutputTokens": 0.008769,
@@ -639,7 +639,7 @@
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196000,
         "maxTokens": 196000,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.000348,
         "costPer1kOutputTokens": 0.00139,
@@ -653,7 +653,7 @@
         "name": "MiniMax-m2.7",
         "contextWindow": 196608,
         "maxTokens": 196608,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.000668,
         "costPer1kOutputTokens": 0.002674,
@@ -704,7 +704,7 @@
       "model": "nemotron/nemotron-3-super-120b-a12b",
       "matchingModel": "nemotron-3-super-120b-a12b",
       "overrides": {
-        "maxTokens": 262144,
+        "contextWindow": 262144,
         "speed": 4,
         "knowledgeCutoffDate": "December 2025",
         "lastUpdated": "March 11, 2026",
@@ -769,7 +769,7 @@
         "contextWindow": 262000,
         "maxTokens": 262000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.000199,
@@ -1279,7 +1279,7 @@
       "overrides": {
         "name": "Mistral Small 2603",
         "maxTokens": 256000,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.000156,
         "costPer1kOutputTokens": 0.000625,
@@ -1426,7 +1426,6 @@
       },
       "unset": [
         "strengths",
-        "reliability",
         "knowledgeCutoffDate"
       ]
     },
@@ -1577,7 +1576,7 @@
         "contextWindow": 131000,
         "maxTokens": 131000,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.000045,
         "costPer1kOutputTokens": 0.000167,
@@ -1695,7 +1694,7 @@
           ]
         },
         "contextComplexity": 4,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.000111,
         "costPer1kOutputTokens": 0.000434,
@@ -1858,10 +1857,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 9.9,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1916,7 +1915,7 @@
             "text"
           ]
         },
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "August 6, 2024",
         "costPer1kInputTokens": 0.002659,
         "costPer1kOutputTokens": 0.010635,
@@ -2604,7 +2603,7 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "maxTokens": 393216,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.000201,
         "costPer1kOutputTokens": 0.0006,
@@ -2822,6 +2821,25 @@
         "lastUpdated": "October 19, 2026",
         "costPer1kInputTokens": 0.000304,
         "costPer1kOutputTokens": 0.001219
+      }
+    },
+    "gpt-6.1-terra": {
+      "model": "gpt-terra/gpt-6-1-terra",
+      "matchingModel": "gpt-6.1-terra",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "October 26, 2026",
+        "costPer1kInputTokens": 0.001176,
+        "costPer1kOutputTokens": 0.005882,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }

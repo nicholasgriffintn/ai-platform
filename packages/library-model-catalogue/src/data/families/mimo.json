@@ -2,7 +2,6 @@
   "defaults": {
     "openWeights": true,
     "contextWindow": 1048576,
-    "reliability": 2,
     "knowledgeCutoffDate": "December 2024",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -43,12 +42,13 @@
           "tool_use"
         ],
         "contextComplexity": 5,
+        "reliability": 2,
         "releaseDate": "April 22, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 21.8,
+          "intelligenceIndex": null,
           "codingIndex": 56.8,
           "agenticIndex": 15.8,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -76,12 +76,13 @@
           "tool_use"
         ],
         "contextComplexity": 4,
+        "reliability": 2,
         "releaseDate": "April 22, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 21.8,
+          "intelligenceIndex": null,
           "codingIndex": 56.8,
           "agenticIndex": 15.8,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -102,13 +103,14 @@
           "coding"
         ],
         "contextComplexity": 5,
+        "reliability": 3,
         "releaseDate": "April 22, 2026",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 26,
+          "intelligenceIndex": null,
           "codingIndex": 60.2,
           "agenticIndex": 21.3,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -153,13 +155,14 @@
           "tool_use"
         ],
         "contextComplexity": 5,
+        "reliability": 1,
         "knowledgeCutoffDate": "September 22, 2026",
         "releaseDate": "September 22, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 37.9,
+          "intelligenceIndex": 26.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -181,6 +184,7 @@
             "text"
           ]
         },
+        "reliability": 2,
         "knowledgeCutoffDate": "September 22, 2026",
         "releaseDate": "September 22, 2026"
       }
@@ -209,13 +213,14 @@
           "tool_use"
         ],
         "contextComplexity": 5,
+        "reliability": 1,
         "knowledgeCutoffDate": "September 22, 2026",
         "releaseDate": "September 22, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 46.3,
+          "intelligenceIndex": 29.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -224,6 +229,7 @@
         "name": "MiMo-V2.6-Pro-UltraSpeed",
         "description": "MiMo pro model for strong multimodal reasoning and agent execution",
         "maxTokens": 131072,
+        "reliability": 2,
         "releaseDate": "September 21, 2026"
       }
     },
@@ -242,13 +248,14 @@
         "strengths": [
           "tool_use"
         ],
+        "reliability": 3,
         "releaseDate": "December 16, 2025",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 16,
+          "intelligenceIndex": null,
           "codingIndex": 49.8,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -294,10 +301,10 @@
         "releaseDate": "March 18, 2026",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 28.6,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     }

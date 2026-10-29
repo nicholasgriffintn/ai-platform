@@ -40,10 +40,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 13.1,
+          "intelligenceIndex": 6.2,
           "codingIndex": 27.8,
           "agenticIndex": 1,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -65,10 +65,10 @@
         "releaseDate": "March 13, 2025",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -105,10 +105,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 13.1,
+          "intelligenceIndex": 6.2,
           "codingIndex": 27.8,
           "agenticIndex": 1,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

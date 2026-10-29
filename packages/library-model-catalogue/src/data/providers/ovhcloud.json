@@ -43,7 +43,7 @@
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 131072,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.00018

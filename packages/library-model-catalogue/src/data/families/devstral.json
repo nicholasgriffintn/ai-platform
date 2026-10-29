@@ -12,7 +12,6 @@
       ]
     },
     "contextComplexity": 4,
-    "reliability": 1,
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
@@ -25,13 +24,14 @@
         "name": "Devstral 2",
         "openWeights": true,
         "description": "Mistral coding agent model for repository tasks and software engineering workflows",
+        "reliability": 2,
         "knowledgeCutoffDate": "December 2025",
         "releaseDate": "December 9, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 8.6,
+          "intelligenceIndex": null,
           "codingIndex": 31.3,
           "agenticIndex": 2.3,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -78,13 +78,14 @@
         "strengths": [
           "tool_use"
         ],
+        "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "May 21, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 7.6,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -95,13 +96,14 @@
         "strengths": [
           "tool_use"
         ],
+        "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "December 9, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 7.5,
+          "intelligenceIndex": null,
           "codingIndex": 29.3,
           "agenticIndex": 2,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     }

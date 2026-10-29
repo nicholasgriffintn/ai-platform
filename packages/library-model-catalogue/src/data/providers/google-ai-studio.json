@@ -164,49 +164,12 @@
         "supportsCodeExecution": true,
         "supportsWebFetch": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 9.9,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
-    },
-    "gemini-2.5-flash-image": {
-      "model": "gemini-flash/nano-banana",
-      "matchingModel": "gemini-2.5-flash-image",
-      "overrides": {
-        "name": "Gemini 2.5 Flash Image",
-        "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text",
-            "image"
-          ]
-        },
-        "isFree": true,
-        "lastUpdated": "August 26, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.03,
-        "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
     },
     "gemini-2.5-flash-image-preview": {
       "model": "gemini/gemini-2-5-flash-image-preview",
@@ -835,7 +798,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
+        "reliability": 2,
         "speed": 2,
         "lastUpdated": "April 2, 2026",
         "dataRetention": {
@@ -845,10 +808,10 @@
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.0004,
         "artificialAnalysis": {
-          "intelligenceIndex": 14.7,
+          "intelligenceIndex": null,
           "codingIndex": 43.4,
           "agenticIndex": 4.2,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       },
       "unset": [

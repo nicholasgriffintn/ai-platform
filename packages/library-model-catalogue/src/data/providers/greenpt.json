@@ -223,8 +223,7 @@
         "supportsAttachments": true
       },
       "unset": [
-        "strengths",
-        "reliability"
+        "strengths"
       ]
     },
     "green-r-raw": {
@@ -237,8 +236,7 @@
         "supportsAttachments": true
       },
       "unset": [
-        "strengths",
-        "reliability"
+        "strengths"
       ]
     },
     "green-s-pro": {
@@ -365,7 +363,7 @@
       "matchingModel": "minimax-m2.5",
       "overrides": {
         "name": "MiniMax-M2.5",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.00049346,
         "costPer1kOutputTokens": 0.0024673,
@@ -419,7 +417,7 @@
       "overrides": {
         "description": "Qwen3 235B MoE instruct model for long-context multilingual chat and reasoning",
         "maxTokens": 16384,
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.001026,
@@ -490,7 +488,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "speed": 4,
+        "speed": 5,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.000255552,
@@ -536,7 +534,6 @@
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text"
@@ -624,6 +621,7 @@
       "matchingModel": "deepseek-v4.1-flash-1017",
       "overrides": {
         "contextWindow": 1000000,
+        "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "October 17, 2026",
         "costPer1kInputTokens": 0.0004104,
@@ -647,7 +645,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 64000,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 2026",
         "costPer1kInputTokens": 0.0005016,
         "costPer1kOutputTokens": 0.002508,

@@ -22,7 +22,6 @@
     "contextComplexity": 5,
     "reliability": 3,
     "knowledgeCutoffDate": "February 16, 2026",
-    "releaseDate": "July 9, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
@@ -37,12 +36,6 @@
         "max"
       ],
       "defaultEffort": "none"
-    },
-    "artificialAnalysis": {
-      "intelligenceIndex": 42.1,
-      "codingIndex": 76.7,
-      "agenticIndex": 43.2,
-      "intelligenceIndexVersion": 4.3
     }
   },
   "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
@@ -50,13 +43,21 @@
     "gpt-5-6-terra": {
       "defaults": {
         "name": "GPT-5.6 Terra",
-        "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work"
+        "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
+        "releaseDate": "July 9, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": 76.7,
+          "agenticIndex": 43.2,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-5-6-terra-eu": {
       "defaults": {
         "name": "GPT-5.6 Terra (EU)",
         "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
+        "releaseDate": "July 9, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -66,6 +67,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": 76.7,
+          "agenticIndex": 43.2,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -73,6 +80,7 @@
       "defaults": {
         "name": "GPT 5.6 Terra (Fast)",
         "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
+        "releaseDate": "July 9, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -84,31 +92,59 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": 76.7,
+          "agenticIndex": 43.2,
+          "intelligenceIndexVersion": 5
         }
       }
     },
     "gpt-5-6-terra-global": {
       "defaults": {
         "name": "GPT-5.6 Terra (Global)",
-        "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work"
+        "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
+        "releaseDate": "July 9, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": 76.7,
+          "agenticIndex": 43.2,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-5-6-terra-india": {
       "defaults": {
         "name": "GPT-5.6 Terra (India)",
-        "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work"
+        "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
+        "releaseDate": "July 9, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": 76.7,
+          "agenticIndex": 43.2,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-5-6-terra-pro": {
       "defaults": {
         "name": "GPT-5.6 Terra Pro",
-        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work"
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "releaseDate": "July 9, 2026"
       }
     },
     "gpt-5-6-terra-us": {
       "defaults": {
         "name": "GPT-5.6 Terra (US)",
-        "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work"
+        "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
+        "releaseDate": "July 9, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": 76.7,
+          "agenticIndex": 43.2,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-6-1-terra": {
@@ -116,7 +152,13 @@
         "name": "GPT-6.1 Terra",
         "description": "Fast, efficient model for visual reasoning, precise computer use, and clear, natural writing.",
         "knowledgeCutoffDate": "June 1, 2026",
-        "releaseDate": "October 26, 2026"
+        "releaseDate": "October 26, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 51,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-6-1-terra-eu": {
@@ -134,6 +176,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 51,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -142,7 +190,59 @@
         "name": "GPT-6.1 Terra (Fast)",
         "description": "Compact GPT model for low-latency assistance and high-volume workloads",
         "knowledgeCutoffDate": "June 1, 2026",
-        "releaseDate": "October 26, 2026"
+        "releaseDate": "October 26, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 51,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "gpt-6-1-terra-global": {
+      "defaults": {
+        "name": "GPT-6.1 Terra (Global)",
+        "description": "Fast, efficient model for visual reasoning, precise computer use, and clear, natural writing.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "June 1, 2026",
+        "releaseDate": "October 26, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 51,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "gpt-6-1-terra-us": {
+      "defaults": {
+        "name": "GPT-6.1 Terra (US)",
+        "description": "Fast, efficient model for visual reasoning, precise computer use, and clear, natural writing.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "June 1, 2026",
+        "releaseDate": "October 26, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 51,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-terra-latest": {
@@ -167,7 +267,13 @@
         "name": "OpenAI: GPT-6.1 Terra",
         "description": "GPT-6.1 Terra is the mid-tier model in OpenAI's GPT-6.1 series, built for fast, capable computer use at a lower price than GPT-6.1 Sol. It reads what is on screen, takes...",
         "knowledgeCutoffDate": "June 1, 2026",
-        "releaseDate": "October 26, 2026"
+        "releaseDate": "October 26, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 51,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "openai-gpt-terra-latest": {

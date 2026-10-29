@@ -18,10 +18,10 @@
     "supportsAttachments": false,
     "supportsTemperature": false,
     "artificialAnalysis": {
-      "intelligenceIndex": 12.5,
+      "intelligenceIndex": null,
       "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The github copilot/o3 mini family includes models that produce text.",

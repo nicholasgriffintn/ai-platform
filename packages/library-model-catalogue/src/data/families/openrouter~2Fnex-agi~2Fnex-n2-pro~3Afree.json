@@ -31,10 +31,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 28.2,
+      "intelligenceIndex": null,
       "codingIndex": 59.1,
       "agenticIndex": 23.7,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The openrouter/nex agi/nex n2 pro:free family includes models that produce text.",
