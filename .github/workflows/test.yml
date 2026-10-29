@@ -30,7 +30,7 @@ jobs:
       - name: Use Node.js 24.x
         uses: actions/setup-node@v7
         with:
-          node-version: 24.x
+          node-version: 26.x
           cache: "pnpm"
       - name: Restore the Vite+ task cache
         uses: ./.github/actions/vite-task-cache
@@ -56,7 +56,7 @@ jobs:
       - name: Use Node.js 24.x
         uses: actions/setup-node@v7
         with:
-          node-version: 24.x
+          node-version: 26.x
           cache: "pnpm"
       - name: Restore the Vite+ task cache
         uses: ./.github/actions/vite-task-cache
@@ -121,7 +121,7 @@ jobs:
       - name: Use Node.js 24.x
         uses: actions/setup-node@v7
         with:
-          node-version: 24.x
+          node-version: 26.x
           cache: "pnpm"
       - name: Restore the Vite+ task cache
         uses: ./.github/actions/vite-task-cache
