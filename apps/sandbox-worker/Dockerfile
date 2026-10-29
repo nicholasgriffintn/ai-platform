@@ -1,6 +1,6 @@
 FROM docker.io/cloudflare/sandbox:1.0.2 AS sandbox
 
-FROM docker.io/library/node:24-trixie-slim
+FROM docker.io/library/node:26-trixie-slim
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \

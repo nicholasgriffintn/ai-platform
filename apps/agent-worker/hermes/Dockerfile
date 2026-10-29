@@ -1,4 +1,4 @@
-FROM docker.io/library/node:24-trixie-slim
+FROM docker.io/library/node:26-trixie-slim
 
 ENV HERMES_VERSION=v2026.9.24
 ENV HERMES_HOME=/workspace/hermes
