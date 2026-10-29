@@ -37,7 +37,7 @@
       "model": "deepseek-thinking/deepseek-v4-pro-new",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00066,
         "costPer1kOutputTokens": 0.00198,
@@ -66,7 +66,7 @@
       "model": "mimo-v2.5/mimo-v2-5",
       "matchingModel": "mimo-v2.5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00028
@@ -449,7 +449,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 384000,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -479,7 +479,7 @@
       "model": "grok/grok-4-7",
       "matchingModel": "grok-4.7",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 21, 2026",
         "costPer1kInputTokens": 0.002,
@@ -596,7 +596,7 @@
       "overrides": {
         "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
         "maxTokens": 131072,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,

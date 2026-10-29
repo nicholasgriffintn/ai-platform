@@ -20,7 +20,7 @@
       "document"
     ],
     "contextComplexity": 5,
-    "reliability": 2,
+    "reliability": 1,
     "knowledgeCutoffDate": "January 2025",
     "releaseDate": "June 1, 2026",
     "supportsToolCalls": true,
@@ -34,10 +34,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 29.2,
-      "codingIndex": 58.6,
-      "agenticIndex": 29.5,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndex": 18.7,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The minimax m3 family includes models that produce text.",

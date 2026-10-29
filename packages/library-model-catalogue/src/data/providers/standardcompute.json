@@ -34,6 +34,7 @@
       "matchingModel": "anthropic/claude-fable-5.1",
       "overrides": {
         "maxTokens": 50000,
+        "contextComplexity": 4,
         "speed": 2,
         "lastUpdated": "September 1, 2026",
         "costPer1kInputTokens": 0.01,
@@ -198,7 +199,7 @@
         "contextWindow": 1000000,
         "maxTokens": 50000,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.001044,
         "costPer1kOutputTokens": 0.002088,
@@ -220,7 +221,7 @@
         "contextWindow": 1000000,
         "maxTokens": 50000,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00042,
@@ -342,8 +343,8 @@
       "matchingModel": "mistralai/mistral-large-4-0",
       "overrides": {
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
-        "contextWindow": 1048576,
         "maxTokens": 50000,
+        "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.00068,
@@ -500,6 +501,7 @@
       "model": "qwen/qwen3-8-27b",
       "matchingModel": "qwen/qwen3.8-27b",
       "overrides": {
+        "contextWindow": 262144,
         "maxTokens": 32768,
         "modalities": {
           "input": [
@@ -600,7 +602,7 @@
       "overrides": {
         "description": "Open MiMo model for multimodal coding agents and long-context automation",
         "maxTokens": 50000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00028

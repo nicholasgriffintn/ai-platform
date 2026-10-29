@@ -49,10 +49,10 @@
         "contextComplexity": 5,
         "reliability": 3,
         "artificialAnalysis": {
-          "intelligenceIndex": 43.6,
-          "codingIndex": 76.2,
-          "agenticIndex": 50,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -79,7 +79,7 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 2,
         "releaseDate": "October 23, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -90,10 +90,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 55.1,
+          "intelligenceIndex": 46,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -175,10 +175,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 43.6,
-          "codingIndex": 76.2,
-          "agenticIndex": 50,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -210,10 +210,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 43.6,
-          "codingIndex": 76.2,
-          "agenticIndex": 50,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -263,10 +263,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 43.6,
-          "codingIndex": 76.2,
-          "agenticIndex": 50,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -309,7 +309,7 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 2,
         "releaseDate": "October 23, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -321,10 +321,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 55.1,
+          "intelligenceIndex": 46,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     }

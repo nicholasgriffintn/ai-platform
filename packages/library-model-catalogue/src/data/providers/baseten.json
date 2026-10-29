@@ -33,7 +33,7 @@
       "overrides": {
         "maxTokens": 32768,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -447,7 +447,7 @@
       "overrides": {
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
         "maxTokens": 262144,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "August 22, 2026",
         "costPer1kInputTokens": 0.00132,
         "costPer1kOutputTokens": 0.00396,

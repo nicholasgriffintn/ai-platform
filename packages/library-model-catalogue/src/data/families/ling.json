@@ -1,7 +1,6 @@
 {
   "defaults": {
     "openWeights": false,
-    "contextComplexity": 4,
     "supportsToolCalls": true,
     "supportsAttachments": false,
     "supportsTemperature": true
@@ -26,6 +25,7 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "July 23, 2026",
         "supportsResponseFormat": false,
@@ -37,10 +37,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 20.1,
-          "codingIndex": 50.6,
-          "agenticIndex": 19.3,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -61,6 +61,7 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "August 27, 2026",
         "supportsResponseFormat": false,
@@ -72,10 +73,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 22.6,
-          "codingIndex": 55.6,
-          "agenticIndex": 27.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -127,6 +128,7 @@
           "document",
           "tool_use"
         ],
+        "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "September 10, 2026",
         "supportsResponseFormat": true,
@@ -139,10 +141,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 24.6,
-          "codingIndex": 57,
-          "agenticIndex": 28.7,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -151,8 +153,8 @@
         "name": "inclusionAI: Ling 3.1 Flash (new)",
         "openWeights": true,
         "description": "Ling 3.1 Flash is a hybrid reasoning mixture-of-experts model from inclusionAI, with 25B active parameters out of 560B total.",
-        "contextWindow": 262144,
-        "maxTokens": 235929,
+        "contextWindow": 1000000,
+        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text"
@@ -164,6 +166,7 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 5,
         "reliability": 2,
         "releaseDate": "September 29, 2026",
         "supportsResponseFormat": true,
@@ -175,10 +178,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 41.1,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -193,14 +196,15 @@
           "document",
           "tool_use"
         ],
-        "reliability": 2,
+        "contextComplexity": 4,
+        "reliability": 1,
         "releaseDate": "July 15, 2026",
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 25,
-          "codingIndex": 52.1,
-          "agenticIndex": 22.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": 12.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -246,7 +250,7 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "July 15, 2026",
         "supportsResponseFormat": false,
         "supportsAttachments": true,
@@ -262,10 +266,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 25,
-          "codingIndex": 52.1,
-          "agenticIndex": 22.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": 12.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -288,14 +292,15 @@
           "document",
           "tool_use"
         ],
-        "reliability": 2,
+        "contextComplexity": 4,
+        "reliability": 1,
         "releaseDate": "July 30, 2026",
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 25.7,
-          "codingIndex": 52.9,
-          "agenticIndex": 23.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": 12.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -323,7 +328,7 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "July 30, 2026",
         "supportsResponseFormat": false,
         "supportsAttachments": true,
@@ -339,10 +344,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 25.7,
-          "codingIndex": 52.9,
-          "agenticIndex": 23.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": 12.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -518,13 +523,14 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 23, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 17,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -543,13 +549,14 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 21, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 9.7,
-          "codingIndex": 25.3,
+          "intelligenceIndex": null,
+          "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -570,6 +577,7 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "July 23, 2026",
         "reasoningConfig": {
@@ -580,10 +588,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 20.1,
-          "codingIndex": 50.6,
-          "agenticIndex": 19.3,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -602,6 +610,7 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "August 27, 2026",
         "reasoningConfig": {
@@ -612,10 +621,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 22.6,
-          "codingIndex": 55.6,
-          "agenticIndex": 27.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -633,6 +642,7 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "August 27, 2026",
         "reasoningConfig": {
@@ -643,10 +653,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 22.6,
-          "codingIndex": 55.6,
-          "agenticIndex": 27.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -668,6 +678,7 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "July 23, 2026",
         "supportsResponseFormat": false,
@@ -679,10 +690,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 20.1,
-          "codingIndex": 50.6,
-          "agenticIndex": 19.3,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -720,6 +731,7 @@
         "name": "Ling 3.0 Flash VL",
         "openWeights": true,
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "September 10, 2026",
         "supportsResponseFormat": true,
@@ -732,16 +744,17 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 24.6,
-          "codingIndex": 57,
-          "agenticIndex": 28.7,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
     "ling-3-0-flash-vl-free": {
       "defaults": {
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextComplexity": 4,
         "reliability": 2,
         "supportsResponseFormat": false,
         "supportsAttachments": true,
@@ -753,10 +766,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 24.6,
-          "codingIndex": 57,
-          "agenticIndex": 28.7,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -777,6 +790,7 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "August 5, 2026",
         "supportsResponseFormat": false,
@@ -791,10 +805,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 11.1,
-          "codingIndex": 26.5,
-          "agenticIndex": 4.4,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -812,6 +826,7 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "August 6, 2026",
         "reasoningConfig": {
@@ -822,10 +837,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 11.1,
-          "codingIndex": 26.5,
-          "agenticIndex": 4.4,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -834,7 +849,6 @@
         "name": "Ling 3.1 Flash",
         "openWeights": true,
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "contextWindow": 262144,
         "modalities": {
           "input": [
             "text"
@@ -849,10 +863,10 @@
         "reliability": 2,
         "releaseDate": "September 29, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 41.1,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -873,6 +887,7 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "September 29, 2026",
         "reasoningConfig": {
@@ -885,10 +900,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 41.1,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

@@ -23,10 +23,10 @@
         {
           "key": "text_to_speechElo",
           "label": "Text-to-speech arena",
-          "value": 1289,
+          "value": 1296,
           "min": 800,
           "max": 1400,
-          "confidenceInterval95": 14
+          "confidenceInterval95": 13
         }
       ]
     }

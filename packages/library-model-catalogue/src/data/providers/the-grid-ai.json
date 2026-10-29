@@ -111,7 +111,8 @@
         "supportsAttachments": true
       },
       "unset": [
-        "reliability"
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "deepseek-pro-latest": {

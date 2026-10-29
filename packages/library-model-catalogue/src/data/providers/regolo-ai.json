@@ -89,7 +89,7 @@
       "overrides": {
         "contextWindow": 96000,
         "maxTokens": 96000,
-        "contextComplexity": 4,
+        "contextComplexity": 3,
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "June 13, 2026",

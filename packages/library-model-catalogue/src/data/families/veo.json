@@ -42,7 +42,7 @@
               "value": 959,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 18
+              "confidenceInterval95": 17
             }
           ]
         }
@@ -84,7 +84,7 @@
               "value": 959,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 18
+              "confidenceInterval95": 17
             }
           ]
         }

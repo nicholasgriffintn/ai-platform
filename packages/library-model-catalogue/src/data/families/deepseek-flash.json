@@ -56,17 +56,24 @@
         ],
         "releaseDate": "September 10, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 39.5,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
     "deepseek-v4-1-flash-1017": {
       "defaults": {
         "description": "October 17 update of DeepSeek V4.1 Flash with improved reasoning, coding, agentic tasks, and visual understanding",
-        "releaseDate": "October 17, 2026"
+        "reliability": 1,
+        "releaseDate": "October 17, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 32.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "deepseek-v4-1-flash-1017-eu": {
@@ -79,6 +86,7 @@
           "document",
           "tool_use"
         ],
+        "reliability": 1,
         "releaseDate": "October 17, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -91,10 +99,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 45.1,
+          "intelligenceIndex": 32.5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -145,10 +153,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 39.5,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -213,10 +221,10 @@
         "releaseDate": "April 24, 2026",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 34.3,
-          "codingIndex": 69.1,
-          "agenticIndex": 41,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -239,10 +247,10 @@
         "releaseDate": "July 31, 2026",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 34.3,
-          "codingIndex": 69.1,
-          "agenticIndex": 41,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -276,10 +284,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 34.3,
-          "codingIndex": 69.1,
-          "agenticIndex": 41,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -311,10 +319,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 34.3,
-          "codingIndex": 69.1,
-          "agenticIndex": 41,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },

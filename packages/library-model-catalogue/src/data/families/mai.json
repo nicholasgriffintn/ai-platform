@@ -73,10 +73,13 @@
         },
         "strengths": [
           "image",
-          "creative"
+          "creative",
+          "document"
         ],
+        "contextComplexity": 4,
         "reliability": 4,
         "releaseDate": "October 13, 2026",
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -108,10 +111,13 @@
           ]
         },
         "strengths": [
-          "image"
+          "image",
+          "document"
         ],
+        "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "October 13, 2026",
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,

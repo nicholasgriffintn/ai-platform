@@ -42,10 +42,10 @@
         "knowledgeCutoffDate": "November 30, 2024",
         "releaseDate": "February 26, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 5.8,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -78,10 +78,10 @@
         "knowledgeCutoffDate": "November 2024",
         "releaseDate": "December 2, 2025",
         "artificialAnalysis": {
-          "intelligenceIndex": 9.3,
-          "codingIndex": 20.1,
-          "agenticIndex": 1,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -110,12 +110,13 @@
       "defaults": {
         "name": "Mistral Large 4",
         "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
+        "contextWindow": 1048576,
         "strengths": [
           "vision",
           "document",
           "tool_use"
         ],
-        "reliability": 2,
+        "contextComplexity": 5,
         "releaseDate": "October 6, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -125,10 +126,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 38.4,
+          "intelligenceIndex": 25.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -142,7 +143,6 @@
           "document",
           "tool_use"
         ],
-        "reliability": 2,
         "releaseDate": "October 6, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -155,10 +155,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 38.4,
+          "intelligenceIndex": 25.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -182,10 +182,10 @@
         "knowledgeCutoffDate": "November 2024",
         "releaseDate": "November 1, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 5.8,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

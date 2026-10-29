@@ -30,10 +30,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 11.8,
-      "codingIndex": 21.3,
+      "intelligenceIndex": null,
+      "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The cortecs/magistral medium 2509 family includes models that produce text.",

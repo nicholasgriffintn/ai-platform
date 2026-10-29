@@ -38,7 +38,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1087,
+              "value": 1085,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11
@@ -92,7 +92,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1087,
+              "value": 1085,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11
@@ -136,10 +136,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 9.3,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -170,10 +170,10 @@
         "reliability": 1,
         "releaseDate": "May 7, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 15.6,
-          "codingIndex": 34.7,
-          "agenticIndex": 1.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -214,10 +214,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 15.6,
-          "codingIndex": 34.7,
-          "agenticIndex": 1.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -264,10 +264,10 @@
         "reliability": 1,
         "releaseDate": "March 3, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 15.6,
-          "codingIndex": 34.7,
-          "agenticIndex": 1.6,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -295,7 +295,7 @@
           "video",
           "tool_use"
         ],
-        "reliability": 2,
+        "reliability": 1,
         "knowledgeCutoffDate": "March 2026",
         "releaseDate": "July 21, 2026",
         "reasoningConfig": {
@@ -308,10 +308,10 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 22.2,
-          "codingIndex": 49.3,
-          "agenticIndex": 14.3,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": 11.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -339,7 +339,7 @@
           "video",
           "tool_use"
         ],
-        "reliability": 2,
+        "reliability": 1,
         "knowledgeCutoffDate": "March 2026",
         "releaseDate": "July 21, 2026",
         "reasoningConfig": {
@@ -353,10 +353,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 22.2,
-          "codingIndex": 49.3,
-          "agenticIndex": 14.3,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": 11.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -393,7 +393,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1254,
+              "value": 1259,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 13

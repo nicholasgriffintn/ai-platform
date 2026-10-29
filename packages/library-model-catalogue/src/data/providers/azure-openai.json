@@ -142,7 +142,8 @@
       "unset": [
         "contextComplexity",
         "supportsTopP",
-        "reliability"
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "anthropic/claude-opus-4-5": {
@@ -247,7 +248,7 @@
         "strengths": [
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 1,
         "knowledgeCutoffDate": "June 1, 2024",
         "lastUpdated": "March 13, 2025",
         "dataRetention": {
@@ -389,8 +390,7 @@
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 131072,
         "maxTokens": 131072,
-        "contextComplexity": 4,
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "July 2024",
         "lastUpdated": "August 21, 2025",
         "dataRetention": {
@@ -498,7 +498,8 @@
       "unset": [
         "supportsResponseFormat",
         "contextComplexity",
-        "reliability"
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "openai/gpt-5-codex": {
@@ -511,7 +512,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "September 15, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -598,7 +599,8 @@
         "supportsTemperature": false
       },
       "unset": [
-        "strengths"
+        "strengths",
+        "artificialAnalysis"
       ]
     },
     "openai/gpt-5.1": {
@@ -672,7 +674,8 @@
       },
       "unset": [
         "contextComplexity",
-        "reliability"
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "openai/gpt-5.1-codex": {
@@ -727,7 +730,8 @@
       },
       "unset": [
         "contextComplexity",
-        "reliability"
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "openai/gpt-5.1-codex-mini": {
@@ -787,7 +791,8 @@
       },
       "unset": [
         "contextComplexity",
-        "reliability"
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "openai/gpt-5.2-codex": {
@@ -867,7 +872,7 @@
       "model": "grok/grok-4",
       "matchingModel": "grok-4",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 9, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -1261,7 +1266,7 @@
       "model": "mistral-small/mistral-small-3-1",
       "matchingModel": "mistral-small-2503",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 1, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -1623,7 +1628,8 @@
       },
       "unset": [
         "contextComplexity",
-        "reliability"
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "gpt-5.3-codex": {
@@ -1644,7 +1650,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 3,
+        "speed": 2,
         "releaseDate": "February 24, 2026",
         "lastUpdated": "February 24, 2026",
         "dataRetention": {
@@ -1810,10 +1816,10 @@
         "costPer1kOutputTokens": 0.0005,
         "apiShape": "completions",
         "artificialAnalysis": {
-          "intelligenceIndex": 11.3,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1867,7 +1873,7 @@
           "tool_use"
         ],
         "contextComplexity": 3,
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "April 8, 2026",
         "lastUpdated": "April 8, 2026",
@@ -1987,7 +1993,7 @@
           "coding",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 24, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -2047,7 +2053,6 @@
           "document",
           "image"
         ],
-        "contextComplexity": 4,
         "isFeatured": true,
         "lastUpdated": "April 24, 2025",
         "dataRetention": {
@@ -2066,6 +2071,16 @@
       "matchingModel": "gpt-image-1.5",
       "overrides": {
         "name": "GPT-Image-1.5",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -2453,7 +2468,6 @@
           "image",
           "creative"
         ],
-        "contextComplexity": 4,
         "lastUpdated": "September 8, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -2584,7 +2598,7 @@
       "matchingModel": "grok-4.7",
       "overrides": {
         "status": "beta",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "September 21, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -2604,7 +2618,7 @@
         "status": "beta",
         "contextWindow": 1000000,
         "maxTokens": 128000,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -2625,6 +2639,7 @@
       "model": "gpt-terra/gpt-6-1-terra",
       "matchingModel": "gpt-6.1-terra",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,

@@ -19,7 +19,13 @@
     "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": false,
-    "supportsTopP": false
+    "supportsTopP": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
   },
   "description": "The claude opus family includes models that produce text.",
   "models": {
@@ -121,13 +127,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "November 24, 2025",
-        "supportsTemperature": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": 23.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "supportsTemperature": true
       }
     },
     "claude-opus-4-5-eu": {
@@ -154,12 +154,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "budget"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 23.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -187,12 +181,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "budget"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 23.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -211,13 +199,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "May 2025",
         "releaseDate": "November 24, 2025",
-        "supportsTemperature": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": 23.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "supportsTemperature": true
       }
     },
     "claude-opus-4-5-latest-eu": {
@@ -245,12 +227,6 @@
             "max"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 23.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -278,12 +254,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "budget"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 23.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -299,13 +269,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "May 31, 2025",
         "releaseDate": "February 5, 2026",
-        "supportsTemperature": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": 26.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "supportsTemperature": true
       }
     },
     "claude-opus-4-6-eu": {
@@ -320,13 +284,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "May 31, 2025",
         "releaseDate": "February 5, 2026",
-        "supportsTemperature": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": 26.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "supportsTemperature": true
       }
     },
     "claude-opus-4-6-fast": {
@@ -347,12 +305,6 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 26.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -378,12 +330,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 26.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -409,12 +355,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 26.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -429,13 +369,7 @@
           "tool_use"
         ],
         "knowledgeCutoffDate": "January 31, 2026",
-        "releaseDate": "April 16, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": 40.7,
-          "codingIndex": 73.6,
-          "agenticIndex": 38.6,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "April 16, 2026"
       }
     },
     "claude-opus-4-7-au": {
@@ -460,12 +394,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 40.7,
-          "codingIndex": 73.6,
-          "agenticIndex": 38.6,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -480,13 +408,7 @@
           "tool_use"
         ],
         "knowledgeCutoffDate": "January 31, 2026",
-        "releaseDate": "April 16, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": 40.7,
-          "codingIndex": 73.6,
-          "agenticIndex": 38.6,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "April 16, 2026"
       }
     },
     "claude-opus-4-7-fast": {
@@ -500,13 +422,7 @@
           "tool_use"
         ],
         "knowledgeCutoffDate": "January 31, 2026",
-        "releaseDate": "April 16, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": 40.7,
-          "codingIndex": 73.6,
-          "agenticIndex": 38.6,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "April 16, 2026"
       }
     },
     "claude-opus-4-7-global": {
@@ -531,12 +447,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 40.7,
-          "codingIndex": 73.6,
-          "agenticIndex": 38.6,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -562,12 +472,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 40.7,
-          "codingIndex": 73.6,
-          "agenticIndex": 38.6,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -593,12 +497,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 40.7,
-          "codingIndex": 73.6,
-          "agenticIndex": 38.6,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -613,13 +511,7 @@
           "tool_use"
         ],
         "knowledgeCutoffDate": "January 2026",
-        "releaseDate": "May 28, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
-          "codingIndex": 74.3,
-          "agenticIndex": 41.9,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "May 28, 2026"
       }
     },
     "claude-opus-4-8-au": {
@@ -644,12 +536,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
-          "codingIndex": 74.3,
-          "agenticIndex": 41.9,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -664,13 +550,7 @@
           "tool_use"
         ],
         "knowledgeCutoffDate": "January 2026",
-        "releaseDate": "May 28, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
-          "codingIndex": 74.3,
-          "agenticIndex": 41.9,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "May 28, 2026"
       }
     },
     "claude-opus-4-8-fast": {
@@ -678,13 +558,7 @@
         "name": "Claude Opus 4.8 (Fast)",
         "description": "Top Claude Opus tier for the hardest reasoning, coding, and long-horizon agents",
         "knowledgeCutoffDate": "January 2026",
-        "releaseDate": "May 28, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
-          "codingIndex": 74.3,
-          "agenticIndex": 41.9,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "May 28, 2026"
       }
     },
     "claude-opus-4-8-global": {
@@ -709,12 +583,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
-          "codingIndex": 74.3,
-          "agenticIndex": 41.9,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -740,12 +608,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
-          "codingIndex": 74.3,
-          "agenticIndex": 41.9,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -771,12 +633,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
-          "codingIndex": 74.3,
-          "agenticIndex": 41.9,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -812,13 +668,7 @@
           "coding"
         ],
         "knowledgeCutoffDate": "May 2026",
-        "releaseDate": "July 24, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": 50.8,
-          "codingIndex": 78,
-          "agenticIndex": 56.5,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "July 24, 2026"
       }
     },
     "claude-opus-5-5": {
@@ -844,10 +694,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 57.6,
+          "intelligenceIndex": 58.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -874,10 +724,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 57.6,
+          "intelligenceIndex": 58.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -893,10 +743,10 @@
         "knowledgeCutoffDate": "June 2026",
         "releaseDate": "September 22, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 57.6,
+          "intelligenceIndex": 58.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -923,10 +773,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 57.6,
+          "intelligenceIndex": 58.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -953,10 +803,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 57.6,
+          "intelligenceIndex": 58.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -983,10 +833,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 57.6,
+          "intelligenceIndex": 58.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1013,10 +863,10 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 57.6,
+          "intelligenceIndex": 58.4,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1042,12 +892,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 50.8,
-          "codingIndex": 78,
-          "agenticIndex": 56.5,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1062,13 +906,7 @@
           "coding"
         ],
         "knowledgeCutoffDate": "May 2026",
-        "releaseDate": "July 24, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": 50.8,
-          "codingIndex": 78,
-          "agenticIndex": 56.5,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "July 24, 2026"
       }
     },
     "claude-opus-5-fast": {
@@ -1082,13 +920,7 @@
           "coding"
         ],
         "knowledgeCutoffDate": "May 2026",
-        "releaseDate": "July 24, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": 50.8,
-          "codingIndex": 78,
-          "agenticIndex": 56.5,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "July 24, 2026"
       }
     },
     "claude-opus-5-global": {
@@ -1113,12 +945,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 50.8,
-          "codingIndex": 78,
-          "agenticIndex": 56.5,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1145,12 +971,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 50.8,
-          "codingIndex": 78,
-          "agenticIndex": 56.5,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1176,12 +996,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 50.8,
-          "codingIndex": 78,
-          "agenticIndex": 56.5,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1207,12 +1021,6 @@
           ],
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 50.8,
-          "codingIndex": 78,
-          "agenticIndex": 56.5,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1255,12 +1063,6 @@
             "max"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 26.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1286,12 +1088,6 @@
             "max"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 40.7,
-          "codingIndex": 73.6,
-          "agenticIndex": 38.6,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -1317,12 +1113,6 @@
             "max"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 41.8,
-          "codingIndex": 74.3,
-          "agenticIndex": 41.9,
-          "intelligenceIndexVersion": 4.3
         }
       }
     }

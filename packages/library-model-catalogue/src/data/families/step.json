@@ -22,6 +22,12 @@
         "high"
       ],
       "defaultEffort": "low"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The step family includes models that produce text.",
@@ -53,12 +59,6 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 17,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -75,13 +75,7 @@
         ],
         "reliability": 2,
         "knowledgeCutoffDate": "March 1, 2026",
-        "releaseDate": "May 29, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": 19.5,
-          "codingIndex": 39.6,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "May 29, 2026"
       }
     },
     "step-5-preview": {
@@ -95,15 +89,14 @@
           "document"
         ],
         "contextComplexity": 5,
-        "reliability": 2,
         "releaseDate": "September 16, 2026",
         "supportsToolCalls": false,
         "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 43.7,
+          "intelligenceIndex": 28.5,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -126,13 +119,7 @@
         ],
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "January 29, 2026",
-        "supportsAttachments": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": 17,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "supportsAttachments": false
       }
     },
     "stepfun-step-5-preview-free": {

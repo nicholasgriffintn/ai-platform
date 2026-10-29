@@ -29,10 +29,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 16,
-      "codingIndex": 49.8,
+      "intelligenceIndex": null,
+      "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The openrouter/xiaomi/mimo v2 flash family includes models that produce text.",

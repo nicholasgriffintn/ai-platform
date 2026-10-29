@@ -45,10 +45,10 @@
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "artificialAnalysis": {
-          "intelligenceIndex": 7.2,
-          "codingIndex": 26,
+          "intelligenceIndex": null,
+          "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       },
       "unset": [
@@ -110,6 +110,7 @@
         "supportsResponseFormat",
         "supportsTopP",
         "reliability",
+        "artificialAnalysis",
         "reasoningConfig"
       ]
     },
@@ -149,10 +150,10 @@
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "artificialAnalysis": {
-          "intelligenceIndex": 15.3,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       },
       "unset": [
@@ -216,6 +217,7 @@
         "supportsResponseFormat",
         "supportsTopP",
         "reliability",
+        "artificialAnalysis",
         "reasoningConfig"
       ]
     },
@@ -255,7 +257,7 @@
           "tool_use"
         ],
         "contextComplexity": 3,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008
@@ -275,7 +277,7 @@
             "text"
           ]
         },
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "May 13, 2024",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -593,7 +595,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -904,7 +906,7 @@
       "matchingModel": "grok-4.7",
       "overrides": {
         "maxTokens": 128000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "September 21, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
@@ -1003,6 +1005,7 @@
       "model": "gpt-terra/gpt-6-1-terra",
       "matchingModel": "gpt-6.1-terra",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005

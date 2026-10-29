@@ -170,7 +170,7 @@
           "coding",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "isFeatured": false,
         "lastUpdated": "July 9, 2025",
         "costPer1kInputTokens": 0.003,
@@ -327,10 +327,10 @@
           "live_search": 0.025
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 11.3,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       },
       "unset": [
@@ -418,13 +418,7 @@
         "lastUpdated": "March 9, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
-        "supportsResponseFormat": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": 14.6,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "supportsResponseFormat": true
       }
     },
     "grok-4.20-0309-reasoning": {
@@ -673,7 +667,6 @@
           "image",
           "creative"
         ],
-        "contextComplexity": 3,
         "lastUpdated": "August 7, 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false
@@ -683,7 +676,7 @@
       "model": "grok/grok-4-7",
       "matchingModel": "grok-4.7",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 21, 2026",
         "costPer1kInputTokens": 0.002,

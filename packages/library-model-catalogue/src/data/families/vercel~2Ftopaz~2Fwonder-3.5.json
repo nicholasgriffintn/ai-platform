@@ -13,7 +13,7 @@
     },
     "releaseDate": "October 6, 2026",
     "supportsToolCalls": false,
-    "supportsAttachments": false,
+    "supportsAttachments": true,
     "supportsTemperature": false
   },
   "description": "The vercel/topaz/wonder 3.5 family includes models that produce image.",

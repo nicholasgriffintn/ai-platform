@@ -320,10 +320,10 @@
         "reliability": 1,
         "releaseDate": "December 3, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 6.7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -352,10 +352,10 @@
         "releaseDate": "December 3, 2024",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 5.9,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -377,10 +377,10 @@
         "reliability": 1,
         "releaseDate": "December 3, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 9.2,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -413,10 +413,10 @@
         "reliability": 1,
         "releaseDate": "December 3, 2024",
         "artificialAnalysis": {
-          "intelligenceIndex": 7,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

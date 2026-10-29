@@ -45,10 +45,10 @@
         "contextComplexity": 5,
         "releaseDate": "April 22, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 21.8,
-          "codingIndex": 56.8,
-          "agenticIndex": 15.8,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -78,10 +78,10 @@
         "contextComplexity": 4,
         "releaseDate": "April 22, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 21.8,
-          "codingIndex": 56.8,
-          "agenticIndex": 15.8,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -105,10 +105,10 @@
         "releaseDate": "April 22, 2026",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 26,
-          "codingIndex": 60.2,
-          "agenticIndex": 21.3,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -153,13 +153,14 @@
           "tool_use"
         ],
         "contextComplexity": 5,
+        "reliability": 1,
         "knowledgeCutoffDate": "September 22, 2026",
         "releaseDate": "September 22, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 37.9,
+          "intelligenceIndex": 26.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -209,13 +210,14 @@
           "tool_use"
         ],
         "contextComplexity": 5,
+        "reliability": 1,
         "knowledgeCutoffDate": "September 22, 2026",
         "releaseDate": "September 22, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 46.3,
+          "intelligenceIndex": 29.9,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -245,10 +247,10 @@
         "releaseDate": "December 16, 2025",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 16,
-          "codingIndex": 49.8,
+          "intelligenceIndex": null,
+          "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -294,10 +296,10 @@
         "releaseDate": "March 18, 2026",
         "supportsAttachments": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 28.6,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     }

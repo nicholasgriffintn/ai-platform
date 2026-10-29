@@ -43,10 +43,10 @@
         ],
         "reliability": 1,
         "artificialAnalysis": {
-          "intelligenceIndex": 6,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -60,10 +60,10 @@
         ],
         "reliability": 1,
         "artificialAnalysis": {
-          "intelligenceIndex": 5.2,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

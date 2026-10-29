@@ -159,7 +159,7 @@
       "model": "minimax/minimax-m2-1",
       "matchingModel": "MiniMaxAI/MiniMax-M2.1",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "October 2025",
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -318,7 +318,7 @@
       "matchingModel": "zai-org/GLM-4.7-Flash",
       "overrides": {
         "maxTokens": 128000,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -347,9 +347,8 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro",
       "overrides": {
-        "contextWindow": 1048576,
         "maxTokens": 393216,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.000435,
         "costPer1kOutputTokens": 0.00087,
@@ -367,7 +366,7 @@
       "overrides": {
         "name": "MiniMax-M2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -382,7 +381,7 @@
       "overrides": {
         "name": "MiniMax-M2.7",
         "maxTokens": 131072,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -483,7 +482,6 @@
       "matchingModel": "zai-org/GLM-5.1",
       "overrides": {
         "contextWindow": 202752,
-        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.001,
@@ -834,7 +832,6 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "Qwen/Qwen3.6-27B",
       "overrides": {
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -860,7 +857,7 @@
       "model": "huggingface/stepfun-ai/Step-3.7-Flash/step-3-7-flash",
       "matchingModel": "stepfun-ai/Step-3.7-Flash",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "May 29, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00115,
@@ -931,7 +928,7 @@
         "strengths": [
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.002,
@@ -1045,7 +1042,7 @@
       "overrides": {
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 64000,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "December 26, 2024",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0013
@@ -1058,7 +1055,8 @@
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 131072,
         "maxTokens": 8192,
-        "speed": 3,
+        "contextComplexity": 3,
+        "speed": 4,
         "lastUpdated": "August 21, 2025",
         "costPer1kInputTokens": 0.00027,
         "costPer1kOutputTokens": 0.001
@@ -1071,7 +1069,7 @@
         "name": "Qwen3 235B-A22B Instruct 2507",
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "maxTokens": 16384,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.000855,
         "costPer1kOutputTokens": 0.002565
@@ -1108,7 +1106,7 @@
       "matchingModel": "Qwen/Qwen3-30B-A3B",
       "overrides": {
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.0005
@@ -1131,7 +1129,7 @@
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 131072,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0015,
@@ -1184,6 +1182,7 @@
       "matchingModel": "Qwen/Qwen3.8-27B",
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 262144,
         "maxTokens": 32768,
         "speed": 2,
         "lastUpdated": "August 14, 2026",
@@ -1273,7 +1272,7 @@
       "overrides": {
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
         "maxTokens": 384000,
-        "speed": 4,
+        "speed": 5,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,

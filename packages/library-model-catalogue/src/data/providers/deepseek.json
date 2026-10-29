@@ -52,7 +52,6 @@
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
         "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
-        "contextWindow": 1048576,
         "maxTokens": 393216,
         "isFree": true,
         "strengths": [
@@ -63,7 +62,7 @@
           "multilingual",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "isFeatured": true,
         "releaseDate": "August 13, 2026",
         "lastUpdated": "August 22, 2026",
@@ -93,7 +92,8 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "reliability": 2,
+        "speed": 5,
         "isFeatured": true,
         "lastUpdated": "October 17, 2026",
         "costPer1kInputTokens": 0.00015,
@@ -108,10 +108,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 39.5,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     }

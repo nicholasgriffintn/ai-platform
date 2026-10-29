@@ -29,10 +29,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 25.3,
-      "codingIndex": 58.8,
-      "agenticIndex": 24.1,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The hy3 family includes models that produce text.",

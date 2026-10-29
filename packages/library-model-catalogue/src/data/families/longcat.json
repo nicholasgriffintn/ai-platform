@@ -33,10 +33,10 @@
         "reliability": 2,
         "releaseDate": "June 30, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 19.1,
-          "codingIndex": 45.3,
-          "agenticIndex": 14,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -102,10 +102,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 19.1,
-          "codingIndex": 45.3,
-          "agenticIndex": 14,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     }

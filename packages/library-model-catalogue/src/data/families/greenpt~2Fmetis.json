@@ -17,9 +17,9 @@
     "contextComplexity": 3,
     "reliability": 4,
     "releaseDate": "October 7, 2026",
-    "supportsToolCalls": false,
+    "supportsToolCalls": true,
     "supportsAttachments": false,
-    "supportsTemperature": false
+    "supportsTemperature": true
   },
   "description": "GreenPT's System One decision model. Answers yes/no, choice and scale questions about a case with a probability for every answer and generates no text.",
   "models": {

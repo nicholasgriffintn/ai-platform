@@ -101,10 +101,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 19.3,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       },
       "unset": [
@@ -144,10 +144,10 @@
         "supportsTemperature": true,
         "supportsTokenCounting": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 16.6,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       },
       "unset": [
@@ -243,6 +243,7 @@
         "supportsResponseFormat",
         "supportsTopP",
         "reliability",
+        "artificialAnalysis",
         "supportsCodeExecution"
       ]
     },

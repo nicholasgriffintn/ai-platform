@@ -15,7 +15,13 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
   },
   "description": "The liquid family includes models that produce text.",
   "models": {
@@ -27,13 +33,7 @@
         "maxTokens": 32768,
         "releaseDate": "February 25, 2026",
         "supportsToolCalls": false,
-        "supportsResponseFormat": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": 5.9,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "supportsResponseFormat": false
       }
     },
     "lfm2-5-1-2b-instruct-free": {
@@ -44,13 +44,7 @@
         "maxTokens": 32768,
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "January 20, 2026",
-        "supportsToolCalls": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": 5.2,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "supportsToolCalls": false
       }
     },
     "lfm2-5-1-2b-thinking-free": {
@@ -70,12 +64,6 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 5.2,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -94,12 +82,6 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 8.4,
-          "codingIndex": 7.7,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -118,12 +100,6 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 8.4,
-          "codingIndex": 7.7,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },

@@ -7,7 +7,13 @@
     "reliability": 1,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": false
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
   },
   "description": "The o pro family includes models that produce text.",
   "models": {
@@ -31,13 +37,7 @@
         ],
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "March 19, 2025",
-        "supportsToolCalls": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": 12.4,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "supportsToolCalls": false
       }
     },
     "o3-pro": {
@@ -50,13 +50,7 @@
         ],
         "knowledgeCutoffDate": "May 2024",
         "releaseDate": "June 10, 2025",
-        "supportsToolCalls": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": 21.9,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "supportsToolCalls": true
       }
     }
   }

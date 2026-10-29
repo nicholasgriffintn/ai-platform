@@ -11,7 +11,13 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
   },
   "description": "The gpt nano family includes models that produce text.",
   "models": {
@@ -32,13 +38,7 @@
         },
         "contextComplexity": 5,
         "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "April 14, 2025",
-        "artificialAnalysis": {
-          "intelligenceIndex": 7.8,
-          "codingIndex": 11.1,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "April 14, 2025"
       }
     },
     "gpt-4-1-nano-eu": {
@@ -57,13 +57,7 @@
           ]
         },
         "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "April 14, 2025",
-        "artificialAnalysis": {
-          "intelligenceIndex": 7.8,
-          "codingIndex": 11.1,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "April 14, 2025"
       }
     },
     "gpt-4-1-nano-fast": {
@@ -83,13 +77,7 @@
           ]
         },
         "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "April 14, 2025",
-        "artificialAnalysis": {
-          "intelligenceIndex": 7.8,
-          "codingIndex": 11.1,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
-        }
+        "releaseDate": "April 14, 2025"
       }
     },
     "gpt-5-4-nano": {
@@ -109,12 +97,6 @@
             "xhigh"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 20.7,
-          "codingIndex": 56.1,
-          "agenticIndex": 16,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -144,12 +126,6 @@
             "high"
           ],
           "defaultEffort": "minimal"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 13,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -180,12 +156,6 @@
             "max"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 13,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     }

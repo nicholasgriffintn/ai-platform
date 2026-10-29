@@ -67,7 +67,7 @@
       "matchingModel": "morph-dsv41flash",
       "overrides": {
         "maxTokens": 1048576,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.0008,

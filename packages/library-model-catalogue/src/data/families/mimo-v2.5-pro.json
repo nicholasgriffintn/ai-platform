@@ -31,10 +31,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 26,
-      "codingIndex": 60.2,
-      "agenticIndex": 21.3,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The mimo v2.5 pro family includes models that produce text.",

@@ -28,10 +28,10 @@
       "defaultEffort": "none"
     },
     "artificialAnalysis": {
-      "intelligenceIndex": 11.4,
-      "codingIndex": 34,
+      "intelligenceIndex": null,
+      "codingIndex": null,
       "agenticIndex": null,
-      "intelligenceIndexVersion": 4.3
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The azure openai/o1 preview family includes models that produce text.",

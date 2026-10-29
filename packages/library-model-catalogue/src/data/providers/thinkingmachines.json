@@ -56,7 +56,8 @@
           "document",
           "tool_use"
         ],
-        "reliability": 2,
+        "contextComplexity": 4,
+        "reliability": 1,
         "speed": 4,
         "isFeatured": true,
         "lastUpdated": "July 15, 2026",
@@ -73,10 +74,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 25,
-          "codingIndex": 52.1,
-          "agenticIndex": 22.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": 12.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       },
       "unset": [
@@ -89,7 +90,8 @@
       "overrides": {
         "contextWindow": 32768,
         "maxTokens": 32768,
-        "speed": 3,
+        "contextComplexity": 3,
+        "speed": 4,
         "lastUpdated": "August 21, 2025",
         "costPer1kInputTokens": 0.001695,
         "costPer1kOutputTokens": 0.004215,
@@ -126,12 +128,6 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 45.1,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -150,7 +146,7 @@
           ]
         },
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0036,
@@ -177,6 +173,7 @@
           "document",
           "tool_use"
         ],
+        "contextComplexity": 3,
         "speed": 3,
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.002205,
@@ -218,6 +215,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 6.8,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -246,7 +249,7 @@
       "model": "nemotron/nemotron-3-super-120b-a12b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16:peft:262144",
       "overrides": {
-        "maxTokens": 262144,
+        "contextWindow": 262144,
         "speed": 4,
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.00057,
@@ -570,7 +573,6 @@
       "matchingModel": "Qwen/Qwen3.6-27B",
       "overrides": {
         "contextWindow": 65536,
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -639,6 +641,7 @@
       "model": "qwen/qwen3-8-27b",
       "matchingModel": "Qwen/Qwen3.8-27B:peft:262144",
       "overrides": {
+        "contextWindow": 262144,
         "maxTokens": 262144,
         "speed": 2,
         "lastUpdated": "August 14, 2026",

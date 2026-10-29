@@ -11,7 +11,6 @@
     },
     "reliability": 1,
     "supportsToolCalls": false,
-    "supportsAttachments": false,
     "supportsTemperature": false
   },
   "description": "Image model for prompt-driven generation, editing, and visual design workflows",
@@ -86,9 +85,10 @@
         },
         "strengths": [
           "creative",
-          "image"
+          "image",
+          "vision"
         ],
-        "contextComplexity": 3,
+        "contextComplexity": 4,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -122,9 +122,10 @@
         },
         "strengths": [
           "creative",
-          "image"
+          "image",
+          "vision"
         ],
-        "contextComplexity": 3,
+        "contextComplexity": 4,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -149,7 +150,8 @@
         "description": "Black Forest Labs' flagship text-to-image model with excellent quality, prompt adherence, and 6x faster generation.",
         "strengths": [
           "creative"
-        ]
+        ],
+        "supportsAttachments": false
       }
     },
     "flux-1-dev": {
@@ -165,6 +167,7 @@
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "August 1, 2024",
         "supportsResponseFormat": true,
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -189,7 +192,8 @@
         "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
-        "releaseDate": "October 1, 2024"
+        "releaseDate": "October 1, 2024",
+        "supportsAttachments": true
       }
     },
     "flux-1-kontext-dev": {
@@ -241,10 +245,12 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
         "strengths": [
-          "image"
+          "image",
+          "document"
         ],
-        "contextComplexity": 1,
+        "contextComplexity": 3,
         "releaseDate": "May 29, 2025",
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -270,10 +276,12 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
         "strengths": [
-          "image"
+          "image",
+          "document"
         ],
-        "contextComplexity": 1,
+        "contextComplexity": 3,
         "releaseDate": "May 29, 2025",
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -305,6 +313,7 @@
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "August 1, 2024",
         "supportsResponseFormat": false,
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -332,6 +341,7 @@
           "image"
         ],
         "reliability": 2,
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -355,6 +365,7 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "reliability": 2,
         "releaseDate": "November 25, 2025",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -378,8 +389,10 @@
         "name": "FLUX.2 Klein 4B",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 0,
+        "contextComplexity": 4,
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "January 15, 2026",
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -405,9 +418,12 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 0,
         "strengths": [
-          "image"
+          "image",
+          "document"
         ],
+        "contextComplexity": 4,
         "releaseDate": "January 15, 2026",
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -432,6 +448,7 @@
         "contextComplexity": 3,
         "reliability": 2,
         "releaseDate": "December 16, 2025",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -456,6 +473,7 @@
         "contextComplexity": 3,
         "reliability": 2,
         "releaseDate": "November 25, 2025",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -505,10 +523,10 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 1090,
+              "value": 1091,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 18
+              "confidenceInterval95": 17
             }
           ]
         }
@@ -521,10 +539,13 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 0,
         "strengths": [
-          "image"
+          "image",
+          "document"
         ],
+        "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "October 5, 2026",
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -550,10 +571,13 @@
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 0,
         "strengths": [
-          "image"
+          "image",
+          "document"
         ],
+        "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "October 15, 2026",
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -578,7 +602,8 @@
         "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
-        "releaseDate": "August 2, 2024"
+        "releaseDate": "August 2, 2024",
+        "supportsAttachments": false
       }
     },
     "flux1-1-pro": {
@@ -592,6 +617,7 @@
         ],
         "contextComplexity": 1,
         "releaseDate": "October 2, 2024",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -621,6 +647,7 @@
         ],
         "contextComplexity": 1,
         "releaseDate": "November 1, 2024",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,

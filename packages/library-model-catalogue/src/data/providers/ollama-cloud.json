@@ -71,9 +71,8 @@
       "overrides": {
         "name": "deepseek-v4-pro",
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
-        "contextWindow": 1048576,
         "maxTokens": 1048576,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00066,
         "costPer1kOutputTokens": 0.00198,
@@ -102,7 +101,6 @@
       "overrides": {
         "name": "glm-5.1",
         "contextWindow": 202752,
-        "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "March 27, 2026",
         "lastUpdated": "April 7, 2026",
@@ -259,7 +257,7 @@
       "overrides": {
         "name": "minimax-m2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -277,7 +275,7 @@
         "name": "minimax-m2.7",
         "contextWindow": 196608,
         "maxTokens": 196608,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -391,7 +389,7 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "maxTokens": 384000,
-        "speed": 4,
+        "speed": 5,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00015,
@@ -411,8 +409,6 @@
       "matchingModel": "mistral-large-4",
       "overrides": {
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
-        "contextWindow": 1048576,
-        "contextComplexity": 5,
         "speed": 4,
         "isFeatured": true,
         "lastUpdated": "October 6, 2026",
@@ -444,7 +440,6 @@
       "matchingModel": "muse-spark-open",
       "overrides": {
         "description": "Muse Spark Open is an 816B total / 42B active open-weight multimodal reasoning model from Meta for coding and long-horizon agentic work, with 1M-token context.",
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

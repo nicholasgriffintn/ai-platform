@@ -128,10 +128,10 @@
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 15.2,
-          "codingIndex": 39.7,
+          "intelligenceIndex": null,
+          "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -171,10 +171,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 20.2,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -233,10 +233,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 20.2,
+          "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -272,10 +272,10 @@
           "defaultEffort": "high"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 11,
-          "codingIndex": 16.3,
-          "agenticIndex": 0.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -338,10 +338,10 @@
           "defaultEffort": "high"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 11,
-          "codingIndex": 16.3,
-          "agenticIndex": 0.9,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -506,7 +506,7 @@
               "value": 1109,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 12
+              "confidenceInterval95": 11
             }
           ]
         }
@@ -626,7 +626,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1088,
+              "value": 1089,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10
@@ -662,7 +662,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1104,
+              "value": 1106,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11

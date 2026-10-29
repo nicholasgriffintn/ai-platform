@@ -22,7 +22,7 @@
         {
           "key": "text_to_speechElo",
           "label": "Text-to-speech arena",
-          "value": 1065,
+          "value": 1063,
           "min": 800,
           "max": 1400,
           "confidenceInterval95": 11

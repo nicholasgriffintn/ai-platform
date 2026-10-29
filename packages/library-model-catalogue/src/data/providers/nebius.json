@@ -31,9 +31,8 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro",
       "overrides": {
-        "contextWindow": 1048576,
         "maxTokens": 1048576,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.0035,
@@ -54,7 +53,7 @@
       "overrides": {
         "contextWindow": 1048000,
         "maxTokens": 1048000,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -122,6 +121,7 @@
           "tool_use",
           "coding"
         ],
+        "contextComplexity": 3,
         "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
@@ -203,10 +203,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 12.9,
-          "codingIndex": 26.8,
-          "agenticIndex": 3.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -215,6 +215,7 @@
       "matchingModel": "nvidia/nemotron-3-super-120b-a12b",
       "overrides": {
         "name": "Nemotron-3-Super-120B-A12B",
+        "contextWindow": 262144,
         "maxTokens": 32768,
         "speed": 4,
         "lastUpdated": "March 11, 2026",
@@ -270,7 +271,7 @@
       "overrides": {
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "maxTokens": 8192,
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "July 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.0002,
@@ -334,6 +335,7 @@
       "model": "qwen/qwen3-8-27b",
       "matchingModel": "Qwen/Qwen3.8-27B",
       "overrides": {
+        "contextWindow": 262144,
         "maxTokens": 262144,
         "modalities": {
           "input": [
@@ -479,10 +481,10 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 26.5,
+          "intelligenceIndex": 13.6,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -512,10 +514,10 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 30.3,
+          "intelligenceIndex": 17.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },

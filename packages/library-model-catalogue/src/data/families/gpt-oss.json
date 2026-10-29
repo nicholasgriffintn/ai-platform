@@ -27,6 +27,12 @@
         "high"
       ],
       "defaultEffort": "low"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
     }
   },
   "description": "The gpt oss family includes models that produce guardrails, text.",
@@ -35,13 +41,7 @@
       "defaults": {
         "name": "GPT OSS 120B",
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
-        "contextComplexity": 4,
-        "artificialAnalysis": {
-          "intelligenceIndex": 11.6,
-          "codingIndex": 30.4,
-          "agenticIndex": 3.7,
-          "intelligenceIndexVersion": 4.3
-        }
+        "contextComplexity": 4
       }
     },
     "gpt-oss-120b-free": {
@@ -58,12 +58,6 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 11.6,
-          "codingIndex": 30.4,
-          "agenticIndex": 3.7,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -73,13 +67,7 @@
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "contextWindow": 128000,
         "maxTokens": 16384,
-        "contextComplexity": 3,
-        "artificialAnalysis": {
-          "intelligenceIndex": 11.6,
-          "codingIndex": 30.4,
-          "agenticIndex": 3.7,
-          "intelligenceIndexVersion": 4.3
-        }
+        "contextComplexity": 3
       }
     },
     "gpt-oss-120b-tee": {
@@ -101,13 +89,7 @@
       "defaults": {
         "name": "GPT OSS 20B",
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
-        "contextComplexity": 3,
-        "artificialAnalysis": {
-          "intelligenceIndex": 9,
-          "codingIndex": 20.7,
-          "agenticIndex": 1.2,
-          "intelligenceIndexVersion": 4.3
-        }
+        "contextComplexity": 3
       }
     },
     "gpt-oss-20b-free": {
@@ -123,12 +105,6 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 9,
-          "codingIndex": 20.7,
-          "agenticIndex": 1.2,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },
@@ -138,13 +114,7 @@
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "contextWindow": 128000,
         "maxTokens": 16384,
-        "contextComplexity": 3,
-        "artificialAnalysis": {
-          "intelligenceIndex": 9,
-          "codingIndex": 20.7,
-          "agenticIndex": 1.2,
-          "intelligenceIndexVersion": 4.3
-        }
+        "contextComplexity": 3
       }
     },
     "gpt-oss-safeguard-120b": {
@@ -229,12 +199,6 @@
             "max"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 11.6,
-          "codingIndex": 30.4,
-          "agenticIndex": 3.7,
-          "intelligenceIndexVersion": 4.3
         }
       }
     },

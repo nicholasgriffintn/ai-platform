@@ -165,7 +165,7 @@
       "overrides": {
         "description": "Budget GLM lane for fast coding help, routing, and everyday automation",
         "maxTokens": 131072,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -212,7 +212,6 @@
       "overrides": {
         "description": "Strong GLM coding model for agentic engineering, terminals, and repository generation",
         "contextWindow": 200000,
-        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.0014,

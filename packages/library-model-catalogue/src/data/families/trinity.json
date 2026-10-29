@@ -40,10 +40,10 @@
         "releaseDate": "April 1, 2026",
         "supportsResponseFormat": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 10.8,
-          "codingIndex": 25.8,
-          "agenticIndex": 1,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },

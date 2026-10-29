@@ -93,7 +93,7 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 2,
         "releaseDate": "October 12, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -107,10 +107,10 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 52.4,
+          "intelligenceIndex": 43.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -194,10 +194,10 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 33.7,
-          "codingIndex": 71.3,
-          "agenticIndex": 25.8,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -219,10 +219,10 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 39.6,
-          "codingIndex": 72.2,
-          "agenticIndex": 43.2,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -280,7 +280,7 @@
           "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 2,
         "releaseDate": "September 2, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -294,10 +294,10 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 48.1,
-          "codingIndex": 75.8,
-          "agenticIndex": 55.5,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndex": 36.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -325,8 +325,9 @@
         "name": "Muse Spark Open",
         "openWeights": true,
         "description": "Open Llama multimodal model for image understanding and text reasoning",
+        "maxTokens": 131072,
         "contextComplexity": 5,
-        "reliability": 2,
+        "reliability": 1,
         "knowledgeCutoffDate": "January 4, 2026",
         "releaseDate": "October 15, 2026",
         "reasoningConfig": {
@@ -339,10 +340,10 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 38.9,
+          "intelligenceIndex": 24.7,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -370,7 +371,7 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 3,
+        "reliability": 2,
         "releaseDate": "October 12, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -384,10 +385,10 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 52.4,
+          "intelligenceIndex": 43.3,
           "codingIndex": null,
           "agenticIndex": null,
-          "intelligenceIndexVersion": 4.3
+          "intelligenceIndexVersion": 5
         }
       }
     }

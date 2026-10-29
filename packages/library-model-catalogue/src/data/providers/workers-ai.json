@@ -175,10 +175,10 @@
         "speed": 4
       },
       "unset": [
-        "supportsAttachments",
         "maxTokens",
         "supportsToolCalls",
-        "supportsTemperature"
+        "supportsTemperature",
+        "supportsAttachments"
       ]
     },
     "flux-2-dev": {
@@ -190,10 +190,10 @@
         "inputFormat": "multipart"
       },
       "unset": [
-        "supportsAttachments",
         "maxTokens",
         "supportsToolCalls",
-        "supportsTemperature"
+        "supportsTemperature",
+        "supportsAttachments"
       ]
     },
     "@cf/black-forest-labs/flux-2-klein-4b": {
@@ -205,10 +205,10 @@
         "inputFormat": "multipart"
       },
       "unset": [
-        "supportsAttachments",
         "maxTokens",
         "supportsToolCalls",
-        "supportsTemperature"
+        "supportsTemperature",
+        "supportsAttachments"
       ]
     },
     "@cf/black-forest-labs/flux-2-klein-9b": {
@@ -219,10 +219,10 @@
         "inputFormat": "multipart"
       },
       "unset": [
-        "supportsAttachments",
         "maxTokens",
         "supportsToolCalls",
-        "supportsTemperature"
+        "supportsTemperature",
+        "supportsAttachments"
       ]
     },
     "stable-diffusion-1.5-img2img": {
@@ -556,7 +556,8 @@
       },
       "unset": [
         "contextComplexity",
-        "reliability"
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "@cf/meta/llama-3.1-8b-instruct-fp8": {
@@ -632,7 +633,7 @@
           "coding",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.0000605,
         "costPer1kOutputTokens": 0.0004,
@@ -805,7 +806,7 @@
       "matchingModel": "@cf/deepseek-ai/deepseek-v4-pro-0813",
       "overrides": {
         "maxTokens": 1048576,
-        "speed": 4,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "August 22, 2026",
         "costPer1kInputTokens": 0.00132,
@@ -826,6 +827,7 @@
       "matchingModel": "@cf/qwen/qwen3.8-27b",
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 262144,
         "maxTokens": 262144,
         "speed": 2,
         "lastUpdated": "August 14, 2026",
@@ -957,28 +959,30 @@
       }
     },
     "@cf/deepseek-ai/deepseek-v4.1-flash-1017": {
-      "model": "deepseek/deepseek-v4-1-flash-1017",
+      "model": "deepseek-flash/deepseek-v4-1-flash-1017",
       "matchingModel": "@cf/deepseek-ai/deepseek-v4.1-flash-1017",
       "overrides": {
         "name": "Deepseek V4.1 Flash 1017",
-        "contextWindow": 1048576,
         "maxTokens": 1048576,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "contextComplexity": 5,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 4,
-        "releaseDate": "October 17, 2026",
         "lastUpdated": "October 17, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

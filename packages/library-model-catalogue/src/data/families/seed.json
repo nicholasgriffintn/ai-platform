@@ -383,11 +383,12 @@
         },
         "strengths": [
           "image",
-          "creative"
+          "creative",
+          "document"
         ],
+        "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "September 9, 2025",
-        "supportsAttachments": false,
         "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -412,7 +413,6 @@
         "name": "Seedream 4.5",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "reliability": 2,
-        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -446,11 +446,12 @@
           ]
         },
         "strengths": [
-          "image"
+          "image",
+          "document"
         ],
+        "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "February 13, 2026",
-        "supportsAttachments": false,
         "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -485,11 +486,12 @@
           ]
         },
         "strengths": [
-          "image"
+          "image",
+          "document"
         ],
+        "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "July 11, 2026",
-        "supportsAttachments": false,
         "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,

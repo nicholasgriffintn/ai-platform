@@ -370,7 +370,8 @@
       "unset": [
         "strengths",
         "reliability",
-        "knowledgeCutoffDate"
+        "knowledgeCutoffDate",
+        "artificialAnalysis"
       ]
     },
     "whisper-large-v3": {
@@ -417,6 +418,7 @@
         "status": "beta",
         "contextWindow": 131072,
         "maxTokens": 16384,
+        "contextComplexity": 3,
         "speed": 2,
         "isFeatured": true,
         "lastUpdated": "August 14, 2026",
