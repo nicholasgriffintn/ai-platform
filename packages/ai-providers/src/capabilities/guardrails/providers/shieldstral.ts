@@ -11,7 +11,7 @@ import type {
   GuardrailsProvider,
   GuardrailSource,
 } from "../../../types/index.js";
-import { requireRequestModel } from "../../../utils/required-model.js";
+import { readServedModel } from "../../../utils/served-model.js";
 import { normaliseGuardrailInput } from "../content.js";
 
 const logger = getLogger({ prefix: "lib/guardrails/shieldstral" });
@@ -62,7 +62,7 @@ function resolveThreshold(value: number | undefined): number {
   return threshold;
 }
 
-function resolveEndpoint(baseUrl: string | undefined): string {
+function resolveBaseUrl(baseUrl: string | undefined): string {
   if (!baseUrl?.trim()) {
     throw new AssistantError(
       "Shieldstral requires SHIELDSTRAL_BASE_URL",
@@ -88,7 +88,7 @@ function resolveEndpoint(baseUrl: string | undefined): string {
     );
   }
 
-  return appendUrlPath(parsed.toString(), "v1/chat/completions");
+  return parsed.toString();
 }
 
 function resolvePolicy(policy: string | undefined): string {
@@ -183,12 +183,22 @@ export class ShieldstralGuardProvider implements GuardrailsProvider {
   constructor(private readonly config: ShieldstralGuardConfig) {}
 
   async validateContent(input: GuardrailInput, source: GuardrailSource): Promise<GuardrailResult> {
-    const endpoint = resolveEndpoint(this.config.baseUrl);
+    const baseUrl = resolveBaseUrl(this.config.baseUrl);
     const threshold = resolveThreshold(this.config.threshold);
     const policy = resolvePolicy(this.config.policy);
     const content = normaliseGuardrailInput(input);
-    const model = requireRequestModel(this.config.model?.trim(), "guardrails");
     const policyVersion = this.config.policyVersion?.trim() || DEFAULT_POLICY_VERSION;
+    const headers: Record<string, string> = this.config.apiKey
+      ? { Authorization: `Bearer ${this.config.apiKey}` }
+      : {};
+    const model =
+      this.config.model?.trim() ||
+      (await readServedModel(
+        appendUrlPath(baseUrl, "v1/models"),
+        headers,
+        "Shieldstral",
+        "SHIELDSTRAL_MODEL",
+      ));
 
     logger.debug("Validating content with Shieldstral", {
       source,
@@ -202,11 +212,8 @@ export class ShieldstralGuardProvider implements GuardrailsProvider {
       const response = await fetchAIResponse<ShieldstralResponse>(
         true,
         "shieldstral",
-        endpoint,
-        {
-          "Content-Type": "application/json",
-          ...(this.config.apiKey ? { Authorization: `Bearer ${this.config.apiKey}` } : {}),
-        },
+        appendUrlPath(baseUrl, "v1/chat/completions"),
+        { "Content-Type": "application/json", ...headers },
         {
           model,
           messages: [

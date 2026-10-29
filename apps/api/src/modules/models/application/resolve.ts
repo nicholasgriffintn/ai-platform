@@ -11,6 +11,7 @@ import {
   listSystemModelLayers,
   rankPolicyModelsByMediaScore,
   readMediaScore,
+  rankSystemRoleModels,
   resolveSystemRoleModels,
   resolveTierModel,
   TEXT_TO_SPEECH_ARENA_SCORE,
@@ -405,12 +406,19 @@ export async function listSystemModels(
     loadSystemModelLayers(env, user, scope),
   ]);
 
-  return resolveSystemRoleModels(models, role, layers, user).map((selected) => ({
-    id: selected.id,
-    name: getModelDisplayName(selected.config),
-    model: selected.config.matchingModel,
-    provider: selected.config.provider,
-    effort: selected.effort,
+  const resolved = resolveSystemRoleModels(models, role, layers, user);
+  const selected = resolved.length
+    ? resolved
+    : getSystemModelLineup(role).defaults.length
+      ? []
+      : rankSystemRoleModels(models, role, "value");
+
+  return selected.map((candidate) => ({
+    id: candidate.id,
+    name: getModelDisplayName(candidate.config),
+    model: candidate.config.matchingModel,
+    provider: candidate.config.provider,
+    ...("effort" in candidate ? { effort: candidate.effort } : {}),
   }));
 }
 

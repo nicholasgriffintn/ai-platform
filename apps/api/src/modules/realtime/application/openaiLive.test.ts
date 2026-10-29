@@ -7,6 +7,11 @@ import { createOpenAILiveCallResponse, readOpenAILiveAnswer } from "./openaiLive
 
 const mocks = vi.hoisted(() => ({
   getRealtimeProvider: vi.fn(),
+  getSystemModel: vi.fn(async () => ({ model: "gpt-6-luna" })),
+}));
+
+vi.mock("~/modules/models/application/resolve", () => ({
+  getSystemModel: mocks.getSystemModel,
 }));
 
 vi.mock("~/infrastructure/providers/capabilities/realtime", () => ({
@@ -102,6 +107,7 @@ describe("GPT-Live brokered calls", () => {
         model: "gpt-live-1",
         instructions: "Be brief.",
         audio: { output: { voice: "cedar" } },
+        delegation: { type: "responses", responses: { model: "gpt-6-luna" } },
       },
       transport: { type: "webrtc", sdp: "offer-sdp" },
     });

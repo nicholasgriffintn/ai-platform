@@ -151,4 +151,30 @@ describe("ShieldstralGuardProvider", () => {
     );
     expect(fetchAIResponse).not.toHaveBeenCalled();
   });
+
+  it("uses the one model the endpoint serves when none is configured, and refuses to guess between several", async () => {
+    fetchAIResponse.mockResolvedValue(response(-3, -0.1));
+    const listModels = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json({ data: [{ id: "served-guard" }] }))
+      .mockResolvedValueOnce(Response.json({ data: [{ id: "guard-a" }, { id: "guard-b" }] }));
+
+    vi.stubGlobal("fetch", listModels);
+
+    const single = await new ShieldstralGuardProvider({
+      baseUrl: "https://single.shieldstral.example",
+    }).validateContent("content", "INPUT");
+
+    expect(listModels).toHaveBeenCalledWith("https://single.shieldstral.example/v1/models", {
+      headers: {},
+    });
+    expect(single.rawResponse).toEqual(expect.objectContaining({ model: "served-guard" }));
+    await expect(
+      new ShieldstralGuardProvider({
+        baseUrl: "https://several.shieldstral.example",
+      }).validateContent("content", "INPUT"),
+    ).rejects.toThrow("Shieldstral serves guard-a, guard-b. Set SHIELDSTRAL_MODEL");
+
+    vi.unstubAllGlobals();
+  });
 });

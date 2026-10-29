@@ -10,6 +10,7 @@ import type { Context } from "hono";
 
 import { ResponseFactory } from "~/infrastructure/http/ResponseFactory";
 import { getRealtimeProvider } from "~/infrastructure/providers/capabilities/realtime";
+import { getSystemModel } from "~/modules/models/application/resolve";
 import type { IEnv, IUser } from "~/types";
 
 const logger = getLogger({ prefix: "services/realtime/openai-live" });
@@ -31,15 +32,17 @@ export function buildOpenAILiveCallBody({
   model,
   instructions,
   voice,
+  delegationModel,
   offer,
 }: {
   model: string;
   instructions?: string;
   voice?: string;
+  delegationModel?: string;
   offer: string;
 }): Record<string, unknown> {
   return {
-    session: buildOpenAILiveSessionConfig({ model, instructions, voice }),
+    session: buildOpenAILiveSessionConfig({ model, instructions, voice, delegationModel }),
     transport: { type: "webrtc", sdp: offer },
   };
 }
@@ -86,6 +89,7 @@ export async function createOpenAILiveCallResponse({
   }
 
   const apiKey = await provider.getApiKey?.({ env, user, type: "realtime" });
+  const delegationModel = (await getSystemModel(env, user, "liveDelegation"))?.model;
 
   if (!apiKey) {
     return ResponseFactory.error(context, "Failed to resolve API key for OpenAI provider", 500);
@@ -98,7 +102,9 @@ export async function createOpenAILiveCallResponse({
       "Content-Type": "application/json",
       "OpenAI-Safety-Identifier": await sha256Hex(`user:${user.id}`),
     },
-    body: JSON.stringify(buildOpenAILiveCallBody({ model, instructions, voice, offer })),
+    body: JSON.stringify(
+      buildOpenAILiveCallBody({ model, instructions, voice, delegationModel, offer }),
+    ),
   });
 
   if (!upstreamResponse.ok) {

@@ -112,7 +112,7 @@ export const SPEECH_PROVIDER_VOICES: Readonly<Record<SpeechProvider, SpeechProvi
       { id: "voice_3144", label: "Huong - Vietnamese" },
       { id: "voice_3142", label: "Mei - Chinese" },
     ],
-    roles: { narrator: "voice_1788", host: "voice_1787", guest: "voice_1788" },
+    roles: { narrator: "voice_1787", host: "voice_1787", guest: "voice_1788" },
   },
   polly: {
     label: "Amazon Polly",

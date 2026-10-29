@@ -23,6 +23,7 @@ export const SYSTEM_MODEL_ROLES = [
   "video",
   "music",
   "speech",
+  "liveDelegation",
   "fim",
   "nextEdit",
   "applyEdit",
@@ -310,6 +311,16 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
       workersAi("@cf/deepgram/aura-1"),
       workersAi("@cf/myshell-ai/melotts"),
     ],
+  },
+  {
+    id: "liveDelegation",
+    label: "Live voice hand-offs",
+    description:
+      "The OpenAI model GPT-Live hands harder questions to during a live voice session. Without a choice, the best value OpenAI model you can use.",
+    group: "media",
+    requires: { kind: "text", providers: ["openai"] },
+    ranking: { metric: "intelligence" },
+    defaults: [],
   },
   {
     id: "fim",
