@@ -1,5 +1,30 @@
 # @assistant/api
 
+## 1.10.0
+
+### Minor Changes
+
+- 36500dd: Memories now keep the words they came from. Each new memory records a quote from your message and the chat it was in, and the memory's version history in Files shows it beside each change. Ask Polychat why it remembers something and it can answer with the quote.
+
+  You can also bring your memory over from another assistant. In Files, start a new memory and choose Bring memory over from another assistant. Drop in a ChatGPT or Claude export (every .zip part Claude sends, or the conversations.json) or paste what Gemini, Meta AI or any other assistant knows about you, using the prompt provided. Polychat reads only your side of the conversations in the background and files what will still matter, each with the quote it came from. The export itself is not kept.
+
+- dd3f0e0: Routines and teammates now run on your model choices instead of a built-in default model. Discover's morning and evening editions use your Writing choice, and every other routine, delegation, wake and channel reply from a teammate without its own model uses the new Teammates and routines choice. Both start on Workers AI models and can be changed in Model choices.
+
+  Polychat no longer picks a default model anywhere on your behalf. An empty model picker means your chosen tier, and browser use runs on the conversation's own OpenAI model.
+
+### Patch Changes
+
+- Updated dependencies [36500dd]
+- Updated dependencies [dd3f0e0]
+  - @ngriffin_uk/polychat-schemas@1.11.0
+  - @ngriffin_uk/polychat-library-chat@1.4.0
+  - @ngriffin_uk/polychat-ai-models@0.4.0
+  - @ngriffin_uk/polychat-ai-providers@0.7.0
+  - @ngriffin_uk/polychat-ai-billing@0.3.5
+  - @ngriffin_uk/polychat-ai-functions@0.3.5
+  - @ngriffin_uk/polychat-ai-agents@0.4.5
+  - @ngriffin_uk/polychat-ai-model-providers@0.3.6
+
 ## 1.9.0
 
 ### Minor Changes

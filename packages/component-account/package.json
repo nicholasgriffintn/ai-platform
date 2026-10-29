@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-component-account",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Controlled account, agent, connector, and provider views for Polychat surfaces",
   "license": "Apache-2.0",
   "files": [

@@ -1,5 +1,20 @@
 # @assistant/desktop
 
+## 0.6.6
+
+### Patch Changes
+
+- Updated dependencies [36500dd]
+- Updated dependencies [dd3f0e0]
+  - @ngriffin_uk/polychat-schemas@1.11.0
+  - @ngriffin_uk/polychat-library-chat@1.4.0
+  - @ngriffin_uk/polychat-library-client@0.10.0
+  - @ngriffin_uk/polychat-library-react@0.11.0
+  - @ngriffin_uk/polychat-component-shell@2.5.0
+  - @ngriffin_uk/polychat-component-account@1.1.2
+  - @ngriffin_uk/polychat-component-conversation@2.2.1
+  - @ngriffin_uk/polychat-component-ui@0.6.3
+
 ## 0.6.5
 
 ### Patch Changes

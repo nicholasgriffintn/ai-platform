@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-prompts-catalogue",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "The Polychat prompt catalogue: every authored prompt and prompt fragment as data, with the schema that validates entries and resolves them by id, task and variant",
   "license": "Apache-2.0",
   "files": [
