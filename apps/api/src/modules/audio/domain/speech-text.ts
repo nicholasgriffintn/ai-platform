@@ -1,7 +1,3 @@
-/**
- * Voice providers hold a steadier level over short requests; a long one can
- * drift quieter towards its end. Sentences are kept whole within each piece.
- */
 const MAX_SPEECH_CHARACTERS = 900;
 const WORDS_PER_MINUTE = 150;
 

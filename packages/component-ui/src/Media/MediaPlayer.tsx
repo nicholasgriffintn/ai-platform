@@ -21,7 +21,6 @@ export interface MediaPlayerProps {
   artBackground?: string;
   captionsVtt?: string | null;
   transcript?: MediaTranscript;
-  /** Evens out and lifts a spoken recording. Needs CORS-clean audio. */
   levelVoice?: boolean;
   showTranscriptList?: boolean;
   notice?: ReactNode;

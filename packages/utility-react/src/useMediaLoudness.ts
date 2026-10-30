@@ -1,11 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
 
-/**
- * Spoken recordings arrive at whatever level the voice provider chose, which is
- * quiet next to most media, and a long read can drift quieter still. Routing the
- * element through a compressor evens the level out and lifts it to a steady
- * listening volume without clipping the loud moments.
- */
 const VOICE_THRESHOLD_DB = -28;
 const VOICE_KNEE_DB = 12;
 const VOICE_RATIO = 4;
@@ -71,13 +65,6 @@ function stageFor(element: HTMLMediaElement): LoudnessStage | null {
   }
 }
 
-/**
- * Levels and lifts a spoken media element. Wraps a media track's `attach` so the
- * element keeps its ordinary events; `element.volume` still applies first.
- *
- * Only use it for media served with CORS headers that match the element's
- * `crossOrigin`: a tainted element goes silent once it is routed through audio.
- */
 export function useMediaLoudness(
   attach: (element: HTMLMediaElement | null) => void,
   enabled = true,
