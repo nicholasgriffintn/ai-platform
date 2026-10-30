@@ -93,7 +93,7 @@
     "zustand": "5.0.16"
   },
   "devDependencies": {
-    "@babel/core": "8.0.7",
+    "@babel/core": "8.0.9",
     "@babel/preset-typescript": "8.0.7",
     "@cloudflare/vite-plugin": "1.64.0",
     "@cloudflare/workers-types": "catalog:",
