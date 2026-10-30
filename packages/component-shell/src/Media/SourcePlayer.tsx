@@ -47,6 +47,7 @@ function useDockedTrack(
       subtitle,
       artBackground,
       crossOrigin: "use-credentials",
+      levelVoice: true,
       href,
     });
   }, [artBackground, docked, href, itemId, load, src, subtitle, title]);
@@ -83,6 +84,7 @@ export function SourcePlayer({ sourceId, title, dock: link, ...player }: SourceP
       src={src}
       title={resolvedTitle}
       crossOrigin="use-credentials"
+      levelVoice
       art={source && playable && media?.cover ? getSourceCoverUrl(source.id) : null}
       transcript={
         transcript ? { segments: transcript.segments, speakers: transcript.speakers } : undefined

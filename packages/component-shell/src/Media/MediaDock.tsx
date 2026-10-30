@@ -1,5 +1,9 @@
 import { Button, cn, MediaTransport, mediaPosition } from "@ngriffin_uk/polychat-component-ui";
-import { useMediaTrack, type MediaTrack } from "@ngriffin_uk/polychat-utility-react";
+import {
+  useMediaLoudness,
+  useMediaTrack,
+  type MediaTrack,
+} from "@ngriffin_uk/polychat-utility-react";
 import { AudioLines, Maximize2, X } from "lucide-react";
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router";
@@ -11,6 +15,7 @@ export interface MediaDockItem {
   subtitle?: string;
   artBackground?: string;
   crossOrigin?: "anonymous" | "use-credentials";
+  levelVoice?: boolean;
   href: string;
 }
 
@@ -26,6 +31,20 @@ const MediaDockContext = createContext<MediaDockValue | null>(null);
 
 export function useMediaDock(): MediaDockValue | null {
   return useContext(MediaDockContext);
+}
+
+function MediaDockAudio({ item, track }: { item: MediaDockItem; track: MediaTrack }) {
+  const attachAudio = useMediaLoudness(track.attach, item.levelVoice ?? false);
+
+  return (
+    <audio
+      ref={attachAudio}
+      src={item.src}
+      title={item.title}
+      preload="metadata"
+      crossOrigin={item.crossOrigin}
+    />
+  );
 }
 
 function MediaDockBar({
@@ -113,15 +132,7 @@ export function MediaDockProvider({ children }: { children: ReactNode }) {
   return (
     <MediaDockContext.Provider value={value}>
       {children}
-      {item ? (
-        <audio
-          ref={track.attach}
-          src={item.src}
-          title={item.title}
-          preload="metadata"
-          crossOrigin={item.crossOrigin}
-        />
-      ) : null}
+      {item ? <MediaDockAudio key={item.id} item={item} track={track} /> : null}
       {item && presentedId !== item.id ? (
         <MediaDockBar item={item} track={track} onClear={clear} />
       ) : null}

@@ -2,6 +2,7 @@ export * from "./dom.js";
 export * from "./link.js";
 export * from "./useAmbientBed.js";
 export * from "./useCaptionTrack.js";
+export * from "./useMediaLoudness.js";
 export * from "./useMediaTrack.js";
 export * from "./useMediaVolume.js";
 export * from "./useCopyToClipboard.js";

@@ -1,4 +1,4 @@
-const MAX_SPEECH_CHARACTERS = 1800;
+const MAX_SPEECH_CHARACTERS = 900;
 const WORDS_PER_MINUTE = 150;
 
 export function splitForSpeech(text: string, maxCharacters = MAX_SPEECH_CHARACTERS): string[] {

@@ -31,6 +31,7 @@ import {
 import {
   useAmbientBed,
   useCrossfadeLoop,
+  useMediaLoudness,
   useMediaVolume,
   useRunningSeconds,
 } from "@ngriffin_uk/polychat-utility-react";
@@ -99,7 +100,7 @@ export function DiscoverWindDownStage({
   const soundLevel = SOUND_LEVEL * gains.left * (playback.ended ? tailLevel : 1);
   const [missingBed, setMissingBed] = useState<string | null>(null);
   const hasBed = windDown?.ambient === true && missingBed !== windDown.bed;
-  const attachVoice = useMediaVolume(playback.track.attach, gains.right);
+  const attachVoice = useMediaVolume(useMediaLoudness(playback.track.attach), gains.right);
 
   useCrossfadeLoop(
     windDown && hasBed ? getDiscoverWindDownBedUrl(windDown.bed) : null,
