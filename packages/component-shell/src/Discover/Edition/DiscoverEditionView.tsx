@@ -251,6 +251,7 @@ export function DiscoverEditionView({ ask }: { ask?: ReactNode }) {
   const [showSettings, setShowSettings] = useState(false);
   const greeting = useGreeting();
   const [today] = useState(todayLine);
+
   const { discover, ownEdition, settings, selectedCard, view, isAuthenticated } = controller;
   const detailOpen = view !== "feed";
   const isLoading =
@@ -273,13 +274,6 @@ export function DiscoverEditionView({ ask }: { ask?: ReactNode }) {
     );
   }
 
-  const headerActions =
-    isAuthenticated && settings ? (
-      <Button variant="outline" size="sm" onClick={() => setShowSettings(true)}>
-        <Settings2 size={14} aria-hidden />
-        Settings
-      </Button>
-    ) : undefined;
   const showMedia = view === "media" && isAuthenticated;
   const cardOpen = Boolean(selectedCard && ownEdition);
   const mediaMounted = showMedia || (controller.mediaPlaying && cardOpen);
@@ -320,7 +314,7 @@ export function DiscoverEditionView({ ask }: { ask?: ReactNode }) {
 
   return (
     <>
-      <PageShell.Header title="Discover" actionContent={headerActions} />
+      <PageShell.Header title="Discover" />
       {isAuthenticated && settings && (
         <DiscoverSettingsDialog
           open={showSettings}
@@ -347,6 +341,14 @@ export function DiscoverEditionView({ ask }: { ask?: ReactNode }) {
         >
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-6 pb-10 lg:px-6">
             <DiscoverLeftPane controller={controller} todayText={today} greeting={greeting} />
+            {isAuthenticated && settings ? (
+              <div className="mt-2">
+                <Button variant="outline" size="sm" onClick={() => setShowSettings(true)}>
+                  <Settings2 size={14} aria-hidden />
+                  Settings
+                </Button>
+              </div>
+            ) : undefined}
           </div>
           <DiscoverAskBar onOpen={controller.openAsk} />
         </div>
