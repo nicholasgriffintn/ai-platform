@@ -1,5 +1,14 @@
 # @ngriffin_uk/polychat-utility-react
 
+## 0.7.1
+
+### Patch Changes
+
+- 8642a45: Discover recordings, episodes and wind-down voices now play at a steady, clearly audible level. Spoken audio is levelled as it plays, so a recording that used to start quiet or drift quieter as it went on holds its volume to the end. New recordings are also voiced in shorter runs so the voice stays even across a whole read.
+- Updated dependencies [2a427dd]
+- Updated dependencies [54bf2d3]
+  - @ngriffin_uk/polychat-schemas@1.12.0
+
 ## 0.7.0
 
 ### Minor Changes

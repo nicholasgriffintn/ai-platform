@@ -1,5 +1,14 @@
 # @ngriffin_uk/polychat-ai-billing
 
+## 0.3.6
+
+### Patch Changes
+
+- Updated dependencies [2a427dd]
+- Updated dependencies [54bf2d3]
+  - @ngriffin_uk/polychat-schemas@1.12.0
+  - @ngriffin_uk/polychat-ai-models@0.5.0
+
 ## 0.3.5
 
 ### Patch Changes

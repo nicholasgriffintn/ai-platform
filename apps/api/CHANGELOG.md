@@ -1,5 +1,40 @@
 # @assistant/api
 
+## 1.11.0
+
+### Minor Changes
+
+- 2a427dd: Discover is now the first thing you see. Open Polychat and the day's edition sits on the left while the right pane is ready for any question, to any model. The separate New chat button is gone: a question asked from Discover becomes a conversation in Chat, and opening a card or a listen takes over the right pane as before. On a phone, the edition comes first and an Ask bar at the bottom opens the composer. The Polychat wordmark and the new chat shortcut both lead to Discover.
+
+  The Perch and Your week keep playing when you leave the page. A small player follows you to the bottom of the window with play, pause and a way back to the full stage, and the stage's address (such as `/?play=perch`) can be shared or bookmarked.
+
+  Anyone without an edition of their own, including before signing in, sees Polychat's house edition: where to start, with each starter card on its own cover, what is new in the latest releases, and a weekly reading routine worth setting up. Signed in with Discover off, the same edition appears with a one-tap way to turn Discover on.
+
+  New accounts start with a Getting started notebook that explains Chat, Teammates, Notebooks, Discover, Work and your keys. Discover also refreshes a little more quietly: live updates say which edition revision changed, so a page already showing it does not reload.
+
+- 54bf2d3: Routines and teammates now run on your model choices instead of a built-in default model. Discover's morning and evening editions use your Writing choice, and every other routine, delegation, wake and channel reply from a teammate without its own model uses the new Teammates and routines choice. Both start on Workers AI models and can be changed in Model choices.
+
+  Live voice hands harder questions to your Live voice hand-offs choice, or the best value OpenAI model you can use when you have not chosen one. Code completion, next edit and apply edit work the same way when left unchosen. A Shieldstral endpoint without `SHIELDSTRAL_MODEL` uses the one model it serves.
+
+  Polychat no longer picks a default model anywhere on your behalf. An empty model picker means your chosen tier, and browser use runs on the conversation's own OpenAI model.
+
+- 2a427dd: Teammates now carry your corrections into every run. When you have told a teammate to stop doing something, or to do it differently, that rule is placed in front of it on its next task, delegation, routine or channel reply, most repeated first and with your own words beside it. Rules that apply to one teammate stay with that teammate, and a rule only changes how it works, never what it is allowed to do.
+
+### Patch Changes
+
+- 2a427dd: Discover on iPhone and Apple TV opens and scrolls more smoothly. The edition shows as soon as it arrives, topic covers and episode art load side by side and are decoded off the main thread, and switching tabs no longer re-downloads the whole edition. Saving, hiding or following from a card updates in place instead of reloading Discover, and cover art is kept on the device so a second visit does not fetch it again.
+- 8642a45: Discover recordings, episodes and wind-down voices now play at a steady, clearly audible level. Spoken audio is levelled as it plays, so a recording that used to start quiet or drift quieter as it went on holds its volume to the end. New recordings are also voiced in shorter runs so the voice stays even across a whole read.
+- Updated dependencies [2a427dd]
+- Updated dependencies [54bf2d3]
+  - @ngriffin_uk/polychat-schemas@1.12.0
+  - @ngriffin_uk/polychat-ai-models@0.5.0
+  - @ngriffin_uk/polychat-ai-providers@0.8.0
+  - @ngriffin_uk/polychat-ai-billing@0.3.6
+  - @ngriffin_uk/polychat-ai-functions@0.3.6
+  - @ngriffin_uk/polychat-ai-agents@0.4.6
+  - @ngriffin_uk/polychat-ai-model-providers@0.3.7
+  - @ngriffin_uk/polychat-ai-prompts@0.6.1
+
 ## 1.10.0
 
 ### Minor Changes

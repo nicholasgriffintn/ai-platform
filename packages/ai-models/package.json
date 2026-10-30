@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-ai-models",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Model primitives for Polychat: the resolved model catalogue, model queries, account policy, credential authority, and reasoning, verbosity and response defaults",
   "license": "Apache-2.0",
   "files": [
