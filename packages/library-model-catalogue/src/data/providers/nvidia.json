@@ -583,7 +583,6 @@
       "matchingModel": "z-ai/glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

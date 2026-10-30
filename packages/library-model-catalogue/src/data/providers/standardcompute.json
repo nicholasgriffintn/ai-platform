@@ -501,7 +501,6 @@
       "model": "qwen/qwen3-8-27b",
       "matchingModel": "qwen/qwen3.8-27b",
       "overrides": {
-        "contextWindow": 262144,
         "maxTokens": 32768,
         "modalities": {
           "input": [

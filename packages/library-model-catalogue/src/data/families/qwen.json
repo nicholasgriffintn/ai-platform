@@ -2408,7 +2408,6 @@
         "name": "Qwen3.6 27B",
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
-        "maxTokens": 65536,
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "April 22, 2026",
@@ -2771,6 +2770,7 @@
       "defaults": {
         "name": "Qwen3.8 27B",
         "description": "Dense 27B vision-language model for coding, agent tasks, and image and video understanding",
+        "contextWindow": 262144,
         "modalities": {
           "input": [
             "text",

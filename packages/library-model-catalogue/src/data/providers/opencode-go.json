@@ -351,7 +351,6 @@
       "overrides": {
         "name": "GLM-5.3-Flash (2x usage)",
         "contextWindow": 1000000,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
