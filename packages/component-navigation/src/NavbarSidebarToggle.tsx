@@ -1,5 +1,6 @@
 import { Button, type ButtonProps } from "@ngriffin_uk/polychat-component-ui";
 import { Menu, PanelLeftOpen } from "lucide-react";
+import type { ReactNode } from "react";
 
 export type NavbarSidebarTogglePeekProps = Pick<
   ButtonProps,
@@ -11,6 +12,7 @@ export interface NavbarSidebarToggleProps {
   sidebarVisible: boolean;
   onToggleSidebar: (visible: boolean) => void;
   peekProps?: NavbarSidebarTogglePeekProps;
+  actions?: ReactNode;
 }
 
 export function NavbarSidebarToggle({
@@ -18,9 +20,10 @@ export function NavbarSidebarToggle({
   sidebarVisible,
   onToggleSidebar,
   peekProps,
+  actions,
 }: NavbarSidebarToggleProps) {
   return (
-    <div className="sticky top-0 z-10 w-full border-b border-sidebar-border bg-sidebar">
+    <div className="@container sticky top-0 z-10 w-full border-b border-sidebar-border bg-sidebar">
       <div className="m-2 flex max-w-full items-center justify-between">
         <div className="flex min-w-0 items-center">
           <div className="flex-shrink-0">
@@ -35,6 +38,7 @@ export function NavbarSidebarToggle({
             />
           </div>
         </div>
+        {actions ? <div className="flex min-w-0 items-center">{actions}</div> : null}
       </div>
     </div>
   );

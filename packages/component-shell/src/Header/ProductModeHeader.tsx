@@ -11,6 +11,7 @@ import { Menu, PanelLeftOpen } from "lucide-react";
 import { type ReactNode, useRef } from "react";
 import { useLocation } from "react-router";
 
+import { MediaDockHeaderChip } from "../Media/MediaDock.js";
 import { useSidebarPeekTrigger } from "../Sidebar/SidebarPeekContext.js";
 
 export interface ProductModeHeaderProps {
@@ -71,7 +72,12 @@ export function ProductModeHeader({
           />
         ) : null
       }
-      end={actions}
+      end={
+        <div className="flex min-w-0 items-center gap-2">
+          {showSidebarToggle && sidebarVisible ? null : <MediaDockHeaderChip />}
+          {actions}
+        </div>
+      }
     />
   );
 }

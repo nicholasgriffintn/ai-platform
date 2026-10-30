@@ -1,12 +1,12 @@
-import { Button, cn, MediaTransport, mediaPosition } from "@ngriffin_uk/polychat-component-ui";
+import { Button, cn } from "@ngriffin_uk/polychat-component-ui";
 import {
   useMediaLoudness,
   useMediaTrack,
   type MediaTrack,
 } from "@ngriffin_uk/polychat-utility-react";
-import { AudioLines, Maximize2, X } from "lucide-react";
+import { AudioLines, LoaderCircle, Pause, Play, X } from "lucide-react";
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 export interface MediaDockItem {
   id: string;
@@ -22,6 +22,7 @@ export interface MediaDockItem {
 export interface MediaDockValue {
   item: MediaDockItem | null;
   track: MediaTrack;
+  presented: boolean;
   load: (item: MediaDockItem) => void;
   clear: () => void;
   present: (id: string) => () => void;
@@ -31,6 +32,16 @@ const MediaDockContext = createContext<MediaDockValue | null>(null);
 
 export function useMediaDock(): MediaDockValue | null {
   return useContext(MediaDockContext);
+}
+
+function useRemoteMedia() {
+  const dock = useMediaDock();
+
+  if (!dock?.item || dock.presented) {
+    return null;
+  }
+
+  return { item: dock.item, track: dock.track, clear: dock.clear };
 }
 
 function MediaDockAudio({ item, track }: { item: MediaDockItem; track: MediaTrack }) {
@@ -47,63 +58,129 @@ function MediaDockAudio({ item, track }: { item: MediaDockItem; track: MediaTrac
   );
 }
 
-function MediaDockBar({
-  item,
-  track,
-  onClear,
-}: {
-  item: MediaDockItem;
-  track: MediaTrack;
-  onClear: () => void;
-}) {
+function PlaybackIcon({ track, size }: { track: MediaTrack; size: number }) {
+  if (track.buffering) {
+    return <LoaderCircle size={size} className="animate-spin" aria-hidden />;
+  }
+
+  return track.playing ? (
+    <Pause size={size} fill="currentColor" aria-hidden />
+  ) : (
+    <Play size={size} fill="currentColor" className="translate-x-px" aria-hidden />
+  );
+}
+
+function artStyle(item: MediaDockItem) {
+  return { background: item.artBackground ?? "var(--color-selection)" };
+}
+
+export function MediaDockSidebarRow({ onOpen }: { onOpen?: () => void }) {
+  const remote = useRemoteMedia();
   const navigate = useNavigate();
-  const { pathname, search } = useLocation();
-  const atHref = `${pathname}${search}` === item.href;
+
+  if (!remote) {
+    return null;
+  }
+
+  const { item, track, clear } = remote;
+  const progress =
+    track.duration > 0 ? Math.min(100, (track.currentTime / track.duration) * 100) : 0;
 
   return (
-    <div
-      role="region"
+    <section
       aria-label="Now playing"
-      className={cn(
-        "fixed inset-x-3 bottom-3 z-40 mx-auto flex max-w-xl items-center gap-3 rounded-2xl border border-border bg-surface-elevated/95 p-2 pl-3 shadow-lg backdrop-blur",
-        "md:inset-x-auto md:right-4 md:left-1/2 md:w-[min(36rem,calc(100vw-2rem))] md:-translate-x-1/2",
-      )}
+      className="relative flex items-center gap-1 border-b border-sidebar-border py-2 pr-2 pl-3"
     >
-      <span
-        aria-hidden
-        className="flex size-10 shrink-0 items-center justify-center rounded-xl text-white"
-        style={{ background: item.artBackground ?? "var(--color-selection)" }}
-      >
-        <AudioLines size={16} className={cn(track.playing && "animate-pulse")} />
-      </span>
-      <div className="min-w-0 flex-1">
-        <MediaTransport
-          playing={track.playing}
-          busy={track.buffering}
-          onToggle={track.toggle}
-          caption={
-            <span className="block truncate text-xs text-muted-foreground">
-              {item.subtitle ? `${item.subtitle} · ` : null}
-              <span className="font-medium text-foreground">{item.title}</span>
-            </span>
-          }
-          {...mediaPosition(track)}
+      <div aria-hidden className="absolute inset-x-0 top-0 h-0.5 bg-sidebar-border">
+        <div
+          className="h-full bg-foreground/60 transition-[width] duration-200 ease-linear"
+          style={{ width: `${progress}%` }}
         />
       </div>
-      {!atHref && (
-        <Button
-          variant="icon"
-          size="icon"
-          aria-label="Open the player"
-          onClick={() => void navigate(item.href)}
+      <button
+        type="button"
+        title="Open the player"
+        className="flex min-w-0 flex-1 items-center gap-2 rounded-md text-left text-sidebar-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:outline-none"
+        onClick={() => {
+          onOpen?.();
+          void navigate(item.href);
+        }}
+      >
+        <span
+          aria-hidden
+          className="flex size-7 shrink-0 items-center justify-center rounded-md text-white"
+          style={artStyle(item)}
         >
-          <Maximize2 size={15} aria-hidden />
-        </Button>
-      )}
-      <Button variant="icon" size="icon" aria-label="Stop and close" onClick={onClear}>
-        <X size={15} aria-hidden />
-      </Button>
-    </div>
+          <AudioLines size={14} className={cn(track.playing && "animate-pulse")} />
+        </span>
+        <span className="flex min-w-0 flex-col">
+          <span className="truncate text-sm font-medium">{item.title}</span>
+          {item.subtitle ? (
+            <span className="truncate text-xs text-muted-foreground">{item.subtitle}</span>
+          ) : null}
+        </span>
+      </button>
+      <Button
+        type="button"
+        variant="icon"
+        size="sm"
+        aria-label={track.playing ? "Pause" : "Play"}
+        onClick={track.toggle}
+        icon={<PlaybackIcon track={track} size={14} />}
+      />
+      <Button
+        type="button"
+        variant="icon"
+        size="sm"
+        aria-label="Stop and close"
+        onClick={clear}
+        icon={<X size={14} aria-hidden />}
+      />
+    </section>
+  );
+}
+
+export function MediaDockHeaderChip() {
+  const remote = useRemoteMedia();
+  const navigate = useNavigate();
+
+  if (!remote) {
+    return null;
+  }
+
+  const { item, track, clear } = remote;
+
+  return (
+    <section
+      aria-label="Now playing"
+      className="flex h-8 min-w-0 shrink items-center rounded-full @min-[40rem]:border @min-[40rem]:border-border @min-[40rem]:bg-surface-elevated @min-[40rem]:p-0.5"
+    >
+      <button
+        type="button"
+        aria-label={track.playing ? `Pause ${item.title}` : `Play ${item.title}`}
+        onClick={track.toggle}
+        className="flex size-7 shrink-0 items-center justify-center rounded-full text-white transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none"
+        style={artStyle(item)}
+      >
+        <PlaybackIcon track={track} size={12} />
+      </button>
+      <button
+        type="button"
+        title="Open the player"
+        onClick={() => void navigate(item.href)}
+        className="hidden max-w-48 min-w-0 truncate rounded-full px-2 text-xs font-medium text-foreground hover:text-active-work focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none @min-[40rem]:block"
+      >
+        {item.title}
+      </button>
+      <button
+        type="button"
+        aria-label="Stop and close"
+        onClick={clear}
+        className="hidden size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-selection hover:text-foreground focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none @min-[40rem]:flex"
+      >
+        <X size={13} aria-hidden />
+      </button>
+    </section>
   );
 }
 
@@ -124,18 +201,16 @@ export function MediaDockProvider({ children }: { children: ReactNode }) {
 
     return () => setPresentedId((current) => (current === id ? null : current));
   }, []);
+  const presented = Boolean(item && presentedId === item.id);
   const value = useMemo<MediaDockValue>(
-    () => ({ item, track, load, clear, present }),
-    [clear, item, load, present, track],
+    () => ({ item, track, presented, load, clear, present }),
+    [clear, item, load, present, presented, track],
   );
 
   return (
     <MediaDockContext.Provider value={value}>
       {children}
       {item ? <MediaDockAudio key={item.id} item={item} track={track} /> : null}
-      {item && presentedId !== item.id ? (
-        <MediaDockBar item={item} track={track} onClear={clear} />
-      ) : null}
     </MediaDockContext.Provider>
   );
 }

@@ -1,6 +1,7 @@
 import { NavbarSidebarToggle } from "@ngriffin_uk/polychat-component-navigation";
 import { useUIStore } from "@ngriffin_uk/polychat-library-react";
 
+import { MediaDockHeaderChip } from "../Media/MediaDock.js";
 import { useSidebarPeekTrigger } from "../Sidebar/SidebarPeekContext.js";
 
 export interface ChatNavbarProps {
@@ -21,6 +22,7 @@ export function ChatNavbar({ showSidebarToggle = true }: ChatNavbarProps) {
       sidebarVisible={sidebarVisible}
       onToggleSidebar={setSidebarVisible}
       peekProps={sidebarPeekTrigger}
+      actions={<MediaDockHeaderChip />}
     />
   );
 }

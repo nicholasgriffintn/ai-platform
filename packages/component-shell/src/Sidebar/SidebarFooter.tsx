@@ -13,6 +13,7 @@ import { Feather } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { useShellHost } from "../Host/ShellHostContext.js";
+import { MediaDockSidebarRow } from "../Media/MediaDock.js";
 import { preloadPolyPanel } from "../Poly/LazyPolyPanel.js";
 import { SidebarSettingsPopover } from "./SidebarSettingsPopover.js";
 
@@ -22,6 +23,8 @@ export function SidebarFooter() {
   const { trackEvent } = useTrackEvent();
   const { openAssistant } = useShellHost();
   const showPoly = useUIStore((state) => state.showPoly);
+  const isMobile = useUIStore((state) => state.isMobile);
+  const setSidebarVisible = useUIStore((state) => state.setSidebarVisible);
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const agenda = usePolyAgenda(isAuthenticated);
   const conversationId = agenda.data?.conversation_id;
@@ -40,6 +43,7 @@ export function SidebarFooter() {
 
   return (
     <ControlledSidebarFooter>
+      <MediaDockSidebarRow onOpen={isMobile ? () => setSidebarVisible(false) : undefined} />
       <button
         type="button"
         aria-pressed={showPoly}
