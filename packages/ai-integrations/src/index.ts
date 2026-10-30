@@ -96,6 +96,7 @@ export {
 export { executeDevinOperation } from "./executors/devin.js";
 export { executeNetlifyOperation } from "./executors/netlify.js";
 export { executeReadwiseOperation } from "./executors/readwise.js";
+export { executeJamendoOperation } from "./executors/jamendo.js";
 export { executeLastfmOperation } from "./executors/lastfm.js";
 export { executeTraktOperation } from "./executors/trakt.js";
 export { joinConnectorCredential } from "./connector-credentials.js";

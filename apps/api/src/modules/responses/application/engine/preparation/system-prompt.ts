@@ -3,10 +3,16 @@ import { buildGoalContractSection, renderPrompt } from "@ngriffin_uk/polychat-ai
 import { estimateTextTokens } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { collectPersonReactions } from "@ngriffin_uk/polychat-library-chat/reactions";
-import type { ChatContextDocument, Goal, SkillAvailability } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ChatContextDocument,
+  Correction,
+  Goal,
+  SkillAvailability,
+} from "@ngriffin_uk/polychat-schemas";
 import { readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Repositories } from "~/infrastructure/database/repositories";
+import { CorrectionRepository } from "~/modules/corrections/infrastructure/CorrectionRepository";
 import {
   describeMemoryDocument,
   readMemoryDocumentDetails,
@@ -144,6 +150,57 @@ async function appendGroupContext(
   );
 }
 
+const CORRECTION_PROMPT_LIMIT = 12;
+
+function renderCorrectionLine(correction: Correction): string {
+  const repeats =
+    correction.recurrences > 0
+      ? ` (came up ${correction.recurrences} more ${correction.recurrences === 1 ? "time" : "times"})`
+      : "";
+
+  return `- ${correction.pattern}${repeats}. They said: "${correction.quote}"`;
+}
+
+async function appendCorrectionContext(
+  systemPrompt: SystemPromptResult,
+  params: {
+    repositories: Repositories;
+    userId: number | undefined;
+    teammateId: string | undefined;
+    teammateContextId: string | null;
+  },
+): Promise<SystemPromptResult> {
+  if (!params.userId || !params.teammateId) {
+    return systemPrompt;
+  }
+
+  try {
+    const corrections = await params.repositories
+      .get(CorrectionRepository)
+      .listActiveForTeammateContext(
+        params.userId,
+        params.teammateContextId,
+        CORRECTION_PROMPT_LIMIT,
+      );
+
+    if (corrections.length === 0) {
+      return systemPrompt;
+    }
+
+    return appendSection(
+      systemPrompt,
+      "project",
+      renderPrompt("chat/context/corrections", {
+        corrections: corrections.map(renderCorrectionLine).join("\n"),
+      }),
+    );
+  } catch (error) {
+    logger.warn("Failed to read standing corrections", { error, userId: params.userId });
+
+    return systemPrompt;
+  }
+}
+
 async function appendMemoryContext(
   systemPrompt: SystemPromptResult,
   {
@@ -225,20 +282,30 @@ export async function buildSystemPrompt({
     memoryScope,
   };
 
+  const teammateId = readOptionalString(options.resolved_configuration?.teammateId);
   const withMemory = async (prompt: string) =>
     appendGroupContext(
-      appendReactionContext(
-        appendProjectInstructions(
-          await appendMemoryContext(basePrompt(prompt), memoryContext),
-          projectContext,
-          activeGoal,
+      await appendCorrectionContext(
+        appendReactionContext(
+          appendProjectInstructions(
+            await appendMemoryContext(basePrompt(prompt), memoryContext),
+            projectContext,
+            activeGoal,
+          ),
+          sanitisedMessages,
         ),
-        sanitisedMessages,
+        {
+          repositories,
+          userId: user?.id,
+          teammateId,
+          teammateContextId:
+            memoryScope.type === "bound" ? (memoryScope.teammateContext?.id ?? null) : null,
+        },
       ),
       {
         repositories,
         conversationId: completion_id,
-        teammateId: readOptionalString(options.resolved_configuration?.teammateId),
+        teammateId,
       },
     );
 

@@ -2,7 +2,6 @@ import SwiftUI
 
 struct WorkRunView: View {
     @EnvironmentObject private var apiClient: APIClient
-    @Environment(\.dismiss) private var dismiss
     @State private var detail: SandboxRunDetail?
     @State private var events: [SandboxRunEventEnvelope] = []
     @State private var instructions: [SandboxRunInstructionEnvelope] = []
@@ -14,49 +13,43 @@ struct WorkRunView: View {
     let runId: String
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if let detail {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 16) {
-                            WorkRunHeader(run: detail.run)
-                            Picker("Run detail", selection: $selection) {
-                                Text("Activity").tag(0)
-                                Text("Proof").tag(1)
-                            }
-                            .pickerStyle(.segmented)
-
-                            if selection == 0 {
-                                activity
-                            } else {
-                                WorkRunProofView(manifest: detail.run.manifest)
-                            }
-
-                            if !detail.run.isTerminal {
-                                controls
-                            }
+        Group {
+            if let detail {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        WorkRunHeader(run: detail.run)
+                        Picker("Run detail", selection: $selection) {
+                            Text("Activity").tag(0)
+                            Text("Proof").tag(1)
                         }
-                        .padding()
+                        .pickerStyle(.segmented)
+
+                        if selection == 0 {
+                            activity
+                        } else {
+                            WorkRunProofView(manifest: detail.run.manifest)
+                        }
+
+                        if !detail.run.isTerminal {
+                            controls
+                        }
                     }
-                    .refreshable { await load() }
-                } else {
-                    ProgressView("Loading run…")
+                    .padding()
                 }
+                .refreshable { await load() }
+            } else {
+                ProgressView("Loading run…")
             }
-            .navigationTitle("Run")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
-            .task { await load() }
-            .alert("Run changed", isPresented: errorBinding) {
-                Button("Reload") { Task { await load() } }
-                Button("Close", role: .cancel) {}
-            } message: {
-                Text(error ?? "Reload the current state and try again.")
-            }
+        }
+        .background(Color.polychat.background)
+        .navigationTitle("Run")
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await load() }
+        .alert("Run changed", isPresented: errorBinding) {
+            Button("Reload") { Task { await load() } }
+            Button("Close", role: .cancel) {}
+        } message: {
+            Text(error ?? "Reload the current state and try again.")
         }
     }
 

@@ -16,7 +16,10 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
-import { getPrivateObjectResponse } from "~/infrastructure/storage/read-resource";
+import {
+  getPrivateObjectResponse,
+  IMMUTABLE_PRIVATE_CACHE_CONTROL,
+} from "~/infrastructure/storage/read-resource";
 import { narratePassages } from "~/modules/audio/application/narration";
 import {
   chapterAudioKey,
@@ -363,6 +366,6 @@ export async function readEpisodeShot(
   return getPrivateObjectResponse(
     context,
     shotImageKey(episodeId, content.seasonId, { ...location, plate: shot.plate }),
-    { filename: "shot", mimeType: "image/png" },
+    { filename: "shot", mimeType: "image/png", cacheControl: IMMUTABLE_PRIVATE_CACHE_CONTROL },
   );
 }

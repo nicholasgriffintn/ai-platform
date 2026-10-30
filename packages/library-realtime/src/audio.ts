@@ -80,13 +80,21 @@ export function setMediaStreamTrackEnabled(
     });
 }
 
-export function requestRealtimeAudioStream(): Promise<MediaStream> {
-  return navigator.mediaDevices.getUserMedia({
+function requireMediaDevices(): MediaDevices {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    throw new Error("This browser cannot use a microphone or camera here.");
+  }
+
+  return navigator.mediaDevices;
+}
+
+export async function requestRealtimeAudioStream(): Promise<MediaStream> {
+  return requireMediaDevices().getUserMedia({
     audio: REALTIME_AUDIO_CONSTRAINTS,
   });
 }
 
-export function requestRealtimeVideoStream(deviceId?: string): Promise<MediaStream> {
+export async function requestRealtimeVideoStream(deviceId?: string): Promise<MediaStream> {
   const video: MediaTrackConstraints = deviceId
     ? {
         ...REALTIME_VIDEO_CONSTRAINTS,
@@ -94,7 +102,7 @@ export function requestRealtimeVideoStream(deviceId?: string): Promise<MediaStre
       }
     : REALTIME_VIDEO_CONSTRAINTS;
 
-  return navigator.mediaDevices.getUserMedia({ video });
+  return requireMediaDevices().getUserMedia({ video });
 }
 
 export async function listRealtimeVideoInputDevices(): Promise<MediaDeviceInfo[]> {

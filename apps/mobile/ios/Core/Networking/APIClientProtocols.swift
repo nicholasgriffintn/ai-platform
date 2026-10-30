@@ -91,6 +91,10 @@ protocol OutputRevisionsAPIClient {
 
 protocol WorkAPIClient {
     func fetchWorkAttention(limit: Int) async throws -> WorkAttentionResponse
+    func fetchProjectTasks(projectId: String, includeDone: Bool) async throws -> [ProjectTask]
+    func fetchMyWorkTasks() async throws -> [ProjectTask]
+    func createProjectTask(projectId: String, objective: String) async throws -> ProjectTaskResponse
+    func startProjectTask(projectId: String, taskId: String) async throws -> ProjectTaskResponse
     func fetchSandboxRun(id: String) async throws -> SandboxRunDetail
     func fetchSandboxRunEvents(id: String) async throws -> SandboxRunEventsResponse
     func fetchSandboxRunInstructions(id: String) async throws -> SandboxRunInstructionsResponse

@@ -1,5 +1,21 @@
 import Foundation
 
+enum InboxView: String, CaseIterable, Identifiable {
+    case needsYou
+    case updates
+    case myTasks
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .needsYou: return "Needs you"
+        case .updates: return "Updates"
+        case .myTasks: return "My tasks"
+        }
+    }
+}
+
 enum AttentionEntry: Identifiable {
     case decision(WorkInboxItem)
     case attention(WorkAttentionItem)
@@ -44,6 +60,46 @@ enum AttentionEntry: Identifiable {
         case .notification(let item): return item.requiresAction
         }
     }
+
+    var isUnread: Bool {
+        switch self {
+        case .decision: return true
+        case .attention(let item): return item.isUnread
+        case .notification(let item): return !item.isRead
+        }
+    }
+}
+
+enum InboxDestination: Equatable {
+    case task(projectId: String, taskId: String)
+    case run(String)
+    case conversation(String)
+    case project(String)
+    case web(String)
+
+    static func of(_ item: WorkInboxItem) -> InboxDestination {
+        if let projectId = item.projectId, let taskId = item.taskId {
+            return .task(projectId: projectId, taskId: taskId)
+        }
+        if let conversationId = item.conversationId {
+            return .conversation(conversationId)
+        }
+        if let projectId = item.projectId {
+            return .project(projectId)
+        }
+        return .web(item.deepLink)
+    }
+
+    static func of(_ item: WorkAttentionItem) -> InboxDestination {
+        if item.type == "run" {
+            return .run(item.resourceId)
+        }
+        return .task(projectId: item.projectId, taskId: item.resourceId)
+    }
+
+    static func of(_ item: TaskInboxItem) -> InboxDestination {
+        .task(projectId: item.projectId, taskId: item.taskId)
+    }
 }
 
 struct AttentionPlace: Identifiable {
@@ -57,13 +113,35 @@ struct AttentionPlace: Identifiable {
 }
 
 enum AttentionPlaces {
-    static func group(
+    static func entries(
+        for view: InboxView,
         decisions: [WorkInboxItem],
+        runs: [WorkAttentionItem],
+        notifications: [TaskInboxItem]
+    ) -> [AttentionEntry] {
+        let needsYou = view == .needsYou
+        let decisionEntries = needsYou ? decisions.map(AttentionEntry.decision) : []
+        let runEntries = runs
+            .filter { $0.type == "run" && $0.needsAction == needsYou }
+            .map(AttentionEntry.attention)
+        let notificationEntries = notifications
+            .filter { $0.requiresAction == needsYou }
+            .map(AttentionEntry.notification)
+
+        return (decisionEntries + runEntries + notificationEntries).sorted { left, right in
+            if left.isUnread != right.isUnread { return left.isUnread }
+            return left.since > right.since
+        }
+    }
+
+    static func group(
+        _ entries: [AttentionEntry],
         workItems: [WorkAttentionItem],
         notifications: [TaskInboxItem],
-        workspaceNames: [String: String]
+        workspaceNames: [String: String],
+        projectNames knownProjectNames: [String: String] = [:]
     ) -> [AttentionPlace] {
-        var projectNames: [String: String] = [:]
+        var projectNames = knownProjectNames
         var names = workspaceNames
         for item in workItems {
             projectNames[item.projectId] = item.projectName
@@ -72,14 +150,6 @@ enum AttentionPlaces {
         for item in notifications {
             projectNames[item.projectId] = item.projectName
         }
-
-        let entries = (decisions.map(AttentionEntry.decision)
-            + workItems.map(AttentionEntry.attention)
-            + notifications.map(AttentionEntry.notification))
-            .sorted { left, right in
-                if left.needsAction != right.needsAction { return left.needsAction }
-                return left.since > right.since
-            }
 
         var order: [String] = []
         var grouped: [String: [AttentionEntry]] = [:]

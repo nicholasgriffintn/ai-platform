@@ -26,7 +26,6 @@ import {
 import { useMemo, useState, lazy, Suspense } from "react";
 import { useParams } from "react-router";
 
-import { HomeDiscover } from "../Discover/HomeDiscover.js";
 import { useChatFollowUpQueue } from "./useChatFollowUpQueue.js";
 
 const DelegatePanel = lazy(() =>
@@ -92,7 +91,6 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
       ? conversationsGuide
       : null;
   const isWelcomeLoading = !hasModeWelcome && (isAuthenticationLoading || areConversationsLoading);
-  const showDiscover = !hasModeWelcome && !isAuthenticated && !isAuthenticationLoading;
   const effectiveModeConfig = useMemo<ThreadModeConfig>(
     () => ({
       ...modeConfig,
@@ -138,8 +136,6 @@ export function HomeConversationThread({ urlModeConfig }: HomeConversationThread
               }
             : {}),
           welcomeLoading: isWelcomeLoading,
-          welcomeFooter: showDiscover ? <HomeDiscover /> : undefined,
-          welcomeFooterHint: showDiscover ? "Keep scrolling for the tour" : undefined,
         }}
       />
       <Dialog

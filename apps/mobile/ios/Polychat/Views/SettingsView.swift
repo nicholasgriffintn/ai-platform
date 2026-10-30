@@ -163,9 +163,9 @@ struct SettingsView: View {
 
     private var aboutSection: some View {
         Section {
-            Link("Privacy policy", destination: URL(string: "https://polychat.app/privacy")!)
-            Link("Terms of service", destination: URL(string: "https://polychat.app/terms")!)
-            Link("Open Polychat on the web", destination: URL(string: "https://polychat.app")!)
+            Link("Privacy policy", destination: WebLinks.url(path: "/privacy"))
+            Link("Terms of service", destination: WebLinks.url(path: "/terms"))
+            Link("Open Polychat on the web", destination: WebLinks.base)
             LabeledContent("Version", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")
         } header: {
             Text("About")
@@ -182,11 +182,17 @@ struct SettingsView: View {
         return parts.isEmpty ? "No data for \(summary.date)" : parts.joined(separator: " · ")
     }
 
+    private var isRegistered: Bool {
+        switch pushNotificationManager.registrationState {
+        case .registered, .serverCannotDeliver: return true
+        default: return false
+        }
+    }
+
     private var notificationToggle: Binding<Bool> {
         Binding(
             get: {
-                notificationManager.settings?.preferences.enabled == true &&
-                pushNotificationManager.registrationState == .registered
+                notificationManager.settings?.preferences.enabled == true && isRegistered
             },
             set: { enabled in
                 Task {
@@ -221,6 +227,8 @@ struct SettingsView: View {
         switch pushNotificationManager.registrationState {
         case .registered:
             return "This iPhone gets approvals, questions and finished work as they happen."
+        case .serverCannotDeliver:
+            return "This iPhone is registered, but Polychat's server isn't set up to send to iPhones yet. Nothing arrives until it is."
         case .awaitingDeviceToken, .registering:
             return "Registering this iPhone…"
         case .failed(let message):
@@ -242,7 +250,7 @@ struct SettingsView: View {
                 }
             )
         )
-        .disabled(pushNotificationManager.registrationState != .registered)
+        .disabled(!isRegistered)
     }
 
     private func notificationCategoryEnabled(_ category: String) -> Bool {

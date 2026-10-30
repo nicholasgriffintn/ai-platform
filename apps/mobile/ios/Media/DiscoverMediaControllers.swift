@@ -19,6 +19,7 @@ final class EpisodePlaybackController: ObservableObject {
     private var reportedMark: String?
     private var observers: Set<AnyCancellable> = []
     private static let resumeIntervalSeconds = 15.0
+    private static let shotPixelSize: CGFloat = 1920
 
     init(apiClient: APIClient = .shared) {
         self.apiClient = apiClient
@@ -142,12 +143,13 @@ final class EpisodePlaybackController: ObservableObject {
             return
         }
 
-        if let data = try? await apiClient.fetchDiscoverEpisodeShot(
+        let data = try? await apiClient.fetchDiscoverEpisodeShot(
             id: episode.id,
             chapter: chapterIndex,
             scene: position.scene,
             shot: position.shot
-        ), let image = UIImage(data: data) {
+        )
+        if let image = await ImageDownsampling.image(from: data, maxPixelSize: Self.shotPixelSize) {
             shotCache[key] = image
             if shotKey == key {
                 shotImage = image

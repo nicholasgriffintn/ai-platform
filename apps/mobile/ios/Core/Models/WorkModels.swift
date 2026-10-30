@@ -180,6 +180,11 @@ struct RegisterMobilePushDeviceRequest: Encodable {
     let appBundleId: String
 }
 
+struct MobilePushRegistration: Decodable, Equatable {
+    let registered: Bool
+    let deliverable: Bool
+}
+
 struct SubmitSandboxRunInstructionRequest: Encodable {
     let kind: String
     let idempotencyKey: String
@@ -357,11 +362,90 @@ struct WorkInboxItem: Decodable, Identifiable, Hashable {
     }
 }
 
+struct ProjectTaskListResponse: Decodable {
+    let tasks: [ProjectTask]
+
+    enum CodingKeys: String, CodingKey {
+        case tasks = "data"
+    }
+}
+
+struct WorkTaskListResponse: Decodable {
+    let tasks: [ProjectTask]
+}
+
+enum WorkActor: Decodable, Equatable, Hashable {
+    case teammate(String)
+    case person(Int)
+
+    private enum CodingKeys: String, CodingKey {
+        case type, id, userId
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        switch try container.decode(String.self, forKey: .type) {
+        case "teammate":
+            self = .teammate(try container.decode(String.self, forKey: .id))
+        default:
+            self = .person(try container.decode(Int.self, forKey: .userId))
+        }
+    }
+}
+
+struct ProjectTask: Decodable, Identifiable, Equatable, Hashable {
+    let id: String
+    let projectId: String
+    let workspaceId: String
+    let key: String?
+    let kind: String
+    let objective: String
+    let description: String?
+    let priority: String
+    let owner: WorkActor?
+    let status: String
+    let blockedReason: String?
+    let blockedDetail: String?
+    let conversationId: String?
+    let runId: String?
+    let dueAt: String?
+    let createdAt: String
+    let updatedAt: String?
+    let completedAt: String?
+
+    var activityDate: Date {
+        AppDateParser.parse(completedAt ?? updatedAt ?? createdAt, fallback: Date.distantPast)
+    }
+}
+
+struct CreateProjectTaskRequest: Encodable {
+    let objective: String
+}
+
+struct WorkPlace: Decodable, Equatable {
+    struct Project: Decodable, Equatable {
+        let id: String
+        let name: String
+    }
+
+    let id: String
+    let name: String
+    let projects: [Project]
+}
+
 struct WorkInboxResponse: Decodable {
     let items: [WorkInboxItem]
+    let places: [WorkPlace]
 
     enum CodingKeys: String, CodingKey {
         case items = "data"
+        case places
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        items = try container.decode([WorkInboxItem].self, forKey: .items)
+        places = try container.decodeIfPresent([WorkPlace].self, forKey: .places) ?? []
     }
 }
 

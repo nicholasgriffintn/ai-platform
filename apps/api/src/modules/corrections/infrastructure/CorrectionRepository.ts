@@ -55,6 +55,21 @@ export class CorrectionRepository extends BaseRepository {
     return rows.map(formatCorrection);
   }
 
+  public async listActiveForTeammateContext(
+    userId: number,
+    teammateContextId: string | null,
+    limit: number,
+  ): Promise<Correction[]> {
+    const rows = await this.runQuery<CorrectionRow>(
+      `SELECT * FROM correction WHERE user_id = ? AND status = 'active'
+       AND (teammate_context_id IS NULL OR teammate_context_id = ?)
+       ORDER BY recurrences DESC, COALESCE(last_recurred_at, created_at) DESC, id DESC LIMIT ?`,
+      [userId, teammateContextId, limit],
+    );
+
+    return rows.map(formatCorrection);
+  }
+
   public async listActiveByPlacementRefs(
     userId: number,
     placementRefs: readonly string[],

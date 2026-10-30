@@ -12,7 +12,7 @@ final class APIClient: ObservableObject {
 
     init(
         baseURL: URL = APIClient.defaultBaseURL(),
-        session: URLSession = .shared,
+        session: URLSession = APIClient.defaultSession(),
         userAgent: String = APIClient.defaultUserAgent()
     ) {
         self.baseURL = baseURL
@@ -475,9 +475,8 @@ final class APIClient: ObservableObject {
         )
     }
 
-    func fetchWorkInbox() async throws -> [WorkInboxItem] {
-        let response: WorkInboxResponse = try await send(path: "/attention/inbox", method: "GET")
-        return response.items
+    func fetchWorkInbox() async throws -> WorkInboxResponse {
+        try await send(path: "/attention/inbox", method: "GET")
     }
 
     func decideHire(workspaceId: String, teammateId: String, approve: Bool) async throws {
@@ -533,6 +532,36 @@ final class APIClient: ObservableObject {
         )
     }
 
+    func fetchProjectTasks(projectId: String, includeDone: Bool) async throws -> [ProjectTask] {
+        let response: ProjectTaskListResponse = try await send(
+            path: "/projects/\(projectId)/tasks",
+            method: "GET",
+            queryItems: includeDone ? [URLQueryItem(name: "include_done", value: "true")] : []
+        )
+        return response.tasks
+    }
+
+    func fetchMyWorkTasks() async throws -> [ProjectTask] {
+        let response: WorkTaskListResponse = try await send(path: "/attention/tasks", method: "GET")
+        return response.tasks
+    }
+
+    func createProjectTask(projectId: String, objective: String) async throws -> ProjectTaskResponse {
+        try await send(
+            path: "/projects/\(projectId)/tasks",
+            method: "POST",
+            body: CreateProjectTaskRequest(objective: objective)
+        )
+    }
+
+    func startProjectTask(projectId: String, taskId: String) async throws -> ProjectTaskResponse {
+        try await send(
+            path: "/projects/\(projectId)/tasks/\(taskId)/start",
+            method: "POST",
+            emptyBody: true
+        )
+    }
+
     func fetchSandboxRunEvents(id: String) async throws -> SandboxRunEventsResponse {
         try await send(path: "/environments/\(id)/events", method: "GET")
     }
@@ -581,8 +610,8 @@ final class APIClient: ObservableObject {
         )
     }
 
-    func registerMobilePushDevice(token: String, environment: String) async throws {
-        let _: EmptyResponse = try await send(
+    func registerMobilePushDevice(token: String, environment: String) async throws -> MobilePushRegistration {
+        try await send(
             path: "/devices",
             method: "POST",
             body: RegisterMobilePushDeviceRequest(
@@ -1077,6 +1106,12 @@ final class APIClient: ObservableObject {
         }
 
         return URL(string: "https://api.polychat.app")!
+    }
+
+    private static func defaultSession() -> URLSession {
+        let configuration = URLSessionConfiguration.default
+        configuration.urlCache = URLCache(memoryCapacity: 32 << 20, diskCapacity: 256 << 20)
+        return URLSession(configuration: configuration)
     }
 
     private static func defaultUserAgent() -> String {

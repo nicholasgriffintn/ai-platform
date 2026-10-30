@@ -165,6 +165,7 @@ CREATE TABLE "resource_revision" (
   "content" TEXT,
   "created_by_user_id" INTEGER REFERENCES "user"("id") ON DELETE NO ACTION,
   "provenance_json" TEXT,
+  "evidence_json" TEXT,
   "operation" TEXT,
   "restored_from_revision" INTEGER,
   "resource_type" TEXT NOT NULL,

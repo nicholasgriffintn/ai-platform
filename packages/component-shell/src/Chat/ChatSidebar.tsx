@@ -4,7 +4,6 @@ import {
   ConversationListControls,
   ConversationListSection,
   ConversationStorageNotice,
-  SidebarNavButton,
   SidebarNavSection,
 } from "@ngriffin_uk/polychat-component-navigation";
 import { ConfirmationDialog, SidebarShell } from "@ngriffin_uk/polychat-component-ui";
@@ -15,6 +14,7 @@ import {
   getNotebookPath,
   getPersonalConversationPath,
   matchNotebookId,
+  DISCOVER_PATH,
   MODE_BASE_PATHS,
   PERSONAL_SURFACE,
   useChats,
@@ -27,7 +27,7 @@ import {
   useConversationStorage,
 } from "@ngriffin_uk/polychat-library-react";
 import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
-import { Loader2, SquarePen } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { type ReactNode, lazy, Suspense, useCallback, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
@@ -61,7 +61,7 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
   const { pathname } = useLocation();
   const { completionId } = useParams<"completionId">();
   const isConversationRoute =
-    pathname === "/" || pathname === MODE_BASE_PATHS.chat || Boolean(completionId);
+    pathname === DISCOVER_PATH || pathname === MODE_BASE_PATHS.chat || Boolean(completionId);
   const {
     sidebarVisible,
     setSidebarVisible,
@@ -74,7 +74,6 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
   const {
     currentConversationId,
     setCurrentConversationId,
-    clearCurrentConversation,
     isAuthenticated,
     isAuthenticationLoading,
   } = useChatStore();
@@ -123,23 +122,6 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
     if (isMobile) {
       setSidebarVisible(false);
     }
-  };
-
-  const handleNewChatClick = () => {
-    clearCurrentConversation();
-
-    if (completionId || !isConversationRoute) {
-      void navigate(MODE_BASE_PATHS.chat);
-    }
-
-    trackEvent({
-      name: "new_chat",
-      category: "sidebar",
-      label: "new_chat",
-      value: 1,
-    });
-
-    closeOnMobile();
   };
 
   const handleConversationClick = (id: string | undefined) => {
@@ -278,13 +260,6 @@ export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps
           <nav aria-label="Conversations">
             <div className="px-2 pb-3">
               <SidebarNavSection>
-                <SidebarNavButton
-                  icon={<SquarePen size={17} />}
-                  isActive={isConversationRoute && !currentConversationId}
-                  onClick={handleNewChatClick}
-                >
-                  New chat
-                </SidebarNavButton>
                 <PlacesNavLinks onNavigate={closeOnMobile} />
               </SidebarNavSection>
               {isAuthenticated && <TeammateRosterSection onNavigate={closeOnMobile} />}

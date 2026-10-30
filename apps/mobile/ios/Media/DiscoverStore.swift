@@ -17,10 +17,18 @@ final class DiscoverStore: ObservableObject {
 
     private let apiClient: APIClient
     private let onEdition: (DiscoverEdition?) -> Void
+    private static let coverPixelSize: CGFloat = 768
+    private static let artPixelSize: CGFloat = 1920
+    private static let imageConcurrency = 4
 
     init(apiClient: APIClient = .shared, onEdition: @escaping (DiscoverEdition?) -> Void = { _ in }) {
         self.apiClient = apiClient
         self.onEdition = onEdition
+    }
+
+    func loadIfNeeded() async {
+        guard discover == nil, !isLoading else { return }
+        await refresh()
     }
 
     func refresh() async {
@@ -39,8 +47,8 @@ final class DiscoverStore: ObservableObject {
                 viewedEdition = nil
             }
             error = nil
-            await loadCovers()
-            await loadMedia()
+            isLoading = false
+            await loadImagesAndMedia()
         } catch is CancellationError {
             return
         } catch APIClientError.httpStatus(401, _) {
@@ -70,8 +78,7 @@ final class DiscoverStore: ObservableObject {
                 return
             }
         }
-        await loadCovers()
-        await loadMedia()
+        await loadImagesAndMedia()
     }
 
     func follows(_ topic: String) -> DiscoverFollow? {
@@ -82,10 +89,11 @@ final class DiscoverStore: ObservableObject {
         do {
             if let follow = follows(topic) {
                 try await apiClient.unfollowDiscoverTopic(notebookId: follow.notebookId)
+                discover?.follows.removeAll { $0.notebookId == follow.notebookId }
             } else {
-                _ = try await apiClient.followDiscoverTopic(topic)
+                let follow = try await apiClient.followDiscoverTopic(topic)
+                discover?.follows.append(follow)
             }
-            await refresh()
         } catch {
             self.error = "That follow did not save: \(error.localizedDescription)"
         }
@@ -134,25 +142,33 @@ final class DiscoverStore: ObservableObject {
         async let windDown = fetchWindDown(discover.windDownId)
 
         let loadedEpisode = await episode
-        media = [
+        let states: [DiscoverMediaItem: DiscoverMediaState] = [
             .episode: DiscoverMediaPresentation.episode(edition: edition, episode: loadedEpisode),
             .perch: DiscoverMediaPresentation.listen(item: .perch, sourceId: edition.listenSourceId, source: await perch),
             .week: DiscoverMediaPresentation.listen(item: .week, sourceId: edition.weekSourceId, source: await week),
             .windDown: DiscoverMediaPresentation.windDown(await windDown)
         ]
+        media = states
 
-        for (item, state) in media {
-            guard let key = state.coverKey else {
-                mediaArt[item] = nil
-                continue
+        let coverKeys = states.compactMapValues(\.coverKey)
+        let missing = Set(coverKeys.values).subtracting(artCache.keys)
+        if !missing.isEmpty {
+            let loaded = await ImageDownsampling.images(
+                for: Array(missing),
+                maxPixelSize: Self.artPixelSize,
+                concurrency: Self.imageConcurrency
+            ) { [apiClient] key in
+                await Self.fetchArt(key: key, episode: loadedEpisode, apiClient: apiClient)
             }
-            if let cached = artCache[key] {
-                mediaArt[item] = cached
-            } else if let image = await loadArt(key: key, episode: loadedEpisode) {
-                artCache[key] = image
-                mediaArt[item] = image
-            }
+            artCache.merge(loaded) { _, new in new }
         }
+        mediaArt = coverKeys.compactMapValues { artCache[$0] }
+    }
+
+    private func loadImagesAndMedia() async {
+        async let coversLoaded: Void = loadCovers()
+        async let mediaLoaded: Void = loadMedia()
+        _ = await (coversLoaded, mediaLoaded)
     }
 
     private func fetchEpisode(_ id: String?) async -> DiscoverEpisode? {
@@ -170,21 +186,19 @@ final class DiscoverStore: ObservableObject {
         return try? await apiClient.fetchDiscoverWindDown(id: id)
     }
 
-    private func loadArt(key: String, episode: DiscoverEpisode?) async -> UIImage? {
-        let data: Data?
+    private static func fetchArt(key: String, episode: DiscoverEpisode?, apiClient: APIClient) async -> Data? {
         if key.hasPrefix("source:") {
-            data = try? await apiClient.fetchSourceCover(id: String(key.dropFirst("source:".count)))
-        } else if let episode, let shot = DiscoverMediaPresentation.coverShot(in: episode) {
-            data = try? await apiClient.fetchDiscoverEpisodeShot(
-                id: episode.id,
-                chapter: shot.chapter,
-                scene: shot.scene,
-                shot: shot.shot
-            )
-        } else {
-            data = nil
+            return try? await apiClient.fetchSourceCover(id: String(key.dropFirst("source:".count)))
         }
-        return data.flatMap(UIImage.init(data:))
+        guard let episode, let shot = DiscoverMediaPresentation.coverShot(in: episode) else {
+            return nil
+        }
+        return try? await apiClient.fetchDiscoverEpisodeShot(
+            id: episode.id,
+            chapter: shot.chapter,
+            scene: shot.scene,
+            shot: shot.shot
+        )
     }
 
     func reset() {
@@ -193,6 +207,7 @@ final class DiscoverStore: ObservableObject {
         media = [:]
         mediaArt = [:]
         covers = [:]
+        artCache = [:]
         isWriting = false
         error = nil
     }
@@ -232,10 +247,10 @@ final class DiscoverStore: ObservableObject {
         guard let edition else { return }
 
         do {
-            _ = try await apiClient.sendDiscoverFeedback(
+            let response = try await apiClient.sendDiscoverFeedback(
                 DiscoverFeedbackRequest(editionId: edition.id, cardId: card.id, signal: signal)
             )
-            await refresh()
+            updateEdition { $0.feedback[response.cardId] = response.signals }
         } catch {
             self.error = "That feedback did not save: \(error.localizedDescription)"
         }
@@ -255,14 +270,27 @@ final class DiscoverStore: ObservableObject {
         "not_enabled": "Turn Discover on first."
     ]
 
-    private func loadCovers() async {
-        let coverIds = (edition?.cards ?? []).compactMap(\.coverId)
-
-        for coverId in coverIds where covers[coverId] == nil {
-            if let data = try? await apiClient.fetchDiscoverCover(coverId: coverId),
-               let image = UIImage(data: data) {
-                covers[coverId] = image
-            }
+    private func updateEdition(_ change: (inout DiscoverEdition) -> Void) {
+        if var viewed = viewedEdition {
+            change(&viewed)
+            viewedEdition = viewed
+        } else if var current = discover?.edition {
+            change(&current)
+            discover?.edition = current
         }
+    }
+
+    private func loadCovers() async {
+        let missing = Set((edition?.cards ?? []).compactMap(\.coverId)).subtracting(covers.keys)
+        guard !missing.isEmpty else { return }
+
+        let loaded = await ImageDownsampling.images(
+            for: Array(missing),
+            maxPixelSize: Self.coverPixelSize,
+            concurrency: Self.imageConcurrency
+        ) { [apiClient] coverId in
+            try? await apiClient.fetchDiscoverCover(coverId: coverId)
+        }
+        covers.merge(loaded) { _, new in new }
     }
 }

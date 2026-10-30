@@ -1,6 +1,7 @@
 import type { AuthUserWithEmail, UserStore } from "@ngriffin_uk/auth-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { seedStarterNotebook } from "~/modules/notebooks/application/starter";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { User } from "~/types";
 
@@ -49,7 +50,7 @@ export async function resolveAssistantEmailUser(
     return null;
   }
 
-  await initialiseAssistantUser(context, created.id);
+  await initialiseAssistantUser(context, created.id, { firstSignIn: true });
 
   return toAssistantAuthUser(created);
 }
@@ -57,8 +58,19 @@ export async function resolveAssistantEmailUser(
 export async function initialiseAssistantUser(
   context: ServiceContext,
   userId: number,
+  options: { firstSignIn?: boolean } = {},
 ): Promise<void> {
   await Promise.allSettled([ensureUserProvisioned(context.repositories, userId)]);
+
+  if (!options.firstSignIn) {
+    return;
+  }
+
+  const user = await context.repositories.get(UserRepository).getUserById(userId);
+
+  if (user) {
+    await seedStarterNotebook(context, user);
+  }
 }
 
 export function toAssistantAuthUser(record: User): AssistantAuthUser {

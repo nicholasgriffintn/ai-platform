@@ -5,6 +5,7 @@ import {
 import { Hono } from "hono";
 
 import { defineResource } from "~/infrastructure/http/resource";
+import { isApnsConfigured } from "~/modules/mobile-push/infrastructure/apns-client";
 import { MobilePushRepository } from "~/modules/mobile-push/infrastructure/MobilePushRepository";
 
 const app = new Hono();
@@ -14,12 +15,19 @@ defineResource(app, { idParam: "device_id", tags: ["devices"] }, (devices) => {
     .create({
       auth: true,
       summary: "Register an iOS push device",
-      description: "Registering the same token again refreshes it.",
+      description:
+        "Registering the same token again refreshes it. `deliverable` says whether this server can reach iPhones at all.",
       bodySchema: registerMobilePushDeviceSchema,
       handler: async ({ body, serviceContext, user }) => {
         await serviceContext.repositories.get(MobilePushRepository).register(user.id, body);
 
-        return { id: body.token, registered: true };
+        return {
+          id: body.token,
+          registered: true,
+          deliverable:
+            isApnsConfigured(serviceContext.env) &&
+            serviceContext.env.APNS_TOPIC === body.appBundleId,
+        };
       },
     })
     .delete({

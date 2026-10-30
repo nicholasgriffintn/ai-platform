@@ -50,7 +50,10 @@ final class CompanionSync {
             if let conversationId = event.string("conversationId") {
                 conversations.conversationDeletedRemotely(id: conversationId)
             }
-        case "project_task.changed", "attention.changed", "task.changed", "workbench_run.changed":
+        case "project_task.changed":
+            refreshAttention()
+            refreshTasks(projectId: event.string("projectId"))
+        case "attention.changed", "task.changed", "workbench_run.changed":
             refreshAttention()
         case "connector_approval.changed":
             refreshAttention()
@@ -88,7 +91,18 @@ final class CompanionSync {
     private func refreshAttention() {
         debounce("attention", delay: .seconds(1)) { [attention, inbox] in
             await inbox.refresh()
-            await attention.refresh(inboxUnread: inbox.unread)
+            await attention.refresh(notifications: inbox.items)
+        }
+    }
+
+    private func refreshTasks(projectId: String?) {
+        debounce("my-tasks", delay: .seconds(1)) { [work] in
+            await work.loadMyTasks()
+        }
+        if let projectId {
+            debounce("tasks:\(projectId)", delay: .seconds(1)) { [work] in
+                await work.loadTasks(projectId: projectId)
+            }
         }
     }
 

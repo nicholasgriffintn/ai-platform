@@ -1,16 +1,11 @@
-import {
-  DISCOVER_PATH,
-  MODE_BASE_PATHS,
-  PROFILE_PATH,
-  TOUR_PATH,
-} from "@ngriffin_uk/polychat-library-react";
+import { MODE_BASE_PATHS, PROFILE_PATH, TOUR_PATH } from "@ngriffin_uk/polychat-library-react";
 import { isInternalNavigationPath } from "@ngriffin_uk/polychat-schemas";
 
 export const DEEP_LINK_SCHEME = "polychat:";
 export const DEEP_LINK_EVENT = "polychat://deep-link";
 
 const ALLOWED_ROOTS = new Set(
-  [MODE_BASE_PATHS.chat, MODE_BASE_PATHS.work, PROFILE_PATH, DISCOVER_PATH, TOUR_PATH].map((path) =>
+  [MODE_BASE_PATHS.chat, MODE_BASE_PATHS.work, PROFILE_PATH, TOUR_PATH].map((path) =>
     path.replace(/^\//, ""),
   ),
 );

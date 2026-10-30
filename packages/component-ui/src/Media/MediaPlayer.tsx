@@ -2,6 +2,7 @@ import {
   useCaptionTrack,
   useMediaLoudness,
   useMediaTrack,
+  type MediaTrack,
 } from "@ngriffin_uk/polychat-utility-react";
 import { useEffect, type ReactNode } from "react";
 
@@ -27,6 +28,8 @@ export interface MediaPlayerProps {
   actions?: ReactNode;
   className?: string;
   onPlayingChange?: (playing: boolean) => void;
+  track?: MediaTrack;
+  hostsMedia?: boolean;
 }
 
 export function MediaPlayer({
@@ -45,8 +48,11 @@ export function MediaPlayer({
   actions,
   className,
   onPlayingChange,
+  track: sharedTrack,
+  hostsMedia = true,
 }: MediaPlayerProps) {
-  const track = useMediaTrack();
+  const ownTrack = useMediaTrack();
+  const track = sharedTrack ?? ownTrack;
   const attachAudio = useMediaLoudness(track.attach, levelVoice && kind === "audio");
   const activeIndex = transcript
     ? currentTranscriptIndex(transcript, track.currentTime, track.duration)
@@ -105,7 +111,7 @@ export function MediaPlayer({
       visual={visual}
       transport={
         <>
-          {kind === "audio" && src ? (
+          {kind === "audio" && src && hostsMedia ? (
             <audio
               ref={attachAudio}
               src={src}

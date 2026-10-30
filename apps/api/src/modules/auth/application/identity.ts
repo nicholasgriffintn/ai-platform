@@ -99,7 +99,7 @@ async function resolveAppleUser(
   await context.repositories
     .get(UserRepository)
     .createOauthAccount(created.id, "apple", identity.providerSubject);
-  await initialiseAssistantUser(context, created.id);
+  await initialiseAssistantUser(context, created.id, { firstSignIn: true });
 
   return toAssistantAuthUser(created);
 }

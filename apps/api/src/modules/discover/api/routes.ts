@@ -59,6 +59,7 @@ import {
   clearDiscoverHealthSummary,
   saveDiscoverHealthSummary,
 } from "~/modules/discover/application/health";
+import { readHouseEdition } from "~/modules/discover/application/house-edition";
 import { requestDiscoverListen } from "~/modules/discover/application/listen";
 import {
   readEditionRecording,
@@ -90,7 +91,19 @@ addRoute(app, "get", "/", {
     200: { description: "Discover", schema: discoverResponseSchema },
     401: { description: "Authentication required", schema: errorResponseSchema },
   },
+  cache: { maxAge: 0, staleWhileRevalidate: 0 },
   handler: async ({ serviceContext }) => readDiscover(serviceContext),
+});
+
+addRoute(app, "get", "/house", {
+  tags: ["discover"],
+  summary: "Read the house edition",
+  description: "Polychat's own edition for anyone without one of their own: where to start.",
+  responses: {
+    200: { description: "The house edition", schema: discoverEditionSchema },
+  },
+  cache: { maxAge: 3600, staleWhileRevalidate: 86400 },
+  handler: async () => readHouseEdition(),
 });
 
 addRoute(app, "get", "/editions/:date", {

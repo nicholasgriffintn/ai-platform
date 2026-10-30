@@ -3,6 +3,8 @@ import { useDiscoverCover } from "@ngriffin_uk/polychat-library-react";
 import { deriveProjectColour, type DiscoverCard } from "@ngriffin_uk/polychat-schemas";
 import { useObjectUrl } from "@ngriffin_uk/polychat-utility-react";
 
+import { HouseCover, isHouseCover } from "./house-covers.js";
+
 type TopicCard = Extract<DiscoverCard, { kind: "topic" }>;
 
 export function discoverTopicGradient(topic: string): string {
@@ -13,8 +15,14 @@ export function discoverTopicGradient(topic: string): string {
 }
 
 export function DiscoverCover({ card, className }: { card: TopicCard; className?: string }) {
-  const cover = useDiscoverCover(card.coverId);
+  const coverId = card.coverId;
+  const houseCover = isHouseCover(coverId);
+  const cover = useDiscoverCover(houseCover ? undefined : coverId);
   const url = useObjectUrl(cover.data);
+
+  if (houseCover) {
+    return <HouseCover coverId={coverId} className={className} />;
+  }
 
   return url ? (
     <img src={url} alt="" className={cn("size-full object-cover", className)} />

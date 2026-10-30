@@ -69,7 +69,7 @@ struct HomeView: View {
                 await store.refresh()
                 await polyStore.refresh()
             }
-            .task { await store.refresh() }
+            .task { await store.loadIfNeeded() }
             .task(id: link) { follow(link) }
             .sheet(item: $selectedCard) { card in
                 DiscoverCardSheet(

@@ -5,6 +5,7 @@ import {
   AppErrorBoundary,
   ArtifactDataProvider,
   customResponseViews,
+  MediaDockProvider,
 } from "@ngriffin_uk/polychat-component-shell";
 import { LinkProvider, ThemedToaster } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
@@ -38,7 +39,9 @@ function DesktopProviders({ children }: { children: ReactNode }) {
         <AnalyticsProvider analytics={analytics}>
           <CustomResponseViewProvider views={customResponseViews}>
             <ArtifactDataProvider>
-              <PolychatProvider>{children}</PolychatProvider>
+              <PolychatProvider>
+                <MediaDockProvider>{children}</MediaDockProvider>
+              </PolychatProvider>
             </ArtifactDataProvider>
           </CustomResponseViewProvider>
         </AnalyticsProvider>

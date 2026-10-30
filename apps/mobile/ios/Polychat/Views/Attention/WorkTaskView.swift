@@ -2,7 +2,8 @@ import SwiftUI
 
 struct WorkTaskView: View {
     @EnvironmentObject private var apiClient: APIClient
-    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var workStore: WorkStore
+    @Environment(\.openURL) private var openURL
     @State private var detail: ProjectTaskDetailResponse?
     @State private var control: ProjectTaskInteractionControl?
     @State private var isWorking = false
@@ -13,59 +14,75 @@ struct WorkTaskView: View {
     let onOpenConversation: (String) -> Void
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if let detail {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 18) {
-                            taskHeader(detail.task)
+        Group {
+            if let detail {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 18) {
+                        taskHeader(detail.task)
 
-                            if let control {
-                                ProjectTaskInteractionCard(
-                                    control: control,
-                                    onAnswerQuestions: submitAnswers,
-                                    onResolveApproval: submitApproval,
-                                    onRefresh: { Task { await load() } }
-                                )
-                            } else if detail.task.status == "review" {
-                                reviewView(detail.task)
-                            } else {
-                                currentState(detail.task)
-                            }
-
-                            if let plan = detail.plan {
-                                ProjectTaskPlanEvidenceView(
-                                    plan: plan,
-                                    onOpenRun: { attempt in
-                                        dismiss()
-                                        onOpenConversation(attempt.conversationId)
-                                    }
-                                )
-                            }
-
-                            ProjectTaskActivityTimelineView(timeline: detail.activity)
+                        if let control {
+                            ProjectTaskInteractionCard(
+                                control: control,
+                                onAnswerQuestions: submitAnswers,
+                                onResolveApproval: submitApproval,
+                                onRefresh: { Task { await load() } }
+                            )
+                        } else if detail.task.status == "review" {
+                            reviewView(detail.task)
+                        } else {
+                            currentState(detail.task)
                         }
-                        .padding()
+
+                        if let plan = detail.plan {
+                            ProjectTaskPlanEvidenceView(
+                                plan: plan,
+                                onOpenRun: { attempt in
+                                    onOpenConversation(attempt.conversationId)
+                                }
+                            )
+                        }
+
+                        ProjectTaskActivityTimelineView(timeline: detail.activity)
                     }
-                    .refreshable { await load() }
-                } else {
-                    ProgressView("Loading task…")
+                    .padding()
                 }
+                .refreshable { await load() }
+            } else {
+                ProgressView("Loading task…")
             }
-            .navigationTitle("Task")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+        }
+        .background(Color.polychat.background)
+        .navigationTitle(workStore.projectName(projectId) ?? "Task")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    if let task = detail?.task, let conversationId = task.conversationId {
+                        Button {
+                            onOpenConversation(conversationId)
+                        } label: {
+                            Label("Open conversation", systemImage: "bubble.left")
+                        }
+                    }
+                    if let task = detail?.task {
+                        Button {
+                            openURL(WebLinks.task(workspaceId: task.workspaceId, projectId: projectId, taskId: taskId))
+                        } label: {
+                            Label("Open on the web", systemImage: "safari")
+                        }
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
                 }
+                .accessibilityLabel("Task options")
             }
-            .task { await load() }
-            .alert("Task changed", isPresented: errorBinding) {
-                Button("Reload") { Task { await load() } }
-                Button("Close", role: .cancel) {}
-            } message: {
-                Text(error ?? "Reload the current task and try again.")
-            }
+        }
+        .task { await load() }
+        .alert("Task changed", isPresented: errorBinding) {
+            Button("Reload") { Task { await load() } }
+            Button("Close", role: .cancel) {}
+        } message: {
+            Text(error ?? "Reload the current task and try again.")
         }
     }
 
@@ -77,7 +94,7 @@ struct WorkTaskView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(task.objective)
                 .font(.title3.weight(.semibold))
-            Text(task.status.capitalized)
+            Text(WorkTaskPresentation.statusLabel(status: task.status, blockedReason: task.blockedReason))
                 .font(.caption.weight(.semibold))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
@@ -100,7 +117,6 @@ struct WorkTaskView: View {
                 .foregroundStyle(.secondary)
             if let conversationId = task.conversationId {
                 Button("Open conversation") {
-                    dismiss()
                     onOpenConversation(conversationId)
                 }
                 .buttonStyle(.bordered)
@@ -116,12 +132,56 @@ struct WorkTaskView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    @ViewBuilder
     private func currentState(_ task: ProjectTaskControlTask) -> some View {
-        ContentUnavailableView(
-            task.status == "done" ? "Task completed" : "No response needed",
-            systemImage: task.status == "done" ? "checkmark.circle" : "clock",
-            description: Text("This task is now \(task.status).")
-        )
+        switch task.status {
+        case "backlog":
+            VStack(alignment: .leading, spacing: 12) {
+                Label("Waiting to be picked up", systemImage: "tray")
+                    .font(.headline)
+                Text("A teammate takes it from the board, or start it now and it runs with your connections.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Button("Start now") {
+                    perform {
+                        _ = try await apiClient.startProjectTask(projectId: projectId, taskId: taskId)
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(isWorking)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        case "running", "queued":
+            VStack(alignment: .leading, spacing: 8) {
+                Label(task.status == "running" ? "Running now" : "Queued", systemImage: "bolt.horizontal")
+                    .font(.headline)
+                Text("Follow along in the conversation, or wait for it to need you.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        case "blocked":
+            VStack(alignment: .leading, spacing: 12) {
+                Label("Stuck", systemImage: "exclamationmark.triangle")
+                    .font(.headline)
+                Text("The lead or the runner picks this up from the board. Open the conversation to see what happened, or sort it out on the web.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                if let conversationId = task.conversationId {
+                    Button("Open conversation") {
+                        onOpenConversation(conversationId)
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        default:
+            ContentUnavailableView(
+                task.status == "done" ? "Task completed" : "No response needed",
+                systemImage: task.status == "done" ? "checkmark.circle" : "clock",
+                description: Text("This task is now \(task.status).")
+            )
+        }
     }
 
     private func load() async {

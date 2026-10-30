@@ -37,12 +37,24 @@ private struct RootTabView: View {
     @EnvironmentObject private var syncClient: DeviceSyncClient
     @State private var selectedTab: AppTab = .home
     @State private var chatsPath: [ChatsRoute] = []
-    @State private var chatsMode: ChatsMode = .chat
-    @State private var workTarget: MobileWorkTarget?
+    @State private var workPath: [WorkRoute] = []
+    @State private var inboxPath: [WorkRoute] = []
     @State private var outputReviewTarget: OutputReviewTarget?
     @State private var deviceApproval: DeviceApprovalTarget?
     @State private var discoverLink: DiscoverLink?
     @State private var companionSync: CompanionSync?
+
+    private var viewedConversationId: String? {
+        let route: String?
+        switch selectedTab {
+        case .chats: route = chatsPath.last?.conversationId
+        case .work: route = workPath.last?.conversationId
+        case .attention: route = inboxPath.last?.conversationId
+        default: route = nil
+        }
+        guard route != nil else { return nil }
+        return conversationManager.currentConversation?.id
+    }
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -51,31 +63,20 @@ private struct RootTabView: View {
             }
 
             Tab("Chats", systemImage: "bubble.left.and.bubble.right", value: AppTab.chats) {
-                ChatsView(path: $chatsPath, mode: $chatsMode)
+                ChatsView(path: $chatsPath)
+            }
+
+            Tab("Work", systemImage: "briefcase", value: AppTab.work) {
+                WorkView(path: $workPath)
             }
 
             Tab("Inbox", systemImage: "tray", value: AppTab.attention) {
-                AttentionView(selectedTarget: $workTarget, onOpenConversation: openConversation)
+                AttentionView(path: $inboxPath)
             }
-            .badge(attentionStore.badgeCount(inboxUnread: notificationManager.unread))
+            .badge(attentionStore.badgeCount(notifications: notificationManager.items))
 
             Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
                 SettingsView()
-            }
-        }
-        .sheet(item: $workTarget) { target in
-            if let runId = target.runId {
-                WorkRunView(runId: runId)
-            } else if let taskId = target.taskId {
-                WorkTaskView(
-                    projectId: target.projectId,
-                    taskId: taskId,
-                    focusedInteractionId: target.interactionId,
-                    onOpenConversation: { conversationId in
-                        workTarget = nil
-                        openConversation(conversationId)
-                    }
-                )
             }
         }
         .sheet(item: $outputReviewTarget) { target in
@@ -99,14 +100,11 @@ private struct RootTabView: View {
                 break
             }
         }
-        .onChange(of: conversationManager.currentConversation?.id) { _, conversationId in
-            syncClient.focus(conversationId: selectedTab == .chats && !chatsPath.isEmpty ? conversationId : nil)
+        .onChange(of: viewedConversationId) { _, conversationId in
+            syncClient.focus(conversationId: conversationId)
         }
-        .onChange(of: chatsPath) { _, path in
-            syncClient.focus(conversationId: path.isEmpty ? nil : conversationManager.currentConversation?.id)
-        }
-        .onChange(of: notificationManager.unread) { _, unread in
-            Task { await attentionStore.publish(inboxUnread: unread) }
+        .onChange(of: notificationManager.items) { _, items in
+            Task { await attentionStore.publish(notifications: items) }
         }
         .onChange(of: notificationManager.requestedInboxItemId) { _, itemId in
             if itemId != nil {
@@ -148,7 +146,7 @@ private struct RootTabView: View {
         _ = await (conversations, models)
 
         await notificationManager.reconcileAuthenticatedState(isAuthenticated: true)
-        await attentionStore.refresh(inboxUnread: notificationManager.unread)
+        await attentionStore.refresh(notifications: notificationManager.items)
         await pushNotificationManager.enableForAuthenticatedUser()
         await healthSync.syncIfNeeded()
         await bindTeammates()
@@ -173,6 +171,8 @@ private struct RootTabView: View {
         await attentionStore.reset()
         await notificationManager.reconcileAuthenticatedState(isAuthenticated: false)
         chatsPath = []
+        workPath = []
+        inboxPath = []
     }
 
     private func refreshOnForeground() async {
@@ -199,14 +199,8 @@ private struct RootTabView: View {
 
     private func open(_ target: MobileWorkTarget) {
         pushNotificationManager.targetToOpen = nil
-        if target.runId != nil || target.taskId != nil {
-            selectedTab = .attention
-            workTarget = target
-        } else if let conversationId = target.conversationId {
-            openConversation(conversationId)
-        } else {
-            selectedTab = .attention
-        }
+        workPath = WorkRoute.routes(to: target)
+        selectedTab = .work
     }
 
     private func handle(_ url: URL) {

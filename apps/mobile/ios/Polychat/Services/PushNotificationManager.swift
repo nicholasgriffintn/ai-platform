@@ -9,6 +9,7 @@ final class PushNotificationManager: ObservableObject {
         case awaitingDeviceToken
         case registering
         case registered
+        case serverCannotDeliver
         case failed(String)
         case disabled
     }
@@ -130,12 +131,12 @@ final class PushNotificationManager: ObservableObject {
         #endif
 
         do {
-            try await apiClient.registerMobilePushDevice(
+            let registration = try await apiClient.registerMobilePushDevice(
                 token: deviceToken,
                 environment: environment
             )
-            isRegistered = true
-            registrationState = .registered
+            isRegistered = registration.registered
+            registrationState = registration.deliverable ? .registered : .serverCannotDeliver
         } catch {
             isRegistered = false
             registrationState = .failed(error.localizedDescription)
