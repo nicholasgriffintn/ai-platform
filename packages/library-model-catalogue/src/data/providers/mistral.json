@@ -450,7 +450,6 @@
       "matchingModel": "zai-glm-5-3-flash",
       "overrides": {
         "contextWindow": 1048576,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

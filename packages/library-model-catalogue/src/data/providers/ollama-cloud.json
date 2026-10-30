@@ -71,6 +71,7 @@
       "overrides": {
         "name": "deepseek-v4-pro",
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
+        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
@@ -138,7 +139,6 @@
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

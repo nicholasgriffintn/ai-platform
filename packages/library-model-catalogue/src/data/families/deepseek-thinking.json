@@ -182,7 +182,6 @@
       "defaults": {
         "name": "DeepSeek V4 Pro",
         "description": "Open MoE flagship with million-token context for coding and long agent runs",
-        "contextWindow": 1048576,
         "strengths": [
           "tool_use",
           "coding"

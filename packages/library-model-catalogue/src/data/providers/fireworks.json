@@ -636,7 +636,6 @@
       "overrides": {
         "name": "GLM 5.3 Flash",
         "contextWindow": 1048573,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

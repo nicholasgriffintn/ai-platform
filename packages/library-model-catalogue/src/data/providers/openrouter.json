@@ -2989,8 +2989,8 @@
         "name": "MoonshotAI Kimi Latest",
         "releaseDate": "April 27, 2026",
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.0001529,
-        "costPer1kOutputTokens": 0.0105572,
+        "costPer1kInputTokens": 0.0001824,
+        "costPer1kOutputTokens": 0.0093388,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -3688,11 +3688,12 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek/deepseek-v4-pro",
       "overrides": {
-        "maxTokens": 393216,
+        "contextWindow": 1048576,
+        "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.0016,
-        "costPer1kOutputTokens": 0.0032,
+        "costPer1kInputTokens": 0.000816234,
+        "costPer1kOutputTokens": 0.001632468,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -6008,6 +6009,7 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "qwen/qwen3.6-27b",
       "overrides": {
+        "maxTokens": 81920,
         "modalities": {
           "input": [
             "text",
@@ -6026,8 +6028,8 @@
         ],
         "speed": 3,
         "lastUpdated": "April 22, 2026",
-        "costPer1kInputTokens": 0.00045,
-        "costPer1kOutputTokens": 0.0027
+        "costPer1kInputTokens": 0.00032,
+        "costPer1kOutputTokens": 0.0032
       }
     },
     "qwen/qwen3.6-35b-a3b": {
@@ -7022,8 +7024,8 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 6, 2026",
-        "costPer1kInputTokens": 0.0000825,
-        "costPer1kOutputTokens": 0.00033,
+        "costPer1kInputTokens": 0.000132,
+        "costPer1kOutputTokens": 0.000528,
         "supportsAttachments": false
       }
     },
@@ -7234,8 +7236,8 @@
         "speed": 3,
         "isFeatured": false,
         "lastUpdated": "July 16, 2026",
-        "costPer1kInputTokens": 0.000239,
-        "costPer1kOutputTokens": 0.0108,
+        "costPer1kInputTokens": 0.000192,
+        "costPer1kOutputTokens": 0.015,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -7433,8 +7435,8 @@
       "matchingModel": "~deepseek/deepseek-v4-flash-latest",
       "overrides": {
         "lastUpdated": "August 1, 2026",
-        "costPer1kInputTokens": 0.0000434,
-        "costPer1kOutputTokens": 0.0001658,
+        "costPer1kInputTokens": 0.0000331,
+        "costPer1kOutputTokens": 0.0003,
         "supportsAttachments": false
       }
     },
@@ -7641,7 +7643,7 @@
       "overrides": {
         "description": "Open-weight sparse MoE (2.4T total, 95B active), the open-weight twin of Qwen3.8 Max for coding, research, complex reasoning, and agentic workflows",
         "contextWindow": 1048576,
-        "maxTokens": 909000,
+        "maxTokens": 131072,
         "contextComplexity": 5,
         "speed": 2,
         "lastUpdated": "August 12, 2026",
@@ -7691,7 +7693,7 @@
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 1000000,
-        "maxTokens": 262144,
+        "maxTokens": 235929,
         "modalities": {
           "input": [
             "text",
@@ -7712,8 +7714,8 @@
         "contextComplexity": 5,
         "speed": 2,
         "lastUpdated": "August 14, 2026",
-        "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0025,
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.001875,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -7748,8 +7750,8 @@
         "maxTokens": 943718,
         "speed": 3,
         "lastUpdated": "August 14, 2026",
-        "costPer1kInputTokens": 0.0000699,
-        "costPer1kOutputTokens": 0.0014,
+        "costPer1kInputTokens": 0.00008,
+        "costPer1kOutputTokens": 0.0036,
         "supportsAttachments": false
       }
     },
@@ -7989,8 +7991,8 @@
       "overrides": {
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "lastUpdated": "August 28, 2026",
-        "costPer1kInputTokens": 0.0007506,
-        "costPer1kOutputTokens": 0.0022509,
+        "costPer1kInputTokens": 0.000834,
+        "costPer1kOutputTokens": 0.002501,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -8008,7 +8010,6 @@
       "overrides": {
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
         "contextWindow": 1048576,
-        "maxTokens": 943717,
         "modalities": {
           "input": [
             "text",
@@ -8028,8 +8029,8 @@
         ],
         "speed": 3,
         "lastUpdated": "August 26, 2026",
-        "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.0005
+        "costPer1kInputTokens": 0.0000487,
+        "costPer1kOutputTokens": 0.0000701
       }
     },
     "ibm-granite/granite-4.2-8b": {
@@ -8048,7 +8049,7 @@
       "matchingModel": "~z-ai/glm-flash-latest",
       "overrides": {
         "lastUpdated": "August 27, 2026",
-        "costPer1kInputTokens": 0.0000503,
+        "costPer1kInputTokens": 0.0000487,
         "costPer1kOutputTokens": 0.0000701
       }
     },
@@ -8428,8 +8429,8 @@
         "maxTokens": 943718,
         "releaseDate": "September 14, 2026",
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.000044,
-        "costPer1kOutputTokens": 0.000383,
+        "costPer1kInputTokens": 0.0000339,
+        "costPer1kOutputTokens": 0.00114,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -8453,7 +8454,7 @@
         "releaseDate": "September 14, 2026",
         "lastUpdated": "September 14, 2026",
         "costPer1kInputTokens": 0.0001035,
-        "costPer1kOutputTokens": 0.008,
+        "costPer1kOutputTokens": 0.004,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [

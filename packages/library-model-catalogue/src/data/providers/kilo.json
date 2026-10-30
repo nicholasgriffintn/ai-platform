@@ -181,8 +181,8 @@
       "matchingModel": "~deepseek/deepseek-flash-latest",
       "overrides": {
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.000044,
-        "costPer1kOutputTokens": 0.000383
+        "costPer1kInputTokens": 0.0000339,
+        "costPer1kOutputTokens": 0.00114
       },
       "unset": [
         "contextComplexity"
@@ -194,7 +194,7 @@
       "overrides": {
         "lastUpdated": "September 14, 2026",
         "costPer1kInputTokens": 0.0001035,
-        "costPer1kOutputTokens": 0.008,
+        "costPer1kOutputTokens": 0.004,
         "supportsAttachments": false
       }
     },
@@ -203,8 +203,8 @@
       "matchingModel": "~deepseek/deepseek-v4-flash-latest",
       "overrides": {
         "lastUpdated": "August 1, 2026",
-        "costPer1kInputTokens": 0.0000434,
-        "costPer1kOutputTokens": 0.0001658,
+        "costPer1kInputTokens": 0.0000331,
+        "costPer1kOutputTokens": 0.0003,
         "supportsAttachments": false
       }
     },
@@ -234,7 +234,7 @@
       "overrides": {
         "lastUpdated": "April 27, 2026",
         "costPer1kInputTokens": 0.0001824,
-        "costPer1kOutputTokens": 0.0105572
+        "costPer1kOutputTokens": 0.0093388
       }
     },
     "~openai/gpt-astra-latest": {
@@ -321,7 +321,7 @@
       "matchingModel": "~z-ai/glm-flash-latest",
       "overrides": {
         "lastUpdated": "August 27, 2026",
-        "costPer1kInputTokens": 0.0000503,
+        "costPer1kInputTokens": 0.0000487,
         "costPer1kOutputTokens": 0.0000701
       }
     },
@@ -1081,7 +1081,8 @@
       "matchingModel": "deepseek/deepseek-v4-pro",
       "overrides": {
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
-        "maxTokens": 393216,
+        "contextWindow": 1024000,
+        "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.0016,
@@ -1670,8 +1671,8 @@
           ]
         },
         "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.000042,
-        "costPer1kOutputTokens": 0.00022,
+        "costPer1kInputTokens": 0.00003,
+        "costPer1kOutputTokens": 0.00009,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -4600,6 +4601,7 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "qwen/qwen3.6-27b",
       "overrides": {
+        "maxTokens": 81920,
         "modalities": {
           "input": [
             "text",
@@ -4790,8 +4792,8 @@
       "matchingModel": "qwen/qwen3.8-2.4t-a95b",
       "overrides": {
         "description": "Open-weight sparse MoE (2.4T total, 95B active), the open-weight twin of Qwen3.8 Max for coding, research, complex reasoning, and agentic workflows",
-        "contextWindow": 1010000,
-        "maxTokens": 909000,
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
         "contextComplexity": 5,
         "speed": 2,
         "lastUpdated": "August 12, 2026",
@@ -4805,8 +4807,7 @@
       "matchingModel": "qwen/qwen3.8-27b",
       "overrides": {
         "description": "Qwen3.8 27B is an open-weight dense vision-language model from Qwen. It is suited for coding, professional workflows, research, multimodal interaction, and long-running agent tasks, with flexible thinking that can be...",
-        "contextWindow": 1000000,
-        "maxTokens": 262144,
+        "maxTokens": 235929,
         "modalities": {
           "input": [
             "text",
@@ -4824,7 +4825,6 @@
           "tool_use",
           "coding"
         ],
-        "contextComplexity": 5,
         "speed": 2,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.000425,
@@ -5219,8 +5219,8 @@
         "description": "Hy3 is a 295B-parameter Mixture-of-Experts model from Tencent (21B active, 192 experts with top-8 routing) built for reasoning, agentic workflows, and real-world production use. It supports a configurable reasoning effort:...",
         "speed": 3,
         "lastUpdated": "July 6, 2026",
-        "costPer1kInputTokens": 0.0000825,
-        "costPer1kOutputTokens": 0.00033,
+        "costPer1kInputTokens": 0.000132,
+        "costPer1kOutputTokens": 0.000528,
         "supportsAttachments": false
       }
     },
@@ -5242,8 +5242,8 @@
       "overrides": {
         "description": "Tencent: Hy4 preview is a mixture-of-experts model from Tencent, with 49B active parameters out of 770B total. It is designed for coding agents, complex tool-use workflows, and productivity tasks that...",
         "lastUpdated": "August 28, 2026",
-        "costPer1kInputTokens": 0.0007506,
-        "costPer1kOutputTokens": 0.0022509,
+        "costPer1kInputTokens": 0.000834,
+        "costPer1kOutputTokens": 0.002501,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -5571,8 +5571,8 @@
         "description": "MiMo-V2.6-Flash is an open-source foundation model developed by Xiaomi. Built on a Mixture-of-Experts architecture with 309B total parameters and 15B activated per token, it employs a hybrid attention mechanism for...",
         "speed": 3,
         "lastUpdated": "September 22, 2026",
-        "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.00028,
+        "costPer1kInputTokens": 0.000087,
+        "costPer1kOutputTokens": 0.000187,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -5887,8 +5887,7 @@
       "matchingModel": "z-ai/glm-5.3-flash",
       "overrides": {
         "description": "GLM-5.3-Flash is a native multimodal model from Z.ai. It is suited for efficient coding and long-horizon agent tasks. Its hybrid sparse and linear attention architecture maintains accurate long-context behavior while...",
-        "contextWindow": 1048575,
-        "maxTokens": 943717,
+        "contextWindow": 1048576,
         "modalities": {
           "input": [
             "text",
