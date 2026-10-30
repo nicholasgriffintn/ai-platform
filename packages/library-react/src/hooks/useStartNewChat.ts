@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
 import { getProjectNewTaskPath } from "../lib/conversation-route.js";
-import { getProductMode, MODE_BASE_PATHS } from "../lib/navigation/places.js";
+import { DISCOVER_PATH, getProductMode } from "../lib/navigation/places.js";
 import { useUIStore } from "../state/stores/uiStore.js";
 import { useTrackEvent } from "./use-track-event.js";
 
@@ -39,7 +39,7 @@ export function useStartNewChat() {
     }
 
     clearCurrentConversation();
-    void navigate(MODE_BASE_PATHS.chat);
+    void navigate(DISCOVER_PATH);
   }, [
     clearCurrentConversation,
     navigate,

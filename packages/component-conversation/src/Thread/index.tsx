@@ -3,7 +3,7 @@ import {
   type ToolInteractionHandler,
   UserQuestionView,
 } from "@ngriffin_uk/polychat-component-content";
-import { cn, Pet, usePetStatus } from "@ngriffin_uk/polychat-component-ui";
+import { Pet, usePetStatus } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import { isCompactConversationCommand } from "@ngriffin_uk/polychat-library-chat/compaction-command";
 import type {
@@ -65,7 +65,6 @@ import type {
   ComposerAssistantActionCapability,
   ComposerCommandAction,
 } from "@ngriffin_uk/polychat-utility-react";
-import { ChevronDown } from "lucide-react";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -119,8 +118,6 @@ export interface ThreadModeConfig {
   welcomeLoading?: boolean;
   welcomeSuggestions?: ChatSuggestion[] | null;
   welcomeCapabilitySuggestions?: boolean;
-  welcomeFooter?: ReactNode;
-  welcomeFooterHint?: string;
   inputPlaceholder?: {
     newConversation: string;
     followUp: string;
@@ -1022,28 +1019,9 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
       {showWelcomeScreen ? (
         <div
           data-header-scroll-source
-          className={cn(
-            "flex min-h-0 flex-1 overflow-y-auto px-0",
-            modeConfig?.welcomeFooter ? "flex-col" : "items-start justify-center py-6 sm:py-8",
-          )}
+          className="flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-0 py-6 sm:py-8"
         >
-          <div
-            className={cn(
-              "w-full",
-              modeConfig?.welcomeFooter
-                ? "relative flex min-h-full shrink-0 flex-col justify-center pt-6 pb-12 sm:pt-8"
-                : "my-auto",
-            )}
-          >
-            {modeConfig?.welcomeFooter && modeConfig.welcomeFooterHint && (
-              <p
-                aria-hidden
-                className="polychat-eyebrow absolute inset-x-0 bottom-3 flex items-center justify-center gap-1.5"
-              >
-                <span>{modeConfig.welcomeFooterHint}</span>
-                <ChevronDown size={12} className="motion-safe:animate-bounce" />
-              </p>
-            )}
+          <div className="my-auto w-full">
             <WelcomeScreen
               title={modeConfig?.welcomeTitle}
               description={modeConfig?.welcomeDescription}
@@ -1079,7 +1057,6 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
               }
             />
           </div>
-          {modeConfig?.welcomeFooter}
         </div>
       ) : (
         <ConversationMessageColumn>

@@ -1,6 +1,6 @@
 import { SidebarHeader as ControlledSidebarHeader } from "@ngriffin_uk/polychat-component-navigation";
 import { APP_NAME, useChatStore } from "@ngriffin_uk/polychat-library-client";
-import { MODE_BASE_PATHS, useUIStore } from "@ngriffin_uk/polychat-library-react";
+import { DISCOVER_PATH, useUIStore } from "@ngriffin_uk/polychat-library-react";
 import type { ReactNode } from "react";
 
 export interface SidebarHeaderProps {
@@ -15,7 +15,7 @@ export function SidebarHeader({ actions }: SidebarHeaderProps) {
     <ControlledSidebarHeader
       actions={actions}
       appName={APP_NAME}
-      homeHref={MODE_BASE_PATHS.chat}
+      homeHref={DISCOVER_PATH}
       sidebarVisible={sidebarVisible}
       onToggleSidebar={setSidebarVisible}
       onSearch={() => setShowSearch(true)}

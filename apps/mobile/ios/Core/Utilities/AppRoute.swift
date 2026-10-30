@@ -3,6 +3,7 @@ import Foundation
 enum AppTab: Hashable {
     case home
     case chats
+    case work
     case attention
     case settings
 }
@@ -81,7 +82,7 @@ enum AppRoute: Equatable {
         case "poly":
             return .poly
         case "work":
-            return workTarget(segments: segments).map(AppRoute.work) ?? .tab(.attention)
+            return workTarget(segments: segments).map(AppRoute.work) ?? .tab(.work)
         case "chat":
             guard segments.count == 2, segments[1] != "new" else {
                 return .tab(.chats)

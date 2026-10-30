@@ -1,6 +1,8 @@
-import { MODE_BASE_PATHS } from "@ngriffin_uk/polychat-library-react";
-import { Navigate } from "react-router";
+import type { ThreadModeConfig } from "@ngriffin_uk/polychat-component-conversation";
+import { DiscoverHomePage } from "@ngriffin_uk/polychat-component-shell";
+
+const DESKTOP_MODE_CONFIG: ThreadModeConfig = { analyticsSource: "desktop" };
 
 export default function RootPage() {
-  return <Navigate to={MODE_BASE_PATHS.chat} replace />;
+  return <DiscoverHomePage hostModeConfig={DESKTOP_MODE_CONFIG} />;
 }

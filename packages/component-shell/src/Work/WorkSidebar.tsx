@@ -3,10 +3,11 @@ import { WorkSidebarNav } from "@ngriffin_uk/polychat-component-workspaces";
 import {
   getPlacePaths,
   getProjectBasePath,
+  useStartNewChat,
   useTaskAttention,
   useUIStore,
 } from "@ngriffin_uk/polychat-library-react";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation } from "react-router";
 
 import { useInboxNeedsYou } from "../Attention/useInboxNeedsYou.js";
 import { SidebarFooter } from "../Sidebar/SidebarFooter.js";
@@ -25,7 +26,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
   const { workspacesQuery, workspaceQuery } = useWorkData();
   const { data } = workspacesQuery;
   const { data: workspace } = workspaceQuery;
-  const navigate = useNavigate();
+  const startNewTask = useStartNewChat();
   const { pathname } = useLocation();
   const { items: attentionItems } = useTaskAttention();
   const inboxNeedsYou = useInboxNeedsYou();
@@ -105,13 +106,7 @@ export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
         }
         onNavigate={closeOnMobile}
         onNewTask={() => {
-          void navigate(
-            projectId && workspaceId
-              ? `${projectBasePath}?new=1`
-              : workspaceId
-                ? `/work/${workspaceId}`
-                : `${workPlaces.conversations}/tasks`,
-          );
+          startNewTask();
           closeOnMobile();
         }}
       />

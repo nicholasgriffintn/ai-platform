@@ -23,6 +23,10 @@ interface PrivateFileRecord {
 
 export type PrivateFileAccessScope = "project" | "owner" | "public-conversation" | "denied";
 
+const DEFAULT_PRIVATE_CACHE_CONTROL = "private, max-age=300";
+
+export const IMMUTABLE_PRIVATE_CACHE_CONTROL = "private, max-age=604800, immutable";
+
 export function getPrivateFileAccessScope(
   record: PrivateFileRecord,
   userId?: number,
@@ -120,6 +124,7 @@ export async function getPrivateFileResponse(
   record: Pick<PrivateFileRecord, "mime_type" | "filename">,
   object: { arrayBuffer(): Promise<ArrayBuffer> },
   rangeHeader?: string | null,
+  cacheControl: string = DEFAULT_PRIVATE_CACHE_CONTROL,
 ): Promise<Response> {
   const disposition = canRenderInline(record.mime_type) ? "inline" : "attachment";
   const bytes = await object.arrayBuffer();
@@ -127,7 +132,7 @@ export async function getPrivateFileResponse(
   const headers = {
     "Content-Type": record.mime_type || "application/octet-stream",
     "Content-Disposition": `${disposition}; filename="${(record.filename || "file").replace(/["\\\r\n]/g, "_")}"`,
-    "Cache-Control": "private, max-age=300",
+    "Cache-Control": cacheControl,
     "X-Content-Type-Options": "nosniff",
     "Accept-Ranges": "bytes",
   };
@@ -149,6 +154,7 @@ export interface PrivateObjectFile {
   filename: string;
   mimeType: string;
   notFound?: string;
+  cacheControl?: string;
 }
 
 export async function getPrivateObjectResponse(
@@ -167,5 +173,6 @@ export async function getPrivateObjectResponse(
     { mime_type: object.httpMetadata?.contentType ?? file.mimeType, filename: file.filename },
     object,
     rangeHeader,
+    file.cacheControl,
   );
 }

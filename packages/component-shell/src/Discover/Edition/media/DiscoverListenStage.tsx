@@ -10,6 +10,7 @@ import { listenStatus } from "./media-status.js";
 
 export function DiscoverListenStage({
   sourceId,
+  dockHref,
   researching = false,
   eyebrow,
   title,
@@ -23,6 +24,7 @@ export function DiscoverListenStage({
   onPlayingChange,
 }: {
   sourceId: string | undefined;
+  dockHref?: string;
   researching?: boolean;
   eyebrow: string;
   title: string;
@@ -48,6 +50,7 @@ export function DiscoverListenStage({
         sourceId={sourceId ?? null}
         title={title}
         artBackground={artBackground}
+        dock={dockHref ? { href: dockHref, subtitle: eyebrow } : undefined}
         onPlayingChange={onPlayingChange}
         notice={
           status.state === "idle" ? (

@@ -26,6 +26,10 @@ export function getDiscover(): Promise<DiscoverResponse> {
   return requestJson("/discover", "GET");
 }
 
+export function getHouseDiscoverEdition(): Promise<DiscoverEdition> {
+  return requestJson("/discover/house", "GET");
+}
+
 export function getDiscoverEdition(
   date: string,
   edition: DiscoverEditionTime = "morning",

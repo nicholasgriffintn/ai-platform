@@ -1,4 +1,4 @@
-import { HomePage } from "@ngriffin_uk/polychat-component-shell";
+import { DiscoverHomePage } from "@ngriffin_uk/polychat-component-shell";
 
 export function meta() {
   return [
@@ -6,9 +6,9 @@ export function meta() {
     {
       name: "description",
       content:
-        "Ask any model, keep every conversation, and bring your team into Work when a question becomes a project. One perch for chat, teammates and shared projects.",
+        "Your morning edition from Poly beside a place to ask any model anything. One perch for chat, teammates and shared projects.",
     },
   ];
 }
 
-export default HomePage;
+export default DiscoverHomePage;

@@ -549,6 +549,7 @@ export class AuthoredSkillRepository extends BaseRepository {
               content: sql<null>`NULL`.as("content"),
               created_by_user_id: sql<null>`NULL`.as("created_by_user_id"),
               provenance_json: sql<null>`NULL`.as("provenance_json"),
+              evidence_json: sql<null>`NULL`.as("evidence_json"),
               operation: sql<null>`NULL`.as("operation"),
               restored_from_revision: sql<null>`NULL`.as("restored_from_revision"),
               resource_type: sql<"skill">`'skill'`.as("resource_type"),

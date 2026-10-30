@@ -85,7 +85,7 @@ export async function updateDiscoverEdition(
         expectedRevision: latest.revision,
         updatedByUserId: user.id,
       });
-      await publishDiscoverChanged(context);
+      await publishDiscoverChanged(context, { id: editionId, revision: latest.revision + 1 });
 
       return;
     } catch (error) {
@@ -125,7 +125,7 @@ async function presentEdition(
 
   const feedback = collectCardSignals(await listDiscoverFeedback(context, userId), edition.id);
 
-  return { ...edition.content, id: edition.id, feedback };
+  return { ...edition.content, id: edition.id, revision: edition.revision, feedback };
 }
 
 const EDITION_HISTORY_LIMIT = 14;
@@ -230,7 +230,7 @@ export async function saveDiscoverEdition(
     throw new AssistantError("Discover edition could not be saved", ErrorType.INTERNAL_ERROR);
   }
 
-  await publishDiscoverChanged(context);
+  await publishDiscoverChanged(context, { id: stored.id, revision: stored.revision });
 
   return stored;
 }

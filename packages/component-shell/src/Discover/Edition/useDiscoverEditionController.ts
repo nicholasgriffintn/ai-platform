@@ -1,7 +1,9 @@
+import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   useDiscover,
   useDiscoverFeedback,
   useDiscoverFollows,
+  useHouseDiscoverEdition,
   useRefreshDiscover,
   useRequestDiscoverListen,
   useRequestDiscoverWeek,
@@ -16,19 +18,60 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 import { normaliseComparableText, readLocalTimeZone } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
+import { useSearchParams } from "react-router";
 
 import { cardTopic, hasDiscoverTopic } from "./discover-card-drafts.js";
 import type { DiscoverStoryCard } from "./DiscoverStoryTile.js";
 import type { DiscoverMedia } from "./media/media-status.js";
 
+export type DiscoverEditionViewState = "feed" | "card" | "media" | "ask";
+
+const PLAY_PARAM = "play";
+const LINKABLE_MEDIA = [
+  "episode",
+  "perch",
+  "week",
+  "wind_down",
+] as const satisfies readonly DiscoverMedia[];
+
+function readPlayParam(value: string | null): DiscoverMedia | null {
+  return LINKABLE_MEDIA.find((media) => media === value) ?? null;
+}
+
+function cardPrompt(card: DiscoverCard): string | null {
+  switch (card.kind) {
+    case "topic":
+    case "action":
+      return card.prompt;
+    case "check_in":
+      return card.question;
+    default:
+      return null;
+  }
+}
+
 export function useDiscoverEditionController() {
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+  const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
+  const setChatInput = useChatStore((state) => state.setChatInput);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const linkedMedia = readPlayParam(searchParams.get(PLAY_PARAM));
   const [requestedAt, setRequestedAt] = useState<number | null>(null);
   const [episodeRequestedAt, setEpisodeRequestedAt] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [view, setView] = useState<"feed" | "card" | "media">("feed");
-  const [chosenMedia, setChosenMedia] = useState<DiscoverMedia | null>(null);
+  const [view, setView] = useState<DiscoverEditionViewState>(linkedMedia ? "media" : "feed");
+  const [chosenMedia, setChosenMedia] = useState<DiscoverMedia | null>(linkedMedia);
   const [mediaPlaying, setMediaPlaying] = useState(false);
-  const discover = useDiscover(true, requestedAt, episodeRequestedAt);
+  const discover = useDiscover(isAuthenticated, requestedAt, episodeRequestedAt);
+  const ownEdition = discover.data?.edition ?? null;
+  const settings = discover.data?.settings ?? null;
+  const isAwaitingEdition = discover.isAwaitingEdition;
+  const needsHouseEdition =
+    !isAuthenticationLoading &&
+    (!isAuthenticated || (discover.isFetched && !ownEdition && !isAwaitingEdition));
+  const house = useHouseDiscoverEdition(needsHouseEdition);
+  const edition = ownEdition ?? (needsHouseEdition ? (house.data ?? null) : null);
+  const isHouseEdition = !ownEdition && edition !== null;
   const requestEpisode = useRequestDiscoverEpisode();
   const requestListen = useRequestDiscoverListen();
   const requestWeek = useRequestDiscoverWeek();
@@ -47,8 +90,6 @@ export function useDiscoverEditionController() {
             normaliseComparableText(follow.topic) === normaliseComparableText(cardTopic(card)),
         )
       : undefined;
-  const edition = discover.data?.edition ?? null;
-  const settings = discover.data?.settings ?? null;
   const selectedCard =
     view === "card" ? (edition?.cards.find((card) => card.id === selectedId) ?? null) : null;
   const media: DiscoverMedia =
@@ -60,6 +101,20 @@ export function useDiscoverEditionController() {
         : [],
     ),
   );
+
+  const setPlayParam = (next: DiscoverMedia | null) => {
+    const params = new URLSearchParams(searchParams);
+
+    if (next && LINKABLE_MEDIA.some((linkable) => linkable === next)) {
+      params.set(PLAY_PARAM, next);
+    } else {
+      params.delete(PLAY_PARAM);
+    }
+
+    if (params.toString() !== searchParams.toString()) {
+      setSearchParams(params, { replace: true });
+    }
+  };
 
   const writeEditionNow = async () => {
     const result = await refresh.mutateAsync();
@@ -75,24 +130,31 @@ export function useDiscoverEditionController() {
     setChosenMedia(next);
     setSelectedId(null);
     setView("media");
+    setPlayParam(next);
+  };
+
+  const closePanel = () => {
+    setSelectedId(null);
+    setView("feed");
+    setPlayParam(null);
   };
 
   const sendFeedback = (card: DiscoverCard, signal: DiscoverFeedbackSignal) => {
-    if (!edition) {
+    if (!ownEdition) {
       return;
     }
 
-    feedback.mutate({ editionId: edition.id, cardId: card.id, signal });
+    feedback.mutate({ editionId: ownEdition.id, cardId: card.id, signal });
   };
 
   const playStory = (cardId: string) => {
-    if (!edition) {
+    if (!ownEdition) {
       return;
     }
 
     setStoryCardId(cardId);
     startStory.mutate(
-      { editionId: edition.id, cardId },
+      { editionId: ownEdition.id, cardId },
       {
         onSuccess: (windDown) => {
           setStoryWindDownId(windDown.id);
@@ -103,8 +165,13 @@ export function useDiscoverEditionController() {
   };
 
   return {
+    isAuthenticated,
+    isAuthenticationLoading,
     discover,
+    house,
     edition,
+    ownEdition,
+    isHouseEdition,
     settings,
     selectedCard,
     view,
@@ -112,6 +179,11 @@ export function useDiscoverEditionController() {
     mediaPlaying,
     setMediaPlaying,
     openMedia,
+    openAsk: () => {
+      setSelectedId(null);
+      setView("ask");
+      setPlayParam(null);
+    },
     startingStoryId: startStory.isPending ? storyCardId : null,
     failedStoryId: startStory.isError ? storyCardId : null,
     openStoryId: view === "media" && media === "story" ? storyCardId : null,
@@ -129,40 +201,40 @@ export function useDiscoverEditionController() {
         playStory(storyCardId);
       }
     },
-    showMedia: () => setView("media"),
+    showMedia: () => {
+      setView("media");
+      setPlayParam(media);
+    },
     windDownId: discover.data?.windDownId ?? null,
     isRecordingWeek: requestWeek.isPending,
     recordWeekError: requestWeek.error,
     recordWeek: () => {
-      if (edition) {
-        requestWeek.mutate(edition.id);
+      if (ownEdition) {
+        requestWeek.mutate(ownEdition.id);
       }
     },
     isRecordingListen: requestListen.isPending,
     recordListenError: requestListen.error,
     recordListen: () => {
-      if (edition) {
-        requestListen.mutate(edition.id);
+      if (ownEdition) {
+        requestListen.mutate(ownEdition.id);
       }
     },
     isAwaitingEpisode:
-      episodeRequestedAt !== null && !edition?.episodeId && !edition?.episodeFailed,
+      episodeRequestedAt !== null && !ownEdition?.episodeId && !ownEdition?.episodeFailed,
     isRequestingEpisode: requestEpisode.isPending,
     requestEpisodeError: requestEpisode.error,
     requestEpisode: () => {
-      if (!edition) {
+      if (!ownEdition) {
         return;
       }
 
-      requestEpisode.mutate(edition.id, {
+      requestEpisode.mutate(ownEdition.id, {
         onSuccess: () => setEpisodeRequestedAt(Date.now()),
       });
     },
-    closePanel: () => {
-      setSelectedId(null);
-      setView("feed");
-    },
-    isAwaitingEdition: discover.isAwaitingEdition,
+    closePanel,
+    isAwaitingEdition,
     isSavingSettings: updateSettings.isPending,
     isRefreshing: refresh.isPending,
     isSendingFeedback: feedback.isPending,
@@ -183,11 +255,26 @@ export function useDiscoverEditionController() {
     isTopicHidden: (card: DiscoverCard) =>
       hasDiscoverTopic(card) && hiddenTopics.has(normaliseComparableText(cardTopic(card))),
     select: (card: DiscoverCard | null) => {
+      if (card && isHouseEdition) {
+        const prompt = cardPrompt(card);
+
+        if (prompt) {
+          setChatInput(prompt);
+        }
+
+        setSelectedId(null);
+        setView("ask");
+        setPlayParam(null);
+
+        return;
+      }
+
       setSelectedId(card?.id ?? null);
       setView(card ? "card" : "feed");
+      setPlayParam(null);
 
-      if (card && edition && !edition.feedback[card.id]?.includes("opened")) {
-        feedback.mutate({ editionId: edition.id, cardId: card.id, signal: "opened" });
+      if (card && ownEdition && !ownEdition.feedback[card.id]?.includes("opened")) {
+        feedback.mutate({ editionId: ownEdition.id, cardId: card.id, signal: "opened" });
       }
     },
     sendFeedback,

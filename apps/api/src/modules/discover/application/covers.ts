@@ -3,7 +3,10 @@ import { isoWeekKey, slugify } from "@ngriffin_uk/polychat-utility-core";
 import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { getPrivateObjectResponse } from "~/infrastructure/storage/read-resource";
+import {
+  getPrivateObjectResponse,
+  IMMUTABLE_PRIVATE_CACHE_CONTROL,
+} from "~/infrastructure/storage/read-resource";
 import { storeDrawnImage, TEXTLESS_PICTURE } from "~/modules/generate/application/stored-image";
 
 import { requireDiscoverEdition, updateDiscoverEdition } from "./editions";
@@ -69,7 +72,12 @@ export async function readDiscoverCover(
   return getPrivateObjectResponse(
     context,
     coverKey(context.requireUser().id, coverId),
-    { filename: coverId, mimeType: "image/png", notFound: "Cover not found" },
+    {
+      filename: coverId,
+      mimeType: "image/png",
+      notFound: "Cover not found",
+      cacheControl: IMMUTABLE_PRIVATE_CACHE_CONTROL,
+    },
     rangeHeader,
   );
 }

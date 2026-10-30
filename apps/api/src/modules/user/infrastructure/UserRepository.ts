@@ -204,7 +204,7 @@ export class UserRepository extends BaseRepository {
     bio?: string;
     twitter_username?: string;
     site?: string;
-  }): Promise<User> {
+  }): Promise<{ user: User; created: boolean }> {
     const existingUser = await this.getUserByGithubId(userData.githubId);
 
     if (existingUser) {
@@ -226,7 +226,7 @@ export class UserRepository extends BaseRepository {
         throw new Error("Failed to retrieve updated user");
       }
 
-      return updatedUser;
+      return { user: updatedUser, created: false };
     }
 
     const userByEmail = await this.getUserByEmail(userData.email);
@@ -242,7 +242,7 @@ export class UserRepository extends BaseRepository {
         throw new Error("Failed to retrieve updated user");
       }
 
-      return updatedUser;
+      return { user: updatedUser, created: false };
     }
 
     const result = await this.createUser(userData);
@@ -259,6 +259,6 @@ export class UserRepository extends BaseRepository {
       throw new Error("Failed to retrieve created user");
     }
 
-    return newUser;
+    return { user: newUser, created: true };
   }
 }

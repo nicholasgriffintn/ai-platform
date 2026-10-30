@@ -4,6 +4,7 @@ import {
   ArtifactDataProvider,
   customResponseViews,
   ErrorPage,
+  MediaDockProvider,
 } from "@ngriffin_uk/polychat-component-shell";
 import { LinkProvider, LoadingSpinner, ThemedToaster } from "@ngriffin_uk/polychat-component-ui";
 import { shouldShowDevTools } from "@ngriffin_uk/polychat-library-client";
@@ -42,7 +43,9 @@ function AppProviders({ children }: { children: React.ReactNode }) {
           <CustomResponseViewProvider views={customResponseViews}>
             <ArtifactDataProvider>
               <PolychatProvider>
-                <WebShellHost>{children}</WebShellHost>
+                <MediaDockProvider>
+                  <WebShellHost>{children}</WebShellHost>
+                </MediaDockProvider>
               </PolychatProvider>
             </ArtifactDataProvider>
           </CustomResponseViewProvider>

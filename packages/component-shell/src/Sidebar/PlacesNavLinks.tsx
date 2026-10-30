@@ -29,6 +29,7 @@ export function PlacesNavLinks({
         <SidebarNavLink
           anchor={polyPlaceAnchor("discover")}
           href={places.discover}
+          end
           icon={<Sunrise size={16} />}
           onClick={onNavigate}
         >

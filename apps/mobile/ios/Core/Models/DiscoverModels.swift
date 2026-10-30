@@ -140,7 +140,7 @@ struct DiscoverEdition: Decodable, Equatable {
     let interests: [DiscoverInterest]?
     let brief: [DiscoverBriefLine]
     let cards: [DiscoverCard]
-    let feedback: [String: [String]]
+    var feedback: [String: [String]]
     let listenSourceId: String?
     let weekSourceId: String?
     let edition: String?
@@ -189,9 +189,9 @@ struct DiscoverUnfollowResponse: Decodable {
 
 struct DiscoverResponse: Decodable, Equatable {
     let settings: DiscoverSettings
-    let edition: DiscoverEdition?
+    var edition: DiscoverEdition?
     let editions: [DiscoverEditionSummary]
-    let follows: [DiscoverFollow]
+    var follows: [DiscoverFollow]
     let windDownId: String?
 }
 

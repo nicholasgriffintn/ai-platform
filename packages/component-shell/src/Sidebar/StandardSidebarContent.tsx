@@ -1,10 +1,8 @@
 import {
-  SidebarNavButton,
   SidebarNavSection,
   StandardSidebarContent as ControlledStandardSidebarContent,
 } from "@ngriffin_uk/polychat-component-navigation";
-import { MODE_BASE_PATHS, useStartNewChat, useUIStore } from "@ngriffin_uk/polychat-library-react";
-import { SquarePen } from "lucide-react";
+import { DISCOVER_PATH, useUIStore } from "@ngriffin_uk/polychat-library-react";
 
 import { DiscoverSidebarSection } from "./DiscoverSidebarSection.js";
 import { PlacesNavLinks } from "./PlacesNavLinks.js";
@@ -15,7 +13,6 @@ import { useSidebarPeekPanel } from "./SidebarPeekContext.js";
 export function StandardSidebarContent() {
   const { sidebarVisible, isMobile, setSidebarVisible } = useUIStore();
   const { peeking, panelProps } = useSidebarPeekPanel();
-  const startNewChat = useStartNewChat();
   const closeOnMobile = () => {
     if (isMobile) {
       setSidebarVisible(false);
@@ -26,7 +23,7 @@ export function StandardSidebarContent() {
     <ControlledStandardSidebarContent
       footer={<SidebarFooter />}
       header={<SidebarHeader />}
-      homeHref={MODE_BASE_PATHS.chat}
+      homeHref={DISCOVER_PATH}
       isMobile={isMobile}
       sidebarVisible={sidebarVisible}
       peeking={peeking}
@@ -34,15 +31,6 @@ export function StandardSidebarContent() {
       onClose={() => setSidebarVisible(false)}
     >
       <SidebarNavSection>
-        <SidebarNavButton
-          icon={<SquarePen size={17} />}
-          onClick={() => {
-            startNewChat();
-            closeOnMobile();
-          }}
-        >
-          New chat
-        </SidebarNavButton>
         <PlacesNavLinks onNavigate={closeOnMobile} />
       </SidebarNavSection>
       <DiscoverSidebarSection onNavigate={closeOnMobile} />

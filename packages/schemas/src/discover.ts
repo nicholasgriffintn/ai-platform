@@ -39,6 +39,7 @@ export const DISCOVER_FEED_GATHER_HOURS = [10, 13] as const;
 export const DISCOVER_FRESH_HOURS = 10;
 export const DISCOVER_RESEARCH_DAYS_KEPT = 7;
 export const DISCOVER_LISTEN_RESEARCH_MINUTES = 30;
+export const DISCOVER_HOUSE_COVER_PREFIX = "house-";
 
 function text() {
   return z.string().trim().min(1);
@@ -382,6 +383,7 @@ export const discoverFeedbackSignalSchema = z.enum(DISCOVER_FEEDBACK_SIGNALS);
 
 export const discoverEditionSchema = discoverEditionContentSchema.extend({
   id: z.string().min(1),
+  revision: z.number().int().nonnegative(),
   feedback: z.record(z.string(), z.array(discoverFeedbackSignalSchema)),
 });
 

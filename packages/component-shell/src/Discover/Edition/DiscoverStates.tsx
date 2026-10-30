@@ -1,5 +1,5 @@
 import { Button, Pet, Skeleton } from "@ngriffin_uk/polychat-component-ui";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Sunrise } from "lucide-react";
 
 export function DiscoverIdlePane() {
   return (
@@ -34,6 +34,28 @@ export function DiscoverPreparing() {
         <Skeleton className="aspect-[4/5] rounded-2xl" />
       </div>
       <Skeleton className="h-24 rounded-2xl" />
+    </div>
+  );
+}
+
+export function DiscoverTurnOn({
+  isWorking,
+  onTurnOn,
+}: {
+  isWorking: boolean;
+  onTurnOn: () => void;
+}) {
+  return (
+    <div className="flex flex-col items-start gap-3 rounded-3xl border border-border bg-surface-elevated p-5">
+      <p className="font-display text-2xl font-medium text-foreground">Make this yours</p>
+      <p className="text-sm text-muted-foreground">
+        Turn on Discover and each morning Poly writes an edition from your own chats: a brief,
+        topics worth a look, links and things to do next.
+      </p>
+      <Button size="sm" variant="primary" disabled={isWorking} onClick={onTurnOn}>
+        <Sunrise size={14} aria-hidden />
+        {isWorking ? "Setting up your first edition" : "Turn on Discover"}
+      </Button>
     </div>
   );
 }

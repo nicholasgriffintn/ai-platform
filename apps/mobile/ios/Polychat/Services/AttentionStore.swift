@@ -5,6 +5,7 @@ import UserNotifications
 final class AttentionStore: ObservableObject {
     @Published private(set) var workItems: [WorkAttentionItem] = []
     @Published private(set) var decisions: [WorkInboxItem] = []
+    @Published private(set) var places: [WorkPlace] = []
     @Published private(set) var backgroundTasks: [BackgroundTask] = []
     @Published private(set) var isLoading = false
     @Published private(set) var workUnavailable = false
@@ -21,19 +22,19 @@ final class AttentionStore: ObservableObject {
         workItems.filter(\.needsAction)
     }
 
-    var otherItems: [WorkAttentionItem] {
-        workItems.filter { !$0.needsAction }
+    var runItems: [WorkAttentionItem] {
+        workItems.filter { $0.type == "run" }
     }
 
     var visibleBackgroundTasks: [BackgroundTask] {
         backgroundTasks.filter { $0.isActive || $0.status == "failed" }
     }
 
-    func badgeCount(inboxUnread: Int) -> Int {
-        actionableItems.count + decisions.count + inboxUnread
+    func badgeCount(notifications: [TaskInboxItem]) -> Int {
+        AttentionPlaces.entries(for: .needsYou, decisions: decisions, runs: runItems, notifications: notifications).count
     }
 
-    func refresh(inboxUnread: Int) async {
+    func refresh(notifications: [TaskInboxItem]) async {
         isLoading = true
         defer { isLoading = false }
 
@@ -42,11 +43,11 @@ final class AttentionStore: ObservableObject {
         async let inbox = loadDecisions()
         _ = await (work, tasks, inbox)
 
-        await publish(inboxUnread: inboxUnread)
+        await publish(notifications: notifications)
     }
 
-    func publish(inboxUnread: Int) async {
-        let needsYou = badgeCount(inboxUnread: inboxUnread)
+    func publish(notifications: [TaskInboxItem]) async {
+        let needsYou = badgeCount(notifications: notifications)
         let running = workItems.filter(\.isRunning).count + backgroundTasks.filter(\.isActive).count
         try? await UNUserNotificationCenter.current().setBadgeCount(needsYou)
         WidgetPublisher.publish(attention: actionableItems + workItems.filter(\.isRunning), needsYou: needsYou, running: running)
@@ -127,9 +128,22 @@ final class AttentionStore: ObservableObject {
         }
     }
 
+    var workspaceNames: [String: String] {
+        Dictionary(places.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+    }
+
+    var projectNames: [String: String] {
+        Dictionary(
+            places.flatMap { place in place.projects.map { ($0.id, $0.name) } },
+            uniquingKeysWith: { first, _ in first }
+        )
+    }
+
     private func loadDecisions() async {
         do {
-            decisions = try await apiClient.fetchWorkInbox()
+            let inbox = try await apiClient.fetchWorkInbox()
+            decisions = inbox.items
+            places = inbox.places
         } catch APIClientError.httpStatus(let status, _) where status == 402 || status == 403 {
             decisions = []
         } catch is CancellationError {
@@ -141,6 +155,7 @@ final class AttentionStore: ObservableObject {
 
     func reset() async {
         decisions = []
+        places = []
         workItems = []
         backgroundTasks = []
         error = nil

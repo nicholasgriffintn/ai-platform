@@ -75,6 +75,66 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
     },
   },
   {
+    id: "jamendo",
+    name: "Jamendo",
+    description:
+      "Find Creative Commons music on Jamendo: playlists, single tracks and instrumental searches, with the licence to credit.",
+    categories: [{ id: "music", name: "Music" }],
+    setupUrl: "/chat/plugins?connector=jamendo",
+    operations: [
+      {
+        id: "list_playlist_tracks",
+        access: "read",
+        inputSchema: {
+          type: "object",
+          required: ["playlist"],
+          properties: {
+            playlist: {
+              type: "string",
+              description: "A Jamendo playlist id or playlist URL.",
+            },
+            limit: limitProperty,
+          },
+        },
+      },
+      {
+        id: "get_track",
+        access: "read",
+        inputSchema: {
+          type: "object",
+          required: ["id"],
+          properties: { id: { type: "string", description: "The Jamendo track id." } },
+        },
+      },
+      {
+        id: "search_tracks",
+        access: "read",
+        inputSchema: {
+          type: "object",
+          required: ["search"],
+          properties: {
+            search: {
+              type: "string",
+              description:
+                "Mood or genre tags such as corporate upbeat or lofi chillhop. Results exclude no-derivatives licences so they can be mixed under video.",
+            },
+            vocals: { type: "string", enum: ["instrumental", "vocal"] },
+            speed: {
+              type: "string",
+              enum: ["verylow", "low", "medium", "high", "veryhigh", "medium high"],
+            },
+            limit: limitProperty,
+          },
+        },
+      },
+    ],
+    auth: {
+      authType: "api_key",
+      credentialFields: [{ label: "Client ID", secret: true }],
+      scopes: ["catalogue:read"],
+    },
+  },
+  {
     id: "trakt",
     name: "Trakt",
     description: "Read the films and shows you've watched and want to watch on Trakt.",

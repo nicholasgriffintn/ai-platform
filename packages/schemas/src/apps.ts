@@ -875,6 +875,7 @@ const nonComposioRecipeConnectorProviders = [
   "netlify",
   "readwise",
   "lastfm",
+  "jamendo",
   "trakt",
   "hardcover",
   "podcastindex",

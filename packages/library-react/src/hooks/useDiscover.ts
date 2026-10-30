@@ -5,6 +5,7 @@ import {
   getDiscoverEpisode,
   getDiscoverWindDown,
   getDiscoverWindDownTonight,
+  getHouseDiscoverEdition,
   queueDiscoverSeasonListen,
   startDiscoverStory,
   startDiscoverWindDown,
@@ -85,6 +86,19 @@ export function useDiscover(
   });
 
   return { ...query, isAwaitingEdition: isAwaitingEdition(query.data, requestedAt) };
+}
+
+export const HOUSE_DISCOVER_QUERY_KEY = ["discover", "house"] as const;
+
+const HOUSE_EDITION_STALE_MS = 60 * 60 * 1000;
+
+export function useHouseDiscoverEdition(enabled: boolean) {
+  return useQuery({
+    queryKey: HOUSE_DISCOVER_QUERY_KEY,
+    queryFn: getHouseDiscoverEdition,
+    enabled,
+    staleTime: HOUSE_EDITION_STALE_MS,
+  });
 }
 
 export function useUpdateDiscoverSettings() {

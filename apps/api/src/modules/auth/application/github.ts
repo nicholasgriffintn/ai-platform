@@ -3,7 +3,11 @@ import type { OAuthTokenSet } from "@ngriffin_uk/auth-oauth2";
 import { getStringRecordValue } from "@ngriffin_uk/polychat-utility-server/objects";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { type AssistantAuthUser, toAssistantAuthUser } from "~/modules/auth/application/authUser";
+import {
+  type AssistantAuthUser,
+  initialiseAssistantUser,
+  toAssistantAuthUser,
+} from "~/modules/auth/application/authUser";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
 export async function resolveGitHubIdentity(
@@ -70,18 +74,25 @@ export async function resolveGitHubUser(
   identity: ExternalIdentity,
 ): Promise<AssistantAuthUser> {
   const profile = readGitHubProfile(identity);
-  const user = await context.repositories.get(UserRepository).createOrUpdateGithubUser({
-    githubId: identity.providerSubject,
-    username: profile.login,
-    email: profile.email,
-    name: profile.name,
-    avatar_url: profile.avatarUrl,
-    company: profile.company,
-    location: profile.location,
-    bio: profile.bio,
-    twitter_username: profile.twitterUsername,
-    site: profile.site,
-  });
+  const { user, created } = await context.repositories
+    .get(UserRepository)
+    .createOrUpdateGithubUser({
+      githubId: identity.providerSubject,
+      username: profile.login,
+      email: profile.email,
+      name: profile.name,
+      avatar_url: profile.avatarUrl,
+      company: profile.company,
+      location: profile.location,
+      bio: profile.bio,
+      twitter_username: profile.twitterUsername,
+      site: profile.site,
+    });
+
+  if (created) {
+    await initialiseAssistantUser(context, user.id, { firstSignIn: true });
+  }
+
   const continuation: AssistantAuthUser["continuation"] = profile.nativeRedirectUri
     ? {
         nativeRedirectUri: profile.nativeRedirectUri,

@@ -2,6 +2,7 @@ import { CHATS_QUERY_KEY } from "@ngriffin_uk/polychat-library-client";
 import type {
   DeviceSyncEvent,
   DeviceSyncEventType,
+  DiscoverResponse,
   PolyAgenda,
 } from "@ngriffin_uk/polychat-schemas";
 import { readOptionalString } from "@ngriffin_uk/polychat-utility-core";
@@ -36,6 +37,23 @@ export interface SyncBindingContext {
 export interface SyncBinding {
   type: DeviceSyncEventType;
   apply: (context: SyncBindingContext, event: DeviceSyncEvent) => void;
+}
+
+const DISCOVER_QUERY_KEY = ["discover"] as const;
+
+function applyDiscoverChanged(context: SyncBindingContext, event: DeviceSyncEvent): void {
+  const editionId = readOptionalString(event.data.editionId);
+  const revision = event.data.revision;
+  const cached = context.queryClient.getQueryData<DiscoverResponse>(DISCOVER_QUERY_KEY);
+  const unchanged =
+    editionId !== undefined &&
+    typeof revision === "number" &&
+    cached?.edition?.id === editionId &&
+    cached.edition.revision === revision;
+
+  if (!unchanged) {
+    context.invalidate(DISCOVER_QUERY_KEY);
+  }
 }
 
 const refreshConversationDetail: SyncBinding["apply"] = (context, event) => {
@@ -261,7 +279,7 @@ export const SYNC_BINDINGS: SyncBinding[] = [
   },
   { type: "connector_approval.changed", apply: refreshConversationDetail },
   { type: "attention.changed", apply: (context) => context.invalidate(TASK_ATTENTION_QUERY_KEY) },
-  { type: "discover.changed", apply: (context) => context.invalidate(["discover"]) },
+  { type: "discover.changed", apply: applyDiscoverChanged },
 ];
 
 const BINDINGS_BY_TYPE = new Map(SYNC_BINDINGS.map((binding) => [binding.type, binding]));

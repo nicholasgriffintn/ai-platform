@@ -98,7 +98,7 @@ describe("meta navigation", () => {
 
 describe("places and files routes", () => {
   it("reads the place from the path, whichever mode it is in", () => {
-    expect(getActivePlace("/")).toBe("conversations");
+    expect(getActivePlace("/")).toBe("discover");
     expect(getActivePlace("/chat/abc")).toBe("conversations");
     expect(getActivePlace("/chat/teammates/a1")).toBe("teammates");
     expect(getActivePlace("/chat/apps/strudel")).toBe("plugins");

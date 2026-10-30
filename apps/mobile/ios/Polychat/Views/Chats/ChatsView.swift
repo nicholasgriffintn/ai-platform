@@ -1,29 +1,17 @@
 import SwiftUI
 
-enum ChatsMode: String, CaseIterable, Identifiable {
-    case chat
-    case work
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .chat: return "Chat"
-        case .work: return "Work"
-        }
-    }
-}
-
 enum ChatsRoute: Hashable {
     case conversation(String)
-    case project(String)
+
+    var conversationId: String? {
+        if case .conversation(let id) = self { return id }
+        return nil
+    }
 }
 
 struct ChatsView: View {
     @EnvironmentObject private var conversationManager: ConversationManager
-    @EnvironmentObject private var workStore: WorkStore
     @Binding var path: [ChatsRoute]
-    @Binding var mode: ChatsMode
     @State private var searchText = ""
     @State private var pendingDeletion: Conversation?
     @State private var pendingRename: Conversation?
@@ -31,28 +19,10 @@ struct ChatsView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            Group {
-                switch mode {
-                case .chat:
-                    chatList
-                case .work:
-                    WorkProjectsList(onOpenProject: { path.append(.project($0.id)) })
-                }
-            }
-            .background(Color.polychat.background)
-            .navigationTitle("Chats")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Picker("Mode", selection: $mode) {
-                        ForEach(ChatsMode.allCases) { mode in
-                            Text(mode.title).tag(mode)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 200)
-                }
-                if mode == .chat {
+            chatList
+                .background(Color.polychat.background)
+                .navigationTitle("Chats")
+                .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             let conversation = conversationManager.startNewConversation()
@@ -63,15 +33,16 @@ struct ChatsView: View {
                         .accessibilityLabel("New chat")
                     }
                 }
-            }
-            .navigationDestination(for: ChatsRoute.self) { route in
-                switch route {
-                case .conversation(let id):
-                    ConversationScreen(conversationId: id, path: $path)
-                case .project(let id):
-                    ProjectConversationsView(projectId: id, path: $path)
+                .navigationDestination(for: ChatsRoute.self) { route in
+                    switch route {
+                    case .conversation(let id):
+                        ConversationScreen(conversationId: id) { replacement in
+                            if !path.isEmpty {
+                                path[path.count - 1] = .conversation(replacement)
+                            }
+                        }
+                    }
                 }
-            }
         }
     }
 
@@ -209,32 +180,5 @@ struct ConversationRow: View {
 
     private var subtitle: String {
         RelativeTime.label(for: conversation.lastMessageAt ?? conversation.createdAt)
-    }
-}
-
-private struct ConversationScreen: View {
-    @EnvironmentObject private var conversationManager: ConversationManager
-    @EnvironmentObject private var workStore: WorkStore
-    let conversationId: String
-    @Binding var path: [ChatsRoute]
-
-    private var projectName: String? {
-        conversationManager.currentConversation?.projectId.flatMap { projectId in
-            workStore.projects.first { $0.id == projectId }?.name
-        }
-    }
-
-    var body: some View {
-        ChatView(projectName: projectName) { projectId in
-            let conversation = conversationManager.startNewConversation(projectId: projectId)
-            if !path.isEmpty {
-                path[path.count - 1] = .conversation(conversation.id)
-            }
-        }
-        .task(id: conversationId) {
-            if conversationManager.currentConversation?.id != conversationId {
-                await conversationManager.loadConversationMessages(id: conversationId)
-            }
-        }
     }
 }

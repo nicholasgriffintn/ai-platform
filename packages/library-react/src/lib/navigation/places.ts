@@ -19,7 +19,7 @@ export const MODE_BASE_PATHS: Record<ProductMode, string> = {
 export const PROFILE_PATH = "/profile";
 export const PET_SETTINGS_PATH = `${PROFILE_PATH}?tab=pets`;
 
-export const DISCOVER_PATH = "/discover";
+export const DISCOVER_PATH = "/";
 
 export const TOUR_PATH = "/tour";
 
@@ -86,7 +86,7 @@ export function getActivePlace(pathname: string): ProductPlace | undefined {
 
   const mode = getProductMode(pathname);
   const base = MODE_BASE_PATHS[mode];
-  const isModeRoute = pathname === "/" || pathname === base || pathname.startsWith(`${base}/`);
+  const isModeRoute = pathname === base || pathname.startsWith(`${base}/`);
 
   if (!isModeRoute) {
     return undefined;
