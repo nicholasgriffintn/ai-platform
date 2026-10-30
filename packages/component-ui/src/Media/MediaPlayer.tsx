@@ -1,4 +1,8 @@
-import { useCaptionTrack, useMediaTrack } from "@ngriffin_uk/polychat-utility-react";
+import {
+  useCaptionTrack,
+  useMediaLoudness,
+  useMediaTrack,
+} from "@ngriffin_uk/polychat-utility-react";
 import { useEffect, type ReactNode } from "react";
 
 import type { MediaTranscript } from "./media-status";
@@ -17,6 +21,8 @@ export interface MediaPlayerProps {
   artBackground?: string;
   captionsVtt?: string | null;
   transcript?: MediaTranscript;
+  /** Evens out and lifts a spoken recording. Needs CORS-clean audio. */
+  levelVoice?: boolean;
   showTranscriptList?: boolean;
   notice?: ReactNode;
   actions?: ReactNode;
@@ -34,6 +40,7 @@ export function MediaPlayer({
   artBackground,
   captionsVtt = null,
   transcript,
+  levelVoice = false,
   showTranscriptList = true,
   notice,
   actions,
@@ -41,6 +48,7 @@ export function MediaPlayer({
   onPlayingChange,
 }: MediaPlayerProps) {
   const track = useMediaTrack();
+  const attachAudio = useMediaLoudness(track.attach, levelVoice && kind === "audio");
   const activeIndex = transcript
     ? currentTranscriptIndex(transcript, track.currentTime, track.duration)
     : -1;
@@ -100,7 +108,7 @@ export function MediaPlayer({
         <>
           {kind === "audio" && src ? (
             <audio
-              ref={track.attach}
+              ref={attachAudio}
               src={src}
               title={title}
               preload="metadata"

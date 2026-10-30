@@ -24,6 +24,7 @@ export function SourcePlayer({ sourceId, title, ...player }: SourcePlayerProps) 
       src={source && playable ? getSourceContentUrl(source.id) : null}
       title={title ?? source?.title ?? ""}
       crossOrigin="use-credentials"
+      levelVoice
       art={source && playable && media?.cover ? getSourceCoverUrl(source.id) : null}
       transcript={
         transcript ? { segments: transcript.segments, speakers: transcript.speakers } : undefined

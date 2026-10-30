@@ -15,6 +15,7 @@ import {
   useRetryDiscoverEpisodeChapter,
 } from "@ngriffin_uk/polychat-library-react";
 import type { DiscoverEpisode, DiscoverEpisodeChapter } from "@ngriffin_uk/polychat-schemas";
+import { useMediaLoudness } from "@ngriffin_uk/polychat-utility-react";
 import { Headphones, Podcast, RotateCcw, Tv } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
@@ -92,6 +93,7 @@ export function EpisodePlayer({
   const playback = useEpisodePlayback(episode, (update) => progress.mutate(update));
   const [listenOnly, setListenOnly] = useState(false);
   const { track, chapter, chapterIndex } = playback;
+  const attachAudio = useMediaLoudness(track.attach);
 
   useEffect(() => onPlayingChange?.(track.playing), [onPlayingChange, track.playing]);
 
@@ -127,7 +129,7 @@ export function EpisodePlayer({
           {episode && playback.ready ? (
             <audio
               key={chapterIndex}
-              ref={track.attach}
+              ref={attachAudio}
               preload="auto"
               autoPlay={playback.wantsPlay}
               crossOrigin="use-credentials"
