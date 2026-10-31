@@ -1,5 +1,37 @@
 # @assistant/desktop
 
+## 0.6.8
+
+### Patch Changes
+
+- 69adfec: Telemetry now runs on Cloudflare Basin. Server events, metrics and AI generation signals go to a Basin Pipelines stream through the `TELEMETRY_STREAM` binding, and the admin `/metrics` endpoint reads them back with Basin SQL. The Analytics Engine and Beacon sinks are gone, along with their exports and settings.
+
+  Every row records the environment and app it came from (`api`, `web`, `desktop` or `ios`), with typed columns for identity, session, path, country, AI usage and flag exposures, and anything else under `properties`. Filter `/metrics` with `environment` and `app`.
+
+  Web, desktop and iOS send product analytics, including page and screen views, to the API in small batches, without a third-party script. The API stores them under the caller's session identity.
+
+  Flags have one interface on both sides. The API resolves Flagship and code rules through `library-flags`, and clients resolve the same assignments with `useFlag(key, defaultValue)`, backed by the new `createBootstrapProvider` and `GET /flags/bootstrap`.
+
+  ```ts
+  const tone = useFlag("chat-tone", "control");
+  ```
+
+- b2cd20c: Discover loads faster, and items open straight away. The item shows as soon as you open it while Poly checks for an earlier conversation about it, with placeholders for the questions until it knows. Episodes and The Perch now say they're getting ready instead of showing an empty player.
+- 5c65b40: Discover items now open in one panel beside the feed, so you keep your place. The panel shows what kind of item it is, steps to the previous or next item with the arrows, and closes with Esc. The item sits on top with three questions to ask about it; once you ask, it shrinks to a compact row (a mini player for episodes and The Perch) so the conversation has room, and Show brings it back. The composer in the panel is scoped to the item, and you can remove its context chip to ask something general instead. Cards fly into the panel as it opens, and the feed's composer steps aside while it's open.
+- 45d3458: Moving around Chat is faster. Discover, your conversations and the Chat places now share one sidebar that stays put as you move between them, so it keeps its scroll position and no longer redraws your recent conversations on every click. Typing and streaming replies also no longer redraw the sidebar and other parts of the page that don't depend on them.
+- 176c49a: Files opens faster. The library now loads only the folders it shows and leaves out transcripts, summaries and other detail until you open a file.
+- 377890d: Discover now uses the whole page. The greeting and brief sit across the top, Watch and listen and Worth a look run as poster shelves, and For you, Coming up and Reading lay out as card grids that reflow to the width you have. A composer floats at the foot of the page with a short row of suggestions; once you send something, the chat opens as a panel beside the edition, with a button to open it in Chat and one to close it and come back. Cards and players open in that same side panel.
+- 377890d: The now-playing controls no longer float over the bottom of the page, where they covered the composer. While audio plays somewhere you are not looking at its player, a Now playing row sits at the foot of the sidebar above Ask Poly, with a progress line, play and pause, stop, and a tap on the title to go back to the full player. When the sidebar is hidden, or on a phone, a compact play button with the title appears at the right of the page header instead.
+- 45d3458: The app feels quicker across the board. Hundreds of screens and controls, including the chat composer, the sidebar and Discover, had quietly stopped skipping work they didn't need to redo, so they redrew on every small change. They're back to only updating when what they show changes.
+- Updated dependencies [69adfec]
+  - @ngriffin_uk/polychat-library-client@0.12.0
+  - @ngriffin_uk/polychat-library-react@0.13.0
+  - @ngriffin_uk/polychat-schemas@1.13.0
+  - @ngriffin_uk/polychat-component-account@1.1.4
+  - @ngriffin_uk/polychat-component-conversation@2.2.3
+  - @ngriffin_uk/polychat-component-shell@2.6.2
+  - @ngriffin_uk/polychat-component-ui@0.7.1
+
 ## 0.6.7
 
 ### Patch Changes

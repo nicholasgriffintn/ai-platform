@@ -1,5 +1,38 @@
 # @assistant/api
 
+## 1.12.0
+
+### Minor Changes
+
+- 69adfec: Telemetry now runs on Cloudflare Basin. Server events, metrics and AI generation signals go to a Basin Pipelines stream through the `TELEMETRY_STREAM` binding, and the admin `/metrics` endpoint reads them back with Basin SQL. The Analytics Engine and Beacon sinks are gone, along with their exports and settings.
+
+  Every row records the environment and app it came from (`api`, `web`, `desktop` or `ios`), with typed columns for identity, session, path, country, AI usage and flag exposures, and anything else under `properties`. Filter `/metrics` with `environment` and `app`.
+
+  Web, desktop and iOS send product analytics, including page and screen views, to the API in small batches, without a third-party script. The API stores them under the caller's session identity.
+
+  Flags have one interface on both sides. The API resolves Flagship and code rules through `library-flags`, and clients resolve the same assignments with `useFlag(key, defaultValue)`, backed by the new `createBootstrapProvider` and `GET /flags/bootstrap`.
+
+  ```ts
+  const tone = useFlag("chat-tone", "control");
+  ```
+
+### Patch Changes
+
+- b2cd20c: Discover loads faster, and items open straight away. The item shows as soon as you open it while Poly checks for an earlier conversation about it, with placeholders for the questions until it knows. Episodes and The Perch now say they're getting ready instead of showing an empty player.
+- 176c49a: Files opens faster. The library now loads only the folders it shows and leaves out transcripts, summaries and other detail until you open a file.
+- 00b5c89: The Perch and other spoken episodes now finish when the voice provider's moderation blocks a line. Only the blocked sentence is left out of the audio, and the transcript still shows it in full.
+- Updated dependencies [69adfec]
+  - @ngriffin_uk/polychat-ai-telemetry@0.4.0
+  - @ngriffin_uk/polychat-ai-providers@0.9.0
+  - @ngriffin_uk/polychat-library-flags@0.3.0
+  - @ngriffin_uk/polychat-schemas@1.13.0
+  - @ngriffin_uk/polychat-ai-billing@0.3.7
+  - @ngriffin_uk/polychat-ai-experiments@0.2.7
+  - @ngriffin_uk/polychat-ai-workflows@0.2.6
+  - @ngriffin_uk/polychat-ai-agents@0.4.7
+  - @ngriffin_uk/polychat-ai-functions@0.3.7
+  - @ngriffin_uk/polychat-ai-model-providers@0.3.8
+
 ## 1.11.0
 
 ### Minor Changes
