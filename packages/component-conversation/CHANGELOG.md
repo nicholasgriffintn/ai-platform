@@ -1,5 +1,15 @@
 # @ngriffin_uk/polychat-component-conversation
 
+## 2.2.3
+
+### Patch Changes
+
+- Updated dependencies [69adfec]
+  - @ngriffin_uk/polychat-library-client@0.12.0
+  - @ngriffin_uk/polychat-library-react@0.13.0
+  - @ngriffin_uk/polychat-schemas@1.13.0
+  - @ngriffin_uk/polychat-component-ui@0.7.1
+
 ## 2.2.2
 
 ### Patch Changes
