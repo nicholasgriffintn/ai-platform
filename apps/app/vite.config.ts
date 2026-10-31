@@ -15,7 +15,7 @@ import { sitePreviewAssets } from "./plugins/site-preview-assets.ts";
 export default defineConfig(({ command }) => ({
   build: {
     chunkSizeWarningLimit: 6500,
-    sourcemap: true,
+    sourcemap: command !== "build",
     minify: "terser",
     terserOptions: {
       compress: {
