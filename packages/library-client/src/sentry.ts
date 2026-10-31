@@ -19,12 +19,7 @@ export function initSentry({ app, release }: { app: ClientAnalyticsApp; release:
   });
 
   Sentry.setTag("app", app);
-
-  const sessionId = getAnalyticsSessionId();
-
-  if (sessionId) {
-    Sentry.setTag("session_id", sessionId);
-  }
+  Sentry.setTag("session_id", getAnalyticsSessionId());
 }
 
 export function captureClientError(error: unknown): void {

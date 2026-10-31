@@ -3,13 +3,14 @@ import {
   type ClientAnalyticsApp,
   type ClientAnalyticsEvent,
 } from "@ngriffin_uk/polychat-schemas/analytics";
+import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { ANALYTICS_CONFIG, BUILD_MODE } from "./constants.js";
 import { fetchApi } from "./fetch-wrapper.js";
 
 const ANALYTICS_FLUSH_DELAY_MS = 2_000;
 
-const sessionId = globalThis.crypto?.randomUUID?.();
+let sessionId: string | undefined;
 
 let app: ClientAnalyticsApp = "web";
 let appVersion: string | undefined;
@@ -42,13 +43,21 @@ export async function flushAnalyticsEvents({ keepalive = false } = {}): Promise<
 
     await fetchApi("/ripple", {
       method: "POST",
-      body: { app, environment: BUILD_MODE || "unknown", appVersion, sessionId, events },
+      body: {
+        app,
+        environment: BUILD_MODE || "unknown",
+        appVersion,
+        sessionId: getAnalyticsSessionId(),
+        events,
+      },
       keepalive,
     }).catch(() => undefined);
   }
 }
 
-export function getAnalyticsSessionId(): string | undefined {
+export function getAnalyticsSessionId(): string {
+  sessionId ??= generateId();
+
   return sessionId;
 }
 
