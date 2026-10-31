@@ -204,6 +204,39 @@ describe("sync bindings", () => {
     expect(invalidatedKeys).toContainEqual(["chats", "remote"]);
   });
 
+  it("refreshes the inbox only when a run starts or stops waiting on the user", () => {
+    const inboxKey = ["work", "inbox"];
+    const running = createContext();
+
+    applySyncEvent(
+      running.context,
+      buildEvent("response.changed", { conversationId: "abc", status: "running" }),
+    );
+    expect(running.invalidatedKeys).not.toContainEqual(inboxKey);
+
+    const waiting = createContext();
+
+    applySyncEvent(
+      waiting.context,
+      buildEvent("response.changed", { conversationId: "abc", status: "awaiting_approval" }),
+    );
+    expect(waiting.invalidatedKeys).toContainEqual(inboxKey);
+
+    const resumed = createContext();
+
+    resumed.context.queryClient.setQueryData(inboxKey, {
+      object: "list",
+      data: [{ kind: "waiting", conversationId: "abc" }],
+      has_more: false,
+      last_id: null,
+    });
+    applySyncEvent(
+      resumed.context,
+      buildEvent("response.changed", { conversationId: "abc", status: "running" }),
+    );
+    expect(resumed.invalidatedKeys).toContainEqual(inboxKey);
+  });
+
   it("refreshes conversation context without refreshing the chat list or goal", () => {
     const { context, invalidatedKeys } = createContext();
 

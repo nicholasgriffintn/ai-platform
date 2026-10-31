@@ -131,12 +131,13 @@ function invalidateTeamWork(queryClient: QueryClient, workspaceId: string) {
 
 export function useWorkInbox() {
   const enabled = useChatStore((state) => state.isAuthenticated);
+  const liveOrPoll = useLiveOrPoll();
 
   return useQuery({
     queryKey: workInboxQueryKey,
     queryFn: getWorkInbox,
     enabled,
-    refetchInterval: WORK_REFETCH_MS,
+    refetchInterval: (query) => liveOrPoll(query, WORK_REFETCH_MS, "attention.changed"),
   });
 }
 

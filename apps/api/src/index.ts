@@ -1,8 +1,12 @@
-import { OutboundGateway } from "@ngriffin_uk/polychat-ai-sandbox/worker";
-import { LogLevel, getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { OutboundGateway as OutboundGatewayEntrypoint } from "@ngriffin_uk/polychat-ai-sandbox/worker";
+import { LogLevel, getLogger, onLogRecord } from "@ngriffin_uk/polychat-ai-telemetry";
 import { DEVICE_SYNC_DEVICE_ID_HEADER, statusResponseSchema } from "@ngriffin_uk/polychat-schemas";
 import { Scalar } from "@scalar/hono-api-reference";
-import { withSentry } from "@sentry/cloudflare";
+import {
+  instrumentAgentWithSentry,
+  instrumentDurableObjectWithSentry,
+  withSentry,
+} from "@sentry/cloudflare";
 import { type Context, Hono } from "hono";
 import { openAPIRouteHandler } from "hono-openapi";
 import { cors } from "hono/cors";
@@ -20,7 +24,7 @@ import { withRequestDatabase } from "./infrastructure/database/request-session";
 import { isCsrfExempt } from "./infrastructure/http/csrf";
 import { isAllowedOrigin } from "./infrastructure/http/origins";
 import { addRoute } from "./infrastructure/http/routeBuilder";
-import { captureApiError, getSentryOptions } from "./infrastructure/sentry";
+import { captureApiError, captureLoggedError, getSentryOptions } from "./infrastructure/sentry";
 import { authMiddleware } from "./middleware/auth";
 import { infraMeteringMiddleware } from "./middleware/infraMetering";
 import { loggerMiddleware } from "./middleware/loggerMiddleware";
@@ -28,19 +32,22 @@ import { rateLimit } from "./middleware/rateLimit";
 import { securityHeaders } from "./middleware/securityHeaders";
 import { serverTimingMiddleware } from "./middleware/serverTiming";
 import { receiveChannelEmail } from "./modules/channels/application/email-intake";
-import { ConversationCoordinator } from "./modules/conversations/infrastructure/coordinator/object";
-import { MachineRunCoordinator } from "./modules/machines/infrastructure/run-coordinator";
+import { ConversationCoordinator as ConversationCoordinatorObject } from "./modules/conversations/infrastructure/coordinator/object";
+import { MachineRunCoordinator as MachineRunCoordinatorObject } from "./modules/machines/infrastructure/run-coordinator";
 import type { TaskMessage } from "./modules/queue/application/types";
-import { RealtimeProxyCoordinator } from "./modules/realtime/infrastructure/proxy-coordinator/object";
-import { SandboxRunCoordinator } from "./modules/sandbox/infrastructure/run-coordinator/object";
+import { RealtimeProxyCoordinator as RealtimeProxyCoordinatorObject } from "./modules/realtime/infrastructure/proxy-coordinator/object";
+import { SandboxRunCoordinator as SandboxRunCoordinatorObject } from "./modules/sandbox/infrastructure/run-coordinator/object";
+import { SiteRuntime as SiteRuntimeObject } from "./modules/sites/infrastructure/runtime";
 import "./models";
 import "./tools";
-import { UserSyncCoordinator } from "./modules/sync/infrastructure/coordinator/object";
+import { UserSyncCoordinator as UserSyncCoordinatorObject } from "./modules/sync/infrastructure/coordinator/object";
 import type { UsageQueueMessage } from "./modules/usage/domain/queue-messages";
 import { apiInfoDescription } from "./openapi/content/apiDescription";
 import { tagDescriptions } from "./openapi/documentation";
 import type { IEnv } from "./types";
 import { consumeQueueBatch, workflows } from "./workflows";
+
+onLogRecord(captureLoggedError);
 
 const app = new Hono<{
   Bindings: IEnv;
@@ -68,6 +75,8 @@ app.use(
       "x-captcha-token",
       "X-Notification-Installation",
       DEVICE_SYNC_DEVICE_ID_HEADER,
+      "sentry-trace",
+      "baggage",
     ],
     credentials: true,
     maxAge: 86400,
@@ -333,13 +342,32 @@ const handler = {
 
 export default withSentry<IEnv>(getSentryOptions, handler);
 
-export {
-  MachineRunCoordinator,
-  ConversationCoordinator,
-  OutboundGateway,
-  RealtimeProxyCoordinator,
-  SandboxRunCoordinator,
-  UserSyncCoordinator,
-};
+const getDurableObjectSentryOptions = (env: IEnv) => getSentryOptions(env);
 
-export { SiteRuntime } from "./modules/sites/infrastructure/runtime";
+export const ConversationCoordinator = instrumentAgentWithSentry(
+  getDurableObjectSentryOptions,
+  ConversationCoordinatorObject,
+);
+export const MachineRunCoordinator = instrumentAgentWithSentry(
+  getDurableObjectSentryOptions,
+  MachineRunCoordinatorObject,
+);
+export const RealtimeProxyCoordinator = instrumentAgentWithSentry(
+  getDurableObjectSentryOptions,
+  RealtimeProxyCoordinatorObject,
+);
+export const SandboxRunCoordinator = instrumentAgentWithSentry(
+  getDurableObjectSentryOptions,
+  SandboxRunCoordinatorObject,
+);
+export const UserSyncCoordinator = instrumentAgentWithSentry(
+  getDurableObjectSentryOptions,
+  UserSyncCoordinatorObject,
+);
+
+export const SiteRuntime = instrumentDurableObjectWithSentry(
+  getDurableObjectSentryOptions,
+  SiteRuntimeObject,
+);
+
+export const OutboundGateway = withSentry(getSentryOptions, OutboundGatewayEntrypoint);

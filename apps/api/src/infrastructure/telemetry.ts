@@ -17,7 +17,7 @@ export function createTelemetry(env: TelemetryEnv, executionCtx?: ExecutionConte
     env,
     executionCtx,
     resolveAiGatewayId,
-    sentry: Sentry.isInitialized() ? Sentry : undefined,
+    sentry: Sentry.isEnabled() ? Sentry : undefined,
   });
 }
 
@@ -26,7 +26,7 @@ export function createMetrics(env: TelemetryEnv, executionCtx?: ExecutionContext
     env,
     executionCtx,
     resolveAiGatewayId,
-    sentry: Sentry.isInitialized() ? Sentry : undefined,
+    sentry: Sentry.isEnabled() ? Sentry : undefined,
   });
 }
 

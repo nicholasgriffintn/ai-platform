@@ -72,7 +72,7 @@ export class KVCache {
 
       return parsed;
     } catch (error) {
-      logger.error("Failed to get value from cache", { key, error });
+      logger.warn("Failed to get value from cache", { key, error });
 
       return null;
     }
@@ -90,7 +90,7 @@ export class KVCache {
 
       return true;
     } catch (error) {
-      logger.error("Failed to set value in cache", { key, error });
+      logger.warn("Failed to set value in cache", { key, error });
 
       return false;
     }
@@ -103,7 +103,7 @@ export class KVCache {
 
       return true;
     } catch (error) {
-      logger.error("Failed to delete value from cache", { key, error });
+      logger.warn("Failed to delete value from cache", { key, error });
 
       return false;
     } finally {
@@ -124,7 +124,7 @@ export class KVCache {
 
       return value !== null;
     } catch (error) {
-      logger.error("Failed to check if key exists in cache", { key, error });
+      logger.warn("Failed to check if key exists in cache", { key, error });
 
       return false;
     }
@@ -161,7 +161,7 @@ export class KVCache {
 
       return result;
     } catch (error) {
-      logger.error("Failed to cache query", { cacheKey, error });
+      logger.warn("Failed to cache query", { cacheKey, error });
 
       return queryFn();
     }
@@ -182,7 +182,7 @@ export class KVCache {
 
       return results.every(Boolean);
     } catch (error) {
-      logger.error("Failed to clear user model cache", { userId, error });
+      logger.warn("Failed to clear user model cache", { userId, error });
 
       return false;
     }

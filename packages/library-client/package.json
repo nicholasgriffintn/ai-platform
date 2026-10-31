@@ -50,7 +50,8 @@
     "@ngriffin_uk/polychat-library-realtime": "workspace:^",
     "@ngriffin_uk/polychat-library-surface": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
-    "@ngriffin_uk/polychat-utility-core": "workspace:^"
+    "@ngriffin_uk/polychat-utility-core": "workspace:^",
+    "@sentry/browser": "10.76.2"
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",

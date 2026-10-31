@@ -1,9 +1,12 @@
 import { CHATS_QUERY_KEY } from "@ngriffin_uk/polychat-library-client";
-import type {
-  DeviceSyncEvent,
-  DeviceSyncEventType,
-  DiscoverResponse,
-  PolyAgenda,
+import {
+  chatRunStatusSchema,
+  isWaitingChatRunStatus,
+  type DeviceSyncEvent,
+  type DeviceSyncEventType,
+  type DiscoverResponse,
+  type PolyAgenda,
+  type WorkInboxResponse,
 } from "@ngriffin_uk/polychat-schemas";
 import { readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 import type { QueryClient } from "@tanstack/react-query";
@@ -24,7 +27,11 @@ import {
 import { PROJECT_WORKBENCH_PREVIEW_QUERY_KEY } from "../hooks/useProjectWorkbenchPreview.js";
 import { TASK_QUERY_KEYS } from "../hooks/useTasks.js";
 import { teammateContextMemoryQueryPrefix } from "../hooks/useTeammateContextMemory.js";
-import { myTasksQueryKey, WORKSPACE_TASKS_QUERY_PREFIX } from "../hooks/useWork.js";
+import {
+  myTasksQueryKey,
+  workInboxQueryKey,
+  WORKSPACE_TASKS_QUERY_PREFIX,
+} from "../hooks/useWork.js";
 import { TEAMMATE_ROSTER_QUERY_KEY } from "../lib/teammates/roster.js";
 import { applyUsageChanged } from "./usage.js";
 
@@ -73,6 +80,19 @@ const refreshPolyAgenda: SyncBinding["apply"] = (context, event) => {
   }
 };
 
+const refreshWorkInboxForRun: SyncBinding["apply"] = (context, event) => {
+  const status = chatRunStatusSchema.safeParse(event.data.status);
+  const conversationId = readOptionalString(event.data.conversationId);
+  const inbox = context.queryClient.getQueryData<WorkInboxResponse>(workInboxQueryKey);
+  const listed = inbox?.data.some(
+    (item) => item.kind === "waiting" && item.conversationId === conversationId,
+  );
+
+  if ((status.success && isWaitingChatRunStatus(status.data)) || listed) {
+    context.invalidate(workInboxQueryKey);
+  }
+};
+
 const refreshConversationAndList: SyncBinding["apply"] = (context, event) => {
   refreshConversationDetail(context, event);
   context.invalidate([CHATS_QUERY_KEY, "remote"]);
@@ -86,6 +106,7 @@ export const SYNC_BINDINGS: SyncBinding[] = [
     apply: (context, event) => {
       refreshConversationAndList(context, event);
       refreshPolyAgenda(context, event);
+      refreshWorkInboxForRun(context, event);
     },
   },
   { type: "response.event", apply: refreshConversationDetail },
@@ -147,6 +168,7 @@ export const SYNC_BINDINGS: SyncBinding[] = [
       context.invalidate(TASK_ATTENTION_QUERY_KEY);
       context.invalidate(myTasksQueryKey);
       context.invalidate(WORKSPACE_TASKS_QUERY_PREFIX);
+      context.invalidate(workInboxQueryKey);
     },
   },
   {
@@ -188,6 +210,8 @@ export const SYNC_BINDINGS: SyncBinding[] = [
       if (workspaceId) {
         context.invalidate(["model-platform", workspaceId]);
       }
+
+      context.invalidate(workInboxQueryKey);
     },
   },
   {
@@ -278,7 +302,13 @@ export const SYNC_BINDINGS: SyncBinding[] = [
     },
   },
   { type: "connector_approval.changed", apply: refreshConversationDetail },
-  { type: "attention.changed", apply: (context) => context.invalidate(TASK_ATTENTION_QUERY_KEY) },
+  {
+    type: "attention.changed",
+    apply: (context) => {
+      context.invalidate(TASK_ATTENTION_QUERY_KEY);
+      context.invalidate(workInboxQueryKey);
+    },
+  },
   { type: "discover.changed", apply: applyDiscoverChanged },
 ];
 
@@ -301,6 +331,7 @@ export function invalidateSyncQueries(invalidateQuery: SyncBindingContext["inval
     ["project-tasks"],
     ["project-task"],
     TASK_ATTENTION_QUERY_KEY,
+    workInboxQueryKey,
     ["project-workbench-runs"],
     PROJECT_WORKBENCH_PREVIEW_QUERY_KEY,
     [MACHINES_QUERY_KEY],

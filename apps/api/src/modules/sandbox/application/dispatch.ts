@@ -601,7 +601,7 @@ export async function processSandboxRunDispatch(params: {
           message.payload.environmentCache.backup.id !== environmentCacheCandidate.backup.id,
       });
     } catch (error) {
-      logger.error("Failed to persist sandbox environment cache", {
+      logger.warn("Failed to persist sandbox environment cache", {
         run_id: message.runId,
         error,
       });

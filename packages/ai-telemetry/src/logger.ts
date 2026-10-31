@@ -147,6 +147,24 @@ class Logger {
     return Object.keys(attributes).length > 0 ? attributes : undefined;
   }
 
+  private findError(args: unknown[]): Error | undefined {
+    for (const arg of args) {
+      if (arg instanceof Error) {
+        return arg;
+      }
+
+      if (arg !== null && typeof arg === "object" && !Array.isArray(arg)) {
+        const nested = Object.values(arg).find((value) => value instanceof Error);
+
+        if (nested instanceof Error) {
+          return nested;
+        }
+      }
+    }
+
+    return undefined;
+  }
+
   private log(level: LogLevel, levelName: string, message: string, ...args: unknown[]) {
     if (level > this.level) {
       return;
@@ -161,6 +179,7 @@ class Logger {
         message,
         prefix: this.prefix || undefined,
         attributes: this.collectAttributes(args),
+        error: this.findError(args),
       };
 
       for (const listener of logRecordListeners) {

@@ -2,6 +2,7 @@ export * from "./http.js";
 export * from "./chat/response-replay.js";
 export * from "./activity.js";
 export * from "./analytics.js";
+export * from "./sentry.js";
 export * from "./agentApprovalStore.js";
 export * from "./discover.js";
 export * from "./flags.js";

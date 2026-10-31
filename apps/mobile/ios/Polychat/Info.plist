@@ -6,6 +6,8 @@
 	<string>https://api.polychat.app</string>
 	<key>AppEnvironment</key>
 	<string>$(APP_ENVIRONMENT)</string>
+	<key>SentryDSN</key>
+	<string>https://9e373e20ea0288290945b266240e45dd@o4512330606247936.ingest.de.sentry.io/4512330625777744</string>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>com.polychat-app.app.health-sync</string>

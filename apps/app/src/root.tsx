@@ -7,7 +7,7 @@ import {
   MediaDockProvider,
 } from "@ngriffin_uk/polychat-component-shell";
 import { LinkProvider, LoadingSpinner, ThemedToaster } from "@ngriffin_uk/polychat-component-ui";
-import { shouldShowDevTools } from "@ngriffin_uk/polychat-library-client";
+import { captureClientError, shouldShowDevTools } from "@ngriffin_uk/polychat-library-client";
 import {
   AnalyticsProvider,
   AppInitializer,
@@ -110,6 +110,10 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   useEffect(() => {
+    if (!isRouteErrorResponse(error) || error.status >= 500) {
+      captureClientError(error);
+    }
+
     if (error && error instanceof Error) {
       trackException(error, {
         message: "Error",

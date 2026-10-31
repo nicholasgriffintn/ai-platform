@@ -16,6 +16,21 @@ import { escapeSqlLikePattern } from "@ngriffin_uk/polychat-utility-server/sql";
 
 import { WORKSPACE_INVITATION_COLUMNS } from "~/infrastructure/database/accessStorage";
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import { workspaceAudience } from "~/modules/sync/application/audience";
+import {
+  publishProjectEvent,
+  publishUserEvent,
+  publishWorkspaceEvent,
+} from "~/modules/sync/application/conversation-events";
+
+const WORKSPACE_INBOX_FIELDS = [
+  "name",
+  "lead_teammate_id",
+  "setup_project_id",
+  "setup_task_id",
+  "setup_plan",
+  "system_models",
+];
 
 export interface WorkspaceRow {
   id: string;
@@ -174,6 +189,9 @@ export class WorkspaceRepository extends BaseRepository {
         )
         .bind(params.id, params.userId),
     ]);
+    publishUserEvent({ env: this.env }, params.userId, "attention.changed", {
+      workspaceId: params.id,
+    });
   }
 
   async listWorkspaces(userId: number): Promise<WorkspaceSummaryRow[]> {
@@ -295,6 +313,7 @@ export class WorkspaceRepository extends BaseRepository {
       "UPDATE resource_grant SET role = ? WHERE kind = 'membership' AND workspace_id = ? AND user_id = ?",
       [role, workspaceId, userId],
     );
+    await this.publishAttentionChanged(workspaceId);
   }
 
   async removeMember(workspaceId: string, userId: number): Promise<void> {
@@ -302,6 +321,8 @@ export class WorkspaceRepository extends BaseRepository {
       "DELETE FROM resource_grant WHERE kind = 'membership' AND workspace_id = ? AND user_id = ?",
       [workspaceId, userId],
     );
+    publishUserEvent({ env: this.env }, userId, "attention.changed", { workspaceId });
+    await this.publishAttentionChanged(workspaceId);
   }
 
   async transferOwnership(
@@ -334,6 +355,8 @@ export class WorkspaceRepository extends BaseRepository {
         409,
       );
     }
+
+    await this.publishAttentionChanged(workspaceId);
   }
 
   async updateWorkspace(workspaceId: string, updates: Record<string, unknown>): Promise<void> {
@@ -360,6 +383,10 @@ export class WorkspaceRepository extends BaseRepository {
     if (result) {
       await this.executeRun(result.query, result.values);
     }
+
+    if (WORKSPACE_INBOX_FIELDS.some((field) => updates[field] !== undefined)) {
+      await this.publishAttentionChanged(workspaceId);
+    }
   }
 
   async deleteWorkspace(workspaceId: string): Promise<void> {
@@ -368,6 +395,10 @@ export class WorkspaceRepository extends BaseRepository {
     if (!database) {
       throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
     }
+
+    const members = this.env.USER_SYNC_COORDINATOR
+      ? await workspaceAudience(this.env, workspaceId)
+      : [];
 
     const projectIds = "SELECT id FROM project WHERE workspace_id = ?";
     const conversationIds = `SELECT id FROM conversation WHERE project_id IN (${projectIds})`;
@@ -430,6 +461,10 @@ export class WorkspaceRepository extends BaseRepository {
         .bind(workspaceId),
       database.prepare("DELETE FROM workspace WHERE id = ?").bind(workspaceId),
     ]);
+
+    for (const userId of members) {
+      publishUserEvent({ env: this.env }, userId, "attention.changed", { workspaceId });
+    }
   }
 
   async upsertInvitation(params: {
@@ -518,6 +553,10 @@ export class WorkspaceRepository extends BaseRepository {
         409,
       );
     }
+
+    publishUserEvent({ env: this.env }, userId, "attention.changed", {
+      workspaceId: invitation.workspace_id,
+    });
   }
 
   async revokeInvitation(workspaceId: string, invitationId: string): Promise<boolean> {
@@ -580,6 +619,7 @@ export class WorkspaceRepository extends BaseRepository {
         params.taskPrefix ?? deriveTaskPrefix(params.name),
       ],
     );
+    await this.publishAttentionChanged(params.workspaceId);
   }
 
   async createProjectWithCapabilities(
@@ -653,6 +693,7 @@ export class WorkspaceRepository extends BaseRepository {
           ),
       ),
     ]);
+    await this.publishAttentionChanged(params.workspaceId);
   }
 
   async listProjectNamesForWorkspaces(
@@ -734,6 +775,10 @@ export class WorkspaceRepository extends BaseRepository {
 
     if (result) {
       await this.executeRun(result.query, result.values);
+    }
+
+    if (updates.name !== undefined || updates.archived_at !== undefined) {
+      await publishProjectEvent({ env: this.env }, projectId, "attention.changed");
     }
   }
 
@@ -1035,5 +1080,9 @@ export class WorkspaceRepository extends BaseRepository {
       member: row.member_user_id !== null,
       teammateActorId: row.teammate_actor_id === null ? "" : String(row.teammate_actor_id),
     }).allowed;
+  }
+
+  private async publishAttentionChanged(workspaceId: string): Promise<void> {
+    await publishWorkspaceEvent({ env: this.env }, workspaceId, "attention.changed");
   }
 }

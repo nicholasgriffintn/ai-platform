@@ -1,3 +1,4 @@
+import { initSentry } from "@ngriffin_uk/polychat-library-client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -9,6 +10,8 @@ import "./infrastructure/desktop-backend";
 import "./infrastructure/device-models";
 import "./infrastructure/product-analytics";
 import "./infrastructure/sqlite-conversation-store";
+
+initSentry({ app: "desktop", release: __POLYCHAT_RELEASE__ });
 
 const container = document.getElementById("root");
 

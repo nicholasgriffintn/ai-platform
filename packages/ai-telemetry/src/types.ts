@@ -37,6 +37,7 @@ export type TelemetryLogRecord = {
   message: string;
   prefix?: string;
   attributes?: Record<string, unknown>;
+  error?: Error;
   traceId?: string;
   spanId?: string;
 };

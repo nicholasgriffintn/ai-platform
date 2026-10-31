@@ -42,6 +42,8 @@ export const ANALYTICS_CONFIG = {
   enabled: !IS_E2E_BUILD,
 };
 
+export const SENTRY_DSN = import.meta.env?.VITE_SENTRY_DSN?.trim() || "";
+
 export const CAPTCHA_SITE_KEY = import.meta.env?.VITE_CAPTCHA_SITE_KEY || "";
 export const ENABLE_CAPTCHA_IN_DEV = false;
 
@@ -99,6 +101,7 @@ const COMMON_CSP = {
     "https://cdn-lfs-us-1.hf.co",
     "https://assets.polychat.app",
     "https://strudel.cc",
+    ...(SENTRY_DSN ? [new URL(SENTRY_DSN).origin] : []),
   ],
   mediaSrc: ["'self'", "data:", "blob:", "https://assets.polychat.app", API_BASE_URL],
   workerSrc: ["'self'", "blob:"],

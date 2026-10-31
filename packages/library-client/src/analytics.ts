@@ -48,6 +48,10 @@ export async function flushAnalyticsEvents({ keepalive = false } = {}): Promise<
   }
 }
 
+export function getAnalyticsSessionId(): string | undefined {
+  return sessionId;
+}
+
 export function setAnalyticsApp(next: ClientAnalyticsApp, version?: string): void {
   app = next;
   appVersion = version;

@@ -39,6 +39,7 @@ import {
   parseMessagingCredentialEnvelope,
 } from "~/infrastructure/providers/capabilities/messaging/credentials";
 import { isMessagingProviderId } from "~/infrastructure/providers/capabilities/messaging/metadata";
+import { publishUserEvent } from "~/modules/sync/application/conversation-events";
 import {
   parseProviderQuotaState,
   type ProviderQuotaState,
@@ -300,6 +301,7 @@ export class UserSettingsRepository extends BaseRepository {
       expression: "json_set(payload, ?, json(?))",
       values: ["$.system_models", JSON.stringify(choices)],
     });
+    publishUserEvent({ env: this.env }, userId, "attention.changed", { action: "models" });
   }
 
   private async patchPreferences(

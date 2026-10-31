@@ -59,8 +59,18 @@ const CHAT_RUN_TRANSITIONS: Record<ChatRunStatus, readonly ChatRunStatus[]> = {
   interrupted: [],
 };
 
+export const WAITING_CHAT_RUN_STATUSES: readonly ChatRunStatus[] = [
+  "awaiting_input",
+  "awaiting_approval",
+  "awaiting_takeover",
+];
+
 export function isTerminalChatRunStatus(status: ChatRunStatus): boolean {
   return TERMINAL_CHAT_RUN_STATUSES.includes(status);
+}
+
+export function isWaitingChatRunStatus(status: ChatRunStatus): boolean {
+  return WAITING_CHAT_RUN_STATUSES.includes(status);
 }
 
 export function canTransitionChatRun(from: ChatRunStatus, to: ChatRunStatus): boolean {

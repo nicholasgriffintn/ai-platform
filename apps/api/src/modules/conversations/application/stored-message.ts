@@ -18,7 +18,7 @@ export function formatStoredMessage(dbMessage: Record<string, unknown>): Message
       content = safeParseJson(content);
     }
   } catch (error) {
-    logger.error("Error parsing message content", { error });
+    logger.warn("Error parsing message content", { error });
   }
 
   const toolCalls = dbMessage.tool_calls

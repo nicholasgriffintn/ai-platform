@@ -8,6 +8,7 @@ import { parseJsonColumn } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { WorkspaceTeammateRow } from "~/infrastructure/database/schema";
+import { publishWorkspaceEvent } from "~/modules/sync/application/conversation-events";
 
 export interface WorkspaceTeammateRecord {
   workspaceId: string;
@@ -27,6 +28,16 @@ export interface WorkspaceTeammateRecord {
   proposal: HireProposal | null;
   createdAt: string;
 }
+
+const INBOX_FIELDS = [
+  "title",
+  "reportsToTeammateId",
+  "status",
+  "pausedReason",
+  "budgetWarnedPeriod",
+  "budgetAlertAt",
+  "proposal",
+] as const;
 
 function formatRecord(row: WorkspaceTeammateRow): WorkspaceTeammateRecord {
   return {
@@ -141,6 +152,8 @@ export class WorkspaceTeammateRepository extends BaseRepository {
       throw new Error("Failed to record the teammate's place in the workspace");
     }
 
+    await this.publishAttentionChanged(params.workspaceId);
+
     return formatRecord(row);
   }
 
@@ -202,6 +215,10 @@ export class WorkspaceTeammateRepository extends BaseRepository {
       true,
     );
 
+    if (row && INBOX_FIELDS.some((field) => updates[field] !== undefined)) {
+      await this.publishAttentionChanged(workspaceId);
+    }
+
     return row ? formatRecord(row) : null;
   }
 
@@ -236,5 +253,12 @@ export class WorkspaceTeammateRepository extends BaseRepository {
       "DELETE FROM workspace_teammate WHERE workspace_id = ? AND teammate_id = ?",
       [workspaceId, teammateId],
     );
+    await this.publishAttentionChanged(workspaceId);
+  }
+
+  private async publishAttentionChanged(workspaceId: string): Promise<void> {
+    await publishWorkspaceEvent({ env: this.env }, workspaceId, "attention.changed", {
+      action: "teammate",
+    });
   }
 }

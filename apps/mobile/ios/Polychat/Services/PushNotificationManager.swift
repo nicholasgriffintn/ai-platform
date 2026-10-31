@@ -157,6 +157,7 @@ final class PolychatAppDelegate: NSObject, UIApplicationDelegate, UNUserNotifica
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
+        CrashReporting.start()
         UNUserNotificationCenter.current().delegate = self
         NotificationCategories.register()
         WatchBridge.shared.activate()

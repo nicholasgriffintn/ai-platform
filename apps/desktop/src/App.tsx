@@ -8,7 +8,7 @@ import {
   MediaDockProvider,
 } from "@ngriffin_uk/polychat-component-shell";
 import { LinkProvider, ThemedToaster } from "@ngriffin_uk/polychat-component-ui";
-import { useChatStore } from "@ngriffin_uk/polychat-library-client";
+import { captureClientError, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   AnalyticsProvider,
   AppInitializer,
@@ -56,13 +56,14 @@ function DesktopWindowContent() {
 
   return (
     <AppErrorBoundary
-      onError={(error) =>
+      onError={(error) => {
+        captureClientError(error);
         trackException(error, {
           message: "Error",
           details: error.message,
           stack: error.stack,
-        })
-      }
+        });
+      }}
     >
       <DesktopWindowEffects />
       <PageViewTracker />

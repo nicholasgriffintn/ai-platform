@@ -14,6 +14,7 @@ import { parse as parseCookieHeader } from "hono/utils/cookie";
 import { isbot } from "isbot";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
+import { setSentryUser } from "~/infrastructure/sentry";
 import { verifyInternalServiceToken } from "~/modules/auth/application/internal-service";
 import { getUserByJwtToken } from "~/modules/auth/application/jwt";
 import { authenticateSession } from "~/modules/auth/application/session-renewal";
@@ -36,7 +37,7 @@ function isBotUserAgent(userAgent: string): boolean {
   try {
     return isbot(userAgent);
   } catch (error) {
-    logger.error("Failed to check if user is a bot:", { error });
+    logger.warn("Failed to check if user is a bot:", { error });
 
     return true;
   }
@@ -98,6 +99,7 @@ export async function authMiddleware(context: Context, next: Next) {
       }
 
       context.set("user", user);
+      setSentryUser(user.id);
 
       return next();
     }
@@ -245,6 +247,7 @@ export async function authMiddleware(context: Context, next: Next) {
 
   context.set("user", user);
   context.set("anonymousUser", anonymousUser);
+  setSentryUser(user?.id ?? anonymousUser?.id);
 
   return next();
 }

@@ -1,6 +1,6 @@
 import type { ChatRun, Delegation, DeviceSyncEventType } from "@ngriffin_uk/polychat-schemas";
 
-import { conversationAudience, projectAudience } from "./audience";
+import { conversationAudience, projectAudience, workspaceAudience } from "./audience";
 import {
   publishSync,
   syncTopic,
@@ -104,6 +104,24 @@ export async function publishProjectEvent(
   publishSync(
     publisher,
     fanOut(audience, syncTopic("project", projectId), type, { projectId, ...data }),
+  );
+}
+
+export async function publishWorkspaceEvent(
+  publisher: SyncPublisher,
+  workspaceId: string,
+  type: DeviceSyncEventType,
+  data: Record<string, unknown> = {},
+): Promise<void> {
+  if (!publisher.env?.USER_SYNC_COORDINATOR) {
+    return;
+  }
+
+  const audience = await workspaceAudience(publisher.env, workspaceId);
+
+  publishSync(
+    publisher,
+    fanOut(audience, syncTopic("workspace", workspaceId), type, { workspaceId, ...data }),
   );
 }
 

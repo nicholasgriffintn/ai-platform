@@ -8,7 +8,7 @@ final class ProductAnalytics {
     private static let flushDelay: Duration = .seconds(2)
 
     private let client: APIClient
-    private let sessionId = UUID().uuidString
+    let sessionId = UUID().uuidString
     private let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
     private var queue: [ClientAnalyticsEvent] = []
     private var flushTask: Task<Void, Never>?

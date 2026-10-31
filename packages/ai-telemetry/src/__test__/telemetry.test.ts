@@ -139,8 +139,9 @@ describe("logger telemetry", () => {
   it("forwards log records with attributes to listeners", () => {
     const records: unknown[] = [];
     const off = onLogRecord((record) => void records.push(record));
+    const boom = new Error("boom");
 
-    getLogger({ prefix: "test" }).error("broke", { attempt: 2 }, new Error("boom"));
+    getLogger({ prefix: "test" }).error("broke", { attempt: 2, error: boom });
     off();
     getLogger({ prefix: "test" }).error("ignored");
 
@@ -150,6 +151,7 @@ describe("logger telemetry", () => {
         prefix: "test",
         message: "broke",
         attributes: { attempt: 2, error: expect.objectContaining({ message: "boom" }) },
+        error: boom,
       }),
     ]);
   });
