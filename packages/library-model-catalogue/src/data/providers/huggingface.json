@@ -347,7 +347,6 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro",
       "overrides": {
-        "contextWindow": 1048576,
         "maxTokens": 393216,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
@@ -367,6 +366,7 @@
       "overrides": {
         "name": "MiniMax-M2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -616,7 +616,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -833,7 +833,6 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "Qwen/Qwen3.6-27B",
       "overrides": {
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",

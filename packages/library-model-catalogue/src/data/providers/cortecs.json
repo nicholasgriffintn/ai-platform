@@ -80,7 +80,7 @@
       "model": "claude-opus/claude-opus-4-5-latest",
       "matchingModel": "claude-opus4-5",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005313,
         "costPer1kOutputTokens": 0.026568,
@@ -1477,7 +1477,7 @@
       "matchingModel": "gpt-5.1",
       "overrides": {
         "name": "GPT 5.1",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.01096,
@@ -2127,7 +2127,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.000656,
         "costPer1kOutputTokens": 0.0033,

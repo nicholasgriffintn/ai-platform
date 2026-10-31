@@ -446,7 +446,7 @@
           "coding",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "releaseDate": "June 14, 2026",
         "lastUpdated": "June 14, 2026",
         "costPer1kInputTokens": 0.00095,

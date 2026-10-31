@@ -2408,6 +2408,7 @@
         "name": "Qwen3.6 27B",
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 262144,
+        "maxTokens": 65536,
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "April 22, 2026",

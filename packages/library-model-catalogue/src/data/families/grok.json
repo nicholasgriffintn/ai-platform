@@ -1339,7 +1339,7 @@
             {
               "key": "image_to_videoElo",
               "label": "Image-to-video arena",
-              "value": 1051,
+              "value": 1053,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 19

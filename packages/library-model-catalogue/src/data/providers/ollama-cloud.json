@@ -71,7 +71,6 @@
       "overrides": {
         "name": "deepseek-v4-pro",
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
-        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
@@ -224,7 +223,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -257,6 +256,7 @@
       "overrides": {
         "name": "minimax-m2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "maxTokens": 131072,
         "speed": 2,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "February 12, 2026",

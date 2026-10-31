@@ -742,7 +742,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "isFeatured": false,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,

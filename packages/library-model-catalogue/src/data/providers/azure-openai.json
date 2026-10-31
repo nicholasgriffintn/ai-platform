@@ -149,7 +149,7 @@
       "model": "claude-opus/claude-opus-4-5",
       "matchingModel": "claude-opus-4-5",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "August 1, 2025",
         "dataRetention": {
@@ -624,7 +624,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "releaseDate": "November 14, 2025",
         "lastUpdated": "November 14, 2025",
         "dataRetention": {
@@ -871,7 +871,7 @@
       "model": "grok/grok-4",
       "matchingModel": "grok-4",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 9, 2025",
         "dataRetention": {
           "maxDays": 30,
@@ -2305,7 +2305,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "June 12, 2026",
         "dataRetention": {
           "maxDays": 30,
