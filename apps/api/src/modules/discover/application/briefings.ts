@@ -238,7 +238,6 @@ async function researchBriefing(
     {
       origin: "page",
       readLimit: PAGE_READ_LIMIT,
-      summarise: false,
       metadata: () => ({
         [DISCOVER_ARTICLE_METADATA_KEY]: { topic, date: edition.content.date },
       }),

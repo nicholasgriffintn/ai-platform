@@ -67,7 +67,6 @@ export async function importNotebookResearch(
     {
       origin: "research",
       readLimit: input.results.length,
-      summarise: false,
       keepDays: filing.keepDays,
       metadata: () => filing.metadata ?? {},
     },

@@ -17,6 +17,7 @@ import {
   sha256Hex,
   zonedTimeToInstant,
 } from "@ngriffin_uk/polychat-utility-core";
+import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 import {
   AssistantError,
   ErrorType,
@@ -66,6 +67,7 @@ const HEADLINE_NEWS_DAYS = 1;
 const TOPIC_NEWS_DAYS = 3;
 const DISCOVER_NEWS_LANGUAGE = "en";
 const CURATE_TOPIC_LIMIT = 4;
+const TOPIC_RESEARCH_CONCURRENCY = 3;
 
 export interface DiscoverGatherSummary {
   read: string[];
@@ -433,13 +435,13 @@ export async function runDiscoverGather(
       hidden: interests.hidden,
     });
 
-    for (const topic of topics) {
-      await researchTopic(context, notebook.id, {
+    await mapWithConcurrency(topics, TOPIC_RESEARCH_CONCURRENCY, (topic) =>
+      researchTopic(context, notebook.id, {
         topic,
         date: zoned.date,
         country: settings.country,
-      });
-    }
+      }),
+    );
 
     added = await topUpDiscoverFeed(context, { today: zoned.date, curate: settings.curate });
   } finally {

@@ -57,7 +57,6 @@ export async function readDiscoverArticles(
     {
       origin: "page",
       readLimit: ARTICLE_READ_LIMIT,
-      summarise: true,
       keepDays: DISCOVER_RESEARCH_DAYS_KEPT,
       metadata: () => ({
         [DISCOVER_ARTICLE_METADATA_KEY]: { topic: input.topic, date: input.date },

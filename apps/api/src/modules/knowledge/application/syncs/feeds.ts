@@ -100,7 +100,6 @@ export async function gatherFeed(
   const gathered = await gatherKnowledgeArticles(context, target, candidates, {
     origin: input.feed.kind === "rss" ? "feed" : "topic",
     readLimit: FEED_ARTICLE_READ_LIMIT,
-    summarise: false,
     metadata: (candidate) => ({
       [KNOWLEDGE_FEED_METADATA_KEY]: {
         syncId: input.syncId,

@@ -2,12 +2,11 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { KnowledgeOrigin } from "@ngriffin_uk/polychat-schemas";
 import { DAY_MS, resolveHttpUrl, truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 import { paginate } from "@ngriffin_uk/polychat-utility-server/arrays";
+import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { runKnowledgeEnricher } from "~/modules/knowledge/application/enrichment/run";
-import { enqueueKnowledgeProcessing } from "~/modules/knowledge/application/index/indexing";
 import {
   commitKnowledgeDocument,
   knowledgeSourceId,
@@ -25,6 +24,7 @@ import { readPageContents } from "~/modules/tools/application/retrieval/page-con
 
 const logger = getLogger({ prefix: "sources/knowledge-articles" });
 const PAGE_READ_BATCH = 10;
+const ARTICLE_FILE_CONCURRENCY = 4;
 const MAX_ARTICLE_CHARACTERS = 400_000;
 
 export interface GatheredArticle extends KnowledgeArticleCandidate {
@@ -35,7 +35,6 @@ export interface GatherArticlesOptions {
   origin: KnowledgeOrigin;
   readLimit: number;
   metadata: (candidate: KnowledgeArticleCandidate) => Record<string, unknown>;
-  summarise: boolean;
   keepDays?: number;
 }
 
@@ -56,21 +55,6 @@ async function readArticlePages(
   }
 
   return pages;
-}
-
-async function summarise(context: ServiceContext, sourceId: string) {
-  try {
-    return readSourceSummary(
-      parseJsonRecord((await runKnowledgeEnricher(context, sourceId, "summary")).metadata),
-    );
-  } catch (error) {
-    logger.warn("An article could not be summarised", {
-      source_id: sourceId,
-      error_message: getErrorMessage(error),
-    });
-
-    return null;
-  }
 }
 
 export async function gatherKnowledgeArticles(
@@ -108,26 +92,23 @@ export async function gatherKnowledgeArticles(
   const expiresAt = options.keepDays
     ? new Date(Date.now() + options.keepDays * DAY_MS).toISOString()
     : null;
-  const gathered: GatheredArticle[] = [];
 
-  for (const { candidate, sourceId } of keyed) {
-    const url = resolveHttpUrl(candidate.url);
-    const stored = known.get(sourceId);
-    const content = url ? contentByUrl.get(url) : undefined;
+  return mapWithConcurrency(
+    keyed,
+    ARTICLE_FILE_CONCURRENCY,
+    async ({ candidate, sourceId }): Promise<GatheredArticle> => {
+      const url = resolveHttpUrl(candidate.url);
+      const stored = known.get(sourceId);
+      const content = url ? contentByUrl.get(url) : undefined;
 
-    if (!url || (!stored && !content)) {
-      gathered.push({ ...candidate, sourceId: null });
-      continue;
-    }
+      if (!url || (!stored && !content)) {
+        return { ...candidate, sourceId: null };
+      }
 
-    const summariseNow = !stored && options.summarise && content !== undefined;
-    let summary = stored ? readSourceSummary(parseJsonRecord(stored.metadata)) : null;
+      const summary = stored ? readSourceSummary(parseJsonRecord(stored.metadata)) : null;
 
-    try {
-      const filed = await commitKnowledgeDocument(
-        context,
-        target,
-        {
+      try {
+        await commitKnowledgeDocument(context, target, {
           id: sourceId,
           origin: options.origin,
           kind: "url",
@@ -150,22 +131,17 @@ export async function gatherKnowledgeArticles(
             ...(candidate.source ? { source: candidate.source } : {}),
             ...(content === undefined ? {} : { readAt }),
           },
-        },
-        { process: !summariseNow },
-      );
+        });
+      } catch (error) {
+        logger.warn("An article could not be filed", {
+          url,
+          error_message: getErrorMessage(error),
+        });
 
-      if (summariseNow) {
-        summary = await summarise(context, sourceId);
-        await enqueueKnowledgeProcessing(context.env, filed, target.userId);
+        return { ...candidate, sourceId: null };
       }
-    } catch (error) {
-      logger.warn("An article could not be filed", { url, error_message: getErrorMessage(error) });
-      gathered.push({ ...candidate, sourceId: null });
-      continue;
-    }
 
-    gathered.push({ ...candidate, ...(summary ? { snippet: summary.summary } : {}), sourceId });
-  }
-
-  return gathered;
+      return { ...candidate, ...(summary ? { snippet: summary.summary } : {}), sourceId };
+    },
+  );
 }
