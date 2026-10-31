@@ -48,7 +48,7 @@ const PANEL_CLASS =
   "absolute inset-0 z-20 flex min-h-0 flex-col bg-background lg:static lg:inset-auto lg:z-auto lg:w-[26rem] lg:shrink-0 lg:border-l lg:border-border xl:w-[32rem] 2xl:w-[min(46rem,45%)]";
 
 const FLOATING_COMPOSER_CLASS =
-  "pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col px-2 pt-24 pb-2 [background:linear-gradient(to_top,var(--background)_calc(100%-6rem),transparent)] sm:px-6 sm:pb-4";
+  "pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col pt-24 pb-2 [background:linear-gradient(to_top,var(--background)_calc(100%-6rem),transparent)] sm:px-6 sm:pb-4";
 
 const COMPOSER_CLEARANCE = 40;
 
@@ -302,8 +302,15 @@ export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
 
   const headerActions =
     isAuthenticated && settings ? (
-      <Button variant="outline" size="sm" onClick={() => setShowSettings(true)}>
-        <Settings2 size={14} aria-hidden />
+      <Button
+        variant="outline"
+        size="sm"
+        collapseLabel
+        icon={<Settings2 size={14} aria-hidden />}
+        aria-label="Discover settings"
+        title="Discover settings"
+        onClick={() => setShowSettings(true)}
+      >
         Settings
       </Button>
     ) : undefined;

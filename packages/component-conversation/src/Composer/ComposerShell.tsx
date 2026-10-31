@@ -45,7 +45,7 @@ function GeneratingAudioNotice() {
   );
 }
 
-function SlimComposerShell({
+export function ComposerShell({
   chips,
   fileInput,
   suggestions,
@@ -56,73 +56,10 @@ function SlimComposerShell({
   isGeneratingAudio = false,
   footerStart,
   footerEnd,
+  density = "regular",
 }: ComposerShellProps) {
-  return (
-    <div data-chat-input-shell className={SHELL_CLASS}>
-      <div className="flex flex-col">
-        {chips}
-        {fileInput}
-        <div className="relative">
-          {suggestions}
-          <div className="flex items-center gap-1 py-1 pr-1.5 pl-1">
-            {leadingControls && (
-              <div className="flex min-w-0 items-center px-2">{leadingControls}</div>
-            )}
-            {input && (
-              <div
-                data-composer-input-row
-                data-poly-anchor="composer"
-                className="flex min-w-0 flex-1 cursor-text items-center py-1 pl-2.5"
-                role="presentation"
-                onMouseDown={focusEditableInRow}
-              >
-                {input}
-              </div>
-            )}
-            {inputHelp && (
-              <div id="message-input-help" className="sr-only">
-                {inputHelp}
-              </div>
-            )}
-            {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}
-          </div>
-        </div>
-        {(isGeneratingAudio || footerStart || footerEnd) && (
-          <div className="px-2 pb-1.5">
-            {isGeneratingAudio && <GeneratingAudioNotice />}
-            {(footerStart || footerEnd) && (
-              <div className="@container/composer-footer flex items-center justify-between gap-2">
-                <div className="flex min-w-0 flex-1 items-center gap-2">{footerStart}</div>
-                <div className="flex shrink-0 items-center gap-2">{footerEnd}</div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export function ComposerShell(props: ComposerShellProps) {
-  const {
-    chips,
-    fileInput,
-    suggestions,
-    leadingControls,
-    input,
-    inputHelp,
-    actions,
-    isGeneratingAudio = false,
-    footerStart,
-    footerEnd,
-    density = "regular",
-  } = props;
-
-  if (density === "slim") {
-    return <SlimComposerShell {...props} />;
-  }
-
   const isCompact = density === "compact";
+  const isSlim = density === "slim";
 
   return (
     <div data-chat-input-shell className={SHELL_CLASS}>
@@ -131,9 +68,19 @@ export function ComposerShell(props: ComposerShellProps) {
         {fileInput}
         <div className="relative">
           {suggestions}
-          <div className="flex items-stretch">
+          <div
+            className={cn(
+              "flex items-stretch",
+              isSlim && "sm:items-center sm:gap-1 sm:py-1 sm:pr-1.5 sm:pl-1",
+            )}
+          >
             {leadingControls && (
-              <div className="flex min-h-[60px] min-w-0 flex-grow items-center px-4 py-3">
+              <div
+                className={cn(
+                  "flex min-h-[60px] min-w-0 flex-grow items-center px-4 py-3",
+                  isSlim && "sm:min-h-0 sm:flex-grow-0 sm:px-2 sm:py-0",
+                )}
+              >
                 {leadingControls}
               </div>
             )}
@@ -144,6 +91,7 @@ export function ComposerShell(props: ComposerShellProps) {
                 className={cn(
                   "flex min-w-0 flex-1 cursor-text",
                   isCompact ? "items-center py-2 pl-3.5" : "px-4 pt-3 pb-5",
+                  isSlim && "sm:items-center sm:py-1 sm:pr-0 sm:pl-2.5",
                 )}
                 role="presentation"
                 onMouseDown={focusEditableInRow}
@@ -161,6 +109,7 @@ export function ComposerShell(props: ComposerShellProps) {
                 className={cn(
                   "flex flex-shrink-0",
                   isCompact ? "items-end py-1.5 pr-1.5 pl-2" : "items-start pt-3 pr-3",
+                  isSlim && "sm:items-center sm:p-0",
                 )}
               >
                 <div className="flex items-center gap-1">{actions}</div>
@@ -170,7 +119,12 @@ export function ComposerShell(props: ComposerShellProps) {
         </div>
 
         {(isGeneratingAudio || footerStart || footerEnd) && (
-          <div className="border-t border-border px-3 pt-3 pb-3">
+          <div
+            className={cn(
+              "border-t border-border px-3 pt-3 pb-3",
+              isSlim && "sm:border-t-0 sm:px-2 sm:pt-0 sm:pb-1.5",
+            )}
+          >
             {isGeneratingAudio && <GeneratingAudioNotice />}
             {(footerStart || footerEnd) && (
               <div className="@container/composer-footer flex items-center justify-between gap-1 sm:gap-2">
