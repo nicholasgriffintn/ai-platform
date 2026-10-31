@@ -101,6 +101,8 @@ const RECORD_COLUMNS = `id, occurred_at, period, source, vendor, resource, unit,
 
 const CREDITS_ENFORCED = "included_credit_micros > 0";
 
+const EVENT_NOT_RECORDED = "NOT EXISTS (SELECT 1 FROM usage_event WHERE idempotency_key = ?)";
+
 const SPEND_PAST_CEILING = `MAX(0, spent_credit_micros + ?
 	- MAX(spent_credit_micros, included_credit_micros + grace_credit_micros))`;
 
@@ -142,18 +144,14 @@ export class UsageEventRepository extends BaseRepository {
       throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
     }
 
-    const inserted = await this.insertEvent(event);
-
-    if (!inserted) {
-      return false;
-    }
-
-    await database.batch([
+    const insert = this.buildInsert(event);
+    const results = await this.executeBatch([
       database
         .prepare(
           `INSERT INTO usage_balance (
 				id, user_id, period, plan_id, included_credit_micros, grace_credit_micros
-			 ) VALUES (?, ?, ?, ?, ?, ?)
+			 ) SELECT ?, ?, ?, ?, ?, ?
+			 WHERE ${EVENT_NOT_RECORDED}
 			 ON CONFLICT (user_id, period) DO UPDATE SET
 			   plan_id = excluded.plan_id,
 			   included_credit_micros = excluded.included_credit_micros,
@@ -167,6 +165,7 @@ export class UsageEventRepository extends BaseRepository {
           seed.planId,
           seed.includedCreditMicros,
           seed.graceCreditMicros,
+          event.idempotency_key,
         ),
       database
         .prepare(
@@ -178,7 +177,7 @@ export class UsageEventRepository extends BaseRepository {
 			       + CASE WHEN ${CREDITS_ENFORCED} AND overage_enabled = 1 THEN ${SPEND_PAST_CEILING} ELSE 0 END,
 			     last_event_at = MAX(COALESCE(last_event_at, ''), ?),
 			     updated_at = CURRENT_TIMESTAMP
-			 WHERE user_id = ? AND period = ?`,
+			 WHERE user_id = ? AND period = ? AND ${EVENT_NOT_RECORDED}`,
         )
         .bind(
           event.credit_micros,
@@ -187,10 +186,12 @@ export class UsageEventRepository extends BaseRepository {
           event.occurred_at,
           event.user_id,
           event.period,
+          event.idempotency_key,
         ),
+      database.prepare(insert.query).bind(...insert.values),
     ]);
 
-    return true;
+    return (results[2]?.meta?.changes ?? 0) > 0;
   }
 
   async listUserEvents(params: ListUsageEventsParams): Promise<UsageEventRecordRow[]> {

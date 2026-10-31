@@ -1,5 +1,8 @@
 import type { UsageEventRecord } from "@ngriffin_uk/polychat-ai-billing";
-import { describe, expect, it, vi } from "vitest";
+import Database from "better-sqlite3";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import type { IEnv } from "~/types";
 
 import { UsageEventRepository } from "../UsageEventRepository";
 
@@ -38,33 +41,40 @@ function event(overrides: Partial<UsageEventRecord> = {}): UsageEventRecord {
   };
 }
 
-describe("UsageEventRepository", () => {
-  function harness(eventInserted: boolean) {
-    const statements: Array<{ query: string; values: unknown[] }> = [];
-    const runs: Array<{ query: string; values: unknown[] }> = [];
-    const prepare = vi.fn((query: string) => ({
-      bind: (...values: unknown[]) => ({
+describe("UsageEventRepository.insertEventAndApplyBalance", () => {
+  let sqlite: Database.Database;
+
+  function execute(query: string, params: unknown[]) {
+    const statement = sqlite.prepare(query);
+    const info = statement.run(...params);
+
+    return { success: true, meta: { changes: info.changes } };
+  }
+
+  function createEnv(): IEnv {
+    const prepare = (query: string) => ({
+      bind: (...params: unknown[]) => ({
         query,
-        values,
-        run: async () => {
-          runs.push({ query, values });
-
-          return { success: true, meta: { changes: eventInserted ? 1 : 0 } };
-        },
+        params,
+        run: async () => execute(query, params),
       }),
-    }));
-    const batch = vi.fn(async (bound: Array<{ query: string; values: unknown[] }>) => {
-      statements.push(...bound);
-
-      return bound.map(() => ({ success: true, meta: { changes: 1 } }));
     });
+    const batch = async (statements: Array<{ query: string; params: unknown[] }>) =>
+      sqlite.transaction(() =>
+        statements.map((statement) => execute(statement.query, statement.params)),
+      )();
 
-    return {
-      statements,
-      runs,
-      batch,
-      repository: new UsageEventRepository({ DB: { prepare, batch } } as never),
-    };
+    return { DB: { prepare, batch } } as unknown as IEnv;
+  }
+
+  function readBalance() {
+    return sqlite
+      .prepare("SELECT * FROM usage_balance WHERE user_id = 7 AND period = '2026-09'")
+      .get() as Record<string, number> | undefined;
+  }
+
+  function countEvents() {
+    return (sqlite.prepare("SELECT COUNT(*) AS n FROM usage_event").get() as { n: number }).n;
   }
 
   const proSeed = {
@@ -73,65 +83,91 @@ describe("UsageEventRepository", () => {
     graceCreditMicros: 50_000_000,
   };
 
-  it("inserts the event first, then upserts the allowance and applies spend", async () => {
-    const { repository, statements, runs } = harness(true);
-
-    await expect(repository.insertEventAndApplyBalance(event(), proSeed)).resolves.toBe(true);
-
-    expect(runs[0]?.query).toContain("INSERT INTO usage_event");
-    expect(statements).toHaveLength(2);
-    expect(statements[0]?.query).toContain("INSERT INTO usage_balance");
-    expect(statements[0]?.query.replace(/\s+/g, " ")).toContain(
-      "ON CONFLICT (user_id, period) DO UPDATE SET",
-    );
-    expect(statements[1]?.query.replace(/\s+/g, " ")).toContain(
-      "spent_credit_micros = spent_credit_micros + ?",
-    );
-    expect(statements[1]?.values).toEqual([
-      30_000,
-      30_000,
-      30_000,
-      "2026-09-01T12:00:00.000Z",
-      7,
-      "2026-09",
-    ]);
+  beforeEach(() => {
+    sqlite = new Database(":memory:");
+    sqlite.exec(`
+      CREATE TABLE usage_event (
+        id text PRIMARY KEY, idempotency_key text NOT NULL UNIQUE, user_id integer,
+        workspace_id text, project_id text, conversation_id text, message_id text,
+        activity_id text, completion_id text, run_id text, run_attempt integer,
+        occurred_at text, period text, source text, vendor text, resource text, unit text,
+        quantity real, rate_version text, unit_cost_micros integer, cost_micros integer,
+        credit_micros integer, billable integer, byok integer, estimated integer,
+        vendor_units real, reason text, site text, raw text
+      );
+      CREATE TABLE usage_balance (
+        id text PRIMARY KEY, user_id integer NOT NULL, period text NOT NULL, plan_id text,
+        included_credit_micros integer DEFAULT 0 NOT NULL,
+        grace_credit_micros integer DEFAULT 0 NOT NULL,
+        spent_credit_micros integer DEFAULT 0 NOT NULL,
+        overrun_credit_micros integer DEFAULT 0 NOT NULL,
+        overage_credit_micros integer DEFAULT 0 NOT NULL,
+        overage_enabled integer DEFAULT 0 NOT NULL,
+        last_event_at text, updated_at text
+      );
+      CREATE UNIQUE INDEX usage_balance_user_period_idx ON usage_balance (user_id, period);
+    `);
   });
 
-  it("refreshes a stale allowance on an existing balance row", async () => {
-    const { repository, statements } = harness(true);
+  afterEach(() => {
+    sqlite.close();
+  });
 
-    await repository.insertEventAndApplyBalance(event(), proSeed);
+  it("records the event and applies its spend once across replays", async () => {
+    const repository = new UsageEventRepository(createEnv());
 
-    const upsert = statements[0]?.query.replace(/\s+/g, " ") ?? "";
+    await expect(repository.insertEventAndApplyBalance(event(), proSeed)).resolves.toBe(true);
+    await expect(repository.insertEventAndApplyBalance(event(), proSeed)).resolves.toBe(false);
 
-    expect(upsert).toContain("included_credit_micros = excluded.included_credit_micros");
-    expect(upsert).toContain("grace_credit_micros = excluded.grace_credit_micros");
+    expect(countEvents()).toBe(1);
+    expect(readBalance()).toMatchObject({
+      plan_id: "pro",
+      included_credit_micros: 500_000_000,
+      spent_credit_micros: 30_000,
+    });
+  });
+
+  it("applies the spend on retry when the balance write failed the first time", async () => {
+    const repository = new UsageEventRepository(createEnv());
+
+    sqlite.exec(`
+      CREATE TABLE fail_balance (flag integer);
+      INSERT INTO fail_balance VALUES (1);
+      CREATE TRIGGER fail_balance_update BEFORE UPDATE OF spent_credit_micros ON usage_balance
+      WHEN EXISTS (SELECT 1 FROM fail_balance)
+      BEGIN SELECT RAISE(ABORT, 'D1 busy'); END;
+    `);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await expect(repository.insertEventAndApplyBalance(event(), proSeed)).rejects.toThrow();
+    expect(countEvents()).toBe(0);
+
+    sqlite.exec("DELETE FROM fail_balance");
+
+    await expect(repository.insertEventAndApplyBalance(event(), proSeed)).resolves.toBe(true);
+    expect(readBalance()?.spent_credit_micros).toBe(30_000);
   });
 
   it("routes spend past the ceiling to overrun, or to overage when the user opted in", async () => {
-    const { repository, statements } = harness(true);
+    const repository = new UsageEventRepository(createEnv());
+    const seed = { planId: "free", includedCreditMicros: 20_000, graceCreditMicros: 0 };
 
-    await repository.insertEventAndApplyBalance(event(), proSeed);
+    await repository.insertEventAndApplyBalance(event(), seed);
+    expect(readBalance()).toMatchObject({
+      overrun_credit_micros: 10_000,
+      overage_credit_micros: 0,
+    });
 
-    const update = statements[1]?.query.replace(/\s+/g, " ") ?? "";
-
-    expect(update).toContain(
-      "overrun_credit_micros = overrun_credit_micros + CASE WHEN included_credit_micros > 0 AND overage_enabled = 0",
+    sqlite.exec("UPDATE usage_balance SET overage_enabled = 1");
+    await repository.insertEventAndApplyBalance(
+      event({ id: "event-2", idempotency_key: "model:message-2:input_tokens" }),
+      seed,
     );
-    expect(update).toContain(
-      "overage_credit_micros = overage_credit_micros + CASE WHEN included_credit_micros > 0 AND overage_enabled = 1",
-    );
-    expect(update).toContain(
-      "MAX(0, spent_credit_micros + ? - MAX(spent_credit_micros, included_credit_micros + grace_credit_micros))",
-    );
-  });
-
-  it("reports a replay without moving the balance", async () => {
-    const { repository, batch } = harness(false);
-
-    await expect(repository.insertEventAndApplyBalance(event(), proSeed)).resolves.toBe(false);
-
-    expect(batch).not.toHaveBeenCalled();
+    expect(readBalance()).toMatchObject({
+      spent_credit_micros: 60_000,
+      overrun_credit_micros: 10_000,
+      overage_credit_micros: 30_000,
+    });
   });
 });
 

@@ -230,7 +230,8 @@
       {
         "queue": "polychat-usage-queue",
         "max_batch_size": 100,
-        "max_batch_timeout": 10
+        "max_batch_timeout": 10,
+        "dead_letter_queue": "polychat-usage-queue-dlq"
       }
     ]
   }
