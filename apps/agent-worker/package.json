@@ -17,7 +17,7 @@
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@ngriffin_uk/polychat-utility-server": "workspace:^",
-    "@opencode/plugin": "2.0.27",
+    "@opencode/plugin": "2.1.4",
     "@opencode/sdk": "2.0.27",
     "agents": "0.30.1",
     "zod": "catalog:"
