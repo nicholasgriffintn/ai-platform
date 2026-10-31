@@ -1,12 +1,12 @@
 import type {
   Ai,
-  AnalyticsEngineDataset,
   D1Database,
   Fetcher,
   R2Bucket,
   RateLimit,
   VectorizeIndex,
 } from "@cloudflare/workers-types";
+import type { Pipeline } from "cloudflare:pipelines";
 
 interface Env {
   EMBEDDING_PROVIDER: "bedrock";
@@ -37,13 +37,14 @@ interface Env {
   ELEVENLABS_API_KEY: string;
   DEEPGRAM_API_KEY: string;
   GROQ_API_KEY: string;
-  ANALYTICS_API_KEY: string;
+  BASIN_SQL_API_TOKEN: string;
+  TELEMETRY_CATALOG_BUCKET: string;
   LOG_LEVEL?: string;
   SENTRY_DSN?: string;
   ASSETS_BUCKET: R2Bucket;
   PRIVATE_ASSETS_BUCKET: R2Bucket;
   DB: D1Database;
-  ANALYTICS: AnalyticsEngineDataset;
+  TELEMETRY_STREAM: Pipeline;
   RATE_LIMITER: RateLimit;
   VECTOR_DB: VectorizeIndex;
   AI: Ai;

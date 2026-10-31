@@ -10,7 +10,7 @@ addRoute(app, "get", "/bootstrap", {
   tags: ["flags"],
   summary: "Evaluate every registered flag and experiment for the caller",
   description:
-    "Returns the caller's assignments so clients can seed their OpenFeature provider with the same bucketing the API uses.",
+    "Returns the caller's assignments so clients resolve flags with the same bucketing the API uses.",
   responses: {
     200: { description: "Flag evaluations for the caller", schema: flagBootstrapResponseSchema },
   },

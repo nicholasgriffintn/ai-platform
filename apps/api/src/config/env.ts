@@ -1,6 +1,5 @@
 import type {
   Ai,
-  AnalyticsEngineDataset,
   D1Database,
   KVNamespace,
   Queue,
@@ -8,6 +7,7 @@ import type {
   Vectorize,
   SendEmail,
 } from "@cloudflare/workers-types";
+import type { TelemetryStream } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { FlagshipBinding } from "@ngriffin_uk/polychat-library-flags";
 import type { AgentHarnessRpc } from "@ngriffin_uk/polychat-schemas";
 
@@ -23,7 +23,7 @@ export type {
 } from "@ngriffin_uk/polychat-ai-models";
 
 export type IEnv = {
-  ANALYTICS: AnalyticsEngineDataset;
+  TELEMETRY_STREAM?: TelemetryStream;
   AI: Ai;
   VECTOR_DB: Vectorize;
   DB: D1Database;
@@ -96,12 +96,10 @@ export type IEnv = {
   OPENAI_API_KEY?: string;
   GOOGLE_STUDIO_API_KEY?: string;
   GROQ_API_KEY?: string;
-  ANALYTICS_API_KEY?: string;
+  BASIN_SQL_API_TOKEN?: string;
+  TELEMETRY_CATALOG_BUCKET?: string;
   ARTIFICIAL_ANALYSIS_API_KEY?: string;
   AI_OBSERVABILITY_ENABLED?: string;
-  BEACON_BACKEND_ENABLED?: string;
-  BEACON_ENDPOINT?: string;
-  BEACON_SITE_ID?: string;
   OLLAMA_CLOUD_API_KEY?: string;
   ZAI_API_KEY?: string;
   MOONSHOT_API_KEY?: string;

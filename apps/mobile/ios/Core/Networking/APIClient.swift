@@ -176,6 +176,10 @@ final class APIClient: ObservableObject {
         let _: EmptyResponse = try await send(path: "/discover/health", method: "DELETE")
     }
 
+    func sendRipple(_ batch: ClientAnalyticsBatch) async throws -> ClientAnalyticsBatchResponse {
+        try await send(path: "/ripple", method: "POST", body: batch)
+    }
+
     func sendDiscoverFeedback(_ request: DiscoverFeedbackRequest) async throws -> DiscoverFeedbackResponse {
         try await send(path: "/discover/feedback", method: "POST", body: request)
     }

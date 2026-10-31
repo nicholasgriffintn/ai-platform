@@ -1,3 +1,8 @@
+export {
+  BOOTSTRAP_PROVIDER_NAME,
+  createBootstrapProvider,
+  type BootstrapEvaluation,
+} from "./bootstrap.js";
 export { bucketFor, evenWeights, pickWeighted, type WeightedEntry } from "./bucketing.js";
 export {
   createFlagshipProvider,

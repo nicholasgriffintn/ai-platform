@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { createBootstrapProvider } from "../bootstrap.js";
 import { bucketFor, pickWeighted } from "../bucketing.js";
 import { createFlagshipProvider, type FlagshipBinding } from "../flagship.js";
 import { createLayeredProvider } from "../layered.js";
@@ -190,6 +191,28 @@ describe("createLayeredProvider", () => {
     });
     await expect(layered.resolve("missing", 1, {})).resolves.toMatchObject({
       value: 1,
+      errorCode: "FLAG_NOT_FOUND",
+    });
+  });
+});
+
+describe("createBootstrapProvider", () => {
+  const bootstrap = createBootstrapProvider([
+    { flagKey: "chat-tone", value: "playful", variant: "playful", reason: "SPLIT" },
+  ]);
+
+  it("serves the server's assignment and falls back when a flag is missing or mistyped", async () => {
+    await expect(bootstrap.resolve("chat-tone", "control", {})).resolves.toMatchObject({
+      value: "playful",
+      variant: "playful",
+      reason: "CACHED",
+    });
+    await expect(bootstrap.resolve("chat-tone", false, {})).resolves.toMatchObject({
+      value: false,
+      errorCode: "TYPE_MISMATCH",
+    });
+    await expect(bootstrap.resolve("missing", 3, {})).resolves.toMatchObject({
+      value: 3,
       errorCode: "FLAG_NOT_FOUND",
     });
   });

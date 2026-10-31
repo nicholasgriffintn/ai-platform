@@ -1,10 +1,8 @@
-import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   ANALYTICS_EVENT_CATEGORIES,
   type AnalyticsEventProperties,
 } from "@ngriffin_uk/polychat-schemas/analytics";
 import { useCallback } from "react";
-import { useShallow } from "zustand/react/shallow";
 
 import { captureClientException, trackClientEvent } from "../lib/analytics/client.js";
 
@@ -20,49 +18,22 @@ export type TrackEventProps = {
 };
 
 export function useTrackEvent() {
-  const { isAuthenticated, user } = useChatStore(
-    useShallow((state) => ({ isAuthenticated: state.isAuthenticated, user: state.user })),
-  );
-
-  const trackEvent = useCallback(
-    (event: TrackEventProps) => {
-      const enhancedProperties: AnalyticsEventProperties = {
-        ...event.properties,
-        authenticated: isAuthenticated,
-      };
-
-      if (isAuthenticated && user && user.id) {
-        enhancedProperties.user_id = String(user.id);
-      }
-
-      trackClientEvent(
-        {
-          ...event,
-          properties: enhancedProperties,
-        },
-        {
-          beacon: typeof window !== "undefined" ? window.Beacon : undefined,
-        },
-      );
-    },
-    [isAuthenticated, user],
-  );
+  const trackEvent = useCallback((event: TrackEventProps) => {
+    trackClientEvent({
+      name: event.name,
+      category: event.category,
+      label: event.label,
+      value: event.value,
+      nonInteraction: event.non_interaction,
+      properties: event.properties,
+    });
+  }, []);
 
   const trackException = useCallback(
     (error: Error | string, properties?: AnalyticsEventProperties) => {
-      captureClientException(
-        error,
-        {
-          authenticated: isAuthenticated,
-          ...(isAuthenticated && user?.id ? { user_id: String(user.id) } : {}),
-          ...properties,
-        },
-        {
-          beacon: typeof window !== "undefined" ? window.Beacon : undefined,
-        },
-      );
+      captureClientException(error, properties);
     },
-    [isAuthenticated, user],
+    [],
   );
 
   const trackAuth = useCallback(

@@ -1,10 +1,6 @@
 import { OutboundGateway } from "@ngriffin_uk/polychat-ai-sandbox/worker";
 import { LogLevel, getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import {
-  DEVICE_SYNC_DEVICE_ID_HEADER,
-  metricsParamsSchema,
-  statusResponseSchema,
-} from "@ngriffin_uk/polychat-schemas";
+import { DEVICE_SYNC_DEVICE_ID_HEADER, statusResponseSchema } from "@ngriffin_uk/polychat-schemas";
 import { Scalar } from "@scalar/hono-api-reference";
 import { withSentry } from "@sentry/cloudflare";
 import { type Context, Hono } from "hono";
@@ -23,10 +19,8 @@ import { serviceContextMiddleware } from "./infrastructure/context/serviceContex
 import { withRequestDatabase } from "./infrastructure/database/request-session";
 import { isCsrfExempt } from "./infrastructure/http/csrf";
 import { isAllowedOrigin } from "./infrastructure/http/origins";
-import { ResponseFactory } from "./infrastructure/http/ResponseFactory";
 import { addRoute } from "./infrastructure/http/routeBuilder";
 import { captureApiError, getSentryOptions } from "./infrastructure/sentry";
-import { requireStrictAdmin } from "./middleware/adminMiddleware";
 import { authMiddleware } from "./middleware/auth";
 import { infraMeteringMiddleware } from "./middleware/infraMetering";
 import { loggerMiddleware } from "./middleware/loggerMiddleware";
@@ -36,7 +30,6 @@ import { serverTimingMiddleware } from "./middleware/serverTiming";
 import { receiveChannelEmail } from "./modules/channels/application/email-intake";
 import { ConversationCoordinator } from "./modules/conversations/infrastructure/coordinator/object";
 import { MachineRunCoordinator } from "./modules/machines/infrastructure/run-coordinator";
-import { handleGetMetrics } from "./modules/metrics/application/getMetrics";
 import type { TaskMessage } from "./modules/queue/application/types";
 import { RealtimeProxyCoordinator } from "./modules/realtime/infrastructure/proxy-coordinator/object";
 import { SandboxRunCoordinator } from "./modules/sandbox/infrastructure/run-coordinator/object";
@@ -293,34 +286,6 @@ addRoute(app, "get", "/status", {
       };
 
       return c.json(response, allHealthy ? 200 : 503);
-    })(raw),
-});
-
-addRoute(app, "get", "/metrics", {
-  tags: ["system"],
-  description: "Get metrics from Analytics Engine",
-  querySchema: metricsParamsSchema,
-  middleware: [requireStrictAdmin],
-  responses: {
-    200: { description: "Metrics retrieved successfully" },
-  },
-  handler: async ({ raw }) =>
-    (async (context: Context) => {
-      const query = context.req.query();
-
-      const boundedLimit = Math.min(Number(query.limit) || 100, 500);
-      const boundedInterval = Math.min(Number(query.interval) || 1, 60);
-      const boundedTimeframe = Math.min(Number(query.timeframe) || 24, 72);
-
-      const metricsResponse = await handleGetMetrics(context, {
-        limit: boundedLimit,
-        interval: boundedInterval.toString(),
-        timeframe: boundedTimeframe.toString(),
-        type: query.type,
-        status: query.status,
-      });
-
-      return ResponseFactory.success(context, { metrics: metricsResponse });
     })(raw),
 });
 

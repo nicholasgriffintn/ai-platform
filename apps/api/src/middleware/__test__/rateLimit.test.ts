@@ -32,7 +32,6 @@ function createMockContext(overrides: any = {}): Context {
       PRO_RATE_LIMITER: {
         limit: vi.fn(),
       },
-      ANALYTICS: {},
       ...overrides.env,
     },
     get: vi.fn(),

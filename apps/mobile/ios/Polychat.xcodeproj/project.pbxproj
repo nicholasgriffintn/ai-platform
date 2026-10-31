@@ -886,6 +886,7 @@
 		6433D2122E1F37C7000E4A43 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APP_ENVIRONMENT = development;
 				APS_ENVIRONMENT = development;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -918,6 +919,7 @@
 		6433D2132E1F37C7000E4A43 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				APP_ENVIRONMENT = production;
 				APS_ENVIRONMENT = production;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

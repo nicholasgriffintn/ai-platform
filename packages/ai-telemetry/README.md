@@ -1,6 +1,6 @@
 # @ngriffin_uk/polychat-ai-telemetry
 
-Telemetry and analytics: a logger whose records can be forwarded to sinks, a `Telemetry` facade that fans events, metrics, spans, logs, AI generation, embedding and user feedback signals, and training examples out to sinks, and sinks for Analytics Engine, Sentry, the beacon endpoint, AI Gateway feedback and OTLP over HTTP.
+Telemetry and analytics: a logger whose records can be forwarded to sinks, a `Telemetry` facade that fans events, metrics, spans, logs, AI generation, embedding and user feedback signals, and training examples out to sinks, and sinks for Basin Pipelines, Sentry, AI Gateway feedback and OTLP over HTTP.
 
 ```ts
 import { createWorkerTelemetry, getLogger } from "@ngriffin_uk/polychat-ai-telemetry";

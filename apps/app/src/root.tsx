@@ -19,12 +19,12 @@ import {
   SurfaceControlsProvider,
   webSurfaceControls,
   LoadingProvider,
+  PageViewTracker,
 } from "@ngriffin_uk/polychat-library-react";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect } from "react";
 import { Outlet, isRouteErrorResponse } from "react-router";
 
-import { AnalyticsBootstrap } from "~/components/Core/AnalyticsBootstrap";
 import { AppShell } from "~/components/Core/AppShell";
 import { ClientUpdateWatcher } from "~/components/Core/ClientUpdateWatcher";
 import { ServiceWorkerRegistration } from "~/components/Core/ServiceWorkerRegistration";
@@ -69,7 +69,7 @@ export default function Root() {
       <LoadingProvider>
         <AppInitializer>
           <CaptchaProvider>
-            <AnalyticsBootstrap />
+            <PageViewTracker />
             <Outlet />
             <ServiceWorkerRegistration />
             <ClientUpdateWatcher />

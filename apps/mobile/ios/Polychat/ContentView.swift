@@ -89,19 +89,27 @@ private struct RootTabView: View {
         .task {
             await start()
         }
+        .onChange(of: selectedTab, initial: true) { _, tab in
+            ProductAnalytics.shared.trackScreen(tab.analyticsPath)
+        }
         .onChange(of: scenePhase) { _, phase in
             switch phase {
             case .active:
                 syncClient.resume()
+                ProductAnalytics.shared.track("app_foreground", category: "session")
                 Task { await refreshOnForeground() }
             case .background:
                 syncClient.suspend()
+                ProductAnalytics.shared.flush()
             default:
                 break
             }
         }
         .onChange(of: viewedConversationId) { _, conversationId in
             syncClient.focus(conversationId: conversationId)
+            if let conversationId {
+                ProductAnalytics.shared.trackScreen("/chat/\(conversationId)")
+            }
         }
         .onChange(of: notificationManager.items) { _, items in
             Task { await attentionStore.publish(notifications: items) }

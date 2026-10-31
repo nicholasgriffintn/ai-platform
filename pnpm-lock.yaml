@@ -2563,6 +2563,9 @@ importers:
       '@ngriffin_uk/polychat-library-client':
         specifier: workspace:^
         version: link:../library-client
+      '@ngriffin_uk/polychat-library-flags':
+        specifier: workspace:^
+        version: link:../library-flags
       '@ngriffin_uk/polychat-library-realtime':
         specifier: workspace:^
         version: link:../library-realtime

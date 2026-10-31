@@ -4,8 +4,7 @@ import { shouldCaptureAiObservability } from "./config.js";
 import { buildAnalyticsDistinctId, buildTelemetryPersonProperties } from "./identity.js";
 import { createSpanId, createTraceId } from "./ids.js";
 import { createAiGatewaySink } from "./sinks/ai-gateway.js";
-import { createAnalyticsEngineSink } from "./sinks/analytics-engine.js";
-import { createBeaconSink } from "./sinks/beacon.js";
+import { createBasinSink } from "./sinks/basin.js";
 import { createSentrySink } from "./sinks/sentry.js";
 import type {
   AiEmbeddingSignal,
@@ -216,14 +215,12 @@ export function createWorkerTelemetrySinks({
   env,
   executionCtx,
   sentry,
-  fetcher = fetch,
   now = Date.now,
   resolveAiGatewayId,
 }: Omit<CreateWorkerTelemetryOptions, "sinks">): TelemetrySink[] {
   return [
-    createAnalyticsEngineSink(env, now),
+    createBasinSink(env, executionCtx, now),
     createSentrySink(sentry, now),
-    createBeaconSink(env, fetcher, executionCtx, now),
     resolveAiGatewayId ? createAiGatewaySink(env, resolveAiGatewayId) : null,
   ].filter((sink): sink is TelemetrySink => sink !== null);
 }

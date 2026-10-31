@@ -115,9 +115,10 @@ export const statusResponseSchema = z.object({
 });
 
 export const metricsParamsSchema = z.object({
+  environment: z.string().optional(),
+  app: z.string().optional(),
   status: z.string().optional(),
   type: z.string().optional(),
   limit: z.string().optional(),
-  interval: z.string().optional(),
   timeframe: z.string().optional(),
 });

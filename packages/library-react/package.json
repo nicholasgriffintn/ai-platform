@@ -35,6 +35,7 @@
     "@ngriffin_uk/auth-react": "^0.7.1",
     "@ngriffin_uk/polychat-library-chat": "workspace:^",
     "@ngriffin_uk/polychat-library-client": "workspace:^",
+    "@ngriffin_uk/polychat-library-flags": "workspace:^",
     "@ngriffin_uk/polychat-library-realtime": "workspace:^",
     "@ngriffin_uk/polychat-library-sites": "workspace:^",
     "@ngriffin_uk/polychat-library-surface": "workspace:^",

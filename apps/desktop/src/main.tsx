@@ -7,6 +7,7 @@ import "./styles/styles.css";
 import { App } from "./App";
 import "./infrastructure/desktop-backend";
 import "./infrastructure/device-models";
+import "./infrastructure/product-analytics";
 import "./infrastructure/sqlite-conversation-store";
 
 const container = document.getElementById("root");

@@ -27,6 +27,8 @@ import machines from "~/modules/machines/api/routes";
 import memoryImports from "~/modules/memory-documents/api/imports";
 import memoryDocuments from "~/modules/memory-documents/api/routes";
 import memorySyntheses from "~/modules/memory/api/syntheses";
+import ripple from "~/modules/metrics/api/ripple";
+import metrics from "~/modules/metrics/api/routes";
 import devices from "~/modules/mobile-push/api/routes";
 import modelDatasets from "~/modules/model-datasets/api/routes";
 import modelEvaluation from "~/modules/model-evaluation/api/routes";
@@ -75,6 +77,8 @@ export function registerApiRoutes(app: ApiApp): void {
   registerSandboxCredentialBrokerRoutes(app);
   registerSandboxPreviewAuthorisationRoute(app);
   app.route("/auth", auth);
+  app.route("/ripple", ripple);
+  app.route("/metrics", metrics);
   app.route("/activity", activity);
   app.route("/responses", responses);
   app.route("/conversations", conversations);

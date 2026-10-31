@@ -18,6 +18,7 @@ import {
   RouterNavLink,
   SurfaceControlsProvider,
   useAnalyticsAdapter,
+  PageViewTracker,
   useTrackEvent,
   webSurfaceControls,
 } from "@ngriffin_uk/polychat-library-react";
@@ -64,6 +65,7 @@ function DesktopWindowContent() {
       }
     >
       <DesktopWindowEffects />
+      <PageViewTracker />
       <DesktopRoutes />
     </AppErrorBoundary>
   );

@@ -41,8 +41,8 @@ const env: IEnv = {
   get CACHE(): never {
     throw new Error("Unexpected cache access");
   },
-  get ANALYTICS(): never {
-    throw new Error("Unexpected analytics access");
+  get TELEMETRY_STREAM(): never {
+    throw new Error("Unexpected telemetry access");
   },
   get VECTOR_DB(): never {
     throw new Error("Unexpected vector store access");

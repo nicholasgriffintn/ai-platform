@@ -4,6 +4,8 @@
 <dict>
 	<key>APIBaseURL</key>
 	<string>https://api.polychat.app</string>
+	<key>AppEnvironment</key>
+	<string>$(APP_ENVIRONMENT)</string>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>com.polychat-app.app.health-sync</string>

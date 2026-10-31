@@ -53,6 +53,7 @@
     "PUBLIC_ASSETS_URL": "<REPLACE_ME>",
     "PRIVATE_ASSETS_BUCKET_NAME": "assistant-private-assets",
     "PUBLIC_ASSETS_BUCKET": "assistant-assets",
+    "TELEMETRY_CATALOG_BUCKET": "polychat-telemetry",
     "REQUIRE_CAPTCHA_SECRET_KEY": "false",
     "AGE_GATE_ENABLED": "true",
     "LOG_LEVEL": "error",
@@ -140,10 +141,11 @@
     { "tag": "v6-sites-runtime", "new_sqlite_classes": ["SiteRuntime"] },
     { "tag": "v7-realtime-proxy", "new_sqlite_classes": ["RealtimeProxyCoordinator"] }
   ],
-  "analytics_engine_datasets": [
+  "pipelines": [
     {
-      "binding": "ANALYTICS",
-      "dataset": "assistant_analytics"
+      "binding": "TELEMETRY_STREAM",
+      "stream": "<TELEMETRY_STREAM_ID>",
+      "remote": true
     }
   ],
   "r2_buckets": [

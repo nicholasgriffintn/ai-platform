@@ -249,6 +249,12 @@ export function readStringField(value: unknown, fieldName: string): string | und
   return typeof field === "string" ? field : undefined;
 }
 
+export function readBooleanField(value: unknown, fieldName: string): boolean | undefined {
+  const field = readRecordField(value, fieldName);
+
+  return typeof field === "boolean" ? field : undefined;
+}
+
 const COLLECTED_STRING_MIN_WORDS = 3;
 
 export function collectStrings(value: unknown, maxCharacters: number): string {

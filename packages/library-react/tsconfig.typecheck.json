@@ -28,6 +28,9 @@
       "path": "../library-client"
     },
     {
+      "path": "../library-flags"
+    },
+    {
       "path": "../library-realtime"
     },
     {

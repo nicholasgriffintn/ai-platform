@@ -1,4 +1,4 @@
-import type { AnalyticsEngineDataset, ExecutionContext } from "@cloudflare/workers-types";
+import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { AnalyticsEvent } from "@ngriffin_uk/polychat-schemas";
 
 import type { SentryTelemetryClient } from "./sinks/sentry.js";
@@ -154,8 +154,6 @@ export type TrainingExampleSignal = TelemetryIdentity & {
   userBehaviour?: Record<string, unknown>;
 };
 
-export type BeaconFetcher = (input: string, init: RequestInit) => Promise<Response>;
-
 export interface AiGatewayPatchLog {
   score?: number | null;
   feedback?: AiFeedbackRating | null;
@@ -168,15 +166,70 @@ export interface AiGatewayBinding {
   };
 }
 
+export type TelemetrySource = "server" | "client";
+
+export type TelemetryRecordContext = {
+  environment: string;
+  app: string;
+  source: TelemetrySource;
+  appVersion?: string | null;
+  sessionId?: string | null;
+  path?: string | null;
+  country?: string | null;
+};
+
+export type TelemetryRecord = {
+  event_id: string;
+  timestamp: number;
+  environment: string;
+  app: string;
+  app_version: string | null;
+  source: TelemetrySource;
+  event_type: string;
+  event_name: string;
+  status: string | null;
+  error_message: string | null;
+  value: number | null;
+  label: string | null;
+  distinct_id: string | null;
+  user_id: number | null;
+  anonymous_id: string | null;
+  plan_id: string | null;
+  authenticated: boolean;
+  session_id: string | null;
+  trace_id: string | null;
+  span_id: string | null;
+  parent_span_id: string | null;
+  path: string | null;
+  country: string | null;
+  ai_provider: string | null;
+  ai_model: string | null;
+  ai_latency_ms: number | null;
+  ai_time_to_first_token_ms: number | null;
+  ai_input_tokens: number | null;
+  ai_output_tokens: number | null;
+  ai_cached_input_tokens: number | null;
+  ai_cache_creation_tokens: number | null;
+  ai_reasoning_tokens: number | null;
+  ai_stream: boolean | null;
+  ai_stop_reason: string | null;
+  ai_http_status: number | null;
+  ai_tool_call_count: number | null;
+  flag_key: string | null;
+  flag_variant: string | null;
+  properties: Record<string, unknown> | null;
+};
+
+export interface TelemetryStream {
+  send(records: TelemetryRecord[]): Promise<void>;
+}
+
 export type TelemetryEnv = {
-  ANALYTICS?: AnalyticsEngineDataset;
+  TELEMETRY_STREAM?: TelemetryStream;
   AI?: AiGatewayBinding;
   ACCOUNT_ID?: string;
   AI_GATEWAY_TOKEN?: string;
   AI_OBSERVABILITY_ENABLED?: string;
-  BEACON_BACKEND_ENABLED?: string;
-  BEACON_ENDPOINT?: string;
-  BEACON_SITE_ID?: string;
   ENV?: string;
 };
 
@@ -197,7 +250,6 @@ export type CreateWorkerTelemetryOptions = {
   env: TelemetryEnv;
   executionCtx?: ExecutionContext;
   sentry?: SentryTelemetryClient;
-  fetcher?: BeaconFetcher;
   now?: () => number;
   sinks?: TelemetrySink[];
   resolveAiGatewayId?: () => string;

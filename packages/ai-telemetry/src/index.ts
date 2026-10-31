@@ -23,7 +23,6 @@ export type {
   AiGatewayBinding,
   AiGatewayPatchLog,
   AiGenerationSignal,
-  BeaconFetcher,
   CreateWorkerTelemetryOptions,
   ResolvedAiEmbedding,
   ResolvedAiFeedback,
@@ -38,9 +37,13 @@ export type {
   TelemetryMetric,
   TelemetryPersonProperties,
   TelemetryProperties,
+  TelemetryRecord,
+  TelemetryRecordContext,
   TelemetrySink,
   TelemetrySpan,
+  TelemetrySource,
   TelemetrySpanStatus,
+  TelemetryStream,
   TrainingExampleSignal,
 } from "./types.js";
 export { createSpanId, createTraceId } from "./ids.js";
@@ -64,16 +67,10 @@ export {
   type EmbeddingProviderLike,
   type EmbeddingTelemetryOptions,
 } from "./embedding.js";
-export {
-  getBeaconAnalyticsConfig,
-  shouldCaptureAiObservability,
-  type BeaconAnalyticsConfig,
-} from "./config.js";
+export { shouldCaptureAiObservability } from "./config.js";
 export * from "./constants.js";
 export { createAiGatewaySink } from "./sinks/ai-gateway.js";
-export { createAnalyticsEngineSink, writeAnalyticsEngineMetric } from "./sinks/analytics-engine.js";
-export * from "./sinks/dataset-layout.js";
-export { createBeaconSink } from "./sinks/beacon.js";
+export { createBasinSink, serverRecordContext, toTelemetryRecord } from "./sinks/basin.js";
 export {
   createSentrySink,
   type SentrySpanAttributes,

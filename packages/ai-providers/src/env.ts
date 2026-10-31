@@ -1,8 +1,9 @@
-import type { Ai, AnalyticsEngineDataset, D1Database, R2Bucket } from "@cloudflare/workers-types";
+import type { Ai, D1Database, R2Bucket } from "@cloudflare/workers-types";
+import type { TelemetryStream } from "@ngriffin_uk/polychat-ai-telemetry";
 
 export interface ProviderEnv {
   AI?: Ai;
-  ANALYTICS?: AnalyticsEngineDataset;
+  TELEMETRY_STREAM?: TelemetryStream;
   DB?: D1Database;
   PRIVATE_ASSETS_BUCKET?: R2Bucket;
   ACCOUNT_ID?: string;

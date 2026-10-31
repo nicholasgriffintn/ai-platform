@@ -1,3 +1,5 @@
+import z from "zod/v4";
+
 export const ANALYTICS_EVENT_CATEGORIES = {
   AUTH: "authentication",
   CONVERSATION: "conversation",
@@ -87,20 +89,39 @@ export function compactAnalyticsProperties(
   return output;
 }
 
-export function stringifyAnalyticsProperties(
-  properties: AnalyticsEventProperties | undefined,
-): Record<string, string> {
-  const output: Record<string, string> = {};
+export const CLIENT_ANALYTICS_BATCH_LIMIT = 50;
 
-  if (!properties) {
-    return output;
-  }
+const CLIENT_ANALYTICS_PROPERTY_LIMIT = 30;
 
-  for (const [key, value] of Object.entries(properties)) {
-    if (value !== null && value !== undefined) {
-      output[key] = String(value);
-    }
-  }
+export const clientAnalyticsEventSchema = z.object({
+  name: z.string().min(1).max(100),
+  category: z.string().min(1).max(50),
+  label: z.string().max(200).optional(),
+  value: z.union([z.number(), z.string().max(200)]).optional(),
+  nonInteraction: z.boolean().optional(),
+  path: z.string().max(500).optional(),
+  properties: z
+    .record(z.string().max(64), z.union([z.string().max(1000), z.number(), z.boolean(), z.null()]))
+    .refine((properties) => Object.keys(properties).length <= CLIENT_ANALYTICS_PROPERTY_LIMIT, {
+      message: `At most ${CLIENT_ANALYTICS_PROPERTY_LIMIT} properties per event`,
+    })
+    .optional(),
+});
 
-  return output;
-}
+export const CLIENT_ANALYTICS_APPS = ["web", "desktop", "ios"] as const;
+
+export const clientAnalyticsAppSchema = z.enum(CLIENT_ANALYTICS_APPS);
+
+export const clientAnalyticsBatchSchema = z.object({
+  app: clientAnalyticsAppSchema,
+  environment: z.string().min(1).max(32),
+  appVersion: z.string().max(64).optional(),
+  sessionId: z.string().max(64).optional(),
+  events: z.array(clientAnalyticsEventSchema).min(1).max(CLIENT_ANALYTICS_BATCH_LIMIT),
+});
+
+export const clientAnalyticsBatchResponseSchema = z.object({ accepted: z.number().int() });
+
+export type ClientAnalyticsEvent = z.infer<typeof clientAnalyticsEventSchema>;
+export type ClientAnalyticsBatch = z.infer<typeof clientAnalyticsBatchSchema>;
+export type ClientAnalyticsApp = z.infer<typeof clientAnalyticsAppSchema>;
