@@ -8,6 +8,7 @@ import {
   createSamplingParameters,
   createWorkersReasoningParameters,
   getEffectiveMaxTokens,
+  resolveDefaultOutputReserve,
   getToolsForProvider,
   resolveEffectiveMaxTokens,
   resolveRequiredMaxTokens,
@@ -157,25 +158,22 @@ describe("createCommonParameters", () => {
     ).toBe(16_384);
   });
 
-  it("clamps the required Workers AI output limit to the remaining context window", () => {
-    const messageText = "x".repeat(4_000);
+  it("caps the default Workers AI output limit at the context output reserve", () => {
     const params: ChatCompletionParameters = {
-      model: "@cf/moonshotai/kimi-k2.7-code",
+      model: "@cf/moonshotai/kimi-k2.6",
       env: createTestEnv(),
-      messages: [{ role: "user", content: messageText }],
+      messages: [{ role: "user", content: "x".repeat(4_000) }],
     };
     const model = {
       matchingModel: params.model,
       provider: "workers-ai",
-      maxTokens: 262_144,
+      maxTokens: 256_000,
       contextWindow: 262_144,
     };
-    const estimatedInput = Math.ceil(messageText.length / 4) + 4;
 
-    const body = createCommonParameters(params, model, "workers-ai");
-
-    expect(body.max_tokens).toBe(262_144 - estimatedInput);
-    expect(body.max_tokens + estimatedInput).toBeLessThanOrEqual(262_144);
+    expect(createCommonParameters(params, model, "workers-ai").max_tokens).toBe(
+      resolveDefaultOutputReserve(262_144),
+    );
   });
 
   it("clamps an explicit Workers AI output limit that would overflow the context window", () => {
@@ -230,12 +228,11 @@ describe("createCommonParameters", () => {
     expect(createCommonParameters(params, model, "workers-ai").max_tokens).toBe(1);
   });
 
-  it("clamps the required Anthropic output limit to the remaining context window", () => {
-    const messageText = "x".repeat(4_000);
+  it("caps the default Anthropic output limit at the context output reserve", () => {
     const params: ChatCompletionParameters = {
       model: "claude-test",
       env: createTestEnv(),
-      messages: [{ role: "user", content: messageText }],
+      messages: [{ role: "user", content: "x".repeat(4_000) }],
     };
     const model = {
       matchingModel: params.model,
@@ -245,7 +242,7 @@ describe("createCommonParameters", () => {
     };
 
     expect(createCommonParameters(params, model, "anthropic").max_tokens).toBe(
-      65_000 - (Math.ceil(messageText.length / 4) + 4),
+      resolveDefaultOutputReserve(65_000),
     );
   });
 

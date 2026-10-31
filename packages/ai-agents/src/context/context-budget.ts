@@ -1,3 +1,4 @@
+import { resolveDefaultOutputReserve } from "@ngriffin_uk/polychat-ai-providers";
 import type { AgentMessage } from "@ngriffin_uk/polychat-library-agent-loop";
 import {
   CHAT_CONTEXT_BREAKDOWN_KINDS,
@@ -16,7 +17,6 @@ import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 const DEFAULT_CONTEXT_WINDOW = 8000;
-const DEFAULT_OUTPUT_RESERVE_RATIO = 0.15;
 const DEFAULT_MAX_TOOL_RESULT_CHARACTERS = 6000;
 const MESSAGE_OVERHEAD_TOKENS = 4;
 
@@ -107,7 +107,7 @@ function resolveContextWindow(value: number | undefined): number {
 }
 
 function resolveInputBudget(contextWindow: number, maxOutputTokens: number | undefined): number {
-  const defaultReserve = Math.max(1, Math.floor(contextWindow * DEFAULT_OUTPUT_RESERVE_RATIO));
+  const defaultReserve = resolveDefaultOutputReserve(contextWindow);
   const requestedReserve =
     maxOutputTokens && Number.isFinite(maxOutputTokens) && maxOutputTokens > 0
       ? Math.floor(maxOutputTokens)

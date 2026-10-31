@@ -31,6 +31,12 @@ const FLAT_REASONING_EFFORT_PROVIDERS = new Set([
   "vercel",
 ]);
 
+const DEFAULT_OUTPUT_RESERVE_RATIO = 0.15;
+
+export function resolveDefaultOutputReserve(contextWindow: number): number {
+  return Math.max(1, Math.floor(contextWindow * DEFAULT_OUTPUT_RESERVE_RATIO));
+}
+
 export function getEffectiveMaxTokens(
   requestedMaxTokens: number | undefined,
   modelMaxTokens: number | undefined,
@@ -119,7 +125,12 @@ function clampMaxTokensToContextWindow(
     return 1;
   }
 
-  return Math.min(effectiveMaxTokens, remaining);
+  const outputLimit =
+    params.max_tokens === undefined
+      ? Math.min(effectiveMaxTokens, resolveDefaultOutputReserve(contextWindow))
+      : effectiveMaxTokens;
+
+  return Math.min(outputLimit, remaining);
 }
 
 export function mergeParametersWithDefaults(
