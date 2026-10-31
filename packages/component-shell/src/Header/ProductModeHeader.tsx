@@ -20,6 +20,7 @@ export interface ProductModeHeaderProps {
   projectColour?: string;
   showProductModeSwitch?: boolean;
   showSidebarToggle?: boolean;
+  bordered?: boolean;
 }
 
 export function ProductModeHeader({
@@ -28,6 +29,7 @@ export function ProductModeHeader({
   projectColour,
   showProductModeSwitch,
   showSidebarToggle = true,
+  bordered = false,
 }: ProductModeHeaderProps) {
   const { pathname } = useLocation();
   const shouldShowProductModeSwitch = showProductModeSwitch ?? isProductModeRoute(pathname);
@@ -40,6 +42,7 @@ export function ProductModeHeader({
     <ProductHeaderShell
       headerRef={headerRef}
       isScrolled={isScrolled}
+      className={bordered ? "border-b border-border" : undefined}
       start={
         <>
           {showSidebarToggle && !sidebarVisible && (

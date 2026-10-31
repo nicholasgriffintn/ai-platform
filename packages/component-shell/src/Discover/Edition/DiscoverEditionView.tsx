@@ -260,7 +260,7 @@ export function DiscoverEditionView({ ask }: { ask?: ReactNode }) {
   if (isLoading) {
     return (
       <>
-        <PageShell.Header title="Discover" />
+        <PageShell.Header title="Discover" bordered />
         <div className="flex h-full items-center justify-center">
           {discover.error ? (
             <p className="text-sm text-failure">
@@ -312,9 +312,17 @@ export function DiscoverEditionView({ ask }: { ask?: ReactNode }) {
       <DiscoverIdlePane />
     );
 
+  const headerActions =
+    isAuthenticated && settings ? (
+      <Button variant="outline" size="sm" onClick={() => setShowSettings(true)}>
+        <Settings2 size={14} aria-hidden />
+        Settings
+      </Button>
+    ) : undefined;
+
   return (
     <>
-      <PageShell.Header title="Discover" />
+      <PageShell.Header title="Discover" actionContent={headerActions} bordered />
       {isAuthenticated && settings && (
         <DiscoverSettingsDialog
           open={showSettings}
@@ -341,14 +349,6 @@ export function DiscoverEditionView({ ask }: { ask?: ReactNode }) {
         >
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-6 pb-10 lg:px-6">
             <DiscoverLeftPane controller={controller} todayText={today} greeting={greeting} />
-            {isAuthenticated && settings ? (
-              <div className="mt-2">
-                <Button variant="outline" size="sm" onClick={() => setShowSettings(true)}>
-                  <Settings2 size={14} aria-hidden />
-                  Settings
-                </Button>
-              </div>
-            ) : undefined}
           </div>
           <DiscoverAskBar onOpen={controller.openAsk} />
         </div>

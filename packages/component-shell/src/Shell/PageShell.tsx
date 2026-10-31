@@ -51,24 +51,25 @@ function PageShellRoot({
     headerActions
   );
 
-  const header =
-    headerContent ||
-    (effectiveTitle && (
-      <ProductModeHeader
-        showSidebarToggle={Boolean(sidebarContent)}
-        projectColour={projectColour}
-        context={
-          <div className="min-w-0">
-            <PageTitle
-              title={effectiveTitle}
-              as={headerTitleAs}
-              className="truncate text-sm font-medium text-foreground"
-            />
-          </div>
-        }
-        actions={effectiveActions}
-      />
-    ));
+  const productModeHeader = effectiveTitle ? (
+    <ProductModeHeader
+      showSidebarToggle={Boolean(sidebarContent)}
+      projectColour={projectColour}
+      context={
+        <div className="min-w-0">
+          <PageTitle
+            title={effectiveTitle}
+            as={headerTitleAs}
+            className="truncate text-sm font-medium text-foreground"
+          />
+        </div>
+      }
+      actions={effectiveActions}
+      bordered={registeredHeader?.bordered}
+    />
+  ) : null;
+
+  const header = registeredHeader ? productModeHeader : headerContent || productModeHeader;
 
   return (
     <PageShellHeaderContext.Provider value={headerContext}>

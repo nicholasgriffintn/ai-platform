@@ -14,6 +14,7 @@ export interface PageShellHeaderDefinition {
   title: string;
   actions?: PageHeaderAction[];
   actionContent?: ReactNode;
+  bordered?: boolean;
 }
 
 interface PageShellHeaderContextValue {
@@ -25,7 +26,12 @@ export const PageShellHeaderContext = createContext<PageShellHeaderContextValue 
 
 const useClientLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-export function PageShellHeader({ title, actions, actionContent }: PageShellHeaderDefinition) {
+export function PageShellHeader({
+  title,
+  actions,
+  actionContent,
+  bordered,
+}: PageShellHeaderDefinition) {
   const context = useContext(PageShellHeaderContext);
   const ownerRef = useRef(Symbol("page-shell-header"));
 
@@ -36,10 +42,10 @@ export function PageShellHeader({ title, actions, actionContent }: PageShellHead
 
     const owner = ownerRef.current;
 
-    context.register(owner, { title, actions, actionContent });
+    context.register(owner, { title, actions, actionContent, bordered });
 
     return () => context.unregister(owner);
-  }, [actionContent, actions, context, title]);
+  }, [actionContent, actions, bordered, context, title]);
 
   if (context) {
     return null;
