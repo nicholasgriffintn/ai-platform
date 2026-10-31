@@ -131,6 +131,12 @@ export function EpisodePlayerView({
               playing={track.playing}
             />
             {!episodeId ? placeholder : null}
+            {episodeId && !episode ? (
+              <MediaNotice
+                status={{ state: "making", label: "Loading" }}
+                message="Getting the episode ready."
+              />
+            ) : null}
             {episodeId && chapter ? (
               <ChapterNotice
                 chapter={chapter}

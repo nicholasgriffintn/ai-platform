@@ -124,6 +124,7 @@ export interface ThreadModeConfig {
   welcomeDescription?: string;
   welcomeOpening?: WelcomeOpening;
   welcomeLoading?: boolean;
+  composerPending?: boolean;
   welcomeSuggestions?: ChatSuggestion[] | null;
   welcomeCapabilitySuggestions?: boolean;
   welcomePlacement?: "screen" | "composer";
@@ -1197,7 +1198,12 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
           goalState={goalState}
           ref={chatInputRef}
           handleSubmit={handleSubmit}
-          isLoading={isStreamLoading || isModelInitializing || isConversationLoading}
+          isLoading={
+            isStreamLoading ||
+            isModelInitializing ||
+            isConversationLoading ||
+            Boolean(modeConfig?.composerPending)
+          }
           isSubmissionBlocked={
             computeSite === "hosted" &&
             isModelSubmissionBlocked(model, selectedModelConfig, isModelsLoading)

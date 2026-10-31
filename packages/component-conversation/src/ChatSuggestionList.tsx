@@ -60,6 +60,19 @@ export function ChatSuggestionList({
   onSelect,
 }: ChatSuggestionListProps) {
   if (isLoading) {
+    if (layout === "list") {
+      return (
+        <output
+          className="polychat-conversation-suggestion-list-skeleton"
+          aria-label="Loading suggestions"
+        >
+          {Array.from({ length: 3 }, (_, index) => (
+            <span key={index} aria-hidden="true" />
+          ))}
+        </output>
+      );
+    }
+
     if (layout !== "grid") {
       return null;
     }

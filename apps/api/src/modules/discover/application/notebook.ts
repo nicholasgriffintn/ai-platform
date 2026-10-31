@@ -137,6 +137,19 @@ export function readDiscoverDocuments(sources: readonly SourceRecord[]): Discove
   return { signals, research };
 }
 
+export async function listDiscoverSignalDocuments(
+  context: ServiceContext,
+  userId: number,
+): Promise<DiscoverSignalDocument[]> {
+  const notebook = await findDiscoverNotebook(context, userId);
+
+  return notebook
+    ? readDiscoverDocuments(
+        await context.repositories.get(SourceRepository).listCollectionSources(notebook.id),
+      ).signals
+    : [];
+}
+
 export async function listDiscoverDocuments(
   context: ServiceContext,
   userId: number,

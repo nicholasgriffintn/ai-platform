@@ -13,8 +13,12 @@ import {
   withExecutionRunContext,
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
-import { carriedDiscoverMedia, discoverEditionGroupId } from "~/modules/discover/domain/edition";
-import { collectCardSignals } from "~/modules/discover/domain/feedback";
+import {
+  carriedDiscoverMedia,
+  discoverEditionGroupId,
+  readDiscoverEditionGroupId,
+} from "~/modules/discover/domain/edition";
+import { collectCardSignals, type DiscoverFeedbackEntry } from "~/modules/discover/domain/feedback";
 import { readOutputContent } from "~/modules/outputs/application/content";
 import {
   OutputRepository,
@@ -114,41 +118,59 @@ export async function requireDiscoverEdition(
   return edition;
 }
 
-async function presentEdition(
-  context: ServiceContext,
-  userId: number,
+const EDITION_HISTORY_LIMIT = 14;
+
+function presentEdition(
   edition: StoredDiscoverEdition | null,
-): Promise<DiscoverEdition | null> {
-  if (!edition) {
-    return null;
-  }
-
-  const feedback = collectCardSignals(await listDiscoverFeedback(context, userId), edition.id);
-
-  return { ...edition.content, id: edition.id, revision: edition.revision, feedback };
+  feedback: readonly DiscoverFeedbackEntry[],
+): DiscoverEdition | null {
+  return edition
+    ? {
+        ...edition.content,
+        id: edition.id,
+        revision: edition.revision,
+        feedback: collectCardSignals(feedback, edition.id),
+      }
+    : null;
 }
 
-const EDITION_HISTORY_LIMIT = 14;
+async function listDiscoverEditionHistory(
+  context: ServiceContext,
+  userId: number,
+): Promise<DiscoverResponse["editions"]> {
+  const groups = await context.repositories
+    .get(OutputRepository)
+    .listPersonalOutputGroups(
+      userId,
+      DISCOVER_CAPABILITY_ID,
+      DISCOVER_EDITION_KIND,
+      EDITION_HISTORY_LIMIT,
+    );
+
+  return groups.flatMap((group) => {
+    const edition = readDiscoverEditionGroupId(group.group_id);
+
+    return edition ? [{ id: group.id, ...edition }] : [];
+  });
+}
 
 export async function readDiscover(context: ServiceContext): Promise<DiscoverResponse> {
   const user = context.requireUser();
-  const [settings, recent, follows, windDownId] = await Promise.all([
+  const [settings, latest, editions, follows, windDownId, feedback] = await Promise.all([
     readDiscoverSettings(context),
-    listRecentDiscoverEditions(context, user.id, EDITION_HISTORY_LIMIT),
+    listRecentDiscoverEditions(context, user.id, 1),
+    listDiscoverEditionHistory(context, user.id),
     listDiscoverFollows(context, user.id),
     latestDiscoverWindDownId(context, user.id),
+    listDiscoverFeedback(context, user.id),
   ]);
 
   return {
     settings,
     follows,
     windDownId,
-    edition: await presentEdition(context, user.id, recent[0] ?? null),
-    editions: recent.map((edition) => ({
-      id: edition.id,
-      date: edition.content.date,
-      edition: edition.content.edition ?? "morning",
-    })),
+    edition: presentEdition(latest[0] ?? null, feedback),
+    editions,
   };
 }
 
@@ -163,7 +185,10 @@ export async function readDiscoverEditionByDate(
       .get(OutputRepository)
       .getPersonalOutputByGroup(user.id, discoverEditionGroupId(date, time), DISCOVER_EDITION_KIND),
   );
-  const presented = await presentEdition(context, user.id, edition);
+  const presented = presentEdition(
+    edition,
+    edition ? await listDiscoverFeedback(context, user.id) : [],
+  );
 
   if (!presented) {
     throw new AssistantError("No Discover edition for that day", ErrorType.NOT_FOUND, 404);

@@ -99,7 +99,9 @@ function useSummaryFields(
           image: sourceCover(source),
         },
         subject:
-          listenId && source?.status === "available" ? { type: "source", id: listenId } : null,
+          listenId && (!source || source.status === "available")
+            ? { type: "source", id: listenId }
+            : null,
       };
     }
 

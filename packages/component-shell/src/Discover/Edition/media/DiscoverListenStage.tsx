@@ -57,6 +57,8 @@ export function DiscoverListenStage({
               message={idleMessage}
               action={action(<Headphones size={15} aria-hidden />, "Record it")}
             />
+          ) : sourceId && !source && !researching ? (
+            <MediaNotice status={status} message="Getting the recording ready." />
           ) : status.state === "making" ? (
             <MediaNotice
               status={status}

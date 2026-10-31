@@ -193,6 +193,25 @@
     border-color: transparent;
     background: var(--polychat-surface);
   }
+  .polychat-conversation-suggestion-list-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+  .polychat-conversation-suggestion-list-skeleton span {
+    display: block;
+    height: 1.75rem;
+    border-radius: 0.5rem;
+    background: var(--polychat-border-strong);
+    animation: polychat-conversation-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .polychat-conversation-suggestion-list-skeleton span:nth-child(2) {
+    width: 80%;
+  }
+  .polychat-conversation-suggestion-list-skeleton span:nth-child(3) {
+    width: 65%;
+  }
   .polychat-conversation-suggestion-skeleton {
     max-width: 36rem;
     margin: 2rem auto 0;

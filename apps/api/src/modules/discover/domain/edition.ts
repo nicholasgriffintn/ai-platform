@@ -37,6 +37,14 @@ export function discoverEditionGroupId(
   return edition === "evening" ? `discover:${date}:evening` : `discover:${date}`;
 }
 
+export function readDiscoverEditionGroupId(
+  groupId: string,
+): { date: string; edition: DiscoverEditionTime } | null {
+  const match = /^discover:(\d{4}-\d{2}-\d{2})(:evening)?$/u.exec(groupId);
+
+  return match?.[1] ? { date: match[1], edition: match[2] ? "evening" : "morning" } : null;
+}
+
 export function discoverEditionTimeAt(hour: number): DiscoverEditionTime {
   return hour >= 15 ? "evening" : "morning";
 }

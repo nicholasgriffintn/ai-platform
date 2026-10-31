@@ -35,17 +35,7 @@ export interface DiscoverItemChatProps {
   renderLead: (chatting: boolean) => ReactNode;
 }
 
-export function DiscoverItemChat(props: DiscoverItemChatProps) {
-  const conversations = useSubjectConversations(props.subject);
-
-  if (!conversations.isFetchedAfterMount) {
-    return props.renderHeader(undefined);
-  }
-
-  return <DiscoverItemThread {...props} conversationId={conversations.data?.[0]?.id} />;
-}
-
-function DiscoverItemThread({
+export function DiscoverItemChat({
   itemKey,
   subject,
   summary,
@@ -55,9 +45,22 @@ function DiscoverItemThread({
   contentRef,
   renderHeader,
   renderLead,
-  conversationId,
-}: DiscoverItemChatProps & { conversationId: string | undefined }) {
-  const scope = useLocalConversationScope(conversationId);
+}: DiscoverItemChatProps) {
+  const conversations = useSubjectConversations(subject);
+  const pending = !conversations.isFetchedAfterMount;
+  const scope = useLocalConversationScope(undefined);
+  const [adopted, setAdopted] = useState(false);
+
+  if (!pending && !adopted) {
+    setAdopted(true);
+
+    const existingId = conversations.data?.[0]?.id;
+
+    if (existingId && !scope.currentConversationId) {
+      scope.setCurrentConversationId(existingId);
+    }
+  }
+
   const draft = useLocalComposerDraft();
   const modelTier = useChatStore((state) => state.modelTier) ?? DEFAULT_MODEL_TIER;
   const [focusOnOpen] = useState(() => window.matchMedia?.(WIDE_QUERY).matches ?? false);
@@ -106,7 +109,9 @@ function DiscoverItemThread({
                 welcomeSuggestions: detached ? [] : suggestions,
                 welcomeCapabilitySuggestions: false,
                 submitSuggestions: true,
-                focusComposerOnOpen: focusOnOpen,
+                focusComposerOnOpen: focusOnOpen && !pending,
+                composerPending: pending,
+                welcomeLoading: pending,
                 composerSubject: chip,
                 inputPlaceholder: {
                   newConversation: detached ? "Ask Poly anything" : placeholder,

@@ -4,8 +4,10 @@ import { describe, expect, it } from "vitest";
 import {
   buildDiscoverEdition,
   carriedDiscoverMedia,
+  discoverEditionGroupId,
   discoverTopicKey,
   listEditionLinks,
+  readDiscoverEditionGroupId,
 } from "../edition";
 import type { DiscoverFeedGroup } from "../feed";
 
@@ -251,5 +253,22 @@ describe("carriedDiscoverMedia", () => {
     expect(
       carriedDiscoverMedia(withMedia({ episodeId: "ep_1", listenSourceId: "perch_1" }), undefined),
     ).toEqual({ episodeId: "ep_1", listenSourceId: undefined, weekSourceId: undefined });
+  });
+});
+
+describe("readDiscoverEditionGroupId", () => {
+  it("reads back the date and time an edition was saved under", () => {
+    expect(readDiscoverEditionGroupId(discoverEditionGroupId("2026-10-31"))).toEqual({
+      date: "2026-10-31",
+      edition: "morning",
+    });
+    expect(readDiscoverEditionGroupId(discoverEditionGroupId("2026-10-31", "evening"))).toEqual({
+      date: "2026-10-31",
+      edition: "evening",
+    });
+  });
+
+  it("ignores groups that are not editions", () => {
+    expect(readDiscoverEditionGroupId("discover-episodes:season-1")).toBeNull();
   });
 });

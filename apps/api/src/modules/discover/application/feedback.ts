@@ -102,11 +102,12 @@ export async function recordDiscoverFeedback(
     },
   });
 
-  if (url && (input.signal === "saved" || input.signal === "opened")) {
-    await keepDiscoverPage(context, url);
-  }
-
-  const signals = collectCardSignals(await listDiscoverFeedback(context, user.id), edition.id);
+  const keepPage = url && (input.signal === "saved" || input.signal === "opened");
+  const [feedback] = await Promise.all([
+    listDiscoverFeedback(context, user.id),
+    keepPage ? keepDiscoverPage(context, url) : undefined,
+  ]);
+  const signals = collectCardSignals(feedback, edition.id);
 
   return { cardId: input.cardId, signals: signals[input.cardId] ?? [] };
 }

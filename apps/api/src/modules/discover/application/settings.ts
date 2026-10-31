@@ -41,7 +41,7 @@ import {
 import { estimateDiscoverCosts } from "./cost";
 import { forgetDeviceActivity } from "./device-documents";
 import { enqueueDiscoverJob } from "./jobs";
-import { listDiscoverDocuments } from "./notebook";
+import { listDiscoverSignalDocuments } from "./notebook";
 
 const DISABLED: DiscoverSettings = {
   enabled: false,
@@ -85,13 +85,13 @@ async function describeSources(
   excluded: readonly string[],
 ): Promise<DiscoverSettings["sources"]> {
   const user = context.requireUser();
-  const [recipe, documents] = await Promise.all([
+  const [recipe, signals] = await Promise.all([
     getAssistantRecipe(DISCOVER_RECIPE_ID, { context, userId: user.id }),
-    listDiscoverDocuments(context, user.id),
+    listDiscoverSignalDocuments(context, user.id),
   ]);
 
   const health = (providerId: string) => {
-    const read = documents.signals.filter((document) => document.providerId === providerId);
+    const read = signals.filter((document) => document.providerId === providerId);
 
     return {
       used: !excluded.includes(providerId),
@@ -106,7 +106,7 @@ async function describeSources(
   };
 
   const devices = listDeviceActivityProviders(
-    documents.signals.map((document) => document.providerId),
+    signals.map((document) => document.providerId),
     excluded,
   );
 
@@ -167,17 +167,15 @@ async function describeInstallation(
   }
 
   const preferences = storedPreferences(installation);
-  const { excludedProviders: _excluded, ...routine } = describeRoutine(
-    installation,
-    await readUserLocation(context),
-  );
+  const [location, notify, costs, sources] = await Promise.all([
+    readUserLocation(context),
+    isRoutineAlwaysNotified(context, installation.id),
+    estimateDiscoverCosts(context),
+    describeSources(context, preferences[RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY]),
+  ]);
+  const { excludedProviders: _excluded, ...routine } = describeRoutine(installation, location);
 
-  return {
-    ...routine,
-    notify: await isRoutineAlwaysNotified(context, installation.id),
-    episodeCosts: (await estimateDiscoverCosts(context)).episode,
-    sources: await describeSources(context, preferences[RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY]),
-  };
+  return { ...routine, notify, episodeCosts: costs.episode, sources };
 }
 
 function nextExcludedSources(

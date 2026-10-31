@@ -53,6 +53,11 @@ export interface OutputRecord {
   updated_at: string | null;
 }
 
+export interface OutputGroupSummary {
+  id: string;
+  group_id: string;
+}
+
 export interface CreateOutputRecord {
   id?: string;
   createdByUserId: number;
@@ -347,6 +352,26 @@ export class OutputRepository extends BaseRepository {
     options: OutputListOptions = {},
   ): Promise<OutputRecord[]> {
     return this.listScopedOutputs("created_by_user_id", userId, capabilityId, options, true);
+  }
+
+  async listPersonalOutputGroups(
+    userId: number,
+    capabilityId: string,
+    kind: string,
+    limit: number,
+  ): Promise<OutputGroupSummary[]> {
+    return this.runQuery<OutputGroupSummary>(
+      `SELECT id, group_id FROM ${outputResourceSql} output
+       WHERE created_by_user_id = ?
+         AND project_id IS NULL
+         AND capability_id = ?
+         AND kind = ?
+         AND group_id IS NOT NULL
+         AND NOT (json_valid(content) AND coalesce(json_extract(content, '$.deletionPending'), 0) = 1)
+       ORDER BY created_at DESC, id DESC
+       LIMIT ?`,
+      [userId, capabilityId, kind, limit],
+    );
   }
 
   async listProjectOutputs(
