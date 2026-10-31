@@ -11,7 +11,9 @@ import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { ComposerCommandAction } from "@ngriffin_uk/polychat-utility-react";
 import { useCallback, useMemo, useState } from "react";
 
-import { ChatSuggestionList } from "../ChatSuggestionList.js";
+import { ChatSuggestionList, type ChatSuggestionLayout } from "../ChatSuggestionList.js";
+
+const PILL_SUGGESTION_COUNT = 3;
 
 interface ChatSuggestionsProps {
   setInput: (text: string) => void;
@@ -21,6 +23,7 @@ interface ChatSuggestionsProps {
   modeCommands?: ComposerCommandAction[];
   modelConfig?: ModelConfigItem;
   includeCapabilities?: boolean;
+  layout?: ChatSuggestionLayout;
 }
 
 export const ChatSuggestions = ({
@@ -31,6 +34,7 @@ export const ChatSuggestions = ({
   modeCommands,
   modelConfig,
   includeCapabilities = true,
+  layout,
 }: ChatSuggestionsProps) => {
   const { trackEvent } = useTrackEvent();
   const { isMobileLoading } = useUIStore();
@@ -50,8 +54,12 @@ export const ChatSuggestions = ({
   const [seen, setSeen] = useState<ReadonlySet<string>>(() => new Set());
 
   const generated = useMemo(
-    () => createChatSuggestions(context, seed, { exclude: seen }),
-    [context, seed, seen],
+    () =>
+      createChatSuggestions(context, seed, {
+        exclude: seen,
+        ...(layout === "pills" ? { count: PILL_SUGGESTION_COUNT } : {}),
+      }),
+    [context, layout, seed, seen],
   );
   const suggestions = suggestionsOverride ?? generated;
 
@@ -108,13 +116,16 @@ export const ChatSuggestions = ({
   }
 
   if (isLoading || isMobileLoading || isLoadingContext) {
-    return <ChatSuggestionList suggestions={[]} isLoading onSelect={() => undefined} />;
+    return (
+      <ChatSuggestionList suggestions={[]} isLoading layout={layout} onSelect={() => undefined} />
+    );
   }
 
   return (
     <ChatSuggestionList
       suggestions={suggestions}
       showRefresh={!hasOverride}
+      layout={layout}
       onRefresh={handleShuffle}
       onSelect={handleSelect}
     />

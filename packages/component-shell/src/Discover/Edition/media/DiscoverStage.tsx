@@ -1,5 +1,5 @@
 import { Button } from "@ngriffin_uk/polychat-component-ui";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import type { ReactNode } from "react";
 
 export function DiscoverStage({
@@ -28,13 +28,22 @@ export function DiscoverStage({
           >
             <ArrowLeft size={16} aria-hidden />
           </Button>
-          <div className="flex min-w-0 flex-col gap-1">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
             <p className="polychat-eyebrow">{eyebrow}</p>
             <h2 className="font-display text-2xl leading-tight font-medium tracking-tight text-balance text-foreground xl:text-3xl">
               {title}
             </h2>
             {subtitle ? <p className="text-sm text-muted-foreground">{subtitle}</p> : null}
           </div>
+          <Button
+            variant="icon"
+            size="icon"
+            aria-label="Close"
+            className="-mr-2 hidden lg:inline-flex"
+            onClick={onClose}
+          >
+            <X size={16} aria-hidden />
+          </Button>
         </div>
         {children}
       </div>

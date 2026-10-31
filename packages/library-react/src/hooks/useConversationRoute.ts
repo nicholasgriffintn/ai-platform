@@ -15,9 +15,11 @@ export type ConversationRouteSurface =
 export function useConversationRoute({
   surface,
   pathConversationId,
+  enabled = true,
 }: {
   surface: ConversationRouteSurface;
   pathConversationId?: string;
+  enabled?: boolean;
 }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -27,6 +29,7 @@ export function useConversationRoute({
 
   useEffect(() => {
     if (
+      !enabled ||
       !conversationId ||
       !hasUserMessage ||
       pathConversationId ||
@@ -43,5 +46,13 @@ export function useConversationRoute({
     void navigate(path, {
       replace: true,
     });
-  }, [conversationId, hasUserMessage, location.search, navigate, pathConversationId, surface]);
+  }, [
+    conversationId,
+    enabled,
+    hasUserMessage,
+    location.search,
+    navigate,
+    pathConversationId,
+    surface,
+  ]);
 }

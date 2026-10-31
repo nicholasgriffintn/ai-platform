@@ -24,7 +24,7 @@ import { cardTopic, hasDiscoverTopic } from "./discover-card-drafts.js";
 import type { DiscoverStoryCard } from "./DiscoverStoryTile.js";
 import type { DiscoverMedia } from "./media/media-status.js";
 
-export type DiscoverEditionViewState = "feed" | "card" | "media" | "ask";
+export type DiscoverEditionViewState = "feed" | "card" | "media";
 
 const PLAY_PARAM = "play";
 const LINKABLE_MEDIA = [
@@ -179,11 +179,6 @@ export function useDiscoverEditionController() {
     mediaPlaying,
     setMediaPlaying,
     openMedia,
-    openAsk: () => {
-      setSelectedId(null);
-      setView("ask");
-      setPlayParam(null);
-    },
     startingStoryId: startStory.isPending ? storyCardId : null,
     failedStoryId: startStory.isError ? storyCardId : null,
     openStoryId: view === "media" && media === "story" ? storyCardId : null,
@@ -262,9 +257,7 @@ export function useDiscoverEditionController() {
           setChatInput(prompt);
         }
 
-        setSelectedId(null);
-        setView("ask");
-        setPlayParam(null);
+        closePanel();
 
         return;
       }

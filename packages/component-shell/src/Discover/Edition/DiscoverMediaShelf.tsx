@@ -14,6 +14,7 @@ import { useState } from "react";
 
 import { episodeCoverUrl } from "../Episode/episode-cover.js";
 import { episodeStatus } from "../Episode/episode-status.js";
+import { DiscoverSection } from "./DiscoverSection.js";
 import { discoverTopicGradient } from "./DiscoverTopicTile.js";
 import { PERCH_GRADIENT, WEEK_GRADIENT } from "./media/discover-art.js";
 import { listenStatus, windDownStatus, type DiscoverMedia } from "./media/media-status.js";
@@ -57,13 +58,12 @@ export function DiscoverMediaShelf({
   const windDown = useDiscoverWindDown(windDownId).data;
   const perchReady = perch?.status === "available" && readSourceMedia(perch.metadata).cover;
   const weekReady = week?.status === "available" && readSourceMedia(week.metadata).cover;
+  const count = 2 + (showEpisode ? 1 : 0) + (edition.weekSourceId ? 1 : 0);
 
   return (
-    <section className="flex flex-col gap-3">
-      <h3 className="polychat-eyebrow px-1">Watch and listen</h3>
+    <DiscoverSection title="Watch and listen" kind="posters" count={count}>
       {showEpisode && (
         <MediaTile
-          wide
           art={
             <Art
               background={discoverTopicGradient(
@@ -83,54 +83,52 @@ export function DiscoverMediaShelf({
           onSelect={() => onOpen("episode")}
         />
       )}
-      <div className="grid grid-cols-2 gap-3">
-        {edition.weekSourceId ? (
-          <MediaTile
-            art={
-              <Art
-                background={WEEK_GRADIENT}
-                image={week && weekReady ? getSourceCoverUrl(week.id) : null}
-              />
-            }
-            eyebrow="Your week"
-            title="Your week, told back"
-            status={listenStatus(edition.weekSourceId, week)}
-            selected={active === "week"}
-            onSelect={() => onOpen("week")}
-          />
-        ) : null}
+      {edition.weekSourceId ? (
         <MediaTile
           art={
             <Art
-              background={PERCH_GRADIENT}
-              image={perch && perchReady ? getSourceCoverUrl(perch.id) : null}
+              background={WEEK_GRADIENT}
+              image={week && weekReady ? getSourceCoverUrl(week.id) : null}
             />
           }
-          eyebrow="The Perch"
-          title="Today's round-up"
-          status={listenStatus(
-            edition.listenSourceId,
-            perch,
-            isDiscoverListenResearching(edition, openedAt),
-          )}
-          selected={active === "perch"}
-          onSelect={() => onOpen("perch")}
+          eyebrow="Your week"
+          title="Your week, told back"
+          status={listenStatus(edition.weekSourceId, week)}
+          selected={active === "week"}
+          onSelect={() => onOpen("week")}
         />
-        <MediaTile
-          art={
-            <WindDownScene
-              bed={windDown?.bed ?? "night"}
-              seed={windDown?.id ?? "wind-down"}
-              moving={false}
-            />
-          }
-          eyebrow="Wind down"
-          title={windDown?.title ?? "Something quieter"}
-          status={windDownStatus(windDown)}
-          selected={active === "wind_down"}
-          onSelect={() => onOpen("wind_down")}
-        />
-      </div>
-    </section>
+      ) : null}
+      <MediaTile
+        art={
+          <Art
+            background={PERCH_GRADIENT}
+            image={perch && perchReady ? getSourceCoverUrl(perch.id) : null}
+          />
+        }
+        eyebrow="The Perch"
+        title="Today's round-up"
+        status={listenStatus(
+          edition.listenSourceId,
+          perch,
+          isDiscoverListenResearching(edition, openedAt),
+        )}
+        selected={active === "perch"}
+        onSelect={() => onOpen("perch")}
+      />
+      <MediaTile
+        art={
+          <WindDownScene
+            bed={windDown?.bed ?? "night"}
+            seed={windDown?.id ?? "wind-down"}
+            moving={false}
+          />
+        }
+        eyebrow="Wind down"
+        title={windDown?.title ?? "Something quieter"}
+        status={windDownStatus(windDown)}
+        selected={active === "wind_down"}
+        onSelect={() => onOpen("wind_down")}
+      />
+    </DiscoverSection>
   );
 }

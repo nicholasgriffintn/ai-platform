@@ -18,10 +18,13 @@ import {
 
 export type { ChatSuggestion } from "@ngriffin_uk/polychat-utility-react";
 
+export type ChatSuggestionLayout = "grid" | "pills";
+
 export interface ChatSuggestionListProps {
   suggestions: ChatSuggestion[];
   isLoading?: boolean;
   showRefresh?: boolean;
+  layout?: ChatSuggestionLayout;
   onRefresh?: () => void;
   onSelect: (suggestion: ChatSuggestion) => void;
 }
@@ -52,10 +55,15 @@ export function ChatSuggestionList({
   suggestions,
   isLoading = false,
   showRefresh = false,
+  layout = "grid",
   onRefresh,
   onSelect,
 }: ChatSuggestionListProps) {
   if (isLoading) {
+    if (layout === "pills") {
+      return null;
+    }
+
     return (
       <output
         className="polychat-conversation-suggestion-skeleton block"
@@ -76,7 +84,11 @@ export function ChatSuggestionList({
   }
 
   return (
-    <section className="polychat-conversation-suggestions" aria-label="Suggestions">
+    <section
+      className="polychat-conversation-suggestions"
+      data-layout={layout}
+      aria-label="Suggestions"
+    >
       <div
         className="polychat-conversation-suggestion-grid"
         aria-label="Suggested prompts"
@@ -100,9 +112,14 @@ export function ChatSuggestionList({
       </div>
       {showRefresh && (
         <div className="polychat-conversation-suggestion-footer">
-          <button type="button" className="polychat-conversation-refresh" onClick={onRefresh}>
+          <button
+            type="button"
+            className="polychat-conversation-refresh"
+            aria-label={layout === "pills" ? "Shuffle suggestions" : undefined}
+            onClick={onRefresh}
+          >
             <Shuffle size={14} aria-hidden="true" />
-            <span>Shuffle</span>
+            {layout === "pills" ? null : <span>Shuffle</span>}
           </button>
         </div>
       )}

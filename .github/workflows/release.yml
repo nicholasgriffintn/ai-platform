@@ -85,8 +85,6 @@ jobs:
       always()
       && needs.plan.result == 'success'
       && needs.plan.outputs.any == 'true'
-      && needs.desktop.result != 'failure'
-      && needs.desktop.result != 'cancelled'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -103,7 +101,7 @@ jobs:
         run: node scripts/app-releases.mjs --notes-dir "$RUNNER_TEMP/release-notes"
 
       - name: Download the desktop archives
-        if: needs.plan.outputs.desktop == 'true'
+        if: needs.desktop.result == 'success'
         uses: actions/download-artifact@v8
         with:
           pattern: desktop-*
@@ -114,6 +112,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASES: ${{ steps.plan.outputs.releases }}
+          DESKTOP_RESULT: ${{ needs.desktop.result }}
         run: |
           set -euo pipefail
           shopt -s nullglob
@@ -124,6 +123,11 @@ jobs:
             tag="$(jq -r '.tag' <<<"$entry")"
             title="$(jq -r '.title + " " + .version' <<<"$entry")"
             notes="$(jq -r '.notesFile' <<<"$entry")"
+
+            if [ "$identifier" = "desktop" ] && [ "$DESKTOP_RESULT" != "success" ]; then
+              echo "::warning::Skipping $tag because the desktop build did not succeed ($DESKTOP_RESULT)."
+              continue
+            fi
 
             assets=()
 

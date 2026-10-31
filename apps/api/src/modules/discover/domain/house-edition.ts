@@ -13,7 +13,7 @@ const START_LINES: readonly DiscoverBriefLine[] = [
   {
     kind: "note",
     label: "Start here",
-    text: "Ask anything in the pane beside this. Every model answers from one place.",
+    text: "Ask anything in the composer below. Every model answers from one place.",
     href: "/chat",
   },
   {

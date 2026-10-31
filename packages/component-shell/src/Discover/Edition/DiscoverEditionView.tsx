@@ -2,13 +2,16 @@ import { Button, cn, LoadingSpinner } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { isDiscoverListenResearching } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage, partOfDay } from "@ngriffin_uk/polychat-utility-core";
-import { ArrowLeft, AudioLines, MessageCircle, Settings2 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useElementSize } from "@ngriffin_uk/polychat-utility-react";
+import { AudioLines, Settings2 } from "lucide-react";
+import { useEffect, useState, type ReactNode, type UIEvent } from "react";
 
 import { PageShell } from "../../Shell/PageShell.js";
 import { cardTopic, countTopicArticles } from "./discover-card-drafts.js";
+import { DiscoverBrief } from "./DiscoverBrief.js";
 import { DiscoverDetailPane } from "./DiscoverDetailPane.js";
 import { DiscoverFeed } from "./DiscoverFeed.js";
+import { DiscoverMasthead, type DiscoverGreeting } from "./DiscoverMasthead.js";
 import { DiscoverMediaShelf } from "./DiscoverMediaShelf.js";
 import { DiscoverSettingsDialog } from "./DiscoverSettingsDialog.js";
 import {
@@ -41,7 +44,23 @@ const MEDIA_LABELS: Record<DiscoverMedia, string> = {
   story: "tonight's story",
 };
 
-function useGreeting(): { opener: string; name: string | null } {
+const PANEL_CLASS =
+  "absolute inset-0 z-20 flex min-h-0 flex-col bg-background lg:static lg:inset-auto lg:z-auto lg:w-[26rem] lg:shrink-0 lg:border-l lg:border-border xl:w-[32rem] 2xl:w-[min(46rem,45%)]";
+
+const FLOATING_COMPOSER_CLASS =
+  "pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col px-2 pt-24 pb-2 [background:linear-gradient(to_top,var(--background)_calc(100%-6rem),transparent)] sm:px-6 sm:pb-4";
+
+const COMPOSER_CLEARANCE = 40;
+
+const SCROLLED_THRESHOLD = 24;
+
+export interface DiscoverChatSlot {
+  isOpen: boolean;
+  header: ReactNode;
+  thread: ReactNode;
+}
+
+function useGreeting(): DiscoverGreeting {
   const user = useChatStore((state) => state.user);
   const nickname = useChatStore((state) => state.userSettings?.nickname);
   const name = nickname?.trim() || user?.name?.trim().split(/\s+/)[0] || null;
@@ -139,44 +158,7 @@ function DiscoverMediaPane({ controller }: { controller: DiscoverEditionControll
   );
 }
 
-function DiscoverAskBar({ onOpen }: { onOpen: () => void }) {
-  return (
-    <div className="shrink-0 border-t border-border bg-background px-4 py-3 lg:hidden">
-      <button
-        type="button"
-        onClick={onOpen}
-        className="flex w-full items-center gap-3 rounded-full border border-border bg-surface px-4 py-3 text-left text-sm text-muted-foreground shadow-sm hover:text-foreground"
-      >
-        <MessageCircle size={16} className="text-active-work" aria-hidden />
-        Ask Poly anything
-      </button>
-    </div>
-  );
-}
-
-function DiscoverAskPane({ ask, onBack }: { ask: ReactNode; onBack: () => void }) {
-  return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2 lg:hidden">
-        <Button variant="icon" size="icon" aria-label="Back to the edition" onClick={onBack}>
-          <ArrowLeft size={16} aria-hidden />
-        </Button>
-        <span className="text-sm font-medium text-foreground">Ask</span>
-      </div>
-      <div className="min-h-0 flex-1">{ask}</div>
-    </div>
-  );
-}
-
-function DiscoverLeftPane({
-  controller,
-  todayText,
-  greeting,
-}: {
-  controller: DiscoverEditionController;
-  todayText: string;
-  greeting: { opener: string; name: string | null };
-}) {
+function DiscoverEditionBody({ controller }: { controller: DiscoverEditionController }) {
   const { edition, ownEdition, settings, selectedCard, view, isAuthenticated } = controller;
   const refreshMessage =
     controller.refreshStatus && controller.refreshStatus !== "queued"
@@ -216,18 +198,7 @@ function DiscoverLeftPane({
   ) : null;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <p className="polychat-eyebrow">{todayText}</p>
-        <h1 className="font-display text-[2.1rem] leading-tight font-medium tracking-tight text-foreground">
-          {greeting.opener}
-          {greeting.name && (
-            <>
-              , <em>{greeting.name}</em>
-            </>
-          )}
-        </h1>
-      </div>
+    <>
       {refreshMessage && <p className="text-sm text-muted-foreground">{refreshMessage}</p>}
       {showTurnOn && (
         <DiscoverTurnOn
@@ -242,18 +213,66 @@ function DiscoverLeftPane({
         />
       )}
       {controller.isAwaitingEdition ? <DiscoverPreparing /> : feed}
-    </div>
+    </>
   );
 }
 
-export function DiscoverEditionView({ ask }: { ask?: ReactNode }) {
+function DiscoverSidePanel({ controller }: { controller: DiscoverEditionController }) {
+  const { ownEdition, selectedCard, view, isAuthenticated } = controller;
+  const showMedia = view === "media" && isAuthenticated;
+  const cardOpen = Boolean(selectedCard && ownEdition);
+  const mediaMounted = showMedia || (controller.mediaPlaying && cardOpen);
+
+  return (
+    <aside className={PANEL_CLASS} aria-label="Discover detail">
+      {mediaMounted && (
+        <div className={cn("h-full", !showMedia && "hidden")}>
+          <DiscoverMediaPane controller={controller} />
+        </div>
+      )}
+      {selectedCard && ownEdition ? (
+        <div className="flex h-full min-h-0 flex-col">
+          {controller.mediaPlaying && (
+            <button
+              type="button"
+              onClick={controller.showMedia}
+              className="flex shrink-0 items-center gap-2 border-b border-border bg-surface px-5 py-2 text-left text-xs text-muted-foreground hover:text-foreground"
+            >
+              <AudioLines size={14} className="text-active-work" aria-hidden />
+              Still playing {MEDIA_LABELS[controller.media]}
+              <span className="ml-auto font-medium text-foreground">Back to it</span>
+            </button>
+          )}
+          <div className="min-h-0 flex-1">
+            <DiscoverDetailPane
+              editionId={ownEdition.id}
+              card={selectedCard}
+              topicArticleCount={countTopicArticles(ownEdition.cards, cardTopic(selectedCard))}
+              signals={ownEdition.feedback[selectedCard.id] ?? []}
+              isSending={controller.isSendingFeedback}
+              follow={controller.followFor(selectedCard)}
+              isChangingFollow={controller.isChangingFollow}
+              onToggleFollow={controller.toggleFollow}
+              onFeedback={controller.sendFeedback}
+              onClose={controller.closePanel}
+            />
+          </div>
+        </div>
+      ) : null}
+    </aside>
+  );
+}
+
+export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
   const controller = useDiscoverEditionController();
   const [showSettings, setShowSettings] = useState(false);
   const greeting = useGreeting();
   const [today] = useState(todayLine);
+  const { ref: composerRef, height: composerHeight } = useElementSize<HTMLDivElement>();
+  const [scrolled, setScrolled] = useState(false);
 
-  const { discover, ownEdition, settings, selectedCard, view, isAuthenticated } = controller;
-  const detailOpen = view !== "feed";
+  const { discover, edition, ownEdition, settings, selectedCard, view, isAuthenticated } =
+    controller;
   const isLoading =
     controller.isAuthenticationLoading || (isAuthenticated && (discover.isLoading || !settings));
 
@@ -274,43 +293,12 @@ export function DiscoverEditionView({ ask }: { ask?: ReactNode }) {
     );
   }
 
-  const showMedia = view === "media" && isAuthenticated;
-  const cardOpen = Boolean(selectedCard && ownEdition);
-  const mediaMounted = showMedia || (controller.mediaPlaying && cardOpen);
-  const rightPane =
-    selectedCard && ownEdition ? (
-      <div className="flex h-full min-h-0 flex-col">
-        {controller.mediaPlaying && (
-          <button
-            type="button"
-            onClick={controller.showMedia}
-            className="flex shrink-0 items-center gap-2 border-b border-border bg-surface px-5 py-2 text-left text-xs text-muted-foreground hover:text-foreground sm:px-8"
-          >
-            <AudioLines size={14} className="text-active-work" aria-hidden />
-            Still playing {MEDIA_LABELS[controller.media]}
-            <span className="ml-auto font-medium text-foreground">Back to it</span>
-          </button>
-        )}
-        <div className="min-h-0 flex-1">
-          <DiscoverDetailPane
-            editionId={ownEdition.id}
-            card={selectedCard}
-            topicArticleCount={countTopicArticles(ownEdition.cards, cardTopic(selectedCard))}
-            signals={ownEdition.feedback[selectedCard.id] ?? []}
-            isSending={controller.isSendingFeedback}
-            follow={controller.followFor(selectedCard)}
-            isChangingFollow={controller.isChangingFollow}
-            onToggleFollow={controller.toggleFollow}
-            onFeedback={controller.sendFeedback}
-            onClose={controller.closePanel}
-          />
-        </div>
-      </div>
-    ) : showMedia ? null : ask ? (
-      <DiscoverAskPane ask={ask} onBack={controller.closePanel} />
-    ) : (
-      <DiscoverIdlePane />
-    );
+  const detailOpen =
+    view === "card" ? Boolean(selectedCard && ownEdition) : view === "media" && isAuthenticated;
+  const chatOpen = Boolean(chat?.isOpen) && !detailOpen;
+  const showChat = chat !== undefined && !(chat.isOpen && detailOpen);
+  const floatingComposer = showChat && !chatOpen;
+  const panelOpen = detailOpen || chatOpen;
 
   const headerActions =
     isAuthenticated && settings ? (
@@ -340,26 +328,51 @@ export function DiscoverEditionView({ ask }: { ask?: ReactNode }) {
           onSavePreferences={controller.savePreferences}
         />
       )}
-      <div className="flex h-full min-h-0">
-        <div
-          className={cn(
-            "flex w-full shrink-0 flex-col border-border lg:w-[26rem] lg:border-r",
-            detailOpen && "hidden lg:flex",
-          )}
-        >
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-6 pb-10 lg:px-6">
-            <DiscoverLeftPane controller={controller} todayText={today} greeting={greeting} />
-          </div>
-          <DiscoverAskBar onOpen={controller.openAsk} />
-        </div>
-        <div className={cn("relative min-w-0 flex-1", !detailOpen && "hidden lg:block")}>
-          {mediaMounted && (
-            <div className={cn("h-full", !showMedia && "hidden")}>
-              <DiscoverMediaPane controller={controller} />
+      <div className="relative flex h-full min-h-0">
+        <div className="relative flex min-h-0 min-w-0 flex-1">
+          <div
+            data-header-scroll-source
+            className={cn("min-h-0 min-w-0 flex-1 overflow-y-auto", panelOpen && "hidden lg:block")}
+            onScroll={(event: UIEvent<HTMLDivElement>) =>
+              setScrolled(event.currentTarget.scrollTop > SCROLLED_THRESHOLD)
+            }
+          >
+            <div
+              className="@container/discover flex w-full flex-col gap-10 px-4 pt-6 pb-12 sm:px-6 lg:px-16 lg:pt-8"
+              style={
+                floatingComposer && composerHeight
+                  ? { paddingBottom: composerHeight + COMPOSER_CLEARANCE }
+                  : undefined
+              }
+            >
+              <DiscoverMasthead today={today} greeting={greeting}>
+                {edition ? <DiscoverBrief lines={edition.brief} /> : null}
+              </DiscoverMasthead>
+              <DiscoverEditionBody controller={controller} />
             </div>
-          )}
-          {rightPane}
+          </div>
+          {showChat ? (
+            <div
+              data-composer-suggestions={!chatOpen && scrolled ? "hidden" : undefined}
+              className={
+                chatOpen ? PANEL_CLASS : cn(FLOATING_COMPOSER_CLASS, detailOpen && "hidden lg:flex")
+              }
+            >
+              {chatOpen ? chat.header : null}
+              <div
+                ref={composerRef}
+                className={
+                  chatOpen
+                    ? "min-h-0 flex-1"
+                    : "pointer-events-auto mx-auto w-full max-w-[48rem] [&_[data-chat-input-shell]]:shadow-xl"
+                }
+              >
+                {chat.thread}
+              </div>
+            </div>
+          ) : null}
         </div>
+        {detailOpen ? <DiscoverSidePanel controller={controller} /> : null}
       </div>
     </>
   );

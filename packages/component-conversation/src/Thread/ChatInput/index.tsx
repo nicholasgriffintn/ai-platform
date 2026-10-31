@@ -49,7 +49,7 @@ import { ComposerCommandActionsProvider } from "../../Composer/commandActions.js
 import { ComposerActionMenu } from "../../Composer/ComposerActionMenu.js";
 import { ComposerCommandChips } from "../../Composer/ComposerCommandSurface.js";
 import { ComposerDirectiveMenu } from "../../Composer/ComposerDirectiveMenu.js";
-import { ComposerShell } from "../../Composer/ComposerShell.js";
+import { ComposerShell, type ComposerShellProps } from "../../Composer/ComposerShell.js";
 import { ComposerVoiceControls } from "../../Composer/ComposerVoiceControls.js";
 import {
   TokenizedComposerInput,
@@ -176,6 +176,7 @@ interface ChatInputProps {
   hideChatSettings?: boolean;
   hideModelSelector?: boolean;
   hideVoiceControls?: boolean;
+  density?: ComposerShellProps["density"];
   autoPlayResponses?: {
     enabled: boolean;
     isGenerating: boolean;
@@ -220,6 +221,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       hideChatSettings = false,
       hideModelSelector = false,
       hideVoiceControls = false,
+      density,
       autoPlayResponses,
       contextAttachments = EMPTY_ATTACHMENTS,
       readonlyContextAttachmentCount = 0,
@@ -766,6 +768,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     return (
       <ComposerCommandActionsProvider actions={commandActions}>
         <ComposerShell
+          density={density}
           isGeneratingAudio={!!autoPlayResponses?.isGenerating}
           chips={
             <ComposerCommandChips

@@ -36,15 +36,23 @@ const DelegatePanel = lazy(() =>
 
 interface HomeConversationThreadProps {
   urlModeConfig?: ThreadModeConfig;
+  routeToConversation?: boolean;
 }
 
-export function HomeConversationThread({ urlModeConfig }: HomeConversationThreadProps) {
+export function HomeConversationThread({
+  urlModeConfig,
+  routeToConversation = true,
+}: HomeConversationThreadProps) {
   const { completionId } = useParams<"completionId">();
   const modeConfig = useConversationLaunchModeConfig(urlModeConfig, completionId);
   const [delegateConversationId, setDelegateConversationId] = useState<string | null>(null);
   const cancelDelegations = useCancelDelegations();
 
-  useConversationRoute({ surface: { kind: "personal" }, pathConversationId: completionId });
+  useConversationRoute({
+    surface: { kind: "personal" },
+    pathConversationId: completionId,
+    enabled: routeToConversation,
+  });
 
   const user = useChatStore((state) => state.user);
   const userSettings = useChatStore((state) => state.userSettings);

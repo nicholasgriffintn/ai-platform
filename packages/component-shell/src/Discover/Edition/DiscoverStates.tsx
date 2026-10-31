@@ -1,6 +1,8 @@
 import { Button, Pet, Skeleton } from "@ngriffin_uk/polychat-component-ui";
 import { RefreshCw, Sunrise } from "lucide-react";
 
+import { DISCOVER_SECTION_GRID } from "./DiscoverSection.js";
+
 export function DiscoverIdlePane() {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
@@ -14,8 +16,8 @@ export function DiscoverIdlePane() {
 
 export function DiscoverPreparing() {
   return (
-    <div className="flex flex-col gap-7" aria-busy="true">
-      <div className="relative overflow-hidden rounded-3xl border border-border bg-surface-elevated p-5">
+    <div className="flex flex-col gap-10" aria-busy="true">
+      <div className="relative max-w-2xl overflow-hidden rounded-3xl border border-border bg-surface-elevated p-5">
         <p className="font-display text-2xl font-medium text-foreground">Out gathering</p>
         <p className="mt-1 max-w-[16rem] text-sm text-muted-foreground">
           Poly is reading the news on your topics. A minute or two, usually.
@@ -29,11 +31,16 @@ export function DiscoverPreparing() {
           <Pet size={80} placement="top" href={null} showNudges={false} label="Poly" />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <Skeleton className="aspect-[4/5] rounded-2xl" />
-        <Skeleton className="aspect-[4/5] rounded-2xl" />
+      <div className={DISCOVER_SECTION_GRID.posters}>
+        {Array.from({ length: 4 }, (_, index) => (
+          <Skeleton key={index} className="aspect-[4/5] rounded-2xl" />
+        ))}
       </div>
-      <Skeleton className="h-24 rounded-2xl" />
+      <div className={DISCOVER_SECTION_GRID.cards}>
+        {Array.from({ length: 3 }, (_, index) => (
+          <Skeleton key={index} className="h-32 rounded-2xl" />
+        ))}
+      </div>
     </div>
   );
 }
@@ -46,7 +53,7 @@ export function DiscoverTurnOn({
   onTurnOn: () => void;
 }) {
   return (
-    <div className="flex flex-col items-start gap-3 rounded-3xl border border-border bg-surface-elevated p-5">
+    <div className="flex max-w-2xl flex-col items-start gap-3 rounded-3xl border border-border bg-surface-elevated p-5">
       <p className="font-display text-2xl font-medium text-foreground">Make this yours</p>
       <p className="text-sm text-muted-foreground">
         Turn on Discover and each morning Poly writes an edition from your own chats: a brief,
@@ -68,7 +75,7 @@ export function DiscoverNoEdition({
   onWriteNow: () => void;
 }) {
   return (
-    <div className="flex flex-col items-start gap-3 rounded-3xl border border-border bg-surface-elevated p-5">
+    <div className="flex max-w-2xl flex-col items-start gap-3 rounded-3xl border border-border bg-surface-elevated p-5">
       <p className="font-display text-2xl font-medium text-foreground">Nothing yet</p>
       <p className="text-sm text-muted-foreground">
         Your first edition arrives tomorrow at seven. Or Poly can write one now.

@@ -69,6 +69,7 @@ import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } fro
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 
+import type { ComposerShellProps } from "../Composer/ComposerShell.js";
 import { ConversationComposerDock, ConversationMessageColumn } from "../ConversationColumn.js";
 import { GoalStatusCard } from "../GoalStatusCard.js";
 import { PetPerch } from "../PetPerch.js";
@@ -118,6 +119,8 @@ export interface ThreadModeConfig {
   welcomeLoading?: boolean;
   welcomeSuggestions?: ChatSuggestion[] | null;
   welcomeCapabilitySuggestions?: boolean;
+  welcomePlacement?: "screen" | "composer";
+  composerDensity?: ComposerShellProps["density"];
   inputPlaceholder?: {
     newConversation: string;
     followUp: string;
@@ -1006,6 +1009,14 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
 
   const showWelcomeScreen =
     messages.length === 0 && !currentConversationId && !isStreamLoading && !streamStarted;
+  const welcomeInComposer = showWelcomeScreen && modeConfig?.welcomePlacement === "composer";
+  const composerPlaceholder =
+    welcomeInComposer && modeConfig?.welcomeTitle && !modeConfig.welcomeLoading
+      ? {
+          newConversation: modeConfig.welcomeTitle,
+          followUp: modeConfig.inputPlaceholder?.followUp ?? "Ask a follow-up",
+        }
+      : modeConfig?.inputPlaceholder;
 
   const handleStartThread = useCallback(
     (messageId: string, modelId?: string) => {
@@ -1014,9 +1025,24 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
     [startConversationThread],
   );
 
+  const welcomeSuggestions = (
+    <ChatSuggestions
+      setInput={setComposerInput}
+      onSubmitPrompt={
+        modeConfig?.submitSuggestions ? (prompt) => void submitPrompt(prompt) : undefined
+      }
+      suggestionsOverride={modeConfig?.welcomeSuggestions}
+      isLoading={modeConfig?.welcomeLoading}
+      modeCommands={modeConfig?.modeControls?.commands}
+      modelConfig={selectedModelConfig}
+      includeCapabilities={modeConfig?.welcomeCapabilitySuggestions !== false}
+      layout={welcomeInComposer ? "pills" : "grid"}
+    />
+  );
+
   return (
     <div className="relative flex h-full min-h-0 w-full flex-col">
-      {showWelcomeScreen ? (
+      {welcomeInComposer ? null : showWelcomeScreen ? (
         <div
           data-header-scroll-source
           className="flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-0 py-6 sm:py-8"
@@ -1040,21 +1066,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
                   activateLabel="Ask Poly about this page"
                 />
               }
-              suggestions={
-                <ChatSuggestions
-                  setInput={setComposerInput}
-                  onSubmitPrompt={
-                    modeConfig?.submitSuggestions
-                      ? (prompt) => void submitPrompt(prompt)
-                      : undefined
-                  }
-                  suggestionsOverride={modeConfig?.welcomeSuggestions}
-                  isLoading={modeConfig?.welcomeLoading}
-                  modeCommands={modeConfig?.modeControls?.commands}
-                  modelConfig={selectedModelConfig}
-                  includeCapabilities={modeConfig?.welcomeCapabilitySuggestions !== false}
-                />
-              }
+              suggestions={welcomeSuggestions}
             />
           </div>
         </div>
@@ -1078,6 +1090,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
       )}
 
       <ConversationComposerDock>
+        {welcomeInComposer ? welcomeSuggestions : null}
         {!showPetPerch || showWelcomeScreen ? null : (
           <PetPerch
             pet={
@@ -1148,7 +1161,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
           controller={controller}
           onStopResponse={abortStream}
           onTranscribe={(data) => void handleTranscribe(data)}
-          placeholder={modeConfig?.inputPlaceholder}
+          placeholder={composerPlaceholder}
           controls={modeConfig?.inputControls}
           modeControls={modeConfig?.modeControls}
           modelProviderFilter={modeConfig?.modelProviderFilter}
@@ -1167,6 +1180,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
           hideChatSettings={modeConfig?.hideChatSettings}
           hideModelSelector={modeConfig?.hideModelSelector}
           hideVoiceControls={modeConfig?.hideVoiceControls}
+          density={modeConfig?.composerDensity}
           contextAttachments={contextAttachments}
           readonlyContextAttachmentCount={modeContextAttachments.length}
           attachmentProjectId={modeConfig?.requestOptions?.metadata?.project_id ?? undefined}
@@ -1181,7 +1195,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
         />
       </ConversationComposerDock>
 
-      <FooterInfo />
+      {welcomeInComposer ? null : <FooterInfo />}
     </div>
   );
 };

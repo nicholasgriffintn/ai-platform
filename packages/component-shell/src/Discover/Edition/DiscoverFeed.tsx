@@ -1,8 +1,16 @@
 import type { DiscoverCard, DiscoverEdition } from "@ngriffin_uk/polychat-schemas";
 import type { ReactNode } from "react";
 
-import { DiscoverBrief } from "./DiscoverBrief.js";
-import { DiscoverRow, type DiscoverRowCard } from "./DiscoverRow.js";
+import {
+  DiscoverFeedCard,
+  type DiscoverFeedCardSize,
+  type DiscoverRowCard,
+} from "./DiscoverFeedCard.js";
+import {
+  DiscoverSection,
+  DiscoverSectionRow,
+  type DiscoverSectionKind,
+} from "./DiscoverSection.js";
 import { DiscoverStoryTile, type DiscoverStoryCard } from "./DiscoverStoryTile.js";
 import { DiscoverTopicTile } from "./DiscoverTopicTile.js";
 
@@ -19,38 +27,40 @@ export interface DiscoverFeedProps {
   media: ReactNode;
 }
 
-function FeedSection({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="flex flex-col gap-3">
-      <h3 className="polychat-eyebrow px-1">{title}</h3>
-      {children}
-    </section>
-  );
-}
-
-function RowList({
+function CardSection({
+  title,
   cards,
+  kind = "cards",
+  size = "regular",
   selectedId,
   isTopicHidden,
   onSelect,
 }: {
+  title: string;
   cards: readonly DiscoverRowCard[];
+  kind?: DiscoverSectionKind;
+  size?: DiscoverFeedCardSize;
   selectedId: string | null;
   isTopicHidden: (card: DiscoverCard) => boolean;
   onSelect: (card: DiscoverCard) => void;
 }) {
+  if (cards.length === 0) {
+    return null;
+  }
+
   return (
-    <div className="flex flex-col divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+    <DiscoverSection title={title} kind={kind} count={cards.length}>
       {cards.map((card) => (
-        <DiscoverRow
+        <DiscoverFeedCard
           key={card.id}
           card={card}
           selected={card.id === selectedId}
           hidden={isTopicHidden(card)}
+          size={size}
           onSelect={onSelect}
         />
       ))}
-    </div>
+    </DiscoverSection>
   );
 }
 
@@ -81,76 +91,53 @@ export function DiscoverFeed({
   const comingUp = rows.filter((card) => card.kind === "event");
   const reads = rows.filter((card) => card.kind === "read" || card.kind === "inbox");
   const watching = rows.filter((card) => card.kind === "watch" || card.kind === "listen");
+  const posterCount = topics.length + stories.length;
+  const cardProps = { selectedId, isTopicHidden, onSelect };
 
   return (
-    <div className="flex flex-col gap-8">
-      <DiscoverBrief lines={edition.brief} />
-      {media}
-      {topics.length + stories.length > 0 && (
-        <FeedSection title="Worth a look">
-          <div className="grid grid-cols-2 gap-3">
-            {topics.map((card) => (
-              <DiscoverTopicTile
-                key={card.id}
-                card={card}
-                selected={card.id === selectedId}
-                hidden={isTopicHidden(card)}
-                following={isFollowing(card)}
-                onSelect={onSelect}
-              />
-            ))}
-            {stories.map((card) => (
-              <DiscoverStoryTile
-                key={card.id}
-                card={card}
-                starting={card.id === startingStoryId}
-                failed={card.id === failedStoryId}
-                selected={card.id === openStoryId}
-                onStart={onStartStory}
-              />
-            ))}
-          </div>
-        </FeedSection>
-      )}
-      {forYou.length > 0 && (
-        <FeedSection title="For you">
-          <RowList
+    <div className="flex flex-col gap-10">
+      {media || posterCount > 0 ? (
+        <DiscoverSectionRow>
+          {media}
+          {posterCount > 0 && (
+            <DiscoverSection title="Worth a look" kind="posters" count={posterCount}>
+              {topics.map((card) => (
+                <DiscoverTopicTile
+                  key={card.id}
+                  card={card}
+                  selected={card.id === selectedId}
+                  hidden={isTopicHidden(card)}
+                  following={isFollowing(card)}
+                  onSelect={onSelect}
+                />
+              ))}
+              {stories.map((card) => (
+                <DiscoverStoryTile
+                  key={card.id}
+                  card={card}
+                  starting={card.id === startingStoryId}
+                  failed={card.id === failedStoryId}
+                  selected={card.id === openStoryId}
+                  onStart={onStartStory}
+                />
+              ))}
+            </DiscoverSection>
+          )}
+        </DiscoverSectionRow>
+      ) : null}
+      {rows.length > 0 && (
+        <DiscoverSectionRow>
+          <CardSection
+            title="For you"
             cards={forYou}
-            selectedId={selectedId}
-            isTopicHidden={isTopicHidden}
-            onSelect={onSelect}
+            kind="spotlight"
+            size="large"
+            {...cardProps}
           />
-        </FeedSection>
-      )}
-      {comingUp.length > 0 && (
-        <FeedSection title="Coming up">
-          <RowList
-            cards={comingUp}
-            selectedId={selectedId}
-            isTopicHidden={isTopicHidden}
-            onSelect={onSelect}
-          />
-        </FeedSection>
-      )}
-      {reads.length > 0 && (
-        <FeedSection title="Reading">
-          <RowList
-            cards={reads}
-            selectedId={selectedId}
-            isTopicHidden={isTopicHidden}
-            onSelect={onSelect}
-          />
-        </FeedSection>
-      )}
-      {watching.length > 0 && (
-        <FeedSection title="Watching and listening">
-          <RowList
-            cards={watching}
-            selectedId={selectedId}
-            isTopicHidden={isTopicHidden}
-            onSelect={onSelect}
-          />
-        </FeedSection>
+          <CardSection title="Coming up" cards={comingUp} {...cardProps} />
+          <CardSection title="Reading" cards={reads} {...cardProps} />
+          <CardSection title="Watching and listening" cards={watching} {...cardProps} />
+        </DiscoverSectionRow>
       )}
       {edition.interests.length > 0 && (
         <p className="px-1 text-xs leading-relaxed text-muted-foreground">

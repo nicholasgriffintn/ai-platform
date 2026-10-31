@@ -14,7 +14,7 @@ function describeReadSource(source: string, url: string): string {
   return sameHost || !host ? source : `${source} · ${host}`;
 }
 
-function RowLead({ card }: { card: DiscoverRowCard }) {
+function CardLead({ card }: { card: DiscoverRowCard }) {
   switch (card.kind) {
     case "action":
       return (
@@ -68,7 +68,7 @@ function RowLead({ card }: { card: DiscoverRowCard }) {
   }
 }
 
-function rowText(card: DiscoverRowCard): { kicker: string; title: string; detail: string | null } {
+function cardText(card: DiscoverRowCard): { kicker: string; title: string; detail: string | null } {
   switch (card.kind) {
     case "action":
       return {
@@ -101,18 +101,31 @@ function rowText(card: DiscoverRowCard): { kicker: string; title: string; detail
   }
 }
 
-export function DiscoverRow({
+export type DiscoverFeedCardSize = "regular" | "large";
+
+export function DiscoverFeedCard({
   card,
   selected,
   hidden,
+  size = "regular",
   onSelect,
 }: {
   card: DiscoverRowCard;
   selected: boolean;
   hidden: boolean;
+  size?: DiscoverFeedCardSize;
   onSelect: (card: DiscoverCard) => void;
 }) {
-  const text = rowText(card);
+  const text = cardText(card);
+  const isQuestion = card.kind === "check_in";
+  const isLarge = size === "large";
+  const chevron = (
+    <ChevronRight
+      size={16}
+      aria-hidden
+      className="mt-2.5 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+    />
+  );
 
   return (
     <button
@@ -120,33 +133,57 @@ export function DiscoverRow({
       aria-pressed={selected}
       onClick={() => onSelect(card)}
       className={cn(
-        "group flex w-full items-start gap-3 px-3 py-3 text-left transition-colors hover:bg-selection focus-visible:bg-selection focus-visible:outline-none",
-        selected && "bg-selection",
+        "group flex w-full flex-col gap-3 rounded-2xl border border-border bg-surface text-left transition-colors hover:border-border-strong hover:bg-surface-elevated focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none",
+        isLarge ? "gap-4 p-5" : "p-4",
+        selected && "border-border-strong bg-surface-elevated",
         hidden && "opacity-40",
       )}
     >
-      <RowLead card={card} />
-      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="truncate text-[0.7rem] text-muted-foreground">{text.kicker}</span>
-        <span
-          className={cn(
-            "text-[0.92rem] leading-snug font-medium text-foreground",
-            card.kind === "check_in" && "font-normal italic",
-          )}
-        >
-          {text.title}
-        </span>
-        {text.detail ? (
-          <span className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-            {text.detail}
+      {isQuestion ? (
+        <>
+          <span className="flex items-center gap-3">
+            <CardLead card={card} />
+            <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+              {text.kicker}
+            </span>
+            {chevron}
           </span>
-        ) : null}
-      </span>
-      <ChevronRight
-        size={16}
-        aria-hidden
-        className="mt-3 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
-      />
+          <span
+            className={cn(
+              "font-display leading-snug text-foreground italic",
+              isLarge ? "text-2xl" : "text-xl",
+            )}
+          >
+            {text.title}
+          </span>
+        </>
+      ) : (
+        <span className="flex items-start gap-3">
+          <CardLead card={card} />
+          <span className="flex min-w-0 flex-1 flex-col gap-1">
+            <span className="truncate text-xs text-muted-foreground">{text.kicker}</span>
+            <span
+              className={cn(
+                "line-clamp-2 leading-snug font-medium text-foreground",
+                isLarge ? "text-lg" : "text-[0.95rem]",
+              )}
+            >
+              {text.title}
+            </span>
+            {text.detail ? (
+              <span
+                className={cn(
+                  "leading-relaxed text-muted-foreground",
+                  isLarge ? "line-clamp-3 text-[0.95rem]" : "line-clamp-2 text-sm",
+                )}
+              >
+                {text.detail}
+              </span>
+            ) : null}
+          </span>
+          {chevron}
+        </span>
+      )}
     </button>
   );
 }

@@ -96,6 +96,79 @@
     justify-content: flex-end;
     margin-top: 0.5rem;
   }
+  .polychat-conversation-suggestions[data-layout="pills"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    max-width: none;
+    max-height: 3rem;
+    margin: 0 0 0.5rem;
+    container-type: normal;
+    transition:
+      opacity var(--polychat-motion-duration-micro) var(--polychat-motion-ease-micro),
+      max-height var(--polychat-motion-duration-micro) var(--polychat-motion-ease-micro),
+      margin var(--polychat-motion-duration-micro) var(--polychat-motion-ease-micro);
+  }
+  [data-composer-suggestions="hidden"] .polychat-conversation-suggestions[data-layout="pills"] {
+    overflow: hidden;
+    max-height: 0;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .polychat-conversation-suggestions[data-layout="pills"] .polychat-conversation-suggestion-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.375rem;
+    min-width: 0;
+    overflow-x: auto;
+    padding: 0.125rem;
+    scrollbar-width: none;
+  }
+  .polychat-conversation-suggestions[data-layout="pills"]
+    .polychat-conversation-suggestion-grid::-webkit-scrollbar {
+    display: none;
+  }
+  .polychat-conversation-suggestions[data-layout="pills"] .polychat-conversation-suggestion {
+    flex: 0 0 auto;
+    width: auto;
+    min-height: 0;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 9999px;
+    padding: 0.3125rem 0.75rem 0.3125rem 0.625rem;
+    background: color-mix(in oklab, var(--polychat-surface-elevated) 88%, transparent);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+    backdrop-filter: blur(12px);
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+  .polychat-conversation-suggestions[data-layout="pills"]
+    .polychat-conversation-suggestion
+    > span:last-child {
+    overflow: hidden;
+    max-width: 14rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .polychat-conversation-suggestions[data-layout="pills"] .polychat-conversation-suggestion-icon {
+    height: 1rem;
+  }
+  .polychat-conversation-suggestions[data-layout="pills"]
+    .polychat-conversation-suggestion-icon
+    svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+  .polychat-conversation-suggestions[data-layout="pills"] .polychat-conversation-suggestion-footer {
+    flex: 0 0 auto;
+    margin: 0;
+  }
+  .polychat-conversation-suggestions[data-layout="pills"] .polychat-conversation-refresh {
+    border-radius: 9999px;
+    padding: 0.375rem;
+  }
   .polychat-conversation-suggestion-skeleton {
     max-width: 36rem;
     margin: 2rem auto 0;
