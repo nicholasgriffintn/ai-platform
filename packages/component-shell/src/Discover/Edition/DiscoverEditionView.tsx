@@ -126,7 +126,8 @@ export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
   const [today] = useState(todayLine);
   const { ref: composerRef, height: composerHeight } = useElementSize<HTMLDivElement>();
   const [scrolled, setScrolled] = useState(false);
-  const motion = useDiscoverPanelMotion(controller.panelItem);
+  const { feedRef, panelRef, capture, playEntrance, open, shown, occupied } =
+    useDiscoverPanelMotion(controller.panelItem);
   const chatPanelRef = useRef<HTMLDivElement>(null);
   const chatPanelOpen = Boolean(chat?.isOpen) && controller.panelItem === null;
 
@@ -201,10 +202,10 @@ export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
       <div className="relative flex h-full min-h-0 overflow-hidden">
         <div className="relative flex min-h-0 min-w-0 flex-1">
           <div
-            ref={motion.feedRef}
+            ref={feedRef}
             data-header-scroll-source
             className={cn("min-h-0 min-w-0 flex-1 overflow-y-auto", panelOpen && "hidden lg:block")}
-            onClickCapture={(event) => motion.capture(event.target)}
+            onClickCapture={(event) => capture(event.target)}
             onScroll={(event: UIEvent<HTMLDivElement>) =>
               setScrolled(event.currentTarget.scrollTop > SCROLLED_THRESHOLD)
             }
@@ -248,7 +249,14 @@ export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
             </div>
           ) : null}
         </div>
-        <DiscoverItemPanel controller={controller} motion={motion} />
+        <DiscoverItemPanel
+          controller={controller}
+          panelRef={panelRef}
+          playEntrance={playEntrance}
+          open={open}
+          shown={shown}
+          occupied={occupied}
+        />
       </div>
     </>
   );

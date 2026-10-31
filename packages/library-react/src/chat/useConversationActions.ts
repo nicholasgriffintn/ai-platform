@@ -13,6 +13,7 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useShallow } from "zustand/react/shallow";
 
 import { getComposerDraftAfterRetry } from "../chat/retry-composer.js";
 import { useComposerDraft } from "../state/composer-draft.js";
@@ -39,7 +40,13 @@ export function useConversationActions(
   requestOptions?: ChatRequestOptions,
 ) {
   const queryClient = useQueryClient();
-  const { model, isAuthenticated, isPro } = useChatStore();
+  const { model, isAuthenticated, isPro } = useChatStore(
+    useShallow((state) => ({
+      model: state.model,
+      isAuthenticated: state.isAuthenticated,
+      isPro: state.isPro,
+    })),
+  );
   const { currentConversationId, setCurrentConversationId } = useConversationScope();
   const { composerInput, setComposerInput } = useComposerDraft();
 

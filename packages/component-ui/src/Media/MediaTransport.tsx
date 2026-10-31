@@ -17,7 +17,7 @@ export interface MediaTransportProps {
   actions?: ReactNode;
 }
 
-export function mediaPosition(track: MediaTrack) {
+export function mediaPosition(track: Pick<MediaTrack, "currentTime" | "duration" | "seek">) {
   return {
     value: track.currentTime,
     max: track.duration,

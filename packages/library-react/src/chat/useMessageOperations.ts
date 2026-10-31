@@ -7,13 +7,14 @@ import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { useCallback } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { createTemporaryConversationTitle } from "../chat/title-source.js";
 import { useConversationStorage } from "./useConversationStorage.js";
 
 export function useMessageOperations(requestOptions?: ChatRequestOptions) {
   const { updateConversation } = useConversationStorage(requestOptions);
-  const { model } = useChatStore();
+  const { model } = useChatStore(useShallow((state) => ({ model: state.model })));
 
   const addMessageToConversation = useCallback(
     async (conversationId: string, message: Message) => {

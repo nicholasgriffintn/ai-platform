@@ -70,6 +70,7 @@ export * from "./Scheduled/ScheduledLibrary.js";
 export * from "./Scheduled/useScheduledLibraryController.js";
 export * from "./Search/SearchDialog.js";
 export * from "./Search/useGlobalSearch.js";
+export * from "./Shell/ChatModeShell.js";
 export * from "./Shell/ChatPlaceShell.js";
 export * from "./Shell/Navbar.js";
 export * from "./Shell/PageShell.js";

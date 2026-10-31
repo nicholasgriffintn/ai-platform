@@ -10,6 +10,7 @@ import { useHeaderScrollEdge } from "@ngriffin_uk/polychat-utility-react";
 import { Menu, PanelLeftOpen } from "lucide-react";
 import { type ReactNode, useRef } from "react";
 import { useLocation } from "react-router";
+import { useShallow } from "zustand/react/shallow";
 
 import { MediaDockHeaderChip } from "../Media/MediaDock.js";
 import { useSidebarPeekTrigger } from "../Sidebar/SidebarPeekContext.js";
@@ -35,7 +36,13 @@ export function ProductModeHeader({
   const shouldShowProductModeSwitch = showProductModeSwitch ?? isProductModeRoute(pathname);
   const headerRef = useRef<HTMLElement>(null);
   const isScrolled = useHeaderScrollEdge(headerRef, pathname);
-  const { isMobile, sidebarVisible, setSidebarVisible } = useUIStore();
+  const { isMobile, sidebarVisible, setSidebarVisible } = useUIStore(
+    useShallow((state) => ({
+      isMobile: state.isMobile,
+      sidebarVisible: state.sidebarVisible,
+      setSidebarVisible: state.setSidebarVisible,
+    })),
+  );
   const sidebarPeekTrigger = useSidebarPeekTrigger();
 
   return (

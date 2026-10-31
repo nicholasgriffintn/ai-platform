@@ -30,6 +30,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useTrackEvent } from "../hooks/use-track-event.js";
 import { AUTH_QUERY_KEYS } from "../hooks/useAuth.js";
@@ -129,7 +130,24 @@ export function useModelSelection({
     setChatSettings,
     selectedTeammateId,
     setSelectedTeammateId,
-  } = useChatStore();
+  } = useChatStore(
+    useShallow((state) => ({
+      isPro: state.isPro,
+      isAuthenticationLoading: state.isAuthenticationLoading,
+      model: state.model,
+      setModel: state.setModel,
+      modelTier: state.modelTier,
+      setModelTier: state.setModelTier,
+      chatMode: state.chatMode,
+      setChatMode: state.setChatMode,
+      computeSite: state.computeSite,
+      setComputeSite: state.setComputeSite,
+      chatSettings: state.chatSettings,
+      setChatSettings: state.setChatSettings,
+      selectedTeammateId: state.selectedTeammateId,
+      setSelectedTeammateId: state.setSelectedTeammateId,
+    })),
+  );
   const { teammates } = useTeammates();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");

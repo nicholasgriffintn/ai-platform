@@ -1,7 +1,7 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import { ownsEscapeKey } from "@ngriffin_uk/polychat-utility-react";
 import { AudioLines } from "lucide-react";
-import { useEffect, useEffectEvent, useMemo } from "react";
+import { type RefObject, useEffect, useEffectEvent, useMemo } from "react";
 
 import { DiscoverIdlePane } from "../DiscoverStates.js";
 import type { DiscoverMedia } from "../media/media-status.js";
@@ -10,7 +10,6 @@ import { discoverItemKind } from "./discover-item-kind.js";
 import { discoverItemKey, type DiscoverItem } from "./discover-items.js";
 import { DiscoverItemHeader } from "./DiscoverItemHeader.js";
 import { DiscoverItemView } from "./DiscoverItemView.js";
-import type { DiscoverPanelMotion } from "./useDiscoverPanelMotion.js";
 
 export const DISCOVER_PANEL_WIDTH = "lg:w-[26rem] xl:w-[34rem] 2xl:w-[40rem]";
 
@@ -31,13 +30,20 @@ const MEDIA_LABELS: Record<DiscoverMedia, string> = {
 
 export function DiscoverItemPanel({
   controller,
-  motion,
+  panelRef,
+  playEntrance,
+  open,
+  shown,
+  occupied,
 }: {
   controller: DiscoverEditionController;
-  motion: DiscoverPanelMotion;
+  panelRef: RefObject<HTMLElement | null>;
+  playEntrance: (content: HTMLElement | null) => void;
+  open: boolean;
+  shown: DiscoverItem | null;
+  occupied: boolean;
 }) {
   const { ownEdition: edition, mediaPlaying, media, closePanel } = controller;
-  const { open, shown, occupied } = motion;
   const playingMedia = useMemo<DiscoverItem>(() => ({ type: "media", media }), [media]);
   const mediaItem =
     shown?.type === "media" ? shown : shown?.type === "card" && mediaPlaying ? playingMedia : null;
@@ -60,7 +66,7 @@ export function DiscoverItemPanel({
 
   return (
     <aside
-      ref={motion.panelRef}
+      ref={panelRef}
       aria-label="Discover item"
       inert={!open}
       className={cn(
@@ -87,7 +93,7 @@ export function DiscoverItemPanel({
               item={mediaItem}
               edition={edition}
               controller={controller}
-              playEntrance={motion.playEntrance}
+              playEntrance={playEntrance}
             />
           </div>
         ) : null}
@@ -109,7 +115,7 @@ export function DiscoverItemPanel({
               item={cardItem}
               edition={edition}
               controller={controller}
-              playEntrance={motion.playEntrance}
+              playEntrance={playEntrance}
             />
           </div>
         ) : null}

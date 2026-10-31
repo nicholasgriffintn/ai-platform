@@ -7,6 +7,7 @@ import type {
 import { CHATS_QUERY_KEY, apiService, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { upsertConversationInChatCaches } from "../conversation-cache.js";
 import { localChatService } from "../index.js";
@@ -22,7 +23,17 @@ export function useConversationStorage(requestOptions?: ChatRequestOptions) {
     temporaryChat,
     temporaryChatsDefault,
     user,
-  } = useChatStore();
+  } = useChatStore(
+    useShallow((state) => ({
+      isAuthenticationLoading: state.isAuthenticationLoading,
+      isAuthenticated: state.isAuthenticated,
+      isPro: state.isPro,
+      markConversationRemoteAvailable: state.markConversationRemoteAvailable,
+      temporaryChat: state.temporaryChat,
+      temporaryChatsDefault: state.temporaryChatsDefault,
+      user: state.user,
+    })),
+  );
   const answersOnDevice = useSelectedModelRunsOnDevice();
 
   const determineStorageMode = useCallback(

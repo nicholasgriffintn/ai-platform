@@ -8,6 +8,7 @@ import {
   useUIStore,
 } from "@ngriffin_uk/polychat-library-react";
 import { useLocation } from "react-router";
+import { useShallow } from "zustand/react/shallow";
 
 import { useInboxNeedsYou } from "../Attention/useInboxNeedsYou.js";
 import { SidebarFooter } from "../Sidebar/SidebarFooter.js";
@@ -21,7 +22,13 @@ interface WorkSidebarProps {
 }
 
 export function WorkSidebar({ workspaceId, projectId }: WorkSidebarProps) {
-  const { sidebarVisible, setSidebarVisible, isMobile } = useUIStore();
+  const { sidebarVisible, setSidebarVisible, isMobile } = useUIStore(
+    useShallow((state) => ({
+      sidebarVisible: state.sidebarVisible,
+      setSidebarVisible: state.setSidebarVisible,
+      isMobile: state.isMobile,
+    })),
+  );
   const { peeking, panelProps } = useSidebarPeekPanel();
   const { workspacesQuery, workspaceQuery } = useWorkData();
   const { data } = workspacesQuery;

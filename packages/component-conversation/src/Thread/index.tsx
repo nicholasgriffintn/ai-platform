@@ -69,6 +69,7 @@ import { useElementSize } from "@ngriffin_uk/polychat-utility-react";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
+import { useShallow } from "zustand/react/shallow";
 
 import type { ComposerSubjectChip } from "../Composer/ComposerCommandSurface.js";
 import type { ComposerShellProps } from "../Composer/ComposerShell.js";
@@ -205,8 +206,14 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
   const location = useLocation();
   const { trackEvent, trackFeatureUsage, trackError } = useTrackEvent();
 
-  const { model, selectedAssistantAction, setSelectedAssistantAction, computeSite } =
-    useChatStore();
+  const { model, selectedAssistantAction, setSelectedAssistantAction, computeSite } = useChatStore(
+    useShallow((state) => ({
+      model: state.model,
+      selectedAssistantAction: state.selectedAssistantAction,
+      setSelectedAssistantAction: state.setSelectedAssistantAction,
+      computeSite: state.computeSite,
+    })),
+  );
   const { currentConversationId, startNewConversation } = useConversationScope();
   const { composerInput, setComposerInput } = useComposerDraft();
   const isComposingGoal = useChatStore((state) => state.isComposingGoal);
@@ -631,8 +638,12 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
 
       const originalInput = composerInput;
       const originalAssistantAction = selectedAssistantAction;
+      const restoreComposer = () => {
+        setComposerInput(originalInput);
+        setSelectedAssistantAction(originalAssistantAction);
+      };
 
-      try {
+      const submitResolvedAction = async () => {
         const actionSubmit = await resolveAssistantActionSubmit(messageInput);
 
         setComposerInput("");
@@ -693,15 +704,22 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
         }
 
         return result?.status !== "error";
-      } catch (error) {
-        setComposerInput(originalInput);
-        setSelectedAssistantAction(originalAssistantAction);
+      };
+
+      const reportSendFailure = (error: unknown) => {
+        restoreComposer();
         toast.error(error instanceof Error ? error.message : "Failed to send message");
         console.error("Failed to send message:", error);
         trackError("message_send_error", error, {
           conversation_id: currentConversationId || "new",
           model_id: model || "unknown",
         });
+      };
+
+      try {
+        return await submitResolvedAction();
+      } catch (error) {
+        reportSendFailure(error);
 
         return false;
       }

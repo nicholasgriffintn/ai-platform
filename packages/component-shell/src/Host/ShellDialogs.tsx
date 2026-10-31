@@ -13,6 +13,7 @@ import {
   WebLLMService,
 } from "@ngriffin_uk/polychat-library-react";
 import { lazy, Suspense, useCallback, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { FileViewerOverlay } from "../Files/Viewer/FileViewerOverlay.js";
 import { PolyOverlay } from "../Poly/PolyOverlay.js";
@@ -39,7 +40,13 @@ const BrowserModelConsentDialog = lazy(() =>
 
 export function ShellDialogs() {
   const host = useShellHost();
-  const { setShowPoly, projectPicker, closeProjectPicker } = useUIStore();
+  const { setShowPoly, projectPicker, closeProjectPicker } = useUIStore(
+    useShallow((state) => ({
+      setShowPoly: state.setShowPoly,
+      projectPicker: state.projectPicker,
+      closeProjectPicker: state.closeProjectPicker,
+    })),
+  );
   const polyPresentation = usePolyPresentation();
   const { isAuthenticated } = useAuthStatus();
   const { providerSettings, isLoadingProviderSettings } = useUser({ enabled: isAuthenticated });

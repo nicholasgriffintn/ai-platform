@@ -21,7 +21,9 @@ export function SourceListen({ source, className }: { source: Source; className?
     passages,
     listen?.status === "ready",
   );
-  const current = passages[Math.min(playback.step, passages.length - 1)];
+  const { audible, step, playing, phase, toggle, seek } = playback;
+  const { attach: attachPassage, buffering } = playback.track;
+  const current = passages[Math.min(step, passages.length - 1)];
   const words = passages.reduce((total, passage) => total + getWordCount(passage.text), 0);
 
   if (!listen || listen.status === "failed") {
@@ -55,29 +57,29 @@ export function SourceListen({ source, className }: { source: Source; className?
         className,
       )}
     >
-      {playback.audible ? (
+      {audible ? (
         <audio
-          key={`${listen.contentHash}:${playback.step}`}
-          ref={playback.track.attach}
+          key={`${listen.contentHash}:${step}`}
+          ref={attachPassage}
           preload="auto"
-          autoPlay={playback.playing}
+          autoPlay={playing}
           crossOrigin="use-credentials"
-          src={getSourceListenPassageUrl(source.id, playback.step)}
+          src={getSourceListenPassageUrl(source.id, step)}
         >
           <track kind="captions" />
         </audio>
       ) : null}
       <MediaTransport
-        playing={playback.playing}
-        busy={playback.phase === "waiting" || playback.track.buffering}
-        onToggle={playback.toggle}
-        value={Math.min(playback.step, passages.length)}
+        playing={playing}
+        busy={phase === "waiting" || buffering}
+        onToggle={toggle}
+        value={Math.min(step, passages.length)}
         max={passages.length}
-        onSeek={(value) => playback.seek(Math.floor(value))}
-        caption={playback.playing && current ? current.text : undefined}
+        onSeek={(value) => seek(Math.floor(value))}
+        caption={playing && current ? current.text : undefined}
         start={
           passages[0]?.audio
-            ? `Passage ${Math.min(playback.step + 1, passages.length)} of ${passages.length}`
+            ? `Passage ${Math.min(step + 1, passages.length)} of ${passages.length}`
             : "Getting the first passage ready"
         }
         end={formatRoundedMinutes(words / SPOKEN_WORDS_PER_SECOND)}

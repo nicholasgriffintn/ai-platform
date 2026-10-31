@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 export const SIDEBAR_PEEK_CLOSE_DELAY_MS = 200;
 
@@ -82,7 +83,9 @@ export function SidebarPeekProvider({ children }: { children: ReactNode }) {
 
 export function useSidebarPeekTrigger(): SidebarPeekTriggerProps {
   const { hold, release, cancel } = useContext(SidebarPeekContext);
-  const { isMobile, sidebarVisible } = useUIStore();
+  const { isMobile, sidebarVisible } = useUIStore(
+    useShallow((state) => ({ isMobile: state.isMobile, sidebarVisible: state.sidebarVisible })),
+  );
 
   const onPointerEnter = useCallback<PointerEventHandler<HTMLElement>>(
     (event) => {

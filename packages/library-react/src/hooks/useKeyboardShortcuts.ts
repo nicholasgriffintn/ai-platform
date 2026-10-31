@@ -1,6 +1,7 @@
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { isTextEntryTarget } from "@ngriffin_uk/polychat-utility-react";
 import { useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import {
   type AppKeyboardShortcutId,
@@ -19,8 +20,22 @@ export function useKeyboardShortcuts() {
     setShowKeyboardShortcuts,
     showPoly,
     setShowPoly,
-  } = useUIStore();
-  const { clearCurrentConversation, setShowSearch } = useChatStore();
+  } = useUIStore(
+    useShallow((state) => ({
+      setSidebarVisible: state.setSidebarVisible,
+      sidebarVisible: state.sidebarVisible,
+      showKeyboardShortcuts: state.showKeyboardShortcuts,
+      setShowKeyboardShortcuts: state.setShowKeyboardShortcuts,
+      showPoly: state.showPoly,
+      setShowPoly: state.setShowPoly,
+    })),
+  );
+  const { clearCurrentConversation, setShowSearch } = useChatStore(
+    useShallow((state) => ({
+      clearCurrentConversation: state.clearCurrentConversation,
+      setShowSearch: state.setShowSearch,
+    })),
+  );
 
   useEffect(() => {
     const handlers: Partial<Record<AppKeyboardShortcutId, ShortcutHandler>> = {

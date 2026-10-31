@@ -7,6 +7,11 @@
   },
   "packageRules": [
     {
+      "description": "Keep Babel on 7 until babel-plugin-react-compiler supports Babel 8; under Babel 8 the compiler silently skips components that destructure props with defaults",
+      "matchPackageNames": ["@babel/core", "@babel/preset-typescript"],
+      "allowedVersions": "<8"
+    },
+    {
       "description": "Require review for release tooling",
       "matchPackageNames": ["@changesets/cli"],
       "automerge": false

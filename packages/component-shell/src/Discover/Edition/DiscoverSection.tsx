@@ -136,7 +136,7 @@ function DiscoverPosterSection({
   maxVisible: number;
   children: ReactNode;
 }) {
-  const scroller = useHorizontalScroller<HTMLDivElement>();
+  const { ref: trackRef, ...scroller } = useHorizontalScroller<HTMLDivElement>();
   const style: CSSProperties & Record<"--poster-count", number> = {
     "--poster-count": clampNumber(count, 1, maxVisible),
   };
@@ -152,7 +152,7 @@ function DiscoverPosterSection({
         <DiscoverCarouselControls scroller={scroller} label={title} />
       </div>
       <div className="relative">
-        <div ref={scroller.ref} className={POSTER_TRACK}>
+        <div ref={trackRef} className={POSTER_TRACK}>
           {children}
         </div>
         <DiscoverCarouselFade scroller={scroller} />

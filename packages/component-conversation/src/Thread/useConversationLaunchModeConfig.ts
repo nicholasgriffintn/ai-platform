@@ -14,8 +14,22 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router";
 import { toast } from "sonner";
+import { useShallow } from "zustand/react/shallow";
 
 import type { ThreadModeConfig } from "./index.js";
+
+function hasConversationLaunch(search: string): boolean {
+  const launch = parseAssistantActionLaunchState(search);
+
+  return Boolean(
+    launch.query ||
+    launch.actionContext ||
+    launch.autoSubmit ||
+    launch.hasEnabledTools ||
+    readRecipeConversationLaunchIntent(search) ||
+    readTeammateConversationLaunchIntent(search),
+  );
+}
 
 interface ResolvedConversationLaunch {
   autoSubmit?: { input: string; key: string };
@@ -34,21 +48,33 @@ export function useConversationLaunchModeConfig(
     setChatMode,
     setSelectedTeammateId,
     startNewConversation,
-  } = useChatStore();
-  const { setSelectedTools } = useToolsStore();
+  } = useChatStore(
+    useShallow((state) => ({
+      clearCurrentConversation: state.clearCurrentConversation,
+      initializeStore: state.initializeStore,
+      setChatInput: state.setChatInput,
+      setChatMode: state.setChatMode,
+      setSelectedTeammateId: state.setSelectedTeammateId,
+      startNewConversation: state.startNewConversation,
+    })),
+  );
+  const setSelectedTools = useToolsStore((state) => state.setSelectedTools);
   const { mutateAsync: installRecipe } = useInstallAssistantRecipe();
   const { mutateAsync: invokeRecipe } = useInvokeAssistantRecipe();
   const [launch, setLaunch] = useState<ResolvedConversationLaunch>();
   const initialiseSequenceRef = useRef(0);
 
+  const launchSearch = hasConversationLaunch(location.search) ? location.search : "";
+  const launchKey = launchSearch ? location.key : "";
+
   useEffect(() => {
-    const locationKey = `${location.key}:${location.pathname}${location.search}`;
+    const locationKey = `${launchKey}:${location.pathname}${launchSearch}`;
     const sequence = ++initialiseSequenceRef.current;
     const initialise = async () => {
       const completionId = pathConversationId;
-      const urlLaunch = parseAssistantActionLaunchState(location.search);
-      const recipeIntent = readRecipeConversationLaunchIntent(location.search);
-      const launchTeammateId = readTeammateConversationLaunchIntent(location.search);
+      const urlLaunch = parseAssistantActionLaunchState(launchSearch);
+      const recipeIntent = readRecipeConversationLaunchIntent(launchSearch);
+      const launchTeammateId = readTeammateConversationLaunchIntent(launchSearch);
 
       if (!completionId) {
         clearCurrentConversation();
@@ -112,7 +138,7 @@ export function useConversationLaunchModeConfig(
       });
 
       if (recipeLaunch || urlLaunch.autoSubmit || launchTeammateId) {
-        const query = removeConsumedAssistantActionLaunchParams(location.search);
+        const query = removeConsumedAssistantActionLaunchParams(window.location.search);
         const historyState =
           window.history.state && typeof window.history.state === "object"
             ? { ...window.history.state, usr: null }
@@ -137,9 +163,9 @@ export function useConversationLaunchModeConfig(
     clearCurrentConversation,
     initializeStore,
     installRecipe,
-    location.key,
+    launchKey,
+    launchSearch,
     location.pathname,
-    location.search,
     modeConfig?.requestOptions?.metadata?.project_id,
     pathConversationId,
     setChatInput,

@@ -1,5 +1,6 @@
 import { AccountSidebarShell } from "@ngriffin_uk/polychat-component-account";
 import { useAuthStatus, useUIStore } from "@ngriffin_uk/polychat-library-react";
+import { useShallow } from "zustand/react/shallow";
 
 import { SidebarFooter } from "../Sidebar/SidebarFooter.js";
 import { SidebarHeader } from "../Sidebar/SidebarHeader.js";
@@ -107,7 +108,13 @@ export function ProfileSidebar({
   onSelectItem,
   items = profileSidebarItems,
 }: ProfileSidebarProps) {
-  const { sidebarVisible, isMobile, setSidebarVisible } = useUIStore();
+  const { sidebarVisible, isMobile, setSidebarVisible } = useUIStore(
+    useShallow((state) => ({
+      sidebarVisible: state.sidebarVisible,
+      isMobile: state.isMobile,
+      setSidebarVisible: state.setSidebarVisible,
+    })),
+  );
   const { peeking, panelProps } = useSidebarPeekPanel();
   const { isAuthenticated, logout, isLoggingOut } = useAuthStatus();
 

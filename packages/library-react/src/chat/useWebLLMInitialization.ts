@@ -2,6 +2,7 @@ import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useShallow } from "zustand/react/shallow";
 
 import { useLoadingActions } from "../state/LoadingContext.js";
 import { useWebLLMConsentStore } from "../state/stores/webLLMConsentStore.js";
@@ -11,7 +12,13 @@ import { pruneStaleWebLLMModels, WebLLMService } from "./web-llm.js";
 
 export function useWebLLMInitialization(apiModels: ModelConfig = {}) {
   const { startLoading, updateLoading, stopLoading } = useLoadingActions();
-  const { computeSite, model, setModel } = useChatStore();
+  const { computeSite, model, setModel } = useChatStore(
+    useShallow((state) => ({
+      computeSite: state.computeSite,
+      model: state.model,
+      setModel: state.setModel,
+    })),
+  );
   const webLLMModels = useWebLLMModels({ enabled: computeSite === "browser" });
   const isConsented = useWebLLMConsentStore((state) =>
     model ? (state.consentedModelIds[model] ?? false) : false,

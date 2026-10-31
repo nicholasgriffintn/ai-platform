@@ -53,11 +53,10 @@ export function MediaPlayer({
 }: MediaPlayerProps) {
   const ownTrack = useMediaTrack();
   const track = sharedTrack ?? ownTrack;
-  const attachAudio = useMediaLoudness(track.attach, levelVoice && kind === "audio");
-  const activeIndex = transcript
-    ? currentTranscriptIndex(transcript, track.currentTime, track.duration)
-    : -1;
-  const started = track.playing || track.currentTime > 0;
+  const { attach, playing, buffering, currentTime, duration, toggle, seek, play } = track;
+  const attachAudio = useMediaLoudness(attach, levelVoice && kind === "audio");
+  const activeIndex = transcript ? currentTranscriptIndex(transcript, currentTime, duration) : -1;
+  const started = playing || currentTime > 0;
   const subtitle =
     transcript && started && (kind === "audio" || !captionsVtt)
       ? transcript.segments[activeIndex]
@@ -65,27 +64,27 @@ export function MediaPlayer({
   const speakers = transcript?.speakers ?? {};
   const captionTrackRef = useCaptionTrack(captionsVtt);
 
-  useEffect(() => onPlayingChange?.(track.playing), [onPlayingChange, track.playing]);
+  useEffect(() => onPlayingChange?.(playing), [onPlayingChange, playing]);
 
   const visual =
     layout === "compact" ? null : (
       <>
         {kind === "video" && src ? (
           <video
-            ref={track.attach}
+            ref={attach}
             src={src}
             title={title}
             preload="metadata"
             playsInline
             crossOrigin={crossOrigin}
-            onClick={track.toggle}
+            onClick={toggle}
             className="absolute inset-0 size-full cursor-pointer bg-black object-contain"
           >
             <track ref={captionTrackRef} kind="captions" srcLang="en" label="Captions" default />
           </video>
         ) : (
           <MediaWaveArt
-            playing={track.playing}
+            playing={playing}
             image={art}
             background={artBackground}
             crossOrigin={crossOrigin}
@@ -123,12 +122,12 @@ export function MediaPlayer({
             </audio>
           ) : null}
           <MediaTransport
-            playing={track.playing}
-            busy={track.buffering}
+            playing={playing}
+            busy={buffering}
             disabled={!src}
-            onToggle={track.toggle}
+            onToggle={toggle}
             actions={actions}
-            {...mediaPosition(track)}
+            {...mediaPosition({ currentTime, duration, seek })}
           />
         </>
       }
@@ -138,8 +137,8 @@ export function MediaPlayer({
           transcript={transcript}
           activeIndex={started ? activeIndex : -1}
           onSeek={(seconds) => {
-            track.seek(seconds);
-            track.play();
+            seek(seconds);
+            play();
           }}
         />
       ) : null}

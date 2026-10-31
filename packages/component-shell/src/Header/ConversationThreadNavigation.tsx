@@ -3,6 +3,7 @@ import { getConversationBranches, useChatStore } from "@ngriffin_uk/polychat-lib
 import { useChat } from "@ngriffin_uk/polychat-library-react";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 function BranchPicker({
   conversationId,
@@ -42,7 +43,14 @@ function BranchPicker({
 }
 
 export function ConversationThreadNavigation() {
-  const { currentConversationId, isAuthenticated, user, setCurrentConversationId } = useChatStore();
+  const { currentConversationId, isAuthenticated, user, setCurrentConversationId } = useChatStore(
+    useShallow((state) => ({
+      currentConversationId: state.currentConversationId,
+      isAuthenticated: state.isAuthenticated,
+      user: state.user,
+      setCurrentConversationId: state.setCurrentConversationId,
+    })),
+  );
   const { data: conversation } = useChat(currentConversationId);
 
   if (

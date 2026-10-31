@@ -3,6 +3,7 @@ import type { ChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/conv
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useChat } from "@ngriffin_uk/polychat-library-react";
 import { useMemo, type ReactNode } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ConversationRetentionControl } from "./ConversationRetentionControl.js";
 import { ConversationShareButton } from "./ConversationShareButton.js";
@@ -24,7 +25,13 @@ export function ConversationProductHeader({
   showProductModeSwitch,
   status,
 }: ConversationProductHeaderProps) {
-  const { currentConversationId, isAuthenticated, setCurrentConversationId } = useChatStore();
+  const { currentConversationId, isAuthenticated, setCurrentConversationId } = useChatStore(
+    useShallow((state) => ({
+      currentConversationId: state.currentConversationId,
+      isAuthenticated: state.isAuthenticated,
+      setCurrentConversationId: state.setCurrentConversationId,
+    })),
+  );
   const { data: conversation, isLoading } = useChat(currentConversationId);
   const conversationProjectId = conversation?.project_id;
   const storageRequestOptions = useMemo(

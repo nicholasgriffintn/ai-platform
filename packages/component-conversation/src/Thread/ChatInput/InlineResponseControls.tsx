@@ -20,6 +20,7 @@ import {
 import type { ReasoningEffort } from "@ngriffin_uk/polychat-schemas";
 import { Brain, ListFilter, Zap } from "lucide-react";
 import { useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { InlineSettingSelect } from "../../InlineSettingSelect.js";
 
@@ -28,7 +29,14 @@ interface InlineResponseControlsProps {
 }
 
 export function InlineResponseControls({ isDisabled = false }: InlineResponseControlsProps) {
-  const { computeSite, chatSettings, model, setChatSettings } = useChatStore();
+  const { computeSite, chatSettings, model, setChatSettings } = useChatStore(
+    useShallow((state) => ({
+      computeSite: state.computeSite,
+      chatSettings: state.chatSettings,
+      model: state.model,
+      setChatSettings: state.setChatSettings,
+    })),
+  );
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
   const webLLMModels = useWebLLMModels({ enabled: computeSite === "browser" });
   const availableModels = useMemo(

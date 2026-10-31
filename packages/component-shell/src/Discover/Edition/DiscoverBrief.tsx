@@ -47,7 +47,7 @@ function BriefLine({ line }: { line: DiscoverBriefLine }) {
 }
 
 export function DiscoverBrief({ lines }: { lines: readonly DiscoverBriefLine[] }) {
-  const scroller = useHorizontalScroller<HTMLUListElement>();
+  const { ref: trackRef, ...scroller } = useHorizontalScroller<HTMLUListElement>();
 
   if (lines.length === 0) {
     return <p className="text-sm text-muted-foreground">A quiet one. Nothing pressing.</p>;
@@ -56,7 +56,7 @@ export function DiscoverBrief({ lines }: { lines: readonly DiscoverBriefLine[] }
   return (
     <div className="flex flex-col gap-3">
       <div className="relative">
-        <ul ref={scroller.ref} aria-label="Brief" className={BRIEF_TRACK}>
+        <ul ref={trackRef} aria-label="Brief" className={BRIEF_TRACK}>
           {lines.map((line) => (
             <li
               key={`${line.label}:${line.text}`}

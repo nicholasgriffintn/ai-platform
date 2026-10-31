@@ -19,6 +19,7 @@ import {
 } from "@ngriffin_uk/polychat-library-client";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { getConversationRefetchInterval } from "../chat/conversation-polling.js";
 import { recoverUnacknowledgedConversation } from "../chat/pending-conversation.js";
@@ -39,7 +40,15 @@ const CHAT_QUERY_GC_TIME = 30 * 60 * 1000;
 
 export function useChats(options: ConversationListOptions = {}) {
   const { currentConversationId, isAuthenticated, isPro, locallyCreatedConversationIds, user } =
-    useChatStore();
+    useChatStore(
+      useShallow((state) => ({
+        currentConversationId: state.currentConversationId,
+        isAuthenticated: state.isAuthenticated,
+        isPro: state.isPro,
+        locallyCreatedConversationIds: state.locallyCreatedConversationIds,
+        user: state.user,
+      })),
+    );
   const localScope = getLocalChatScope(user?.id);
   const fetchSortBy = options.sortBy === "title" ? "updated" : (options.sortBy ?? "updated");
   const queryOptions = useMemo<Omit<ConversationListOptions, "after">>(
@@ -133,7 +142,17 @@ export function useChat(
     markConversationRemoteAvailable,
     currentConversationId,
     setConversationModelSelection,
-  } = useChatStore();
+  } = useChatStore(
+    useShallow((state) => ({
+      isAuthenticated: state.isAuthenticated,
+      isAuthenticationLoading: state.isAuthenticationLoading,
+      isPro: state.isPro,
+      locallyCreatedConversationIds: state.locallyCreatedConversationIds,
+      markConversationRemoteAvailable: state.markConversationRemoteAvailable,
+      currentConversationId: state.currentConversationId,
+      setConversationModelSelection: state.setConversationModelSelection,
+    })),
+  );
   const queryClient = useQueryClient();
   const streamSource = useStreamActivityStore((state) =>
     completion_id ? state.streams[completion_id]?.source : undefined,
@@ -283,7 +302,15 @@ export function useLoadEarlierChatMessages(completionId: string | undefined) {
 export function useDeleteChat() {
   const queryClient = useQueryClient();
   const { currentConversationId, isAuthenticated, isPro, setCurrentConversationId, user } =
-    useChatStore();
+    useChatStore(
+      useShallow((state) => ({
+        currentConversationId: state.currentConversationId,
+        isAuthenticated: state.isAuthenticated,
+        isPro: state.isPro,
+        setCurrentConversationId: state.setCurrentConversationId,
+        user: state.user,
+      })),
+    );
 
   return useMutation({
     mutationFn: async (completion_id: string) => {
@@ -315,7 +342,13 @@ export function useDeleteChat() {
 
 export function useSetAllChatsArchived() {
   const queryClient = useQueryClient();
-  const { isAuthenticated, isPro, user } = useChatStore();
+  const { isAuthenticated, isPro, user } = useChatStore(
+    useShallow((state) => ({
+      isAuthenticated: state.isAuthenticated,
+      isPro: state.isPro,
+      user: state.user,
+    })),
+  );
 
   return useMutation({
     mutationFn: async ({
@@ -351,7 +384,12 @@ export function useSetAllChatsArchived() {
 
 export function useDeleteAllLocalChats() {
   const queryClient = useQueryClient();
-  const { setCurrentConversationId, user } = useChatStore();
+  const { setCurrentConversationId, user } = useChatStore(
+    useShallow((state) => ({
+      setCurrentConversationId: state.setCurrentConversationId,
+      user: state.user,
+    })),
+  );
 
   return useMutation({
     mutationFn: async () => {
@@ -379,7 +417,13 @@ export function useDeleteAllRemoteChats() {
 
 export function useUpdateChatTitle() {
   const queryClient = useQueryClient();
-  const { isAuthenticated, isPro, user } = useChatStore();
+  const { isAuthenticated, isPro, user } = useChatStore(
+    useShallow((state) => ({
+      isAuthenticated: state.isAuthenticated,
+      isPro: state.isPro,
+      user: state.user,
+    })),
+  );
 
   return useMutation({
     mutationFn: async ({ completion_id, title }: { completion_id: string; title: string }) => {
@@ -410,7 +454,7 @@ export function useUpdateChatTitle() {
 export function useGenerateTitle(requestOptions?: ChatRequestOptions) {
   const queryClient = useQueryClient();
   const { determineStorageMode } = useConversationStorage(requestOptions);
-  const { user } = useChatStore();
+  const { user } = useChatStore(useShallow((state) => ({ user: state.user })));
 
   return useMutation({
     mutationFn: async ({

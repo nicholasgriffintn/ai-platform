@@ -114,5 +114,3 @@ export function useDiscoverPanelMotion(item: DiscoverItem | null) {
 
   return { open, shown, occupied, panelRef, feedRef, capture, playEntrance };
 }
-
-export type DiscoverPanelMotion = ReturnType<typeof useDiscoverPanelMotion>;

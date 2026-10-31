@@ -4,6 +4,7 @@ import {
   type AnalyticsEventProperties,
 } from "@ngriffin_uk/polychat-schemas/analytics";
 import { useCallback } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { captureClientException, trackClientEvent } from "../lib/analytics/client.js";
 
@@ -19,7 +20,9 @@ export type TrackEventProps = {
 };
 
 export function useTrackEvent() {
-  const { isAuthenticated, user } = useChatStore();
+  const { isAuthenticated, user } = useChatStore(
+    useShallow((state) => ({ isAuthenticated: state.isAuthenticated, user: state.user })),
+  );
 
   const trackEvent = useCallback(
     (event: TrackEventProps) => {

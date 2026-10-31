@@ -10,6 +10,7 @@ import {
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import type { ComposerCommandAction } from "@ngriffin_uk/polychat-utility-react";
 import { useCallback, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ChatSuggestionList, type ChatSuggestionLayout } from "../ChatSuggestionList.js";
 
@@ -37,7 +38,9 @@ export const ChatSuggestions = ({
   layout,
 }: ChatSuggestionsProps) => {
   const { trackEvent } = useTrackEvent();
-  const { isMobileLoading } = useUIStore();
+  const { isMobileLoading } = useUIStore(
+    useShallow((state) => ({ isMobileLoading: state.isMobileLoading })),
+  );
   const toggleTool = useToolsStore((state) => state.toggleTool);
   const isToolEnabled = useToolsStore((state) => state.isToolEnabled);
 

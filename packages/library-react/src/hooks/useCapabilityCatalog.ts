@@ -14,6 +14,7 @@ export const capabilityCatalogQueryKey = (projectId?: string) =>
 
 const CATALOG_STALE_TIME = 30 * 60 * 1000;
 const CATALOG_GC_TIME = 60 * 60 * 1000;
+const PERSONAL_CATALOG_STALE_TIME = 10 * 1000;
 
 export function useCapabilityCatalog(projectId?: string, options: { enabled?: boolean } = {}) {
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
@@ -23,7 +24,7 @@ export function useCapabilityCatalog(projectId?: string, options: { enabled?: bo
     queryKey: capabilityCatalogQueryKey(projectId),
     queryFn: () => fetchCapabilityCatalog(projectId),
     enabled: (options.enabled ?? true) && isAuthenticated && !isAuthenticationLoading,
-    staleTime: 0,
+    staleTime: PERSONAL_CATALOG_STALE_TIME,
     gcTime: CATALOG_GC_TIME,
   });
 }

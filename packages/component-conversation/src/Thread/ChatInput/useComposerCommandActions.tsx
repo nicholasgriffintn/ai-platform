@@ -49,6 +49,7 @@ import type {
 } from "@ngriffin_uk/polychat-utility-react";
 import { Archive, BookOpen, Brain, Cpu, Layers, ListFilter, Target } from "lucide-react";
 import { useCallback, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { getComposerCommandMenuState } from "../../Composer/composerCommandNavigation.js";
 import { MODEL_TOOL_ICONS } from "./modelToolIcons.js";
@@ -106,7 +107,27 @@ export function useComposerCommandActions({
     setSelectedTeammateTokenPosition,
     setUseMultiModel,
     useMultiModel,
-  } = useChatStore();
+  } = useChatStore(
+    useShallow((state) => ({
+      chatMode: state.chatMode,
+      computeSite: state.computeSite,
+      chatSettings: state.chatSettings,
+      isPro: state.isPro,
+      model: state.model,
+      modelTier: state.modelTier,
+      selectedAssistantAction: state.selectedAssistantAction,
+      selectedTeammateId: state.selectedTeammateId,
+      setChatMode: state.setChatMode,
+      setChatSettings: state.setChatSettings,
+      setModel: state.setModel,
+      setModelTier: state.setModelTier,
+      setSelectedAssistantAction: state.setSelectedAssistantAction,
+      setSelectedTeammateId: state.setSelectedTeammateId,
+      setSelectedTeammateTokenPosition: state.setSelectedTeammateTokenPosition,
+      setUseMultiModel: state.setUseMultiModel,
+      useMultiModel: state.useMultiModel,
+    })),
+  );
   const isComposingGoal = useChatStore((state) => state.isComposingGoal);
   const setComposingGoal = useChatStore((state) => state.setComposingGoal);
   const includeTeammates = assistantActionCatalog?.includeTeammates !== false;
@@ -635,7 +656,9 @@ export function useComposerCommandActions({
   );
 
   const selectActionItem = useCallback(
-    (item: AssistantActionItem, tokenText = getComposerInlineTokenText(item.label)) => {
+    (item: AssistantActionItem, inlineTokenText?: string) => {
+      const tokenText = inlineTokenText ?? getComposerInlineTokenText(item.label);
+
       if (!canUseTeammates) {
         return undefined;
       }

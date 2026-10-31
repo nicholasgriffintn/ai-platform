@@ -41,6 +41,7 @@ import { getErrorMessage, generateId } from "@ngriffin_uk/polychat-utility-core"
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 import { toast } from "sonner";
+import { useShallow } from "zustand/react/shallow";
 
 import { streamDeviceModelRun } from "../chat/device-run.js";
 import { resolveAcceptedResponse } from "../chat/run-command.js";
@@ -90,7 +91,25 @@ export function useStreamingResponse(
     markConversationRemoteAvailable,
     setModel,
     user,
-  } = useChatStore();
+  } = useChatStore(
+    useShallow((state) => ({
+      chatMode: state.chatMode,
+      computeSite: state.computeSite,
+      model: state.model,
+      chatSettings: state.chatSettings,
+      isAuthenticated: state.isAuthenticated,
+      isPro: state.isPro,
+      temporaryChat: state.temporaryChat,
+      temporaryChatsDefault: state.temporaryChatsDefault,
+      useMultiModel: state.useMultiModel,
+      modelTier: state.modelTier,
+      permissionMode: state.permissionMode,
+      selectedTeammateId: state.selectedTeammateId,
+      markConversationRemoteAvailable: state.markConversationRemoteAvailable,
+      setModel: state.setModel,
+      user: state.user,
+    })),
+  );
   const setUsageLimits = useUsageStore((state) => state.setUsageLimits);
   const beginStreamActivity = useStreamActivityStore((state) => state.beginStreamActivity);
   const completeStreamActivityMessage = useStreamActivityStore(

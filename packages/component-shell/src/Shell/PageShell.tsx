@@ -11,7 +11,7 @@ import {
 import type { ReactNode } from "react";
 
 import { ProductModeHeader } from "../Header/ProductModeHeader.js";
-import { ProductShell } from "./ProductShell.js";
+import { ProductShell, useInsideProductShell } from "./ProductShell.js";
 
 export interface PageShellProps {
   title?: string;
@@ -43,6 +43,7 @@ function PageShellRoot({
   headerTitleAs = "h1",
 }: PageShellProps) {
   const { headerContext, registeredHeader } = usePageShellHeaderRegistry();
+  const insideProductShell = useInsideProductShell();
 
   const effectiveTitle = registeredHeader?.title ?? title;
   const effectiveActions = registeredHeader ? (
@@ -71,29 +72,37 @@ function PageShellRoot({
 
   const header = registeredHeader ? productModeHeader : headerContent || productModeHeader;
 
+  const frame = (
+    <PageShellFrame
+      className={className}
+      fullBleed={fullBleed}
+      header={header}
+      notification={
+        isBeta ? (
+          <NotificationBar
+            title="Beta Feature"
+            description="Dynamic Apps is currently in beta. Some features may change, not work or be unavailable."
+          />
+        ) : null
+      }
+    >
+      {children}
+    </PageShellFrame>
+  );
+
   return (
     <PageShellHeaderContext.Provider value={headerContext}>
-      <ProductShell
-        sidebarContent={sidebarContent}
-        displayNavBar={displayNavBar ?? !header}
-        bgClassName={bgClassName}
-      >
-        <PageShellFrame
-          className={className}
-          fullBleed={fullBleed}
-          header={header}
-          notification={
-            isBeta ? (
-              <NotificationBar
-                title="Beta Feature"
-                description="Dynamic Apps is currently in beta. Some features may change, not work or be unavailable."
-              />
-            ) : null
-          }
+      {insideProductShell ? (
+        frame
+      ) : (
+        <ProductShell
+          sidebarContent={sidebarContent}
+          displayNavBar={displayNavBar ?? !header}
+          bgClassName={bgClassName}
         >
-          {children}
-        </PageShellFrame>
-      </ProductShell>
+          {frame}
+        </ProductShell>
+      )}
     </PageShellHeaderContext.Provider>
   );
 }

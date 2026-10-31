@@ -46,7 +46,7 @@ export function HomeConversationThread({
   const { completionId } = useParams<"completionId">();
   const modeConfig = useConversationLaunchModeConfig(urlModeConfig, completionId);
   const [delegateConversationId, setDelegateConversationId] = useState<string | null>(null);
-  const cancelDelegations = useCancelDelegations();
+  const { mutateAsync: cancelDelegations } = useCancelDelegations();
 
   useConversationRoute({
     surface: { kind: "personal" },
@@ -99,9 +99,21 @@ export function HomeConversationThread({
       ? conversationsGuide
       : null;
   const isWelcomeLoading = !hasModeWelcome && (isAuthenticationLoading || areConversationsLoading);
-  const effectiveModeConfig = useMemo<ThreadModeConfig>(
+  const welcomeTitle = hasModeWelcome ? modeConfig?.welcomeTitle : welcome.title;
+  const welcomeDescription = hasModeWelcome ? modeConfig?.welcomeDescription : welcome.description;
+  const threadModeConfig = useMemo<ThreadModeConfig>(
     () => ({
       ...modeConfig,
+      welcomeTitle,
+      welcomeDescription,
+      ...(firstVisitGuide
+        ? {
+            welcomeOpening: buildGuideOpening(firstVisitGuide),
+            welcomeSuggestions: buildGuideSuggestions(firstVisitGuide),
+            welcomeCapabilitySuggestions: false,
+          }
+        : {}),
+      welcomeLoading: isWelcomeLoading,
       agentApprovals,
       followUpQueue,
       onToolInteraction: async (toolName, action, data) => {
@@ -118,7 +130,7 @@ export function HomeConversationThread({
           data.action === "stop_all" &&
           typeof data.conversationId === "string"
         ) {
-          await cancelDelegations.mutateAsync(data.conversationId);
+          await cancelDelegations(data.conversationId);
 
           return true;
         }
@@ -126,26 +138,21 @@ export function HomeConversationThread({
         return (await modeConfig?.onToolInteraction?.(toolName, action, data)) ?? false;
       },
     }),
-    [agentApprovals, cancelDelegations, followUpQueue, modeConfig],
+    [
+      agentApprovals,
+      cancelDelegations,
+      firstVisitGuide,
+      followUpQueue,
+      isWelcomeLoading,
+      modeConfig,
+      welcomeDescription,
+      welcomeTitle,
+    ],
   );
 
   return (
     <>
-      <ConversationThread
-        modeConfig={{
-          ...effectiveModeConfig,
-          welcomeTitle: hasModeWelcome ? modeConfig?.welcomeTitle : welcome.title,
-          welcomeDescription: hasModeWelcome ? modeConfig?.welcomeDescription : welcome.description,
-          ...(firstVisitGuide
-            ? {
-                welcomeOpening: buildGuideOpening(firstVisitGuide),
-                welcomeSuggestions: buildGuideSuggestions(firstVisitGuide),
-                welcomeCapabilitySuggestions: false,
-              }
-            : {}),
-          welcomeLoading: isWelcomeLoading,
-        }}
-      />
+      <ConversationThread modeConfig={threadModeConfig} />
       <Dialog
         open={delegateConversationId !== null}
         onOpenChange={(open) => {

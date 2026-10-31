@@ -1,6 +1,7 @@
 import { useToolsStore, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useModels, useModelToolOptions } from "@ngriffin_uk/polychat-library-react";
 import { Layers } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ToolToggleMenu } from "../../../ToolToggleMenu.js";
 import { MODEL_TOOL_ICONS } from "../modelToolIcons.js";
@@ -11,8 +12,21 @@ interface ToolTogglesProps {
 }
 
 export const ToolToggles = ({ isDisabled = false, showHeading = true }: ToolTogglesProps) => {
-  const { model, chatMode, isPro, useMultiModel, setUseMultiModel } = useChatStore();
-  const { selectedTools, setSelectedTools } = useToolsStore();
+  const { model, chatMode, isPro, useMultiModel, setUseMultiModel } = useChatStore(
+    useShallow((state) => ({
+      model: state.model,
+      chatMode: state.chatMode,
+      isPro: state.isPro,
+      useMultiModel: state.useMultiModel,
+      setUseMultiModel: state.setUseMultiModel,
+    })),
+  );
+  const { selectedTools, setSelectedTools } = useToolsStore(
+    useShallow((state) => ({
+      selectedTools: state.selectedTools,
+      setSelectedTools: state.setSelectedTools,
+    })),
+  );
   const { data: apiModels } = useModels();
 
   const modelCapabilities = model ? apiModels?.[model] : undefined;

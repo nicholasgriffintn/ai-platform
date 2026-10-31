@@ -2,6 +2,7 @@ import { isModelToolId } from "@ngriffin_uk/polychat-library-chat/model-tools";
 import { useToolsStore } from "@ngriffin_uk/polychat-library-client";
 import { readToolIds, type TeammateResponse, type ChatMode } from "@ngriffin_uk/polychat-schemas";
 import { useEffect, useRef } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 type TeammateWithTools = Pick<TeammateResponse, "id" | "enabled_tools">;
 
@@ -18,7 +19,14 @@ export const useTeammateToolDefaults = ({
   chatMode: ChatMode;
 }) => {
   const { selectedTools, setSelectedTools, setToolSelectionMode, toolSelectionMode } =
-    useToolsStore();
+    useToolsStore(
+      useShallow((state) => ({
+        selectedTools: state.selectedTools,
+        setSelectedTools: state.setSelectedTools,
+        setToolSelectionMode: state.setToolSelectionMode,
+        toolSelectionMode: state.toolSelectionMode,
+      })),
+    );
   const hadTeammateToolsRef = useRef(false);
 
   useEffect(() => {

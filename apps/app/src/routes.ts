@@ -1,22 +1,24 @@
-import { type RouteConfig, index, route } from "@react-router/dev/routes";
+import { type RouteConfig, index, layout, route } from "@react-router/dev/routes";
 
 export default [
-  index("pages/home.tsx"),
-  route("/chat", "pages/chat/layout.tsx", [
-    route("attention", "pages/chat/attention.tsx"),
-    route("files/*", "pages/chat/files.tsx"),
-    route("teammates", "pages/chat/teammates.tsx"),
-    route("groups/:conversationId", "pages/chat/group.tsx"),
-    route("notebooks/:notebookId/:conversationId?", "pages/chat/notebook.tsx"),
-    route("teammates/:teammateId/settings", "pages/chat/teammate-settings.tsx"),
-    route("teammates/:teammateId/context", "pages/chat/teammate-context.tsx"),
-    route("teammates/:teammateId", "pages/chat/teammate.tsx"),
-    route("plugins", "pages/chat/plugins.tsx"),
-    route("scheduled", "pages/chat/scheduled.tsx"),
-    route("apps/:appId/*", "pages/chat/app.tsx"),
-    route("tools/:toolId", "pages/chat/tool.tsx"),
-    route("skills/:skillId", "pages/chat/skill.tsx"),
-    route(":completionId?", "pages/chat/index.tsx"),
+  layout("components/Core/ChatModeLayout.tsx", [
+    index("pages/home.tsx"),
+    route("/chat", "pages/chat/layout.tsx", [
+      route("attention", "pages/chat/attention.tsx"),
+      route("files/*", "pages/chat/files.tsx"),
+      route("teammates", "pages/chat/teammates.tsx"),
+      route("groups/:conversationId", "pages/chat/group.tsx"),
+      route("notebooks/:notebookId/:conversationId?", "pages/chat/notebook.tsx"),
+      route("teammates/:teammateId/settings", "pages/chat/teammate-settings.tsx"),
+      route("teammates/:teammateId/context", "pages/chat/teammate-context.tsx"),
+      route("teammates/:teammateId", "pages/chat/teammate.tsx"),
+      route("plugins", "pages/chat/plugins.tsx"),
+      route("scheduled", "pages/chat/scheduled.tsx"),
+      route("apps/:appId/*", "pages/chat/app.tsx"),
+      route("tools/:toolId", "pages/chat/tool.tsx"),
+      route("skills/:skillId", "pages/chat/skill.tsx"),
+      route(":completionId?", "pages/chat/index.tsx"),
+    ]),
   ]),
   route("/work", "pages/work/layout.tsx", [
     index("pages/work/index.tsx"),

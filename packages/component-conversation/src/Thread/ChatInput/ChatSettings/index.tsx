@@ -19,6 +19,7 @@ import {
   type ReasoningEffort,
 } from "@ngriffin_uk/polychat-schemas";
 import { useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { ChatSettingsPanel } from "../../../Composer/ChatSettingsPanel.js";
 
@@ -56,7 +57,20 @@ export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
     useMultiModel,
     permissionMode,
     setPermissionMode,
-  } = useChatStore();
+  } = useChatStore(
+    useShallow((state) => ({
+      chatMode: state.chatMode,
+      computeSite: state.computeSite,
+      chatSettings: state.chatSettings,
+      isPro: state.isPro,
+      model: state.model,
+      setChatSettings: state.setChatSettings,
+      setUseMultiModel: state.setUseMultiModel,
+      useMultiModel: state.useMultiModel,
+      permissionMode: state.permissionMode,
+      setPermissionMode: state.setPermissionMode,
+    })),
+  );
   const [showSettings, setShowSettings] = useState(false);
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
   const webLLMModels = useWebLLMModels({ enabled: computeSite === "browser" });

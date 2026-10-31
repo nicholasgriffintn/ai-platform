@@ -34,6 +34,7 @@ import {
 import type { HomeChatModeId, ModelSelectionChangeHandler } from "@ngriffin_uk/polychat-schemas";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
+import { useShallow } from "zustand/react/shallow";
 
 import { LiveChatModeControls, LiveSessionComposerControls } from "./LiveChatModeControls.js";
 
@@ -53,7 +54,20 @@ export function useHomeChatModeConfig(): {
     isPro,
     livePushToTalk,
     setLivePushToTalk,
-  } = useChatStore();
+  } = useChatStore(
+    useShallow((state) => ({
+      currentConversationId: state.currentConversationId,
+      homeChatMode: state.homeChatMode,
+      setHomeChatMode: state.setHomeChatMode,
+      setChatMode: state.setChatMode,
+      setSelectedTeammateId: state.setSelectedTeammateId,
+      model: state.model,
+      setModel: state.setModel,
+      isPro: state.isPro,
+      livePushToTalk: state.livePushToTalk,
+      setLivePushToTalk: state.setLivePushToTalk,
+    })),
+  );
   const { data: currentConversation } = useChat(currentConversationId);
   const { data: apiModels = EMPTY_MODEL_CONFIG } = useModels();
   const { data: realtimeProviderOptions = [], isLoading: isLoadingRealtimeProviders } =

@@ -1,6 +1,7 @@
 import { authService, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import type { UserSettings } from "@ngriffin_uk/polychat-schemas/user-profile";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useShallow } from "zustand/react/shallow";
 
 import { MODELS_QUERY_KEY } from "../chat/useModels.js";
 import { useUsageStore } from "../state/usageStore.js";
@@ -20,7 +21,19 @@ export function useAuthStatus() {
     setHasApiKey,
     setUserSettings,
     clearAuthenticatedUserConfiguration,
-  } = useChatStore();
+  } = useChatStore(
+    useShallow((state) => ({
+      isAuthenticated: state.isAuthenticated,
+      isAuthenticationLoading: state.isAuthenticationLoading,
+      user: state.user,
+      userSettings: state.userSettings,
+      setIsAuthenticationLoading: state.setIsAuthenticationLoading,
+      setAuthenticatedUserConfiguration: state.setAuthenticatedUserConfiguration,
+      setHasApiKey: state.setHasApiKey,
+      setUserSettings: state.setUserSettings,
+      clearAuthenticatedUserConfiguration: state.clearAuthenticatedUserConfiguration,
+    })),
+  );
   const queryClient = useQueryClient();
 
   const authStatusQuery = useQuery({

@@ -7,6 +7,7 @@ import { useUIStore } from "@ngriffin_uk/polychat-library-react";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { containsEventTarget } from "@ngriffin_uk/polychat-utility-react";
 import { type KeyboardEvent, useCallback, useEffect, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useModelSelectorLayout } from "./useModelSelectorLayout.js";
 
@@ -35,7 +36,7 @@ export function useModelSelectorController({
   onOpen,
   onClose,
 }: UseModelSelectorControllerOptions) {
-  const { isMobile } = useUIStore();
+  const { isMobile } = useUIStore(useShallow((state) => ({ isMobile: state.isMobile })));
   const [hoverPreview, setHoverPreview] = useState<ModelHoverPreviewState | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);

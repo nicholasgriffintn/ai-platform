@@ -44,6 +44,7 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
+import { useShallow } from "zustand/react/shallow";
 
 import { ComposerCommandActionsProvider } from "../../Composer/commandActions.js";
 import { ComposerActionMenu } from "../../Composer/ComposerActionMenu.js";
@@ -236,7 +237,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     },
     ref,
   ) => {
-    const { isMobile } = useUIStore();
+    const { isMobile } = useUIStore(useShallow((state) => ({ isMobile: state.isMobile })));
     const queryClient = useQueryClient();
     const {
       model,
@@ -247,7 +248,18 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       selectedAssistantAction,
       setSelectedTeammateTokenPosition,
       setSelectedAssistantAction,
-    } = useChatStore();
+    } = useChatStore(
+      useShallow((state) => ({
+        model: state.model,
+        chatMode: state.chatMode,
+        isAuthenticationLoading: state.isAuthenticationLoading,
+        selectedTeammateId: state.selectedTeammateId,
+        selectedTeammateTokenPosition: state.selectedTeammateTokenPosition,
+        selectedAssistantAction: state.selectedAssistantAction,
+        setSelectedTeammateTokenPosition: state.setSelectedTeammateTokenPosition,
+        setSelectedAssistantAction: state.setSelectedAssistantAction,
+      })),
+    );
     const isPro = useChatStore((state) => state.isPro);
     const { currentConversationId } = useConversationScope();
     const { composerInput, setComposerInput } = useComposerDraft();
@@ -493,6 +505,59 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
 
     const handleComposerInput = (value: string) => setComposerInput(value);
 
+    const uploadFiles = async (files: File[]) => {
+      const uploadedAttachments: AttachmentData[] = [];
+      const uploadResults = await Promise.allSettled(
+        files.map((file) =>
+          uploadComposerAttachment(file, {
+            isImageModel,
+            isMultimodalModel,
+            isTextToImageOnlyModel,
+            supportsAudio,
+            supportsDocuments,
+            projectId: attachmentProjectId,
+          }),
+        ),
+      );
+
+      for (const result of uploadResults) {
+        if (result.status === "rejected") {
+          toast.error("Couldn't upload file", {
+            description: result.reason instanceof Error ? result.reason.message : "Unknown error",
+          });
+          continue;
+        }
+
+        if ("error" in result.value) {
+          toast.error("Couldn't attach file", { description: result.value.error });
+        } else {
+          uploadedAttachments.push(result.value.attachment);
+        }
+      }
+
+      if (uploadedAttachments.length > 0) {
+        setSelectedAttachments((currentAttachments) => [
+          ...currentAttachments,
+          ...uploadedAttachments,
+        ]);
+        await queryClient.invalidateQueries({ queryKey: SOURCE_QUERY_KEYS.all });
+      }
+    };
+
+    const reportUploadFailure = (error: unknown) => {
+      console.error("Failed to upload file:", error);
+      toast.error("Couldn't upload file", {
+        description: error instanceof Error ? error.message : "Unknown error",
+      });
+    };
+
+    const finishUpload = () => {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    };
+
     const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files ?? []);
 
@@ -500,55 +565,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
         return;
       }
 
-      try {
-        setIsUploading(true);
-        const uploadedAttachments: AttachmentData[] = [];
-        const uploadResults = await Promise.allSettled(
-          files.map((file) =>
-            uploadComposerAttachment(file, {
-              isImageModel,
-              isMultimodalModel,
-              isTextToImageOnlyModel,
-              supportsAudio,
-              supportsDocuments,
-              projectId: attachmentProjectId,
-            }),
-          ),
-        );
-
-        for (const result of uploadResults) {
-          if (result.status === "rejected") {
-            toast.error("Couldn't upload file", {
-              description: result.reason instanceof Error ? result.reason.message : "Unknown error",
-            });
-            continue;
-          }
-
-          if ("error" in result.value) {
-            toast.error("Couldn't attach file", { description: result.value.error });
-          } else {
-            uploadedAttachments.push(result.value.attachment);
-          }
-        }
-
-        if (uploadedAttachments.length > 0) {
-          setSelectedAttachments((currentAttachments) => [
-            ...currentAttachments,
-            ...uploadedAttachments,
-          ]);
-          await queryClient.invalidateQueries({ queryKey: SOURCE_QUERY_KEYS.all });
-        }
-      } catch (error) {
-        console.error("Failed to upload file:", error);
-        toast.error("Couldn't upload file", {
-          description: error instanceof Error ? error.message : "Unknown error",
-        });
-      } finally {
-        setIsUploading(false);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-      }
+      setIsUploading(true);
+      await uploadFiles(files).catch(reportUploadFailure);
+      finishUpload();
     };
 
     const clearSelectedAttachments = () => {

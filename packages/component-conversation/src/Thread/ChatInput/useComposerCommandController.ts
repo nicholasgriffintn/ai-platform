@@ -19,6 +19,7 @@ import type {
   ComposerCommandAction,
 } from "@ngriffin_uk/polychat-utility-react";
 import { type ReactNode, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { useComposerCommandActions } from "./useComposerCommandActions.js";
 
@@ -50,7 +51,14 @@ export function useComposerCommandController({
   toolSelectionLocked?: boolean;
 }) {
   const { chatMode, selectedTeammateId, selectedTeammateTokenPosition, selectedAssistantAction } =
-    useChatStore();
+    useChatStore(
+      useShallow((state) => ({
+        chatMode: state.chatMode,
+        selectedTeammateId: state.selectedTeammateId,
+        selectedTeammateTokenPosition: state.selectedTeammateTokenPosition,
+        selectedAssistantAction: state.selectedAssistantAction,
+      })),
+    );
   const { composerInput, setComposerInput } = useComposerDraft();
   const includeTeammates = assistantActionCatalog?.includeTeammates !== false;
   const { teammates } = useTeammates({ enabled: includeTeammates });

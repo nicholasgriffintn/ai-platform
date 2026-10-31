@@ -1,6 +1,7 @@
 import { AppCard as ControlledAppCard } from "@ngriffin_uk/polychat-component-capabilities";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import type { CapabilityCatalogItem as AppListItem } from "@ngriffin_uk/polychat-schemas";
+import { useShallow } from "zustand/react/shallow";
 
 interface AppCardProps {
   app: AppListItem;
@@ -9,7 +10,9 @@ interface AppCardProps {
 }
 
 export const AppCard = ({ app, onSelect, isWrappedInGroup = false }: AppCardProps) => {
-  const { isAuthenticated, isPro } = useChatStore();
+  const { isAuthenticated, isPro } = useChatStore(
+    useShallow((state) => ({ isAuthenticated: state.isAuthenticated, isPro: state.isPro })),
+  );
 
   return (
     <ControlledAppCard
