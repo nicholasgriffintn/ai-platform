@@ -9,6 +9,7 @@ import {
   type ListPage,
   type Source,
   type SourceCollection,
+  type SourceCollectionKind,
   type SourceGenerationType,
   type SourceSummary,
   type UpdateSourceCollectionInput,
@@ -33,6 +34,7 @@ import {
 } from "~/modules/knowledge/domain/envelope";
 import { MemoryManager } from "~/modules/memory/application/manager";
 import { writeSourceContent } from "~/modules/sources/application/content";
+import { listSourceMetadata } from "~/modules/sources/domain/list-metadata";
 import type {
   SourceCollectionRecord,
   SourceRecord,
@@ -91,7 +93,7 @@ export function toSourceSummary(source: Source): SourceSummary {
 export function formatSourceSummary(record: SourceSummaryRecord): SourceSummary {
   const { content: _content, ...summary } = formatSource({ ...record, content: null });
 
-  return summary;
+  return { ...summary, metadata: listSourceMetadata(summary.metadata) };
 }
 
 function formatCollection(record: SourceCollectionRecord): SourceCollection {
@@ -464,12 +466,13 @@ export async function createSourceCollection(
 export async function listSourceCollections(
   context: ServiceContext,
   userId: number,
-  projectId?: string,
+  filters: { projectId?: string; kinds?: readonly SourceCollectionKind[] } = {},
 ): Promise<ListPage<SourceCollection>> {
+  const { projectId, kinds } = filters;
   const records = projectId
     ? (await requireProjectAccess(context, projectId),
-      await context.repositories.get(SourceRepository).listProjectCollections(projectId))
-    : await context.repositories.get(SourceRepository).listPersonalCollections(userId);
+      await context.repositories.get(SourceRepository).listProjectCollections(projectId, kinds))
+    : await context.repositories.get(SourceRepository).listPersonalCollections(userId, kinds);
 
   return listPageOf(records.map(formatCollection), (collection) => collection.id);
 }

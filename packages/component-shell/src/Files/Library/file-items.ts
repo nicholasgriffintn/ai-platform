@@ -8,6 +8,7 @@ import {
   type MemoryDocumentSummary,
   type OutputSummary,
   type SourceCollection,
+  type SourceCollectionKind,
   type SourceSummary,
 } from "@ngriffin_uk/polychat-schemas";
 import {
@@ -31,6 +32,18 @@ export type FileType =
   | "connected"
   | "memory"
   | "folder";
+
+export const LISTED_FOLDER_KINDS: readonly SourceCollectionKind[] = [
+  "general",
+  "memory",
+  "podcast",
+];
+
+export const OPENABLE_FOLDER_KINDS: readonly SourceCollectionKind[] = [
+  ...LISTED_FOLDER_KINDS,
+  "topic",
+  "entity",
+];
 
 export const FILE_TYPE_LABELS: Record<FileType, string> = {
   result: "Results",

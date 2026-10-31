@@ -344,12 +344,22 @@ export class SourceRepository extends BaseRepository {
     return collection;
   }
 
-  async listPersonalCollections(userId: number): Promise<SourceCollectionRecord[]> {
-    return this.listCollections("sc.created_by_user_id = ? AND sc.project_id IS NULL", [userId]);
+  async listPersonalCollections(
+    userId: number,
+    kinds?: readonly SourceCollectionKind[],
+  ): Promise<SourceCollectionRecord[]> {
+    return this.listCollections(
+      "sc.created_by_user_id = ? AND sc.project_id IS NULL",
+      [userId],
+      kinds,
+    );
   }
 
-  async listProjectCollections(projectId: string): Promise<SourceCollectionRecord[]> {
-    return this.listCollections("sc.project_id = ?", [projectId]);
+  async listProjectCollections(
+    projectId: string,
+    kinds?: readonly SourceCollectionKind[],
+  ): Promise<SourceCollectionRecord[]> {
+    return this.listCollections("sc.project_id = ?", [projectId], kinds);
   }
 
   async getCollectionSummary(collectionId: string): Promise<SourceCollectionRecord | null> {
@@ -561,17 +571,20 @@ export class SourceRepository extends BaseRepository {
   private async listCollections(
     where: string,
     values: unknown[],
+    kinds?: readonly SourceCollectionKind[],
   ): Promise<SourceCollectionRecord[]> {
+    const kindFilter = kinds?.length ? ` AND sc.kind IN (${kinds.map(() => "?").join(", ")})` : "";
+
     return this.runQuery<SourceCollectionRecord>(
       `SELECT sc.*, COUNT(s.id) AS source_count,
          (SELECT COUNT(*) FROM resource_link ol WHERE ol.kind = 'output_collection' AND ol.collection_id = sc.id) AS output_count
 			 FROM resource_collection sc
 			 LEFT JOIN resource_link scm ON scm.kind = 'source_collection' AND scm.collection_id = sc.id
          LEFT JOIN ${sourceResourceSql} s ON s.id = scm.source_id AND ${sourceVisibilitySql("s")}
-			 WHERE sc.collection_type = 'source' AND ${where}
+			 WHERE sc.collection_type = 'source' AND ${where}${kindFilter}
 			 GROUP BY sc.id
 			 ORDER BY sc.updated_at DESC, sc.created_at DESC`,
-      values,
+      kinds?.length ? [...values, ...kinds] : values,
     );
   }
 }

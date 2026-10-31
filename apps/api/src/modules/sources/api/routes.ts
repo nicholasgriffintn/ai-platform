@@ -19,6 +19,7 @@ import {
   outputListResponseSchema,
   projectKnowledgeSearchResponseSchema,
   setProjectContextSourcesSchema,
+  sourceCollectionListQuerySchema,
   sourceCollectionListResponseSchema,
   sourceCollectionSchema,
   sourceListQuerySchema,
@@ -577,12 +578,15 @@ defineResource(app, { idParam: "source_id", tags: ["sources"] }, (sources) => {
     .list({
       auth: true,
       summary: "List source collections",
-      querySchema: projectQuerySchema,
+      querySchema: sourceCollectionListQuerySchema,
       responses: {
         200: { description: "Collections", schema: sourceCollectionListResponseSchema },
       },
       handler: ({ query, serviceContext, user }) =>
-        listSourceCollections(serviceContext, user.id, query.project_id),
+        listSourceCollections(serviceContext, user.id, {
+          projectId: query.project_id,
+          kinds: query.kinds,
+        }),
     })
     .create({
       auth: true,

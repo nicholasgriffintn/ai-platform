@@ -98,6 +98,11 @@ const csvList = <TSchema extends z.ZodType>(schema: TSchema) =>
     z.array(schema),
   );
 
+export const sourceCollectionListQuerySchema = z.object({
+  project_id: z.string().min(1).optional(),
+  kinds: csvList(sourceCollectionKindSchema).optional(),
+});
+
 export const knowledgeSearchQuerySchema = z
   .object({
     project_id: z.string().min(1).optional(),

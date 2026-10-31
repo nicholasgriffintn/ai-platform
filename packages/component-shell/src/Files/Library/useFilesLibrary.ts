@@ -9,7 +9,9 @@ import {
 
 import {
   folderToFileItem,
+  LISTED_FOLDER_KINDS,
   memoryToFileItem,
+  OPENABLE_FOLDER_KINDS,
   outputToFileItem,
   sourceToFileItem,
   type FileItem,
@@ -35,13 +37,11 @@ export function useFilesLibrary({
   );
   const folderOutputs = useCollectionOutputs(folderId);
   const memory = useMemoryDocuments(projectId);
-  const collections = useSourceCollections(projectId);
-  const collectionFolders = (collections.data ?? []).filter(
-    (collection) => collection.kind !== "context",
-  );
-  const folders = collectionFolders.filter(
-    (folder) => folder.kind !== "topic" && folder.kind !== "entity",
-  );
+  const collections = useSourceCollections(projectId, {
+    kinds: folderId ? OPENABLE_FOLDER_KINDS : LISTED_FOLDER_KINDS,
+  });
+  const collectionFolders = collections.data ?? [];
+  const folders = collectionFolders.filter((folder) => LISTED_FOLDER_KINDS.includes(folder.kind));
 
   const items: FileItem[] = [
     ...(includes("made")

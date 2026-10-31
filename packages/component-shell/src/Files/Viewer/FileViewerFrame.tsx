@@ -15,7 +15,7 @@ import { History, Maximize2, MessageSquare, MessagesSquare, SquarePen } from "lu
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router";
 
-import type { FileItem } from "../Library/file-items.js";
+import { LISTED_FOLDER_KINDS, type FileItem } from "../Library/file-items.js";
 import { FileActionDialogs } from "../Library/FileActionDialogs.js";
 import { FileItemMenuItems } from "../Library/FileItemMenu.js";
 import { FileTypeIcon } from "../Library/FilePreview.js";
@@ -137,7 +137,7 @@ export function FileViewerFrame({
   chrome: FileViewerChrome;
 }) {
   const navigate = useNavigate();
-  const { data: folders } = useSourceCollections(projectId);
+  const { data: folders } = useSourceCollections(projectId, { kinds: LISTED_FOLDER_KINDS });
   const conversations = useSubjectConversations(subject);
   const conversationCount = conversations.data?.length ?? 0;
 

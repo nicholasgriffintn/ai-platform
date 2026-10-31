@@ -10,10 +10,12 @@ export async function ensureFolder(
   folder: { projectId: string | null; title: string; kind: "general" | "podcast" },
 ): Promise<{ id: string; created: boolean }> {
   const name = folder.title.trim();
-  const folders = await listSourceCollections(context, userId, folder.projectId ?? undefined);
+  const folders = await listSourceCollections(context, userId, {
+    projectId: folder.projectId ?? undefined,
+    kinds: [folder.kind],
+  });
   const existing = folders.data.find(
-    (candidate) =>
-      candidate.kind === folder.kind && candidate.title.toLowerCase() === name.toLowerCase(),
+    (candidate) => candidate.title.toLowerCase() === name.toLowerCase(),
   );
 
   if (existing) {

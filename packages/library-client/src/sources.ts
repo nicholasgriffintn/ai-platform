@@ -5,6 +5,7 @@ import type {
   OutputSummary,
   Source,
   SourceCollection,
+  SourceCollectionKind,
   SourceGenerationType,
   SourceKind,
   SourceSummary,
@@ -31,6 +32,7 @@ import type {
 
 import { fetchApiData as request } from "./fetch-wrapper.js";
 import { apiMediaUrl } from "./media-url.js";
+import { withQuery } from "./resource.js";
 
 export interface SourceListFilters {
   projectId?: string;
@@ -242,10 +244,16 @@ export async function deleteSource(sourceId: string): Promise<void> {
   await request(`/sources/${encodeURIComponent(sourceId)}`, { method: "DELETE" });
 }
 
-export async function listSourceCollections(projectId?: string): Promise<SourceCollection[]> {
-  const suffix = projectId ? `?project_id=${encodeURIComponent(projectId)}` : "";
+export async function listSourceCollections(
+  projectId?: string,
+  kinds?: readonly SourceCollectionKind[],
+): Promise<SourceCollection[]> {
+  const path = withQuery("/sources/collections", {
+    project_id: projectId,
+    kinds: kinds?.join(","),
+  });
 
-  return (await request<ListPage<SourceCollection>>(`/sources/collections${suffix}`)).data;
+  return (await request<ListPage<SourceCollection>>(path)).data;
 }
 
 export async function createSourceCollection(

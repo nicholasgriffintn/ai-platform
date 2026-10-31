@@ -41,6 +41,7 @@ import {
   type UpdateSourceCollectionInput,
   type UpdateSourceInput,
   type Source,
+  type SourceCollectionKind,
   type SourceGenerationType,
   type SourceKind,
   type SourceSummary,
@@ -74,6 +75,8 @@ export const SOURCE_QUERY_KEYS = {
   lists: ["sources", "list"] as const,
   revisions: (sourceId: string) => ["sources", "revisions", sourceId] as const,
   collections: (projectId?: string) => ["sources", "collections", projectId] as const,
+  collectionKinds: (projectId?: string, kinds?: readonly SourceCollectionKind[]) =>
+    ["sources", "collections", projectId, kinds] as const,
   projectContext: (projectId: string) => ["sources", "project-context", projectId] as const,
 };
 
@@ -134,10 +137,15 @@ export function useSource(sourceId: string | null) {
   });
 }
 
-export function useSourceCollections(projectId?: string) {
+export function useSourceCollections(
+  projectId?: string,
+  options: { kinds?: readonly SourceCollectionKind[] } = {},
+) {
+  const { kinds } = options;
+
   return useQuery({
-    queryKey: SOURCE_QUERY_KEYS.collections(projectId),
-    queryFn: () => listSourceCollections(projectId),
+    queryKey: SOURCE_QUERY_KEYS.collectionKinds(projectId, kinds),
+    queryFn: () => listSourceCollections(projectId, kinds),
   });
 }
 
