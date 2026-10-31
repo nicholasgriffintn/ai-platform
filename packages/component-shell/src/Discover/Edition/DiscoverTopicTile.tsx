@@ -52,17 +52,20 @@ export function DiscoverTopicTile({
     <button
       type="button"
       aria-pressed={selected}
+      data-discover-item={`card:${card.id}`}
       onClick={() => onSelect(card)}
       className={cn(
-        "group relative aspect-[4/5] w-full overflow-hidden rounded-2xl text-left ring-offset-2 ring-offset-canvas transition focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none",
+        "group relative aspect-[4/5] w-full overflow-hidden rounded-2xl text-left ring-offset-2 ring-offset-canvas transition focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none active:scale-[.98] motion-reduce:active:scale-100",
         selected && "ring-2 ring-active-work",
         hidden && "opacity-40 saturate-0",
       )}
     >
-      <DiscoverCover
-        card={card}
-        className="absolute inset-0 transition-transform duration-500 group-hover:scale-[1.04] motion-reduce:transition-none"
-      />
+      <span data-discover-art className="absolute inset-0">
+        <DiscoverCover
+          card={card}
+          className="absolute inset-0 transition-transform duration-500 group-hover:scale-[1.04] motion-reduce:transition-none"
+        />
+      </span>
       {following && (
         <span className="absolute top-2 left-2 rounded-full bg-black/55 px-2 py-0.5 text-[0.65rem] font-medium text-white backdrop-blur">
           Following

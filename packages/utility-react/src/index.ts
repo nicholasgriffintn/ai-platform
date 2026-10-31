@@ -9,6 +9,8 @@ export * from "./useCopyToClipboard.js";
 export * from "./useCrossfadeLoop.js";
 export * from "./useDebouncedValue.js";
 export * from "./useElementSize.js";
+export * from "./useHorizontalScroller.js";
+export * from "./useLingeringValue.js";
 export * from "./useElementWidth.js";
 export * from "./useFileUpload.js";
 export * from "./useKeyHold.js";

@@ -73,12 +73,10 @@ function phaseText(
 export function DiscoverWindDownStage({
   windDownId,
   story,
-  onClose,
   onPlayingChange,
 }: {
   windDownId: string | null;
   story?: { retrying: boolean; onRetry: () => void };
-  onClose: () => void;
   onPlayingChange: (playing: boolean) => void;
 }) {
   const windDown = useDiscoverWindDown(windDownId).data;
@@ -122,7 +120,6 @@ export function DiscoverWindDownStage({
       eyebrow={story ? "Tonight's story" : "Wind down"}
       title={!choosing && windDown ? windDown.title : "Something quieter"}
       subtitle="A calm voice, or none, over a quiet sound. Slide between the two."
-      onClose={onClose}
     >
       <MediaStage
         visual={

@@ -1,44 +1,43 @@
 import { MediaNotice, MediaNoticeAction } from "@ngriffin_uk/polychat-component-ui";
-import { useDiscoverEpisode } from "@ngriffin_uk/polychat-library-react";
 import type { DiscoverEdition } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { Clapperboard, RotateCcw } from "lucide-react";
 
 import { episodeStatus } from "../../Episode/episode-status.js";
-import { EpisodePlayer, episodeHeading } from "../../Episode/EpisodePlayer.js";
+import {
+  EpisodePlayerView,
+  episodeHeading,
+  type EpisodePlayerState,
+} from "../../Episode/EpisodePlayer.js";
 import { DiscoverStage } from "./DiscoverStage.js";
 
 export function DiscoverEpisodeStage({
   edition,
+  player,
   awaiting,
   isRequesting,
   requestError,
   onRequest,
-  onClose,
   onPlayingChange,
 }: {
   edition: DiscoverEdition;
+  player: EpisodePlayerState;
   awaiting: boolean;
   isRequesting: boolean;
   requestError: unknown;
   onRequest: () => void;
-  onClose: () => void;
   onPlayingChange: (playing: boolean) => void;
 }) {
-  const episode = useDiscoverEpisode(edition.episodeId).data;
+  const { episode } = player;
   const status = episodeStatus(edition, episode, awaiting);
   const topic = edition.interests[0]?.topic ?? null;
   const heading = episodeHeading(episode);
 
   return (
-    <DiscoverStage
-      eyebrow={heading.eyebrow}
-      title={heading.title}
-      subtitle={heading.recap}
-      onClose={onClose}
-    >
-      <EpisodePlayer
-        episodeId={edition.episodeId}
+    <DiscoverStage eyebrow={heading.eyebrow} title={heading.title} subtitle={heading.recap}>
+      <EpisodePlayerView
+        player={player}
+        seasonAction={false}
         onPlayingChange={onPlayingChange}
         placeholder={
           edition.episodeOverBudget ? (

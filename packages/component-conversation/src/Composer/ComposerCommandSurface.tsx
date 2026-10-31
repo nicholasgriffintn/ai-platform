@@ -34,7 +34,7 @@ function ContextChip({
 }: {
   children: ReactNode;
   className: string;
-  kind: "action" | "teammate" | "attachment" | "mode" | "skill";
+  kind: "action" | "teammate" | "attachment" | "mode" | "skill" | "subject";
 }) {
   return (
     <span
@@ -71,6 +71,12 @@ interface ComposerAttachmentChipState {
   label: string;
   onClear?: () => void;
   preview: ReactNode;
+}
+
+export interface ComposerSubjectChip {
+  label: string;
+  preview: ReactNode;
+  onClear?: () => void;
 }
 
 export interface ComposerGoalChipState {
@@ -111,6 +117,7 @@ export function ComposerAttachmentChips({
 export function ComposerCommandChips(
   props: ComposerCommandsState & {
     attachments?: ComposerAttachmentChipState[];
+    subject?: ComposerSubjectChip;
     goal?: ComposerGoalChipState;
     hideTeammateChip?: boolean;
     onClearMode?: () => void;
@@ -123,12 +130,39 @@ export function ComposerCommandChips(
 
   const shouldShowTeammate = selectedTeammate && !props.hideTeammateChip;
 
-  if (!props.attachments?.length && !activeMode && !shouldShowTeammate && !props.goal) {
+  if (
+    !props.attachments?.length &&
+    !activeMode &&
+    !shouldShowTeammate &&
+    !props.goal &&
+    !props.subject
+  ) {
     return null;
   }
 
   return (
     <div className="flex flex-wrap items-center gap-2 px-3 pt-3">
+      {props.subject && (
+        <ContextChip
+          kind="subject"
+          className="min-w-0 border-border bg-surface pl-1 font-normal text-muted-foreground"
+        >
+          <span
+            aria-hidden
+            className="flex size-5 shrink-0 items-center justify-center overflow-hidden rounded"
+          >
+            {props.subject.preview}
+          </span>
+          <span className="truncate">{props.subject.label}</span>
+          {props.subject.onClear && (
+            <ChipRemoveButton
+              onClick={props.subject.onClear}
+              className="rounded-sm text-muted-foreground hover:text-foreground"
+              label="Ask without this context"
+            />
+          )}
+        </ContextChip>
+      )}
       <ComposerAttachmentChips attachments={props.attachments ?? []} />
       {activeMode && (
         <ContextChip kind="mode" className="border-success/45 bg-success/12 text-success">

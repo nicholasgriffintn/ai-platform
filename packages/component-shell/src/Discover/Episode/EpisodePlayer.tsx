@@ -75,22 +75,40 @@ export function episodeHeading(episode: DiscoverEpisode | undefined) {
   };
 }
 
-export function EpisodePlayer({
-  episodeId,
-  placeholder,
-  onPlayingChange,
-  className,
-}: {
-  episodeId: string | undefined;
-  placeholder?: ReactNode;
-  onPlayingChange?: (playing: boolean) => void;
-  className?: string;
-}) {
+export function useEpisodePlayer(episodeId: string | undefined) {
   const episode = useDiscoverEpisode(episodeId).data;
-  const retry = useRetryDiscoverEpisodeChapter(episodeId ?? "");
-  const seasonListen = useQueueDiscoverSeasonListen();
   const progress = useRecordDiscoverEpisodeProgress(episodeId ?? "");
   const playback = useEpisodePlayback(episode, (update) => progress.mutate(update));
+
+  return { episodeId, episode, playback };
+}
+
+export type EpisodePlayerState = ReturnType<typeof useEpisodePlayer>;
+
+interface EpisodePlayerViewProps {
+  placeholder?: ReactNode;
+  seasonAction?: boolean;
+  onPlayingChange?: (playing: boolean) => void;
+  className?: string;
+}
+
+export function EpisodePlayer({
+  episodeId,
+  ...view
+}: EpisodePlayerViewProps & { episodeId: string | undefined }) {
+  return <EpisodePlayerView player={useEpisodePlayer(episodeId)} {...view} />;
+}
+
+export function EpisodePlayerView({
+  player,
+  placeholder,
+  seasonAction = true,
+  onPlayingChange,
+  className,
+}: EpisodePlayerViewProps & { player: EpisodePlayerState }) {
+  const { episodeId, episode, playback } = player;
+  const retry = useRetryDiscoverEpisodeChapter(episodeId ?? "");
+  const seasonListen = useQueueDiscoverSeasonListen();
   const [listenOnly, setListenOnly] = useState(false);
   const { track, chapter, chapterIndex } = playback;
   const attachAudio = useMediaLoudness(track.attach);
@@ -181,20 +199,22 @@ export function EpisodePlayer({
               onRetry: entry.status === "failed" ? () => retry.mutate(index) : undefined,
             }))}
           />
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={seasonListen.isPending || seasonListen.isSuccess}
-              onClick={() => seasonListen.mutate(episode.seasonId)}
-            >
-              <Podcast size={14} aria-hidden />
-              {seasonListen.isSuccess ? "Saving to The Perch" : "Save the season as one listen"}
-            </Button>
-            <p className="text-xs text-muted-foreground">
-              Every part so far, as one episode in your podcast feed.
-            </p>
-          </div>
+          {seasonAction ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={seasonListen.isPending || seasonListen.isSuccess}
+                onClick={() => seasonListen.mutate(episode.seasonId)}
+              >
+                <Podcast size={14} aria-hidden />
+                {seasonListen.isSuccess ? "Saving to The Perch" : "Save the season as one listen"}
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Every part so far, as one episode in your podcast feed.
+              </p>
+            </div>
+          ) : null}
         </>
       ) : null}
     </MediaStage>

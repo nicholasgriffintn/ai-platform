@@ -20,7 +20,6 @@ export function DiscoverListenStage({
   isRecording = false,
   recordError,
   onRecord,
-  onClose,
   onPlayingChange,
 }: {
   sourceId: string | undefined;
@@ -34,7 +33,6 @@ export function DiscoverListenStage({
   isRecording?: boolean;
   recordError?: unknown;
   onRecord?: () => void;
-  onClose: () => void;
   onPlayingChange: (playing: boolean) => void;
 }) {
   const source = useSource(sourceId ?? null).data;
@@ -45,7 +43,7 @@ export function DiscoverListenStage({
     ) : undefined;
 
   return (
-    <DiscoverStage eyebrow={eyebrow} title={title} subtitle={subtitle} onClose={onClose}>
+    <DiscoverStage eyebrow={eyebrow} title={title} subtitle={subtitle}>
       <SourcePlayer
         sourceId={sourceId ?? null}
         title={title}

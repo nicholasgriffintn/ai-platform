@@ -7,12 +7,14 @@ import {
   type DiscoverRowCard,
 } from "./DiscoverFeedCard.js";
 import {
+  DISCOVER_SHELF_VISIBLE,
   DiscoverSection,
   DiscoverSectionRow,
   type DiscoverSectionKind,
 } from "./DiscoverSection.js";
 import { DiscoverStoryTile, type DiscoverStoryCard } from "./DiscoverStoryTile.js";
 import { DiscoverTopicTile } from "./DiscoverTopicTile.js";
+import { groupDiscoverCards } from "./item/discover-items.js";
 
 export interface DiscoverFeedProps {
   edition: DiscoverEdition;
@@ -25,6 +27,7 @@ export interface DiscoverFeedProps {
   openStoryId: string | null;
   onStartStory: (card: DiscoverStoryCard) => void;
   media: ReactNode;
+  mediaCount: number;
 }
 
 function CardSection({
@@ -75,32 +78,30 @@ export function DiscoverFeed({
   openStoryId,
   onStartStory,
   media,
+  mediaCount,
 }: DiscoverFeedProps) {
-  const topics = edition.cards.filter(
-    (card): card is Extract<DiscoverCard, { kind: "topic" }> => card.kind === "topic",
-  );
-  const stories = edition.cards.filter(
-    (card): card is DiscoverStoryCard => card.kind === "wind_down",
-  );
-  const rows = edition.cards.filter(
-    (card): card is DiscoverRowCard => card.kind !== "topic" && card.kind !== "wind_down",
-  );
-  const forYou = rows.filter(
-    (card) => card.kind === "action" || card.kind === "check_in" || card.kind === "resurface",
-  );
-  const comingUp = rows.filter((card) => card.kind === "event");
-  const reads = rows.filter((card) => card.kind === "read" || card.kind === "inbox");
-  const watching = rows.filter((card) => card.kind === "watch" || card.kind === "listen");
+  const { topics, stories, forYou, comingUp, reads, watching } = groupDiscoverCards(edition.cards);
+  const rows = [...forYou, ...comingUp, ...reads, ...watching];
   const posterCount = topics.length + stories.length;
   const cardProps = { selectedId, isTopicHidden, onSelect };
 
   return (
     <div className="flex flex-col gap-10">
-      {media || posterCount > 0 ? (
-        <DiscoverSectionRow>
+      {mediaCount > 0 || posterCount > 0 ? (
+        <DiscoverSectionRow
+          posters={[
+            Math.min(mediaCount, DISCOVER_SHELF_VISIBLE.watch),
+            Math.min(posterCount, DISCOVER_SHELF_VISIBLE.worth),
+          ]}
+        >
           {media}
           {posterCount > 0 && (
-            <DiscoverSection title="Worth a look" kind="posters" count={posterCount}>
+            <DiscoverSection
+              title="Worth a look"
+              kind="posters"
+              count={posterCount}
+              maxVisible={DISCOVER_SHELF_VISIBLE.worth}
+            >
               {topics.map((card) => (
                 <DiscoverTopicTile
                   key={card.id}

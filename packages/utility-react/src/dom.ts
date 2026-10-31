@@ -77,3 +77,19 @@ export function isTextEntryTarget(target: EventTarget | null): boolean {
     target.isContentEditable
   );
 }
+
+export function ownsEscapeKey(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  if (target.closest('[role="menu"], [role="dialog"], [role="listbox"], [role="alertdialog"]')) {
+    return true;
+  }
+
+  if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+    return target.value.trim().length > 0;
+  }
+
+  return target.isContentEditable && (target.textContent ?? "").trim().length > 0;
+}

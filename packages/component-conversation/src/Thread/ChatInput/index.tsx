@@ -47,7 +47,10 @@ import { toast } from "sonner";
 
 import { ComposerCommandActionsProvider } from "../../Composer/commandActions.js";
 import { ComposerActionMenu } from "../../Composer/ComposerActionMenu.js";
-import { ComposerCommandChips } from "../../Composer/ComposerCommandSurface.js";
+import {
+  ComposerCommandChips,
+  type ComposerSubjectChip,
+} from "../../Composer/ComposerCommandSurface.js";
 import { ComposerDirectiveMenu } from "../../Composer/ComposerDirectiveMenu.js";
 import { ComposerShell, type ComposerShellProps } from "../../Composer/ComposerShell.js";
 import { ComposerVoiceControls } from "../../Composer/ComposerVoiceControls.js";
@@ -183,6 +186,7 @@ interface ChatInputProps {
     isPlaying: boolean;
     onToggle: () => void;
   };
+  subject?: ComposerSubjectChip;
   contextAttachments?: AttachmentData[];
   readonlyContextAttachmentCount?: number;
   onRemoveContextAttachment?: (index: number) => void;
@@ -223,6 +227,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
       hideVoiceControls = false,
       density,
       autoPlayResponses,
+      subject,
       contextAttachments = EMPTY_ATTACHMENTS,
       readonlyContextAttachmentCount = 0,
       onRemoveContextAttachment,
@@ -774,6 +779,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
             <ComposerCommandChips
               {...commandState}
               attachments={attachmentChips}
+              subject={subject}
               goal={
                 isComposingGoal
                   ? {

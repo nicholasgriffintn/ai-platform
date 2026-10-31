@@ -2,6 +2,8 @@ import type { ChatSuggestion } from "@ngriffin_uk/polychat-library-react";
 import type { DiscoverCard } from "@ngriffin_uk/polychat-schemas";
 import { normaliseComparableText } from "@ngriffin_uk/polychat-utility-core";
 
+import type { DiscoverMedia } from "./media/media-status.js";
+
 export function discoverCardEyebrow(card: DiscoverCard): string {
   switch (card.kind) {
     case "topic":
@@ -121,7 +123,7 @@ export function discoverCardSuggestions(card: DiscoverCard): ChatSuggestion[] {
         ),
       ];
     case "read": {
-      const piece = card.sourceId ? "this piece" : `${card.url}`;
+      const piece = card.sourceId ? "this piece" : card.url;
       const read = card.sourceId ? "" : "Read ";
 
       return [
@@ -228,6 +230,61 @@ export function discoverCardSuggestions(card: DiscoverCard): ChatSuggestion[] {
         ),
       ];
     case "wind_down":
+      return [];
+  }
+}
+
+function mediaSuggestion(
+  media: DiscoverMedia,
+  key: string,
+  label: string,
+  prompt: string,
+): ChatSuggestion {
+  return { id: `discover-${media}-${key}`, label, prompt, category: "discover" };
+}
+
+export function discoverMediaSuggestions(media: DiscoverMedia): ChatSuggestion[] {
+  switch (media) {
+    case "episode":
+      return [
+        mediaSuggestion(
+          media,
+          "recap",
+          "Recap it in three lines",
+          "Recap this episode in three lines.",
+        ),
+        mediaSuggestion(
+          media,
+          "argument",
+          "What's the main argument?",
+          "What is the main argument of this episode, and how well does it hold up?",
+        ),
+        mediaSuggestion(
+          media,
+          "next",
+          "What should I read next on this?",
+          "Based on this episode, what should I read or watch next on the topic?",
+        ),
+      ];
+    case "perch":
+    case "week":
+      return [
+        mediaSuggestion(
+          media,
+          "stories",
+          "What were the main stories?",
+          "What were the main stories in this, in a sentence each?",
+        ),
+        mediaSuggestion(media, "recap", "Recap it in three lines", "Recap this in three lines."),
+        mediaSuggestion(
+          media,
+          "follow",
+          "What should I follow up on?",
+          "From this, what is worth following up on, and why?",
+        ),
+      ];
+    case "wind_down":
+    case "story":
       return [];
   }
 }

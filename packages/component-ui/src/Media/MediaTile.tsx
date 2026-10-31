@@ -28,9 +28,9 @@ export function MediaTile({
       aria-pressed={selected}
       onClick={onSelect}
       className={cn(
-        "group relative w-full overflow-hidden rounded-2xl bg-neutral-950 text-left ring-offset-2 ring-offset-canvas transition focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none",
+        "group relative w-full overflow-hidden rounded-2xl bg-neutral-950 text-left ring-offset-2 ring-offset-canvas transition focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none active:scale-[.98] motion-reduce:active:scale-100",
         wide ? "aspect-video" : "aspect-[4/5]",
-        selected && "ring-2 ring-foreground/70",
+        selected && "ring-2 ring-active-work",
       )}
     >
       <span className="absolute inset-0 transition-transform duration-700 group-hover:scale-[1.04] motion-reduce:transition-none">

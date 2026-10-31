@@ -131,11 +131,12 @@ export function DiscoverFeedCard({
     <button
       type="button"
       aria-pressed={selected}
+      data-discover-item={`card:${card.id}`}
       onClick={() => onSelect(card)}
       className={cn(
-        "group flex w-full flex-col gap-3 rounded-2xl border border-border bg-surface text-left transition-colors hover:border-border-strong hover:bg-surface-elevated focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none",
+        "group flex w-full flex-col gap-3 rounded-2xl border border-border bg-surface text-left ring-offset-2 ring-offset-canvas transition hover:border-border-strong hover:bg-surface-elevated focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none active:scale-[.99] motion-reduce:active:scale-100",
         isLarge ? "gap-4 p-5" : "p-4",
-        selected && "border-border-strong bg-surface-elevated",
+        selected && "border-border-strong bg-surface-elevated ring-2 ring-active-work",
         hidden && "opacity-40",
       )}
     >

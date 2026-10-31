@@ -18,7 +18,7 @@ import {
 
 export type { ChatSuggestion } from "@ngriffin_uk/polychat-utility-react";
 
-export type ChatSuggestionLayout = "grid" | "pills";
+export type ChatSuggestionLayout = "grid" | "pills" | "list";
 
 export interface ChatSuggestionListProps {
   suggestions: ChatSuggestion[];
@@ -60,7 +60,7 @@ export function ChatSuggestionList({
   onSelect,
 }: ChatSuggestionListProps) {
   if (isLoading) {
-    if (layout === "pills") {
+    if (layout !== "grid") {
       return null;
     }
 

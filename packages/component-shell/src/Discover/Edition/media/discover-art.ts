@@ -3,3 +3,5 @@ export const PERCH_GRADIENT =
 
 export const WEEK_GRADIENT =
   "radial-gradient(100% 80% at 20% 0%, #34d39999 0%, transparent 55%), radial-gradient(90% 80% at 100% 100%, #0f766e 0%, transparent 65%), linear-gradient(150deg, #134e4a 0%, #0c0a09 100%)";
+
+export const NIGHT_GRADIENT = "linear-gradient(180deg, #151a3c 0%, #1f1c50 60%, #352a74 100%)";

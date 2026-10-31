@@ -17,11 +17,20 @@ import type {
   UpdateDiscoverSettings,
 } from "@ngriffin_uk/polychat-schemas";
 import { normaliseComparableText, readLocalTimeZone } from "@ngriffin_uk/polychat-utility-core";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 
 import { cardTopic, hasDiscoverTopic } from "./discover-card-drafts.js";
 import type { DiscoverStoryCard } from "./DiscoverStoryTile.js";
+import {
+  discoverItemKey,
+  discoverMediaShelf,
+  groupDiscoverCards,
+  orderDiscoverItems,
+  stepDiscoverItem,
+  type DiscoverItem,
+} from "./item/discover-items.js";
+import type { DiscoverCardFeedback } from "./item/DiscoverCardActions.js";
 import type { DiscoverMedia } from "./media/media-status.js";
 
 export type DiscoverEditionViewState = "feed" | "card" | "media";
@@ -94,6 +103,27 @@ export function useDiscoverEditionController() {
     view === "card" ? (edition?.cards.find((card) => card.id === selectedId) ?? null) : null;
   const media: DiscoverMedia =
     chosenMedia ?? (settings && settings.episode !== "off" ? "episode" : "perch");
+  const mediaShelf = useMemo(
+    () => (ownEdition && settings ? discoverMediaShelf(ownEdition, settings) : []),
+    [ownEdition, settings],
+  );
+  const items = useMemo(
+    () => (ownEdition ? orderDiscoverItems(mediaShelf, groupDiscoverCards(ownEdition.cards)) : []),
+    [mediaShelf, ownEdition],
+  );
+  const mediaOpen = view === "media" && isAuthenticated;
+  const panelItem = useMemo<DiscoverItem | null>(
+    () =>
+      selectedCard && ownEdition
+        ? { type: "card", card: selectedCard }
+        : mediaOpen
+          ? { type: "media", media }
+          : null,
+    [media, mediaOpen, ownEdition, selectedCard],
+  );
+  const panelIndex = panelItem
+    ? items.findIndex((item) => discoverItemKey(item) === discoverItemKey(panelItem))
+    : -1;
   const hiddenTopics = new Set(
     (edition?.cards ?? []).flatMap((card) =>
       hasDiscoverTopic(card) && edition?.feedback[card.id]?.includes("hide")
@@ -145,6 +175,38 @@ export function useDiscoverEditionController() {
     }
 
     feedback.mutate({ editionId: ownEdition.id, cardId: card.id, signal });
+  };
+
+  const toggleFollow = (card: DiscoverCard) => {
+    const current = followFor(card);
+
+    if (current) {
+      follows.unfollow.mutate(current.notebookId);
+    } else if (hasDiscoverTopic(card)) {
+      follows.follow.mutate(cardTopic(card));
+    }
+  };
+
+  const select = (card: DiscoverCard | null) => {
+    if (card && isHouseEdition) {
+      const prompt = cardPrompt(card);
+
+      if (prompt) {
+        setChatInput(prompt);
+      }
+
+      closePanel();
+
+      return;
+    }
+
+    setSelectedId(card?.id ?? null);
+    setView(card ? "card" : "feed");
+    setPlayParam(null);
+
+    if (card && ownEdition && !ownEdition.feedback[card.id]?.includes("opened")) {
+      feedback.mutate({ editionId: ownEdition.id, cardId: card.id, signal: "opened" });
+    }
   };
 
   const playStory = (cardId: string) => {
@@ -235,39 +297,31 @@ export function useDiscoverEditionController() {
     isSendingFeedback: feedback.isPending,
     follows: followed,
     followFor,
+    feedbackFor: (card: DiscoverCard): DiscoverCardFeedback => ({
+      signals: ownEdition?.feedback[card.id] ?? [],
+      isSending: feedback.isPending,
+      follow: followFor(card),
+      isChangingFollow: follows.follow.isPending || follows.unfollow.isPending,
+      onFeedback: sendFeedback,
+      onToggleFollow: toggleFollow,
+    }),
     isChangingFollow: follows.follow.isPending || follows.unfollow.isPending,
-    toggleFollow: (card: DiscoverCard) => {
-      const current = followFor(card);
-
-      if (current) {
-        follows.unfollow.mutate(current.notebookId);
-      } else if (hasDiscoverTopic(card)) {
-        follows.follow.mutate(cardTopic(card));
-      }
-    },
+    toggleFollow,
     unfollow: (notebookId: string) => follows.unfollow.mutate(notebookId),
     refreshStatus: refresh.data?.status ?? null,
     isTopicHidden: (card: DiscoverCard) =>
       hasDiscoverTopic(card) && hiddenTopics.has(normaliseComparableText(cardTopic(card))),
-    select: (card: DiscoverCard | null) => {
-      if (card && isHouseEdition) {
-        const prompt = cardPrompt(card);
+    select,
+    mediaShelf,
+    panelItem,
+    panelPosition: panelIndex >= 0 ? `${panelIndex + 1} of ${items.length}` : null,
+    step: (direction: 1 | -1) => {
+      const next = stepDiscoverItem(items, panelItem, direction);
 
-        if (prompt) {
-          setChatInput(prompt);
-        }
-
-        closePanel();
-
-        return;
-      }
-
-      setSelectedId(card?.id ?? null);
-      setView(card ? "card" : "feed");
-      setPlayParam(null);
-
-      if (card && ownEdition && !ownEdition.feedback[card.id]?.includes("opened")) {
-        feedback.mutate({ editionId: ownEdition.id, cardId: card.id, signal: "opened" });
+      if (next?.type === "card") {
+        select(next.card);
+      } else if (next) {
+        openMedia(next.media);
       }
     },
     sendFeedback,

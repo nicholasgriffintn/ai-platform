@@ -1,5 +1,5 @@
-import { cn } from "@ngriffin_uk/polychat-component-ui";
 import type { DiscoverBriefKind, DiscoverBriefLine } from "@ngriffin_uk/polychat-schemas";
+import { useHorizontalScroller } from "@ngriffin_uk/polychat-utility-react";
 import {
   BellRing,
   CalendarDays,
@@ -10,18 +10,11 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { DiscoverCarouselControls, DiscoverCarouselFade } from "./DiscoverCarousel.js";
 import { DiscoverHref } from "./DiscoverHref.js";
 
-const WIDE_COLUMNS = [
-  "@3xl/brief:grid-cols-1",
-  "@3xl/brief:grid-cols-2",
-  "@3xl/brief:grid-cols-3",
-  "@3xl/brief:grid-cols-4",
-] as const;
-
-function wideColumns(count: number): string {
-  return WIDE_COLUMNS[Math.min(count, WIDE_COLUMNS.length) - 1];
-}
+const BRIEF_TRACK =
+  "flex flex-col gap-4 [scrollbar-width:none] @md/brief:snap-x @md/brief:snap-mandatory @md/brief:flex-row @md/brief:gap-6 @md/brief:overflow-x-auto [&::-webkit-scrollbar]:hidden";
 
 const BRIEF_ICONS: Record<DiscoverBriefKind, { icon: LucideIcon; tone: string }> = {
   waiting: { icon: BellRing, tone: "text-human-action" },
@@ -54,23 +47,28 @@ function BriefLine({ line }: { line: DiscoverBriefLine }) {
 }
 
 export function DiscoverBrief({ lines }: { lines: readonly DiscoverBriefLine[] }) {
+  const scroller = useHorizontalScroller<HTMLUListElement>();
+
   if (lines.length === 0) {
     return <p className="text-sm text-muted-foreground">A quiet one. Nothing pressing.</p>;
   }
 
   return (
-    <ul
-      aria-label="Brief"
-      className={cn(
-        "grid grid-cols-1 gap-x-6 gap-y-4 @md/brief:grid-cols-2",
-        wideColumns(lines.length),
-      )}
-    >
-      {lines.map((line) => (
-        <li key={`${line.label}:${line.text}`} className="min-w-0">
-          <BriefLine line={line} />
-        </li>
-      ))}
-    </ul>
+    <div className="flex flex-col gap-3">
+      <div className="relative">
+        <ul ref={scroller.ref} aria-label="Brief" className={BRIEF_TRACK}>
+          {lines.map((line) => (
+            <li
+              key={`${line.label}:${line.text}`}
+              className="min-w-0 @md/brief:shrink-0 @md/brief:basis-[calc((100%-1.5rem)/2)] @md/brief:snap-start @3xl/brief:basis-[calc((100%-3rem)/3)]"
+            >
+              <BriefLine line={line} />
+            </li>
+          ))}
+        </ul>
+        <DiscoverCarouselFade scroller={scroller} />
+      </div>
+      <DiscoverCarouselControls scroller={scroller} label="the brief" className="justify-end" />
+    </div>
   );
 }

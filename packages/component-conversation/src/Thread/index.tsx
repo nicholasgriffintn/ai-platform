@@ -65,12 +65,18 @@ import type {
   ComposerAssistantActionCapability,
   ComposerCommandAction,
 } from "@ngriffin_uk/polychat-utility-react";
+import { useElementSize } from "@ngriffin_uk/polychat-utility-react";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "sonner";
 
+import type { ComposerSubjectChip } from "../Composer/ComposerCommandSurface.js";
 import type { ComposerShellProps } from "../Composer/ComposerShell.js";
-import { ConversationComposerDock, ConversationMessageColumn } from "../ConversationColumn.js";
+import {
+  ConversationComposerDock,
+  ConversationMessageColumn,
+  ConversationWelcomeStarters,
+} from "../ConversationColumn.js";
 import { GoalStatusCard } from "../GoalStatusCard.js";
 import { PetPerch } from "../PetPerch.js";
 import { WELCOME_PET_SIZE, type WelcomeOpening, WelcomeScreen } from "../WelcomeScreen.js";
@@ -95,6 +101,7 @@ import { useAutoPlayResponses } from "./useAutoPlayResponses.js";
 import { useGoalCommands } from "./useGoalCommands.js";
 
 const EMPTY_CONTEXT_ATTACHMENTS: AttachmentData[] = [];
+const LEAD_CLEARANCE = 32;
 
 export interface ConversationFollowUpQueue {
   messages: readonly QueuedChatMessage[];
@@ -120,6 +127,8 @@ export interface ThreadModeConfig {
   welcomeSuggestions?: ChatSuggestion[] | null;
   welcomeCapabilitySuggestions?: boolean;
   welcomePlacement?: "screen" | "composer";
+  lead?: ReactNode;
+  composerSubject?: ComposerSubjectChip;
   composerDensity?: ComposerShellProps["density"];
   inputPlaceholder?: {
     newConversation: string;
@@ -991,6 +1000,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
     ],
   );
 
+  const { ref: dockRef, height: dockHeight } = useElementSize<HTMLDivElement>();
   const petStatus = usePetStatus(currentConversationId);
   const petFollows = usePetFollowEnabled();
   const polyIsOpen = useUIStore((state) => state.showPoly);
@@ -1025,6 +1035,10 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
     [startConversationThread],
   );
 
+  const lead = modeConfig?.lead;
+  const floatingDock = lead !== undefined && showWelcomeScreen;
+  const hasWelcomeStarters =
+    modeConfig?.welcomeSuggestions !== null && modeConfig?.welcomeSuggestions?.length !== 0;
   const welcomeSuggestions = (
     <ChatSuggestions
       setInput={setComposerInput}
@@ -1036,13 +1050,56 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
       modeCommands={modeConfig?.modeControls?.commands}
       modelConfig={selectedModelConfig}
       includeCapabilities={modeConfig?.welcomeCapabilitySuggestions !== false}
-      layout={welcomeInComposer ? "pills" : "grid"}
+      layout={lead !== undefined ? "list" : welcomeInComposer ? "pills" : "grid"}
     />
+  );
+
+  const messageColumn = (
+    <ConversationMessageColumn>
+      <MessageList
+        messages={messages}
+        retention={storageMode.retention}
+        hideInlineUserQuestions={Boolean(modeConfig?.pendingUserQuestions)}
+        onToolInteraction={handleToolInteraction}
+        onConnectorApproval={handleConnectorApproval}
+        onArtifactOpen={handleArtifactOpen}
+        onStartThread={handleStartThread}
+        isStartingThread={isStartingThread}
+        onRequestSecondOpinion={(messageId) => void requestSecondOpinion(messageId)}
+        isRequestingSecondOpinion={isRequestingSecondOpinion}
+        onQuoteSelection={handleQuoteSelection}
+        onSaveToNote={modeConfig?.onSaveToNote}
+      />
+    </ConversationMessageColumn>
   );
 
   return (
     <div className="relative flex h-full min-h-0 w-full flex-col">
-      {welcomeInComposer ? null : showWelcomeScreen ? (
+      {lead !== undefined ? (
+        <>
+          <div
+            data-header-scroll-source={showWelcomeScreen ? "" : undefined}
+            className={
+              showWelcomeScreen
+                ? "min-h-0 flex-1 [scrollbar-gutter:stable] overflow-y-auto"
+                : "relative z-10 shrink-0"
+            }
+            style={
+              floatingDock && dockHeight
+                ? { paddingBottom: dockHeight + LEAD_CLEARANCE }
+                : undefined
+            }
+          >
+            {lead}
+            {showWelcomeScreen && hasWelcomeStarters ? (
+              <ConversationWelcomeStarters title={modeConfig?.welcomeTitle}>
+                {welcomeSuggestions}
+              </ConversationWelcomeStarters>
+            ) : null}
+          </div>
+          {showWelcomeScreen ? null : messageColumn}
+        </>
+      ) : welcomeInComposer ? null : showWelcomeScreen ? (
         <div
           data-header-scroll-source
           className="flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-0 py-6 sm:py-8"
@@ -1071,25 +1128,13 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
           </div>
         </div>
       ) : (
-        <ConversationMessageColumn>
-          <MessageList
-            messages={messages}
-            retention={storageMode.retention}
-            hideInlineUserQuestions={Boolean(modeConfig?.pendingUserQuestions)}
-            onToolInteraction={handleToolInteraction}
-            onConnectorApproval={handleConnectorApproval}
-            onArtifactOpen={handleArtifactOpen}
-            onStartThread={handleStartThread}
-            isStartingThread={isStartingThread}
-            onRequestSecondOpinion={(messageId) => void requestSecondOpinion(messageId)}
-            isRequestingSecondOpinion={isRequestingSecondOpinion}
-            onQuoteSelection={handleQuoteSelection}
-            onSaveToNote={modeConfig?.onSaveToNote}
-          />
-        </ConversationMessageColumn>
+        messageColumn
       )}
 
-      <ConversationComposerDock>
+      <ConversationComposerDock
+        floating={floatingDock}
+        ref={lead !== undefined ? dockRef : undefined}
+      >
         {welcomeInComposer ? welcomeSuggestions : null}
         {!showPetPerch || showWelcomeScreen ? null : (
           <PetPerch
@@ -1181,6 +1226,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
           hideModelSelector={modeConfig?.hideModelSelector}
           hideVoiceControls={modeConfig?.hideVoiceControls}
           density={modeConfig?.composerDensity}
+          subject={modeConfig?.composerSubject}
           contextAttachments={contextAttachments}
           readonlyContextAttachmentCount={modeContextAttachments.length}
           attachmentProjectId={modeConfig?.requestOptions?.metadata?.project_id ?? undefined}
@@ -1193,9 +1239,10 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
             onToggle: handleAutoPlayToggle,
           }}
         />
+        {lead !== undefined ? <FooterInfo /> : null}
       </ConversationComposerDock>
 
-      {welcomeInComposer ? null : <FooterInfo />}
+      {welcomeInComposer || lead !== undefined ? null : <FooterInfo />}
     </div>
   );
 };

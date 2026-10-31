@@ -16,7 +16,10 @@ export function MediaStage({
   return (
     <div className={cn("flex flex-col gap-5", className)}>
       {visual ? (
-        <div className="relative aspect-video w-full overflow-hidden rounded-3xl bg-neutral-950 shadow-sm">
+        <div
+          data-media-visual
+          className="relative aspect-video w-full overflow-hidden rounded-3xl bg-neutral-950 shadow-sm"
+        >
           {visual}
         </div>
       ) : null}
