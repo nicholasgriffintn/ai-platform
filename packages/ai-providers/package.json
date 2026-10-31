@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-ai-providers",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "private": false,
   "description": "AI provider primitives for Polychat: the categorised provider library, the vendor implementations for chat, audio, image, music, speech, video, transcription, OCR, guardrails, search, research and realtime, plus credentials, fetch, parameter mapping and response formatting",
   "license": "Apache-2.0",
