@@ -30,7 +30,7 @@ export async function describeDocument({
   const statistics = deriveDocumentStatistics(body);
 
   try {
-    const { model, provider, effort } = await getAuxiliaryModel(context.env, user);
+    const { model, provider } = await getAuxiliaryModel(context.env, user);
     const { object } = await ai.generateObject({
       env: context.env,
       user,
@@ -38,7 +38,7 @@ export async function describeDocument({
       provider,
       system: buildDocumentMetadataPrompt(),
       prompt: `Title: ${title}\n\n${body}`,
-      reasoning_effort: effort,
+      reasoning_effort: "none",
       disable_functions: true,
       schema: documentMetadataSchema,
       name: "document_metadata",

@@ -160,6 +160,7 @@ async function scriptChapter(
   let draft = await generateSystemObject(context, {
     role: "writing",
     name: "discover_episode_chapter",
+    requiresReasoning: false,
     schema: discoverChapterScriptDraftSchema,
     system,
     material,
@@ -169,6 +170,7 @@ async function scriptChapter(
     const check = await generateSystemObject(context, {
       role: "writing",
       name: "discover_episode_check",
+      requiresReasoning: true,
       schema: discoverChapterCheckSchema,
       system: renderPrompt("discover/episode/check"),
       material: `# Material\n\n${material}\n\n# Narration\n\n${draft.scenes
@@ -183,6 +185,7 @@ async function scriptChapter(
     draft = await generateSystemObject(context, {
       role: "writing",
       name: "discover_episode_chapter",
+      requiresReasoning: false,
       schema: discoverChapterScriptDraftSchema,
       system: `${system}\n\nAn earlier draft made claims the material does not support. Leave these out or say plainly that the material does not cover them:\n${check.unsupported
         .map((claim) => `- ${claim}`)

@@ -19,7 +19,7 @@ export async function formatDocumentBody({
   prompt?: string;
 }): Promise<string> {
   try {
-    const { model, provider, effort } = await getAuxiliaryModel(context.env, user);
+    const { model, provider } = await getAuxiliaryModel(context.env, user);
     const messages = [{ role: "user" as const, content: body }];
 
     if (prompt) {
@@ -33,7 +33,7 @@ export async function formatDocumentBody({
       provider,
       system: buildDocumentFormatPrompt(),
       messages,
-      reasoning_effort: effort,
+      reasoning_effort: "none",
       disable_functions: true,
     });
 

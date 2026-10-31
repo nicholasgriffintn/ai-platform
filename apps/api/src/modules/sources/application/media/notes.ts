@@ -39,13 +39,13 @@ export async function summariseSource(
     );
   }
 
-  const { model, provider, effort } = await getAuxiliaryModel(context.env, user);
+  const { model, provider } = await getAuxiliaryModel(context.env, user);
   const { object: notes } = await ai.generateObject({
     env: context.env,
     user,
     model,
     provider,
-    reasoning_effort: effort,
+    reasoning_effort: "none",
     disable_functions: true,
     name: "source_notes",
     schema: sourceNotesSchema,

@@ -90,6 +90,7 @@ async function ensureSeason(
   const plan = await generateSystemObject(context, {
     role: "writing",
     name: "discover_season_plan",
+    requiresReasoning: true,
     schema: discoverSeasonPlanDraftSchema,
     system: renderPrompt("discover/season/plan", {
       topic,
@@ -198,6 +199,7 @@ async function scriptDiscoverEpisode(
   const script = await generateSystemObject(context, {
     role: "writing",
     name: "discover_episode_outline",
+    requiresReasoning: false,
     schema: discoverEpisodeOutlineDraftSchema,
     system: renderPrompt("discover/episode/outline", {
       topic,

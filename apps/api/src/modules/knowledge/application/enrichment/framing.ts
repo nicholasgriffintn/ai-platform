@@ -31,6 +31,7 @@ export async function analyseArticleFraming(
     generateSystemObject(context, {
       role: "writing",
       name: "article_framing",
+      requiresReasoning: false,
       schema: articleFramingDraftSchema,
       system: getPromptText("knowledge/framing"),
       material: article,

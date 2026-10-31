@@ -51,6 +51,7 @@ export async function writeWindDownScript(
       return generateSystemObject(context, {
         role: "writing",
         name: "discover_wind_down_story",
+        requiresReasoning: false,
         schema: discoverWindDownDraftSchema,
         system: renderPrompt("discover/wind-down/story", { minutes }),
         material: describeWindDownMaterial({
@@ -75,6 +76,7 @@ export async function writeWindDownScript(
       return generateSystemObject(context, {
         role: "writing",
         name: "discover_wind_down_read_back",
+        requiresReasoning: false,
         schema: discoverWindDownDraftSchema,
         system: renderPrompt("discover/wind-down/read-back", { minutes }),
         material: describeWindDownMaterial({ ...base, day: null, highlights }),
@@ -85,6 +87,7 @@ export async function writeWindDownScript(
       return generateSystemObject(context, {
         role: "writing",
         name: "discover_wind_down_park",
+        requiresReasoning: false,
         schema: discoverWindDownParkDraftSchema,
         system: renderPrompt("discover/wind-down/park", { minutes }),
         material: describeWindDownMaterial({
@@ -97,6 +100,7 @@ export async function writeWindDownScript(
       return generateSystemObject(context, {
         role: "writing",
         name: "discover_wind_down",
+        requiresReasoning: false,
         schema: discoverWindDownDraftSchema,
         system: renderPrompt("discover/wind-down/script", {
           kind: humaniseIdentifier(content.kind).toLowerCase(),

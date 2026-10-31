@@ -82,6 +82,7 @@ export async function compareDiscoverCoverage(
   const coverage = await generateSystemObject(withEditionRun(context, edition), {
     role: "writing",
     name: "discover_coverage",
+    requiresReasoning: true,
     schema: discoverCoverageDraftSchema,
     system: getPromptText("discover/coverage"),
     material: buildDiscoverCoverageMaterial(card.topic, articles),

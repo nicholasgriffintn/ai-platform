@@ -39,7 +39,7 @@ export async function generateConversationTitle(
         runtimeEnv,
         user,
         "titling",
-        ({ model, provider, effort }) =>
+        ({ model, provider }) =>
           ai.generateText({
             env: runtimeEnv,
             user,
@@ -47,7 +47,7 @@ export async function generateConversationTitle(
             provider,
             prompt: buildConversationTitlePrompt({ messages: messagesToUse }),
             max_tokens: TITLE_MAX_OUTPUT_TOKENS,
-            reasoning_effort: effort,
+            reasoning_effort: "none",
             disable_functions: true,
           }),
         await resolveConversationModelScope(runtimeEnv, conversationId),

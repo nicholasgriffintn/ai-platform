@@ -89,6 +89,7 @@ async function inferInterests(
     const { interests } = await generateSystemObject(context, {
       role: "writing",
       name: "discover_interests",
+      requiresReasoning: false,
       schema: discoverInterestInferenceSchema,
       system: renderPrompt("discover/interests"),
       material: describeInterestMaterial({

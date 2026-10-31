@@ -259,6 +259,7 @@ async function researchBriefing(
   const briefing = await generateSystemObject(withEditionRun(context, edition), {
     role: "writing",
     name: "discover_briefing",
+    requiresReasoning: false,
     schema: discoverBriefingDraftSchema,
     system: renderPrompt("discover/briefing", { topic }),
     material: buildDiscoverBriefingMaterial(topic, articles),

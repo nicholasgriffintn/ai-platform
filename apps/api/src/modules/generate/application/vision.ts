@@ -19,13 +19,13 @@ export async function describePicture(
     context.env,
     user,
     "vision",
-    ({ model, provider, effort }) =>
+    ({ model, provider }) =>
       ai.generateText({
         env: context.env,
         user,
         model,
         provider,
-        reasoning_effort: effort,
+        reasoning_effort: "none",
         disable_functions: true,
         messages: [
           {

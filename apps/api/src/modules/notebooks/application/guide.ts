@@ -32,6 +32,7 @@ export async function writeNotebookGuide(
   const object = await generateSystemObject(context, {
     role: "writing",
     name: "notebook_guide",
+    requiresReasoning: false,
     schema: notebookGuideDraftSchema,
     system: renderPrompt("notebooks/guide", { notebookName: access.notebook.title }),
     material,

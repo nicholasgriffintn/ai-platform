@@ -138,17 +138,13 @@ export class TrainingQualityHandler implements TaskHandler {
     });
 
     try {
-      const {
-        model: modelToUse,
-        provider: providerToUse,
-        effort,
-      } = await getAuxiliaryModel(env, user);
+      const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(env, user);
       const response = await ai.generateText({
         env,
         model: modelToUse,
         provider: providerToUse,
         prompt,
-        reasoning_effort: effort,
+        reasoning_effort: "none",
         disable_functions: true,
       });
 

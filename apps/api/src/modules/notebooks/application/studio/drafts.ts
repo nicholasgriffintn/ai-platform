@@ -102,6 +102,7 @@ export async function writeStudioDraft(
       const draft = await generateSystemObject(context, {
         role: "writing",
         name: "notebook_deck",
+        requiresReasoning: false,
         schema: z.object({ title: titleField, slides: deckOutputContentSchema.shape.slides }),
         system: renderPrompt("notebooks/studio/deck", {
           ...shared,
@@ -118,6 +119,7 @@ export async function writeStudioDraft(
       const draft = await generateSystemObject(context, {
         role: "writing",
         name: "notebook_sheet",
+        requiresReasoning: false,
         schema: z.object({ title: titleField, tables: sheetOutputContentSchema.shape.tables }),
         system: renderPrompt("notebooks/studio/sheet", shared),
         material,
@@ -130,6 +132,7 @@ export async function writeStudioDraft(
       const draft = await generateSystemObject(context, {
         role: "writing",
         name: "notebook_report",
+        requiresReasoning: false,
         schema: z.object({
           title: titleField,
           body: z.string().min(1).max(DOCUMENT_MAX_BODY).describe("The report in Markdown."),
@@ -148,6 +151,7 @@ export async function writeStudioDraft(
       const draft = await generateSystemObject(context, {
         role: "writing",
         name: "notebook_mind_map",
+        requiresReasoning: false,
         schema: z.object({ title: titleField, root: mindMapOutputContentSchema.shape.root }),
         system: renderPrompt("notebooks/studio/mind-map", shared),
         material,
@@ -160,6 +164,7 @@ export async function writeStudioDraft(
       const draft = await generateSystemObject(context, {
         role: "writing",
         name: "notebook_flashcards",
+        requiresReasoning: false,
         schema: z.object({ title: titleField, cards: flashcardsOutputContentSchema.shape.cards }),
         system: renderPrompt("notebooks/studio/flashcards", {
           ...shared,
@@ -176,6 +181,7 @@ export async function writeStudioDraft(
       const draft = await generateSystemObject(context, {
         role: "writing",
         name: "notebook_quiz",
+        requiresReasoning: false,
         schema: z.object({ title: titleField, questions: quizOutputContentSchema.shape.questions }),
         system: renderPrompt("notebooks/studio/quiz", {
           ...shared,
@@ -192,6 +198,7 @@ export async function writeStudioDraft(
       const draft = await generateSystemObject(context, {
         role: "writing",
         name: "notebook_video",
+        requiresReasoning: false,
         schema: z.object({
           title: titleField,
           scenes: z.array(videoOverviewSceneDraftSchema).min(1).max(VIDEO_OVERVIEW_MAX_SCENES),
@@ -223,6 +230,7 @@ export async function writeInfographicPrompt(
   return generateSystemObject(context, {
     role: "writing",
     name: "notebook_infographic",
+    requiresReasoning: false,
     schema: z.object({
       title: titleField,
       prompt: z

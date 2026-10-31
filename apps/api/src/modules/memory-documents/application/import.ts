@@ -136,6 +136,7 @@ export async function importMemoryBatch(
   const extraction = await generateSystemObject(context, {
     role: "housekeeping",
     name: "memory_import",
+    requiresReasoning: false,
     schema: memoryImportExtractionSchema,
     system: getPromptText("memory/import"),
     material: `## Messages\n\n${renderMemoryImportBatch(batch)}`,

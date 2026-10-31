@@ -14,6 +14,7 @@ export interface SystemObjectRequest<TObject> {
   role: SystemModelRole;
   scope?: SystemModelScope;
   name: string;
+  requiresReasoning: boolean;
   schema: z.ZodType<TObject>;
   system: string;
   material: string;
@@ -37,7 +38,7 @@ export async function generateSystemObject<TObject>(
           user,
           model,
           provider,
-          reasoning_effort: effort,
+          reasoning_effort: request.requiresReasoning ? effort : "none",
           disable_functions: true,
           name: request.name,
           schema: request.schema,

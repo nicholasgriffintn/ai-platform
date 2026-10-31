@@ -210,7 +210,7 @@ export class SessionManager {
         this.env,
         this.user,
         "compaction",
-        ({ model, provider, effort }) =>
+        ({ model, provider }) =>
           ai.generateText({
             env: this.env,
             user: this.user,
@@ -218,7 +218,7 @@ export class SessionManager {
             provider,
             system: buildConversationSummarisePrompt({ modeHint }),
             prompt: summaryInput,
-            reasoning_effort: effort,
+            reasoning_effort: "none",
             disable_functions: true,
           }),
         await resolveConversationModelScope(this.env, conversationId),

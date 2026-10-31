@@ -44,6 +44,7 @@ export async function writePodcastScript(
   return generateSystemObject(context, {
     role: "writing",
     name: "podcast_script",
+    requiresReasoning: false,
     schema: podcastScriptSchema,
     system: renderPrompt("sources/podcast/script", {
       format: `${PODCAST_FORMATS[options.format].label}. ${PODCAST_FORMATS[options.format].description}`,

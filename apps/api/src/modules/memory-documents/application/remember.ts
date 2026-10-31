@@ -79,6 +79,7 @@ async function placeMemories(
   const { placements } = await generateSystemObject(context, {
     role: "housekeeping",
     name: "memory_placement",
+    requiresReasoning: false,
     schema: memoryPlacementSchema,
     system: getPromptText("memory/documents/placement"),
     material: `## Memory documents\n\n${renderMemoryIndex(documents)}\n\n## To remember\n\n${renderMemoryNotes(notes)}`,
@@ -121,6 +122,7 @@ function draftMemoryDocument(
   return generateSystemObject(context, {
     role: "housekeeping",
     name: "memory_document",
+    requiresReasoning: false,
     schema: memoryDocumentDraftSchema,
     system: renderPrompt("memory/documents/write", {
       todaysDate: new Date().toISOString().slice(0, 10),

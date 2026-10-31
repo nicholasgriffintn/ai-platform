@@ -76,6 +76,7 @@ export const classifyEnricher: KnowledgeEnricher = {
     const classification = await generateSystemObject(context, {
       role: "housekeeping",
       name: "knowledge_classify",
+      requiresReasoning: false,
       schema: knowledgeClassificationSchema,
       system: getPromptText("knowledge/classify"),
       material: [

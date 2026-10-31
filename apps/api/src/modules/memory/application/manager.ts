@@ -165,21 +165,17 @@ export class MemoryManager {
         }
 
         if (gate?.proceed) {
-          const {
-            model: modelToUse,
-            provider: providerToUse,
-            effort,
-          } = await getAuxiliaryModel(this.env, this.user);
-          const scope = {
+          const { model: modelToUse, provider: providerToUse } = await getAuxiliaryModel(
+            this.env,
+            this.user,
+          );
+          const { object: classification } = await ai.generateObject({
             env: this.env,
             user: this.user,
             model: modelToUse,
             provider: providerToUse,
-            reasoning_effort: effort,
+            reasoning_effort: "none",
             disable_functions: true,
-          };
-          const { object: classification } = await ai.generateObject({
-            ...scope,
             system: buildMemoryClassifierPrompt(),
             prompt: lastUser.text,
             schema: memoryClassificationSchema,
