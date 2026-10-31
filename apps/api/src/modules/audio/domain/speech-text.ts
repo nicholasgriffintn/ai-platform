@@ -1,12 +1,17 @@
 const MAX_SPEECH_CHARACTERS = 900;
 const WORDS_PER_MINUTE = 150;
 
+export function splitSentences(text: string): string[] {
+  return (text.match(/[^.!?]+(?:[.!?]+|$)/g) ?? [text])
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 export function splitForSpeech(text: string, maxCharacters = MAX_SPEECH_CHARACTERS): string[] {
-  const sentences = text.match(/[^.!?]+(?:[.!?]+|$)/g) ?? [text];
   const pieces: string[] = [];
   let current = "";
 
-  for (const sentence of sentences.map((value) => value.trim()).filter(Boolean)) {
+  for (const sentence of splitSentences(text)) {
     const candidate = current ? `${current} ${sentence}` : sentence;
 
     if (candidate.length <= maxCharacters) {

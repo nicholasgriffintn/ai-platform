@@ -1,20 +1,25 @@
 import type { AudioResponseFormat } from "@ngriffin_uk/polychat-ai-providers";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { SpeechProvider } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { isProviderGuardrailBlockError } from "@ngriffin_uk/polychat-utility-server/provider-errors";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
 import { getAudioProvider } from "~/infrastructure/providers/capabilities/audio";
 import { StorageService } from "~/infrastructure/storage";
+import { splitForSpeech, splitSentences } from "~/modules/audio/domain/speech-text";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IEnv, IFunctionResponse, IUser } from "~/types";
 
 import { prepareSpeechInput } from "./input";
 import { resolveSpeechVoice, type SpeechVoiceSelection } from "./speech-voice";
 import { renderWithSpeechVoices } from "./speech-voices";
+
+const logger = getLogger({ prefix: "audio/speech" });
 
 type TextToSpeechRequest = {
   env: IEnv;
@@ -57,6 +62,49 @@ export async function synthesiseSpeech(
   }
 
   return new Uint8Array(base64ToBuffer(result.audioBase64));
+}
+
+async function voicePieces(
+  pieces: readonly string[],
+  speak: (text: string) => Promise<Uint8Array>,
+  retrySentences: boolean,
+): Promise<Uint8Array[]> {
+  const segments: Uint8Array[] = [];
+
+  for (const piece of pieces) {
+    try {
+      segments.push(await speak(piece));
+    } catch (error) {
+      if (!isProviderGuardrailBlockError(error)) {
+        throw error;
+      }
+
+      const sentences = splitSentences(piece);
+
+      if (retrySentences && sentences.length > 1) {
+        segments.push(...(await voicePieces(sentences, speak, false)));
+      } else {
+        logger.warn("Skipped speech the provider's moderation blocked", {
+          characters: piece.length,
+        });
+      }
+    }
+  }
+
+  return segments;
+}
+
+export function synthesiseSpeechText(
+  context: ServiceContext,
+  selection: SpeechVoiceSelection,
+  text: string,
+  language: string,
+): Promise<Uint8Array[]> {
+  return voicePieces(
+    splitForSpeech(text),
+    (piece) => synthesiseSpeech(context, selection, piece, language),
+    true,
+  );
 }
 
 export const handleTextToSpeech = async (

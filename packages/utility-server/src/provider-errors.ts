@@ -211,6 +211,17 @@ export function isProviderQuotaExhaustedError(error: unknown): boolean {
   return hasQuotaExhaustedCode(context?.responseJson) || hasQuotaExhaustedCode(error.error);
 }
 
+export function isProviderGuardrailBlockError(error: unknown): boolean {
+  if (!isProviderErrorLike(error)) {
+    return false;
+  }
+
+  const context = isPlainObject(error.context) ? error.context : undefined;
+  const body = isPlainObject(context?.responseJson) ? context.responseJson : undefined;
+
+  return body?.type === "guardrail_violation";
+}
+
 export function isProviderAccessDeniedError(error: unknown): boolean {
   if (!isProviderErrorLike(error)) {
     return false;

@@ -1,4 +1,5 @@
 import type { NarrationVoice } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { joinAudioSegments, mp3DurationSeconds } from "~/modules/audio/domain/mp3";
@@ -7,10 +8,10 @@ import {
   timePassages,
   type NarrationTiming,
 } from "~/modules/audio/domain/narration-timing";
-import { estimateSpokenSeconds, splitForSpeech } from "~/modules/audio/domain/speech-text";
+import { estimateSpokenSeconds } from "~/modules/audio/domain/speech-text";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
-import { synthesiseSpeech } from "./speech";
+import { synthesiseSpeechText } from "./speech";
 import { resolveSpeechVoice } from "./speech-voice";
 import { renderWithSpeechVoices } from "./speech-voices";
 
@@ -47,13 +48,9 @@ export async function narratePassages(
       await options.onVoice?.({ model: narrator.id, voice: narrator.voice });
 
       for (const [index, passage] of passages.entries()) {
-        const pieces: Uint8Array[] = [];
-
-        for (const text of splitForSpeech(passage)) {
-          pieces.push(await synthesiseSpeech(context, narrator, text, options.language));
-        }
-
-        const audio = joinAudioSegments(pieces);
+        const audio = joinAudioSegments(
+          await synthesiseSpeechText(context, narrator, passage, options.language),
+        );
 
         segments.push(audio);
         await options.onPassage?.(index, audio);
@@ -62,6 +59,11 @@ export async function narratePassages(
       return segments;
     },
   );
+
+  if (rendered.every((segment) => segment.byteLength === 0)) {
+    throw new AssistantError("No speech was generated", ErrorType.PROVIDER_ERROR);
+  }
+
   const measured = rendered.map((segment) => mp3DurationSeconds(segment));
   const durations = measured.every((seconds) => seconds > 0)
     ? measured

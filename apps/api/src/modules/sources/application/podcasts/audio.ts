@@ -1,11 +1,11 @@
 import type { PodcastScriptTurn } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { synthesiseSpeech } from "~/modules/audio/application/speech";
+import { synthesiseSpeechText } from "~/modules/audio/application/speech";
 import { resolveSpeechVoice } from "~/modules/audio/application/speech-voice";
 import { renderWithSpeechVoices } from "~/modules/audio/application/speech-voices";
 import { joinAudioSegments, mp3SegmentSeconds } from "~/modules/audio/domain/mp3";
-import { splitForSpeech } from "~/modules/audio/domain/speech-text";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
 export const PODCAST_HOSTS = {
@@ -44,12 +44,19 @@ export async function synthesisePodcastAudio(
       for (const turn of turns) {
         turnStarts.push(elapsed);
 
-        for (const text of splitForSpeech(turn.text)) {
-          const segment = await synthesiseSpeech(context, voices[turn.speaker], text, language);
-
+        for (const segment of await synthesiseSpeechText(
+          context,
+          voices[turn.speaker],
+          turn.text,
+          language,
+        )) {
           segments.push(segment);
           elapsed += mp3SegmentSeconds(segment);
         }
+      }
+
+      if (segments.length === 0) {
+        throw new AssistantError("No speech was generated", ErrorType.PROVIDER_ERROR);
       }
 
       return { audio: joinAudioSegments(segments), turnStarts, durationSeconds: elapsed };
