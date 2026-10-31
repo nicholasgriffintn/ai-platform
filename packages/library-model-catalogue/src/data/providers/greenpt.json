@@ -305,7 +305,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.000863555,
         "costPer1kOutputTokens": 0.004317775,
@@ -365,6 +365,7 @@
       "matchingModel": "minimax-m2.5",
       "overrides": {
         "name": "MiniMax-M2.5",
+        "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.00049346,

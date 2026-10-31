@@ -783,7 +783,7 @@
       "model": "claude-opus/claude-opus-4-5",
       "matchingModel": "anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -942,7 +942,7 @@
       "model": "claude-opus/claude-opus-4-5-eu",
       "matchingModel": "eu.anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -999,7 +999,7 @@
       "model": "claude-opus/claude-opus-4-5-global",
       "matchingModel": "global.anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1353,7 +1353,7 @@
       "model": "claude-opus/claude-opus-4-5-us",
       "matchingModel": "us.anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",

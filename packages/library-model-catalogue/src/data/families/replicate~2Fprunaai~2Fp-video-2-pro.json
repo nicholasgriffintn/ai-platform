@@ -12,11 +12,30 @@
     "strengths": [
       "creative",
       "video",
-      "vision"
+      "vision",
+      "document"
     ],
+    "contextComplexity": 4,
+    "reliability": 3,
     "supportsToolCalls": false,
     "supportsAttachments": true,
-    "supportsTemperature": false
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_videoElo",
+          "label": "Text-to-video arena",
+          "value": 1103,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 18
+        }
+      ]
+    }
   },
   "description": "Pruna's highest-quality video model. Generate video from text or images with speed and quality modes, first- and last-frame control, and durations up to 15 seconds.",
   "models": {

@@ -31,7 +31,6 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro",
       "overrides": {
-        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
@@ -123,7 +122,7 @@
           "coding"
         ],
         "contextComplexity": 3,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,

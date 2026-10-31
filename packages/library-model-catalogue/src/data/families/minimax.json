@@ -355,7 +355,6 @@
         "openWeights": true,
         "description": "Prior MiniMax coding model for agent workflows, office edits, and automation",
         "contextWindow": 204800,
-        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],

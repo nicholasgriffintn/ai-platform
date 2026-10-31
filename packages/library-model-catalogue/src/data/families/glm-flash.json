@@ -117,10 +117,10 @@
         "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
         "maxTokens": 131072,
         "contextComplexity": 5,
-        "reliability": 4,
+        "reliability": 1,
         "releaseDate": "August 26, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 27.8,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -152,7 +152,7 @@
           "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 4,
+        "reliability": 1,
         "releaseDate": "August 26, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -165,7 +165,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 27.8,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5

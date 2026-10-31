@@ -185,6 +185,31 @@
         }
       }
     },
+    "inclusionai-ling-3-1-flash-1019-free": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.1 Flash 1019 (free)",
+        "description": "An updated checkpoint of inclusionAI's Ling 3.1 Flash, provided free of charge by Novita AI until November 3, 2026. Ling 3.1 Flash is a hybrid reasoning mixture-of-experts model with 25B active parameters out of 560B total and a 1M-token context window.",
+        "contextWindow": 1000000,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 26, 2025",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "inkling": {
       "defaults": {
         "name": "Inkling",

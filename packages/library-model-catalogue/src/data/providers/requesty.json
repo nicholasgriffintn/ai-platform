@@ -314,7 +314,7 @@
       "model": "claude-opus/claude-opus-4-5",
       "matchingModel": "anthropic/claude-opus-4-5",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
@@ -501,7 +501,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "September 9, 2025",
         "lastUpdated": "September 9, 2025",
@@ -699,7 +699,7 @@
       "model": "gpt/gpt-5-1",
       "matchingModel": "openai/gpt-5.1",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -1010,7 +1010,7 @@
       "matchingModel": "claude-opus-4-5",
       "overrides": {
         "name": "Claude Opus 4.5 (latest)",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -1033,7 +1033,7 @@
       "model": "claude-opus/claude-opus-4-5-latest-eu",
       "matchingModel": "claude-opus-4-5@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275
@@ -1508,7 +1508,7 @@
       "model": "gpt/gpt-5-1-eu",
       "matchingModel": "gpt-5.1@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.011
@@ -1592,7 +1592,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 8, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
@@ -2632,7 +2632,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -2654,7 +2654,7 @@
       "model": "kimi-k2/kimi-k2-7-code-eu",
       "matchingModel": "kimi-k2.7-code@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0045,
