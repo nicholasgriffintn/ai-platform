@@ -1,5 +1,13 @@
 # @ngriffin_uk/polychat-library-sites
 
+## 0.3.6
+
+### Patch Changes
+
+- Updated dependencies [80afaf2]
+  - @ngriffin_uk/polychat-schemas@1.14.0
+  - @ngriffin_uk/polychat-utility-core@0.10.0
+
 ## 0.3.5
 
 ### Patch Changes

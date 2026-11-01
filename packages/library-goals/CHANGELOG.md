@@ -1,5 +1,13 @@
 # @ngriffin_uk/polychat-library-goals
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [80afaf2]
+  - @ngriffin_uk/polychat-library-tasks@0.3.0
+  - @ngriffin_uk/polychat-schemas@1.14.0
+
 ## 0.1.1
 
 ### Patch Changes

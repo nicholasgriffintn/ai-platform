@@ -1,5 +1,15 @@
 # @ngriffin_uk/polychat-library-agent-loop
 
+## 0.3.7
+
+### Patch Changes
+
+- Updated dependencies [80afaf2]
+  - @ngriffin_uk/polychat-utility-core@0.10.0
+  - @ngriffin_uk/polychat-utility-server@0.7.0
+  - @ngriffin_uk/polychat-library-interactions@0.1.8
+  - @ngriffin_uk/polychat-library-tools@0.4.5
+
 ## 0.3.6
 
 ### Patch Changes

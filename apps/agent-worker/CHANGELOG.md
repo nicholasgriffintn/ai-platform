@@ -1,5 +1,15 @@
 # @assistant/agent-worker
 
+## 0.1.7
+
+### Patch Changes
+
+- Updated dependencies [80afaf2]
+  - @ngriffin_uk/polychat-schemas@1.14.0
+  - @ngriffin_uk/polychat-utility-core@0.10.0
+  - @ngriffin_uk/polychat-utility-server@0.7.0
+  - @ngriffin_uk/polychat-library-sandbox@0.3.7
+
 ## 0.1.6
 
 ### Patch Changes
