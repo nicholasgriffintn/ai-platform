@@ -28,6 +28,10 @@ import {
   discoverTopicKey,
   listEditionLinks,
 } from "~/modules/discover/domain/edition";
+import {
+  summariseDiscoverFeedPreferences,
+  type DiscoverFeedPreferences,
+} from "~/modules/discover/domain/feed-weights";
 import { summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
 import { isDiscoverSignalCurrent } from "~/modules/discover/domain/freshness";
 import type { DiscoverLink } from "~/modules/discover/domain/links";
@@ -125,6 +129,7 @@ export interface DiscoverEditionBasis {
   resurfaceHrefs: Set<string>;
   edition: DiscoverEditionTime;
   seenLinks: DiscoverLink[];
+  feedPreferences: DiscoverFeedPreferences;
 }
 
 async function loadDiscoverBasis(context: ServiceContext, now: Date) {
@@ -191,6 +196,7 @@ export async function readDiscoverEditionBasis(
     resurfaceHrefs: new Set(resurface.map((item) => item.href)),
     edition: basis.edition,
     seenLinks: listEditionLinks(basis.recentEditions),
+    feedPreferences: summariseDiscoverFeedPreferences(basis.feedbackEntries),
   };
 }
 

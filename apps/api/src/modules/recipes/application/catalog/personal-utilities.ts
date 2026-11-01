@@ -6,6 +6,7 @@ import {
 
 import {
   DISCOVER_SIGNALS,
+  isDiscoverConnectorSignal,
   listDiscoverSignalOperations,
 } from "~/modules/discover/domain/signal-catalogue";
 import { listDiscoverSignalProviders } from "~/modules/discover/domain/signal-selection";
@@ -25,8 +26,10 @@ import {
   locationField,
 } from "./shared";
 
+const DISCOVER_CONNECTOR_SIGNALS = DISCOVER_SIGNALS.filter(isDiscoverConnectorSignal);
+
 const DISCOVER_SIGNAL_INTEGRATIONS: CatalogRecipe["integrations"] = listDiscoverSignalProviders(
-  DISCOVER_SIGNALS,
+  DISCOVER_CONNECTOR_SIGNALS,
 ).map((provider) => ({
   id: provider.providerId,
   providerId: provider.providerId,
@@ -36,9 +39,9 @@ const DISCOVER_SIGNAL_INTEGRATIONS: CatalogRecipe["integrations"] = listDiscover
   connectionGroup: provider.group,
   operationIds: [
     ...new Set(
-      DISCOVER_SIGNALS.filter((signal) => signal.providerId === provider.providerId).flatMap(
-        listDiscoverSignalOperations,
-      ),
+      DISCOVER_CONNECTOR_SIGNALS.filter(
+        (signal) => signal.providerId === provider.providerId,
+      ).flatMap(listDiscoverSignalOperations),
     ),
   ],
 }));
@@ -120,6 +123,7 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
         description: "The illustration style for episodes.",
       },
     ],
+    privateConfigurationKeys: ["feeds", "includedProviders", "newsCategories", "country"],
   },
   {
     id: "birthday-gift-ideas",

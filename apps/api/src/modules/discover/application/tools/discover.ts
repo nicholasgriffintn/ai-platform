@@ -93,6 +93,7 @@ export const compose_discover_edition: ApiToolDefinition = {
         followedTopics: basis.followedTopics,
         curate: basis.curate,
         interestOrder: args.interests.map((interest) => interest.topic),
+        preferences: basis.feedPreferences,
       }),
       createId: generateId,
     });

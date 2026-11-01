@@ -12,6 +12,7 @@ import {
   fillDiscoverFeed,
   splitDiscoverSignalFeeds,
 } from "~/modules/discover/domain/feed";
+import { summariseDiscoverFeedPreferences } from "~/modules/discover/domain/feed-weights";
 import { summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
 import { collectSeenLinks } from "~/modules/discover/domain/links";
 import {
@@ -49,6 +50,7 @@ export async function topUpDiscoverFeed(
     summariseDiscoverFeedback(feedback).hiddenTopics.map(discoverTopicKey),
   );
   const { browsed, shared } = splitDiscoverSignalFeeds(documents.signals);
+  const preferences = summariseDiscoverFeedPreferences(feedback);
   const research = selectCurrentResearch(documents.research, {
     today: input.today,
     hiddenTopics,
@@ -62,6 +64,7 @@ export async function topUpDiscoverFeed(
         followedTopics: new Set(follows.map((follow) => discoverTopicKey(follow.topic))),
         curate: input.curate,
         interestOrder: content.interests.map((interest) => interest.topic),
+        preferences,
       }),
       seen: collectSeenLinks([
         ...listEditionLinks([content, ...earlier.map((edition) => edition.content)]),

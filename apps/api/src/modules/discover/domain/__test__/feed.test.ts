@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { discoverTopicKey } from "../edition";
 import { buildDiscoverFeedGroups, fillDiscoverFeed, type DiscoverFeedGroup } from "../feed";
+import { summariseDiscoverFeedPreferences } from "../feed-weights";
 import { collectSeenLinks } from "../links";
 
 function item(slug: string, source = "Example") {
@@ -74,6 +75,51 @@ describe("fillDiscoverFeed", () => {
     ]);
   });
 
+  it("gives sources you asked for more of extra cards each round and sources you want less of fewer", () => {
+    const cards = fill([
+      {
+        topic: "Hacker News",
+        lead: "From HN",
+        items: ["h1", "h2", "h3", "h4"].map((s) => item(s)),
+        weight: 2,
+        ranked: true,
+      },
+      {
+        topic: "DEV",
+        lead: "From DEV",
+        items: ["d1", "d2", "d3"].map((s) => item(s)),
+        weight: 0.5,
+        ranked: true,
+      },
+    ]);
+
+    expect(cards.map((card) => (card.kind === "read" ? card.url.split("/").at(-1) : ""))).toEqual([
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "d1",
+      "d2",
+      "d3",
+    ]);
+  });
+
+  it("turns videos and podcast episodes into watch and listen cards", () => {
+    const cards = fill([
+      {
+        topic: "YouTube new videos",
+        lead: "From YouTube new videos",
+        items: [
+          { ...item("video"), media: "watch" as const },
+          { ...item("episode"), media: "listen" as const },
+        ],
+        ranked: true,
+      },
+    ]);
+
+    expect(cards.map((card) => card.kind)).toEqual(["watch", "listen"]);
+  });
+
   it("leaves out an item that would not make a valid card, such as a plain http link", () => {
     const cards = fill([
       {
@@ -109,6 +155,42 @@ describe("fillDiscoverFeed", () => {
 });
 
 describe("buildDiscoverFeedGroups", () => {
+  it("weights service feeds by more, less and how often their cards get opened", () => {
+    const feedback = (signal: "more" | "less" | "opened", topic: string, cardId: string) => ({
+      editionId: "e1",
+      cardId,
+      signal,
+      topic,
+      title: "",
+      url: null,
+      createdAt: "2026-10-30T10:00:00Z",
+    });
+    const groups = buildDiscoverFeedGroups({
+      research: [],
+      signals: [
+        { title: "DEV this week", items: [item("d")] },
+        { title: "Hacker News", items: [item("h")] },
+        { title: "Lobsters", items: [item("l")] },
+      ],
+      headlinesTopic: "Today's headlines",
+      followedTopics: new Set(),
+      curate: "",
+      interestOrder: [],
+      preferences: summariseDiscoverFeedPreferences([
+        feedback("less", "DEV this week", "c1"),
+        feedback("more", "Hacker News", "c2"),
+        feedback("opened", "Lobsters", "c3"),
+        feedback("opened", "Lobsters", "c4"),
+      ]),
+    });
+
+    expect(groups.map((group) => [group.topic, group.weight])).toEqual([
+      ["Hacker News", 2],
+      ["Lobsters", 1.2],
+      ["DEV this week", 0.5],
+    ]);
+  });
+
   it("puts followed topics first, then today's interests, headlines, then service feeds", () => {
     const groups = buildDiscoverFeedGroups({
       research: [

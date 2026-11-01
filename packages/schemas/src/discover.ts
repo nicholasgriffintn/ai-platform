@@ -387,6 +387,10 @@ export const discoverEditionSchema = discoverEditionContentSchema.extend({
   feedback: z.record(z.string(), z.array(discoverFeedbackSignalSchema)),
 });
 
+export const DISCOVER_FEED_LIMIT = 20;
+
+export const discoverFeedUrlSchema = z.url({ protocol: /^https?$/ }).max(2048);
+
 export const discoverSettingsSchema = z.object({
   enabled: z.boolean(),
   timezone: z.string().nullable(),
@@ -397,6 +401,15 @@ export const discoverSettingsSchema = z.object({
   episode: discoverEpisodeLengthSchema,
   style: videoOverviewStyleSchema,
   notify: z.boolean(),
+  feeds: z.array(z.string()),
+  newsCategories: z.array(
+    z.object({
+      id: z.string().min(1),
+      label: z.string().min(1),
+      sources: z.array(z.string()),
+      selected: z.boolean(),
+    }),
+  ),
   sources: z.array(
     z.object({
       providerId: z.string().min(1),
@@ -428,6 +441,8 @@ export const updateDiscoverSettingsSchema = z
     episode: discoverEpisodeLengthSchema.optional(),
     style: videoOverviewStyleSchema.optional(),
     notify: z.boolean().optional(),
+    feeds: z.array(discoverFeedUrlSchema).max(DISCOVER_FEED_LIMIT).optional(),
+    newsCategories: z.array(z.string().min(1).max(40)).max(40).optional(),
     source: z
       .object({ providerId: z.string().min(1), used: z.boolean() })
       .strict()

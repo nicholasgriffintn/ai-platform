@@ -1,5 +1,5 @@
 import { HOSTED_MCP_APPROVAL_TOOL_NAME, type ModelModalities } from "@ngriffin_uk/polychat-schemas";
-import { isRecord, generateId } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, generateId, readTrimmedString } from "@ngriffin_uk/polychat-utility-core";
 import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -14,6 +14,7 @@ import {
 import type { ProviderStorage } from "../host.js";
 import { buildOpenAIResponseOutputParts } from "../openai-response-parts.js";
 import { preprocessQwQResponse } from "../unterminated-thinking.js";
+import { readProviderRefusal } from "../utils/generation-signals.js";
 import { readGoogleThoughtSignature } from "../utils/googleThoughtSignatures.js";
 import { extractReasoningContentBlocks } from "./content-blocks.js";
 
@@ -49,8 +50,15 @@ export class ResponseFormatter {
     options: ResponseFormatOptions = {},
   ): Promise<any> {
     const formatter = ResponseFormatter.getFormatter(provider);
+    const formatted = await formatter(data, options);
 
-    return await formatter(data, options);
+    if (!isRecord(formatted) || formatted.refusal || readTrimmedString(formatted.response)) {
+      return formatted;
+    }
+
+    const refusal = readProviderRefusal(data);
+
+    return refusal ? { ...formatted, refusal } : formatted;
   }
 
   private static getFormatter(

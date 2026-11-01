@@ -13,12 +13,19 @@ import { discoverTopicKey } from "./edition";
 export const DISCOVER_HEADLINES_TOPIC = "Today's headlines";
 const RESEARCH_CURRENT_DAYS = 1;
 
+export type DiscoverResultMedia = "watch" | "listen";
+
 export interface DiscoverResearchResult {
   title: string;
   url: string;
   snippet: string;
   source?: string;
   date?: string;
+  media?: DiscoverResultMedia;
+}
+
+function readResultMedia(value: unknown): DiscoverResultMedia | undefined {
+  return value === "watch" || value === "listen" ? value : undefined;
 }
 
 export interface DiscoverResearchSection {
@@ -67,6 +74,7 @@ export function readResearchResults(value: unknown): DiscoverResearchResult[] {
             snippet: typeof entry.snippet === "string" ? entry.snippet : "",
             ...(typeof entry.source === "string" ? { source: entry.source } : {}),
             ...(typeof entry.date === "string" ? { date: entry.date } : {}),
+            ...(readResultMedia(entry.media) ? { media: readResultMedia(entry.media) } : {}),
           },
         ]
       : [],

@@ -1,13 +1,11 @@
-import {
-  DISCOVER_SIGNAL_GROUPS,
-  listDiscoverSignalOperations,
-  type DiscoverSignal,
-} from "./signal-catalogue";
+import { isDiscoverPublicSignal, listDiscoverSignalOperations } from "./signal-catalogue";
+import { DISCOVER_SIGNAL_GROUPS, type DiscoverSignal } from "./signal-sources/types";
 
 export interface DiscoverSignalSelectionInput {
   signals: readonly DiscoverSignal[];
   connectedProviders: ReadonlySet<string>;
   excludedProviders: ReadonlySet<string>;
+  includedProviders: ReadonlySet<string>;
   supports: (providerId: string, operation: string) => boolean;
   hasLocation: boolean;
 }
@@ -26,10 +24,21 @@ export function selectDiscoverSignals(
 
   for (const signal of input.signals) {
     if (
-      !input.connectedProviders.has(signal.providerId) ||
       input.excludedProviders.has(signal.providerId) ||
       (signal.needsLocation && !input.hasLocation)
     ) {
+      continue;
+    }
+
+    if (isDiscoverPublicSignal(signal)) {
+      if (input.includedProviders.has(signal.providerId)) {
+        selected.push(signal);
+      }
+
+      continue;
+    }
+
+    if (!input.connectedProviders.has(signal.providerId)) {
       continue;
     }
 

@@ -1,4 +1,4 @@
-import { isRecord, readStringField } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, readNonEmptyString, readStringField } from "@ngriffin_uk/polychat-utility-core";
 import { readNumberField } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
 import type { ToolDefinitionLike } from "../tool-definitions.js";
@@ -181,6 +181,43 @@ export function readStopReason(data: unknown): string | undefined {
   }
 
   return undefined;
+}
+
+const REFUSAL_STOP_REASONS = new Set([
+  "refusal",
+  "content_filter",
+  "content_filtered",
+  "guardrail_intervened",
+  "safety",
+  "prohibited_content",
+  "blocklist",
+  "spii",
+  "image_safety",
+]);
+
+export function readProviderRefusal(data: unknown): string | null {
+  if (!isRecord(data)) {
+    return null;
+  }
+
+  const choice = Array.isArray(data.choices) && isRecord(data.choices[0]) ? data.choices[0] : {};
+  const explicit =
+    readNonEmptyString(data.refusal) ??
+    readNonEmptyString(isRecord(choice.message) ? choice.message.refusal : undefined);
+
+  if (explicit) {
+    return explicit;
+  }
+
+  const reason = readStopReason(data);
+
+  if (!reason || !REFUSAL_STOP_REASONS.has(reason.toLowerCase())) {
+    return null;
+  }
+
+  const details = isRecord(data.stop_details) ? data.stop_details : {};
+
+  return readNonEmptyString(details.explanation) ?? `Blocked by the provider (${reason})`;
 }
 
 export function readErrorStatus(error: unknown): number | undefined {

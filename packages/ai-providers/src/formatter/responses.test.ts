@@ -106,6 +106,40 @@ describe("ResponseFormatter Google AI Studio prompt blocks", () => {
   });
 });
 
+describe("ResponseFormatter provider refusals", () => {
+  it("reports an Anthropic refusal stop with its explanation", async () => {
+    const response = await ResponseFormatter.formatResponse(
+      {
+        content: [],
+        stop_reason: "refusal",
+        stop_details: { type: "refusal", category: "cyber", explanation: "Blocked under policy" },
+      },
+      "anthropic",
+    );
+
+    expect(response.response).toBe("");
+    expect(response.refusal).toBe("Blocked under policy");
+  });
+
+  it("reports an OpenAI-compatible content filter stop", async () => {
+    const response = await ResponseFormatter.formatResponse(
+      { choices: [{ message: { content: null }, finish_reason: "content_filter" }] },
+      "openai",
+    );
+
+    expect(response.refusal).toBe("Blocked by the provider (content_filter)");
+  });
+
+  it("leaves an answered reply without a refusal", async () => {
+    const response = await ResponseFormatter.formatResponse(
+      { content: [{ type: "text", text: "Sure." }], stop_reason: "end_turn" },
+      "anthropic",
+    );
+
+    expect(response.refusal).toBeUndefined();
+  });
+});
+
 describe("StreamingFormatter Google AI Studio tool calls", () => {
   it("preserves Google's function call id", () => {
     const toolCall = StreamingFormatter.extractToolCall({

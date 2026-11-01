@@ -20,11 +20,21 @@ import {
   listDeviceActivityProviders,
   readDeviceActivitySource,
 } from "~/modules/discover/domain/device-activity";
+import { DISCOVER_NEWS_CATEGORIES } from "~/modules/discover/domain/news-categories";
 import {
   DEFAULT_DISCOVER_PREFERENCES,
+  applyDiscoverSourceChange,
+  readDiscoverNewsCategoryIds,
   readDiscoverPreferences,
   type DiscoverPreferences,
 } from "~/modules/discover/domain/settings";
+import {
+  DISCOVER_SIGNALS,
+  isDiscoverOptInProvider,
+  isDiscoverPublicSignal,
+} from "~/modules/discover/domain/signal-catalogue";
+import { listDiscoverSignalProviders } from "~/modules/discover/domain/signal-selection";
+import { DISCOVER_FEED_PROVIDER_ID } from "~/modules/discover/domain/signal-sources/feeds";
 import {
   isRoutineAlwaysNotified,
   setRoutineAlwaysNotified,
@@ -43,6 +53,15 @@ import { forgetDeviceActivity } from "./device-documents";
 import { enqueueDiscoverJob } from "./jobs";
 import { listDiscoverSignalDocuments } from "./notebook";
 
+function describeNewsCategories(selected: readonly string[]): DiscoverSettings["newsCategories"] {
+  return DISCOVER_NEWS_CATEGORIES.map((category) => ({
+    id: category.id,
+    label: category.label,
+    sources: category.feeds.map((feed) => feed.name),
+    selected: selected.includes(category.id),
+  }));
+}
+
 const DISABLED: DiscoverSettings = {
   enabled: false,
   timezone: null,
@@ -53,6 +72,8 @@ const DISABLED: DiscoverSettings = {
   episode: DEFAULT_DISCOVER_PREFERENCES.episode,
   style: DEFAULT_DISCOVER_PREFERENCES.style,
   notify: false,
+  feeds: [],
+  newsCategories: describeNewsCategories([]),
   sources: [],
   installationId: null,
   episodeCosts: null,
@@ -82,8 +103,9 @@ function storedPreferences(installation: RecipeInstallation): DiscoverPreference
 
 async function describeSources(
   context: ServiceContext,
-  excluded: readonly string[],
+  preferences: DiscoverPreferences,
 ): Promise<DiscoverSettings["sources"]> {
+  const excluded = preferences[RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY];
   const user = context.requireUser();
   const [recipe, signals] = await Promise.all([
     getAssistantRecipe(DISCOVER_RECIPE_ID, { context, userId: user.id }),
@@ -124,20 +146,53 @@ async function describeSources(
       connected: true,
       ...health(deviceActivityProviderId(source)),
     })),
+    ...listDiscoverSignalProviders(DISCOVER_SIGNALS.filter(isDiscoverPublicSignal)).map(
+      (source) => ({
+        providerId: source.providerId,
+        name: source.title,
+        description: source.description,
+        connected: true,
+        ...health(source.providerId),
+        used: preferences.includedProviders.includes(source.providerId),
+      }),
+    ),
+    ...(preferences.feeds.length > 0
+      ? [
+          {
+            providerId: DISCOVER_FEED_PROVIDER_ID,
+            name: "Your feeds",
+            description: `Reads the ${preferences.feeds.length} feeds you follow.`,
+            connected: true,
+            ...health(DISCOVER_FEED_PROVIDER_ID),
+          },
+        ]
+      : []),
   ];
 }
 
 export type DiscoverRoutineSettings = Omit<
   DiscoverSettings,
   "notify" | "sources" | "episodeCosts"
-> & { excludedProviders: string[]; country: string | null };
+> & {
+  excludedProviders: string[];
+  includedProviders: string[];
+  newsCategoryIds: string[];
+  country: string | null;
+};
 
 function describeRoutine(
   installation: RecipeInstallation | null,
   location: string | null,
 ): DiscoverRoutineSettings {
   if (!installation) {
-    return { ...DISABLED, location, excludedProviders: [], country: null };
+    return {
+      ...DISABLED,
+      location,
+      excludedProviders: [],
+      includedProviders: [],
+      newsCategoryIds: [],
+      country: null,
+    };
   }
 
   const schedule = installation.triggers.find((trigger) => trigger.type === "schedule");
@@ -152,8 +207,12 @@ function describeRoutine(
     evening: preferences.evening,
     episode: preferences.episode,
     style: preferences.style,
+    feeds: preferences.feeds,
+    newsCategories: describeNewsCategories(preferences.newsCategories),
+    newsCategoryIds: preferences.newsCategories,
     installationId: installation.id,
     excludedProviders: preferences[RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY],
+    includedProviders: preferences.includedProviders,
     country: preferences.country,
   };
 }
@@ -171,24 +230,16 @@ async function describeInstallation(
     readUserLocation(context),
     isRoutineAlwaysNotified(context, installation.id),
     estimateDiscoverCosts(context),
-    describeSources(context, preferences[RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY]),
+    describeSources(context, preferences),
   ]);
-  const { excludedProviders: _excluded, ...routine } = describeRoutine(installation, location);
+  const {
+    excludedProviders: _excluded,
+    includedProviders: _included,
+    newsCategoryIds: _newsCategoryIds,
+    ...routine
+  } = describeRoutine(installation, location);
 
   return { ...routine, notify, episodeCosts: costs.episode, sources };
-}
-
-function nextExcludedSources(
-  current: readonly string[],
-  change: UpdateDiscoverSettings["source"],
-): string[] {
-  if (!change) {
-    return [...current];
-  }
-
-  const others = current.filter((providerId) => providerId !== change.providerId);
-
-  return change.used ? others : [...others, change.providerId];
 }
 
 async function readUserLocation(context: ServiceContext): Promise<string | null> {
@@ -243,10 +294,11 @@ export async function updateDiscoverSettings(
     evening: input.evening ?? current.evening,
     episode: input.episode ?? current.episode,
     style: input.style ?? current.style,
-    [RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY]: nextExcludedSources(
-      current[RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY],
-      input.source,
-    ),
+    feeds: input.feeds ? [...new Set(input.feeds)] : current.feeds,
+    newsCategories: input.newsCategories
+      ? readDiscoverNewsCategoryIds(input.newsCategories)
+      : current.newsCategories,
+    ...applyDiscoverSourceChange(current, input.source, isDiscoverOptInProvider),
     country: requestCountry ?? current.country,
   };
   const installed = await installAssistantRecipe(DISCOVER_RECIPE_ID, {

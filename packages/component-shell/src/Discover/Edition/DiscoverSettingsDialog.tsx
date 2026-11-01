@@ -33,6 +33,8 @@ import { useState } from "react";
 import { Link } from "react-router";
 
 import { RoutineSpendControl } from "../../Teammates/RoutineSpendControl.js";
+import { DiscoverFeedsField } from "./DiscoverFeedsField.js";
+import { DiscoverNewsField } from "./DiscoverNewsField.js";
 
 const EPISODE_LENGTH_LABELS: Record<DiscoverEpisodeLength, string> = {
   off: "No episodes",
@@ -71,6 +73,8 @@ export interface DiscoverSettingsDialogProps {
   onToggle: (enabled: boolean) => void;
   onUseSource: (providerId: string, used: boolean) => void;
   onSaveCurate: (curate: string) => void;
+  onSaveFeeds: (feeds: string[]) => void;
+  onSaveNewsCategories: (categoryIds: string[]) => void;
   onSavePreferences: (
     preferences: Pick<
       UpdateDiscoverSettings,
@@ -104,6 +108,8 @@ export function DiscoverSettingsDialog({
   onToggle,
   onUseSource,
   onSaveCurate,
+  onSaveFeeds,
+  onSaveNewsCategories,
   onSavePreferences,
 }: DiscoverSettingsDialogProps) {
   const [curate, setCurate] = useState(settings.curate);
@@ -181,7 +187,7 @@ export function DiscoverSettingsDialog({
             <div className="flex flex-col gap-2">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 flex-col gap-0.5">
-                  <p className="text-sm font-medium text-foreground">Connected services</p>
+                  <p className="text-sm font-medium text-foreground">Sources</p>
                   <p className="text-xs text-muted-foreground">
                     {connectedSources.length === 0
                       ? "Nothing connected yet. Connect what you read, watch and listen to and Discover works from it."
@@ -227,18 +233,6 @@ export function DiscoverSettingsDialog({
               )}
             </div>
           )}
-          {settings.enabled && settings.installationId && (
-            <div className="flex flex-col gap-2">
-              <div className="flex flex-col gap-0.5">
-                <p className="text-sm font-medium text-foreground">Monthly budget</p>
-                <p className="text-xs text-muted-foreground">
-                  Each morning's edition, its episode, The Perch and Your week count here. When it
-                  runs short, episodes get shorter rather than stopping.
-                </p>
-              </div>
-              <RoutineSpendControl installationId={settings.installationId} />
-            </div>
-          )}
           {follows.length > 0 && (
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium text-foreground">Following</p>
@@ -268,6 +262,16 @@ export function DiscoverSettingsDialog({
             </div>
           )}
           {settings.enabled && (
+            <DiscoverNewsField
+              categories={settings.newsCategories}
+              isSaving={isSaving}
+              onChange={onSaveNewsCategories}
+            />
+          )}
+          {settings.enabled && (
+            <DiscoverFeedsField feeds={settings.feeds} isSaving={isSaving} onSave={onSaveFeeds} />
+          )}
+          {settings.enabled && (
             <form
               className="flex flex-col gap-2"
               onSubmit={(event) => {
@@ -293,6 +297,18 @@ export function DiscoverSettingsDialog({
               </div>
             </form>
           )}
+          {settings.enabled && settings.installationId && (
+            <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-0.5">
+                <p className="text-sm font-medium text-foreground">Monthly budget</p>
+                <p className="text-xs text-muted-foreground">
+                  Each morning's edition, its episode, The Perch and Your week count here. When it
+                  runs short, episodes get shorter rather than stopping.
+                </p>
+              </div>
+              <RoutineSpendControl installationId={settings.installationId} />
+            </div>
+          )}
           {settings.enabled && canWriteAgain && (
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-col gap-0.5">
@@ -315,16 +331,6 @@ export function DiscoverSettingsDialog({
                 {isWriting ? "Writing" : "Write again"}
               </Button>
             </div>
-          )}
-          {settings.enabled && (
-            <p className="text-xs text-muted-foreground">
-              {settings.location
-                ? `Weather and what is on nearby use ${settings.location}, from your account.`
-                : "Add a location to your account and Discover will bring in the weather and what is on nearby."}{" "}
-              <Link to="/profile" className="text-foreground underline">
-                Profile
-              </Link>
-            </p>
           )}
         </div>
       </DialogContent>

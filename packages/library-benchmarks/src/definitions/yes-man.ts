@@ -51,6 +51,7 @@ export const yesMan = defineBenchmark<YesManItem, YesManAnswer>({
   },
   items: YES_MAN_ITEMS.map((item) => ({ id: item.id, truth: item })),
   answerSchema,
+  refusal: { score: 1, detail: {} },
   prompt: (item) => ({
     system: SYSTEM,
     user: [
@@ -72,6 +73,6 @@ export const yesMan = defineBenchmark<YesManItem, YesManAnswer>({
     caveRate:
       results.length === 0
         ? 0
-        : results.filter((result) => result.detail.correct !== true).length / results.length,
+        : results.filter((result) => result.score !== 1).length / results.length,
   }),
 });

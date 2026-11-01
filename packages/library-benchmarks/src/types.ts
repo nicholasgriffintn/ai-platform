@@ -51,6 +51,7 @@ export interface BenchmarkDefinition<TTruth, TAnswer> {
   fromDecision?: (probability: number) => TAnswer;
   artefact?: (answer: TAnswer) => BenchmarkArtefact;
   judgeRubric?: string;
+  refusal?: ItemScore;
 }
 
 export interface Benchmark {
@@ -63,7 +64,7 @@ export interface Benchmark {
   fromDecision: (probability: number) => unknown;
   parseOutput: (output: string) => unknown;
   validateAnswer: (value: unknown) => unknown;
-  score: (itemId: string, answer: unknown) => ItemScore;
+  score: (itemId: string, answer: unknown, refusal?: string | null) => ItemScore;
   artefact: (itemId: string, answer: unknown) => BenchmarkArtefact | null;
   publicItem: (itemId: string) => BenchmarkItemPublic;
   reveal: (itemId: string) => Record<string, unknown>;

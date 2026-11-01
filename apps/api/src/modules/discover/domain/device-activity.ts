@@ -9,7 +9,7 @@ import { readUrlHost } from "@ngriffin_uk/polychat-utility-core";
 
 import { mergeDailyLog, parseDailyLog, renderDailyLog, type DailyLogDay } from "./daily-log";
 import type { DiscoverResearchResult } from "./research";
-import type { DiscoverSignalGroup } from "./signal-catalogue";
+import type { DiscoverSignalGroup } from "./signal-sources/types";
 
 export const DEVICE_ACTIVITY_MACHINE_METADATA_KEY = "deviceMachineId";
 export const DEVICE_ACTIVITY_DAYS_KEPT = 7;

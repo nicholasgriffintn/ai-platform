@@ -39,6 +39,12 @@ export function defineBenchmark<TTruth, TAnswer>(
     return parsed.success ? parsed.data : null;
   };
 
+  const scoreAnswer = (itemId: string, answer: unknown): ItemScore => {
+    const valid = validateAnswer(answer);
+
+    return valid === null ? INVALID_ANSWER : definition.score(requireItem(itemId), valid);
+  };
+
   return {
     summary: { ...definition.summary, itemCount: definition.items.length },
     itemIds: definition.items.map((item) => item.id),
@@ -49,10 +55,14 @@ export function defineBenchmark<TTruth, TAnswer>(
     fromDecision: (probability) => definition.fromDecision?.(probability) ?? null,
     parseOutput: (output) => validateAnswer(definition.parse(output)),
     validateAnswer,
-    score: (itemId, answer) => {
-      const valid = validateAnswer(answer);
+    score: (itemId, answer, refusal = null) => {
+      if (refusal === null) {
+        return scoreAnswer(itemId, answer);
+      }
 
-      return valid === null ? INVALID_ANSWER : definition.score(requireItem(itemId), valid);
+      const scored = definition.refusal ?? scoreAnswer(itemId, answer);
+
+      return { ...scored, detail: { ...scored.detail, blocked: refusal } };
     },
     artefact: (itemId, answer) => {
       const valid = validateAnswer(answer);

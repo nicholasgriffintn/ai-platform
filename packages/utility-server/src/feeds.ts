@@ -1,4 +1,15 @@
 import { htmlToPlainText } from "./html-text.js";
+import { fetchFollowingSafeRedirects, readResponseTextWithinLimit } from "./http.js";
+
+export const SYNDICATION_ACCEPT_HEADER =
+  "application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.9, */*;q=0.5";
+
+export class SyndicationFeedResponseError extends Error {
+  constructor(readonly status: number) {
+    super(`The feed answered with ${status}`);
+    this.name = "SyndicationFeedResponseError";
+  }
+}
 
 export interface SyndicationItem {
   title: string;
@@ -204,4 +215,23 @@ export function parseSyndicationFeed(xml: string, base: string | null = null): S
     title: readText(xml.slice(0, firstEntry), "title"),
     items: entries.flatMap((entry) => readItem(entry.inner, base) ?? []),
   };
+}
+
+export async function fetchSyndicationFeed(
+  url: string | URL,
+  maxBytes: number,
+): Promise<SyndicationFeed> {
+  const response = await fetchFollowingSafeRedirects(url, {
+    headers: { accept: SYNDICATION_ACCEPT_HEADER },
+  });
+
+  if (!response.ok) {
+    await response.body?.cancel();
+    throw new SyndicationFeedResponseError(response.status);
+  }
+
+  return parseSyndicationFeed(
+    await readResponseTextWithinLimit(response, maxBytes),
+    response.url || url.toString(),
+  );
 }

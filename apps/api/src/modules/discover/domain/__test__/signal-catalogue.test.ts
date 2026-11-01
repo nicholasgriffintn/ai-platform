@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { findDiscoverSignal } from "../signal-catalogue";
+import { findDiscoverSignal, isDiscoverConnectorSignal } from "../signal-catalogue";
+import type { DiscoverConnectorSignal } from "../signal-sources/types";
 
 const read = {
   date: "2026-10-28",
@@ -10,9 +11,19 @@ const read = {
   topics: ['Sleep "Token"', "Isaac Asimov"],
 };
 
+function connector(id: string): DiscoverConnectorSignal {
+  const signal = findDiscoverSignal(id);
+
+  if (!signal || !isDiscoverConnectorSignal(signal)) {
+    throw new Error(`${id} is not a connector signal`);
+  }
+
+  return signal;
+}
+
 describe("Reddit signals", () => {
   it("searches the week's top posts on the person's topics and links search and front page posts alike", () => {
-    const topics = findDiscoverSignal("reddit-topics");
+    const topics = connector("reddit-topics");
     const front = findDiscoverSignal("reddit-front");
 
     expect(topics?.parameters(read)).toMatchObject({
@@ -64,7 +75,7 @@ describe("Reddit signals", () => {
 
 describe("YouTube new videos", () => {
   it("asks each subscribed channel for its uploads and keeps this week's videos, newest first", () => {
-    const signal = findDiscoverSignal("youtube-new-videos");
+    const signal = connector("youtube-new-videos");
     const upload = (videoId: string, title: string, publishedAt: string) => ({
       snippet: { title, videoOwnerChannelTitle: "Veritasium" },
       contentDetails: { videoId, videoPublishedAt: publishedAt },

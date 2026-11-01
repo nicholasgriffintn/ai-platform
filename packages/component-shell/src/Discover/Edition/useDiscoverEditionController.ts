@@ -339,6 +339,10 @@ export function useDiscoverEditionController() {
       updateSettings.mutate({ enabled: settings.enabled, source: { providerId, used } }),
     saveCurate: (curate: string) =>
       settings && updateSettings.mutate({ enabled: settings.enabled, curate }),
+    saveFeeds: (feeds: string[]) =>
+      settings && updateSettings.mutate({ enabled: settings.enabled, feeds }),
+    saveNewsCategories: (newsCategories: string[]) =>
+      settings && updateSettings.mutate({ enabled: settings.enabled, newsCategories }),
     savePreferences: (
       preferences: Pick<
         UpdateDiscoverSettings,

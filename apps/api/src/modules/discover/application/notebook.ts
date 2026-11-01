@@ -13,7 +13,7 @@ import {
   readResearchResults,
   type DiscoverResearchResult,
 } from "~/modules/discover/domain/research";
-import { findDiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
+import { isKnownDiscoverSignalId } from "~/modules/discover/domain/signal-catalogue";
 import { withKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { createNotebook, updateNotebook } from "~/modules/notebooks/application/notebooks";
 import { readNotebookSettings } from "~/modules/notebooks/domain/notebook";
@@ -107,7 +107,7 @@ export function readDiscoverDocuments(sources: readonly SourceRecord[]): Discove
     const topic = metadata[DISCOVER_RESEARCH_METADATA_KEY];
 
     if (typeof signal === "string" && signal) {
-      if (!findDiscoverSignal(signal) && !readDeviceActivitySource(source.provider ?? "")) {
+      if (!isKnownDiscoverSignalId(signal) && !readDeviceActivitySource(source.provider ?? "")) {
         continue;
       }
 

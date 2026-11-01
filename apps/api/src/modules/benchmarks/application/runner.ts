@@ -245,7 +245,7 @@ async function runItem(
       },
       target,
     );
-    const scored = benchmark.score(itemId, response.answer);
+    const scored = benchmark.score(itemId, response.answer, response.blocked);
     const artefact = benchmark.artefact(itemId, response.answer);
     const judged =
       artefact && benchmark.summary.scoring === "votes"
@@ -262,7 +262,6 @@ async function runItem(
         detail: {
           ...scored.detail,
           ...(judged === null ? {} : { judge: judged }),
-          ...(response.blocked === null ? {} : { blocked: response.blocked }),
         },
         error: null,
         attempts,
@@ -305,7 +304,8 @@ export function rescoreAutoResults(
       return result;
     }
 
-    const scored = benchmark.score(result.itemId, result.answer);
+    const refusal = typeof result.detail.blocked === "string" ? result.detail.blocked : null;
+    const scored = benchmark.score(result.itemId, result.answer, refusal);
 
     return { ...result, score: scored.score, detail: scored.detail };
   });

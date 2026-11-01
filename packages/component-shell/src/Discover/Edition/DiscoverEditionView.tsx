@@ -196,6 +196,8 @@ export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
           onToggle={controller.toggle}
           onUseSource={controller.useSource}
           onSaveCurate={controller.saveCurate}
+          onSaveFeeds={controller.saveFeeds}
+          onSaveNewsCategories={controller.saveNewsCategories}
           onSavePreferences={controller.savePreferences}
         />
       )}

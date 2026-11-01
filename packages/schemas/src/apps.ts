@@ -963,6 +963,10 @@ export const assistantRecipeSchema = z.object({
   resultPath: internalNavigationPathSchema.optional(),
   enabledTools: z.array(z.string()).default([]),
   configurationFields: z.array(recipeConfigurationFieldSchema).default([]),
+  privateConfigurationKeys: z
+    .array(z.string().min(1).max(80))
+    .optional()
+    .describe("Saved with an installation but never shown to the model or in configuration forms"),
   connectorPolicy: z
     .object({
       access: z.enum(["read", "write"]).optional(),

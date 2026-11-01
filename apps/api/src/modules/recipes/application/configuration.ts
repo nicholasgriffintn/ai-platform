@@ -1,6 +1,7 @@
 import { getConnectorOperationConfig } from "@ngriffin_uk/polychat-ai-integrations";
 import { operationIsGranted } from "@ngriffin_uk/polychat-library-policy";
 import {
+  RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY,
   recipeConfigurationSchema,
   type AssistantRecipe,
   type RecipeConfiguration,
@@ -80,6 +81,17 @@ export function normaliseRecipeConfigurationForRecipe(
 
     if (normalised !== undefined && normalised !== null && normalised !== "") {
       result[field.key] = normalised;
+    }
+  }
+
+  for (const key of [
+    RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY,
+    ...(recipe.privateConfigurationKeys ?? []),
+  ]) {
+    const value = configuration[key];
+
+    if (value !== undefined) {
+      result[key] = value;
     }
   }
 

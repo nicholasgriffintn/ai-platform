@@ -15,6 +15,7 @@ import {
 import {
   containsRecordList,
   describeZonedInstant,
+  isoDaysBefore,
   sha256Hex,
   zonedTimeToInstant,
 } from "@ngriffin_uk/polychat-utility-core";
@@ -28,7 +29,6 @@ import { z } from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { closeComposioConnectorRun } from "~/modules/connectors/application/composio-run";
-import { executeRecipeConnectorOperation } from "~/modules/connectors/application/operations";
 import { discoverTopicKey } from "~/modules/discover/domain/edition";
 import { isDiscoverGatherFresh } from "~/modules/discover/domain/freshness";
 import {
@@ -37,17 +37,28 @@ import {
 } from "~/modules/discover/domain/gather-schedule";
 import { chooseResearchTopics } from "~/modules/discover/domain/interests";
 import {
+  listDiscoverCategoryNews,
+  matchDiscoverNews,
+  pickDiscoverHeadlines,
+  selectDiscoverNewsCategories,
+} from "~/modules/discover/domain/news-categories";
+import {
   DISCOVER_HEADLINES_TOPIC,
   mergeResearchDocument,
+  type DiscoverResearchResult,
 } from "~/modules/discover/domain/research";
 import {
   DISCOVER_SIGNALS,
   isDiscoverFeedSignal,
-  type DiscoverSignal,
-  type DiscoverSignalExpansion,
+  listDiscoverFeedSignals,
 } from "~/modules/discover/domain/signal-catalogue";
 import { renderSignalDocument } from "~/modules/discover/domain/signal-document";
 import { selectDiscoverSignals } from "~/modules/discover/domain/signal-selection";
+import { DISCOVER_FEED_PROVIDER_ID } from "~/modules/discover/domain/signal-sources/feeds";
+import type {
+  DiscoverSignal,
+  DiscoverSignalRead,
+} from "~/modules/discover/domain/signal-sources/types";
 import { readKnowledgeText, withKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { findTopicArticles } from "~/modules/knowledge/application/syncs/topics";
 import { TaskService } from "~/modules/queue/application/TaskService";
@@ -59,6 +70,7 @@ import { readDiscoverArticles } from "./articles";
 import { topUpDiscoverFeed } from "./feed-top-up";
 import { listDiscoverFollows } from "./follows";
 import { chooseDiscoverInterests } from "./interests";
+import { discoverNewsItemsSchema, readDiscoverNews } from "./news";
 import {
   ensureDiscoverNotebook,
   listDiscoverDocuments,
@@ -67,6 +79,7 @@ import {
 } from "./notebook";
 import { readDiscoverRoutine, type DiscoverRoutineSettings } from "./settings";
 import { discoverSignalSourceId, writeDiscoverDocument } from "./signal-documents";
+import { readDiscoverSignalResult } from "./signal-reads";
 
 const logger = getLogger({ prefix: "discover/gather" });
 const RESEARCH_RESULT_LIMIT = 8;
@@ -75,7 +88,7 @@ const TOPIC_NEWS_DAYS = 3;
 const DISCOVER_NEWS_LANGUAGE = "en";
 const CURATE_TOPIC_LIMIT = 4;
 const TOPIC_RESEARCH_CONCURRENCY = 3;
-const SIGNAL_EXPANSION_CONCURRENCY = 4;
+const NEWS_TOPIC_MIN_MATCHES = 3;
 
 export interface DiscoverGatherSummary {
   read: string[];
@@ -117,12 +130,16 @@ export async function listConnectedDiscoverProviders(
 
 export async function resolveDiscoverSignals(
   context: ServiceContext,
-  settings: Pick<DiscoverRoutineSettings, "location" | "excludedProviders">,
+  settings: Pick<
+    DiscoverRoutineSettings,
+    "location" | "excludedProviders" | "includedProviders" | "feeds"
+  >,
 ) {
   return selectDiscoverSignals({
-    signals: DISCOVER_SIGNALS,
+    signals: [...DISCOVER_SIGNALS, ...listDiscoverFeedSignals(settings.feeds)],
     connectedProviders: await listConnectedDiscoverProviders(context),
     excludedProviders: new Set(settings.excludedProviders),
+    includedProviders: new Set([...settings.includedProviders, DISCOVER_FEED_PROVIDER_ID]),
     supports: supportsSignal,
     hasLocation: Boolean(settings.location),
   });
@@ -140,69 +157,18 @@ async function researchSourceId(userId: number, topic: string): Promise<string> 
   return `discover_research_${(await sha256Hex(`${userId}:${discoverTopicKey(topic)}`)).slice(0, 24)}`;
 }
 
-type SignalOperationRunner = (
-  operation: string,
-  params: Record<string, unknown>,
-) => Promise<unknown>;
-
-async function expandSignal(
-  signal: DiscoverSignal,
-  expansion: DiscoverSignalExpansion,
-  listed: unknown,
-  read: Parameters<DiscoverSignal["parameters"]>[0],
-  run: SignalOperationRunner,
-): Promise<unknown[]> {
-  const requests = expansion.requests(listed, read);
-  const failures: unknown[] = [];
-  const results = await mapWithConcurrency(requests, SIGNAL_EXPANSION_CONCURRENCY, (params) =>
-    run(expansion.operation, params).catch((error: unknown) => {
-      failures.push(error);
-      logger.warn("Part of a Discover signal could not be read", {
-        signal: signal.id,
-        error_message: getErrorMessage(error),
-      });
-
-      return null;
-    }),
-  );
-
-  if (requests.length > 0 && failures.length === requests.length) {
-    throw failures[0];
-  }
-
-  return results.filter((result) => result !== null);
-}
-
 async function readSignal(
   context: ServiceContext,
   notebookId: string,
   signal: DiscoverSignal,
-  read: Parameters<DiscoverSignal["parameters"]>[0],
+  read: DiscoverSignalRead,
 ): Promise<boolean> {
   const user = context.requireUser();
   const sourceId = await discoverSignalSourceId(user.id, signal.id);
   const readAt = new Date().toISOString();
 
   try {
-    const run: SignalOperationRunner = (operation, params) =>
-      executeRecipeConnectorOperation({
-        context,
-        userId: user.id,
-        request: {
-          provider: recipeConnectorProviderSchema.parse(signal.providerId),
-          operation,
-          params,
-        },
-        scope: {
-          completionId: context.connectorRunId,
-          conversationId: null,
-          recipeId: DISCOVER_RECIPE_ID,
-        },
-      });
-    const listed = await run(signal.operation, signal.parameters(read));
-    const result = signal.expand
-      ? await expandSignal(signal, signal.expand, listed, read, run)
-      : listed;
+    const result = await readDiscoverSignalResult(context, signal, read);
     const lines = signal.digest(result);
     const feedItems = signal.items?.(result, read) ?? [];
 
@@ -291,30 +257,33 @@ interface ResearchRequest {
   country: string | null;
   query?: string;
   days?: number;
+  candidates?: readonly DiscoverResearchResult[];
 }
 
 async function researchTopic(
   context: ServiceContext,
   notebookId: string,
-  { topic, date, country, query = topic, days = TOPIC_NEWS_DAYS }: ResearchRequest,
+  { topic, date, country, query = topic, days = TOPIC_NEWS_DAYS, candidates }: ResearchRequest,
 ): Promise<boolean> {
   const user = context.requireUser();
   const sourceId = await researchSourceId(user.id, topic);
   const attemptedAt = new Date().toISOString();
 
   try {
-    const found = await findTopicArticles(
-      context,
-      { userId: user.id, projectId: null },
-      {
-        kind: "news",
-        query,
-        days,
-        country,
-        language: DISCOVER_NEWS_LANGUAGE,
-        limit: RESEARCH_RESULT_LIMIT,
-      },
-    );
+    const found =
+      candidates ??
+      (await findTopicArticles(
+        context,
+        { userId: user.id, projectId: null },
+        {
+          kind: "news",
+          query,
+          days,
+          country,
+          language: DISCOVER_NEWS_LANGUAGE,
+          limit: RESEARCH_RESULT_LIMIT,
+        },
+      ));
     const results = await readDiscoverArticles(context, notebookId, {
       topic,
       date,
@@ -474,6 +443,14 @@ export async function runDiscoverGather(
       (ok ? read : stale).push(signal.providerId);
     }
 
+    const newsCategories = selectDiscoverNewsCategories(settings.newsCategoryIds);
+    const news =
+      newsCategories.length > 0
+        ? await steps.value("news", discoverNewsItemsSchema, () => readDiscoverNews(newsCategories))
+        : [];
+    const headlineSince = isoDaysBefore(now, HEADLINE_NEWS_DAYS);
+    const topicSince = isoDaysBefore(now, TOPIC_NEWS_DAYS);
+
     await steps.run("headlines", async () => {
       await researchTopic(context, notebookId, {
         topic: DISCOVER_HEADLINES_TOPIC,
@@ -481,8 +458,31 @@ export async function runDiscoverGather(
         country: settings.country,
         query: headlinesQuery(settings.location),
         days: HEADLINE_NEWS_DAYS,
+        ...(news.length > 0
+          ? {
+              candidates: pickDiscoverHeadlines(news, {
+                since: headlineSince,
+                limit: RESEARCH_RESULT_LIMIT,
+              }),
+            }
+          : {}),
       });
     });
+
+    await mapWithConcurrency(newsCategories, TOPIC_RESEARCH_CONCURRENCY, (category) =>
+      steps.run(`news-${category.id}`, async () => {
+        await researchTopic(context, notebookId, {
+          topic: category.topic,
+          date: zoned.date,
+          country: settings.country,
+          candidates: listDiscoverCategoryNews(news, {
+            category: category.id,
+            since: topicSince,
+            limit: RESEARCH_RESULT_LIMIT,
+          }),
+        });
+      }),
+    );
 
     topics = await steps.value("topics", z.array(z.string()), async () => {
       const follows = await listDiscoverFollows(context, context.requireUser().id);
@@ -503,10 +503,16 @@ export async function runDiscoverGather(
 
     await mapWithConcurrency(topics, TOPIC_RESEARCH_CONCURRENCY, (topic, index) =>
       steps.run(`topic-${index}`, async () => {
+        const matched = matchDiscoverNews(topic, news, {
+          since: topicSince,
+          limit: RESEARCH_RESULT_LIMIT,
+        });
+
         await researchTopic(context, notebookId, {
           topic,
           date: zoned.date,
           country: settings.country,
+          ...(matched.length >= NEWS_TOPIC_MIN_MATCHES ? { candidates: matched } : {}),
         });
       }),
     );

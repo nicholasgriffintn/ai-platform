@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { DISCOVER_SIGNALS, type DiscoverSignal } from "../signal-catalogue";
+import { DISCOVER_SIGNALS } from "../signal-catalogue";
 import { listDiscoverSignalProviders, selectDiscoverSignals } from "../signal-selection";
+import type { DiscoverConnectorSignal, DiscoverSignal } from "../signal-sources/types";
 
 function signal(
-  partial: Partial<DiscoverSignal> & Pick<DiscoverSignal, "id" | "providerId" | "group">,
+  partial: Partial<DiscoverConnectorSignal> &
+    Pick<DiscoverConnectorSignal, "id" | "providerId" | "group">,
 ): DiscoverSignal {
   return {
     title: partial.id,
@@ -31,6 +33,7 @@ describe("selectDiscoverSignals", () => {
       signals: SIGNALS,
       connectedProviders: new Set(["gmail", "outlook", "lastfm", "marquee", "openweather_api"]),
       excludedProviders: new Set(["lastfm"]),
+      includedProviders: new Set(),
       supports: (provider) => provider !== "marquee",
       hasLocation: false,
     });
@@ -44,6 +47,7 @@ describe("selectDiscoverSignals", () => {
       signals: SIGNALS,
       connectedProviders: new Set(["outlook", "openweather_api"]),
       excludedProviders: new Set(),
+      includedProviders: new Set(),
       supports: () => true,
       hasLocation: true,
     });
@@ -53,6 +57,33 @@ describe("selectDiscoverSignals", () => {
       "outlook-calendar",
       "weather",
     ]);
+  });
+
+  it("reads a public source only once it is switched on, without needing a connection", () => {
+    const publicSignal: DiscoverSignal = {
+      kind: "public",
+      id: "hackernews-front",
+      providerId: "hackernews",
+      group: "reading",
+      title: "Hacker News",
+      description: "",
+      format: "json",
+      url: () => "https://example.com/front.json",
+      digest: () => [],
+    };
+    const select = (included: string[], excluded: string[]) =>
+      selectDiscoverSignals({
+        signals: [publicSignal],
+        connectedProviders: new Set(),
+        excludedProviders: new Set(excluded),
+        includedProviders: new Set(included),
+        supports: () => false,
+        hasLocation: false,
+      }).selected.map((item) => item.id);
+
+    expect(select([], [])).toEqual([]);
+    expect(select(["hackernews"], [])).toEqual(["hackernews-front"]);
+    expect(select(["hackernews"], ["hackernews"])).toEqual([]);
   });
 });
 
