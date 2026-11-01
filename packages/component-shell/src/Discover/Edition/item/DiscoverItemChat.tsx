@@ -62,7 +62,9 @@ export function DiscoverItemChat({
   }
 
   const draft = useLocalComposerDraft();
-  const modelTier = useChatStore((state) => state.modelTier) ?? DEFAULT_MODEL_TIER;
+  const selectedModel = useChatStore((state) => state.model);
+  const storedModelTier = useChatStore((state) => state.modelTier);
+  const modelTier = selectedModel ? undefined : (storedModelTier ?? DEFAULT_MODEL_TIER);
   const [focusOnOpen] = useState(() => window.matchMedia?.(WIDE_QUERY).matches ?? false);
   const [detached, setDetached] = useState(false);
   const chatting = Boolean(scope.currentConversationId);
