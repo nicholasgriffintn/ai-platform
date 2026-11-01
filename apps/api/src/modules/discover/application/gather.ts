@@ -35,7 +35,6 @@ import {
   discoverGatherTaskId,
   nextDiscoverGatherSlot,
 } from "~/modules/discover/domain/gather-schedule";
-import { chooseResearchTopics } from "~/modules/discover/domain/interests";
 import {
   listDiscoverCategoryNews,
   matchDiscoverNews,
@@ -69,7 +68,7 @@ import { SourceRepository } from "~/modules/sources/infrastructure/SourceReposit
 import { readDiscoverArticles } from "./articles";
 import { topUpDiscoverFeed } from "./feed-top-up";
 import { listDiscoverFollows } from "./follows";
-import { chooseDiscoverInterests } from "./interests";
+import { chooseDiscoverResearchTopics } from "./interests";
 import { discoverNewsItemsSchema, readDiscoverNews } from "./news";
 import {
   ensureDiscoverNotebook,
@@ -358,29 +357,6 @@ export async function listDiscoverTopics(
   return topics;
 }
 
-async function listSignalTopics(
-  context: ServiceContext,
-  notebookId: string,
-  input: { curate: string; today: string; now: Date },
-): Promise<string[]> {
-  const [follows, interests] = await Promise.all([
-    listDiscoverFollows(context, context.requireUser().id),
-    chooseDiscoverInterests(context, notebookId, {
-      today: input.today,
-      now: input.now,
-      refresh: false,
-    }),
-  ]);
-
-  return chooseResearchTopics({
-    followed: follows.map((follow) => follow.topic),
-    asked: curateTopics(input.curate),
-    more: interests.more,
-    inferred: interests.ranked,
-    hidden: interests.hidden,
-  });
-}
-
 export async function runDiscoverGather(
   context: ServiceContext,
   {
@@ -413,10 +389,12 @@ export async function runDiscoverGather(
     const signalTopics =
       selected.length > 0
         ? await steps.value("signal-topics", z.array(z.string()), () =>
-            listSignalTopics(context, notebookId, {
-              curate: settings.curate,
+            chooseDiscoverResearchTopics(context, notebookId, {
+              asked: curateTopics(settings.curate),
               today: zoned.date,
               now,
+              timezone,
+              refresh: false,
             }),
           )
         : [];
@@ -484,22 +462,15 @@ export async function runDiscoverGather(
       }),
     );
 
-    topics = await steps.value("topics", z.array(z.string()), async () => {
-      const follows = await listDiscoverFollows(context, context.requireUser().id);
-      const interests = await chooseDiscoverInterests(context, notebookId, {
+    topics = await steps.value("topics", z.array(z.string()), () =>
+      chooseDiscoverResearchTopics(context, notebookId, {
+        asked: curateTopics(settings.curate),
         today: zoned.date,
         now,
+        timezone,
         refresh: scope === "full",
-      });
-
-      return chooseResearchTopics({
-        followed: follows.map((follow) => follow.topic),
-        asked: curateTopics(settings.curate),
-        more: interests.more,
-        inferred: interests.ranked,
-        hidden: interests.hidden,
-      });
-    });
+      }),
+    );
 
     await mapWithConcurrency(topics, TOPIC_RESEARCH_CONCURRENCY, (topic, index) =>
       steps.run(`topic-${index}`, async () => {

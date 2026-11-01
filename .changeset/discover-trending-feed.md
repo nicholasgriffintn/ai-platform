@@ -14,3 +14,4 @@ Discover's feed stays fresh and gets better at what you like.
 - Pick news categories (World, UK, US, Business, Technology, AI, Science, Climate, Health, Sport, Culture, Gaming) under News in Discover settings. Headlines and each category come from leading outlets such as the BBC, The Guardian, NPR, Ars Technica and Nature, and your topics use those stories first, searching the web only when they have little on it.
 - Follow any RSS or Atom feed under Your feeds in Discover settings, including the private RSS link Patreon gives you for each creator you support.
 - Tapping More or Less on a card now changes how often that source appears, and sources you open often get a little more room.
+- Topics you follow, ask for more of or save are researched every day. Interests Discover picks up from your services take turns instead, a couple a day, so a show on your watchlist no longer brings news about it every morning. Ones you open come round a little sooner.

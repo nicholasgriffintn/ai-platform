@@ -17,6 +17,7 @@ export interface DiscoverFeedbackSummary {
   moreTopics: string[];
   lessTopics: string[];
   hiddenTopics: string[];
+  savedTopics: string[];
   saved: Array<{ title: string; url: string | null }>;
 }
 
@@ -31,10 +32,16 @@ export function summariseDiscoverFeedback(
 ): DiscoverFeedbackSummary {
   const preferences = new Map<string, { topic: string; signal: DiscoverFeedbackSignal }>();
   const saved = new Map<string, { title: string; url: string | null }>();
+  const savedTopics = new Map<string, string>();
 
   for (const entry of sortCopy(entries, byCreatedAt)) {
     if (entry.signal === "saved") {
       saved.set(`${entry.editionId}:${entry.cardId}`, { title: entry.title, url: entry.url });
+
+      if (entry.topic) {
+        savedTopics.set(discoverTopicKey(entry.topic), entry.topic);
+      }
+
       continue;
     }
 
@@ -52,6 +59,7 @@ export function summariseDiscoverFeedback(
     moreTopics: topicsWith("more"),
     lessTopics: topicsWith("less"),
     hiddenTopics: topicsWith("hide"),
+    savedTopics: [...savedTopics.values()],
     saved: [...saved.values()].reverse(),
   };
 }

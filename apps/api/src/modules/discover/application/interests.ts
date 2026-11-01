@@ -7,34 +7,42 @@ import {
   type DiscoverInterestInference,
   type DiscoverInterestProfile,
 } from "@ngriffin_uk/polychat-schemas";
-import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
+import { describeZonedInstant, sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { discoverTopicKey } from "~/modules/discover/domain/edition";
+import { summariseDiscoverFeedPreferences } from "~/modules/discover/domain/feed-weights";
 import { summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
 import { isDiscoverSignalCurrent } from "~/modules/discover/domain/freshness";
 import {
+  chooseResearchTopics,
   describeInterestMaterial,
   mergeInterestProfile,
-  rankInterestProfile,
   renderInterestProfile,
 } from "~/modules/discover/domain/interests";
 import { condenseSignalLines } from "~/modules/discover/domain/signal-document";
 import { generateSystemObject } from "~/modules/models/application/system-object";
-import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
+import {
+  SourceRepository,
+  type SourceRecord,
+} from "~/modules/sources/infrastructure/SourceRepository";
 
 import { listRecentDiscoverChatTitles, readMemorySummary } from "./context";
 import { listDiscoverFeedback } from "./feedback";
+import { listDiscoverFollows } from "./follows";
 import { readDiscoverDocuments } from "./notebook";
 import { writeDiscoverDocument } from "./signal-documents";
 
 const logger = getLogger({ prefix: "discover/interests" });
 
 export interface DiscoverInterestChoice {
-  ranked: string[];
+  interests: DiscoverInterestProfile["interests"];
   more: string[];
+  saved: string[];
   hidden: string[];
+  engaged: ReadonlyMap<string, number>;
 }
 
 async function interestProfileId(userId: number): Promise<string> {
@@ -124,7 +132,13 @@ export async function chooseDiscoverInterests(
   ]);
   const summary = summariseDiscoverFeedback(feedback);
   const hidden = [...summary.hiddenTopics, ...summary.lessTopics];
-  const kept = { ranked: rankInterestProfile(profile), more: summary.moreTopics, hidden };
+  const kept = {
+    interests: profile?.interests ?? [],
+    more: summary.moreTopics,
+    saved: summary.savedTopics,
+    hidden,
+    engaged: summariseDiscoverFeedPreferences(feedback).engaged,
+  };
 
   if (!input.refresh || profile?.updatedOn === input.today) {
     return kept;
@@ -153,5 +167,52 @@ export async function chooseDiscoverInterests(
     metadata: { [DISCOVER_INTERESTS_METADATA_KEY]: next },
   });
 
-  return { ...kept, ranked: rankInterestProfile(next) };
+  return { ...kept, interests: next.interests };
+}
+
+function readResearchDates(
+  sources: readonly SourceRecord[],
+  timezone: string,
+): Map<string, string> {
+  const dates = new Map<string, string>();
+
+  for (const document of readDiscoverDocuments(sources).research) {
+    if (document.attemptedAt) {
+      dates.set(
+        discoverTopicKey(document.topic),
+        describeZonedInstant(new Date(document.attemptedAt), timezone).date,
+      );
+    }
+  }
+
+  return dates;
+}
+
+export async function chooseDiscoverResearchTopics(
+  context: ServiceContext,
+  notebookId: string,
+  input: { asked: readonly string[]; today: string; now: Date; timezone: string; refresh: boolean },
+): Promise<string[]> {
+  const user = context.requireUser();
+  const [follows, interests, sources] = await Promise.all([
+    listDiscoverFollows(context, user.id),
+    chooseDiscoverInterests(context, notebookId, {
+      today: input.today,
+      now: input.now,
+      refresh: input.refresh,
+    }),
+    context.repositories.get(SourceRepository).listCollectionSources(notebookId),
+  ]);
+
+  return chooseResearchTopics({
+    followed: follows.map((follow) => follow.topic),
+    asked: input.asked,
+    more: interests.more,
+    saved: interests.saved,
+    inferred: interests.interests,
+    engaged: interests.engaged,
+    researchedOn: readResearchDates(sources, input.timezone),
+    hidden: interests.hidden,
+    today: input.today,
+  });
 }

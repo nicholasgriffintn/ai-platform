@@ -8,7 +8,10 @@ import { shiftCalendarDate } from "@ngriffin_uk/polychat-utility-core";
 import { discoverTopicKey } from "./edition";
 
 export const DISCOVER_RESEARCH_TOPIC_LIMIT = 8;
-export const DISCOVER_INFERRED_INTEREST_LIMIT = 4;
+const ROTATING_INTEREST_LIMIT = 2;
+const INTEREST_REST_DAYS = 3;
+const OPENED_WEIGHT = 0.25;
+const OPENED_WEIGHT_CAP = 1;
 const INTEREST_KEPT_DAYS = 14;
 const INTEREST_PROFILE_LIMIT = 12;
 
@@ -18,36 +21,18 @@ export interface DiscoverResearchTopicsInput {
   followed: readonly string[];
   asked: readonly string[];
   more: readonly string[];
-  inferred: readonly string[];
+  saved: readonly string[];
+  inferred: readonly ProfileInterest[];
+  engaged: ReadonlyMap<string, number>;
+  researchedOn: ReadonlyMap<string, string>;
   hidden: readonly string[];
+  today: string;
 }
 
-export function chooseResearchTopics(input: DiscoverResearchTopicsInput): string[] {
-  const hidden = new Set(input.hidden.map(discoverTopicKey));
-  const seen = new Set<string>();
-  const topics: string[] = [];
-
-  for (const topic of [
-    ...input.followed,
-    ...input.asked,
-    ...input.more,
-    ...input.inferred.slice(0, DISCOVER_INFERRED_INTEREST_LIMIT),
-  ]) {
-    const key = discoverTopicKey(topic);
-
-    if (!key || hidden.has(key) || seen.has(key)) {
-      continue;
-    }
-
-    seen.add(key);
-    topics.push(topic.trim());
-
-    if (topics.length >= DISCOVER_RESEARCH_TOPIC_LIMIT) {
-      break;
-    }
-  }
-
-  return topics;
+interface RotatingInterest {
+  interest: ProfileInterest;
+  researchedToday: boolean;
+  weight: number;
 }
 
 function byStrength(left: ProfileInterest, right: ProfileInterest): number {
@@ -56,6 +41,72 @@ function byStrength(left: ProfileInterest, right: ProfileInterest): number {
   }
 
   return right.days - left.days;
+}
+
+function countEvidenceServices(interest: ProfileInterest): number {
+  return new Set(interest.evidence.map((line) => line.split(":")[0]?.trim().toLowerCase())).size;
+}
+
+function byRotation(left: RotatingInterest, right: RotatingInterest): number {
+  if (left.researchedToday !== right.researchedToday) {
+    return left.researchedToday ? -1 : 1;
+  }
+
+  return right.weight - left.weight || byStrength(left.interest, right.interest);
+}
+
+function chooseRotatingInterests(
+  input: DiscoverResearchTopicsInput,
+  taken: ReadonlySet<string>,
+): string[] {
+  const restingSince = shiftCalendarDate(input.today, -INTEREST_REST_DAYS);
+
+  return input.inferred
+    .flatMap((interest): RotatingInterest[] => {
+      const key = discoverTopicKey(interest.topic);
+      const researchedOn = input.researchedOn.get(key);
+      const resting = researchedOn && researchedOn < input.today && researchedOn > restingSince;
+
+      if (!key || taken.has(key) || resting) {
+        return [];
+      }
+
+      return [
+        {
+          interest,
+          researchedToday: researchedOn === input.today,
+          weight:
+            countEvidenceServices(interest) +
+            Math.min(OPENED_WEIGHT_CAP, (input.engaged.get(key) ?? 0) * OPENED_WEIGHT),
+        },
+      ];
+    })
+    .sort(byRotation)
+    .slice(0, ROTATING_INTEREST_LIMIT)
+    .map((rotating) => rotating.interest.topic);
+}
+
+export function chooseResearchTopics(input: DiscoverResearchTopicsInput): string[] {
+  const taken = new Set(input.hidden.map(discoverTopicKey));
+  const topics: string[] = [];
+  const add = (topic: string) => {
+    const key = discoverTopicKey(topic);
+
+    if (key && !taken.has(key) && topics.length < DISCOVER_RESEARCH_TOPIC_LIMIT) {
+      taken.add(key);
+      topics.push(topic.trim());
+    }
+  };
+
+  for (const topic of [...input.followed, ...input.asked, ...input.more, ...input.saved]) {
+    add(topic);
+  }
+
+  for (const topic of chooseRotatingInterests(input, taken)) {
+    add(topic);
+  }
+
+  return topics;
 }
 
 function strengthen(
@@ -111,10 +162,6 @@ export function mergeInterestProfile(
       .sort(byStrength)
       .slice(0, INTEREST_PROFILE_LIMIT),
   };
-}
-
-export function rankInterestProfile(profile: DiscoverInterestProfile | null): string[] {
-  return [...(profile?.interests ?? [])].sort(byStrength).map((interest) => interest.topic);
 }
 
 function describeProfileInterest(interest: ProfileInterest): string {
