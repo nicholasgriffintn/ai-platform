@@ -320,10 +320,10 @@ export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
     id: "devto-top-today",
     providerId: "devto",
     group: "reading",
-    title: "DEV today",
-    description: "Reads the most liked DEV articles from the last day.",
+    title: "DEV this week",
+    description: "Reads the most popular DEV articles from the last week.",
     operation: "DEVTO_LIST_ARTICLES",
-    parameters: () => ({ top: 1, per_page: 20 }),
+    parameters: () => ({ top: 7, per_page: 20 }),
     items: (result) =>
       items(result, ["data", "articles"], ["articles"]).flatMap((article) => {
         const title = first(article, ["title"]);

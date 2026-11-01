@@ -14,6 +14,7 @@ export interface DiscoverFeedGroup {
   lead: string;
   items: readonly DiscoverResearchResult[];
   spoken?: boolean;
+  ranked?: boolean;
 }
 
 export interface DiscoverFeedSources {
@@ -81,7 +82,12 @@ export function buildDiscoverFeedGroups(sources: DiscoverFeedSources): DiscoverF
     }));
   const signals = sources.signals
     .filter((signal) => signal.items.length > 0)
-    .map((signal) => ({ topic: signal.title, lead: `From ${signal.title}`, items: signal.items }));
+    .map((signal) => ({
+      topic: signal.title,
+      lead: `From ${signal.title}`,
+      items: signal.items,
+      ranked: true,
+    }));
 
   return [...research, ...signals];
 }
@@ -151,7 +157,10 @@ export function fillDiscoverFeed(input: {
 }): DiscoverCard[] {
   const queues = input.groups
     .filter((group) => !input.skipTopics.has(discoverTopicKey(group.topic)))
-    .map((group) => ({ group, remaining: newestFirst(group.items) }));
+    .map((group) => ({
+      group,
+      remaining: group.ranked ? [...group.items] : newestFirst(group.items),
+    }));
   const tiers = [
     queues.filter((queue) => queue.group.spoken),
     queues.filter((queue) => !queue.group.spoken),
