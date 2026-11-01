@@ -9,7 +9,7 @@
   "screenshots": [
     {
       "src": "screenshots/wide.png",
-      "sizes": "640x320",
+      "sizes": "1280x640",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Polychat"

@@ -2,9 +2,21 @@
 
 Polychat is a multi-model AI assistant platform for personal chat and collaborative project work, with web, iOS and desktop clients.
 
-Try the hosted version at [polychat.app](https://polychat.app), or read [Building my own AI assistant](https://nicholasgriffin.dev/blog/building-my-own-ai-assistant) for the story behind the project.
+https://assets.polychat.app/readme/polychat-chat.mp4
 
-![A chat in the Polychat web application](./docs/images/chat.png)
+Alongside the standard chat interface that all of these platforms have, Polychat also provides a fully featured interface for work use cases which allows you to run a fully autonomous process while being able to see what's going on, at all times.
+
+https://assets.polychat.app/readme/polychat-work.mp4
+
+This works through a set of agents which are available across both chat and work contexts.
+
+https://assets.polychat.app/readme/polychat-agents.mp4
+
+And everything hooks up to a central knowledge base system that stores your files and provides a daily view of interesting things for you in the discover tab.
+
+https://assets.polychat.app/readme/polychat-media.mp4
+
+Try the hosted version at [polychat.app](https://polychat.app), or read [Building my own AI assistant](https://nicholasgriffin.dev/blog/building-my-own-ai-assistant) for the story behind the project.
 
 ## Set up or adapt Polychat
 
