@@ -232,7 +232,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          sudo apt-get install --no-install-recommends --yes webkit2gtk-driver xvfb
+          sudo apt-get install --no-install-recommends --yes webkitgtk-webdriver xvfb
           cargo install tauri-driver --version "^2" --locked
           timeout 10m xvfb-run --auto-servernum pnpm --filter @assistant/desktop test:e2e
 
