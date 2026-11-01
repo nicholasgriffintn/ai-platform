@@ -189,7 +189,6 @@ playwright-report
 
 .claude
 
-xcshareddata/
 xcuserdata/
 .coverage/
 TestResults/
