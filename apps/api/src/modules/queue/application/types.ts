@@ -31,5 +31,4 @@ export interface TaskStep {
   ): Promise<TaskStepOutcome>;
   text(name: string, options: { retries: number }, run: () => Promise<string>): Promise<string>;
   sleep(name: string, seconds: number): Promise<void>;
-  sleepUntil(name: string, at: Date): Promise<void>;
 }

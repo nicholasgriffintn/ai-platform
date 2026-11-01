@@ -1302,9 +1302,15 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
 		export const toJSONSchema = undefined;
 	`;
   const apiEntryModule = `
-		import api, { MachineRunCoordinator, ConversationCoordinator, SandboxRunCoordinator, UserSyncCoordinator } from "./api.js";
+		import api, { MachineRunCoordinator, ConversationCoordinator, SandboxRunCoordinator, UserSyncCoordinator, TaskWorkflow as ApiTaskWorkflow } from "./api.js";
 
 		export { MachineRunCoordinator, ConversationCoordinator, SandboxRunCoordinator, UserSyncCoordinator };
+
+		export class TaskWorkflow extends ApiTaskWorkflow {
+			constructor(ctx, env) {
+				super(ctx, withExternalBindingShape(env));
+			}
+		}
 		const vectors = new Map();
 
 	function withExternalBindingShape(env) {
@@ -1430,16 +1436,8 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
           ASSETS_BUCKET: "ASSETS_BUCKET",
           PRIVATE_ASSETS_BUCKET: "PRIVATE_ASSETS_BUCKET",
         },
-        queueProducers: {
-          TASK_QUEUE: { queueName: "polychat-task-queue" },
-        },
-        queueConsumers: {
-          "polychat-task-queue": {
-            maxBatchSize: 10,
-            maxBatchTimeout: 0.1,
-            maxRetries: 0,
-            deadLetterQueue: "polychat-task-queue-dlq",
-          },
+        workflows: {
+          TASK_WORKFLOW: { name: "polychat-tasks", className: "TaskWorkflow" },
         },
         ratelimits: {
           FREE_RATE_LIMITER: {
@@ -1791,56 +1789,6 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
 						return new Response(null, { status: 204 });
 					}
 
-					async function redeliverSandboxRun(request, env) {
-						const { runId } = await request.json();
-						if (typeof runId !== "string" || !/^[A-Za-z0-9_-]{1,160}$/.test(runId)) {
-							return Response.json({ error: "Invalid sandbox run id" }, { status: 400 });
-						}
-						const source = await env.DB.prepare(
-							"SELECT task_type, user_id, project_id, task_data, priority, schedule_type, scheduled_at, max_attempts FROM tasks WHERE task_type = 'sandbox_run_dispatch' AND task_data LIKE ? ORDER BY created_at DESC LIMIT 1"
-						).bind("%" + runId + "%").first();
-						if (!source?.task_data) {
-							return Response.json({ error: "Sandbox dispatch task not found" }, { status: 404 });
-						}
-						const taskId = "e2e-redelivery-" + runId;
-						await env.DB.prepare(
-							"INSERT OR IGNORE INTO tasks (id, task_type, status, priority, user_id, project_id, task_data, schedule_type, scheduled_at, created_by, attempts, max_attempts) VALUES (?, ?, 'queued', ?, ?, ?, ?, ?, ?, 'system', 0, ?)"
-						).bind(
-							taskId,
-							source.task_type,
-							source.priority,
-							source.user_id,
-							source.project_id,
-							source.task_data,
-							source.schedule_type,
-							source.scheduled_at,
-							source.max_attempts,
-						).run();
-						await env.TASK_QUEUE.send({
-							taskId,
-							task_type: source.task_type,
-							user_id: source.user_id,
-							project_id: source.project_id,
-							task_data: JSON.parse(source.task_data),
-							priority: source.priority,
-							schedule_type: source.schedule_type,
-							scheduled_at: source.scheduled_at,
-							max_attempts: source.max_attempts,
-						});
-						return Response.json({ taskId }, { status: 202 });
-					}
-
-					async function sandboxRedeliveryState(request, env) {
-						const runId = new URL(request.url).searchParams.get("runId");
-						if (!runId) {
-							return Response.json({ error: "Sandbox run id is required" }, { status: 400 });
-						}
-						const task = await env.DB.prepare(
-							"SELECT status, error_message FROM tasks WHERE id = ?"
-						).bind("e2e-redelivery-" + runId).first();
-						return task ? Response.json(task) : Response.json({ error: "Redelivery not found" }, { status: 404 });
-					}
-
 					export default {
 						async fetch(request, env) {
 							try {
@@ -1857,12 +1805,6 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
 								if (request.method === "DELETE" && url.pathname === "/__e2e-workbench-run") {
 									return deleteQueuedWorkbenchRun(request, env);
 								}
-								if (request.method === "POST" && url.pathname === "/__e2e-sandbox-redelivery") {
-									return redeliverSandboxRun(request, env);
-								}
-								if (request.method === "GET" && url.pathname === "/__e2e-sandbox-redelivery") {
-									return sandboxRedeliveryState(request, env);
-								}
 								const session = await env.DB.prepare(
 									"SELECT user_id FROM session WHERE id = ?"
 								).bind("${readinessSessionHash}").first();
@@ -1875,15 +1817,11 @@ function createRuntimeOptions(apiBundle, port, seedMaterial) {
 				`,
         compatibilityDate,
         d1Databases: { DB: "polychat-e2e" },
-        queueProducers: {
-          TASK_QUEUE: { queueName: "polychat-task-queue" },
-        },
         routes: [
           `${apiBaseUrl}/__e2e-ready`,
           `${apiBaseUrl}/__e2e-persona`,
           `${apiBaseUrl}/__e2e-persona-state*`,
           `${apiBaseUrl}/__e2e-workbench-run*`,
-          `${apiBaseUrl}/__e2e-sandbox-redelivery*`,
         ],
       },
     ],

@@ -30,6 +30,5 @@ export function workflowTaskStep(step: WorkflowStep): TaskStep {
       }),
     text: (name, { retries }, run) => step.do(name, stepConfig(retries), () => run()),
     sleep: (name, seconds) => step.sleep(name, `${seconds} seconds`),
-    sleepUntil: (name, at) => step.sleepUntil(name, at),
   };
 }

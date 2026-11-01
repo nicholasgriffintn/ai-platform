@@ -1,6 +1,10 @@
 import { SCHEDULES } from "~/config/schedules";
 
-import { purgeSettledTasks, redispatchPendingTasks } from "./scheduledTasks";
+import {
+  purgeSettledTasks,
+  recoverErroredWorkflowTasks,
+  redispatchPendingTasks,
+} from "./scheduledTasks";
 import { defineSchedule, type AppWorkflows } from "./workflows";
 
 export function registerQueueMaintenance(workflows: AppWorkflows): void {
@@ -9,6 +13,16 @@ export function registerQueueMaintenance(workflows: AppWorkflows): void {
       name: "task-recovery",
       run: async ({ env }) => {
         await redispatchPendingTasks(env);
+      },
+    }),
+  );
+
+  workflows.every(
+    SCHEDULES.RECIPE_EXECUTION,
+    defineSchedule({
+      name: "errored-workflow-recovery",
+      run: async ({ env }) => {
+        await recoverErroredWorkflowTasks(env);
       },
     }),
   );

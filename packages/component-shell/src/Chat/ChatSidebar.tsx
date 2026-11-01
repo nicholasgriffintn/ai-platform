@@ -6,6 +6,7 @@ import { SidebarShell } from "@ngriffin_uk/polychat-component-ui";
 import { shouldExplainStorage } from "@ngriffin_uk/polychat-library-chat/conversation-storage-policy";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
+  matchChatCompletionId,
   matchNotebookId,
   DISCOVER_PATH,
   MODE_BASE_PATHS,
@@ -14,7 +15,7 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useLocation, useMatches } from "react-router";
+import { useLocation } from "react-router";
 import { useShallow } from "zustand/react/shallow";
 
 import { DiscoverSidebarSection } from "../Sidebar/DiscoverSidebarSection.js";
@@ -32,7 +33,7 @@ export interface ChatSidebarProps {
 
 export function ChatSidebar({ contentOverride, headerActions }: ChatSidebarProps) {
   const { pathname } = useLocation();
-  const completionId = useMatches().at(-1)?.params.completionId;
+  const completionId = matchChatCompletionId(pathname);
   const isConversationRoute =
     pathname === DISCOVER_PATH || pathname === MODE_BASE_PATHS.chat || Boolean(completionId);
   const activeNotebookId = matchNotebookId(pathname);

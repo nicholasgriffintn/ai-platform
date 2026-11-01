@@ -85,7 +85,6 @@ function fakeStep(memo = new Map<string, string>(), crashOnce = new Set<string>(
     sleep: async (name, seconds) => {
       sleeps.push([name, seconds]);
     },
-    sleepUntil: async () => {},
   };
 
   return { step, sleeps };

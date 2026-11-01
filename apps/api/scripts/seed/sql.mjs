@@ -23,6 +23,32 @@ export function shift(iso, { minutes = 0, seconds = 0 } = {}) {
   return new Date(Date.parse(iso) + minutes * 60_000 + seconds * 1000).toISOString();
 }
 
+const DATE_STAMP =
+  /(?<![\w/.-])(\d{4}-\d{2}-\d{2})(?:([T ])(\d{2}:\d{2}:\d{2})(\.\d+)?(Z)?)?(?![\w/])/g;
+
+export function moveDates(text, { around, milliseconds, days, withinDays = 14 }) {
+  const centre = Date.parse(`${around}T00:00:00Z`);
+
+  return text.replace(DATE_STAMP, (match, date, separator, time, fraction, zone) => {
+    const value = Date.parse(`${date}T${time ?? "00:00:00"}${fraction ?? ""}Z`);
+
+    if (Number.isNaN(value) || Math.abs(value - centre) > withinDays * 86_400_000) {
+      return match;
+    }
+
+    if (!time) {
+      return new Date(value + days * 86_400_000).toISOString().slice(0, 10);
+    }
+
+    const [movedDate, movedTime] = new Date(value + milliseconds)
+      .toISOString()
+      .slice(0, -1)
+      .split("T");
+
+    return `${movedDate}${separator}${fraction ? movedTime : movedTime.slice(0, 8)}${zone ?? ""}`;
+  });
+}
+
 export function period(date = NOW) {
   return date.toISOString().slice(0, 7);
 }

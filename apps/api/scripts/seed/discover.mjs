@@ -16,6 +16,7 @@ import {
   POLY_TEAMMATE_ID,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { CAPTURED_EDITION, CAPTURED_EPISODE, capturedStatements } from "./captured-discover.mjs";
 import { OWNER } from "./identity.mjs";
 import { seedFile } from "./sources.mjs";
 import { at, insert, NOW, seedId, shift } from "./sql.mjs";
@@ -37,78 +38,12 @@ function dateOf(daysAgo) {
 }
 
 function editionId(daysAgo) {
-  return daysAgo === 0
-    ? seedId("discover", "edition", "today")
-    : seedId("discover", "edition", `d${daysAgo}`);
+  return daysAgo === 0 ? CAPTURED_EDITION.id : seedId("discover", "edition", `d${daysAgo}`);
 }
 
 function cardId(key) {
   return seedId("discover", "card", key);
 }
-
-const TODAY_CARDS = [
-  {
-    id: cardId("lisbon"),
-    kind: "topic",
-    topic: "Lisbon trip",
-    title: "Lisbon after dark",
-    angle:
-      "You've sorted the days. The evenings are open: fado in Alfama, late jazz in Belém and where locals eat after ten.",
-    prompt:
-      "Help me plan the evenings of my Lisbon weekend: fado, late jazz and somewhere good to eat after ten.",
-    reason: "You planned a Lisbon weekend in chat last week.",
-  },
-  {
-    id: cardId("webgpu"),
-    kind: "read",
-    topic: "WebGPU",
-    title: "WebGPU implementation status",
-    url: "https://github.com/gpuweb/gpuweb/wiki/Implementation-Status",
-    source: "gpuweb on GitHub",
-    summary:
-      "The working group's tracker of which browsers ship WebGPU, behind which flags, and on which platforms.",
-    reason: "You asked about WebGPU support twice this month.",
-  },
-  {
-    id: cardId("habits"),
-    kind: "topic",
-    topic: "Habits",
-    title: "Why streaks break on day four",
-    angle:
-      "Your habits notebook covers the loop. Today's angle is the dip after the first few days and what makes people push through it.",
-    prompt:
-      "Using what I've collected on habits, explain why new streaks tend to break after a few days and give me three ways to get past it.",
-    reason: "Your Build Better Habits notebook.",
-  },
-  {
-    id: cardId("groceries"),
-    kind: "action",
-    title: "Make the Sunday grocery list automatic",
-    detail:
-      "You've asked for a grocery list three Sundays running. An automation could have it ready each week.",
-    when: "Sundays 09:00",
-    prompt:
-      "Set up an automation that writes my grocery list every Sunday at 09:00. Show me the schedule before you create it.",
-    reason: "Three Sunday grocery chats in a row.",
-  },
-  {
-    id: cardId("films"),
-    kind: "read",
-    topic: "Films",
-    title: "Sight and Sound's critics' poll",
-    url: "https://www.bfi.org.uk/sight-and-sound/greatest-films-all-time",
-    source: "BFI",
-    summary:
-      "The once-a-decade critics' poll of the greatest films, a useful counterweight to the box-office view in your notebook.",
-    reason: "Your Films of the Century notebook.",
-  },
-  {
-    id: cardId("checkin"),
-    kind: "check_in",
-    question: "Did the jazz festival tickets come through for Saturday?",
-    reason: "You were waiting on tickets on Tuesday.",
-  },
-];
 
 const EARLIER_CARDS = {
   1: [
@@ -169,7 +104,6 @@ const EARLIER_CARDS = {
 
 function editionContent(daysAgo) {
   const date = dateOf(daysAgo);
-  const today = daysAgo === 0;
 
   return discoverEditionContentSchema.parse({
     version: 1,
@@ -183,38 +117,14 @@ function editionContent(daysAgo) {
       { topic: "Habits", reason: "Your Build Better Habits notebook." },
       { topic: "Films", reason: "Your Films of the Century notebook." },
     ],
-    brief: today
-      ? [
-          {
-            kind: "waiting",
-            label: "Waiting on you",
-            text: "Atlas needs your call on shipping quoted selections behind a flag",
-          },
-          {
-            kind: "calendar",
-            label: "Lisbon trip",
-            text: "Feira da Ladra is on this Saturday, 9:00 to 18:00",
-          },
-          {
-            kind: "topic",
-            label: "WebGPU",
-            text: "Safari's WebGPU support is now on by default in the latest beta",
-          },
-          {
-            kind: "on_this_day",
-            label: "On this day",
-            text: "1946: a V-2 rocket takes the first photo of Earth from space",
-            href: "https://en.wikipedia.org/wiki/The_Earth_as_seen_from_V-2_rocket_No._13",
-          },
-        ]
-      : [
-          {
-            kind: "topic",
-            label: "Habits",
-            text: "Day two of the habits season is ready to watch",
-          },
-        ],
-    cards: today ? TODAY_CARDS : EARLIER_CARDS[daysAgo],
+    brief: [
+      {
+        kind: "topic",
+        label: "Habits",
+        text: "Day two of the habits season is ready to watch",
+      },
+    ],
+    cards: EARLIER_CARDS[daysAgo],
     ...(daysAgo === 1 ? { episodeId: EPISODE_IDS[1] } : {}),
     ...(daysAgo === 2 ? { episodeId: EPISODE_IDS[0] } : {}),
     generatedAt: at({ days: daysAgo, hours: 2 }),
@@ -609,20 +519,26 @@ export const DISCOVER_FILES = [
   ),
 ];
 
+const CAPTURED_READS = CAPTURED_EDITION.content.cards.filter((card) => card.kind === "read");
+const CAPTURED_TOPIC = CAPTURED_EDITION.content.cards.find((card) => card.kind === "topic");
+
 const FEEDBACK = [
-  [0, "webgpu", "opened"],
-  [0, "habits", "more"],
-  [0, "films", "saved"],
-  [1, "d1-habits", "opened"],
-  [1, "d1-habits", "saved"],
-  [1, "d1-lisbon", "less"],
-  [2, "d2-films", "opened"],
+  [0, CAPTURED_READS[0].id, "opened"],
+  [0, CAPTURED_TOPIC.id, "more"],
+  [0, CAPTURED_READS[1].id, "saved"],
+  [1, cardId("d1-habits"), "opened"],
+  [1, cardId("d1-habits"), "saved"],
+  [1, cardId("d1-lisbon"), "less"],
+  [2, cardId("d2-films"), "opened"],
 ];
 
+function editionCards(daysAgo) {
+  return daysAgo === 0 ? CAPTURED_EDITION.content.cards : EARLIER_CARDS[daysAgo];
+}
+
 function feedbackStatements() {
-  return FEEDBACK.map(([daysAgo, key, signal], index) => {
-    const edition = editionContent(daysAgo);
-    const card = edition.cards.find((candidate) => candidate.id === cardId(key));
+  return FEEDBACK.map(([daysAgo, id, signal], index) => {
+    const card = editionCards(daysAgo).find((candidate) => candidate.id === id);
     const title = card.title;
     const createdAt = at({ days: daysAgo, hours: 1, minutes: index });
 
@@ -649,9 +565,9 @@ function feedbackStatements() {
 }
 
 export function discoverStatements() {
-  const statements = [...polyStatements()];
+  const statements = [...polyStatements(), ...capturedStatements()];
 
-  for (const daysAgo of [2, 1, 0]) {
+  for (const daysAgo of [2, 1]) {
     const date = dateOf(daysAgo);
 
     statements.push(
@@ -683,8 +599,8 @@ export function discoverStatements() {
         cast: [],
         places: [],
         motifs: ["stepping stones"],
-        nextPart: 3,
-        episodeIds: EPISODE_IDS,
+        nextPart: CAPTURED_EPISODE.content.part + 1,
+        episodeIds: [...EPISODE_IDS, CAPTURED_EPISODE.id],
       }),
       createdAt: at({ days: 2, hours: 2 }),
     }),

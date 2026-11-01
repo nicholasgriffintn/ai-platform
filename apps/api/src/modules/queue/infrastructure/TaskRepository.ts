@@ -471,6 +471,38 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
     return result.map((task) => this.parseTask(task));
   }
 
+  public async sampleDueWorkflowTasks(updatedBefore: Date, limit: number): Promise<Task[]> {
+    const result = await this.runQuery<Task>(
+      `SELECT * FROM tasks
+       WHERE status IN ('queued', 'running')
+         AND workflow_instance_id IS NOT NULL
+         AND datetime(updated_at) < datetime(?)
+         AND (scheduled_at IS NULL OR datetime(scheduled_at) < datetime(?))
+       ORDER BY RANDOM()
+       LIMIT ?`,
+      [updatedBefore.toISOString(), updatedBefore.toISOString(), limit],
+    );
+
+    return result.map((task) => this.parseTask(task));
+  }
+
+  public async requeueErroredWorkflowTask(taskId: string, instanceId: string): Promise<boolean> {
+    const task = await this.runQuery<Task>(
+      `UPDATE tasks
+       SET status = 'pending', attempts = attempts + 1, execution_owner_token = NULL,
+           workflow_instance_id = NULL, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND workflow_instance_id = ? AND status IN ('queued', 'running')
+         AND attempts + 1 < max_attempts
+       RETURNING *`,
+      [taskId, instanceId],
+      true,
+    );
+
+    this.announce(task);
+
+    return task !== null;
+  }
+
   public async findRunningExecutionStep(taskId: string): Promise<string | null> {
     const row = await this.runQuery<{ step: string | null }>(
       `SELECT step FROM task_executions

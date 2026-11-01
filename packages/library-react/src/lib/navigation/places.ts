@@ -60,6 +60,15 @@ export function isTeammateThreadPath(pathname: string): boolean {
   return TEAMMATE_THREAD_PATH.test(pathname);
 }
 
+const CHAT_PAGE_SEGMENTS = new Set(["attention", "files", "teammates", "plugins", "scheduled"]);
+const CHAT_COMPLETION_PATH = /^\/chat\/([^/]+)\/?$/u;
+
+export function matchChatCompletionId(pathname: string): string | undefined {
+  const segment = CHAT_COMPLETION_PATH.exec(pathname)?.[1];
+
+  return segment && !CHAT_PAGE_SEGMENTS.has(segment) ? decodeURIComponent(segment) : undefined;
+}
+
 export function getProductMode(pathname: string): ProductMode {
   return pathname === MODE_BASE_PATHS.work || pathname.startsWith(`${MODE_BASE_PATHS.work}/`)
     ? "work"

@@ -55,9 +55,10 @@ export class TaskExecutor {
 
   public async run(message: TaskMessage, instanceId: string, step: TaskStep): Promise<void> {
     const scheduledAt = message.scheduled_at ? Date.parse(message.scheduled_at) : Number.NaN;
+    const secondsUntilDue = Math.ceil((scheduledAt - Date.now()) / 1000);
 
-    if (Number.isFinite(scheduledAt)) {
-      await step.sleepUntil("scheduled", new Date(scheduledAt));
+    if (secondsUntilDue > 0) {
+      await step.sleep("scheduled", secondsUntilDue);
     }
 
     const admission = await step.do("admit", { retries: BOOKKEEPING_RETRIES }, () =>
