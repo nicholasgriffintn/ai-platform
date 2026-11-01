@@ -1,4 +1,5 @@
 import type { ThreadModeConfig } from "@ngriffin_uk/polychat-component-conversation";
+import { cn } from "@ngriffin_uk/polychat-component-ui";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   ArtifactWorkbenchProvider,
@@ -20,10 +21,10 @@ export interface DiscoverHomePageProps {
   hostModeConfig?: ThreadModeConfig;
 }
 
-function HomeChatThread({ modeConfig }: { modeConfig: ThreadModeConfig }) {
+function HomeChatThread({ modeConfig, docked }: { modeConfig: ThreadModeConfig; docked: boolean }) {
   return (
     <ArtifactWorkbenchProvider>
-      <div className="relative h-full min-h-0 overflow-hidden">
+      <div className={cn("relative h-full min-h-0", docked && "overflow-hidden")}>
         <HomeConversationThread urlModeConfig={modeConfig} routeToConversation={false} />
         <ConversationArtifactOverlay />
       </div>
@@ -49,7 +50,7 @@ function useHomeChatSlot(modeConfig: ThreadModeConfig): DiscoverChatSlot {
         isOpen && conversationId ? (
           <HomeChatPanelHeader conversationId={conversationId} onClose={clearCurrentConversation} />
         ) : null,
-      thread: <HomeChatThread modeConfig={modeConfig} />,
+      thread: <HomeChatThread modeConfig={modeConfig} docked={isOpen} />,
     }),
     [clearCurrentConversation, conversationId, isOpen, modeConfig],
   );
