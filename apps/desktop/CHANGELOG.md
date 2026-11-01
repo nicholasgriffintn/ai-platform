@@ -1,5 +1,26 @@
 # @assistant/desktop
 
+## 0.6.9
+
+### Patch Changes
+
+- 5d8d67d: The desktop app opens again instead of showing "Something went wrong". The chat sidebar still highlights the conversation you have open.
+- Updated dependencies [5d8d67d]
+- Updated dependencies [80afaf2]
+  - @ngriffin_uk/polychat-library-react@0.14.0
+  - @ngriffin_uk/polychat-component-shell@2.7.0
+  - @ngriffin_uk/polychat-schemas@1.14.0
+  - @ngriffin_uk/polychat-component-navigation@0.7.0
+  - @ngriffin_uk/polychat-library-client@0.13.0
+  - @ngriffin_uk/polychat-utility-core@0.10.0
+  - @ngriffin_uk/polychat-component-account@1.1.5
+  - @ngriffin_uk/polychat-component-conversation@2.2.4
+  - @ngriffin_uk/polychat-component-ui@0.7.2
+  - @ngriffin_uk/polychat-component-content@1.3.6
+  - @ngriffin_uk/polychat-component-experiences@0.7.2
+  - @ngriffin_uk/polychat-component-models@1.2.7
+  - @ngriffin_uk/polychat-library-chat@1.4.1
+
 ## 0.6.8
 
 ### Patch Changes

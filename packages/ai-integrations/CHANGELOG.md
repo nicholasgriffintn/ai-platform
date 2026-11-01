@@ -1,5 +1,14 @@
 # @ngriffin_uk/polychat-ai-integrations
 
+## 0.6.3
+
+### Patch Changes
+
+- Updated dependencies [80afaf2]
+  - @ngriffin_uk/polychat-schemas@1.14.0
+  - @ngriffin_uk/polychat-utility-core@0.10.0
+  - @ngriffin_uk/polychat-utility-server@0.7.0
+
 ## 0.6.2
 
 ### Patch Changes

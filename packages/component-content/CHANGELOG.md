@@ -1,5 +1,16 @@
 # @ngriffin_uk/polychat-component-content
 
+## 1.3.6
+
+### Patch Changes
+
+- Updated dependencies [80afaf2]
+  - @ngriffin_uk/polychat-schemas@1.14.0
+  - @ngriffin_uk/polychat-utility-core@0.10.0
+  - @ngriffin_uk/polychat-component-ui@0.7.2
+  - @ngriffin_uk/polychat-library-chat@1.4.1
+  - @ngriffin_uk/polychat-utility-react@0.7.2
+
 ## 1.3.5
 
 ### Patch Changes

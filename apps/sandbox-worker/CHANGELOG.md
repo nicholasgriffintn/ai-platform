@@ -1,5 +1,21 @@
 # @assistant/sandbox-worker
 
+## 0.2.9
+
+### Patch Changes
+
+- Updated dependencies [80afaf2]
+  - @ngriffin_uk/polychat-schemas@1.14.0
+  - @ngriffin_uk/polychat-library-client@0.13.0
+  - @ngriffin_uk/polychat-utility-core@0.10.0
+  - @ngriffin_uk/polychat-utility-server@0.7.0
+  - @ngriffin_uk/polychat-ai-agents@0.4.8
+  - @ngriffin_uk/polychat-ai-prompts@0.6.2
+  - @ngriffin_uk/polychat-library-interactions@0.1.8
+  - @ngriffin_uk/polychat-library-sandbox@0.3.7
+  - @ngriffin_uk/polychat-library-tools@0.4.5
+  - @ngriffin_uk/polychat-ai-models@0.5.1
+
 ## 0.2.8
 
 ### Patch Changes

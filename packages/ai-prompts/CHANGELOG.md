@@ -1,5 +1,12 @@
 # @ngriffin_uk/polychat-ai-prompts
 
+## 0.6.2
+
+### Patch Changes
+
+- Updated dependencies [80afaf2]
+  - @ngriffin_uk/polychat-utility-core@0.10.0
+
 ## 0.6.1
 
 ### Patch Changes
