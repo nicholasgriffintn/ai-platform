@@ -10,6 +10,7 @@ import {
   DISCOVER_SHELF_VISIBLE,
   DiscoverSection,
   DiscoverSectionRow,
+  DiscoverSectionStack,
   type DiscoverSectionKind,
 } from "./DiscoverSection.js";
 import { DiscoverStoryTile, type DiscoverStoryCard } from "./DiscoverStoryTile.js";
@@ -35,6 +36,7 @@ function CardSection({
   cards,
   kind = "cards",
   size = "regular",
+  stacked,
   selectedId,
   isTopicHidden,
   onSelect,
@@ -43,6 +45,7 @@ function CardSection({
   cards: readonly DiscoverRowCard[];
   kind?: DiscoverSectionKind;
   size?: DiscoverFeedCardSize;
+  stacked?: boolean;
   selectedId: string | null;
   isTopicHidden: (card: DiscoverCard) => boolean;
   onSelect: (card: DiscoverCard) => void;
@@ -52,7 +55,7 @@ function CardSection({
   }
 
   return (
-    <DiscoverSection title={title} kind={kind} count={cards.length}>
+    <DiscoverSection title={title} kind={kind} count={cards.length} stacked={stacked}>
       {cards.map((card) => (
         <DiscoverFeedCard
           key={card.id}
@@ -82,6 +85,7 @@ export function DiscoverFeed({
 }: DiscoverFeedProps) {
   const { topics, stories, forYou, comingUp, reads, watching } = groupDiscoverCards(edition.cards);
   const rows = [...forYou, ...comingUp, ...reads, ...watching];
+  const leadCount = forYou.length || comingUp.length;
   const posterCount = topics.length + stories.length;
   const cardProps = { selectedId, isTopicHidden, onSelect };
 
@@ -128,14 +132,22 @@ export function DiscoverFeed({
       ) : null}
       {rows.length > 0 && (
         <DiscoverSectionRow>
-          <CardSection
-            title="For you"
-            cards={forYou}
-            kind="spotlight"
-            size="large"
-            {...cardProps}
-          />
-          <CardSection title="Coming up" cards={comingUp} {...cardProps} />
+          {leadCount > 0 && (
+            <DiscoverSectionStack
+              kind={forYou.length > 0 ? "spotlight" : "cards"}
+              count={leadCount}
+            >
+              <CardSection title="Coming up" cards={comingUp} stacked {...cardProps} />
+              <CardSection
+                title="For you"
+                cards={forYou}
+                kind="spotlight"
+                size="large"
+                stacked
+                {...cardProps}
+              />
+            </DiscoverSectionStack>
+          )}
           <CardSection title="Reading" cards={reads} {...cardProps} />
           <CardSection title="Watching and listening" cards={watching} {...cardProps} />
         </DiscoverSectionRow>

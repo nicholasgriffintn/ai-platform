@@ -49,7 +49,7 @@ final class DiscoverStore: ObservableObject {
             error = nil
             isLoading = false
             await loadImagesAndMedia()
-        } catch is CancellationError {
+        } catch let error where error.isCancellation {
             return
         } catch APIClientError.httpStatus(401, _) {
             credentialRejected = true
@@ -108,6 +108,11 @@ final class DiscoverStore: ObservableObject {
             case .perch, .windDown: return true
             }
         }
+    }
+
+    var items: [DiscoverItem] {
+        let cards = (edition?.cards ?? []).filter { !signals(for: $0).contains("hide") }
+        return DiscoverItem.ordered(media: visibleMedia, cards: cards)
     }
 
     var isEveningEdition: Bool {

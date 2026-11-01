@@ -119,7 +119,7 @@ final class DeviceSyncClient: ObservableObject {
             hasOpened = true
 
             try await receive(on: socket)
-        } catch is CancellationError {
+        } catch let error where error.isCancellation {
             return
         } catch {
             guard isRunning, !Task.isCancelled else { return }

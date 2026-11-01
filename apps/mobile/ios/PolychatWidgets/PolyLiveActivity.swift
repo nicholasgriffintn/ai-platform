@@ -2,7 +2,6 @@ import ActivityKit
 import SwiftUI
 import WidgetKit
 
-private let polyURL = URL(string: "polychat://poly")!
 private let inboxURL = URL(string: "polychat://attention")!
 
 private typealias WorkLine = PolyActivityAttributes.WorkLine
@@ -13,116 +12,133 @@ private extension WorkLine.State {
         switch self {
         case .running: return .blue
         case .needsYou: return .orange
+        case .completed: return .green
+        case .failed: return .red
         }
     }
 
     var symbol: String {
         switch self {
-        case .running: return "gearshape.2.fill"
+        case .running: return "arrow.triangle.2.circlepath"
         case .needsYou: return "exclamationmark.bubble.fill"
+        case .completed: return "checkmark.circle"
+        case .failed: return "xmark.circle"
         }
     }
 
     var label: String {
         switch self {
-        case .running: return "Running"
-        case .needsYou: return "Waiting on you"
+        case .running: return "Working"
+        case .needsYou: return "Needs you"
+        case .completed: return "Completed"
+        case .failed: return "Failed"
+        }
+    }
+
+    var fallbackDetail: String {
+        switch self {
+        case .running: return "Poly is on it"
+        case .needsYou: return "Waiting on your answer"
+        case .completed: return "Your agent is done working"
+        case .failed: return "Stopped before finishing"
+        }
+    }
+
+    var action: String {
+        self == .needsYou ? "Respond" : "View work"
+    }
+}
+
+private extension WorkLine {
+    var detail: String {
+        if let step, !step.isEmpty { return step }
+        return state.fallbackDetail
+    }
+}
+
+private extension ActivityState {
+    var segments: [WorkLine.State] {
+        [focus.state] + others
+    }
+
+    var link: URL {
+        focus.link ?? inboxURL
+    }
+}
+
+private struct Elapsed: View {
+    let line: WorkLine
+
+    var body: some View {
+        if let endedAt = line.endedAt {
+            Text(Duration.seconds(endedAt.timeIntervalSince(line.since)).formatted(
+                .units(allowed: [.hours, .minutes, .seconds], width: .narrow, maximumUnitCount: 1)
+            ))
+        } else {
+            Text(timerInterval: line.since...Date.distantFuture, countsDown: false)
+                .multilineTextAlignment(.trailing)
         }
     }
 }
 
-private struct StateGlyph: View {
-    let state: WorkLine.State
-    var size: CGFloat = 30
-
-    var body: some View {
-        Image(systemName: state.symbol)
-            .font(.system(size: size * 0.48, weight: .semibold))
-            .foregroundStyle(state.tint)
-            .frame(width: size, height: size)
-            .background(state.tint.opacity(0.18), in: Circle())
-    }
-}
-
-private struct ElapsedTimer: View {
-    let since: Date
-
-    var body: some View {
-        Text(timerInterval: since...Date.distantFuture, countsDown: false)
-            .monospacedDigit()
-            .multilineTextAlignment(.trailing)
-    }
-}
-
-private struct Counts: View {
-    let state: ActivityState
+private struct StatusLine: View {
+    let line: WorkLine
 
     var body: some View {
         HStack(spacing: 8) {
-            if state.needsYou > 0 {
-                Label("\(state.needsYou)", systemImage: "exclamationmark.circle.fill")
-                    .foregroundStyle(.orange)
-            }
-            if state.workingOn > 0 {
-                Label("\(state.workingOn)", systemImage: "bolt.fill")
-                    .foregroundStyle(.blue)
-            }
+            Text("\(Text(line.state.label).foregroundStyle(line.state.tint)) · \(line.detail)")
+                .lineLimit(1)
+            Spacer(minLength: 4)
+            Elapsed(line: line)
+                .monospacedDigit()
+                .frame(maxWidth: 64, alignment: .trailing)
         }
-        .font(.caption.weight(.semibold))
-        .labelStyle(.titleAndIcon)
+        .font(.subheadline)
+        .foregroundStyle(.secondary)
     }
 }
 
-private struct FocusCard: View {
+private struct Segments: View {
+    let states: [WorkLine.State]
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(Array(states.enumerated()), id: \.offset) { _, state in
+                Capsule()
+                    .fill(state.tint)
+                    .frame(height: 6)
+            }
+        }
+    }
+}
+
+private struct ActionButton: View {
+    let state: ActivityState
+
+    var body: some View {
+        Link(destination: state.link) {
+            Text(state.focus.state.action)
+                .font(.subheadline.weight(.semibold))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(.white.opacity(0.12), in: Capsule())
+        }
+    }
+}
+
+private struct TitleRow: View {
     let line: WorkLine
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            StateGlyph(state: line.state)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(line.title)
-                    .font(.subheadline.weight(.semibold))
-                    .lineLimit(2)
-                Text(line.place)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                if let step = line.step, !step.isEmpty {
-                    Text(step)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
-            }
-            Spacer(minLength: 4)
-            VStack(alignment: .trailing, spacing: 2) {
-                ElapsedTimer(since: line.since)
-                    .font(.title3.weight(.semibold))
-                    .frame(maxWidth: 76, alignment: .trailing)
-                Text(line.state.label)
-                    .font(.caption2.weight(.medium))
-                    .foregroundStyle(line.state.tint)
-            }
-        }
-    }
-}
-
-private struct NextRow: View {
-    let line: WorkLine
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Circle()
-                .fill(line.state.tint)
-                .frame(width: 6, height: 6)
+            PolyMark(size: 22)
             Text(line.title)
-                .font(.caption)
-                .lineLimit(1)
-            Spacer(minLength: 4)
-            ElapsedTimer(since: line.since)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: 52, alignment: .trailing)
+                .font(.headline)
+                .lineLimit(2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Image(systemName: line.state.symbol)
+                .font(.title3)
+                .foregroundStyle(line.state.tint)
         }
     }
 }
@@ -136,46 +152,35 @@ private struct PolyActivityLockScreen: View {
         case .small:
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
-                    PolyMark(size: 18)
-                    Counts(state: state)
-                }
-                if let focus = state.focus {
-                    Text(focus.title)
-                        .font(.caption.weight(.semibold))
-                        .lineLimit(2)
-                    ElapsedTimer(since: focus.since)
+                    PolyMark(size: 16)
+                    Image(systemName: state.focus.state.symbol)
                         .font(.caption2)
-                        .foregroundStyle(focus.state.tint)
+                        .foregroundStyle(state.focus.state.tint)
+                    Spacer(minLength: 0)
+                    Elapsed(line: state.focus)
+                        .font(.caption2.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: 44, alignment: .trailing)
                 }
+                Text(state.focus.title)
+                    .font(.caption.weight(.semibold))
+                    .lineLimit(2)
+                Text(state.focus.state.label)
+                    .font(.caption2)
+                    .foregroundStyle(state.focus.state.tint)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(8)
         default:
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 8) {
-                    PolyMark(size: 22)
-                    Text("Poly")
-                        .font(.subheadline.weight(.bold))
-                    Spacer(minLength: 0)
-                    Counts(state: state)
+            VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 6) {
+                    TitleRow(line: state.focus)
+                    StatusLine(line: state.focus)
                 }
-                if let focus = state.focus {
-                    Link(destination: focus.link ?? inboxURL) {
-                        FocusCard(line: focus)
-                    }
-                }
-                if !state.next.isEmpty {
-                    VStack(spacing: 6) {
-                        ForEach(state.next.prefix(2)) { line in
-                            Link(destination: line.link ?? inboxURL) {
-                                NextRow(line: line)
-                            }
-                        }
-                    }
-                    .padding(.top, 2)
-                }
+                Segments(states: state.segments)
+                ActionButton(state: state)
             }
-            .padding(14)
+            .padding(16)
         }
     }
 }
@@ -185,88 +190,53 @@ struct PolyLiveActivity: Widget {
         ActivityConfiguration(for: PolyActivityAttributes.self) { context in
             PolyActivityLockScreen(state: context.state)
                 .activitySystemActionForegroundColor(.primary)
-                .widgetURL(context.state.focus?.link ?? inboxURL)
+                .widgetURL(context.state.link)
         } dynamicIsland: { context in
-            DynamicIsland {
+            let focus = context.state.focus
+            return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    if let focus = context.state.focus {
-                        StateGlyph(state: focus.state, size: 36)
-                    } else {
-                        PolyMark(size: 36)
-                    }
+                    PolyMark(size: 28)
+                        .padding(.leading, 4)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    if let focus = context.state.focus {
-                        ElapsedTimer(since: focus.since)
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(focus.state.tint)
-                            .frame(maxWidth: 76, alignment: .trailing)
-                    } else {
-                        Counts(state: context.state)
-                    }
+                    Image(systemName: focus.state.symbol)
+                        .font(.title3)
+                        .foregroundStyle(focus.state.tint)
+                        .padding(.trailing, 4)
                 }
                 DynamicIslandExpandedRegion(.center) {
-                    if let focus = context.state.focus {
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(focus.title)
-                                .font(.subheadline.weight(.semibold))
-                                .lineLimit(1)
-                            Text(focus.place)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                        }
+                    Text(focus.title)
+                        .font(.subheadline.weight(.semibold))
+                        .lineLimit(2)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                    }
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    VStack(spacing: 6) {
-                        if let next = context.state.next.first {
-                            Link(destination: next.link ?? inboxURL) {
-                                NextRow(line: next)
-                            }
-                        }
-                        HStack {
-                            Counts(state: context.state)
-                            Spacer(minLength: 0)
-                            Link(destination: inboxURL) {
-                                Text("Open inbox")
-                                    .font(.caption.weight(.semibold))
-                            }
-                        }
+                    VStack(spacing: 10) {
+                        StatusLine(line: focus)
+                        Segments(states: context.state.segments)
+                        ActionButton(state: context.state)
                     }
+                    .padding(.top, 4)
                 }
             } compactLeading: {
-                HStack(spacing: 4) {
-                    PolyMark(size: 18)
-                    if let focus = context.state.focus {
-                        Image(systemName: focus.state.symbol)
-                            .font(.caption2)
-                            .foregroundStyle(focus.state.tint)
-                    }
-                }
+                PolyMark(size: 18)
             } compactTrailing: {
-                if context.state.needsYou > 0 {
-                    Text("\(context.state.needsYou)")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(.orange)
-                } else if let focus = context.state.focus {
-                    ElapsedTimer(since: focus.since)
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(.blue)
+                if focus.state == .running {
+                    Elapsed(line: focus)
+                        .font(.caption2.weight(.semibold).monospacedDigit())
+                        .foregroundStyle(focus.state.tint)
                         .frame(maxWidth: 44)
+                } else {
+                    Image(systemName: focus.state.symbol)
+                        .font(.caption)
+                        .foregroundStyle(focus.state.tint)
                 }
             } minimal: {
-                if context.state.needsYou > 0 {
-                    Text("\(context.state.needsYou)")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(.orange)
-                } else {
-                    Image(systemName: "bolt.fill")
-                        .foregroundStyle(.blue)
-                }
+                Image(systemName: focus.state.symbol)
+                    .font(.caption)
+                    .foregroundStyle(focus.state.tint)
             }
-            .widgetURL(context.state.focus?.link ?? polyURL)
+            .widgetURL(context.state.link)
         }
         .supplementalActivityFamilies([.small, .medium])
     }

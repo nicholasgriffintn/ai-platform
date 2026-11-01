@@ -51,7 +51,7 @@ final class WatchStore: ObservableObject {
         } catch APIClientError.httpStatus(let status, _) where status == 402 || status == 403 {
             actionable = []
             running = []
-        } catch is CancellationError {
+        } catch let error where error.isCancellation {
             return
         } catch {
             self.error = "Poly could not be reached: \(error.localizedDescription)"

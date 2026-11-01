@@ -48,39 +48,35 @@ final class AttentionStore: ObservableObject {
 
     func publish(notifications: [TaskInboxItem]) async {
         let needsYou = badgeCount(notifications: notifications)
-        let running = workItems.filter(\.isRunning).count + backgroundTasks.filter(\.isActive).count
+        let running = workItems.filter(\.isRunning)
         try? await UNUserNotificationCenter.current().setBadgeCount(needsYou)
-        WidgetPublisher.publish(attention: actionableItems + workItems.filter(\.isRunning), needsYou: needsYou, running: running)
-        await liveActivity.sync(needsYou: needsYou, workingOn: running, lines: liveLines)
+        WidgetPublisher.publish(attention: actionableItems + running, needsYou: needsYou, running: running.count)
+        await liveActivity.sync(live: liveLines, finished: finishedLines)
     }
 
     private var liveLines: [LiveWorkLine] {
-        let running = workItems.filter(\.isRunning).map { item in
-            liveLine(item, needsYou: false)
-        }
-        let waiting = actionableItems.map { item in liveLine(item, needsYou: true) }
-        let decided = decisions.map { item in
-            LiveWorkLine(
-                id: item.id,
-                title: item.title,
-                place: item.workspaceId == nil ? "Personal" : "Work",
-                step: item.detail,
-                needsYou: true,
-                since: AppDateParser.parse(item.since, fallback: Date()),
-                link: item.target.flatMap(AppRoute.workLink)
-                    ?? item.conversationId.flatMap { URL(string: "polychat://chat/\($0)") }
-            )
-        }
-        return running + waiting + decided
+        let blocked = runItems.filter(\.needsAction).map { liveLine($0, state: .needsYou) }
+        let running = workItems.filter(\.isRunning).map { liveLine($0, state: .running) }
+        return blocked + running
     }
 
-    private func liveLine(_ item: WorkAttentionItem, needsYou: Bool) -> LiveWorkLine {
+    private var finishedLines: [LiveWorkLine] {
+        workItems.compactMap { item in
+            switch item.kind {
+            case "completed": return liveLine(item, state: .completed)
+            case "failed": return liveLine(item, state: .failed)
+            default: return nil
+            }
+        }
+    }
+
+    private func liveLine(_ item: WorkAttentionItem, state: LiveWorkLine.State) -> LiveWorkLine {
         LiveWorkLine(
-            id: item.id,
+            id: item.resourceId,
             title: item.title,
             place: "\(item.workspaceName) · \(item.projectName)",
             step: item.detail,
-            needsYou: needsYou,
+            state: state,
             since: AppDateParser.parse(item.occurredAt, fallback: Date()),
             link: AppRoute.workLink(item.target)
         )
@@ -146,7 +142,7 @@ final class AttentionStore: ObservableObject {
             places = inbox.places
         } catch APIClientError.httpStatus(let status, _) where status == 402 || status == 403 {
             decisions = []
-        } catch is CancellationError {
+        } catch let error where error.isCancellation {
             return
         } catch {
             self.error = "Inbox could not be loaded: \(error.localizedDescription)"
@@ -161,7 +157,7 @@ final class AttentionStore: ObservableObject {
         error = nil
         workUnavailable = false
         try? await UNUserNotificationCenter.current().setBadgeCount(0)
-        await liveActivity.sync(needsYou: 0, workingOn: 0, lines: [])
+        await liveActivity.sync(live: [], finished: [])
     }
 
     private func loadWork() async {
@@ -172,7 +168,7 @@ final class AttentionStore: ObservableObject {
         } catch APIClientError.httpStatus(let status, _) where status == 402 || status == 403 {
             workItems = []
             workUnavailable = true
-        } catch is CancellationError {
+        } catch let error where error.isCancellation {
             return
         } catch {
             self.error = "Attention could not be loaded: \(error.localizedDescription)"

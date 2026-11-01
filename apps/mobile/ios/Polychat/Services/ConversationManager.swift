@@ -257,7 +257,7 @@ class ConversationManager: ObservableObject {
             }
 
             store(applying(detail, to: conversation))
-        } catch is CancellationError {
+        } catch let error where error.isCancellation {
             return
         } catch {
             if currentConversation?.id == conversationId {
@@ -366,7 +366,7 @@ class ConversationManager: ObservableObject {
                 if replayState.snapshot.response.isTerminal {
                     return
                 }
-            } catch is CancellationError {
+            } catch let error where error.isCancellation {
                 return
             } catch {
                 self.error = "Task status could not be refreshed: \(error.localizedDescription)"

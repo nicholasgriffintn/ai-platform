@@ -6,19 +6,19 @@ struct HomeView: View {
     @EnvironmentObject private var playback: DiscoverPlayback
     @EnvironmentObject private var polyStore: PolyStore
     @Environment(\.openURL) private var openURL
-    @State private var mediaItem: DiscoverMediaItem?
+    @State private var panelItem: DiscoverItem?
     @State private var storyWindDownId: String?
-    @State private var selectedCard: DiscoverCard?
-    @State private var askRequest: DiscoverAskRequest?
+    @State private var expandedSections: Set<DiscoverSection> = []
     @Binding var link: DiscoverLink?
     let onOpenConversation: (String) -> Void
 
+    private static let sectionPreview = 5
     private let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
+                LazyVStack(alignment: .leading, spacing: 28) {
                     header
 
                     if let agenda = polyStore.agenda {
@@ -63,7 +63,7 @@ struct HomeView: View {
             .navigationTitle("Home")
             .toolbar(.hidden, for: .navigationBar)
             .safeAreaInset(edge: .bottom) {
-                DiscoverNowPlayingBar(playback: playback) { mediaItem = $0 }
+                DiscoverNowPlayingBar(playback: playback) { panelItem = .media($0) }
             }
             .refreshable {
                 await store.refresh()
@@ -71,43 +71,8 @@ struct HomeView: View {
             }
             .task { await store.loadIfNeeded() }
             .task(id: link) { follow(link) }
-            .sheet(item: $selectedCard) { card in
-                DiscoverCardSheet(
-                    card: card,
-                    cover: card.coverId.flatMap { store.covers[$0] },
-                    signals: store.signals(for: card),
-                    isFollowing: card.topic.flatMap { store.follows($0) } != nil,
-                    onAsk: {
-                        selectedCard = nil
-                        ask(card)
-                    },
-                    onOpenLink: { openLink(card) },
-                    onFeedback: { signal in
-                        if signal != "saved" {
-                            selectedCard = nil
-                        }
-                        Task { await store.send(signal, for: card) }
-                    },
-                    onToggleFollow: { topic in
-                        Task { await store.toggleFollow(topic) }
-                    }
-                )
-                .presentationDetents([.medium, .large])
-            }
-            .sheet(item: $askRequest) { request in
-                DiscoverAskSheet(request: request)
-            }
-            .sheet(item: $mediaItem) { item in
-                if let edition = store.edition {
-                    DiscoverMediaSheet(
-                        item: item,
-                        edition: edition,
-                        windDownId: store.discover?.windDownId,
-                        artwork: store.mediaArt[item],
-                        onRefresh: { await store.refresh() }
-                    )
-                    .onDisappear { Task { await store.loadMedia() } }
-                }
+            .navigationDestination(item: $panelItem) { item in
+                DiscoverItemPanel(item: item, onOpenConversation: onOpenConversation)
             }
         }
     }
@@ -162,7 +127,7 @@ struct HomeView: View {
                             DiscoverStoryTile(card: card) { startStory(card) }
                         } else {
                             DiscoverTopicTile(card: card, cover: card.coverId.flatMap { store.covers[$0] }) {
-                                selectedCard = card
+                                panelItem = .card(card)
                             }
                             .contextMenu { feedbackMenu(card) }
                         }
@@ -174,14 +139,29 @@ struct HomeView: View {
         ForEach(DiscoverSection.allCases.filter { $0 != .topics }, id: \.self) { section in
             let cards = store.cards(in: section)
             if !cards.isEmpty {
+                let expanded = expandedSections.contains(section)
+                let shown = expanded ? cards : Array(cards.prefix(Self.sectionPreview))
                 VStack(alignment: .leading, spacing: 12) {
-                    EyebrowLabel(section.title)
-                    VStack(spacing: 0) {
-                        ForEach(Array(cards.enumerated()), id: \.element.id) { index, card in
+                    HStack {
+                        EyebrowLabel(section.title)
+                        Spacer()
+                        if cards.count > Self.sectionPreview {
+                            Button(expanded ? "Show less" : "Show all \(cards.count)") {
+                                if expanded {
+                                    expandedSections.remove(section)
+                                } else {
+                                    expandedSections.insert(section)
+                                }
+                            }
+                            .font(.caption.weight(.semibold))
+                        }
+                    }
+                    LazyVStack(spacing: 0) {
+                        ForEach(Array(shown.enumerated()), id: \.element.id) { index, card in
                             if index > 0 {
                                 Divider().padding(.leading, 52)
                             }
-                            DiscoverRow(card: card) { selectedCard = card }
+                            DiscoverRow(card: card) { panelItem = .card(card) }
                                 .contextMenu { feedbackMenu(card) }
                         }
                     }
@@ -201,7 +181,7 @@ struct HomeView: View {
     @ViewBuilder
     private func feedbackMenu(_ card: DiscoverCard) -> some View {
         Button {
-            ask(card)
+            panelItem = .card(card)
         } label: {
             Label("Ask Poly about this", systemImage: "bubble.left")
         }
@@ -234,7 +214,7 @@ struct HomeView: View {
             await store.send("opened", for: card)
             guard let id = await playback.windDown.startStory(editionId: edition.id, cardId: card.id) else { return }
             storyWindDownId = id
-            mediaItem = .windDown
+            panelItem = .media(.windDown)
         }
     }
 
@@ -243,12 +223,7 @@ struct HomeView: View {
             playback.windDown.reset()
             storyWindDownId = nil
         }
-        mediaItem = item
-    }
-
-    private func ask(_ card: DiscoverCard) {
-        guard let edition = store.edition else { return }
-        askRequest = DiscoverAskRequest(card: card, editionId: edition.id)
+        panelItem = .media(item)
     }
 
     private func follow(_ link: DiscoverLink?) {
@@ -256,16 +231,10 @@ struct HomeView: View {
         self.link = nil
         switch link {
         case .media(let item):
-            mediaItem = item
+            panelItem = .media(item)
         case .card(let id):
-            selectedCard = store.edition?.cards.first { $0.id == id }
+            panelItem = store.edition?.cards.first { $0.id == id }.map(DiscoverItem.card)
         }
-    }
-
-    private func openLink(_ card: DiscoverCard) {
-        guard let url = card.externalURL else { return }
-        Task { await store.send("opened", for: card) }
-        openURL(url)
     }
 
     private func open(_ line: DiscoverBriefLine) {

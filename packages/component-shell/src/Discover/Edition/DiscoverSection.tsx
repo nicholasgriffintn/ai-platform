@@ -18,7 +18,7 @@ const SECTION_GAP_PX = 2 * REM_PX;
 const POSTER_MIN_PX = 10.5 * REM_PX;
 const POSTER_MAX_PX = 20 * REM_PX;
 
-type CardSectionKind = Exclude<DiscoverSectionKind, "posters">;
+export type CardSectionKind = Exclude<DiscoverSectionKind, "posters">;
 
 interface DiscoverSectionLayout {
   minItemRem: number;
@@ -125,6 +125,22 @@ export function DiscoverSectionRow({
   );
 }
 
+export function DiscoverSectionStack({
+  kind,
+  count,
+  children,
+}: {
+  kind: CardSectionKind;
+  count: number;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex max-w-full min-w-0 flex-col gap-8" style={sectionStyle(kind, count)}>
+      {children}
+    </div>
+  );
+}
+
 function DiscoverPosterSection({
   title,
   count,
@@ -166,12 +182,14 @@ export function DiscoverSection({
   kind,
   count,
   maxVisible = count,
+  stacked = false,
   children,
 }: {
   title: string;
   kind: DiscoverSectionKind;
   count: number;
   maxVisible?: number;
+  stacked?: boolean;
   children: ReactNode;
 }) {
   if (kind === "posters") {
@@ -186,7 +204,7 @@ export function DiscoverSection({
     <section
       aria-label={title}
       className="flex max-w-full min-w-0 flex-col gap-3"
-      style={sectionStyle(kind, count)}
+      style={stacked ? undefined : sectionStyle(kind, count)}
     >
       <h3 className="polychat-eyebrow px-1">{title}</h3>
       <div className={DISCOVER_SECTION_GRID[kind]}>{children}</div>

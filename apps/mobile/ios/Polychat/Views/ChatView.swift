@@ -11,7 +11,24 @@ struct ChatView: View {
     @State private var showingModelSelector = false
     @FocusState private var isMessageInputFocused: Bool
     let projectName: String?
-    let onNewChat: (String?) -> Void
+    let onNewChat: ((String?) -> Void)?
+    let placeholder: String
+    let showsTitle: Bool
+    let welcome: ((@escaping (String) -> Void) -> AnyView)?
+
+    init(
+        projectName: String?,
+        onNewChat: ((String?) -> Void)? = nil,
+        placeholder: String = "Message Polychat",
+        showsTitle: Bool = true,
+        welcome: ((@escaping (String) -> Void) -> AnyView)? = nil
+    ) {
+        self.projectName = projectName
+        self.onNewChat = onNewChat
+        self.placeholder = placeholder
+        self.showsTitle = showsTitle
+        self.welcome = welcome
+    }
 
     private var conversation: Conversation? {
         conversationManager.currentConversation
@@ -47,30 +64,20 @@ struct ChatView: View {
         conversation.map { conversationManager.isStreaming($0.id) } ?? false
     }
 
+    private var isLoadingConversation: Bool {
+        conversationManager.loadingConversationID == conversation?.id
+    }
+
     var body: some View {
         VStack(spacing: 0) {
-            MessageListView(
-                messages: messages,
-                response: currentResponse,
-                activityLabel: conversationManager.turnActivityLabel(for: conversation?.id),
-                taskActivity: conversationManager.currentTaskActivity,
-                taskInteraction: conversationManager.currentTaskInteraction,
-                connectorApproval: conversationManager.currentConnectorApproval,
-                isLoadingConversation: conversationManager.loadingConversationID == conversation?.id,
-                hasMoreMessages: conversation?.hasMoreMessages == true,
-                isLoadingEarlierMessages: conversationManager.isLoadingEarlierMessages,
-                emptyState: AnyView(ChatEmptyState(projectName: projectName)),
-                onLoadEarlierMessages: { Task { await conversationManager.loadEarlierMessages() } },
-                onAnswerTaskQuestions: { answers in Task { await conversationManager.answerCurrentTaskQuestions(answers) } },
-                onResolveTaskApproval: { resolution in Task { await conversationManager.resolveCurrentTaskApproval(resolution) } },
-                onRefreshTaskInteraction: { Task { await conversationManager.refreshCurrentTaskInteraction() } },
-                onResolveConnectorApproval: { resolution in Task { await conversationManager.resolveCurrentConnectorApproval(resolution) } },
-                onContinueConnectorApproval: { Task { await conversationManager.continueCurrentConnectorApproval() } },
-                onRefreshConnectorApproval: { Task { await conversationManager.refreshCurrentConnectorApproval() } },
-                onRetry: { message in Task { await conversationManager.regenerateAssistantMessage(message.id) } },
-                onEdit: { message, text in Task { await conversationManager.editUserMessage(message.id, text: text) } }
-            )
-            .id(conversation?.id)
+            if let welcome, messages.isEmpty, !isLoadingConversation {
+                ScrollView {
+                    welcome(submit)
+                }
+                .scrollDismissesKeyboard(.interactively)
+            } else {
+                messageList
+            }
 
             if let machineResponse = currentResponse, machineResponse.provenance?.site == "machine", !machineResponse.isActive {
                 HStack(spacing: 10) {
@@ -103,6 +110,7 @@ struct ChatView: View {
                 activeModelProvider: activeModelConfig?.provider,
                 isRunActive: isStreaming || currentResponse?.isActive == true,
                 isCancellationPending: currentResponse?.status == "cancelling",
+                placeholder: placeholder,
                 onFilesPicked: { files in
                     Task {
                         selectedAttachments += await composer.upload(files, apiClient: apiClient)
@@ -125,17 +133,18 @@ struct ChatView: View {
             )
         }
         .background(Color.polychat.background)
-        .navigationTitle(conversation?.title ?? "New chat")
-        .navigationBarTitleDisplayMode(.inline)
+        .modifier(ConversationTitle(title: showsTitle ? conversation?.title ?? "New chat" : nil))
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    isMessageInputFocused = false
-                    onNewChat(conversation?.projectId)
-                } label: {
-                    Image(systemName: "square.and.pencil")
+            if let onNewChat {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        isMessageInputFocused = false
+                        onNewChat(conversation?.projectId)
+                    } label: {
+                        Image(systemName: "square.and.pencil")
+                    }
+                    .accessibilityLabel("New chat")
                 }
-                .accessibilityLabel("New chat")
             }
         }
         .sheet(isPresented: $showingModelSelector) {
@@ -171,6 +180,36 @@ struct ChatView: View {
                 Task { await conversationManager.submitApprovalsIfReady() }
             }
         }
+    }
+
+    private var messageList: some View {
+        MessageListView(
+            messages: messages,
+            response: currentResponse,
+            activityLabel: conversationManager.turnActivityLabel(for: conversation?.id),
+            taskActivity: conversationManager.currentTaskActivity,
+            taskInteraction: conversationManager.currentTaskInteraction,
+            connectorApproval: conversationManager.currentConnectorApproval,
+            isLoadingConversation: isLoadingConversation,
+            hasMoreMessages: conversation?.hasMoreMessages == true,
+            isLoadingEarlierMessages: conversationManager.isLoadingEarlierMessages,
+            emptyState: AnyView(ChatEmptyState(projectName: projectName)),
+            onLoadEarlierMessages: { Task { await conversationManager.loadEarlierMessages() } },
+            onAnswerTaskQuestions: { answers in Task { await conversationManager.answerCurrentTaskQuestions(answers) } },
+            onResolveTaskApproval: { resolution in Task { await conversationManager.resolveCurrentTaskApproval(resolution) } },
+            onRefreshTaskInteraction: { Task { await conversationManager.refreshCurrentTaskInteraction() } },
+            onResolveConnectorApproval: { resolution in Task { await conversationManager.resolveCurrentConnectorApproval(resolution) } },
+            onContinueConnectorApproval: { Task { await conversationManager.continueCurrentConnectorApproval() } },
+            onRefreshConnectorApproval: { Task { await conversationManager.refreshCurrentConnectorApproval() } },
+            onRetry: { message in Task { await conversationManager.regenerateAssistantMessage(message.id) } },
+            onEdit: { message, text in Task { await conversationManager.editUserMessage(message.id, text: text) } }
+        )
+        .id(conversation?.id)
+    }
+
+    private func submit(_ text: String) {
+        messageText = text
+        sendMessage()
     }
 
     private func sendMessage() {
@@ -217,5 +256,19 @@ private struct ChatEmptyState: View {
         .frame(maxWidth: .infinity)
         .padding(.top, 120)
         .padding(.horizontal, 24)
+    }
+}
+
+private struct ConversationTitle: ViewModifier {
+    let title: String?
+
+    func body(content: Content) -> some View {
+        if let title {
+            content
+                .navigationTitle(title)
+                .navigationBarTitleDisplayMode(.inline)
+        } else {
+            content
+        }
     }
 }

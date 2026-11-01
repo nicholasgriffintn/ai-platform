@@ -4,6 +4,15 @@ import UIKit
 @testable import Polychat
 
 struct ModelTests {
+    @Test func liveActivityStateDecodesActivitiesStartedByEarlierBuilds() throws {
+        let legacy = try JSONDecoder().decode(PolyActivityAttributes.ContentState.self, from: Data("""
+        {"mood":"work","needsYou":0,"workingOn":2,"next":[]}
+        """.utf8))
+
+        #expect(legacy.focus.id == "legacy")
+        #expect(legacy.others.isEmpty)
+    }
+
     @Test func taskInboxDecodesReadStateAndCurrentDeepLink() throws {
         let inbox = try JSONDecoder().decode(TaskInboxResponse.self, from: Data("""
         {

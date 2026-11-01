@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7A5E00012F00000000000001 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 7A5E00032F00000000000001 /* Sentry */; };
 		7A11000F2F00000000000001 /* PolychatWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7A1100012F00000000000001 /* PolychatWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7A2000222F00000000000001 /* PolychatWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 7A20000B2F00000000000001 /* PolychatWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7A2000232F00000000000001 /* PolychatWatchWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7A20000C2F00000000000001 /* PolychatWatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7A2000242F00000000000001 /* PolychatTopShelf.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 7A20000E2F00000000000001 /* PolychatTopShelf.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		7A5E00012F00000000000001 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 7A5E00032F00000000000001 /* Sentry */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -596,10 +596,10 @@
 				Base,
 			);
 			mainGroup = 6433D1E32E1F37C6000E4A43;
+			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				7A5E00022F00000000000001 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 			);
-			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 6433D1ED2E1F37C6000E4A43 /* Products */;
 			projectDirPath = "";

@@ -12,6 +12,7 @@ struct MessageInputView: View {
     let activeModelProvider: String?
     let isRunActive: Bool
     let isCancellationPending: Bool
+    var placeholder = "Message Polychat"
     let onFilesPicked: ([PickedComposerFile]) -> Void
     let onVoiceTapped: () -> Void
     let onModelTapped: () -> Void
@@ -46,7 +47,7 @@ struct MessageInputView: View {
                     }
                 }
 
-                TextField(isRecordingVoice ? "Listening…" : "Message Polychat", text: $messageText, axis: .vertical)
+                TextField(isRecordingVoice ? "Listening…" : placeholder, text: $messageText, axis: .vertical)
                     .focused(inputFocus)
                     .textFieldStyle(.plain)
                     .font(.body)

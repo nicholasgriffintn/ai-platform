@@ -84,52 +84,6 @@ private struct DiscoverMediaTile: View {
     }
 }
 
-struct DiscoverMediaSheet: View {
-    @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var playback: DiscoverPlayback
-    let item: DiscoverMediaItem
-    let edition: DiscoverEdition
-    let windDownId: String?
-    let artwork: UIImage?
-    let onRefresh: () async -> Void
-
-    var body: some View {
-        NavigationStack {
-            Group {
-                switch item {
-                case .episode:
-                    EpisodePlayerView(controller: playback.episode, edition: edition, artwork: artwork, onRefresh: onRefresh)
-                case .perch:
-                    SourceListenView(
-                        controller: playback.listen(.perch, editionId: edition.id),
-                        sourceId: edition.listenSourceId,
-                        artwork: artwork,
-                        onRefresh: onRefresh
-                    )
-                case .week:
-                    SourceListenView(
-                        controller: playback.listen(.week, editionId: edition.id),
-                        sourceId: edition.weekSourceId,
-                        artwork: artwork,
-                        onRefresh: onRefresh
-                    )
-                case .windDown:
-                    WindDownView(controller: playback.windDown, windDownId: windDownId)
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(Color.polychat.background)
-            .navigationTitle(item.title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
-        }
-    }
-}
-
 private struct MediaArtwork: View {
     let item: DiscoverMediaItem
     var image: UIImage?
@@ -160,32 +114,14 @@ private struct PlaybackBar: View {
     let onToggle: () -> Void
 
     var body: some View {
-        VStack(spacing: 8) {
-            ProgressView(value: player.duration > 0 ? player.currentTime / player.duration : 0)
-                .tint(Color.polychat.primary)
-            HStack {
-                Text(format(player.currentTime))
-                Spacer()
-                Button(action: onToggle) {
-                    Group {
-                        if isLoading {
-                            ProgressView()
-                        } else {
-                            Image(systemName: player.isPlaying ? "pause.fill" : "play.fill")
-                        }
-                    }
-                    .font(.title2)
-                    .frame(width: 56, height: 56)
-                    .foregroundStyle(Color.polychat.primaryForeground)
-                    .background(Color.polychat.primary, in: Circle())
-                }
-                .accessibilityLabel(player.isPlaying ? "Pause" : "Play")
-                Spacer()
-                Text(format(player.duration))
-            }
-            .font(.caption.monospacedDigit())
-            .foregroundStyle(Color.polychat.textMuted)
-        }
+        MediaTransport(
+            isPlaying: player.isPlaying,
+            isBusy: isLoading,
+            progress: player.duration > 0 ? player.currentTime / player.duration : 0,
+            start: format(player.currentTime),
+            end: player.duration > 0 ? format(player.duration) : "",
+            onToggle: onToggle
+        )
     }
 
     private func format(_ seconds: TimeInterval) -> String {
@@ -222,7 +158,7 @@ struct MediaNotice: View {
     }
 }
 
-private struct EpisodePlayerView: View {
+struct EpisodePlayerView: View {
     @EnvironmentObject private var apiClient: APIClient
     @ObservedObject var controller: EpisodePlaybackController
     @State private var isRequesting = false
@@ -231,71 +167,63 @@ private struct EpisodePlayerView: View {
     let onRefresh: () async -> Void
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                MediaArtwork(item: .episode, image: controller.shotImage ?? artwork)
+        VStack(alignment: .leading, spacing: 16) {
+            MediaArtwork(item: .episode, image: controller.shotImage ?? artwork)
 
-                if let episode = controller.episode {
-                    VStack(alignment: .leading, spacing: 4) {
-                        EyebrowLabel("Part \(episode.part) of \(episode.parts) · \(episode.topic)")
-                        Text(episode.title).font(.polychatDisplay(.title2))
-                        if let caption = controller.caption, !caption.isEmpty {
-                            Text(caption).font(.subheadline).foregroundStyle(Color.polychat.textMuted)
-                        }
+            if let episode = controller.episode {
+                VStack(alignment: .leading, spacing: 4) {
+                    EyebrowLabel("Part \(episode.part) of \(episode.parts) · \(episode.topic)")
+                    Text(episode.title).font(.polychatDisplay(.title2))
+                    if let caption = controller.caption, !caption.isEmpty {
+                        Text(caption).font(.subheadline).foregroundStyle(Color.polychat.textMuted)
                     }
+                }
 
-                    HStack(spacing: 12) {
-                        PlaybackBar(player: controller.player, isLoading: controller.isLoading) {
-                            Task { await controller.togglePlayback() }
-                        }
-                        AirPlayButton()
-                            .frame(width: 36, height: 36)
-                            .accessibilityLabel("Play on Apple TV or speakers")
-                    }
+                PlaybackBar(player: controller.player, isLoading: controller.isLoading) {
+                    Task { await controller.togglePlayback() }
+                }
 
-                    VStack(spacing: 0) {
-                        ForEach(Array(episode.chapters.enumerated()), id: \.offset) { index, chapter in
-                            Button {
-                                Task { await controller.play(chapter: index, fromStart: true) }
-                            } label: {
-                                HStack {
-                                    Text("\(index + 1). \(chapter.title)")
-                                        .font(.subheadline.weight(index == controller.chapterIndex ? .semibold : .regular))
-                                        .foregroundStyle(Color.polychat.text)
-                                    Spacer()
-                                    if !chapter.isReady {
-                                        StatusPill(label: chapter.status == "failed" ? "Failed" : "Recording", tint: Color.polychat.attention)
-                                    }
+                VStack(spacing: 0) {
+                    ForEach(Array(episode.chapters.enumerated()), id: \.offset) { index, chapter in
+                        Button {
+                            Task { await controller.play(chapter: index, fromStart: true) }
+                        } label: {
+                            HStack {
+                                Text("\(index + 1). \(chapter.title)")
+                                    .font(.subheadline.weight(index == controller.chapterIndex ? .semibold : .regular))
+                                    .foregroundStyle(Color.polychat.text)
+                                Spacer()
+                                if !chapter.isReady {
+                                    StatusPill(label: chapter.status == "failed" ? "Failed" : "Recording", tint: Color.polychat.attention)
                                 }
-                                .padding(.vertical, 10)
                             }
-                            .disabled(!chapter.isReady)
-                            if index < episode.chapters.count - 1 { Divider() }
+                            .padding(.vertical, 10)
                         }
+                        .disabled(!chapter.isReady)
+                        if index < episode.chapters.count - 1 { Divider() }
                     }
-                    .polychatCard(padding: 12)
-
-                    if !episode.recap.isEmpty {
-                        Text(episode.recap).font(.footnote).foregroundStyle(Color.polychat.textMuted)
-                    }
-                } else if edition.episodeId == nil {
-                    MediaNotice(
-                        message: edition.episodeOverBudget == true
-                            ? "This month's Discover budget is spent. Raise it in settings on the web to make today's part."
-                            : "Today's part of a five-day season on your top topic.",
-                        actionTitle: "Make it",
-                        isWorking: isRequesting,
-                        action: request
-                    )
-                } else if controller.isLoading {
-                    ProgressView().frame(maxWidth: .infinity)
                 }
+                .polychatCard(padding: 12)
 
-                if let error = controller.error {
-                    InlineErrorBanner(message: error)
+                if !episode.recap.isEmpty {
+                    Text(episode.recap).font(.footnote).foregroundStyle(Color.polychat.textMuted)
                 }
+            } else if edition.episodeId == nil {
+                MediaNotice(
+                    message: edition.episodeOverBudget == true
+                        ? "This month's Discover budget is spent. Raise it in settings on the web to make today's part."
+                        : "Today's part of a five-day season on your top topic.",
+                    actionTitle: "Make it",
+                    isWorking: isRequesting,
+                    action: request
+                )
+            } else if controller.isLoading {
+                ProgressView().frame(maxWidth: .infinity)
             }
-            .padding(16)
+
+            if let error = controller.error {
+                InlineErrorBanner(message: error)
+            }
         }
         .task(id: edition.episodeId) {
             if let id = edition.episodeId {
@@ -318,7 +246,7 @@ private struct EpisodePlayerView: View {
     }
 }
 
-private struct SourceListenView: View {
+struct SourceListenView: View {
     @ObservedObject var controller: ListenPlaybackController
     let sourceId: String?
     let artwork: UIImage?
@@ -330,13 +258,8 @@ private struct SourceListenView: View {
 
             if let source = controller.source, source.isPlayable {
                 Text(source.title).font(.polychatDisplay(.title3))
-                HStack(spacing: 12) {
-                    PlaybackBar(player: controller.player, isLoading: controller.isWorking) {
-                        Task { await controller.togglePlayback() }
-                    }
-                    AirPlayButton()
-                        .frame(width: 36, height: 36)
-                        .accessibilityLabel("Play on Apple TV or speakers")
+                PlaybackBar(player: controller.player, isLoading: controller.isWorking) {
+                    Task { await controller.togglePlayback() }
                 }
             } else if sourceId == nil && !controller.requested {
                 MediaNotice(
@@ -357,7 +280,6 @@ private struct SourceListenView: View {
                 InlineErrorBanner(message: error)
             }
         }
-        .padding(16)
         .task(id: sourceId != nil || controller.requested) {
             await controller.follow(hasRecording: sourceId != nil, artwork: artwork)
         }

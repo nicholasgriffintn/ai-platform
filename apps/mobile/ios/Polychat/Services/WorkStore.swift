@@ -54,7 +54,7 @@ final class WorkStore: ObservableObject {
             workspaces = []
             projects = []
             isUnavailable = true
-        } catch is CancellationError {
+        } catch let error where error.isCancellation {
             return
         } catch {
             self.error = "Work could not be loaded: \(error.localizedDescription)"
@@ -84,7 +84,7 @@ final class WorkStore: ObservableObject {
                 projectId: projectId,
                 includeDone: finishedProjects.contains(projectId)
             )
-        } catch is CancellationError {
+        } catch let error where error.isCancellation {
             return
         } catch {
             self.error = "Tasks could not be loaded: \(error.localizedDescription)"
@@ -109,7 +109,7 @@ final class WorkStore: ObservableObject {
             myTasks = try await apiClient.fetchMyWorkTasks()
         } catch APIClientError.httpStatus(let status, _) where status == 402 || status == 403 {
             myTasks = []
-        } catch is CancellationError {
+        } catch let error where error.isCancellation {
             return
         } catch {
             self.error = "Your tasks could not be loaded: \(error.localizedDescription)"
@@ -143,7 +143,7 @@ final class WorkStore: ObservableObject {
             conversationsByProject[projectId] = project.conversations.sorted { lhs, rhs in
                 lhs.isPinned != rhs.isPinned ? lhs.isPinned : lhs.activityDate > rhs.activityDate
             }
-        } catch is CancellationError {
+        } catch let error where error.isCancellation {
             return
         } catch {
             self.error = "Conversations could not be loaded: \(error.localizedDescription)"

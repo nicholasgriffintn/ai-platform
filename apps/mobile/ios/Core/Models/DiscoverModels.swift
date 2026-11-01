@@ -97,17 +97,6 @@ struct DiscoverCard: Decodable, Equatable, Identifiable {
         }
         return ConversationSubject(type: "discover_card", id: "\(editionId):\(id)")
     }
-
-    var chatPrompt: String {
-        if let prompt { return prompt }
-        if kind == "resurface", let title {
-            return "Remind me what \"\(title)\" was about and where I left it."
-        }
-        if kind == "read", let title, let url {
-            return "I saw \"\(title)\" (\(url)). What's the gist, and why might it matter to me?"
-        }
-        return "About your question, \"\(question ?? "")\": "
-    }
 }
 
 enum DiscoverSection: CaseIterable {
@@ -440,6 +429,13 @@ struct SourceListen: Decodable, Equatable {
     var isMaking: Bool { status == "making" }
     var isFailed: Bool { status == "failed" }
     var isPlayable: Bool { passages.first?.audio == true }
+
+    var spokenMinutes: Int {
+        let words = passages.reduce(0) { total, passage in
+            total + passage.text.split(whereSeparator: \.isWhitespace).count
+        }
+        return max(1, Int((Double(words) / 2.5 / 60).rounded()))
+    }
 }
 
 struct DiscoverHealthSummary: Codable, Equatable {

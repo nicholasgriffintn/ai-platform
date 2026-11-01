@@ -120,6 +120,21 @@ struct ViewPresentationTests {
         #expect(formatted.contains("<analysis>Do not touch this</analysis>"))
     }
 
+    @Test func discoverPanelStepsThroughMediaThenCardsAndSkipsStories() throws {
+        let cards = try JSONDecoder().decode([DiscoverCard].self, from: Data("""
+        [{"id":"r1","kind":"read","topic":"AI","title":"Read","reason":"r"},
+         {"id":"s1","kind":"wind_down","topic":"Sleep","title":"Story","reason":"r"},
+         {"id":"t1","kind":"topic","topic":"AI","title":"Topic","reason":"r"}]
+        """.utf8))
+        let items = DiscoverItem.ordered(media: [.perch], cards: cards)
+
+        #expect(items.map(\.id) == ["media:perch", "card:t1", "card:r1"])
+        #expect(DiscoverItem.step(items, from: items[2], by: 1) == items[0])
+        #expect(DiscoverItem.step(items, from: items[0], by: -1) == items[2])
+        #expect(DiscoverItem.step(items, from: .card(cards[1]), by: 1) == items[0])
+        #expect(DiscoverItem.position(of: items[1], in: items) == "2 of 3")
+    }
+
     @Test func discoverEpisodeTileReportsPartialAndFinishedChaptersLikeTheWeb() throws {
         let edition = try JSONDecoder().decode(DiscoverEdition.self, from: Data("""
         {"id":"e1","date":"2026-10-24","greeting":"Evening","brief":[],"cards":[],"feedback":{},

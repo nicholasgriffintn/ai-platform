@@ -4,6 +4,12 @@ import UniformTypeIdentifiers
 @testable import Polychat
 
 struct UtilityTests {
+    @Test func cancelledRequestsAreNotReportedAsErrors() {
+        #expect(CancellationError().isCancellation)
+        #expect(URLError(.cancelled).isCancellation)
+        #expect(!URLError(.timedOut).isCancellation)
+    }
+
     @Test func responseReplayAppliesAndClearsRetryState() {
         let initial = ResponseSnapshot(
             cursor: 1,
