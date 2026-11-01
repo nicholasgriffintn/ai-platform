@@ -48,6 +48,7 @@ type AgentRuntimeMessage = AgentMessage & {
   tool_call_id?: unknown;
   tool_call_arguments?: unknown;
   status?: unknown;
+  data?: unknown;
 };
 
 class AgentProviderIO {
@@ -104,6 +105,10 @@ class AgentProviderIO {
 
       if (typeof message.status === "string") {
         providerMessage.status = message.status;
+      }
+
+      if (message.role === "tool" && isPlainObject(message.data)) {
+        providerMessage.data = message.data;
       }
 
       return providerMessage;

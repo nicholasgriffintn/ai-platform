@@ -1,0 +1,66 @@
+name: Desktop release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  desktop:
+    name: Desktop
+    uses: ./.github/workflows/desktop-build.yml
+    secrets: inherit
+    with:
+      retention-days: 30
+      signed: true
+
+  publish:
+    name: Publish the desktop release
+    needs: desktop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+
+      - name: Collect release notes
+        id: plan
+        run: node scripts/app-releases.mjs --force desktop --notes-dir "$RUNNER_TEMP/release-notes"
+
+      - name: Download the desktop archives
+        uses: actions/download-artifact@v8
+        with:
+          pattern: desktop-*
+          merge-multiple: true
+          path: dist-release
+
+      - name: Create or replace the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASES: ${{ steps.plan.outputs.releases }}
+        run: |
+          set -euo pipefail
+
+          entry="$(jq -c '.[0]' <<<"$RELEASES")"
+          tag="$(jq -r '.tag' <<<"$entry")"
+          title="$(jq -r '.title + " " + .version' <<<"$entry")"
+          notes="$(jq -r '.notesFile' <<<"$entry")"
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" dist-release/* --clobber
+          else
+            gh release create "$tag" \
+              --title "$title" \
+              --notes-file "$notes" \
+              dist-release/*
+          fi

@@ -5,7 +5,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { hasDirectChanges, readChangelogEntry } from "./lib/changelog.mjs";
-import { RELEASE_APPS, readAppVersion, releaseTag } from "./lib/release-apps.mjs";
+import { RELEASE_APPS, findReleaseApp, readAppVersion, releaseTag } from "./lib/release-apps.mjs";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -37,11 +37,13 @@ function readChangelog(app) {
   }
 }
 
-function planApp(app) {
+function planApp(app, forced) {
   const version = readAppVersion(repositoryRoot, app);
   const tag = releaseTag(app, version);
   const changelog = readChangelog(app);
   const notes = changelog === null ? null : readChangelogEntry(changelog, version);
+  const release =
+    forced === undefined ? hasDirectChanges(notes) && !tagExists(tag) : forced === app.id;
 
   return {
     id: app.id,
@@ -51,7 +53,7 @@ function planApp(app) {
     version,
     tag,
     notes,
-    release: hasDirectChanges(notes) && !tagExists(tag),
+    release,
   };
 }
 
@@ -60,7 +62,7 @@ function writeNotes(directory, plan) {
 
   const file = join(directory, `${plan.id}.md`);
 
-  writeFileSync(file, `${plan.notes}\n`);
+  writeFileSync(file, `${plan.notes ?? ""}\n`);
 
   return file;
 }
@@ -77,7 +79,13 @@ function writeOutputs(outputs) {
   }
 }
 
-const plans = RELEASE_APPS.map(planApp);
+const forced = readOption("force");
+
+if (forced !== undefined) {
+  findReleaseApp(forced);
+}
+
+const plans = RELEASE_APPS.map((app) => planApp(app, forced));
 const releasing = plans.filter((plan) => plan.release);
 const notesDirectory = readOption("notes-dir");
 
