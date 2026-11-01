@@ -21,6 +21,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { discoverTopicKey } from "~/modules/discover/domain/edition";
 import {
+  buildDiscoverEpisodeMaterial,
   buildEpisodeChapters,
   describeSeasonPlan,
   discoverSeasonGroupId,
@@ -29,7 +30,6 @@ import {
   readEpisodeProgress,
   seasonNeedsReplacing,
 } from "~/modules/discover/domain/episodes";
-import { buildDiscoverListenMaterial } from "~/modules/discover/domain/listen";
 import { withKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { generateSystemObject } from "~/modules/models/application/system-object";
 import { requireNotebookAccess } from "~/modules/notebooks/application/access";
@@ -190,7 +190,7 @@ async function scriptDiscoverEpisode(
   const material = await gatherMaterial(
     context,
     topic,
-    buildDiscoverListenMaterial(edition.content, briefings),
+    buildDiscoverEpisodeMaterial(edition.content, topic, briefings),
     notebookId,
   );
   const season = await ensureSeason(context, topic, settings.style, material);
@@ -294,7 +294,7 @@ export async function loadEpisodeMaterial(
   return gatherMaterial(
     context,
     episode.topic,
-    buildDiscoverListenMaterial(edition.content, briefing ? [briefing] : []),
+    buildDiscoverEpisodeMaterial(edition.content, episode.topic, briefing ? [briefing] : []),
     episode.notebookId,
   );
 }

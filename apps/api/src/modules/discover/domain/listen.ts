@@ -13,7 +13,7 @@ const LISTEN_STORY_LIMIT = 12;
 
 type EditionCard = DiscoverEditionContent["cards"][number];
 
-function describeCard(card: EditionCard): string {
+export function describeDiscoverCard(card: EditionCard): string {
   switch (card.kind) {
     case "topic":
       return `## ${card.topic}: ${card.title}\n${card.angle}\nWhy it matters to them: ${card.reason}`;
@@ -52,9 +52,9 @@ export function buildDiscoverListenMaterial(
     ...brief,
     ...describeBriefings(briefings),
     ...(stories.length > 0 ? ["# Also in today's edition"] : []),
-    ...stories.map(describeCard).filter(Boolean),
+    ...stories.map(describeDiscoverCard).filter(Boolean),
     ...(projects.length > 0 ? ["## Their own projects, for one passing line at most"] : []),
-    ...projects.map(describeCard),
+    ...projects.map(describeDiscoverCard),
   ].join("\n\n");
 }
 

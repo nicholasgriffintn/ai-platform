@@ -13,7 +13,9 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 
+import { describeBriefings, type DiscoverBriefingText } from "./briefing";
 import { discoverTopicKey } from "./edition";
+import { describeDiscoverCard } from "./listen";
 
 const SPOKEN_WORDS_PER_MINUTE = 140;
 
@@ -55,7 +57,7 @@ export function describeSeasonPlan(season: DiscoverSeasonContent): string {
     `Title: ${season.title}`,
     "Parts:",
     ...parts,
-    "Recurring cast and places (use these plate names):",
+    "Recurring cast and places, for the pictures only (use these plate names):",
     ...characters,
     `Motifs: ${season.motifs.join("; ")}`,
   ].join("\n");
@@ -81,6 +83,51 @@ export function describeChapterBrief(chapter: DiscoverEpisodeChapter): string {
   return [chapter.title, ...chapter.beats.map((beat) => `- ${beat}`)].join("\n");
 }
 
+function chapterNarration(chapter: DiscoverEpisodeChapter): string {
+  return [`## ${chapter.title}`, ...chapter.scenes.map((scene) => scene.narration)].join("\n\n");
+}
+
+export function describeEarlierChapters(
+  chapters: readonly DiscoverEpisodeChapter[],
+  index: number,
+): string | undefined {
+  const earlier = chapters
+    .slice(0, index)
+    .filter((chapter) => chapter.scenes.length > 0)
+    .map(chapterNarration);
+
+  return earlier.length > 0 ? earlier.join("\n\n") : undefined;
+}
+
+export function describeLaterChapters(
+  chapters: readonly DiscoverEpisodeChapter[],
+  index: number,
+): string | undefined {
+  const later = chapters.slice(index + 1).map(describeChapterBrief);
+
+  return later.length > 0 ? later.join("\n\n") : undefined;
+}
+
+export function buildDiscoverEpisodeMaterial(
+  edition: DiscoverEditionContent,
+  topic: string,
+  briefings: readonly DiscoverBriefingText[] = [],
+): string {
+  const key = discoverTopicKey(topic);
+  const cards = edition.cards.filter(
+    (card) =>
+      (card.kind === "read" || card.kind === "watch" || card.kind === "listen") &&
+      discoverTopicKey(card.topic) === key,
+  );
+
+  return [
+    `# ${topic}, ${edition.date}`,
+    ...describeBriefings(briefings),
+    ...(cards.length > 0 ? [`# More on ${topic} today`] : []),
+    ...cards.map(describeDiscoverCard),
+  ].join("\n\n");
+}
+
 export function shotImageKey(
   episodeId: string,
   seasonId: string,
@@ -92,12 +139,7 @@ export function shotImageKey(
 }
 
 export function episodeNarration(episode: DiscoverEpisodeContent): string {
-  return [
-    `# ${episode.title}`,
-    ...episode.chapters.map((chapter) =>
-      [`## ${chapter.title}`, ...chapter.scenes.map((scene) => scene.narration)].join("\n\n"),
-    ),
-  ].join("\n\n");
+  return [`# ${episode.title}`, ...episode.chapters.map(chapterNarration)].join("\n\n");
 }
 
 export function episodeStudyGroupId(episodeId: string, kind: string): string {

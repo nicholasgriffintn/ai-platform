@@ -27,6 +27,8 @@ import {
   chapterAudioKey,
   chapterWordTarget,
   describeChapterBrief,
+  describeEarlierChapters,
+  describeLaterChapters,
   describeSeasonPlan,
   shotImageKey,
   wordsForMinutes,
@@ -153,6 +155,8 @@ async function scriptChapter(
     position: `${chapterIndex + 1} of ${content.chapters.length}`,
     words: String(chapterWordTarget(wordsForMinutes(content.minutes), content.chapters.length)),
     plan: describeSeasonPlan(season),
+    earlier: describeEarlierChapters(content.chapters, chapterIndex),
+    later: describeLaterChapters(content.chapters, chapterIndex),
   });
   let draft = await generateSystemObject(context, {
     role: "writing",
@@ -184,7 +188,7 @@ async function scriptChapter(
       name: "discover_episode_chapter",
       requiresReasoning: false,
       schema: discoverChapterScriptDraftSchema,
-      system: `${system}\n\nAn earlier draft made claims the material does not support. Leave these out or say plainly that the material does not cover them:\n${check.unsupported
+      system: `${system}\n\nAn earlier draft made claims the material does not support. Leave them out entirely, without mentioning that anything is missing:\n${check.unsupported
         .map((claim) => `- ${claim}`)
         .join("\n")}`,
       material,
