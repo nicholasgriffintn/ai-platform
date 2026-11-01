@@ -8,15 +8,8 @@ import {
   buildSandboxReadObservation,
   type SandboxPromptStrategy,
 } from "@ngriffin_uk/polychat-ai-prompts";
-import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 
-import {
-  MAX_AGENT_STEPS,
-  MAX_COMMANDS,
-  MAX_OBSERVATION_CHARS,
-  MAX_READ_FILES_BATCH,
-  MAX_SNIPPET_CHARS,
-} from "../../../../config/agent";
+import { MAX_AGENT_STEPS, MAX_COMMANDS, MAX_READ_FILES_BATCH } from "../../../../config/agent";
 import type { PromptStrategySelection } from "./prompt-strategy";
 import type { ReadFileResult, RepositoryContext } from "./types";
 
@@ -31,15 +24,12 @@ function toPromptStrategy(strategy: PromptStrategySelection): SandboxPromptStrat
 function formatRepositoryContext(repoContext: RepositoryContext): string {
   return buildRepositoryContext({
     topLevelEntries: repoContext.topLevelEntries,
-    fileSnippets: repoContext.files.map((entry) => ({
-      path: entry.path,
-      snippet: truncateForModel(entry.snippet, MAX_SNIPPET_CHARS),
-    })),
+    fileSnippets: repoContext.files,
     taskInstructions: repoContext.taskInstructions
       ? {
           source: repoContext.taskInstructionSource,
           path: repoContext.taskInstructions.path,
-          snippet: truncateForModel(repoContext.taskInstructions.snippet, MAX_SNIPPET_CHARS),
+          snippet: repoContext.taskInstructions.snippet,
         }
       : null,
   });
@@ -94,7 +84,7 @@ export function formatReadObservation(result: ReadFileResult): string {
   if (result.error) {
     return buildSandboxReadErrorObservation({
       path: result.path,
-      error: truncateForModel(result.error, MAX_OBSERVATION_CHARS),
+      error: result.error,
     });
   }
 
@@ -102,7 +92,7 @@ export function formatReadObservation(result: ReadFileResult): string {
     path: result.path,
     startLine: result.startLine,
     endLine: result.endLine,
-    content: truncateForModel(result.content, MAX_OBSERVATION_CHARS),
+    content: result.content,
     truncated: result.truncated,
   });
 }
@@ -121,8 +111,8 @@ export function formatCommandObservation(params: {
     result: {
       exitCode: params.result.exitCode,
       success: params.result.success,
-      stdout: truncateForModel(params.result.stdout.trim(), MAX_OBSERVATION_CHARS),
-      stderr: truncateForModel(params.result.stderr.trim(), MAX_OBSERVATION_CHARS),
+      stdout: params.result.stdout.trim(),
+      stderr: params.result.stderr.trim(),
     },
   });
 }

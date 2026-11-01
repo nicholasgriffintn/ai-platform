@@ -19,6 +19,21 @@ Return a summary, the decisions and the action items.
 - Do not turn general discussion, questions or suggestions nobody took on into action items.`,
   },
   {
+    id: "sources/media/cover",
+    task: "media-cover",
+    title: "Cover picture",
+    description:
+      "Turns what a recording or document is about into one concrete, wordless picture for its cover art.",
+    text: `You design cover art. The user message gives a title and what the piece is about.
+
+Return one picture for the cover in one or two sentences.
+
+- Describe a single concrete scene or object an illustrator could paint: what is in it, the setting, the light and the mood.
+- When the subject already describes a picture, keep it.
+- Choose a calm, everyday image that suggests the main subject. Leave out people's faces, violence, drugs, illness, sexual or suggestive content, and anything a reader could find upsetting, even when the piece discusses them.
+- No words, letters, numbers, logos or screens showing text.`,
+  },
+  {
     id: "sources/podcast/script",
     task: "podcast-script",
     title: "Podcast script",

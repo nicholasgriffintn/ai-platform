@@ -56,9 +56,8 @@ function setup(current: ChatRun, transitioned: ChatRun | null = null) {
     assertOwned: vi.fn().mockResolvedValue(undefined),
     release: vi.fn().mockResolvedValue(undefined),
   };
-  const executionLease = {
+  const executionFence = {
     ownerToken: "owner-1",
-    expiresAt: "2026-09-05T12:05:00.000Z",
     assertOwned: vi.fn().mockResolvedValue(undefined),
   };
   const context = {
@@ -91,7 +90,7 @@ function setup(current: ChatRun, transitioned: ChatRun | null = null) {
 
   mocks.acquireThread.mockResolvedValue({ acquired: true, lease: threadLease });
 
-  return { context, executionLease, threadLease };
+  return { context, executionFence, threadLease };
 }
 
 describe("durable project-task run recovery", () => {
@@ -108,12 +107,12 @@ describe("durable project-task run recovery", () => {
       status: "interrupted" as const,
       terminalReason: "Owner ended",
     };
-    const { context, executionLease, threadLease } = setup(current, interrupted);
+    const { context, executionFence, threadLease } = setup(current, interrupted);
 
     const recovered = await recoverRedeliveredProjectTaskRun({
       context,
       conversationId: current.conversationId,
-      executionLease,
+      executionFence,
       run: current,
     });
 
@@ -133,12 +132,12 @@ describe("durable project-task run recovery", () => {
     "rehydrates %s and preserves its replay resources",
     async (status) => {
       const current = run(status);
-      const { context, executionLease } = setup(current);
+      const { context, executionFence } = setup(current);
 
       const recovered = await recoverRedeliveredProjectTaskRun({
         context,
         conversationId: current.conversationId,
-        executionLease,
+        executionFence,
         run: current,
       });
 
@@ -152,7 +151,7 @@ describe("durable project-task run recovery", () => {
   it("marks an expired waiting interaction failed without resuming provider work", async () => {
     const current = run("awaiting_input");
     const failed: ChatRun = { ...current, status: "failed" };
-    const { context, executionLease } = setup(current, failed);
+    const { context, executionFence } = setup(current, failed);
 
     vi.mocked(
       context.repositories.get(MessageRepository).getLatestPendingToolMessage,
@@ -167,7 +166,7 @@ describe("durable project-task run recovery", () => {
       recoverRedeliveredProjectTaskRun({
         context,
         conversationId: current.conversationId,
-        executionLease,
+        executionFence,
         run: current,
       }),
     ).resolves.toEqual(failed);

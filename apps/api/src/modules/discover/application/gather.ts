@@ -3,6 +3,7 @@ import {
   getConnectorOperationConfig,
 } from "@ngriffin_uk/polychat-ai-integrations";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { inlineTaskSteps, type TaskSteps } from "@ngriffin_uk/polychat-ai-workflows";
 import {
   DISCOVER_JOB_TASK_TYPE,
   DISCOVER_RECIPE_ID,
@@ -23,6 +24,7 @@ import {
   ErrorType,
   getErrorMessage,
 } from "@ngriffin_uk/polychat-utility-server/errors";
+import { z } from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { closeComposioConnectorRun } from "~/modules/connectors/application/composio-run";
@@ -368,7 +370,11 @@ async function listSignalTopics(
 
 export async function runDiscoverGather(
   context: ServiceContext,
-  { now = new Date(), scope = "full" }: { now?: Date; scope?: DiscoverGatherScope } = {},
+  {
+    now = new Date(),
+    scope = "full",
+    steps = inlineTaskSteps,
+  }: { now?: Date; scope?: DiscoverGatherScope; steps?: TaskSteps } = {},
 ): Promise<DiscoverGatherSummary> {
   const settings = await readDiscoverRoutine(context);
 
@@ -378,7 +384,11 @@ export async function runDiscoverGather(
 
   const timezone = settings.timezone ?? "UTC";
   const zoned = describeZonedInstant(now, timezone);
-  const notebook = await ensureDiscoverNotebook(context);
+  const notebookId = await steps.value(
+    "notebook",
+    z.string(),
+    async () => (await ensureDiscoverNotebook(context)).id,
+  );
   const { selected } =
     scope === "full" ? await resolveDiscoverSignals(context, settings) : { selected: [] };
   const read: string[] = [];
@@ -389,11 +399,13 @@ export async function runDiscoverGather(
   try {
     const signalTopics =
       selected.length > 0
-        ? await listSignalTopics(context, notebook.id, {
-            curate: settings.curate,
-            today: zoned.date,
-            now,
-          })
+        ? await steps.value("signal-topics", z.array(z.string()), () =>
+            listSignalTopics(context, notebookId, {
+              curate: settings.curate,
+              today: zoned.date,
+              now,
+            }),
+          )
         : [];
 
     for (const signal of selected) {
@@ -401,52 +413,67 @@ export async function runDiscoverGather(
         continue;
       }
 
-      const ok = await readSignal(context, notebook.id, signal, {
-        date: zoned.date,
-        timezone,
-        now,
-        location: settings.location,
-        topics: signalTopics,
+      const ok = await steps.value(`signal-${signal.providerId}`, z.boolean(), async () => {
+        try {
+          return await readSignal(context, notebookId, signal, {
+            date: zoned.date,
+            timezone,
+            now,
+            location: settings.location,
+            topics: signalTopics,
+          });
+        } finally {
+          await closeComposioConnectorRun(context);
+        }
       });
 
       (ok ? read : stale).push(signal.providerId);
     }
 
-    await researchTopic(context, notebook.id, {
-      topic: DISCOVER_HEADLINES_TOPIC,
-      date: zoned.date,
-      country: settings.country,
-      query: headlinesQuery(settings.location),
-      days: HEADLINE_NEWS_DAYS,
-    });
-
-    const follows = await listDiscoverFollows(context, context.requireUser().id);
-    const interests = await chooseDiscoverInterests(context, notebook.id, {
-      today: zoned.date,
-      now,
-      refresh: scope === "full",
-    });
-
-    topics = chooseResearchTopics({
-      followed: follows.map((follow) => follow.topic),
-      asked: curateTopics(settings.curate),
-      more: interests.more,
-      inferred: interests.ranked,
-      hidden: interests.hidden,
-    });
-
-    await mapWithConcurrency(topics, TOPIC_RESEARCH_CONCURRENCY, (topic) =>
-      researchTopic(context, notebook.id, {
-        topic,
+    await steps.run("headlines", async () => {
+      await researchTopic(context, notebookId, {
+        topic: DISCOVER_HEADLINES_TOPIC,
         date: zoned.date,
         country: settings.country,
+        query: headlinesQuery(settings.location),
+        days: HEADLINE_NEWS_DAYS,
+      });
+    });
+
+    topics = await steps.value("topics", z.array(z.string()), async () => {
+      const follows = await listDiscoverFollows(context, context.requireUser().id);
+      const interests = await chooseDiscoverInterests(context, notebookId, {
+        today: zoned.date,
+        now,
+        refresh: scope === "full",
+      });
+
+      return chooseResearchTopics({
+        followed: follows.map((follow) => follow.topic),
+        asked: curateTopics(settings.curate),
+        more: interests.more,
+        inferred: interests.ranked,
+        hidden: interests.hidden,
+      });
+    });
+
+    await mapWithConcurrency(topics, TOPIC_RESEARCH_CONCURRENCY, (topic, index) =>
+      steps.run(`topic-${index}`, async () => {
+        await researchTopic(context, notebookId, {
+          topic,
+          date: zoned.date,
+          country: settings.country,
+        });
       }),
     );
 
-    added = await topUpDiscoverFeed(context, { today: zoned.date, curate: settings.curate });
+    added = await steps.value("feed", z.number(), () =>
+      topUpDiscoverFeed(context, { today: zoned.date, curate: settings.curate }),
+    );
   } finally {
-    await closeComposioConnectorRun(context);
-    await scheduleNextDiscoverGather(context, settings, zoned, timezone);
+    await steps.run("schedule-next", () =>
+      scheduleNextDiscoverGather(context, settings, zoned, timezone),
+    );
   }
 
   return { read: [...new Set(read)], stale: [...new Set(stale)], topics, added };

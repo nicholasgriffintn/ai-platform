@@ -368,7 +368,7 @@ export class OutputRepository extends BaseRepository {
          AND kind = ?
          AND group_id IS NOT NULL
          AND NOT (json_valid(content) AND coalesce(json_extract(content, '$.deletionPending'), 0) = 1)
-       ORDER BY created_at DESC, id DESC
+       ORDER BY datetime(created_at) DESC, id DESC
        LIMIT ?`,
       [userId, capabilityId, kind, limit],
     );
@@ -443,7 +443,7 @@ export class OutputRepository extends BaseRepository {
       `SELECT * FROM ${outputResourceSql} output
        WHERE output.collection_id = ?
           OR output.conversation_id IN (SELECT id FROM conversation WHERE group_id = ?)
-       ORDER BY created_at DESC, id DESC LIMIT 200`,
+       ORDER BY datetime(created_at) DESC, id DESC LIMIT 200`,
       [collectionId, collectionId],
     );
 
@@ -515,7 +515,7 @@ export class OutputRepository extends BaseRepository {
 
     if (options.after) {
       conditions.push(
-        `(created_at, id) < (SELECT created_at, id FROM ${outputResourceSql} anchor WHERE anchor.id = ?)`,
+        `(datetime(created_at), id) < (SELECT datetime(created_at), id FROM ${outputResourceSql} anchor WHERE anchor.id = ?)`,
       );
       values.push(options.after);
     }
@@ -523,7 +523,7 @@ export class OutputRepository extends BaseRepository {
     values.push(options.limit ?? 100);
 
     const outputs = await this.runQuery<OutputRecord>(
-      `SELECT * FROM ${outputResourceSql} output WHERE ${conditions.join(" AND ")} ORDER BY created_at DESC, id DESC LIMIT ?`,
+      `SELECT * FROM ${outputResourceSql} output WHERE ${conditions.join(" AND ")} ORDER BY datetime(created_at) DESC, id DESC LIMIT ?`,
       values,
       false,
     );

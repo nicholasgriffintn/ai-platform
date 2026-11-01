@@ -613,7 +613,6 @@ export const modelRegistryEvalTaskDataSchema = z.object({
   offset: z.number().int().nonnegative().default(0),
   readinessAttempt: z.number().int().nonnegative().default(0),
   batch: z.boolean().default(false),
-  pollAttempt: z.number().int().nonnegative().default(0),
 });
 
 export const routeSuggestionSchema = z.object({

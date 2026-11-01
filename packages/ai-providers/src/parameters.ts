@@ -291,7 +291,7 @@ export function createWorkersReasoningParameters(
   }
 
   if (effort === "none") {
-    return { chat_template_kwargs: { enable_thinking: false } };
+    return { reasoning_effort: "none", chat_template_kwargs: { enable_thinking: false } };
   }
 
   return effort === "low" || effort === "medium" || effort === "high"

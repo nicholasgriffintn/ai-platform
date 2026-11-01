@@ -1,8 +1,4 @@
-import {
-  canBatchModelRoute,
-  MODEL_REGISTRY_EVAL_TASK_TYPE,
-  type EvalCaseResult,
-} from "@ngriffin_uk/polychat-schemas";
+import { canBatchModelRoute, type EvalCaseResult } from "@ngriffin_uk/polychat-schemas";
 import z from "zod/v4";
 
 import type { Repositories } from "~/infrastructure/database/repositories";
@@ -11,8 +7,7 @@ import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/M
 import { ModelGraderRepository } from "~/modules/model-evaluation/infrastructure/ModelGraderRepository";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
-import { TaskService } from "~/modules/queue/application/TaskService";
-import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
+import type { TaskResult } from "~/modules/queue/application/types";
 import type { IEnv } from "~/types";
 
 import type {
@@ -27,8 +22,9 @@ import {
   writeEvalResults,
 } from "./run-results";
 
-export const BATCH_POLL_DELAY_MS = 10 * 60 * 1000;
 export const BATCH_MAX_POLL_ATTEMPTS = 150;
+
+const BATCH_POLL_DELAY_SECONDS = 10 * 60;
 const BATCH_MAX_TOKENS = 2048;
 
 const batchHandleSchema = z.object({
@@ -59,22 +55,6 @@ async function readBatchHandle(bucket: R2Bucket, runId: string): Promise<BatchHa
   return object ? batchHandleSchema.parse(await object.json()) : null;
 }
 
-async function schedulePoll(
-  env: IEnv,
-  repositories: Repositories,
-  runId: string,
-  pollAttempt: number,
-): Promise<void> {
-  await new TaskService(env, repositories.get(TaskRepository)).enqueueTask({
-    id: `${MODEL_REGISTRY_EVAL_TASK_TYPE}:${runId}:batch:${pollAttempt}`,
-    task_type: MODEL_REGISTRY_EVAL_TASK_TYPE,
-    task_data: { runId, offset: 0, readinessAttempt: 0, batch: true, pollAttempt },
-    schedule_type: "scheduled",
-    scheduled_at: new Date(Date.now() + BATCH_POLL_DELAY_MS).toISOString(),
-    priority: 6,
-  });
-}
-
 export async function executeBatchedEvalRun(
   env: IEnv,
   repositories: Repositories,
@@ -85,7 +65,7 @@ export async function executeBatchedEvalRun(
     bucket: R2Bucket;
     pollAttempt: number;
   },
-) {
+): Promise<TaskResult> {
   const { run, suite, route, bucket, pollAttempt } = input;
 
   if (!canBatchEvalRoute(route)) {
@@ -116,9 +96,12 @@ export async function executeBatchedEvalRun(
       { httpMetadata: { contentType: "application/json" } },
     );
     await repositories.get(ModelEvalRepository).updateRun(run.id, { status: "running" });
-    await schedulePoll(env, repositories, run.id, 1);
 
-    return { status: "success" as const, message: `Submitted batch ${batchId}` };
+    return {
+      status: "pending",
+      message: `Submitted batch ${batchId}`,
+      retryAfterSeconds: BATCH_POLL_DELAY_SECONDS,
+    };
   }
 
   const poll = await provider.poll(handle.batchId);
@@ -130,12 +113,14 @@ export async function executeBatchedEvalRun(
         failure_reason: "The batch did not finish within its 24-hour window",
       });
 
-      return { status: "error" as const, message: "Batch timed out" };
+      return { status: "error", message: "Batch timed out" };
     }
 
-    await schedulePoll(env, repositories, run.id, pollAttempt + 1);
-
-    return { status: "success" as const, message: "Batch still running" };
+    return {
+      status: "pending",
+      message: "Batch still running",
+      retryAfterSeconds: BATCH_POLL_DELAY_SECONDS,
+    };
   }
 
   if (poll.status === "failed") {
@@ -144,7 +129,7 @@ export async function executeBatchedEvalRun(
       failure_reason: poll.reason,
     });
 
-    return { status: "error" as const, message: poll.reason };
+    return { status: "error", message: poll.reason };
   }
 
   const judge = await getAuxiliaryModel(env);
@@ -175,5 +160,5 @@ export async function executeBatchedEvalRun(
     measureLatency: false,
   });
 
-  return { status: "success" as const, message: `Completed ${results.length} batched cases` };
+  return { status: "success", message: `Completed ${results.length} batched cases` };
 }

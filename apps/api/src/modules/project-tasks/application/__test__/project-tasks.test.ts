@@ -362,6 +362,7 @@ describe("updateProjectTask", () => {
 
     expect(runtime.updateDispatchTask).toHaveBeenCalledWith("dispatch-1", {
       status: "cancelled",
+      completed_at: expect.any(String),
     });
     expect(runtime.updateGoal).toHaveBeenCalledWith(
       "goal-1",

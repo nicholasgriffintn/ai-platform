@@ -464,8 +464,6 @@ export async function sendProjectTaskAgain(
 
   const tasks = context.repositories.get(TaskRepository);
 
-  await tasks.releaseExpiredLease(task.dispatchTaskId);
-
   const dispatch = await tasks.getTaskById(task.dispatchTaskId);
 
   if (dispatch?.status === "running") {

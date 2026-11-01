@@ -1,7 +1,6 @@
 import { redactSandboxOutput, throwIfAborted } from "@ngriffin_uk/polychat-library-sandbox";
-import { quoteShellArgument, truncateForModel } from "@ngriffin_uk/polychat-utility-core";
+import { quoteShellArgument } from "@ngriffin_uk/polychat-utility-core";
 
-import { MAX_OBSERVATION_CHARS } from "../../../../config/agent";
 import {
   assertSafeCommand,
   extractCommands,
@@ -36,9 +35,7 @@ function toCheckName(command: string, index: number): string {
 }
 
 function toCheckOutput(stdout: string, stderr: string): string {
-  const combinedOutput = [stdout.trim(), stderr.trim()].filter(Boolean).join("\n");
-
-  return truncateForModel(combinedOutput, MAX_OBSERVATION_CHARS);
+  return [stdout.trim(), stderr.trim()].filter(Boolean).join("\n");
 }
 
 export function deriveQualityGateCommands(params: {
@@ -163,10 +160,7 @@ export async function runQualityGate(params: {
             commandIndex: index + 1,
             commandTotal: commands.length,
             stream: output.stream,
-            output: truncateForModel(
-              redactSandboxOutput(output.data, redactionSecrets),
-              MAX_OBSERVATION_CHARS,
-            ),
+            output: redactSandboxOutput(output.data, redactionSecrets),
           });
         },
       },
@@ -210,7 +204,7 @@ export async function runQualityGate(params: {
       commandIndex: index + 1,
       commandTotal: commands.length,
       exitCode: safeResult.exitCode,
-      error: truncateForModel(failureMessage, MAX_OBSERVATION_CHARS),
+      error: failureMessage,
     });
   }
 

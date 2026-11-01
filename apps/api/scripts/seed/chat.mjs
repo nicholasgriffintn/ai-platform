@@ -8,6 +8,7 @@ import {
   SEED_MODEL,
   SEED_MODEL_SMALL,
   sha256Hex,
+  shift,
   SILENT_AUDIO_DATA_URL,
   svgDataUrl,
 } from "./sql.mjs";
@@ -1848,10 +1849,23 @@ Compound interest: $A = P\\left(1 + \\frac{r}{n}\\right)^{nt}$ where $P$ is the 
       attempts: 3,
       max_attempts: 3,
       last_attempted_at: at({ days: 5 }),
+      completed_at: shift(at({ days: 5 }), { seconds: 30 }),
       error_message: "Embedding provider timed out after 30s",
       created_at: at({ days: 5, hours: 1 }),
-      updated_at: at({ days: 5 }),
+      updated_at: shift(at({ days: 5 }), { seconds: 30 }),
     }),
+    ...[20, 10, 0].map((minutes, index) =>
+      insert("task_executions", {
+        id: seedId("task-exec", `synthesis-failed-${index + 1}`),
+        task_id: seedId("task", "synthesis-failed"),
+        status: "failed",
+        step: "run",
+        started_at: at({ days: 5, minutes }),
+        completed_at: shift(at({ days: 5, minutes }), { seconds: 30 }),
+        execution_time_ms: 30_000,
+        error_message: "Embedding provider timed out after 30s",
+      }),
+    ),
   );
 
   for (const [name, content] of [

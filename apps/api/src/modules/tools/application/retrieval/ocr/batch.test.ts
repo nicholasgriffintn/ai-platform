@@ -149,7 +149,6 @@ describe("startOcrBatch", () => {
         task_data: expect.objectContaining({
           outputId: "batch-output-1",
           jobId: "provider-job-1",
-          pollAttempt: 0,
         }),
       }),
     );

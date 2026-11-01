@@ -17,7 +17,6 @@ import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 const DEFAULT_CONTEXT_WINDOW = 8000;
-const DEFAULT_MAX_TOOL_RESULT_CHARACTERS = 6000;
 const MESSAGE_OVERHEAD_TOKENS = 4;
 
 export interface ContextBudgetSkill {
@@ -41,7 +40,6 @@ export interface ContextBudgetInput {
   contextWindow?: number;
   systemPrompt: string;
   maxOutputTokens?: number;
-  maxToolResultCharacters?: number;
   runId: string;
   conversationId: string;
   attempt: number;
@@ -90,8 +88,10 @@ function contentText(content: AgentMessage["content"]): string {
   }
 }
 
+const TOOL_CHARACTERS_PER_TOKEN = 6;
+
 function estimateTokens(message: AgentMessage): number {
-  const charactersPerToken = message.role === "tool" ? 6 : 4;
+  const charactersPerToken = message.role === "tool" ? TOOL_CHARACTERS_PER_TOKEN : 4;
 
   return (
     Math.ceil(contentText(message.content).length / charactersPerToken) + MESSAGE_OVERHEAD_TOKENS
@@ -142,10 +142,11 @@ function shortenToolResult(
   }
 
   const marker = `[Tool result shortened; ${fullText.length.toLocaleString()} characters stored separately.]`;
-  const available = Math.max(maxCharacters - marker.length - 2, 20);
+  const separator = "\n…\n";
+  const available = Math.max(maxCharacters - marker.length - separator.length - 1, 20);
   const headLength = Math.ceil(available * 0.7);
   const tailLength = Math.max(available - headLength, 1);
-  const shortened = `${marker}\n${fullText.slice(0, headLength)}\n…\n${fullText.slice(-tailLength)}`;
+  const shortened = `${marker}\n${fullText.slice(0, headLength)}${separator}${fullText.slice(-tailLength)}`;
   const id = messageId(message);
 
   return {
@@ -214,6 +215,39 @@ function addUnit(
   unit.forEach((entry) => selectedIndexes.add(entry.index));
 
   return availableTokens - requiredTokens;
+}
+
+function fitToolResults(
+  unit: IndexedMessage[] | undefined,
+  availableTokens: number,
+  omissions: ChatContextOmission[],
+): IndexedMessage[] | undefined {
+  if (!unit || unitTokens(unit) <= availableTokens) {
+    return unit;
+  }
+
+  const tools = unit.filter((entry) => entry.message.role === "tool");
+  const roomForTools = availableTokens - unitTokens(unit.filter((entry) => !tools.includes(entry)));
+
+  if (tools.length === 0 || roomForTools <= tools.length * MESSAGE_OVERHEAD_TOKENS) {
+    return unit;
+  }
+
+  const charactersPerResult =
+    Math.floor(roomForTools / tools.length - MESSAGE_OVERHEAD_TOKENS) * TOOL_CHARACTERS_PER_TOKEN;
+
+  for (const entry of tools) {
+    const bounded = shortenToolResult(entry.message, charactersPerResult);
+
+    if (bounded.omission) {
+      omissions.push(bounded.omission);
+    }
+
+    entry.message = bounded.message;
+    entry.tokens = estimateTokens(bounded.message);
+  }
+
+  return unit;
 }
 
 function snapshotPart(message: ContextBudgetMessage): Record<string, unknown> | null {
@@ -470,28 +504,20 @@ function readApprovals(messages: readonly ContextBudgetMessage[]): ChatContextAp
 export function fitMessagesToContextBudget(input: ContextBudgetInput): ContextBudgetResult {
   const contextWindow = resolveContextWindow(input.contextWindow);
   const maxInputTokens = resolveInputBudget(contextWindow, input.maxOutputTokens);
-  const maxToolResultCharacters = Math.max(
-    80,
-    Math.floor(input.maxToolResultCharacters ?? DEFAULT_MAX_TOOL_RESULT_CHARACTERS),
-  );
+  const systemTokens = estimateTextTokens(input.systemPrompt);
+  const toolTokens = Math.max(0, Math.floor(input.toolDefinitionTokens ?? 0));
   const omissions: ChatContextOmission[] = [];
-  const indexed = input.messages.map((message, index): IndexedMessage => {
-    const bounded = shortenToolResult(message, maxToolResultCharacters);
-
-    if (bounded.omission) {
-      omissions.push(bounded.omission);
-    }
-
-    return { index, message: bounded.message, tokens: estimateTokens(bounded.message) };
-  });
+  const indexed = input.messages.map((message, index): IndexedMessage => ({
+    index,
+    message,
+    tokens: estimateTokens(message),
+  }));
   const fixed = indexed.filter(
     (entry) => entry.message.role === "system" || entry.message.role === "developer",
   );
   const conversation = indexed.filter(
     (entry) => entry.message.role !== "system" && entry.message.role !== "developer",
   );
-  const systemTokens = estimateTextTokens(input.systemPrompt);
-  const toolTokens = Math.max(0, Math.floor(input.toolDefinitionTokens ?? 0));
   let availableTokens = maxInputTokens - systemTokens - unitTokens(fixed);
 
   if (availableTokens < 0) {
@@ -519,8 +545,13 @@ export function fitMessagesToContextBudget(input: ContextBudgetInput): ContextBu
 
   availableTokens = addUnit(latestUserUnit, selectedIndexes, availableTokens);
   availableTokens = addUnit(summaryUnit, selectedIndexes, availableTokens);
+  availableTokens = addUnit(
+    fitToolResults(units[units.length - 1], availableTokens, omissions),
+    selectedIndexes,
+    availableTokens,
+  );
 
-  for (let index = units.length - 1; index >= 0; index -= 1) {
+  for (let index = units.length - 2; index >= 0; index -= 1) {
     availableTokens = addUnit(units[index], selectedIndexes, availableTokens);
   }
 

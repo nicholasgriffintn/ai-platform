@@ -418,6 +418,7 @@ export async function executeFeatureImplementation(
     const loopOperation = executeAgentLoop({
       sandbox,
       client,
+      runId,
       model,
       modelSettings: params.modelSettings,
       repoDisplayName: repo.displayName,

@@ -267,7 +267,6 @@ export async function startOcrBatch(
         projectId: options.projectId,
         model: input.model,
         startedAt,
-        pollAttempt: 0,
       },
       priority: 5,
     });
@@ -353,7 +352,6 @@ export async function startOcrBatch(
         projectId: options.projectId,
         model: input.model,
         startedAt,
-        pollAttempt: 0,
       },
       priority: 5,
     });

@@ -6,8 +6,9 @@ import { defineTask } from "~/modules/queue/application/workflows";
 import { runPodcastGeneration } from "~/modules/sources/application/podcasts/generate";
 
 export const sourcePodcastGeneration = defineTask({
+  durable: true,
   payload: z.object({ sourceId: z.string().min(1), runId: z.string().min(1).optional() }),
-  handle: async ({ sourceId, runId }, { env, message }) => {
+  handle: async ({ sourceId, runId }, { env, message, execution }) => {
     const owner = await loadUserContext(env, message.user_id);
 
     if (!owner) {
@@ -15,11 +16,11 @@ export const sourcePodcastGeneration = defineTask({
     }
 
     const context = runId ? withExecutionRunContext(owner, runId) : owner;
-    const source = await runPodcastGeneration(context, sourceId);
+    const outcome = await runPodcastGeneration(context, sourceId, execution.steps);
 
     return {
-      status: source?.status === "failed" ? "error" : "success",
-      message: source ? `Podcast ${source.status}` : "Nothing to generate",
+      status: outcome === "failed" ? "error" : "success",
+      message: outcome === "skipped" ? "Nothing to generate" : `Podcast ${outcome}`,
     };
   },
 });

@@ -201,7 +201,7 @@ export class MemoryDocumentRepository extends BaseRepository {
         WHERE d.id = ? AND d.revision = ? AND d.deleted_at IS NULL
           AND (SELECT through_message_id AS message_id FROM memory_reflection WHERE record_kind = 'checkpoint' AND context_id = ? AND conversation_id = ?) IS ?
           AND EXISTS (SELECT 1 FROM teammate_context c WHERE c.id = ? AND c.status = 'active' AND c.actor_user_id = ? AND c.memory_document_id = d.id)
-          AND EXISTS (SELECT 1 FROM tasks t WHERE t.id = ? AND t.status = 'running' AND t.execution_owner_token = ? AND julianday(t.execution_lease_expires_at) > julianday('now'))`).bind(
+          AND EXISTS (SELECT 1 FROM tasks t WHERE t.id = ? AND t.status = 'running' AND t.execution_owner_token = ?)`).bind(
         input.operationId,
         input.contextId,
         input.conversationId,

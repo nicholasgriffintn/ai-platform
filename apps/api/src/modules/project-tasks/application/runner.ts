@@ -6,7 +6,6 @@ import { isTerminalGoalStatus } from "@ngriffin_uk/polychat-library-goals";
 import {
   isTaskError,
   leaseBusyError,
-  leaseExpiry,
   ownershipLostError,
 } from "@ngriffin_uk/polychat-library-tasks";
 import {
@@ -43,7 +42,7 @@ import { OutputRepository } from "~/modules/outputs/infrastructure/OutputReposit
 import { renderFixUp } from "~/modules/project-tasks/domain/fix-ups";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { TaskService } from "~/modules/queue/application/TaskService";
-import type { TaskExecutionLease } from "~/modules/queue/application/types";
+import type { TaskExecutionFence } from "~/modules/queue/application/types";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { toProviderMessages } from "~/modules/responses/application/engine/messages/provider-mapping";
 import { recordChatRunOperationalMetric } from "~/modules/responses/application/runs/operational-metrics";
@@ -126,9 +125,9 @@ export async function queueProjectTaskRun(params: {
 }): Promise<ProjectTask> {
   const { context, task, runnerIdentityUserId, stageId } = params;
 
-  if (!context.env.TASK_QUEUE) {
+  if (!context.env.TASK_WORKFLOW) {
     throw new AssistantError(
-      "Task execution is unavailable because the task queue is not configured",
+      "Task execution is unavailable because the task workflow is not configured",
       ErrorType.CONFIGURATION_ERROR,
       503,
     );
@@ -362,7 +361,7 @@ async function blockTask(
   context: ServiceContext,
   taskId: string,
   dispatchTaskId: string,
-  executionLease: TaskExecutionLease,
+  executionFence: TaskExecutionFence,
   reason: ProjectTaskBlockedReason,
   detail: string,
 ): Promise<void> {
@@ -370,7 +369,7 @@ async function blockTask(
     context,
     taskId,
     dispatchTaskId,
-    executionLease,
+    executionFence,
     updates: {
       status: "blocked",
       blockedReason: reason,
@@ -383,15 +382,15 @@ async function updateOwnedProjectTask(params: {
   context: ServiceContext;
   taskId: string;
   dispatchTaskId: string;
-  executionLease: TaskExecutionLease;
+  executionFence: TaskExecutionFence;
   updates: Parameters<ProjectTaskRepository["updateTask"]>[1];
 }): Promise<ProjectTask> {
-  await params.executionLease.assertOwned();
+  await params.executionFence.assertOwned();
   const updated = await params.context.repositories
     .get(ProjectTaskRepository)
     .updateTask(params.taskId, params.updates, {
       dispatchTaskId: params.dispatchTaskId,
-      ownerToken: params.executionLease.ownerToken,
+      ownerToken: params.executionFence.ownerToken,
     });
 
   if (!updated) {
@@ -425,7 +424,7 @@ async function releaseDurableRunResources(
 export async function recoverRedeliveredProjectTaskRun(params: {
   context: ServiceContext;
   conversationId: string;
-  executionLease: TaskExecutionLease;
+  executionFence: TaskExecutionFence;
   run: ChatRun;
 }): Promise<ChatRun> {
   const lock = await acquireThread({
@@ -435,11 +434,11 @@ export async function recoverRedeliveredProjectTaskRun(params: {
   });
 
   if (lock.acquired === false) {
-    throw leaseBusyError(params.run.id, leaseExpiry(Date.now(), 60_000));
+    throw leaseBusyError(params.run.id, new Date(Date.now() + 60_000).toISOString());
   }
 
   try {
-    await params.executionLease.assertOwned();
+    await params.executionFence.assertOwned();
     const current =
       (await params.context.repositories.get(ConversationRunRepository).getById(params.run.id)) ??
       params.run;
@@ -523,7 +522,7 @@ export async function runProjectTaskDispatch(params: {
   approvedTools?: string[];
   interaction?: { toolName: string; response: Record<string, unknown> };
   resumeInterrupted?: boolean;
-  executionLease: TaskExecutionLease;
+  executionFence: TaskExecutionFence;
 }): Promise<{ status: "completed" | "blocked" | "skipped"; detail?: string }> {
   const { env, taskId, projectId, runnerIdentityUserId } = params;
   const baseContext = createServiceContext({ env });
@@ -539,7 +538,7 @@ export async function runProjectTaskDispatch(params: {
     projectId,
     runnerIdentityUserId,
     dispatchTaskId: params.dispatchTaskId,
-    executionOwnerToken: params.executionLease.ownerToken,
+    executionOwnerToken: params.executionFence.ownerToken,
     resumeInterrupted: params.resumeInterrupted,
   });
 
@@ -554,7 +553,7 @@ export async function runProjectTaskDispatch(params: {
       context,
       taskId,
       params.dispatchTaskId,
-      params.executionLease,
+      params.executionFence,
       "run_failed",
       "The project is no longer available",
     );
@@ -571,7 +570,7 @@ export async function runProjectTaskDispatch(params: {
       context,
       taskId,
       params.dispatchTaskId,
-      params.executionLease,
+      params.executionFence,
       "run_failed",
       "The person who started this task is no longer a member of the workspace",
     );
@@ -584,7 +583,7 @@ export async function runProjectTaskDispatch(params: {
       context,
       taskId,
       params.dispatchTaskId,
-      params.executionLease,
+      params.executionFence,
       "token_budget",
       "This task has spent its token budget. Raise it to continue.",
     );
@@ -610,7 +609,7 @@ export async function runProjectTaskDispatch(params: {
       context,
       taskId,
       params.dispatchTaskId,
-      params.executionLease,
+      params.executionFence,
       "missing_capability",
       detail,
     );
@@ -623,7 +622,7 @@ export async function runProjectTaskDispatch(params: {
   let previousRun: ChatRun | null = null;
 
   try {
-    await params.executionLease.assertOwned();
+    await params.executionFence.assertOwned();
     await ensureProjectTaskConversation({
       context,
       task: claimed,
@@ -634,7 +633,7 @@ export async function runProjectTaskDispatch(params: {
       context,
       taskId,
       dispatchTaskId: params.dispatchTaskId,
-      executionLease: params.executionLease,
+      executionFence: params.executionFence,
       updates: { conversationId },
     });
     previousRun = claimed.runId
@@ -645,7 +644,7 @@ export async function runProjectTaskDispatch(params: {
       previousRun = await recoverRedeliveredProjectTaskRun({
         context,
         conversationId,
-        executionLease: params.executionLease,
+        executionFence: params.executionFence,
         run: previousRun,
       });
     }
@@ -663,7 +662,7 @@ export async function runProjectTaskDispatch(params: {
         context,
         taskId,
         dispatchTaskId: params.dispatchTaskId,
-        executionLease: params.executionLease,
+        executionFence: params.executionFence,
         updates: { goalId },
       });
     }
@@ -678,7 +677,7 @@ export async function runProjectTaskDispatch(params: {
       context,
       taskId,
       params.dispatchTaskId,
-      params.executionLease,
+      params.executionFence,
       "run_failed",
       detail,
     );
@@ -687,7 +686,7 @@ export async function runProjectTaskDispatch(params: {
   }
 
   if (params.resumeInterrupted) {
-    await params.executionLease.assertOwned();
+    await params.executionFence.assertOwned();
     await context.repositories
       .get(ActivityRepository)
       .failActiveActivitiesByGroup(
@@ -712,7 +711,7 @@ export async function runProjectTaskDispatch(params: {
       context,
       taskId,
       params.dispatchTaskId,
-      params.executionLease,
+      params.executionFence,
       "run_failed",
       detail,
     );
@@ -720,7 +719,7 @@ export async function runProjectTaskDispatch(params: {
     return { status: "blocked", detail };
   }
 
-  await params.executionLease.assertOwned();
+  await params.executionFence.assertOwned();
 
   const activity = await context.repositories.get(ActivityRepository).createActivity({
     createdByUserId: runnerIdentityUserId,
@@ -738,7 +737,7 @@ export async function runProjectTaskDispatch(params: {
   let completedRun: ChatRun | null = null;
 
   try {
-    await params.executionLease.assertOwned();
+    await params.executionFence.assertOwned();
     const conversationManager = ConversationManager.getInstance({
       repositories: context.repositories,
       user,
@@ -837,7 +836,7 @@ export async function runProjectTaskDispatch(params: {
       durableExecution: {
         kind: "project_task",
         dispatchTaskId: params.dispatchTaskId,
-        executionOwnerToken: params.executionLease.ownerToken,
+        executionOwnerToken: params.executionFence.ownerToken,
       },
       commandPayload: {
         approvedTools: params.approvedTools ?? [],
@@ -942,11 +941,11 @@ export async function runProjectTaskDispatch(params: {
       context,
       taskId,
       params.dispatchTaskId,
-      params.executionLease,
+      params.executionFence,
       "run_failed",
       detail,
     );
-    await params.executionLease.assertOwned();
+    await params.executionFence.assertOwned();
     await context.repositories.get(ActivityRepository).updateActivity(activity.id, {
       status: "failed",
       summary: detail.slice(0, 200),
@@ -1059,7 +1058,7 @@ export async function runProjectTaskDispatch(params: {
     context,
     taskId,
     dispatchTaskId: params.dispatchTaskId,
-    executionLease: params.executionLease,
+    executionFence: params.executionFence,
     updates: finished
       ? {
           tokensSpent,
@@ -1078,7 +1077,7 @@ export async function runProjectTaskDispatch(params: {
               : {}),
         },
   });
-  await params.executionLease.assertOwned();
+  await params.executionFence.assertOwned();
   await context.repositories.get(ActivityRepository).updateActivity(activity.id, {
     status: nextStatus === "blocked" ? "waiting" : "succeeded",
     summary: goal?.objective.slice(0, 200) ?? claimed.objective.slice(0, 200),
@@ -1090,7 +1089,7 @@ export async function runProjectTaskDispatch(params: {
 
   if (completion && claimed.executionProfile === "diff_review") {
     try {
-      await params.executionLease.assertOwned();
+      await params.executionFence.assertOwned();
       const retainedCompletion = await retainTaskReviewCompletion(context, claimed, completion);
 
       if (retainedCompletion) {
@@ -1098,7 +1097,7 @@ export async function runProjectTaskDispatch(params: {
           context,
           taskId,
           dispatchTaskId: params.dispatchTaskId,
-          executionLease: params.executionLease,
+          executionFence: params.executionFence,
           updates: {
             completions: [...claimed.completions, retainedCompletion],
           },
@@ -1199,7 +1198,7 @@ export async function settleFailedProjectTaskDispatch(params: {
   env: IEnv;
   dispatchTaskId: string;
   taskId: string;
-  executionLease: TaskExecutionLease;
+  executionFence: TaskExecutionFence;
   detail: string;
 }): Promise<void> {
   const context = createServiceContext({ env: params.env });
@@ -1217,14 +1216,14 @@ export async function settleFailedProjectTaskDispatch(params: {
     context,
     taskId: params.taskId,
     dispatchTaskId: params.dispatchTaskId,
-    executionLease: params.executionLease,
+    executionFence: params.executionFence,
     updates: {
       status: "blocked",
       blockedReason: "run_failed",
       blockedDetail: params.detail.slice(0, 500),
     },
   });
-  await params.executionLease.assertOwned();
+  await params.executionFence.assertOwned();
   await context.repositories
     .get(ActivityRepository)
     .failActiveActivitiesByGroup("project_task", params.taskId, params.detail);

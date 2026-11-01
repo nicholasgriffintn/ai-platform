@@ -246,14 +246,6 @@ async function scriptDiscoverEpisode(
     updatedByUserId: user.id,
   });
 
-  if (content.chapters.length > 0) {
-    await enqueueDiscoverJob(context, {
-      job: "episode_chapter",
-      episodeId: episode.id,
-      chapter: 0,
-    });
-  }
-
   await updateDiscoverEdition(context, editionId, (latest) => {
     const { episodeFailed: _failed, ...content } = latest;
 

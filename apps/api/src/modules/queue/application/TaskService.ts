@@ -1,11 +1,10 @@
-import { addInfraUsage } from "@ngriffin_uk/polychat-ai-billing";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import { MAX_QUEUE_DELAY_SECONDS } from "~/config/limits";
 import type { Task } from "~/infrastructure/database/schema";
 import { normaliseIsoDateTime } from "~/infrastructure/date";
 import type { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
+import { terminateTaskWorkflow } from "~/modules/queue/infrastructure/workflow-instances";
 import type { IEnv } from "~/types";
 
 import type { TaskDefinition, TaskMessage } from "./types";
@@ -13,10 +12,10 @@ import type { TaskDefinition, TaskMessage } from "./types";
 const logger = getLogger({ prefix: "services/tasks" });
 
 export class TaskService {
-  private env: Pick<IEnv, "TASK_QUEUE">;
+  private env: Pick<IEnv, "TASK_WORKFLOW">;
   private taskRepository: TaskRepository;
 
-  constructor(env: Pick<IEnv, "TASK_QUEUE">, taskRepository: TaskRepository) {
+  constructor(env: Pick<IEnv, "TASK_WORKFLOW">, taskRepository: TaskRepository) {
     this.env = env;
     this.taskRepository = taskRepository;
   }
@@ -53,7 +52,7 @@ export class TaskService {
         throw new Error("Failed to create task record");
       }
 
-      if (!taskResult.created && task.status !== "pending" && task.status !== "queued") {
+      if (!taskResult.created && task.status !== "pending") {
         logger.info("Task already exists, skipping duplicate enqueue", {
           taskId: task.id,
           taskType: taskDef.task_type,
@@ -71,8 +70,6 @@ export class TaskService {
         throw new Error(`Task ${task.id} conflicts with an existing task definition`);
       }
 
-      await this.taskRepository.updateTask(task.id, { status: "queued" });
-
       const message: TaskMessage = {
         taskId: task.id,
         task_type: taskDef.task_type,
@@ -85,11 +82,7 @@ export class TaskService {
         max_attempts: task.max_attempts ?? 3,
       };
 
-      if (!this.env.TASK_QUEUE) {
-        throw new Error("TASK_QUEUE binding is not available; task remains queued for recovery");
-      }
-
-      await this.sendMessage(message);
+      await this.startRun(message);
 
       logger.info("Task enqueued successfully", {
         taskId: task.id,
@@ -105,30 +98,18 @@ export class TaskService {
     }
   }
 
-  public async dispatchPendingTasks(sentBefore: Date, limit = 100): Promise<number> {
-    if (!this.env.TASK_QUEUE) {
-      throw new Error("TASK_QUEUE binding is not available; pending tasks cannot be recovered");
-    }
-
-    await this.taskRepository.releaseAbandonedTasks();
-
-    const tasks = await this.taskRepository.getPendingTasks(limit, sentBefore);
-    let dispatched = 0;
+  public async dispatchPendingTasks(updatedBefore: Date, limit = 100): Promise<number> {
+    const tasks = await this.taskRepository.getPendingTasks(limit, updatedBefore);
 
     for (const task of tasks) {
       await this.dispatchTask(task);
-      dispatched++;
     }
 
-    return dispatched;
+    return tasks.length;
   }
 
   public async dispatchTask(task: Task): Promise<void> {
-    if (!this.env.TASK_QUEUE) {
-      throw new Error("TASK_QUEUE binding is not available; task remains pending for recovery");
-    }
-
-    const message: TaskMessage = {
+    await this.startRun({
       taskId: task.id,
       task_type: task.task_type,
       user_id: task.user_id ?? undefined,
@@ -138,10 +119,7 @@ export class TaskService {
       schedule_type: task.schedule_type,
       scheduled_at: task.scheduled_at ?? undefined,
       max_attempts: task.max_attempts ?? 3,
-    };
-
-    await this.sendMessage(message);
-    await this.taskRepository.updateTask(task.id, { status: "queued" });
+    });
   }
 
   public async scheduleRecurringTask(
@@ -177,6 +155,18 @@ export class TaskService {
     return this.taskRepository.getTasksByUserId(userId, limit);
   }
 
+  public async retryTask(taskId: string): Promise<boolean> {
+    const task = await this.taskRepository.resetTaskForRetry(taskId);
+
+    if (!task) {
+      return false;
+    }
+
+    await this.dispatchTask(task);
+
+    return true;
+  }
+
   public async cancelTask(taskId: string): Promise<boolean> {
     const task = await this.taskRepository.getTaskById(taskId);
 
@@ -188,36 +178,36 @@ export class TaskService {
       return false;
     }
 
-    await this.taskRepository.updateTask(taskId, { status: "cancelled" });
+    await this.taskRepository.updateTask(taskId, {
+      status: "cancelled",
+      completed_at: new Date().toISOString(),
+    });
+
+    if (task.workflow_instance_id && this.env.TASK_WORKFLOW) {
+      await terminateTaskWorkflow(this.env.TASK_WORKFLOW, task.workflow_instance_id);
+    }
 
     return true;
   }
 
-  private async sendMessage(message: TaskMessage): Promise<void> {
-    if (!this.env.TASK_QUEUE) {
-      throw new Error("TASK_QUEUE binding is not available");
+  private async startRun(message: TaskMessage): Promise<void> {
+    if (!this.env.TASK_WORKFLOW) {
+      throw new Error("TASK_WORKFLOW binding is not available; task remains pending for recovery");
     }
 
-    let delaySeconds: number | undefined;
+    const instanceId = generateId();
 
-    if (message.schedule_type === "scheduled" && message.scheduled_at) {
-      const scheduledAtMs = Date.parse(message.scheduled_at);
+    await this.taskRepository.updateTask(message.taskId, {
+      status: "queued",
+      workflow_instance_id: instanceId,
+    });
 
-      if (Number.isFinite(scheduledAtMs)) {
-        const delayMs = scheduledAtMs - Date.now();
+    try {
+      await this.env.TASK_WORKFLOW.create({ id: instanceId, params: message });
+    } catch (error) {
+      await this.taskRepository.updateTask(message.taskId, { status: "pending" });
 
-        if (delayMs > 0) {
-          delaySeconds = Math.min(MAX_QUEUE_DELAY_SECONDS, Math.ceil(delayMs / 1000));
-        }
-      }
+      throw error;
     }
-
-    if (delaySeconds) {
-      await this.env.TASK_QUEUE.send(message, { delaySeconds });
-    } else {
-      await this.env.TASK_QUEUE.send(message);
-    }
-
-    addInfraUsage("queue_operations", 1);
   }
 }

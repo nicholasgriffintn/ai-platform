@@ -27,7 +27,6 @@ const researchPollingPayload = z.object({
   userId: z.number(),
   options: z.custom<ResearchOptions>(isRecord).optional(),
   startedAt: z.string().optional(),
-  pollAttempt: z.number().optional(),
 });
 
 type ResearchPollingPayload = z.infer<typeof researchPollingPayload>;

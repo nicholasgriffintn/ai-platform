@@ -109,7 +109,7 @@ export async function storeDrawnImage(
 
     return true;
   } catch (error) {
-    logger.warn("Image could not be drawn", { key, error_message: getErrorMessage(error) });
+    logger.error("Image could not be drawn", { key, error_message: getErrorMessage(error) });
 
     return false;
   }

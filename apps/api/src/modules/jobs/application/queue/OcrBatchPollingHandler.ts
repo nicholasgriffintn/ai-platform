@@ -28,13 +28,19 @@ import {
 import { isOutputDeletionPending } from "~/modules/outputs/application/deletion";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { TaskService } from "~/modules/queue/application/TaskService";
-import type { TaskHandler, TaskMessage, TaskResult } from "~/modules/queue/application/types";
+import type {
+  TaskExecutionContext,
+  TaskHandler,
+  TaskMessage,
+  TaskResult,
+} from "~/modules/queue/application/types";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import type { IEnv } from "~/types";
 
 const OCR_BATCH_TIMEOUT_MS = 25 * 60 * 60 * 1000;
+const OCR_BATCH_POLL_DELAYS_SECONDS: readonly number[] = [5, 10, 20, 30, 60, 120, 300];
 
 export interface OcrBatchPollingData {
   outputId: string;
@@ -43,7 +49,6 @@ export interface OcrBatchPollingData {
   projectId?: string;
   model: string;
   startedAt: string;
-  pollAttempt: number;
 }
 
 interface OcrBatchPollingDependencies {
@@ -60,9 +65,6 @@ function readPollingData(message: TaskMessage): OcrBatchPollingData | null {
     !data.userId ||
     !data.model ||
     !data.startedAt ||
-    typeof data.pollAttempt !== "number" ||
-    !Number.isInteger(data.pollAttempt) ||
-    data.pollAttempt < 0 ||
     !ownsResource(data.userId, message.user_id) ||
     (message.project_id ?? undefined) !== data.projectId
   ) {
@@ -114,19 +116,24 @@ async function cleanupStoredProviderBatch(
   );
 }
 
+function nextPoll(pollAttempt: number) {
+  return pollingSchedule({ attempt: pollAttempt, delaysSeconds: OCR_BATCH_POLL_DELAYS_SECONDS });
+}
+
 async function enqueueOcrBatchReconciliation(
   taskService: TaskService,
   data: OcrBatchPollingData,
+  pollAttempt: number,
   priority = 5,
 ): Promise<void> {
-  const polling = pollingSchedule({ attempt: data.pollAttempt });
+  const polling = nextPoll(pollAttempt);
 
   await taskService.enqueueTask({
     id: `ocr-batch:${data.outputId}:reconcile:${generateId()}`,
     task_type: OCR_BATCH_POLLING_TASK_TYPE,
     user_id: data.userId,
     project_id: data.projectId,
-    task_data: { ...data, pollAttempt: polling.attempt },
+    task_data: { ...data },
     schedule_type: "scheduled",
     scheduled_at: polling.scheduledAt,
     priority,
@@ -136,7 +143,11 @@ async function enqueueOcrBatchReconciliation(
 export class OcrBatchPollingHandler implements TaskHandler {
   constructor(private readonly dependencies: OcrBatchPollingDependencies = {}) {}
 
-  async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
+  async handle(
+    message: TaskMessage,
+    env: IEnv,
+    execution: TaskExecutionContext,
+  ): Promise<TaskResult> {
     const data = readPollingData(message);
 
     if (!data) {
@@ -208,7 +219,7 @@ export class OcrBatchPollingHandler implements TaskHandler {
       const cancelledJob = await batchClient.cancel({ env, user, jobId: data.jobId });
 
       if (["QUEUED", "RUNNING", "CANCELLATION_REQUESTED"].includes(cancelledJob.status)) {
-        const pendingOutput = await updateOutput(context, user.id, output.id, {
+        await updateOutput(context, user.id, output.id, {
           status: "pending",
           expectedRevision: output.revision,
           content: {
@@ -217,24 +228,12 @@ export class OcrBatchPollingHandler implements TaskHandler {
             error: "OCR batch exceeded its 25-hour polling window",
           },
         });
-        const polling = pollingSchedule({ attempt: data.pollAttempt });
-        const taskService = new TaskService(env, context.repositories.get(TaskRepository));
-
-        await taskService.enqueueTask({
-          id: `ocr-batch:${data.outputId}:cleanup:${pendingOutput.revision}`,
-          task_type: OCR_BATCH_POLLING_TASK_TYPE,
-          user_id: data.userId,
-          project_id: data.projectId,
-          task_data: { ...data, pollAttempt: polling.attempt },
-          schedule_type: "scheduled",
-          scheduled_at: polling.scheduledAt,
-          priority: message.priority || 5,
-        });
 
         return {
-          status: "success",
+          status: "pending",
           message: "OCR batch timeout cancellation is pending",
           data: { outputId: output.id },
+          retryAfterSeconds: nextPoll(execution.pollAttempt).delaySeconds,
         };
       }
 
@@ -338,24 +337,12 @@ export class OcrBatchPollingHandler implements TaskHandler {
           },
         },
       });
-      const polling = pollingSchedule({ attempt: data.pollAttempt });
-      const taskService = new TaskService(env, context.repositories.get(TaskRepository));
-
-      await taskService.enqueueTask({
-        id: `ocr-batch:${data.outputId}:${polling.attempt}`,
-        task_type: OCR_BATCH_POLLING_TASK_TYPE,
-        user_id: data.userId,
-        project_id: data.projectId,
-        task_data: { ...data, pollAttempt: polling.attempt },
-        schedule_type: "scheduled",
-        scheduled_at: polling.scheduledAt,
-        priority: message.priority || 5,
-      });
 
       return {
-        status: "success",
+        status: "pending",
         message: "OCR batch still in progress",
         data: { outputId: data.outputId, providerStatus: job.status },
+        retryAfterSeconds: nextPoll(execution.pollAttempt).delaySeconds,
       };
     }
 
@@ -420,7 +407,12 @@ export class OcrBatchPollingHandler implements TaskHandler {
     };
   }
 
-  async onFinalFailure(message: TaskMessage, env: IEnv, error: Error): Promise<void> {
+  async onFinalFailure(
+    message: TaskMessage,
+    env: IEnv,
+    error: Error,
+    execution: TaskExecutionContext,
+  ): Promise<void> {
     const data = readPollingData(message);
 
     if (!data) {
@@ -455,7 +447,12 @@ export class OcrBatchPollingHandler implements TaskHandler {
     const taskService = new TaskService(env, new TaskRepository(env));
 
     if (existingCleanup) {
-      await enqueueOcrBatchReconciliation(taskService, data, message.priority || 5);
+      await enqueueOcrBatchReconciliation(
+        taskService,
+        data,
+        execution.pollAttempt,
+        message.priority || 5,
+      );
       await cleanupStoredProviderBatch(batchClient, env, user, existingCleanup);
       await outputRepository.updateOutput(output.id, {
         status: output.status,
@@ -489,7 +486,8 @@ export class OcrBatchPollingHandler implements TaskHandler {
 
       await enqueueOcrBatchReconciliation(
         taskService,
-        { ...data, pollAttempt: data.pollAttempt + 1 },
+        data,
+        execution.pollAttempt + 1,
         message.priority || 5,
       );
 
@@ -526,7 +524,12 @@ export class OcrBatchPollingHandler implements TaskHandler {
       throw new AssistantError("OCR batch cleanup state is missing", ErrorType.INTERNAL_ERROR);
     }
 
-    await enqueueOcrBatchReconciliation(taskService, data, message.priority || 5);
+    await enqueueOcrBatchReconciliation(
+      taskService,
+      data,
+      execution.pollAttempt,
+      message.priority || 5,
+    );
     await cleanupStoredProviderBatch(batchClient, env, user, terminalCleanup);
     await outputRepository.updateOutput(terminalOutput.id, {
       status: terminalOutput.status,

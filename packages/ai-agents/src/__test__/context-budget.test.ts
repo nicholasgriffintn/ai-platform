@@ -12,7 +12,6 @@ function plan(messages: AgentMessage[], contextWindow = 32000) {
     contextWindow,
     systemPrompt: "System rules",
     maxOutputTokens: 1000,
-    maxToolResultCharacters: 120,
     runId: "run-1",
     conversationId: "conversation-1",
     attempt: 1,
@@ -25,7 +24,7 @@ function plan(messages: AgentMessage[], contextWindow = 32000) {
 }
 
 describe("mid-run context budgeting", () => {
-  it("bounds a large tool result before the next model call and retains its stored reference", () => {
+  it("bounds a tool result that cannot fit the context and retains its stored reference", () => {
     const content = `start ${"verbose ".repeat(100)} final evidence`;
     const messages = [
       { role: "user", content: "Investigate this", id: "user-1" },
@@ -44,7 +43,7 @@ describe("mid-run context budgeting", () => {
       },
     ] satisfies Array<AgentMessage & { id: string }>;
 
-    const result = plan(messages);
+    const result = plan(messages, 1100);
     const toolResult = result.messages.find((message) => message.role === "tool");
 
     expect(toolResult?.content).toContain("Tool result shortened");

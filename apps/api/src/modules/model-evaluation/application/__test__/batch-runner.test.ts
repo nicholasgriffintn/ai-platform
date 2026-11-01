@@ -10,15 +10,9 @@ import type {
 } from "../../infrastructure/ModelEvalRepository";
 
 const provider = vi.hoisted(() => ({ submit: vi.fn(), poll: vi.fn() }));
-const enqueueTask = vi.hoisted(() => vi.fn());
 
 vi.mock("~/infrastructure/providers/capabilities/batch", () => ({
   getBatchProvider: () => provider,
-}));
-vi.mock("~/modules/queue/application/TaskService", () => ({
-  TaskService: class {
-    enqueueTask = enqueueTask;
-  },
 }));
 vi.mock("~/modules/models/application/resolve", () => ({
   getAuxiliaryModel: async () => ({ model: "judge", provider: "workers-ai" }),
@@ -31,7 +25,6 @@ vi.mock("~/modules/model-registry/application/decisions", () => ({
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { ModelGraderRepository } from "~/modules/model-evaluation/infrastructure/ModelGraderRepository";
 import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
-import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 
 import { BATCH_MAX_POLL_ATTEMPTS, executeBatchedEvalRun } from "../batch-runner";
 
@@ -80,7 +73,6 @@ const route = {
 
 function repositories() {
   return fakeRepositories([
-    [TaskRepository, {}],
     [
       ModelEvalRepository,
       { updateRun: vi.fn(), updateRunScores: vi.fn(), listRuns: vi.fn(async () => []) },
@@ -100,13 +92,13 @@ describe("executeBatchedEvalRun", () => {
     vi.clearAllMocks();
   });
 
-  it("submits every case once, keeps the handle and schedules a poll", async () => {
+  it("submits every case once, keeps the handle and waits to poll", async () => {
     const storage = bucket();
     const repos = repositories();
 
     provider.submit.mockResolvedValue({ batchId: "batch-1" });
 
-    await executeBatchedEvalRun({} as IEnv, repos, {
+    const result = await executeBatchedEvalRun({} as IEnv, repos, {
       run,
       suite,
       route,
@@ -125,11 +117,7 @@ describe("executeBatchedEvalRun", () => {
       expect.objectContaining({ id: "case_1", prompt: "Capital of Spain?" }),
     ]);
     expect(storage.objects.get("model-registry/eval-runs/run-1.batch.json")).toContain("batch-1");
-    expect(enqueueTask).toHaveBeenCalledWith(
-      expect.objectContaining({
-        task_data: expect.objectContaining({ batch: true, pollAttempt: 1 }),
-      }),
-    );
+    expect(result).toEqual(expect.objectContaining({ status: "pending", retryAfterSeconds: 600 }));
   });
 
   it("grades completed outputs, keeps failures in the results and skips latency", async () => {
@@ -191,6 +179,5 @@ describe("executeBatchedEvalRun", () => {
       status: "failed",
       failure_reason: "The batch did not finish within its 24-hour window",
     });
-    expect(enqueueTask).not.toHaveBeenCalled();
   });
 });

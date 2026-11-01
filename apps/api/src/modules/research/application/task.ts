@@ -123,7 +123,6 @@ export const startResearchTask = async (req: ResearchTaskRequest): Promise<Resea
           userId: user.id,
           options,
           startedAt: new Date().toISOString(),
-          pollAttempt: 0,
         },
         priority: 7,
       });

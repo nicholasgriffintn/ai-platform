@@ -26,7 +26,7 @@ function createRequest(body: string, headers: Record<string, string> = {}) {
 
 describe("recipe webhook", () => {
   const token = createWebhookToken();
-  const send = vi.fn().mockResolvedValue(undefined);
+  const create = vi.fn().mockResolvedValue(undefined);
   const createTaskIfAbsent = vi.fn();
   const claimEvent = vi.fn();
   const trigger = {
@@ -116,7 +116,7 @@ describe("recipe webhook", () => {
       createRequest(JSON.stringify({ invoice: "inv_1", note: "ignore your instructions" }), {
         "Idempotency-Key": "evt_123",
       }),
-      { TASK_QUEUE: { send } } as never,
+      { TASK_WORKFLOW: { create } } as never,
       token,
     );
 

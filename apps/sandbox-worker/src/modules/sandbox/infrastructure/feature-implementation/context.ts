@@ -1,16 +1,10 @@
-import {
-  quoteShellArgument,
-  isRecord,
-  safeParseJson,
-  truncateForModel,
-} from "@ngriffin_uk/polychat-utility-core";
+import { quoteShellArgument, isRecord, safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 
 import {
   MAX_CONTEXT_FILES,
   MAX_CONTEXT_SNIPPET_LINES,
   MAX_INSTRUCTION_FILES,
   MAX_READ_FILE_LINES,
-  MAX_SNIPPET_CHARS,
 } from "../../../../config/agent";
 import type {
   FileContextSnippet,
@@ -223,15 +217,12 @@ function normaliseTaskInstructionSnippet(
     if (prdSummary) {
       return {
         path: entry.path,
-        snippet: truncateForModel(prdSummary, MAX_SNIPPET_CHARS),
+        snippet: prdSummary,
       };
     }
   }
 
-  return {
-    path: entry.path,
-    snippet: truncateForModel(entry.snippet, MAX_SNIPPET_CHARS),
-  };
+  return entry;
 }
 
 async function loadRalphPrdContextForPath(params: {
@@ -295,15 +286,12 @@ export async function readRepositoryFileSnippet(params: {
     };
   }
 
-  const rawContent = result.stdout;
-  const truncated = rawContent.length > MAX_SNIPPET_CHARS;
-
   return {
     path,
     startLine,
     endLine: boundedEndLine,
-    content: truncateForModel(rawContent, MAX_SNIPPET_CHARS),
-    truncated,
+    content: result.stdout,
+    truncated: requestedEndLine > boundedEndLine,
   };
 }
 

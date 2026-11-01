@@ -127,7 +127,11 @@ export async function queueYourWeek(
 ): Promise<{ queued: true }> {
   const edition = await requireDiscoverEdition(context, context.requireUser().id, editionId);
 
-  await enqueueDiscoverJob(withEditionRun(context, edition), { job: "your_week", editionId });
+  await enqueueDiscoverJob(withEditionRun(context, edition), {
+    job: "edition",
+    editionId,
+    yourWeek: true,
+  });
 
   return { queued: true };
 }

@@ -168,7 +168,7 @@ export async function reflectTeammateMemory(
     prepared?.sourceTokenBudget,
   );
 
-  await execution.lease.assertOwned();
+  await execution.fence.assertOwned();
 
   const proposal =
     prepared && sources.length
@@ -176,7 +176,7 @@ export async function reflectTeammateMemory(
           context,
           prepared,
           sources,
-          `${taskId}:${execution.deliveryAttempt}`,
+          `${taskId}:${execution.attempt}`,
           input.conversationId,
         )
       : { edits: [], changeNote: "No new user evidence" };
@@ -197,7 +197,7 @@ export async function reflectTeammateMemory(
     prepared?.sourceTokenBudget,
   );
 
-  await execution.lease.assertOwned();
+  await execution.fence.assertOwned();
   const result = await repository.commitReflection({
     operationId: taskId,
     taskId,
@@ -218,7 +218,7 @@ export async function reflectTeammateMemory(
       })),
     ),
     userId: user.id,
-    ownerToken: execution.lease.ownerToken,
+    ownerToken: execution.fence.ownerToken,
   });
 
   if (!result) {

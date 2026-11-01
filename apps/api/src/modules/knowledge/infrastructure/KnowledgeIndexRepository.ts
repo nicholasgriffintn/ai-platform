@@ -433,7 +433,7 @@ export class KnowledgeIndexRepository extends BaseRepository<Pick<IEnv, "DB">> {
        WHERE NOT EXISTS (SELECT 1 FROM search_document leased WHERE leased.document_type = 'source'
            AND leased.resource_type = c.resource_type AND leased.source_id = c.id AND leased.lease_expires_at >= CURRENT_TIMESTAMP)
        AND NOT EXISTS (SELECT 1 FROM tasks t WHERE t.task_type = 'source_knowledge_index'
-         AND (t.status IN ('pending', 'queued', 'running') OR t.execution_lease_expires_at >= datetime('now', '-1 minute'))
+         AND t.status IN ('pending', 'queued', 'running')
          AND json_extract(t.task_data, '$.sourceId') = c.id)
        LIMIT 100`,
       [

@@ -4,6 +4,7 @@ import {
   DISCOVER_ARTICLE_METADATA_KEY,
   DISCOVER_BRIEFING_METADATA_KEY,
   discoverBriefingDraftSchema,
+  type DiscoverEditionFollowUp,
 } from "@ngriffin_uk/polychat-schemas";
 import {
   generateId,
@@ -48,7 +49,6 @@ import {
   type StoredDiscoverEdition,
 } from "./editions";
 import { listDiscoverFollows } from "./follows";
-import { enqueueDiscoverJob } from "./jobs";
 import { ensureDiscoverNotebook } from "./notebook";
 import { readDiscoverRoutine } from "./settings";
 import { discoverKnowledgeTarget, writeDiscoverDocument } from "./signal-documents";
@@ -335,7 +335,7 @@ export async function ensureDiscoverBriefings(
 export async function researchDiscoverEdition(
   context: ServiceContext,
   editionId: string,
-  next: readonly ("listen" | "episode")[],
+  next: readonly DiscoverEditionFollowUp[],
 ): Promise<number> {
   const user = context.requireUser();
   const edition = await requireDiscoverEdition(context, user.id, editionId);
@@ -364,10 +364,6 @@ export async function researchDiscoverEdition(
       edition_id: editionId,
       error_message: getErrorMessage(error),
     });
-  }
-
-  for (const job of next) {
-    await enqueueDiscoverJob(withEditionRun(context, edition), { job, editionId });
   }
 
   return researched;

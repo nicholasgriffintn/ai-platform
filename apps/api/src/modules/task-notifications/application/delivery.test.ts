@@ -1,3 +1,4 @@
+import { inlineTaskSteps } from "@ngriffin_uk/polychat-ai-workflows";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { IEnv } from "~/types";
@@ -69,11 +70,12 @@ function message() {
 }
 
 const executionContext = {
-  deliveryAttempt: 1,
-  isRedelivery: false,
-  lease: {
+  attempt: 1,
+  isRetry: false,
+  pollAttempt: 0,
+  steps: inlineTaskSteps,
+  fence: {
     ownerToken: "owner-1",
-    expiresAt: "2026-09-05T12:05:00.000Z",
     assertOwned: vi.fn().mockResolvedValue(undefined),
   },
 };

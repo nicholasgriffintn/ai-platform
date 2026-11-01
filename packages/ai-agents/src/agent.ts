@@ -41,7 +41,6 @@ export interface AgentDefinition<TContext extends AnyToolExecutionContext = Tool
   instructions?: string;
   tools?: ToolDefinition<any, any, TContext>[];
   config?: Partial<AgentConfig>;
-  maxObservationChars?: number;
 }
 
 export interface AgentRunInput<TContext extends AnyToolExecutionContext> {
@@ -166,7 +165,6 @@ export function Agent<TContext extends AnyToolExecutionContext = ToolExecutionCo
     }
 
     let toolCallCount = 0;
-    const maxObservationChars = definition.maxObservationChars ?? 5000;
     const result = await executeAgentLoop<AgentRunInput<TContext>, { commandCount: number }>({
       initialMessages: messages,
       initialPlan: input.plan ?? "",
@@ -215,10 +213,7 @@ export function Agent<TContext extends AnyToolExecutionContext = ToolExecutionCo
             name: toolCall.name,
             tool_call_id: toolCall.id,
             tool_call_arguments: toolCall.arguments,
-            content:
-              content.length > maxObservationChars
-                ? `${content.slice(0, maxObservationChars)}\n... (truncated)`
-                : content,
+            content,
             status,
           });
           await context.emit({ type: "agent.tool", tool: toolCall.name, status });

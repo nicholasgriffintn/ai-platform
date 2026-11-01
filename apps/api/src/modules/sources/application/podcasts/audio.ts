@@ -1,8 +1,9 @@
 import type { PodcastScriptTurn } from "@ngriffin_uk/polychat-schemas";
+import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { synthesiseSpeechText } from "~/modules/audio/application/speech";
+import { SPEECH_CONCURRENCY, synthesiseSpeechText } from "~/modules/audio/application/speech";
 import { resolveSpeechVoice } from "~/modules/audio/application/speech-voice";
 import { renderWithSpeechVoices } from "~/modules/audio/application/speech-voices";
 import { joinAudioSegments, mp3SegmentSeconds } from "~/modules/audio/domain/mp3";
@@ -37,19 +38,17 @@ export async function synthesisePodcastAudio(
       return { host, guest };
     },
     async (voices) => {
+      const spoken = await mapWithConcurrency(turns, SPEECH_CONCURRENCY, (turn) =>
+        synthesiseSpeechText(context, voices[turn.speaker], turn.text, language),
+      );
       const segments: Uint8Array[] = [];
       const turnStarts: number[] = [];
       let elapsed = 0;
 
-      for (const turn of turns) {
+      for (const turnSegments of spoken) {
         turnStarts.push(elapsed);
 
-        for (const segment of await synthesiseSpeechText(
-          context,
-          voices[turn.speaker],
-          turn.text,
-          language,
-        )) {
+        for (const segment of turnSegments) {
           segments.push(segment);
           elapsed += mp3SegmentSeconds(segment);
         }

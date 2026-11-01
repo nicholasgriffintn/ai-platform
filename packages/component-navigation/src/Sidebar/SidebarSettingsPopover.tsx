@@ -16,8 +16,9 @@ import {
   ChevronUp,
   ExternalLink,
   FileText,
-  KeyRound,
+  Gauge,
   Keyboard,
+  KeyRound,
   Loader2,
   LogIn,
   LogOut,
@@ -56,6 +57,7 @@ export interface SidebarSettingsLinks {
   privacy: string;
   sourceCode: string;
   downloads?: string;
+  admin?: string;
 }
 
 export interface SidebarThemeControl {
@@ -292,6 +294,11 @@ export function SidebarSettingsPopover({
                 <PopoverLink href={links.billing} icon={<WalletCards className="h-4 w-4" />}>
                   Billing
                 </PopoverLink>
+                {links.admin ? (
+                  <PopoverLink href={links.admin} icon={<Gauge className="h-4 w-4" />}>
+                    Admin
+                  </PopoverLink>
+                ) : null}
                 <button type="button" onClick={onSignOut} className={popoverRowClassName}>
                   <LogOut className="h-4 w-4" />
                   <span>Sign out</span>

@@ -143,7 +143,7 @@ export async function startModelGeneration(
       task_type: SOURCE_GENERATION_POLLING_TASK_TYPE,
       user_id: user.id,
       project_id: source.project_id ?? undefined,
-      task_data: { sourceId: source.id, userId: user.id, modelId, pollAttempt: 0 },
+      task_data: { sourceId: source.id, userId: user.id, modelId },
       priority: 6,
     });
   }

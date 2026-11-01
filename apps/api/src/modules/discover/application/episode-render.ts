@@ -1,5 +1,6 @@
 import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import type { TaskSteps } from "@ngriffin_uk/polychat-ai-workflows";
 import {
   discoverChapterCheckSchema,
   discoverChapterScriptDraftSchema,
@@ -13,6 +14,7 @@ import {
   ErrorType,
   getErrorMessage,
 } from "@ngriffin_uk/polychat-utility-server/errors";
+import { z } from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
@@ -35,6 +37,7 @@ import { VIDEO_STYLE_PROMPTS } from "~/modules/notebooks/domain/studio-guidance"
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 
 import { requireDiscoverEdition, withEditionRun } from "./editions";
+import { makeEpisodeStudySet } from "./episode-extras";
 import { loadEpisodeMaterial, requireDiscoverEpisode, requireDiscoverSeason } from "./episodes";
 import { publishDiscoverChanged } from "./events";
 import { enqueueDiscoverJob } from "./jobs";
@@ -113,8 +116,6 @@ async function saveEpisode(
     const finished = chapters.every(
       (chapter) => chapter.status === "ready" || chapter.status === "failed",
     );
-    const completed =
-      record.status !== "ready" && chapters.every((chapter) => chapter.status === "ready");
 
     try {
       await outputs.updateOutput(episodeId, {
@@ -124,10 +125,6 @@ async function saveEpisode(
         updatedByUserId: user.id,
       });
       await publishDiscoverChanged(context);
-
-      if (completed && content.notebookId) {
-        await enqueueDiscoverJob(context, { job: "episode_extras", episodeId });
-      }
 
       return;
     } catch (error) {
@@ -200,99 +197,148 @@ async function scriptChapter(
   }));
 }
 
-async function queueNextChapter(
-  context: ServiceContext,
-  episodeId: string,
-  chapterIndex: number,
-): Promise<void> {
-  const { content } = await requireDiscoverEpisode(context, episodeId);
-  const next = content.chapters.findIndex(
-    (chapter, index) => index > chapterIndex && chapter.status === "pending",
-  );
-
-  if (next !== -1) {
-    await enqueueDiscoverJob(context, { job: "episode_chapter", episodeId, chapter: next });
-  }
+function shouldRenderChapter(chapter: DiscoverEpisodeChapter | undefined): boolean {
+  return Boolean(chapter) && chapter?.status !== "ready" && chapter?.status !== "failed";
 }
 
-export async function renderEpisodeChapter(
+async function scriptEpisodeChapter(
+  context: ServiceContext,
+  episodeId: string,
+  chapterIndex: number,
+): Promise<boolean> {
+  const { content } = await requireDiscoverEpisode(context, episodeId);
+
+  if (!shouldRenderChapter(content.chapters[chapterIndex])) {
+    return false;
+  }
+
+  await saveChapter(context, episodeId, chapterIndex, (current) => ({
+    ...current,
+    status: "scripting",
+  }));
+  const scenes = await scriptChapter(context, content, chapterIndex);
+
+  await saveChapter(context, episodeId, chapterIndex, (current) => ({
+    ...current,
+    scenes,
+    status: "rendering",
+  }));
+
+  return true;
+}
+
+async function narrateEpisodeChapter(
   context: ServiceContext,
   episodeId: string,
   chapterIndex: number,
 ): Promise<void> {
   const { content } = await requireDiscoverEpisode(context, episodeId);
-  const chapter = content.chapters[chapterIndex];
+  const timings = await narrateChapter(
+    context,
+    episodeId,
+    chapterIndex,
+    content.chapters[chapterIndex],
+    content.voice,
+  );
 
-  if (!chapter || chapter.status === "ready") {
-    await queueNextChapter(context, episodeId, chapterIndex);
+  await saveChapter(context, episodeId, chapterIndex, (current) => ({
+    ...current,
+    timings,
+    status: "ready",
+  }));
+}
 
+function chapterShotJobs(
+  episodeId: string,
+  content: DiscoverEpisodeContent,
+  chapterIndex: number,
+): ShotJob[] {
+  return content.chapters[chapterIndex].scenes.flatMap((scene, sceneIndex) =>
+    scene.shots.map((shot, shotIndex) => ({
+      key: shotImageKey(episodeId, content.seasonId, {
+        chapter: chapterIndex,
+        scene: sceneIndex,
+        shot: shotIndex,
+        plate: shot.plate,
+      }),
+      visual: shot.visual,
+      scene: sceneIndex,
+      shot: shotIndex,
+    })),
+  );
+}
+
+async function drawChapterShots(
+  context: ServiceContext,
+  episodeId: string,
+  chapterIndex: number,
+  style: string,
+  batch: readonly ShotJob[],
+): Promise<void> {
+  const drawn = await mapWithConcurrency(batch, SHOT_CONCURRENCY, async (job) =>
+    (await storeDrawnImage(context, job.key, {
+      completionId: job.key.replaceAll("/", "-"),
+      prompt: `${style}. ${job.visual}. ${TEXTLESS_PICTURE}`,
+      aspectRatio: "16:9",
+      width: SHOT_WIDTH,
+      height: SHOT_HEIGHT,
+    }))
+      ? `${job.scene}:${job.shot}`
+      : null,
+  );
+  const ready = new Set(drawn.filter((key): key is string => key !== null));
+
+  if (ready.size === 0) {
     return;
   }
 
-  try {
-    await saveChapter(context, episodeId, chapterIndex, (current) => ({
-      ...current,
-      status: "scripting",
-    }));
-    const scenes = await scriptChapter(context, content, chapterIndex);
-    const scripted = { ...chapter, scenes };
-
-    await saveChapter(context, episodeId, chapterIndex, (current) => ({
-      ...current,
-      scenes,
-      status: "rendering",
-    }));
-
-    const timings = await narrateChapter(context, episodeId, chapterIndex, scripted, content.voice);
-
-    await saveChapter(context, episodeId, chapterIndex, (current) => ({
-      ...current,
-      timings,
-      status: "ready",
-    }));
-
-    const style = VIDEO_STYLE_PROMPTS[content.style];
-    const jobs: ShotJob[] = scenes.flatMap((scene, sceneIndex) =>
-      scene.shots.map((shot, shotIndex) => ({
-        key: shotImageKey(episodeId, content.seasonId, {
-          chapter: chapterIndex,
-          scene: sceneIndex,
-          shot: shotIndex,
-          plate: shot.plate,
-        }),
-        visual: shot.visual,
-        scene: sceneIndex,
-        shot: shotIndex,
+  await saveChapter(context, episodeId, chapterIndex, (current) => ({
+    ...current,
+    scenes: current.scenes.map((scene, sceneIndex) => ({
+      ...scene,
+      shots: scene.shots.map((shot, shotIndex) => ({
+        ...shot,
+        image: shot.image || ready.has(`${sceneIndex}:${shotIndex}`),
       })),
+    })),
+  }));
+}
+
+async function renderEpisodeChapter(
+  context: ServiceContext,
+  episodeId: string,
+  chapterIndex: number,
+  steps: TaskSteps,
+): Promise<void> {
+  const step = `chapter-${chapterIndex}`;
+
+  try {
+    const scripted = await steps.value(`${step}-script`, z.boolean(), () =>
+      scriptEpisodeChapter(context, episodeId, chapterIndex),
     );
 
-    for (let start = 0; start < jobs.length; start += SHOT_BATCH) {
-      const batch = jobs.slice(start, start + SHOT_BATCH);
-      const drawn = await mapWithConcurrency(batch, SHOT_CONCURRENCY, async (job) =>
-        (await storeDrawnImage(context, job.key, {
-          completionId: job.key.replaceAll("/", "-"),
-          prompt: `${style}. ${job.visual}. ${TEXTLESS_PICTURE}`,
-          aspectRatio: "16:9",
-          width: SHOT_WIDTH,
-          height: SHOT_HEIGHT,
-        }))
-          ? `${job.scene}:${job.shot}`
-          : null,
-      );
-      const ready = new Set(drawn.filter((key): key is string => key !== null));
+    if (!scripted) {
+      return;
+    }
 
-      if (ready.size > 0) {
-        await saveChapter(context, episodeId, chapterIndex, (current) => ({
-          ...current,
-          scenes: current.scenes.map((scene, sceneIndex) => ({
-            ...scene,
-            shots: scene.shots.map((shot, shotIndex) => ({
-              ...shot,
-              image: shot.image || ready.has(`${sceneIndex}:${shotIndex}`),
-            })),
-          })),
-        }));
-      }
+    await steps.run(`${step}-narrate`, () =>
+      narrateEpisodeChapter(context, episodeId, chapterIndex),
+    );
+
+    const { content } = await requireDiscoverEpisode(context, episodeId);
+    const style = VIDEO_STYLE_PROMPTS[content.style];
+    const jobs = chapterShotJobs(episodeId, content, chapterIndex);
+
+    for (let start = 0; start < jobs.length; start += SHOT_BATCH) {
+      await steps.run(`${step}-shots-${start / SHOT_BATCH}`, () =>
+        drawChapterShots(
+          context,
+          episodeId,
+          chapterIndex,
+          style,
+          jobs.slice(start, start + SHOT_BATCH),
+        ),
+      );
     }
   } catch (error) {
     logger.error("Episode chapter failed", {
@@ -300,12 +346,33 @@ export async function renderEpisodeChapter(
       chapterIndex,
       error_message: getErrorMessage(error),
     });
-    await saveChapter(context, episodeId, chapterIndex, (current) =>
-      current.status === "ready" ? current : { ...current, status: "failed" },
+    await steps.run(`${step}-failed`, () =>
+      saveChapter(context, episodeId, chapterIndex, (current) =>
+        current.status === "ready" ? current : { ...current, status: "failed" },
+      ),
     );
   }
+}
 
-  await queueNextChapter(context, episodeId, chapterIndex);
+export async function renderDiscoverEpisode(
+  context: ServiceContext,
+  episodeId: string,
+  steps: TaskSteps,
+  fromChapter = 0,
+): Promise<void> {
+  const { content } = await requireDiscoverEpisode(context, episodeId);
+
+  for (let index = fromChapter; index < content.chapters.length; index += 1) {
+    await renderEpisodeChapter(context, episodeId, index, steps);
+  }
+
+  await steps.run("extras", async () => {
+    const { content: latest } = await requireDiscoverEpisode(context, episodeId);
+
+    if (latest.chapters.every((chapter) => chapter.status === "ready")) {
+      await makeEpisodeStudySet(context, episodeId);
+    }
+  });
 }
 
 export async function retryEpisodeChapter(

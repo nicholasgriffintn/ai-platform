@@ -908,6 +908,9 @@ importers:
       '@ngriffin_uk/polychat-ai-agents':
         specifier: workspace:^
         version: link:../../packages/ai-agents
+      '@ngriffin_uk/polychat-ai-models':
+        specifier: workspace:^
+        version: link:../../packages/ai-models
       '@ngriffin_uk/polychat-ai-prompts':
         specifier: workspace:^
         version: link:../../packages/ai-prompts

@@ -251,7 +251,10 @@ export const adminTaskViewSchema = z.enum(["active", "failed", "all"]);
 
 export const adminTasksQuerySchema = z.object({
   view: adminTaskViewSchema.default("active"),
+  task_type: z.string().min(1).optional(),
 });
+
+export const adminTaskParamsSchema = z.object({ task_id: z.string().min(1) });
 
 export const adminTaskSchema = z.object({
   id: z.string(),
@@ -260,25 +263,73 @@ export const adminTaskSchema = z.object({
   user_id: z.number().nullable(),
   priority: z.number(),
   attempts: z.number(),
-  recovery_count: z.number(),
+  max_attempts: z.number(),
   scheduled_at: z.string().nullable(),
   last_attempted_at: z.string().nullable(),
-  lease_expires_at: z.string().nullable(),
+  completed_at: z.string().nullable(),
+  workflow_instance_id: z.string().nullable(),
   error_message: z.string().nullable(),
   created_at: z.string(),
   updated_at: z.string().nullable(),
 });
 
-export const adminTaskCountSchema = z.object({
+export const adminTaskTypeSummarySchema = z.object({
   task_type: z.string(),
-  status: taskStatusSchema,
-  count: z.number(),
-  oldest: z.string(),
+  running: z.number(),
+  waiting: z.number(),
+  scheduled: z.number(),
+  suspended: z.number(),
+  failed: z.number(),
+  completed: z.number(),
+  average_turnaround_ms: z.number().nullable(),
+  oldest_open: z.string().nullable(),
 });
 
 export const adminTasksResponseSchema = z.object({
-  counts: z.array(adminTaskCountSchema),
+  since: z.string(),
+  types: z.array(adminTaskTypeSummarySchema),
   tasks: z.array(adminTaskSchema),
+});
+
+export const adminTaskWorkflowStatusSchema = z.enum([
+  "queued",
+  "running",
+  "paused",
+  "errored",
+  "terminated",
+  "complete",
+  "waiting",
+  "waitingForPause",
+  "rollingBack",
+  "unknown",
+  "unavailable",
+]);
+
+export const adminTaskWorkflowSchema = z.object({
+  instance_id: z.string(),
+  status: adminTaskWorkflowStatusSchema,
+  error: z.string().nullable(),
+});
+
+export const adminTaskStepSchema = z.object({
+  id: z.string(),
+  step: z.string().nullable(),
+  status: taskExecutionStatusSchema,
+  started_at: z.string(),
+  completed_at: z.string().nullable(),
+  execution_time_ms: z.number().nullable(),
+  error_message: z.string().nullable(),
+});
+
+export const adminTaskDetailSchema = z.object({
+  task: adminTaskSchema.extend({
+    project_id: z.string().nullable(),
+    schedule_type: z.string().nullable(),
+    task_data: z.record(z.string(), z.unknown()).nullable(),
+    metadata: z.record(z.string(), z.unknown()).nullable(),
+  }),
+  workflow: adminTaskWorkflowSchema.nullable(),
+  steps: z.array(adminTaskStepSchema),
 });
 
 export const memorySynthesisListSchema = listSchema(memorySynthesisSchema);
@@ -305,6 +356,10 @@ export type ListTasksResponse = z.infer<typeof listTasksResponseSchema>;
 export type AdminTaskView = z.infer<typeof adminTaskViewSchema>;
 export type AdminTask = z.infer<typeof adminTaskSchema>;
 export type AdminTasksResponse = z.infer<typeof adminTasksResponseSchema>;
+export type AdminTaskTypeSummary = z.infer<typeof adminTaskTypeSummarySchema>;
+export type AdminTaskWorkflow = z.infer<typeof adminTaskWorkflowSchema>;
+export type AdminTaskStep = z.infer<typeof adminTaskStepSchema>;
+export type AdminTaskDetail = z.infer<typeof adminTaskDetailSchema>;
 export type GetMemorySynthesisResponse = z.infer<typeof getMemorySynthesisResponseSchema>;
 export type TriggerMemorySynthesisRequest = z.infer<typeof triggerMemorySynthesisRequestSchema>;
 export type RecipeExecutionTaskData = z.infer<typeof recipeExecutionTaskDataSchema>;

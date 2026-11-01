@@ -592,30 +592,26 @@ const discoverJobRun = { runId: z.string().min(1).optional() };
 export const discoverGatherScopeSchema = z.enum(["full", "feed"]);
 export type DiscoverGatherScope = z.infer<typeof discoverGatherScopeSchema>;
 
+export const discoverEditionFollowUpSchema = z.enum(["listen", "episode"]);
+
 export const discoverJobTaskDataSchema = z.discriminatedUnion("job", [
-  z.object({ ...discoverJobRun, job: z.literal("covers"), editionId: z.string().min(1) }).strict(),
-  z.object({ ...discoverJobRun, job: z.literal("links"), editionId: z.string().min(1) }).strict(),
-  z.object({ ...discoverJobRun, job: z.literal("tidy"), today: z.iso.date() }).strict(),
+  z
+    .object({
+      ...discoverJobRun,
+      job: z.literal("edition"),
+      editionId: z.string().min(1),
+      covers: z.boolean().optional(),
+      research: z.array(discoverEditionFollowUpSchema).max(2).optional(),
+      links: z.boolean().optional(),
+      yourWeek: z.boolean().optional(),
+      tidy: z.iso.date().optional(),
+    })
+    .strict(),
   z
     .object({
       ...discoverJobRun,
       job: z.literal("gather"),
       scope: discoverGatherScopeSchema.optional(),
-    })
-    .strict(),
-  z
-    .object({ ...discoverJobRun, job: z.literal("your_week"), editionId: z.string().min(1) })
-    .strict(),
-  z
-    .object({ ...discoverJobRun, job: z.literal("episode_extras"), episodeId: z.string().min(1) })
-    .strict(),
-  z.object({ ...discoverJobRun, job: z.literal("listen"), editionId: z.string().min(1) }).strict(),
-  z
-    .object({
-      ...discoverJobRun,
-      job: z.literal("research"),
-      editionId: z.string().min(1),
-      next: z.array(z.enum(["listen", "episode"])).max(2),
     })
     .strict(),
   z.object({ ...discoverJobRun, job: z.literal("episode"), editionId: z.string().min(1) }).strict(),
@@ -694,4 +690,5 @@ export type DiscoverFollow = z.infer<typeof discoverFollowSchema>;
 export type FollowDiscoverTopic = z.infer<typeof followDiscoverTopicSchema>;
 export type DiscoverListenResponse = z.infer<typeof discoverListenResponseSchema>;
 export type DiscoverJobTaskData = z.infer<typeof discoverJobTaskDataSchema>;
+export type DiscoverEditionFollowUp = z.infer<typeof discoverEditionFollowUpSchema>;
 export type DiscoverEpisodeResponse = z.infer<typeof discoverEpisodeResponseSchema>;

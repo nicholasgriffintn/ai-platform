@@ -23,6 +23,7 @@ export const promptTasks = [
   "image-description",
   "drawing-guess",
   "media-notes",
+  "media-cover",
   "podcast-script",
   "notebook-chat",
   "notebook-guide",

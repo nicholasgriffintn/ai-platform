@@ -1,8 +1,11 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import type { TaskSteps } from "@ngriffin_uk/polychat-ai-workflows";
 import {
   formatTranscriptText,
   podcastFormatSchema,
   podcastLengthSchema,
+  podcastScriptSchema,
+  sourceGenerationSchema,
   SOURCE_PODCAST_GENERATION_TASK_TYPE,
   type GeneratePodcastInput,
   type Source,
@@ -14,6 +17,7 @@ import {
   ErrorType,
   getErrorMessage,
 } from "@ngriffin_uk/polychat-utility-server/errors";
+import { z } from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
@@ -45,6 +49,11 @@ import { PODCAST_HOSTS, synthesisePodcastAudio } from "./audio";
 import { writePodcastScript } from "./script";
 
 const logger = getLogger({ prefix: "sources/podcasts" });
+const podcastRecordingSchema = z.object({
+  turnStarts: z.array(z.number()),
+  durationSeconds: z.number(),
+  byteSize: z.number(),
+});
 
 export async function startPodcastGeneration(
   context: ServiceContext,
@@ -141,107 +150,129 @@ export async function startPodcastGeneration(
   return episode;
 }
 
-async function produceEpisode(
-  context: ServiceContext,
-  episode: SourceRecord,
-  generation: SourceGeneration,
-): Promise<SourceRecord> {
-  const user = context.requireUser();
-  const sources = await withKnowledgeText(
-    context,
-    await requireSourcesAccess(context, user.id, generation.sourceIds ?? []),
-  );
-  const language =
-    typeof generation.input?.language === "string" ? generation.input.language : "en";
-  const script = await writePodcastScript(context, {
-    sources,
-    format: podcastFormatSchema.catch("deep_dive").parse(generation.input?.format),
-    length: podcastLengthSchema.catch("default").parse(generation.input?.length),
-    language,
-    focus: generation.prompt,
-  });
-  const { audio, turnStarts, durationSeconds } = await synthesisePodcastAudio(
-    context,
-    script.turns,
-    language,
-  );
-  const key = `sources/${episode.id}/episode.mp3`;
-  const transcript: SourceTranscript = {
-    status: "ready",
-    speakers: { host: PODCAST_HOSTS.host.name, guest: PODCAST_HOSTS.guest.name },
-    segments: script.turns.map((turn, index) => ({
-      speaker: turn.speaker,
-      text: turn.text,
-      start: Math.round((turnStarts[index] ?? 0) * 100) / 100,
-    })),
-  };
+async function requireEpisode(context: ServiceContext, sourceId: string): Promise<SourceRecord> {
+  const episode = await context.repositories.get(SourceRepository).getSource(sourceId);
 
-  await StorageService.forPrivateAssets(context).uploadObject(key, audio, {
-    httpMetadata: { contentType: "audio/mpeg" },
-  });
-
-  const titled = await updateSourceRecord(context, episode, {
-    title: episode.title === "New episode" ? script.title.slice(0, 200) : episode.title,
-    content: formatTranscriptText(transcript),
-    media: {
-      transcript,
-      notes: { summary: script.description, decisions: [], actionItems: [] },
-      durationSeconds:
-        durationSeconds > 0
-          ? Math.round(durationSeconds)
-          : estimateSpokenSeconds(script.turns.map((turn) => turn.text)),
-    },
-  });
-  const repository = context.repositories.get(SourceRepository);
-
-  await repository.attachSourceFile(
-    titled.id,
-    {
-      storageKey: key,
-      mimeType: "audio/mpeg",
-      filename: "episode.mp3",
-      byteSize: audio.byteLength,
-    },
-    { status: "available" },
-  );
-
-  const stored = await repository.getSource(titled.id);
-
-  if (!stored) {
+  if (!episode) {
     throw new AssistantError("Source not found", ErrorType.NOT_FOUND, 404);
   }
 
-  await publishSourceChanged(context, stored);
+  return episode;
+}
+
+async function produceEpisode(
+  context: ServiceContext,
+  sourceId: string,
+  generation: SourceGeneration,
+  steps: TaskSteps,
+): Promise<void> {
+  const user = context.requireUser();
+  const language =
+    typeof generation.input?.language === "string" ? generation.input.language : "en";
+  const key = `sources/${sourceId}/episode.mp3`;
+  const script = await steps.value("script", podcastScriptSchema, async () =>
+    writePodcastScript(context, {
+      sources: await withKnowledgeText(
+        context,
+        await requireSourcesAccess(context, user.id, generation.sourceIds ?? []),
+      ),
+      format: podcastFormatSchema.catch("deep_dive").parse(generation.input?.format),
+      length: podcastLengthSchema.catch("default").parse(generation.input?.length),
+      language,
+      focus: generation.prompt,
+    }),
+  );
+  const recording = await steps.value("voice", podcastRecordingSchema, async () => {
+    const { audio, turnStarts, durationSeconds } = await synthesisePodcastAudio(
+      context,
+      script.turns,
+      language,
+    );
+
+    await StorageService.forPrivateAssets(context).uploadObject(key, audio, {
+      httpMetadata: { contentType: "audio/mpeg" },
+    });
+
+    return { turnStarts, durationSeconds, byteSize: audio.byteLength };
+  });
+
+  await steps.run("store", async () => {
+    const episode = await requireEpisode(context, sourceId);
+    const transcript: SourceTranscript = {
+      status: "ready",
+      speakers: { host: PODCAST_HOSTS.host.name, guest: PODCAST_HOSTS.guest.name },
+      segments: script.turns.map((turn, index) => ({
+        speaker: turn.speaker,
+        text: turn.text,
+        start: Math.round((recording.turnStarts[index] ?? 0) * 100) / 100,
+      })),
+    };
+    const titled = await updateSourceRecord(context, episode, {
+      title: episode.title === "New episode" ? script.title.slice(0, 200) : episode.title,
+      content: formatTranscriptText(transcript),
+      media: {
+        transcript,
+        notes: { summary: script.description, decisions: [], actionItems: [] },
+        durationSeconds:
+          recording.durationSeconds > 0
+            ? Math.round(recording.durationSeconds)
+            : estimateSpokenSeconds(script.turns.map((turn) => turn.text)),
+      },
+    });
+    const repository = context.repositories.get(SourceRepository);
+
+    await repository.attachSourceFile(
+      titled.id,
+      {
+        storageKey: key,
+        mimeType: "audio/mpeg",
+        filename: "episode.mp3",
+        byteSize: recording.byteSize,
+      },
+      { status: "available" },
+    );
+    await publishSourceChanged(context, await requireEpisode(context, sourceId));
+  });
 
   try {
-    return await storeSourceCover(context, stored, script.description);
+    await steps.run("cover", async () => {
+      await storeSourceCover(context, await requireEpisode(context, sourceId), script.description);
+    });
   } catch (error) {
-    logger.warn("Podcast cover was not generated", { sourceId: stored.id, error });
-
-    return stored;
+    logger.error("Podcast cover was not generated", { sourceId, error });
   }
 }
 
-/** Writes the script, voices it and stores the episode. Runs on the queue. */
 export async function runPodcastGeneration(
   context: ServiceContext,
   sourceId: string,
-): Promise<SourceRecord | null> {
-  const episode = await context.repositories.get(SourceRepository).getSource(sourceId);
-  const generation = episode ? readSourceRecordGeneration(episode) : null;
+  steps: TaskSteps,
+): Promise<"ready" | "failed" | "skipped"> {
+  const generation = await steps.value("load", sourceGenerationSchema.nullable(), async () => {
+    const episode = await context.repositories.get(SourceRepository).getSource(sourceId);
 
-  if (!episode || episode.kind !== "podcast" || episode.status !== "processing" || !generation) {
-    return null;
+    return episode?.kind === "podcast" && episode.status === "processing"
+      ? readSourceRecordGeneration(episode)
+      : null;
+  });
+
+  if (!generation) {
+    return "skipped";
   }
 
   try {
-    return await produceEpisode(context, episode, generation);
+    await produceEpisode(context, sourceId, generation, steps);
+
+    return "ready";
   } catch (error) {
     logger.error("Podcast generation failed", { sourceId, error });
-
-    return updateSourceRecord(context, episode, {
-      status: "failed",
-      generation: { error: getErrorMessage(error, "Podcast generation failed") },
+    await steps.run("failed", async () => {
+      await updateSourceRecord(context, await requireEpisode(context, sourceId), {
+        status: "failed",
+        generation: { error: getErrorMessage(error, "Podcast generation failed") },
+      });
     });
+
+    return "failed";
   }
 }

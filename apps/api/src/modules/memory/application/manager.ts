@@ -3,7 +3,6 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { z } from "zod/v4";
 
-import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getMemoryProvider } from "~/infrastructure/providers/capabilities/memory";
 import type {
@@ -12,6 +11,7 @@ import type {
 } from "~/infrastructure/providers/capabilities/memory/types";
 import { conversationEvidence } from "~/modules/memory-documents/domain/evidence";
 import { gateMemoryClassification } from "~/modules/memory/application/gate";
+import { generateModelObject } from "~/modules/models/application/model-object";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 import { recordProjectAudit } from "~/modules/workspaces/application/audit";
@@ -169,15 +169,14 @@ export class MemoryManager {
             this.env,
             this.user,
           );
-          const { object: classification } = await ai.generateObject({
+          const { object: classification } = await generateModelObject({
             env: this.env,
             user: this.user,
             model: modelToUse,
             provider: providerToUse,
-            reasoning_effort: "none",
-            disable_functions: true,
+            reasoningEffort: "none",
             system: buildMemoryClassifierPrompt(),
-            prompt: lastUser.text,
+            material: lastUser.text,
             schema: memoryClassificationSchema,
             name: "memory_classification",
           });

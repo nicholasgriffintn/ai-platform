@@ -14,14 +14,12 @@ import type {
   AgentToolCall,
   ExecuteAgentLoopParams,
 } from "./types.js";
-import { truncateForModel } from "./utils.js";
 
 const DEFAULT_CONFIG: AgentConfig = {
   maxSteps: 48,
   maxStepExtensions: 2,
   maxRecoveryReplans: 4,
   maxConsecutiveTurnFailures: 3,
-  maxObservationChars: 5000,
 };
 
 function defaultGetCommandCount(state: AgentLoopState): number {
@@ -104,7 +102,7 @@ export async function executeAgentLoop<
     }
 
     requiresPlanRecovery = true;
-    recoveryReason = truncateForModel(reason, config.maxObservationChars);
+    recoveryReason = reason;
     consecutiveTurnFailures = 0;
 
     params.onPlanRecovery?.({
@@ -170,7 +168,7 @@ export async function executeAgentLoop<
       type: "agent_finished",
       agentStep: step,
       commandCount: getCommandCount(params.state),
-      plan: truncateForModel(currentPlan, 1000),
+      plan: currentPlan,
       summary,
     });
 
@@ -228,7 +226,7 @@ export async function executeAgentLoop<
         await emit({
           type: "agent_turn_failed",
           agentStep: step,
-          error: truncateForModel(errorMessage, config.maxObservationChars),
+          error: errorMessage,
         });
         throw error;
       }
@@ -237,13 +235,11 @@ export async function executeAgentLoop<
       await emit({
         type: "agent_turn_invalid",
         agentStep: step,
-        error: truncateForModel(errorMessage, config.maxObservationChars),
+        error: errorMessage,
       });
       messages.push({
         role: "user",
-        content: formatMissingToolCallMessage(
-          truncateForModel(errorMessage, config.maxObservationChars),
-        ),
+        content: formatMissingToolCallMessage(errorMessage),
       });
 
       if (consecutiveTurnFailures >= config.maxConsecutiveTurnFailures && !requiresPlanRecovery) {
@@ -311,7 +307,7 @@ export async function executeAgentLoop<
     });
 
     if (planCall) {
-      currentPlan = truncateForModel(readStringArgument(planCall, "plan"), 2500);
+      currentPlan = readStringArgument(planCall, "plan");
       requiresPlanRecovery = false;
       recoveryReason = undefined;
       await emit({
@@ -356,12 +352,9 @@ export async function executeAgentLoop<
       });
       messages.push({
         role: "user",
-        content: truncateForModel(
-          `[automated check, not a message from the user] ${
-            assessment.instruction ?? "The objective is not satisfied yet. Continue working."
-          }`,
-          config.maxObservationChars,
-        ),
+        content: `[automated check, not a message from the user] ${
+          assessment.instruction ?? "The objective is not satisfied yet. Continue working."
+        }`,
       });
     }
 

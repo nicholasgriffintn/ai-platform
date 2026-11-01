@@ -25,8 +25,7 @@ import { listDiscoverArticleSources } from "../articles";
 import { buildDiscoverContextSnapshot, readDiscoverEditionBasis } from "../context";
 import { canAffordDiscoverListen } from "../cost";
 import { saveDiscoverEdition } from "../editions";
-import { enqueueDiscoverJob } from "../jobs";
-import { queueDiscoverResearch } from "../listen";
+import { queueDiscoverEditionWork } from "../listen";
 import { listDiscoverDocuments } from "../notebook";
 import { startDiscoverWindDown } from "../wind-down";
 import {
@@ -128,10 +127,6 @@ export const compose_discover_edition: ApiToolDefinition = {
       },
     });
 
-    if (edition.cards.some((card) => card.kind === "topic")) {
-      await enqueueDiscoverJob(context, { job: "covers", editionId: saved.id });
-    }
-
     const morning = editionTime === "morning";
     const listen =
       morning &&
@@ -140,22 +135,13 @@ export const compose_discover_edition: ApiToolDefinition = {
       (await canAffordDiscoverListen(context, basis.installationId));
     const episode = morning && basis.watchedLatestEpisode && basis.preferences.episode !== "off";
 
-    if (listen || episode) {
-      await queueDiscoverResearch(context, saved, [
-        ...(listen ? ["listen" as const] : []),
-        ...(episode ? ["episode" as const] : []),
-      ]);
-    }
-
-    if (basis.follows.length > 0 && edition.cards.some((card) => card.kind === "read")) {
-      await enqueueDiscoverJob(context, { job: "links", editionId: saved.id });
-    }
-
-    if (morning && basis.preferences.listen && isSundayEdition(edition.date)) {
-      await enqueueDiscoverJob(context, { job: "your_week", editionId: saved.id });
-    }
-
-    await enqueueDiscoverJob(context, { job: "tidy", today: edition.date });
+    await queueDiscoverEditionWork(context, saved, {
+      covers: edition.cards.some((card) => card.kind === "topic"),
+      research: [...(listen ? ["listen" as const] : []), ...(episode ? ["episode" as const] : [])],
+      links: basis.follows.length > 0 && edition.cards.some((card) => card.kind === "read"),
+      yourWeek: morning && basis.preferences.listen && isSundayEdition(edition.date),
+      tidy: edition.date,
+    });
 
     const dropped = args.cards.length - edition.cards.length;
 

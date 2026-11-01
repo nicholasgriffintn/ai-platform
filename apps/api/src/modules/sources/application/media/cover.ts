@@ -1,10 +1,13 @@
+import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
 import type { CreateSourceCoverInput, Source } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { z } from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
 import { storeDrawnImage, TEXTLESS_PICTURE } from "~/modules/generate/application/stored-image";
+import { generateSystemObject } from "~/modules/models/application/system-object";
 import { formatSource, requireSourceAccess } from "~/modules/sources/application/sources";
 import type { SourceRecord } from "~/modules/sources/infrastructure/SourceRepository";
 
@@ -13,11 +16,24 @@ import { readSourceRecordMedia, updateSourceRecord } from "./metadata";
 const COVER_MIME_TYPE = "image/png";
 const COVER_SIZE = 1024;
 
-function describeCover(source: SourceRecord, prompt?: string): string {
-  const summary = readSourceRecordMedia(source).notes?.summary;
-  const subject = prompt || summary || source.title;
+const coverPictureSchema = z.object({ picture: z.string().min(1) });
 
-  return `Square cover artwork for an episode titled "${source.title}". ${subject}. Bold, simple composition. ${TEXTLESS_PICTURE}`;
+async function describeCover(
+  context: ServiceContext,
+  source: SourceRecord,
+  prompt?: string,
+): Promise<string> {
+  const subject = prompt || readSourceRecordMedia(source).notes?.summary || source.title;
+  const { picture } = await generateSystemObject(context, {
+    role: "housekeeping",
+    name: "source_cover",
+    requiresReasoning: false,
+    schema: coverPictureSchema,
+    system: getPromptText("sources/media/cover"),
+    material: `Title: ${source.title}\n\nAbout: ${subject}`,
+  });
+
+  return `Square cover artwork. ${picture} Bold, simple composition. ${TEXTLESS_PICTURE}`;
 }
 
 export async function storeSourceCover(
@@ -29,7 +45,7 @@ export async function storeSourceCover(
   const key = `sources/${source.id}/cover-${coverId}.png`;
   const stored = await storeDrawnImage(context, key, {
     completionId: `source-cover-${coverId}`,
-    prompt: describeCover(source, prompt),
+    prompt: await describeCover(context, source, prompt),
     aspectRatio: "1:1",
     width: COVER_SIZE,
     height: COVER_SIZE,

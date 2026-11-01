@@ -125,8 +125,8 @@ export async function executeEvalRun(
     offset: number;
     readinessAttempt: number;
     batch: boolean;
-    pollAttempt: number;
   },
+  pollAttempt: number,
 ) {
   const run = await repositories.get(ModelEvalRepository).getRun(data.runId);
   const suite = run ? await repositories.get(ModelEvalRepository).getSuiteById(run.suite_id) : null;
@@ -155,7 +155,7 @@ export async function executeEvalRun(
         suite,
         route,
         bucket,
-        pollAttempt: data.pollAttempt,
+        pollAttempt,
       });
     }
 

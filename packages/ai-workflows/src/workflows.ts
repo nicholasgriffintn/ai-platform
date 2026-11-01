@@ -46,14 +46,6 @@ export interface Workflows<TEnv, TType extends string = string> {
   runCron(env: TEnv, event: CronEvent): Promise<CronRunReport>;
 }
 
-export const POLL_ATTEMPT_FIELD = "pollAttempt";
-
-function readPollAttempt(taskData: Record<string, unknown>): number | undefined {
-  const value = taskData[POLL_ATTEMPT_FIELD];
-
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
-}
-
 export function createWorkflows<TEnv, TType extends string = string>(
   options: CreateWorkflowsOptions<TEnv, TType>,
 ): Workflows<TEnv, TType> {
@@ -100,7 +92,9 @@ export function createWorkflows<TEnv, TType extends string = string>(
       error: Error,
       context: TaskContext<TEnv, TType>,
     ) => Promise<void>,
+    durable = false,
   ): TaskHandler<TEnv, TType> => ({
+    durable,
     handle: async (message, env, execution) => {
       const result = await handle(read(message.task_data), taskContext(env, message, execution));
 
@@ -127,6 +121,7 @@ export function createWorkflows<TEnv, TType extends string = string>(
           (taskData) => parsePayload(type, schema, taskData),
           definition.handle,
           definition.onFinalFailure,
+          definition.durable,
         ),
       );
 
@@ -150,7 +145,7 @@ export function createWorkflows<TEnv, TType extends string = string>(
         }
 
         const schedule = pollingSchedule({
-          attempt: readPollAttempt(context.message.task_data),
+          attempt: context.execution.pollAttempt,
           delaysSeconds: definition.delaysSeconds,
           maxAttempts: definition.maxAttempts,
           now,
@@ -167,20 +162,10 @@ export function createWorkflows<TEnv, TType extends string = string>(
           );
         }
 
-        await context.enqueue({
-          task_type: type,
-          user_id: context.message.user_id,
-          project_id: context.message.project_id,
-          task_data: { ...context.message.task_data, [POLL_ATTEMPT_FIELD]: schedule.attempt },
-          schedule_type: "scheduled",
-          scheduled_at: schedule.scheduledAt,
-          priority: context.message.priority,
-        });
-
         return {
-          status: "success",
+          status: "pending",
           message: `Still pending, polling again in ${schedule.delaySeconds}s`,
-          data: { pollAttempt: schedule.attempt, scheduledAt: schedule.scheduledAt },
+          retryAfterSeconds: schedule.delaySeconds,
         };
       },
     });

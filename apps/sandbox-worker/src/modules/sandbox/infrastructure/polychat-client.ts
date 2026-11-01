@@ -13,8 +13,25 @@ const DEFAULT_MAX_ATTEMPTS = 3;
 const DEFAULT_BASE_DELAY_MS = 400;
 const DEFAULT_MAX_DELAY_MS = 3000;
 
+export interface PolychatFunctionToolCall {
+  id: string;
+  type: "function";
+  function: {
+    name: string;
+    arguments: string;
+  };
+}
+
+export interface PolychatChatMessage {
+  role: string;
+  content: string;
+  name?: string;
+  tool_call_id?: string;
+  tool_calls?: PolychatFunctionToolCall[];
+}
+
 interface PolychatChatCompletionParams extends SandboxModelSettings {
-  messages: Array<{ role: string; content: string }>;
+  messages: PolychatChatMessage[];
   model: string;
   stream?: boolean;
   tools?: unknown[];

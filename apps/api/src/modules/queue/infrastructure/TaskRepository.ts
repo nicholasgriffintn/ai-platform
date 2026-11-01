@@ -8,11 +8,16 @@ import type { Task, TaskExecution } from "~/infrastructure/database/schema";
 import { publishUserEvent } from "~/modules/sync/application/conversation-events";
 import type { IEnv } from "~/types";
 
-export interface TaskCountRow {
+export interface TaskTypeSummaryRow {
   task_type: string;
-  status: TaskStatus;
-  count: number;
-  oldest: string;
+  running: number;
+  waiting: number;
+  scheduled: number;
+  suspended: number;
+  failed: number;
+  completed: number;
+  average_turnaround_ms: number | null;
+  oldest_open: string | null;
 }
 
 export interface TaskOverviewRow {
@@ -22,10 +27,11 @@ export interface TaskOverviewRow {
   user_id: number | null;
   priority: number;
   attempts: number;
-  recovery_count: number;
+  max_attempts: number;
   scheduled_at: string | null;
   last_attempted_at: string | null;
-  execution_lease_expires_at: string | null;
+  completed_at: string | null;
+  workflow_instance_id: string | null;
   error_message: string | null;
   created_at: string;
   updated_at: string | null;
@@ -48,6 +54,7 @@ export interface CreateTaskParams {
 
 export interface UpdateTaskParams {
   status?: "pending" | "queued" | "running" | "suspended" | "completed" | "failed" | "cancelled";
+  workflow_instance_id?: string;
   attempts?: number;
   last_attempted_at?: string;
   completed_at?: string;
@@ -143,16 +150,6 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
     return { task, created };
   }
 
-  public async countTasksByIdPrefix(prefix: string): Promise<number> {
-    const row = await this.runQuery<{ total: number }>(
-      "SELECT COUNT(*) AS total FROM tasks WHERE id LIKE ? ESCAPE '\\'",
-      [`${prefix.replaceAll(/[\\%_]/g, (match) => `\\${match}`)}%`],
-      true,
-    );
-
-    return row?.total ?? 0;
-  }
-
   public async getTaskById(taskId: string): Promise<Task | null> {
     const { query, values } = this.buildSelectQuery("tasks", { id: taskId });
     const result = await this.runQuery<Task>(query, values, true);
@@ -179,115 +176,77 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
     return Array.isArray(result) ? result.map((task) => this.parseTask(task)) : [];
   }
 
-  public async countTasksByTypeAndStatus(statuses: readonly TaskStatus[]): Promise<TaskCountRow[]> {
-    return this.runQuery<TaskCountRow>(
-      `SELECT task_type, status, COUNT(*) AS count, MIN(created_at) AS oldest
+  public async summariseTaskTypes(since: Date): Promise<TaskTypeSummaryRow[]> {
+    const cutoff = since.toISOString();
+
+    return this.runQuery<TaskTypeSummaryRow>(
+      `SELECT task_type,
+              SUM(status = 'running') AS running,
+              SUM(status IN ('pending', 'queued')
+                AND (scheduled_at IS NULL OR datetime(scheduled_at) <= datetime('now'))) AS waiting,
+              SUM(status IN ('pending', 'queued')
+                AND scheduled_at IS NOT NULL AND datetime(scheduled_at) > datetime('now')) AS scheduled,
+              SUM(status = 'suspended') AS suspended,
+              SUM(status = 'failed' AND datetime(updated_at) >= datetime(?)) AS failed,
+              SUM(status = 'completed' AND datetime(completed_at) >= datetime(?)) AS completed,
+              AVG(CASE WHEN status = 'completed' AND datetime(completed_at) >= datetime(?)
+                THEN (julianday(completed_at) - julianday(created_at)) * 86400000 END)
+                AS average_turnaround_ms,
+              MIN(CASE WHEN status IN ('pending', 'queued', 'running') THEN created_at END)
+                AS oldest_open
        FROM tasks
-       WHERE status IN (${statuses.map(() => "?").join(", ")})
-       GROUP BY task_type, status
-       ORDER BY count DESC`,
-      [...statuses],
+       WHERE status IN ('pending', 'queued', 'running', 'suspended')
+          OR datetime(updated_at) >= datetime(?)
+       GROUP BY task_type
+       ORDER BY running DESC, waiting DESC, failed DESC, task_type ASC`,
+      [cutoff, cutoff, cutoff, cutoff],
     );
   }
 
-  public async listRecentTasksByStatus(
-    statuses: readonly TaskStatus[],
-    limit: number,
-  ): Promise<TaskOverviewRow[]> {
+  public async listRecentTasks(params: {
+    statuses: readonly TaskStatus[];
+    taskType?: string;
+    limit: number;
+  }): Promise<TaskOverviewRow[]> {
     return this.runQuery<TaskOverviewRow>(
-      `SELECT id, task_type, status, user_id, priority, attempts, recovery_count, scheduled_at,
-              last_attempted_at, execution_lease_expires_at, error_message, created_at, updated_at
+      `SELECT id, task_type, status, user_id, priority, attempts, max_attempts, scheduled_at,
+              last_attempted_at, completed_at, workflow_instance_id, error_message, created_at,
+              updated_at
        FROM tasks
-       WHERE status IN (${statuses.map(() => "?").join(", ")})
+       WHERE status IN (${params.statuses.map(() => "?").join(", ")})
+         AND (? IS NULL OR task_type = ?)
        ORDER BY updated_at DESC
        LIMIT ?`,
-      [...statuses, limit],
+      [...params.statuses, params.taskType ?? null, params.taskType ?? null, params.limit],
     );
   }
 
-  public async getPendingTasks(limit: number, sentBefore: Date, now = new Date()): Promise<Task[]> {
+  public async resetTaskForRetry(taskId: string): Promise<Task | null> {
+    const task = await this.runQuery<Task>(
+      `UPDATE tasks
+       SET status = 'pending', attempts = 0, error_message = NULL, completed_at = NULL,
+           execution_owner_token = NULL, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND status IN ('failed', 'cancelled')
+       RETURNING *`,
+      [taskId],
+      true,
+    );
+
+    this.announce(task);
+
+    return task ? this.parseTask(task) : null;
+  }
+
+  public async getPendingTasks(limit: number, updatedBefore: Date): Promise<Task[]> {
     const result = await this.runQuery<Task>(
       `SELECT * FROM tasks
-       WHERE (
-           status = 'pending'
-           OR (status = 'queued' AND datetime(updated_at) <= datetime(?))
-         )
-         AND (scheduled_at IS NULL OR datetime(scheduled_at) <= datetime(?))
+       WHERE status = 'pending' AND datetime(updated_at) <= datetime(?)
        ORDER BY priority DESC, created_at ASC
        LIMIT ?`,
-      [sentBefore.toISOString(), now.toISOString(), limit],
+      [updatedBefore.toISOString(), limit],
     );
 
     return result ? result.map((task) => this.parseTask(task)) : [];
-  }
-
-  public async releaseAbandonedTasks(now = new Date()): Promise<number> {
-    return this.releaseExpiredLeases(now, null);
-  }
-
-  public async releaseExpiredLease(taskId: string, now = new Date()): Promise<boolean> {
-    return (await this.releaseExpiredLeases(now, taskId)) > 0;
-  }
-
-  private async releaseExpiredLeases(now: Date, taskId: string | null): Promise<number> {
-    const released = await this.runQuery<{ id: string }>(
-      `UPDATE tasks
-       SET status = CASE WHEN COALESCE(attempts, 0) + 1 >= COALESCE(max_attempts, 3) THEN 'failed' ELSE 'pending' END,
-           attempts = COALESCE(attempts, 0) + 1,
-           execution_owner_token = NULL,
-           execution_lease_expires_at = NULL,
-           error_message = CASE
-             WHEN COALESCE(attempts, 0) + 1 >= COALESCE(max_attempts, 3) THEN 'The worker stopped before the task finished'
-             ELSE error_message
-           END,
-           completed_at = CASE WHEN COALESCE(attempts, 0) + 1 >= COALESCE(max_attempts, 3) THEN ? ELSE completed_at END,
-           updated_at = CURRENT_TIMESTAMP
-       WHERE status = 'running'
-         AND execution_lease_expires_at IS NOT NULL
-         AND datetime(execution_lease_expires_at) <= datetime(?)
-         AND (? IS NULL OR id = ?)
-       RETURNING id`,
-      [now.toISOString(), now.toISOString(), taskId, taskId],
-    );
-
-    return released?.length ?? 0;
-  }
-
-  public async requeueFailedTasksByType(
-    taskType: TaskType,
-    cutoff: Date,
-    maxRecoveries: number,
-    limit = 100,
-  ): Promise<Task[]> {
-    const tasks = await this.runQuery<Task>(
-      `UPDATE tasks
-       SET status = 'queued',
-           attempts = 0,
-           recovery_count = recovery_count + 1,
-           completed_at = NULL,
-           error_message = NULL,
-           execution_owner_token = NULL,
-           execution_lease_expires_at = NULL,
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id IN (
-         SELECT id FROM tasks
-         WHERE task_type = ?
-           AND status = 'failed'
-           AND recovery_count < ?
-           AND datetime(updated_at) <= datetime(?)
-         ORDER BY updated_at ASC
-         LIMIT ?
-       )
-       RETURNING *`,
-      [taskType, maxRecoveries, cutoff.toISOString(), limit],
-    );
-    const recovered = tasks?.map((task) => this.parseTask(task)) ?? [];
-
-    for (const task of recovered) {
-      this.announce(task);
-    }
-
-    return recovered;
   }
 
   public async updateTask(taskId: string, params: UpdateTaskParams): Promise<Task | null> {
@@ -424,87 +383,35 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
 
   public async claimTaskForExecution(
     taskId: string,
-    options: {
-      ownerToken: string;
-      leaseExpiresAt: string;
-      resumeInterrupted?: boolean;
-      now?: string;
-    },
+    options: { ownerToken: string; instanceId: string },
   ): Promise<Task | null> {
-    const now = options.now ?? new Date().toISOString();
+    const instancePrefix = `${options.instanceId}:`;
     const task = await this.runQuery<Task>(
       `UPDATE tasks
-			 SET status = 'running',
+       SET status = 'running',
            last_attempted_at = ?,
-           execution_owner_token = ?,
-           execution_lease_expires_at = ?,
-           attempts = attempts + CASE WHEN status = 'running' THEN 1 ELSE 0 END
-			 WHERE id = ?
+           execution_owner_token = ?
+       WHERE id = ?
          AND (
            status IN ('pending', 'queued')
-           OR (
-             ? = 1
-             AND status = 'running'
-             AND (
-               execution_owner_token IS NULL
-               OR execution_lease_expires_at IS NULL
-               OR datetime(execution_lease_expires_at) <= datetime(?)
-             )
-           )
+           OR (status = 'running' AND substr(execution_owner_token, 1, length(?)) = ?)
          )
-			 RETURNING *`,
-      [
-        now,
-        options.ownerToken,
-        options.leaseExpiresAt,
-        taskId,
-        options.resumeInterrupted ? 1 : 0,
-        now,
-      ],
+       RETURNING *`,
+      [new Date().toISOString(), options.ownerToken, taskId, instancePrefix, instancePrefix],
       true,
     );
 
     return task ? this.parseTask(task) : null;
   }
 
-  public async renewTaskExecutionLease(params: {
-    taskId: string;
-    ownerToken: string;
-    leaseExpiresAt: string;
-    now?: string;
-  }): Promise<string | null> {
-    const row = await this.runQuery<{ execution_lease_expires_at: string }>(
-      `UPDATE tasks
-       SET execution_lease_expires_at = ?, updated_at = CURRENT_TIMESTAMP
-       WHERE id = ?
-         AND status = 'running'
-         AND execution_owner_token = ?
-         AND datetime(execution_lease_expires_at) > datetime(?)
-       RETURNING execution_lease_expires_at`,
-      [
-        params.leaseExpiresAt,
-        params.taskId,
-        params.ownerToken,
-        params.now ?? new Date().toISOString(),
-      ],
-      true,
-    );
-
-    return row?.execution_lease_expires_at ?? null;
-  }
-
   public async isTaskExecutionOwner(params: {
     taskId: string;
     ownerToken: string;
-    now?: string;
   }): Promise<boolean> {
     const row = await this.runQuery<{ owned: number }>(
       `SELECT 1 AS owned FROM tasks
-       WHERE id = ?
-         AND status = 'running'
-         AND execution_owner_token = ?
-         AND datetime(execution_lease_expires_at) > datetime(?)`,
-      [params.taskId, params.ownerToken, params.now ?? new Date().toISOString()],
+       WHERE id = ? AND status = 'running' AND execution_owner_token = ?`,
+      [params.taskId, params.ownerToken],
       true,
     );
 
@@ -516,20 +423,13 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
     ownerToken: string,
     params: UpdateTaskParams,
   ): Promise<Task | null> {
-    const updates = {
-      ...params,
-      execution_owner_token: null,
-      execution_lease_expires_at: null,
-    };
+    const updates = { ...params, execution_owner_token: null };
     const update = this.buildUpdateQuery(
       "tasks",
       updates,
       Object.keys(updates),
-      `id = ?
-       AND status = 'running'
-       AND execution_owner_token = ?
-       AND datetime(execution_lease_expires_at) > datetime(?)`,
-      [taskId, ownerToken, new Date().toISOString()],
+      "id = ? AND status = 'running' AND execution_owner_token = ?",
+      [taskId, ownerToken],
       { returning: "*" },
     );
 
@@ -542,6 +442,46 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
     this.announce(task);
 
     return task ? this.parseTask(task) : null;
+  }
+
+  public async failOpenTask(taskId: string, errorMessage: string): Promise<void> {
+    const task = await this.runQuery<Task>(
+      `UPDATE tasks
+       SET status = 'failed', execution_owner_token = NULL, error_message = ?, completed_at = ?,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND status IN ('pending', 'queued', 'running')
+       RETURNING *`,
+      [errorMessage, new Date().toISOString(), taskId],
+      true,
+    );
+
+    this.announce(task);
+  }
+
+  public async listOpenWorkflowTasksUpdatedBefore(cutoff: Date): Promise<Task[]> {
+    const result = await this.runQuery<Task>(
+      `SELECT * FROM tasks
+       WHERE status IN ('queued', 'running')
+         AND workflow_instance_id IS NOT NULL
+         AND datetime(updated_at) < datetime(?)
+       ORDER BY created_at ASC`,
+      [cutoff.toISOString()],
+    );
+
+    return result.map((task) => this.parseTask(task));
+  }
+
+  public async findRunningExecutionStep(taskId: string): Promise<string | null> {
+    const row = await this.runQuery<{ step: string | null }>(
+      `SELECT step FROM task_executions
+       WHERE task_id = ? AND status = 'running'
+       ORDER BY started_at DESC
+       LIMIT 1`,
+      [taskId],
+      true,
+    );
+
+    return row?.step ?? null;
   }
 
   public async failRunningTaskExecutions(taskId: string, reason: string): Promise<void> {
@@ -585,26 +525,19 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
     return tasksDeleted?.meta?.changes ?? 0;
   }
 
-  public async createTaskExecution(
-    taskId: string,
-    status: "running" | "completed" | "failed",
-    errorMessage?: string,
-    resultData?: Record<string, any>,
-  ): Promise<TaskExecution | null> {
-    const id = generateId();
-    const now = new Date().toISOString();
-
+  public async createTaskExecution(taskId: string, step: string): Promise<TaskExecution | null> {
     const insert = this.buildInsertQuery(
       "task_executions",
       {
-        id,
+        id: generateId(),
         task_id: taskId,
-        status,
-        started_at: now,
-        completed_at: status !== "running" ? now : null,
+        status: "running",
+        step,
+        started_at: new Date().toISOString(),
+        completed_at: null,
         execution_time_ms: null,
-        error_message: errorMessage ?? null,
-        result_data: resultData ? JSON.stringify(resultData) : null,
+        error_message: null,
+        result_data: null,
       },
       { jsonFields: ["result_data"], returning: "*" },
     );

@@ -1,9 +1,9 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { inlineTaskSteps } from "@ngriffin_uk/polychat-ai-workflows";
 import {
-  createExecutionLease,
+  busyRetryDelaySeconds,
+  finalFailureError,
   isTaskError,
-  leaseBusyError,
-  leaseExpiry,
   ownershipLostError,
   settleTaskFailure,
   settleTaskSuccess,
@@ -11,16 +11,36 @@ import {
   type TaskHandlerRegistry,
 } from "@ngriffin_uk/polychat-library-tasks";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
-import { isConfigurationError } from "@ngriffin_uk/polychat-utility-server/errors";
+import {
+  getErrorMessage,
+  isConfigurationError,
+  toError,
+} from "@ngriffin_uk/polychat-utility-server/errors";
+import { z } from "zod/v4";
 
 import { evaluateServerFlag, isTaskFlagType, taskFlags } from "~/modules/experiments/application";
-import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
+import {
+  TaskRepository,
+  type UpdateTaskParams,
+} from "~/modules/queue/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
 
-import { taskLeaseStore } from "./lease-store";
-import type { TaskExecutionContext, TaskHandler, TaskMessage, TaskResult } from "./types";
+import type {
+  TaskExecutionContext,
+  TaskExecutionFence,
+  TaskHandler,
+  TaskMessage,
+  TaskResult,
+  TaskStep,
+  TaskStepOutcome,
+  TaskSteps,
+} from "./types";
 
 const logger = getLogger({ prefix: "services/tasks/executor" });
+
+const BOOKKEEPING_RETRIES = 5;
+const DONE: TaskStepOutcome = { status: "done" };
+const durableClaimSchema = z.object({ ownerToken: z.string() });
 
 export class TaskExecutor {
   private env: IEnv;
@@ -33,97 +53,120 @@ export class TaskExecutor {
     this.taskRepository = new TaskRepository(env);
   }
 
-  public async execute(message: TaskMessage, deliveryAttempt = 1): Promise<void> {
-    const startTime = Date.now();
-    const isRedelivery = deliveryAttempt > 1;
+  public async run(message: TaskMessage, instanceId: string, step: TaskStep): Promise<void> {
+    const scheduledAt = message.scheduled_at ? Date.parse(message.scheduled_at) : Number.NaN;
 
-    try {
-      if (
-        isTaskFlagType(message.task_type) &&
-        !(await evaluateServerFlag(this.env, taskFlags(this.env)[message.task_type]))
-      ) {
-        await this.taskRepository.updateTask(message.taskId, {
-          status: "cancelled",
-          completed_at: new Date().toISOString(),
-          error_message: `Task type ${message.task_type} is disabled by its feature flag`,
-        });
-        logger.info(`Task type ${message.task_type} is disabled by its feature flag`);
+    if (Number.isFinite(scheduledAt)) {
+      await step.sleepUntil("scheduled", new Date(scheduledAt));
+    }
 
-        return;
-      }
+    const admission = await step.do("admit", { retries: BOOKKEEPING_RETRIES }, () =>
+      this.admit(message),
+    );
 
-      if (!this.handlers.has(message.task_type)) {
-        await this.taskRepository.updateTask(message.taskId, {
-          status: "cancelled",
-          completed_at: new Date().toISOString(),
-          error_message: `Unknown task type: ${message.task_type}`,
-        });
-        logger.warn(`Unknown task type ${message.task_type} was cancelled`);
+    if (admission.status !== "run") {
+      return;
+    }
 
-        return;
-      }
+    if (this.handlers.resolve(message.task_type).durable) {
+      await this.runDurable(message, instanceId, step);
 
-      const handler = this.handlers.resolve(message.task_type);
+      return;
+    }
 
-      const ownerToken = generateId();
-      const leaseExpiresAt = leaseExpiry();
-      const claimedTask = await this.taskRepository.claimTaskForExecution(message.taskId, {
-        ownerToken,
-        leaseExpiresAt,
-        resumeInterrupted: isRedelivery,
-      });
-
-      if (!claimedTask) {
-        const currentTask = await this.taskRepository.getTaskById(message.taskId);
-
-        if (
-          currentTask?.status === "running" &&
-          currentTask.execution_lease_expires_at &&
-          Date.parse(currentTask.execution_lease_expires_at) > Date.now()
-        ) {
-          throw leaseBusyError(message.taskId, currentTask.execution_lease_expires_at);
-        }
-
-        logger.info(`Task ${message.taskId} is not claimable, skipping duplicate delivery`);
-
-        return;
-      }
-
-      const lease = createExecutionLease({
-        store: taskLeaseStore(this.taskRepository),
-        taskId: message.taskId,
-        ownerToken,
-        initialExpiresAt: leaseExpiresAt,
-      });
-      const executionContext: TaskExecutionContext = {
-        deliveryAttempt,
-        isRedelivery,
-        lease,
-      };
-
-      if (isRedelivery) {
-        await this.taskRepository.failRunningTaskExecutions(
-          message.taskId,
-          "The previous queue delivery ended before recording an outcome.",
-        );
-      }
-
-      const executionId = await this.recordExecutionStart(message.taskId);
+    for (let pollAttempt = 0; ; pollAttempt++) {
+      const name = pollAttempt === 0 ? "run" : `run-${pollAttempt}`;
+      let outcome: TaskStepOutcome;
 
       try {
-        const result = await handler.handle(message, this.env, executionContext);
+        outcome = await step.do(name, { retries: this.retries(message) }, (attempt) =>
+          this.attempt(message, instanceId, name, attempt, pollAttempt),
+        );
+      } catch (error) {
+        await step.do(`${name}-settle`, { retries: BOOKKEEPING_RETRIES }, async () => {
+          await this.taskRepository.failOpenTask(message.taskId, getErrorMessage(error));
 
-        if (result.status === "error") {
-          throw new Error(result.message || "Unknown error during task execution");
-        }
+          return DONE;
+        });
 
-        const executionTime = Date.now() - startTime;
+        throw error;
+      }
 
-        await lease.assertOwned();
-        await this.recordExecutionSuccess(executionId, executionTime, result);
+      if (outcome.status !== "wait") {
+        return;
+      }
 
+      await step.sleep(`wait-${pollAttempt + 1}`, outcome.seconds);
+    }
+  }
+
+  private async runDurable(message: TaskMessage, instanceId: string, step: TaskStep) {
+    const handler = this.handlers.resolve(message.task_type);
+    const claim = await step.text("claim", { retries: BOOKKEEPING_RETRIES }, async () => {
+      const ownerToken = `${instanceId}:${generateId()}`;
+      const claimed = await this.taskRepository.claimTaskForExecution(message.taskId, {
+        ownerToken,
+        instanceId,
+      });
+
+      if (!claimed) {
+        return "";
+      }
+
+      return JSON.stringify({ ownerToken });
+    });
+
+    if (!claim) {
+      logger.info(`Task ${message.taskId} is not claimable by this run, skipping`);
+
+      return;
+    }
+
+    const { ownerToken } = durableClaimSchema.parse(JSON.parse(claim));
+    const fence = this.fence(message.taskId, ownerToken);
+    const retries = this.retries(message);
+    const steps: TaskSteps = {
+      run: async (name, work) => {
+        await step.text(name, { retries }, () =>
+          this.recordStep(message.taskId, name, async () => {
+            await fence.assertOwned();
+            await work();
+
+            return "";
+          }),
+        );
+      },
+      value: async (name, schema, work) => {
+        const stored = await step.text(name, { retries }, () =>
+          this.recordStep(message.taskId, name, async () => {
+            await fence.assertOwned();
+
+            return JSON.stringify((await work()) ?? null);
+          }),
+        );
+
+        return schema.parse(JSON.parse(stored));
+      },
+    };
+    const execution: TaskExecutionContext = {
+      attempt: 1,
+      isRetry: false,
+      pollAttempt: 0,
+      fence,
+      steps,
+    };
+
+    try {
+      const result = await handler.handle(message, this.env, execution);
+
+      if (result.status === "error") {
+        throw new Error(result.message || "Unknown error during task execution");
+      }
+
+      await step.text("settle", { retries: BOOKKEEPING_RETRIES }, async () => {
         const settlement = settleTaskSuccess(result);
-        const settled = await this.taskRepository.updateOwnedTask(
+
+        await this.taskRepository.updateOwnedTask(
           message.taskId,
           ownerToken,
           settlement.status === "suspended"
@@ -131,83 +174,219 @@ export class TaskExecutor {
             : { status: "completed", completed_at: settlement.completedAt },
         );
 
-        if (!settled) {
-          throw ownershipLostError(message.taskId);
-        }
-
-        logger.info(
-          result.status === "suspended"
-            ? `Task ${message.taskId} suspended in ${executionTime}ms`
-            : `Task ${message.taskId} completed successfully in ${executionTime}ms`,
-        );
-      } catch (error) {
-        const executionTime = Date.now() - startTime;
-
-        await this.recordExecutionFailure(executionId, executionTime, error as Error);
-
-        if (isTaskError(error, "lease_busy")) {
-          await lease.assertOwned();
-          const released = await this.taskRepository.updateOwnedTask(message.taskId, ownerToken, {
-            status: "queued",
-          });
-
-          if (!released) {
-            throw ownershipLostError(message.taskId);
-          }
-
-          throw error;
-        }
-
-        if (isTaskError(error, "ownership_lost")) {
-          throw error;
-        }
-
-        await lease.assertOwned();
-
-        const task = await this.taskRepository.getTaskById(message.taskId);
-
-        if (task) {
-          const settlement = settleTaskFailure(error, {
-            attempts: task.attempts || 0,
-            maxAttempts: task.max_attempts || DEFAULT_TASK_MAX_ATTEMPTS,
-            retryable: !isConfigurationError(error),
-          });
-
-          if (settlement.status === "failed") {
-            await handler.onFinalFailure?.(message, this.env, error as Error, executionContext);
-          }
-
-          const settled = await this.taskRepository.updateOwnedTask(message.taskId, ownerToken, {
-            status: settlement.status,
-            attempts: settlement.attempts,
-            error_message: settlement.error,
-          });
-
-          if (!settled) {
-            throw ownershipLostError(message.taskId);
-          }
-
-          if (settlement.status === "failed") {
-            logger.error(`Task ${message.taskId} failed after ${settlement.attempts} attempts`);
-          } else {
-            logger.warn(
-              `Task ${message.taskId} failed, attempt ${settlement.attempts}/${task.max_attempts}`,
-            );
-          }
-        }
-
-        throw error;
-      } finally {
-        await lease.stop();
-      }
+        return "";
+      });
     } catch (error) {
-      logger.error(`Task execution error for ${message.taskId}:`, error);
+      await step.text("fail", { retries: BOOKKEEPING_RETRIES }, async () => {
+        if (
+          !(await this.taskRepository.isTaskExecutionOwner({ taskId: message.taskId, ownerToken }))
+        ) {
+          return "";
+        }
+
+        await handler.onFinalFailure?.(message, this.env, toError(error), execution);
+        await this.taskRepository.updateOwnedTask(message.taskId, ownerToken, {
+          status: "failed",
+          completed_at: new Date().toISOString(),
+          error_message: getErrorMessage(error),
+        });
+
+        return "";
+      });
+
       throw error;
     }
   }
 
-  private async recordExecutionStart(taskId: string): Promise<string> {
-    const execution = await this.taskRepository.createTaskExecution(taskId, "running");
+  private retries(message: TaskMessage): number {
+    return Math.max(0, (message.max_attempts ?? DEFAULT_TASK_MAX_ATTEMPTS) - 1);
+  }
+
+  private async admit(message: TaskMessage): Promise<TaskStepOutcome> {
+    if (
+      isTaskFlagType(message.task_type) &&
+      !(await evaluateServerFlag(this.env, taskFlags(this.env)[message.task_type]))
+    ) {
+      await this.taskRepository.updateTask(message.taskId, {
+        status: "cancelled",
+        completed_at: new Date().toISOString(),
+        error_message: `Task type ${message.task_type} is disabled by its feature flag`,
+      });
+      logger.info(`Task type ${message.task_type} is disabled by its feature flag`);
+
+      return DONE;
+    }
+
+    if (!this.handlers.has(message.task_type)) {
+      await this.taskRepository.updateTask(message.taskId, {
+        status: "cancelled",
+        completed_at: new Date().toISOString(),
+        error_message: `Unknown task type: ${message.task_type}`,
+      });
+      logger.warn(`Unknown task type ${message.task_type} was cancelled`);
+
+      return DONE;
+    }
+
+    return { status: "run" };
+  }
+
+  private async attempt(
+    message: TaskMessage,
+    instanceId: string,
+    stepName: string,
+    attempt: number,
+    pollAttempt: number,
+  ): Promise<TaskStepOutcome> {
+    const handler = this.handlers.resolve(message.task_type);
+    const ownerToken = `${instanceId}:${generateId()}`;
+    const claimed = await this.taskRepository.claimTaskForExecution(message.taskId, {
+      ownerToken,
+      instanceId,
+    });
+
+    if (!claimed) {
+      logger.info(`Task ${message.taskId} is not claimable by this run, skipping`);
+
+      return DONE;
+    }
+
+    if (attempt > 1) {
+      await this.taskRepository.failRunningTaskExecutions(
+        message.taskId,
+        "The previous attempt ended before recording an outcome.",
+      );
+    }
+
+    const fence = this.fence(message.taskId, ownerToken);
+    const execution: TaskExecutionContext = {
+      attempt,
+      isRetry: attempt > 1,
+      pollAttempt,
+      fence,
+      steps: inlineTaskSteps,
+    };
+    const startTime = Date.now();
+    const executionId = await this.recordExecutionStart(message.taskId, stepName);
+
+    try {
+      const result = await handler.handle(message, this.env, execution);
+
+      if (result.status === "error") {
+        throw new Error(result.message || "Unknown error during task execution");
+      }
+
+      await fence.assertOwned();
+      await this.recordExecutionSuccess(executionId, Date.now() - startTime, result);
+
+      if (result.status === "pending") {
+        await this.settle(message.taskId, ownerToken, { status: "queued" });
+
+        return { status: "wait", seconds: Math.max(1, result.retryAfterSeconds ?? 1) };
+      }
+
+      const settlement = settleTaskSuccess(result);
+
+      await this.settle(
+        message.taskId,
+        ownerToken,
+        settlement.status === "suspended"
+          ? { status: "suspended" }
+          : { status: "completed", completed_at: settlement.completedAt },
+      );
+
+      return DONE;
+    } catch (error) {
+      await this.recordExecutionFailure(executionId, Date.now() - startTime, toError(error));
+
+      if (isTaskError(error, "ownership_lost")) {
+        logger.info(`Task ${message.taskId} moved on without this run, stopping`);
+
+        return DONE;
+      }
+
+      if (isTaskError(error, "lease_busy")) {
+        await this.settle(message.taskId, ownerToken, { status: "queued" });
+
+        return { status: "wait", seconds: busyRetryDelaySeconds(error) };
+      }
+
+      const settlement = settleTaskFailure(error, {
+        attempts: attempt - 1,
+        maxAttempts: message.max_attempts ?? DEFAULT_TASK_MAX_ATTEMPTS,
+        retryable: !isConfigurationError(error) && !isTaskError(error, "invalid_payload"),
+      });
+
+      if (settlement.status === "failed") {
+        await handler.onFinalFailure?.(message, this.env, toError(error), execution);
+        await this.settle(message.taskId, ownerToken, {
+          status: "failed",
+          attempts: settlement.attempts,
+          completed_at: new Date().toISOString(),
+          error_message: settlement.error,
+        });
+        logger.error(`Task ${message.taskId} failed after ${settlement.attempts} attempts`);
+
+        throw finalFailureError(message.taskId, error);
+      }
+
+      await this.settle(message.taskId, ownerToken, {
+        status: "queued",
+        attempts: settlement.attempts,
+        error_message: settlement.error,
+      });
+      logger.warn(
+        `Task ${message.taskId} failed, attempt ${settlement.attempts}/${message.max_attempts ?? DEFAULT_TASK_MAX_ATTEMPTS}`,
+      );
+
+      throw error;
+    }
+  }
+
+  private fence(taskId: string, ownerToken: string): TaskExecutionFence {
+    return {
+      ownerToken,
+      assertOwned: async () => {
+        if (!(await this.taskRepository.isTaskExecutionOwner({ taskId, ownerToken }))) {
+          throw ownershipLostError(taskId);
+        }
+      },
+    };
+  }
+
+  private async settle(
+    taskId: string,
+    ownerToken: string,
+    params: UpdateTaskParams,
+  ): Promise<void> {
+    if (!(await this.taskRepository.updateOwnedTask(taskId, ownerToken, params))) {
+      throw ownershipLostError(taskId);
+    }
+  }
+
+  private async recordStep(taskId: string, name: string, work: () => Promise<string>) {
+    const startedAt = Date.now();
+    const executionId = await this.recordExecutionStart(taskId, name);
+
+    try {
+      const value = await work();
+
+      await this.taskRepository.updateTaskExecution(
+        executionId,
+        "completed",
+        Date.now() - startedAt,
+      );
+
+      return value;
+    } catch (error) {
+      await this.recordExecutionFailure(executionId, Date.now() - startedAt, toError(error));
+
+      throw error;
+    }
+  }
+
+  private async recordExecutionStart(taskId: string, step: string): Promise<string> {
+    const execution = await this.taskRepository.createTaskExecution(taskId, step);
 
     return execution?.id || generateId();
   }
@@ -238,14 +417,5 @@ export class TaskExecutor {
       error.message,
       { stack: error.stack },
     );
-  }
-
-  public async handleFailure(message: TaskMessage, error: Error): Promise<void> {
-    logger.error(`Task ${message.taskId} moved to DLQ:`, error);
-
-    await this.taskRepository.updateTask(message.taskId, {
-      status: "failed",
-      error_message: error.message,
-    });
   }
 }

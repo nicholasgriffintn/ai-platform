@@ -6,7 +6,12 @@ import {
 import { createRepositories } from "~/infrastructure/database/repositories";
 import { executeEvalRun } from "~/modules/model-evaluation/application/runner";
 import { inspectVersion } from "~/modules/model-registry/application/inspection";
-import type { TaskHandler, TaskMessage, TaskResult } from "~/modules/queue/application/types";
+import type {
+  TaskExecutionContext,
+  TaskHandler,
+  TaskMessage,
+  TaskResult,
+} from "~/modules/queue/application/types";
 import type { IEnv } from "~/types";
 
 export class ModelRegistryInspectHandler implements TaskHandler {
@@ -22,13 +27,17 @@ export class ModelRegistryInspectHandler implements TaskHandler {
 }
 
 export class ModelRegistryEvalHandler implements TaskHandler {
-  public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
+  public async handle(
+    message: TaskMessage,
+    env: IEnv,
+    execution: TaskExecutionContext,
+  ): Promise<TaskResult> {
     const parsed = modelRegistryEvalTaskDataSchema.safeParse(message.task_data);
 
     if (!parsed.success) {
       return { status: "error", message: "runId is required to execute an eval run" };
     }
 
-    return executeEvalRun(env, createRepositories(env), parsed.data);
+    return executeEvalRun(env, createRepositories(env), parsed.data, execution.pollAttempt);
   }
 }

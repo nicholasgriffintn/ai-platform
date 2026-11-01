@@ -14,8 +14,8 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/errors";
 import z from "zod/v4";
 
-import { ai } from "~/infrastructure/ai";
 import { KVCache } from "~/infrastructure/cache";
+import { generateModelObject } from "~/modules/models/application/model-object";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import type { IEnv, IUser } from "~/types";
 
@@ -52,17 +52,16 @@ async function summariseSection(
   excerpt: string,
 ): Promise<DocumentDigestSection | null> {
   try {
-    const { object } = await ai.generateObject({
+    const { object } = await generateModelObject({
       env,
       user,
       model: target.model,
       provider: target.provider,
-      reasoning_effort: "none",
-      disable_functions: true,
+      reasoningEffort: "none",
       name: "document_section",
       schema: sectionSchema,
       system: getPromptText("document/digest/section"),
-      prompt: excerpt,
+      material: excerpt,
     });
 
     return object;
@@ -78,17 +77,16 @@ async function summariseWhole(
   target: DigestModel,
   material: string,
 ): Promise<SourceContentSummaryDraft> {
-  const { object } = await ai.generateObject({
+  const { object } = await generateModelObject({
     env,
     user,
     model: target.model,
     provider: target.provider,
-    reasoning_effort: "none",
-    disable_functions: true,
+    reasoningEffort: "none",
     name: "document_summary",
     schema: sourceContentSummaryDraftSchema,
     system: getPromptText("document/digest/summary"),
-    prompt: material,
+    material,
   });
 
   return object;

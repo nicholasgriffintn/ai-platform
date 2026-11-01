@@ -6,7 +6,9 @@ import { DOCUMENT_DIGEST_CHUNK_CHARS, digestDocument, formatDocumentDigest } fro
 
 const generateObject = vi.hoisted(() => vi.fn());
 
-vi.mock("~/infrastructure/ai", () => ({ ai: { generateObject } }));
+vi.mock("~/modules/models/application/model-object", () => ({
+  generateModelObject: generateObject,
+}));
 vi.mock("~/modules/models/application/resolve", () => ({
   getAuxiliaryModel: async () => ({ model: "aux", provider: "workers-ai", effort: undefined }),
 }));
@@ -43,15 +45,16 @@ describe("digestDocument", () => {
   });
 
   it("summarises every part, builds the summary from them and caches a complete digest", async () => {
-    generateObject.mockImplementation(async ({ name, prompt }: { name: string; prompt: string }) =>
-      name === "document_section"
-        ? {
-            object: {
-              title: prompt.trim().slice(0, 6),
-              summary: `About ${prompt.trim().slice(0, 6)}`,
-            },
-          }
-        : { object: { summary: `Summary of: ${prompt}`, keyPoints: [], topics: [] } },
+    generateObject.mockImplementation(
+      async ({ name, material: prompt }: { name: string; material: string }) =>
+        name === "document_section"
+          ? {
+              object: {
+                title: prompt.trim().slice(0, 6),
+                summary: `About ${prompt.trim().slice(0, 6)}`,
+              },
+            }
+          : { object: { summary: `Summary of: ${prompt}`, keyPoints: [], topics: [] } },
     );
     const cache = kv();
     const env = { CACHE: cache.binding } as unknown as IEnv;
@@ -84,7 +87,7 @@ describe("digestDocument", () => {
 
   it("keeps going when a part fails, says so, and does not cache the gap", async () => {
     generateObject.mockImplementation(
-      async ({ name, prompt }: { name: string; prompt: string }) => {
+      async ({ name, material: prompt }: { name: string; material: string }) => {
         if (name === "document_section" && prompt.trim().startsWith("Part-2")) {
           throw new Error("model timed out");
         }

@@ -81,6 +81,7 @@ export default [
   route("/auth/callback", "pages/auth/callback.tsx"),
   route("/auth/verify-magic-link", "pages/auth/verify-magic-link.tsx"),
   route("/profile", "pages/profile.tsx"),
+  route("/admin/*?", "pages/admin.tsx"),
   route("/s/:share_id", "pages/shared/[share_id].tsx"),
   route("/o/:token", "pages/shared/output.tsx"),
   route("*?", "pages/catchall.tsx"),

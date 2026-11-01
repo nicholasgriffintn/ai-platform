@@ -94,7 +94,7 @@ export class TaskNotificationDeliveryHandler implements TaskHandler {
     )}?notification=${encodeURIComponent(itemId)}`;
 
     try {
-      await context.lease.assertOwned();
+      await context.fence.assertOwned();
       const response = await fetch(providerUrl, {
         method: "POST",
         headers: {

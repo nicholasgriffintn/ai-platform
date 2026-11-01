@@ -1,4 +1,4 @@
-import type { ExecutionLease, TaskResult } from "@ngriffin_uk/polychat-library-tasks";
+import type { TaskResult } from "@ngriffin_uk/polychat-library-tasks";
 import type { z } from "zod/v4";
 
 export type { TaskResult } from "@ngriffin_uk/polychat-library-tasks";
@@ -34,15 +34,26 @@ export interface TaskQueue<TType extends string = string> {
   enqueue(request: TaskEnqueueRequest<TType>): Promise<string>;
 }
 
-export type TaskExecutionLease = Pick<ExecutionLease, "ownerToken" | "expiresAt" | "assertOwned">;
+export interface TaskExecutionFence {
+  ownerToken: string;
+  assertOwned(): Promise<void>;
+}
+
+export interface TaskSteps {
+  run(name: string, work: () => Promise<void>): Promise<void>;
+  value<T>(name: string, schema: PayloadSchema<T>, work: () => Promise<T>): Promise<T>;
+}
 
 export interface TaskExecutionContext {
-  deliveryAttempt: number;
-  isRedelivery: boolean;
-  lease: TaskExecutionLease;
+  attempt: number;
+  isRetry: boolean;
+  pollAttempt: number;
+  fence: TaskExecutionFence;
+  steps: TaskSteps;
 }
 
 export interface TaskHandler<TEnv, TType extends string = string> {
+  durable?: boolean;
   handle(
     message: TaskMessage<TType>,
     env: TEnv,
@@ -68,6 +79,7 @@ export type PayloadSchema<TPayload> = z.ZodType<TPayload>;
 
 export interface TaskDefinition<TEnv, TPayload, TType extends string = string> {
   payload: PayloadSchema<TPayload>;
+  durable?: boolean;
   handle: (payload: TPayload, context: TaskContext<TEnv, TType>) => Promise<TaskResult | void>;
   onFinalFailure?: (
     payload: TPayload,

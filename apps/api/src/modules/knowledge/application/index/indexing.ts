@@ -2,6 +2,7 @@ import { SOURCE_KNOWLEDGE_INDEX_TASK_TYPE } from "@ngriffin_uk/polychat-schemas"
 import { generateId, sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 import { chunkKnowledgeText } from "@ngriffin_uk/polychat-utility-server/embeddings";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
+import { z } from "zod/v4";
 
 import { EMBEDDING_VECTOR_SPACE_VERSION, WORKERS_EMBEDDING_MODEL } from "~/config/storage";
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -28,6 +29,7 @@ import { readMemoryDocumentDetails } from "~/modules/memory-documents/domain/det
 import { requireOutputAccess } from "~/modules/outputs/application/access";
 import { outputKnowledgeText } from "~/modules/outputs/domain/knowledge-text";
 import { TaskService } from "~/modules/queue/application/TaskService";
+import type { TaskDefinition, TaskExecutionContext } from "~/modules/queue/application/types";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { requireSourceAccess } from "~/modules/sources/application/sources";
 import { readSourceSummary, renderSourceSummary } from "~/modules/sources/domain/summary";
@@ -128,42 +130,53 @@ async function readIndexText(
   return { text: await readKnowledgeText(context, source), source };
 }
 
-export async function indexKnowledgeResource(
+async function enrichKnowledgeResource(
   context: ServiceContext,
   resourceType: IndexedResourceType,
   resourceId: string,
-  assertOwned: () => Promise<void>,
-): Promise<void> {
-  await assertOwned();
+): Promise<boolean> {
   await cleanupStaleIndexes(context, resourceType, resourceId);
-  const index = context.repositories.get(KnowledgeIndexRepository);
-  const resource = await index.getResource(resourceType, resourceId);
+  const resource = await context.repositories
+    .get(KnowledgeIndexRepository)
+    .getResource(resourceType, resourceId);
 
-  if (
-    !resource ||
-    (resource.resource_type === "source" && resource.kind === "memory") ||
-    resource.status !== "available"
-  ) {
-    return;
+  if (!resource || resource.kind === "memory" || resource.status !== "available") {
+    return false;
   }
 
   const { text, source } = await readIndexText(context, resource);
 
   if (!text.trim()) {
-    return;
+    return false;
   }
 
   if (source) {
     await runCommitEnrichers(context, source, text);
   }
 
-  const current = (await index.getResource(resourceType, resourceId)) ?? resource;
+  return true;
+}
+
+async function embedKnowledgeResource(
+  context: ServiceContext,
+  resourceType: IndexedResourceType,
+  resourceId: string,
+  assertOwned: () => Promise<void>,
+): Promise<void> {
+  const index = context.repositories.get(KnowledgeIndexRepository);
+  const current = await index.getResource(resourceType, resourceId);
+
+  if (!current || current.kind === "memory" || current.status !== "available") {
+    return;
+  }
+
   const existing = await index.getDocument(resourceType, current.id, current.search_revision);
 
   if (existing?.status === "active") {
     return;
   }
 
+  const { text } = await readIndexText(context, current);
   const document = await prepareSearchDocument(current, text);
   const target = existing
     ? decodeEmbeddingRuntimeTarget(existing.target)
@@ -182,11 +195,54 @@ export async function indexKnowledgeResource(
   }
 
   try {
-    await assertOwned();
     await insertResourceVectors(context, current, document.documentId, target, token, assertOwned);
   } finally {
     await index.release(document.documentId, token);
   }
+}
+
+export async function indexKnowledgeResource(
+  context: ServiceContext,
+  resourceType: IndexedResourceType,
+  resourceId: string,
+  execution: Pick<TaskExecutionContext, "steps" | "fence">,
+): Promise<void> {
+  const enriched = await execution.steps.value("enrich", z.boolean(), () =>
+    enrichKnowledgeResource(context, resourceType, resourceId),
+  );
+
+  if (!enriched) {
+    return;
+  }
+
+  await execution.steps.run("embed", () =>
+    embedKnowledgeResource(context, resourceType, resourceId, () => execution.fence.assertOwned()),
+  );
+}
+
+async function revisionTaskId(
+  env: IEnv,
+  resourceType: IndexedResourceType,
+  resourceId: string,
+): Promise<string | undefined> {
+  const resource = await new KnowledgeIndexRepository(env).getResource(resourceType, resourceId);
+
+  return resource
+    ? `${SOURCE_KNOWLEDGE_INDEX_TASK_TYPE}:${resourceType}:${resourceId}:${resource.search_revision}`
+    : undefined;
+}
+
+function indexTask(
+  resource: { id: string; project_id: string | null },
+  userId: number | undefined,
+  resourceType: IndexedResourceType,
+): TaskDefinition {
+  return {
+    task_type: SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
+    user_id: userId,
+    project_id: resource.project_id ?? undefined,
+    task_data: { sourceId: resource.id, resourceType },
+  };
 }
 
 export async function enqueueKnowledgeProcessing(
@@ -196,11 +252,19 @@ export async function enqueueKnowledgeProcessing(
   resourceType: IndexedResourceType = "source",
 ): Promise<void> {
   await new TaskService(env, new TaskRepository(env)).enqueueTask({
-    task_type: SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
-    user_id: userId,
-    project_id: resource.project_id ?? undefined,
-    task_data: { sourceId: resource.id, resourceType },
+    ...indexTask(resource, userId, resourceType),
+    id: await revisionTaskId(env, resourceType, resource.id),
   });
+}
+
+export async function enqueueKnowledgeReprocessing(
+  env: IEnv,
+  resource: { id: string; project_id: string | null },
+  userId: number,
+): Promise<void> {
+  await new TaskService(env, new TaskRepository(env)).enqueueTask(
+    indexTask(resource, userId, "source"),
+  );
 }
 
 export async function scheduleKnowledgeIndexes(env: IEnv): Promise<number> {
@@ -212,10 +276,8 @@ export async function scheduleKnowledgeIndexes(env: IEnv): Promise<number> {
 
   for (const candidate of candidates) {
     await tasks.enqueueTask({
-      task_type: SOURCE_KNOWLEDGE_INDEX_TASK_TYPE,
-      user_id: candidate.user_id ?? undefined,
-      project_id: candidate.project_id ?? undefined,
-      task_data: { sourceId: candidate.id, resourceType: candidate.resource_type },
+      ...indexTask(candidate, candidate.user_id ?? undefined, candidate.resource_type),
+      id: await revisionTaskId(env, candidate.resource_type, candidate.id),
     });
   }
 
@@ -227,13 +289,15 @@ export async function indexResourceForUser(
   userId: number | undefined,
   resourceType: IndexedResourceType,
   resourceId: string,
-  assertOwned: () => Promise<void>,
+  execution: Pick<TaskExecutionContext, "steps" | "fence">,
 ): Promise<void> {
   const repositories = createRepositories(env);
   const user = userId ? await repositories.get(UserRepository).getUserById(userId) : null;
 
   if (!user) {
-    await cleanupStaleIndexes({ env, repositories }, resourceType, resourceId);
+    await execution.steps.run("cleanup", () =>
+      cleanupStaleIndexes({ env, repositories }, resourceType, resourceId),
+    );
 
     return;
   }
@@ -242,6 +306,6 @@ export async function indexResourceForUser(
     createServiceContext({ env, user }),
     resourceType,
     resourceId,
-    assertOwned,
+    execution,
   );
 }

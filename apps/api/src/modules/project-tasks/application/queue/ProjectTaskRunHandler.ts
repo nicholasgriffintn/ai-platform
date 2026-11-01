@@ -49,8 +49,8 @@ export class ProjectTaskRunHandler implements TaskHandler {
         conversationId: payload.data.conversationId,
         approvedTools: payload.data.approvedTools,
         interaction: payload.data.interaction,
-        resumeInterrupted: execution.isRedelivery,
-        executionLease: execution.lease,
+        resumeInterrupted: execution.isRetry,
+        executionFence: execution.fence,
       });
 
       if (result.status === "skipped") {
@@ -88,7 +88,7 @@ export class ProjectTaskRunHandler implements TaskHandler {
         env,
         dispatchTaskId: payload.data.dispatchTaskId,
         taskId: payload.data.taskId,
-        executionLease: execution.lease,
+        executionFence: execution.fence,
         detail: "The agent run failed before it could start. Try again.",
       });
 
@@ -121,7 +121,7 @@ export class ProjectTaskRunHandler implements TaskHandler {
       env,
       dispatchTaskId: payload.data.dispatchTaskId,
       taskId: payload.data.taskId,
-      executionLease: execution.lease,
+      executionFence: execution.fence,
       detail: error.message,
     });
   }

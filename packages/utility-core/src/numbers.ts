@@ -222,3 +222,27 @@ export function balanceGains(balance: number): { left: number; right: number } {
 
   return { left: Math.min(1, 2 * (1 - value)), right: Math.min(1, 2 * value) };
 }
+
+export function formatElapsedMs(milliseconds: number): string {
+  if (!Number.isFinite(milliseconds) || milliseconds < 0) {
+    return "";
+  }
+
+  if (milliseconds < 1000) {
+    return `${Math.round(milliseconds)} ms`;
+  }
+
+  const seconds = milliseconds / 1000;
+
+  if (seconds < 60) {
+    return `${seconds.toFixed(seconds < 10 ? 1 : 0)} s`;
+  }
+
+  const minutes = Math.floor(seconds / 60);
+
+  if (minutes < 60) {
+    return `${minutes} min ${Math.round(seconds % 60)} s`;
+  }
+
+  return `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
+}

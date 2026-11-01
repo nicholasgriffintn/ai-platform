@@ -1,13 +1,11 @@
-import type { AgentMessage } from "@ngriffin_uk/polychat-ai-agents";
 import { getPromptText, renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import { redactSandboxOutput } from "@ngriffin_uk/polychat-library-sandbox";
 import type { SandboxTrustLevel } from "@ngriffin_uk/polychat-schemas";
-import { quoteShellArgument, truncateForModel } from "@ngriffin_uk/polychat-utility-core";
+import { quoteShellArgument } from "@ngriffin_uk/polychat-utility-core";
 
 import {
   MAX_COMMANDS,
   MAX_CONSECUTIVE_COMMAND_FAILURES,
-  MAX_OBSERVATION_CHARS,
   MAX_PARALLEL_COMMANDS,
   MAX_READ_FILES_BATCH,
 } from "../../../../config/agent";
@@ -44,7 +42,7 @@ export interface AgentLoopActionContext {
   trustLevel: SandboxTrustLevel;
   step: number;
   state: AgentLoopMutableState;
-  messages: AgentMessage[];
+  observations: string[];
   executionLogs: string[];
   emit: ExecuteAgentLoopParams["emit"];
   approvalClient?: ExecuteAgentLoopParams["approvalClient"];
@@ -54,13 +52,6 @@ export interface AgentLoopActionContext {
   redactionSecrets: readonly string[];
   environmentVariables?: Record<string, string>;
   environmentVariableNames: readonly string[];
-}
-
-function pushUserMessage(messages: AgentMessage[], content: string) {
-  messages.push({
-    role: "user",
-    content,
-  });
 }
 
 async function guardAgainstRepeatedAction(
@@ -93,7 +84,7 @@ async function guardAgainstRepeatedAction(
 
   const reason =
     `Detected repeated action "${params.action}" ${repeatCount} times in a row.` +
-    ` Last repeated target: ${truncateForModel(params.description, 300)}`;
+    ` Last repeated target: ${params.description}`;
 
   await context.emit({
     type: "agent_repetition_detected",
@@ -101,13 +92,10 @@ async function guardAgainstRepeatedAction(
     action: params.action,
     repeatCount,
     message: reason,
-    error: truncateForModel(params.description, 300),
+    error: params.description,
   });
   context.beginPlanRecovery(reason);
-  pushUserMessage(
-    context.messages,
-    [reason, getPromptText("sandbox/notice/repeated-action")].join("\n"),
-  );
+  context.observations.push([reason, getPromptText("sandbox/notice/repeated-action")].join("\n"));
 
   return true;
 }
@@ -144,7 +132,7 @@ export async function handleReadFileAction(
     truncated: readResult.truncated,
     error: readResult.error,
   });
-  pushUserMessage(context.messages, formatReadObservation(readResult));
+  context.observations.push(formatReadObservation(readResult));
 }
 
 export async function handleReadFilesAction(
@@ -169,7 +157,7 @@ export async function handleReadFilesAction(
   );
 
   if (!requestedFiles.length) {
-    pushUserMessage(context.messages, "read_files requires at least one valid file target.");
+    context.observations.push("read_files requires at least one valid file target.");
 
     return;
   }
@@ -211,10 +199,11 @@ export async function handleReadFilesAction(
     )
     .join("\n\n");
 
-  pushUserMessage(
-    context.messages,
+  context.observations.push(
     [
-      renderPrompt("sandbox/notice/read-batch-completed", { fileCount: results.length }),
+      renderPrompt("sandbox/notice/read-batch-completed", {
+        fileCount: results.length,
+      }),
       truncatedLine,
       observations,
     ]
@@ -257,8 +246,7 @@ export async function handleRunCommandAction(
   });
 
   if (approval.rejected) {
-    pushUserMessage(
-      context.messages,
+    context.observations.push(
       renderPrompt("sandbox/notice/approval-rejected", {
         command: decision.command,
         reason: approval.rejectedMessage ?? "No decision details provided.",
@@ -285,20 +273,19 @@ export async function handleRunCommandAction(
       command: decision.command,
       commandTotal: MAX_COMMANDS,
       agentStep: context.step,
-      error: truncateForModel(errorMessage, MAX_OBSERVATION_CHARS),
+      error: errorMessage,
     });
-    pushUserMessage(
-      context.messages,
+    context.observations.push(
       renderPrompt("sandbox/notice/command-blocked", {
         command: decision.command,
-        error: truncateForModel(errorMessage, MAX_OBSERVATION_CHARS),
+        error: errorMessage,
       }),
     );
     if (context.state.consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
       context.beginPlanRecovery(
-        `Command policy/validation failed ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last error: ${truncateForModel(errorMessage, 600)}`,
+        `Command policy/validation failed ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last error: ${errorMessage}`,
       );
-      pushUserMessage(context.messages, getPromptText("sandbox/notice/command-failures-exhausted"));
+      context.observations.push(getPromptText("sandbox/notice/command-failures-exhausted"));
     }
 
     return;
@@ -327,10 +314,7 @@ export async function handleRunCommandAction(
           commandTotal: MAX_COMMANDS,
           agentStep: context.step,
           stream: output.stream,
-          output: truncateForModel(
-            redactSandboxOutput(output.data, context.redactionSecrets),
-            MAX_OBSERVATION_CHARS,
-          ),
+          output: redactSandboxOutput(output.data, context.redactionSecrets),
         });
       },
     },
@@ -355,11 +339,10 @@ export async function handleRunCommandAction(
       commandTotal: MAX_COMMANDS,
       agentStep: context.step,
       exitCode: safeResult.exitCode,
-      error: truncateForModel(failureMessage, MAX_OBSERVATION_CHARS),
+      error: failureMessage,
     });
 
-    pushUserMessage(
-      context.messages,
+    context.observations.push(
       formatCommandObservation({
         command: decision.command,
         result: safeResult,
@@ -368,9 +351,9 @@ export async function handleRunCommandAction(
 
     if (context.state.consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
       context.beginPlanRecovery(
-        `Command execution failed ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last failure: ${truncateForModel(failureMessage, 600)}`,
+        `Command execution failed ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last failure: ${failureMessage}`,
       );
-      pushUserMessage(context.messages, getPromptText("sandbox/notice/commands-failing"));
+      context.observations.push(getPromptText("sandbox/notice/commands-failing"));
     }
 
     await context.guardExecution("Sandbox run cancelled after command execution");
@@ -387,8 +370,7 @@ export async function handleRunCommandAction(
     agentStep: context.step,
     exitCode: result.exitCode,
   });
-  pushUserMessage(
-    context.messages,
+  context.observations.push(
     formatCommandObservation({
       command: decision.command,
       result,
@@ -417,8 +399,7 @@ export async function handleRunParallelAction(
   const requestedCommands = decision.commands.map((entry) => entry.trim()).filter(Boolean);
 
   if (!requestedCommands.length) {
-    pushUserMessage(
-      context.messages,
+    context.observations.push(
       "run_parallel requires at least one non-empty command. Use update_plan or provide valid commands.",
     );
 
@@ -457,19 +438,18 @@ export async function handleRunParallelAction(
       command: blockedCommand.command,
       commandTotal: MAX_COMMANDS,
       agentStep: context.step,
-      error: truncateForModel(blockedCommand.error, MAX_OBSERVATION_CHARS),
+      error: blockedCommand.error,
     });
-    pushUserMessage(
-      context.messages,
+    context.observations.push(
       [
         `Parallel command blocked: ${blockedCommand.command}`,
-        `Error: ${truncateForModel(blockedCommand.error, MAX_OBSERVATION_CHARS)}`,
+        `Error: ${blockedCommand.error}`,
         "run_parallel supports safe read-only commands only. Revise with update_plan before retrying.",
       ].join("\n"),
     );
     if (context.state.consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
       context.beginPlanRecovery(
-        `Parallel command validation failed ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last error: ${truncateForModel(blockedCommand.error, 600)}`,
+        `Parallel command validation failed ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last error: ${blockedCommand.error}`,
       );
     }
 
@@ -506,10 +486,7 @@ export async function handleRunParallelAction(
               commandTotal: MAX_COMMANDS,
               agentStep: context.step,
               stream: output.stream,
-              output: truncateForModel(
-                redactSandboxOutput(output.data, context.redactionSecrets),
-                MAX_OBSERVATION_CHARS,
-              ),
+              output: redactSandboxOutput(output.data, context.redactionSecrets),
             });
           },
         },
@@ -549,7 +526,7 @@ export async function handleRunParallelAction(
         commandTotal: MAX_COMMANDS,
         agentStep: context.step,
         exitCode: result.exitCode,
-        error: truncateForModel(failureMessage, MAX_OBSERVATION_CHARS),
+        error: failureMessage,
       });
       continue;
     }
@@ -571,8 +548,7 @@ export async function handleRunParallelAction(
         ? "1 command failed in the parallel batch."
         : `${failedCount} commands failed in the parallel batch.`;
 
-    pushUserMessage(
-      context.messages,
+    context.observations.push(
       [
         failureLine,
         getPromptText("sandbox/notice/review-parallel-outputs"),
@@ -596,8 +572,7 @@ export async function handleRunParallelAction(
       ? `Only the first ${MAX_PARALLEL_COMMANDS} commands were executed.`
       : "";
 
-  pushUserMessage(
-    context.messages,
+  context.observations.push(
     [
       `Parallel command batch succeeded (${commands.length} commands).`,
       truncationLine,
@@ -619,7 +594,7 @@ export async function handleRunScriptAction(
     signature: `run_script:${decision.language ?? "javascript"}:${decision.code}`,
     threshold: 2,
     action: "run_script",
-    description: truncateForModel(decision.code, 200),
+    description: decision.code,
   });
 
   if (repeated) {
@@ -627,7 +602,7 @@ export async function handleRunScriptAction(
   }
 
   if (context.readOnlyCommands || context.trustLevel === "strict") {
-    pushUserMessage(context.messages, getPromptText("sandbox/notice/script-not-allowed"));
+    context.observations.push(getPromptText("sandbox/notice/script-not-allowed"));
 
     return;
   }
@@ -641,7 +616,7 @@ export async function handleRunScriptAction(
 
   await context.emit({
     type: "script_started",
-    code: truncateForModel(decision.code, 2000),
+    code: decision.code,
     language: scriptLanguage,
     agentStep: context.step,
     commandIndex: context.state.commandCount,
@@ -665,19 +640,18 @@ export async function handleRunScriptAction(
       agentStep: context.step,
       commandIndex: context.state.commandCount,
       commandTotal: MAX_COMMANDS,
-      error: truncateForModel(errorMessage, MAX_OBSERVATION_CHARS),
+      error: errorMessage,
     });
-    pushUserMessage(
-      context.messages,
+    context.observations.push(
       renderPrompt("sandbox/notice/script-failed", {
-        error: truncateForModel(errorMessage, MAX_OBSERVATION_CHARS),
+        error: errorMessage,
       }),
     );
     if (context.state.consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
       context.beginPlanRecovery(
-        `Script execution threw ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last error: ${truncateForModel(errorMessage, 600)}`,
+        `Script execution threw ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last error: ${errorMessage}`,
       );
-      pushUserMessage(context.messages, getPromptText("sandbox/notice/script-attempts-failing"));
+      context.observations.push(getPromptText("sandbox/notice/script-attempts-failing"));
     }
 
     await context.guardExecution("Sandbox run cancelled after script execution");
@@ -689,9 +663,7 @@ export async function handleRunScriptAction(
     .filter(Boolean)
     .join("\n");
 
-  context.executionLogs.push(
-    `[script:${scriptLanguage}]\n${truncateForModel(decision.code, 1000)}\n---\n${truncateForModel(scriptOutput, MAX_OBSERVATION_CHARS)}`,
-  );
+  context.executionLogs.push(`[script:${scriptLanguage}]\n${decision.code}\n---\n${scriptOutput}`);
 
   if (!execution.success) {
     context.state.consecutiveCommandFailures += 1;
@@ -703,24 +675,23 @@ export async function handleRunScriptAction(
       agentStep: context.step,
       commandIndex: context.state.commandCount,
       commandTotal: MAX_COMMANDS,
-      error: truncateForModel(errorMessage, MAX_OBSERVATION_CHARS),
+      error: errorMessage,
     });
 
     const traceback = execution.stderr.trim() || undefined;
 
-    pushUserMessage(
-      context.messages,
+    context.observations.push(
       renderPrompt("sandbox/notice/script-error", {
-        error: truncateForModel(errorMessage, MAX_OBSERVATION_CHARS),
-        traceback: traceback ? truncateForModel(traceback, MAX_OBSERVATION_CHARS) : undefined,
+        error: errorMessage,
+        traceback,
       }),
     );
 
     if (context.state.consecutiveCommandFailures >= MAX_CONSECUTIVE_COMMAND_FAILURES) {
       context.beginPlanRecovery(
-        `Script execution failed ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last error: ${truncateForModel(errorMessage, 600)}`,
+        `Script execution failed ${MAX_CONSECUTIVE_COMMAND_FAILURES} times in a row. Last error: ${errorMessage}`,
       );
-      pushUserMessage(context.messages, getPromptText("sandbox/notice/script-failures-exhausted"));
+      context.observations.push(getPromptText("sandbox/notice/script-failures-exhausted"));
     }
 
     await context.guardExecution("Sandbox run cancelled after script execution");
@@ -736,10 +707,9 @@ export async function handleRunScriptAction(
     commandTotal: MAX_COMMANDS,
   });
 
-  pushUserMessage(
-    context.messages,
+  context.observations.push(
     renderPrompt("sandbox/observation/script", {
-      output: truncateForModel(scriptOutput, MAX_OBSERVATION_CHARS),
+      output: scriptOutput,
     }),
   );
   await context.guardExecution("Sandbox run cancelled after script execution");

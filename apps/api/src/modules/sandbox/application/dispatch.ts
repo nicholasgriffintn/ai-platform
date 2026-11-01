@@ -100,8 +100,8 @@ export async function enqueueSandboxRunDispatchTask(params: {
 }): Promise<string> {
   const { context, message, projectId } = params;
 
-  if (!context.env.TASK_QUEUE) {
-    throw new Error("TASK_QUEUE binding is not configured for sandbox run dispatch");
+  if (!context.env.TASK_WORKFLOW) {
+    throw new Error("TASK_WORKFLOW binding is not configured for sandbox run dispatch");
   }
 
   const taskService = new TaskService(context.env, context.repositories.get(TaskRepository));

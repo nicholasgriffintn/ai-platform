@@ -2720,10 +2720,9 @@ export const tasks = sqliteTable(
     created_by: text({ enum: ["system", "user"] }).notNull(),
     attempts: integer().default(0),
     max_attempts: integer().default(3),
-    recovery_count: integer().notNull().default(0),
     last_attempted_at: text(),
     execution_owner_token: text(),
-    execution_lease_expires_at: text(),
+    workflow_instance_id: text(),
     completed_at: text(),
     error_message: text(),
     metadata: text(),
@@ -2744,10 +2743,6 @@ export const tasks = sqliteTable(
     statusIdx: index("tasks_status_idx").on(table.status),
     taskTypeIdx: index("tasks_task_type_idx").on(table.task_type),
     scheduledAtIdx: index("tasks_scheduled_at_idx").on(table.scheduled_at),
-    executionLeaseIdx: index("tasks_execution_lease_idx").on(
-      table.status,
-      table.execution_lease_expires_at,
-    ),
   }),
 );
 
@@ -2763,6 +2758,7 @@ export const taskExecutions = sqliteTable(
     status: text({
       enum: ["running", "completed", "failed"],
     }).notNull(),
+    step: text(),
     started_at: text().notNull(),
     completed_at: text(),
     execution_time_ms: integer(),

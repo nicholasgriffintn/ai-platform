@@ -4,7 +4,7 @@ import {
   knowledgeClassificationSchema,
   type KnowledgeClassification,
 } from "@ngriffin_uk/polychat-schemas";
-import { sha256Hex, truncateForModel } from "@ngriffin_uk/polychat-utility-core";
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { knowledgeScopeKey } from "~/modules/knowledge/domain/item";
@@ -18,8 +18,6 @@ import { generateSystemObject } from "~/modules/models/application/system-object
 import { readSourceSummary, renderSourceSummary } from "~/modules/sources/domain/summary";
 
 import type { KnowledgeEnricher } from "./types";
-
-const CLASSIFY_MATERIAL_CHARACTERS = 16_000;
 
 async function classificationCollectionId(
   scope: KnowledgeLinkScope,
@@ -81,9 +79,7 @@ export const classifyEnricher: KnowledgeEnricher = {
       system: getPromptText("knowledge/classify"),
       material: [
         `Title: ${source.title}`,
-        summary
-          ? `Summary:\n${renderSourceSummary(summary)}`
-          : `Text:\n${truncateForModel(text, CLASSIFY_MATERIAL_CHARACTERS)}`,
+        summary ? `Summary:\n${renderSourceSummary(summary)}` : `Text:\n${text}`,
         existing.length > 0
           ? `Existing topics: ${existing.map((topic) => topic.title).join(", ")}`
           : "Existing topics: none yet",

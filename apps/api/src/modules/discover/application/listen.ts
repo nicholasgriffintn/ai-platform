@@ -1,6 +1,7 @@
 import {
   isDiscoverListenResearching,
   type DiscoverEditionContent,
+  type DiscoverJobTaskData,
   type DiscoverListenResponse,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -28,6 +29,11 @@ import { enqueueDiscoverJob } from "./jobs";
 import { readDiscoverRoutine } from "./settings";
 
 const LISTEN_SOURCE_LIMIT = 10;
+
+export type DiscoverEditionWork = Omit<
+  Extract<DiscoverJobTaskData, { job: "edition" }>,
+  "job" | "editionId" | "runId"
+>;
 
 async function readCurrentListen(
   context: ServiceContext,
@@ -63,12 +69,12 @@ function withoutListenRequest({
   return content;
 }
 
-export async function queueDiscoverResearch(
+export async function queueDiscoverEditionWork(
   context: ServiceContext,
   edition: StoredDiscoverEdition,
-  next: readonly ("listen" | "episode")[],
+  work: DiscoverEditionWork,
 ): Promise<void> {
-  const listen = next.includes("listen");
+  const listen = work.research?.includes("listen") ?? false;
 
   if (listen) {
     const requestedAt = new Date().toISOString();
@@ -81,9 +87,9 @@ export async function queueDiscoverResearch(
 
   try {
     await enqueueDiscoverJob(withEditionRun(context, edition), {
-      job: "research",
+      ...work,
+      job: "edition",
       editionId: edition.id,
-      next: [...next],
     });
   } catch (error) {
     if (listen) {
@@ -111,7 +117,7 @@ export async function requestDiscoverListen(
   }
 
   await requireListenBudget(context);
-  await queueDiscoverResearch(context, edition, ["listen"]);
+  await queueDiscoverEditionWork(context, edition, { research: ["listen"] });
 
   return { sourceId: null };
 }

@@ -1,5 +1,6 @@
 import { taskService } from "@ngriffin_uk/polychat-library-client";
 import type {
+  AdminTaskDetail,
   AdminTasksResponse,
   AdminTaskView,
   CreateTaskResponse,
@@ -130,11 +131,32 @@ export function useMemorySynthesis() {
   };
 }
 
-export function useAdminTasks(view: AdminTaskView, enabled: boolean) {
+export function useAdminTasks(view: AdminTaskView, taskType: string | undefined, enabled: boolean) {
   return useQuery<AdminTasksResponse>({
-    queryKey: ["admin-tasks", view],
-    queryFn: () => taskService.listAdminTasks(view),
+    queryKey: ["admin-tasks", view, taskType ?? null],
+    queryFn: () => taskService.listAdminTasks(view, taskType),
     enabled,
     refetchInterval: ADMIN_TASK_REFRESH_MS,
+  });
+}
+
+export function useAdminTask(taskId: string | undefined, enabled: boolean) {
+  return useQuery<AdminTaskDetail>({
+    queryKey: ["admin-tasks", "detail", taskId],
+    queryFn: () => taskService.getAdminTask(taskId ?? ""),
+    enabled: enabled && Boolean(taskId),
+    refetchInterval: ADMIN_TASK_REFRESH_MS,
+  });
+}
+
+export function useAdminTaskAction() {
+  const queryClient = useQueryClient();
+
+  return useMutation<AdminTaskDetail, Error, { taskId: string; action: "retry" | "cancel" }>({
+    mutationFn: ({ taskId, action }) => taskService.actOnAdminTask(taskId, action),
+    onSuccess: (detail) => {
+      queryClient.setQueryData(["admin-tasks", "detail", detail.task.id], detail);
+      void queryClient.invalidateQueries({ queryKey: ["admin-tasks"] });
+    },
   });
 }

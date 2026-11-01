@@ -5,6 +5,7 @@ import { Scalar } from "@scalar/hono-api-reference";
 import {
   instrumentAgentWithSentry,
   instrumentDurableObjectWithSentry,
+  instrumentWorkflowWithSentry,
   withSentry,
 } from "@sentry/cloudflare";
 import { type Context, Hono } from "hono";
@@ -34,18 +35,17 @@ import { serverTimingMiddleware } from "./middleware/serverTiming";
 import { receiveChannelEmail } from "./modules/channels/application/email-intake";
 import { ConversationCoordinator as ConversationCoordinatorObject } from "./modules/conversations/infrastructure/coordinator/object";
 import { MachineRunCoordinator as MachineRunCoordinatorObject } from "./modules/machines/infrastructure/run-coordinator";
-import type { TaskMessage } from "./modules/queue/application/types";
+import { recoverInterruptedLocalRuns } from "./modules/queue/application/local-recovery";
 import { RealtimeProxyCoordinator as RealtimeProxyCoordinatorObject } from "./modules/realtime/infrastructure/proxy-coordinator/object";
 import { SandboxRunCoordinator as SandboxRunCoordinatorObject } from "./modules/sandbox/infrastructure/run-coordinator/object";
 import { SiteRuntime as SiteRuntimeObject } from "./modules/sites/infrastructure/runtime";
 import "./models";
 import "./tools";
 import { UserSyncCoordinator as UserSyncCoordinatorObject } from "./modules/sync/infrastructure/coordinator/object";
-import type { UsageQueueMessage } from "./modules/usage/domain/queue-messages";
 import { apiInfoDescription } from "./openapi/content/apiDescription";
 import { tagDescriptions } from "./openapi/documentation";
 import type { IEnv } from "./types";
-import { consumeQueueBatch, workflows } from "./workflows";
+import { consumeUsageBatch, TaskWorkflow as TaskWorkflowEntrypoint, workflows } from "./workflows";
 
 onLogRecord(captureLoggedError);
 
@@ -327,6 +327,10 @@ const handler = {
       hasLoggedStart = true;
     }
 
+    if (env.ENV === "development") {
+      ctx.waitUntil(recoverInterruptedLocalRuns(env));
+    }
+
     return app.fetch(request, withRequestDatabase(env), ctx);
   },
   async email(message: ForwardableEmailMessage, env: IEnv): Promise<void> {
@@ -336,7 +340,7 @@ const handler = {
     await workflows.runCron(env, event);
   },
   async queue(batch: MessageBatch, env: IEnv): Promise<void> {
-    await consumeQueueBatch(env, batch.messages as Message<TaskMessage | UsageQueueMessage>[]);
+    await consumeUsageBatch(env, batch.messages);
   },
 } satisfies ExportedHandler<IEnv>;
 
@@ -368,6 +372,11 @@ export const UserSyncCoordinator = instrumentAgentWithSentry(
 export const SiteRuntime = instrumentDurableObjectWithSentry(
   getDurableObjectSentryOptions,
   SiteRuntimeObject,
+);
+
+export const TaskWorkflow = instrumentWorkflowWithSentry(
+  getDurableObjectSentryOptions,
+  TaskWorkflowEntrypoint,
 );
 
 export const OutboundGateway = withSentry(getSentryOptions, OutboundGatewayEntrypoint);

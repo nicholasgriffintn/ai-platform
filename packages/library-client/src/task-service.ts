@@ -1,4 +1,5 @@
 import type {
+  AdminTaskDetail,
   AdminTasksResponse,
   AdminTaskView,
   ListTasksResponse,
@@ -11,7 +12,7 @@ import type {
 } from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApi } from "./fetch-wrapper.js";
-import { returnFetchedData } from "./http.js";
+import { createApiErrorFromResponse, returnFetchedData } from "./http.js";
 
 class TaskService {
   private static instance: TaskService;
@@ -43,16 +44,47 @@ class TaskService {
     }
   }
 
-  public async listAdminTasks(view: AdminTaskView): Promise<AdminTasksResponse> {
-    const response = await fetchApi(`/admin/tasks?view=${encodeURIComponent(view)}`, {
+  public async listAdminTasks(view: AdminTaskView, taskType?: string): Promise<AdminTasksResponse> {
+    const query = new URLSearchParams({ view });
+
+    if (taskType) {
+      query.set("task_type", taskType);
+    }
+
+    const response = await fetchApi(`/admin/tasks?${query.toString()}`, { method: "GET" });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, "Failed to fetch background tasks");
+    }
+
+    return await returnFetchedData<AdminTasksResponse>(response);
+  }
+
+  public async getAdminTask(taskId: string): Promise<AdminTaskDetail> {
+    const response = await fetchApi(`/admin/tasks/${encodeURIComponent(taskId)}`, {
       method: "GET",
     });
 
     if (!response.ok) {
-      throw new Error("Failed to fetch background tasks");
+      throw await createApiErrorFromResponse(response, "Failed to fetch the task");
     }
 
-    return await returnFetchedData<AdminTasksResponse>(response);
+    return await returnFetchedData<AdminTaskDetail>(response);
+  }
+
+  public async actOnAdminTask(
+    taskId: string,
+    action: "retry" | "cancel",
+  ): Promise<AdminTaskDetail> {
+    const response = await fetchApi(`/admin/tasks/${encodeURIComponent(taskId)}/${action}`, {
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw await createApiErrorFromResponse(response, `Failed to ${action} the task`);
+    }
+
+    return await returnFetchedData<AdminTaskDetail>(response);
   }
 
   public async getTask(taskId: string): Promise<GetTaskResponse> {

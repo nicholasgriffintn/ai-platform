@@ -15,6 +15,7 @@ import {
   useUsageStore,
 } from "@ngriffin_uk/polychat-library-react";
 
+import { ADMIN_PATHS } from "../Admin/admin-paths.js";
 import { useShellHost } from "../Host/ShellHostContext.js";
 
 const links: SidebarSettingsLinks = {
@@ -53,7 +54,11 @@ export function SidebarSettingsPopover() {
       isAuthenticated={isAuthenticated}
       isLoading={isLoading}
       isUsageLoading={isLoading || (isAuthenticated && usageBalance.isLoading)}
-      links={downloadsPath ? { ...links, downloads: downloadsPath } : links}
+      links={{
+        ...links,
+        ...(downloadsPath ? { downloads: downloadsPath } : {}),
+        ...(user?.role === "admin" ? { admin: ADMIN_PATHS.root } : {}),
+      }}
       sourceCodeIcon={<ProviderGlyph name="github" size={16} />}
       usage={getSidebarUsageItems(usageLimits, usageBalance.data?.credits)}
       theme={{ value: themePreference, onChange: setThemePreference }}

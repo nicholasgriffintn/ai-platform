@@ -75,6 +75,7 @@ export interface ReadFileResult {
 export interface ExecuteAgentLoopParams {
   sandbox: SandboxInstance;
   client: PolychatClient;
+  runId: string;
   model: string;
   modelSettings?: SandboxModelSettings;
   repoDisplayName: string;

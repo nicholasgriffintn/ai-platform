@@ -1,10 +1,6 @@
 import { SCHEDULES } from "~/config/schedules";
 
-import {
-  purgeSettledTasks,
-  recoverFailedDurableTasks,
-  redispatchPendingTasks,
-} from "./scheduledTasks";
+import { purgeSettledTasks, redispatchPendingTasks } from "./scheduledTasks";
 import { defineSchedule, type AppWorkflows } from "./workflows";
 
 export function registerQueueMaintenance(workflows: AppWorkflows): void {
@@ -12,7 +8,6 @@ export function registerQueueMaintenance(workflows: AppWorkflows): void {
     defineSchedule({
       name: "task-recovery",
       run: async ({ env }) => {
-        await recoverFailedDurableTasks(env);
         await redispatchPendingTasks(env);
       },
     }),

@@ -36,3 +36,13 @@ export async function mapWithConcurrency<T, R>(
 
   return results;
 }
+
+export async function settleAll(work: readonly Promise<unknown>[]): Promise<void> {
+  const failure = (await Promise.allSettled(work)).find(
+    (result): result is PromiseRejectedResult => result.status === "rejected",
+  );
+
+  if (failure) {
+    throw failure.reason;
+  }
+}

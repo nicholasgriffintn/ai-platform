@@ -20,7 +20,6 @@ export const sourceGenerationPolling = definePoll({
     sourceId: z.string().min(1),
     userId: z.number(),
     modelId: z.string().optional(),
-    pollAttempt: z.number().optional(),
   }),
   check: async (data, { env }) => {
     const context = await loadUserContext(env, data.userId);

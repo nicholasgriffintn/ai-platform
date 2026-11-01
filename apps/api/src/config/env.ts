@@ -6,10 +6,12 @@ import type {
   RateLimit,
   Vectorize,
   SendEmail,
+  Workflow,
 } from "@cloudflare/workers-types";
 import type { TelemetryStream } from "@ngriffin_uk/polychat-ai-telemetry";
+import type { TaskMessage } from "@ngriffin_uk/polychat-ai-workflows";
 import type { FlagshipBinding } from "@ngriffin_uk/polychat-library-flags";
-import type { AgentHarnessRpc } from "@ngriffin_uk/polychat-schemas";
+import type { AgentHarnessRpc, TaskType } from "@ngriffin_uk/polychat-schemas";
 
 export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<T, Exclude<keyof T, Keys>> &
   {
@@ -28,7 +30,7 @@ export type IEnv = {
   VECTOR_DB: Vectorize;
   DB: D1Database;
   CACHE: KVNamespace;
-  TASK_QUEUE?: Queue;
+  TASK_WORKFLOW?: Workflow<TaskMessage<TaskType>>;
   USAGE_QUEUE?: Queue;
   TASK_NOTIFICATION_PROVIDER_URL?: string;
   TASK_NOTIFICATION_PROVIDER_TOKEN?: string;

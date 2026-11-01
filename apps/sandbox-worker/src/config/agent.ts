@@ -11,8 +11,6 @@ export const MAX_CONTEXT_FILES = 10;
 export const MAX_CONTEXT_SNIPPET_LINES = 120;
 export const MAX_INSTRUCTION_FILES = 8;
 export const MAX_READ_FILE_LINES = 240;
-export const MAX_SNIPPET_CHARS = 5000;
-export const MAX_OBSERVATION_CHARS = 5000;
 
 export const MODEL_RETRY_OPTIONS: PolychatRetryOptions = {
   maxAttempts: 3,

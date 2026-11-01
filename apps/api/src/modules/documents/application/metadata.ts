@@ -6,9 +6,9 @@ import {
   type DocumentMetadata,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { gradeEditorialQuality } from "~/modules/documents/application/editorial-quality";
+import { generateModelObject } from "~/modules/models/application/model-object";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import type { IUser } from "~/types";
 
@@ -31,15 +31,14 @@ export async function describeDocument({
 
   try {
     const { model, provider } = await getAuxiliaryModel(context.env, user);
-    const { object } = await ai.generateObject({
+    const { object } = await generateModelObject({
       env: context.env,
       user,
       model,
       provider,
       system: buildDocumentMetadataPrompt(),
-      prompt: `Title: ${title}\n\n${body}`,
-      reasoning_effort: "none",
-      disable_functions: true,
+      material: `Title: ${title}\n\n${body}`,
+      reasoningEffort: "none",
       schema: documentMetadataSchema,
       name: "document_metadata",
     });

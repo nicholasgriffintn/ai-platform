@@ -1,8 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
+import { busyRetryDelaySeconds, leaseBusyError } from "../errors.js";
 import { createTaskHandlerRegistry } from "../handlers.js";
-import { createExecutionLease, leaseExpiry, leaseRetryDelaySeconds } from "../lease.js";
-import { retryDelayMs, settleTaskFailure, settleTaskSuccess } from "../outcome.js";
+import { settleTaskFailure, settleTaskSuccess } from "../outcome.js";
 import { defineStatusMachine } from "../status-machine.js";
 
 describe("task outcomes", () => {
@@ -24,83 +24,22 @@ describe("task outcomes", () => {
     ).toEqual({ status: "failed", attempts: 1, error: "secret missing" });
   });
 
-  it("requeues failures with backoff until the attempt budget is spent", () => {
-    const backoff = { baseDelayMs: 1000, maxDelayMs: 3000 };
-
-    expect(settleTaskFailure(new Error("boom"), { attempts: 0, maxAttempts: 3, backoff })).toEqual({
+  it("requeues failures until the attempt budget is spent", () => {
+    expect(settleTaskFailure(new Error("boom"), { attempts: 0, maxAttempts: 3 })).toEqual({
       status: "queued",
       attempts: 1,
       error: "boom",
-      retryDelayMs: 1000,
-    });
-    expect(settleTaskFailure("boom", { attempts: 1, maxAttempts: 3, backoff })).toMatchObject({
-      status: "queued",
-      attempts: 2,
-      retryDelayMs: 2000,
     });
     expect(settleTaskFailure(new Error("boom"), { attempts: 2, maxAttempts: 3 })).toEqual({
       status: "failed",
       attempts: 3,
       error: "boom",
     });
-    expect(retryDelayMs(4, backoff)).toBe(3000);
-    expect(retryDelayMs(4)).toBe(0);
-  });
-});
-
-describe("execution leases", () => {
-  it("renews on schedule, reports ownership, and stops cleanly", async () => {
-    const callbacks: Array<() => void> = [];
-    const store = {
-      renew: vi.fn(async ({ expiresAt }: { expiresAt: string }) => expiresAt),
-      isOwner: vi.fn(async () => true),
-    };
-    const lease = createExecutionLease({
-      store,
-      taskId: "t1",
-      ownerToken: "owner",
-      initialExpiresAt: leaseExpiry(0, 1000),
-      durationMs: 1000,
-      renewalIntervalMs: 100,
-      now: () => 500,
-      schedule: (callback) => {
-        callbacks.push(callback);
-
-        return () => callbacks.splice(callbacks.indexOf(callback), 1);
-      },
-    });
-
-    expect(lease.expiresAt).toBe("1970-01-01T00:00:01.000Z");
-    callbacks.shift()?.();
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(store.renew).toHaveBeenCalledWith({
-      taskId: "t1",
-      ownerToken: "owner",
-      expiresAt: "1970-01-01T00:00:01.500Z",
-    });
-    expect(lease.expiresAt).toBe("1970-01-01T00:00:01.500Z");
-    await lease.assertOwned();
-    await lease.stop();
-    expect(callbacks).toHaveLength(0);
-    await expect(lease.assertOwned()).rejects.toMatchObject({ code: "ownership_lost" });
   });
 
-  it("marks the lease lost when the store no longer recognises the owner", async () => {
-    const store = { renew: vi.fn(async () => null), isOwner: vi.fn(async () => false) };
-    const lease = createExecutionLease({
-      store,
-      taskId: "t2",
-      ownerToken: "owner",
-      initialExpiresAt: leaseExpiry(),
-      schedule: () => () => {},
-    });
-
-    await expect(lease.assertOwned()).rejects.toMatchObject({
-      code: "ownership_lost",
-      details: { taskId: "t2" },
-    });
-    expect(leaseRetryDelaySeconds(new Date(90_500).toISOString(), 0)).toBe(91);
+  it("waits until a busy task's holder expires before trying again", () => {
+    expect(busyRetryDelaySeconds(leaseBusyError("t1", new Date(90_500).toISOString()), 0)).toBe(91);
+    expect(busyRetryDelaySeconds(leaseBusyError("t1", "not a date"), 0)).toBe(1);
   });
 });
 

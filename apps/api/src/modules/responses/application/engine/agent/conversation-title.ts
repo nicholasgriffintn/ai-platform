@@ -112,7 +112,7 @@ async function enqueueRicherTitleTask(
   const context = params.context;
   const user = context?.user;
 
-  if (!context?.env.TASK_QUEUE || !user?.id) {
+  if (!context?.env.TASK_WORKFLOW || !user?.id) {
     return;
   }
 

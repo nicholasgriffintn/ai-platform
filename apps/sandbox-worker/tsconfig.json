@@ -26,6 +26,9 @@
       "path": "../../packages/ai-agents"
     },
     {
+      "path": "../../packages/ai-models"
+    },
+    {
       "path": "../../packages/ai-prompts"
     },
     {

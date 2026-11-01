@@ -35,7 +35,6 @@ export interface AgentConfig {
   maxStepExtensions: number;
   maxRecoveryReplans: number;
   maxConsecutiveTurnFailures: number;
-  maxObservationChars: number;
 }
 
 export interface AgentEvent {

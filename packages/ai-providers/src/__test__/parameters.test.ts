@@ -314,6 +314,7 @@ describe("createWorkersReasoningParameters", () => {
 
   it("turns Cloudflare thinking off when the request asks for no reasoning", () => {
     expect(createWorkersReasoningParameters({ reasoning_effort: "none" }, unrankedModel)).toEqual({
+      reasoning_effort: "none",
       chat_template_kwargs: { enable_thinking: false },
     });
   });

@@ -11,7 +11,7 @@ import {
 import { estimateSpokenSeconds } from "~/modules/audio/domain/speech-text";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
-import { synthesiseSpeechText } from "./speech";
+import { SPEECH_CONCURRENCY, synthesiseSpeechText } from "./speech";
 import { resolveSpeechVoice } from "./speech-voice";
 import { renderWithSpeechVoices } from "./speech-voices";
 
@@ -47,13 +47,21 @@ export async function narratePassages(
 
       await options.onVoice?.({ model: narrator.id, voice: narrator.voice });
 
-      for (const [index, passage] of passages.entries()) {
-        const audio = joinAudioSegments(
-          await synthesiseSpeechText(context, narrator, passage, options.language),
+      for (let start = 0; start < passages.length; start += SPEECH_CONCURRENCY) {
+        const batch = await Promise.all(
+          passages
+            .slice(start, start + SPEECH_CONCURRENCY)
+            .map(async (passage) =>
+              joinAudioSegments(
+                await synthesiseSpeechText(context, narrator, passage, options.language),
+              ),
+            ),
         );
 
-        segments.push(audio);
-        await options.onPassage?.(index, audio);
+        for (const [offset, audio] of batch.entries()) {
+          segments.push(audio);
+          await options.onPassage?.(start + offset, audio);
+        }
       }
 
       return segments;

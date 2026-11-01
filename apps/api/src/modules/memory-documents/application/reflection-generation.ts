@@ -6,7 +6,6 @@ import {
   userCreditActor,
 } from "@ngriffin_uk/polychat-ai-billing";
 import { estimateTextTokens } from "@ngriffin_uk/polychat-ai-providers";
-import { normaliseTokenUsage } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   creditMicrosFromCredits,
   memoryReflectionProposalSchema,
@@ -14,9 +13,9 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 
-import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { assertTurnAdmitted } from "~/modules/conversations/application/turn-admission";
+import { generateModelObject } from "~/modules/models/application/model-object";
 import { findModelConfig, getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
 
@@ -143,33 +142,28 @@ export async function generateMemoryReflection(
   }
 
   try {
-    const result = await ai.generateObject(
-      {
-        env: context.env,
-        user,
-        model,
-        provider,
-        reasoning_effort: effort,
-        system: MEMORY_REFLECTION_SYSTEM,
-        prompt,
-        disable_functions: true,
-        store: false,
-        schema: memoryReflectionProposalSchema,
-        name: "memory_reflection",
-      },
-      async (completion) => {
-        await recordModelTurnUsage(runtime, {
-          actor: userCreditActor(user.id),
-          usage: normaliseTokenUsage(completion.usage),
-          rawUsage: completion.usage,
-          model: completion.model,
-          provider: completion.provider,
-          completionId: conversationId,
-          conversationId,
-          messageId: operationId,
-        });
-      },
-    );
+    const result = await generateModelObject({
+      env: context.env,
+      user,
+      model,
+      provider,
+      reasoningEffort: effort,
+      system: MEMORY_REFLECTION_SYSTEM,
+      material: prompt,
+      schema: memoryReflectionProposalSchema,
+      name: "memory_reflection",
+    });
+
+    await recordModelTurnUsage(runtime, {
+      actor: userCreditActor(user.id),
+      usage: result.usage,
+      rawUsage: result.rawUsage,
+      model,
+      provider,
+      completionId: conversationId,
+      conversationId,
+      messageId: operationId,
+    });
 
     return result.object;
   } finally {

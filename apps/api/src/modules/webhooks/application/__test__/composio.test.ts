@@ -69,7 +69,7 @@ function createTriggerEvent() {
 }
 
 describe("Composio webhook", () => {
-  const send = vi.fn().mockResolvedValue(undefined);
+  const create = vi.fn().mockResolvedValue(undefined);
   const createTaskIfAbsent = vi.fn();
   const updateTask = vi.fn();
   const markConnectedAccountError = vi.fn();
@@ -145,7 +145,7 @@ describe("Composio webhook", () => {
   it("queues one run-scoped recipe task and labels event data as untrusted", async () => {
     const response = await handleComposioWebhook(await createRequest(createTriggerEvent()), {
       COMPOSIO_WEBHOOK_SECRET: "webhook-secret",
-      TASK_QUEUE: { send },
+      TASK_WORKFLOW: { create },
     } as any);
 
     expect(response.status).toBe(200);
@@ -159,7 +159,7 @@ describe("Composio webhook", () => {
         }),
       }),
     );
-    expect(send).toHaveBeenCalledOnce();
+    expect(create).toHaveBeenCalledOnce();
   });
 
   it("marks trigger mappings and mirrored accounts when Composio reports an expired account", async () => {

@@ -7,15 +7,13 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { ai } from "~/infrastructure/ai";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { readKnowledgeText } from "~/modules/knowledge/application/intake/body";
+import { generateModelObject } from "~/modules/models/application/model-object";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { formatSource, requireSourceAccess } from "~/modules/sources/application/sources";
 
 import { readSourceRecordMedia, updateSourceRecord } from "./metadata";
-
-const MAX_NOTES_INPUT_CHARACTERS = 120_000;
 
 export async function summariseSource(
   context: ServiceContext,
@@ -40,17 +38,16 @@ export async function summariseSource(
   }
 
   const { model, provider } = await getAuxiliaryModel(context.env, user);
-  const { object: notes } = await ai.generateObject({
+  const { object: notes } = await generateModelObject({
     env: context.env,
     user,
     model,
     provider,
-    reasoning_effort: "none",
-    disable_functions: true,
+    reasoningEffort: "none",
     name: "source_notes",
     schema: sourceNotesSchema,
     system: getPromptText("sources/media/notes"),
-    prompt: text.slice(0, MAX_NOTES_INPUT_CHARACTERS),
+    material: text,
   });
 
   return formatSource(

@@ -21,6 +21,8 @@ import { renderWithSpeechVoices } from "./speech-voices";
 
 const logger = getLogger({ prefix: "audio/speech" });
 
+export const SPEECH_CONCURRENCY = 4;
+
 type TextToSpeechRequest = {
   env: IEnv;
   input: string;

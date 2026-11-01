@@ -460,7 +460,6 @@ export class ConversationManager {
               messageId: message.id,
               asyncInvocation,
               userId: this.user.id,
-              pollAttempt: 0,
             },
             priority: 7,
           });

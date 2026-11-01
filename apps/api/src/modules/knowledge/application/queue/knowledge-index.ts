@@ -4,14 +4,13 @@ import { indexResourceForUser } from "~/modules/knowledge/application/index/inde
 import { defineTask } from "~/modules/queue/application/workflows";
 
 export const knowledgeIndex = defineTask({
+  durable: true,
   payload: z.object({
     sourceId: z.string().min(1),
     resourceType: z.enum(["source", "output", "memory"]).default("source"),
   }),
   handle: async ({ sourceId, resourceType }, { env, message, execution }) => {
-    await indexResourceForUser(env, message.user_id, resourceType, sourceId, () =>
-      execution.lease.assertOwned(),
-    );
+    await indexResourceForUser(env, message.user_id, resourceType, sourceId, execution);
 
     return { status: "success", message: "Knowledge processed and indexed" };
   },

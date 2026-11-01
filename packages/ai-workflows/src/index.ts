@@ -1,9 +1,5 @@
-export {
-  createWorkflows,
-  POLL_ATTEMPT_FIELD,
-  type CreateWorkflowsOptions,
-  type Workflows,
-} from "./workflows.js";
+export { inlineTaskSteps } from "./steps.js";
+export { createWorkflows, type CreateWorkflowsOptions, type Workflows } from "./workflows.js";
 export {
   PENDING,
   type CronContext,
@@ -18,7 +14,8 @@ export {
   type TaskDefinition,
   type TaskEnqueueRequest,
   type TaskExecutionContext,
-  type TaskExecutionLease,
+  type TaskExecutionFence,
+  type TaskSteps,
   type TaskHandler,
   type TaskMessage,
   type TaskQueue,

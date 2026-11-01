@@ -1,4 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from "cloudflare:workers";
 
 import { registerBenchmarksQueue } from "~/modules/benchmarks/application/queue/register";
 import { registerChannelsQueue } from "~/modules/channels/application/queue/register";
@@ -16,10 +17,11 @@ import { registerModelPlatformQueue } from "~/modules/model-governance/applicati
 import { registerModelRegistryQueue } from "~/modules/model-registry/application/queue/register";
 import { registerNotebooksQueue } from "~/modules/notebooks/application/queue/register";
 import { registerProjectTasksQueue } from "~/modules/project-tasks/application/queue/register";
-import { QueueExecutor } from "~/modules/queue/application/QueueExecutor";
 import { registerQueueMaintenance } from "~/modules/queue/application/register";
+import { TaskExecutor } from "~/modules/queue/application/TaskExecutor";
 import type { TaskMessage } from "~/modules/queue/application/types";
 import { workflows } from "~/modules/queue/application/workflows";
+import { workflowTaskStep } from "~/modules/queue/infrastructure/workflow-step";
 import { registerRealtimeQueue } from "~/modules/realtime/application/queue/register";
 import { registerRecipesQueue } from "~/modules/recipes/application/queue/register";
 import { registerResponsesQueue } from "~/modules/responses/application/queue/register";
@@ -30,12 +32,11 @@ import { registerTaskNotificationsQueue } from "~/modules/task-notifications/app
 import { registerTeammatesQueue } from "~/modules/teammates/application/queue/register";
 import { rollUpUsageMessages } from "~/modules/usage/application/infra-usage-queue";
 import { registerUsageQueue } from "~/modules/usage/application/queue/register";
-import { isUsageQueueMessage, type UsageQueueMessage } from "~/modules/usage/domain/queue-messages";
 import { registerUserQueue } from "~/modules/user/application/queue/register";
 import { registerWebhookEndpointsQueue } from "~/modules/webhook-endpoints/application/queue/register";
 import type { IEnv } from "~/types";
 
-const logger = getLogger({ prefix: "queue/consumer" });
+const logger = getLogger({ prefix: "usage/consumer" });
 
 registerSourcesQueue(workflows);
 registerKnowledgeQueue(workflows);
@@ -66,34 +67,23 @@ registerUsageQueue(workflows);
 registerUserQueue(workflows);
 registerWebhookEndpointsQueue(workflows);
 
-function isTaskQueueMessage(
-  message: Message<TaskMessage | UsageQueueMessage>,
-): message is Message<TaskMessage> {
-  return !isUsageQueueMessage(message.body);
+export class TaskWorkflow extends WorkflowEntrypoint<IEnv, TaskMessage> {
+  public async run(event: Readonly<WorkflowEvent<TaskMessage>>, step: WorkflowStep): Promise<void> {
+    await new TaskExecutor(this.env, workflows.handlers()).run(
+      event.payload,
+      event.instanceId,
+      workflowTaskStep(step),
+    );
+  }
 }
 
-export async function consumeQueueBatch(
-  env: IEnv,
-  messages: readonly Message<TaskMessage | UsageQueueMessage>[],
-): Promise<void> {
-  const taskMessages = messages.filter(isTaskQueueMessage);
-
-  if (taskMessages.length > 0) {
-    await QueueExecutor.respondToCronQueue(env, taskMessages, workflows);
-  }
-
-  const usageMessages = messages.filter((message) => !isTaskQueueMessage(message));
-
-  if (usageMessages.length === 0) {
-    return;
-  }
-
+export async function consumeUsageBatch(env: IEnv, messages: readonly Message[]): Promise<void> {
   try {
-    await rollUpUsageMessages(env, usageMessages);
+    await rollUpUsageMessages(env, messages);
   } catch (error) {
     logger.error("Failed to roll up usage", { error });
 
-    for (const message of usageMessages) {
+    for (const message of messages) {
       message.retry();
     }
   }

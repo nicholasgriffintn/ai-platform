@@ -2,7 +2,13 @@ import { isTaskError } from "@ngriffin_uk/polychat-library-tasks";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod/v4";
 
-import { createWorkflows, PENDING, type TaskExecutionContext, type TaskMessage } from "../index.js";
+import {
+  createWorkflows,
+  inlineTaskSteps,
+  PENDING,
+  type TaskExecutionContext,
+  type TaskMessage,
+} from "../index.js";
 
 type Env = { FLAG?: string };
 
@@ -12,11 +18,13 @@ function createHarness(now = () => Date.parse("2026-09-18T10:00:00.000Z")) {
     queue: () => ({ enqueue }),
     now,
   });
-  const execution: TaskExecutionContext = {
-    deliveryAttempt: 1,
-    isRedelivery: false,
-    lease: { ownerToken: "o", expiresAt: "", assertOwned: async () => {} },
-  };
+  const execution = (pollAttempt = 0): TaskExecutionContext => ({
+    attempt: 1,
+    isRetry: false,
+    pollAttempt,
+    fence: { ownerToken: "o", assertOwned: async () => {} },
+    steps: inlineTaskSteps,
+  });
   const message = (type: "sync" | "poll_job" | "raw", task_data: Record<string, unknown>) =>
     ({
       taskId: "task-1",
@@ -42,9 +50,9 @@ describe("on", () => {
     const handler = workflows.handlers().resolve("sync");
 
     await expect(
-      handler.handle(message("sync", { day: "2026-09-17" }), {}, execution),
+      handler.handle(message("sync", { day: "2026-09-17" }), {}, execution()),
     ).resolves.toEqual({ status: "success", data: { day: "2026-09-17" } });
-    await expect(handler.handle(message("sync", { day: 3 }), {}, execution)).rejects.toSatisfy(
+    await expect(handler.handle(message("sync", { day: 3 }), {}, execution())).rejects.toSatisfy(
       (error) => isTaskError(error, "invalid_payload"),
     );
   });
@@ -63,16 +71,16 @@ describe("on", () => {
       workflows
         .handlers()
         .resolve("raw")
-        .handle(message("raw", { anything: 1 }), {}, execution),
+        .handle(message("raw", { anything: 1 }), {}, execution()),
     ).resolves.toEqual({ status: "success" });
     expect(seen).toEqual([{ anything: 1 }]);
   });
 });
 
 describe("poll", () => {
-  const payload = z.object({ jobId: z.string(), pollAttempt: z.number().optional() });
+  const payload = z.object({ jobId: z.string() });
 
-  it("re-queues itself with the next attempt while the check is pending", async () => {
+  it("asks to be checked again after the next delay while the check is pending", async () => {
     const { workflows, enqueue, execution, message } = createHarness();
 
     workflows.poll("poll_job", { payload, check: async () => PENDING });
@@ -80,18 +88,10 @@ describe("poll", () => {
     const result = await workflows
       .handlers()
       .resolve("poll_job")
-      .handle(message("poll_job", { jobId: "j1", pollAttempt: 1 }), {}, execution);
+      .handle(message("poll_job", { jobId: "j1" }), {}, execution(1));
 
-    expect(result).toMatchObject({ status: "success", data: { pollAttempt: 2 } });
-    expect(enqueue).toHaveBeenCalledWith({
-      task_type: "poll_job",
-      user_id: 7,
-      project_id: undefined,
-      task_data: { jobId: "j1", pollAttempt: 2 },
-      schedule_type: "scheduled",
-      scheduled_at: "2026-09-18T10:00:10.000Z",
-      priority: 5,
-    });
+    expect(result).toMatchObject({ status: "pending", retryAfterSeconds: 10 });
+    expect(enqueue).not.toHaveBeenCalled();
   });
 
   it("returns the check result and stops polling once the job settles", async () => {
@@ -106,7 +106,7 @@ describe("poll", () => {
       workflows
         .handlers()
         .resolve("poll_job")
-        .handle(message("poll_job", { jobId: "j1" }), {}, execution),
+        .handle(message("poll_job", { jobId: "j1" }), {}, execution()),
     ).resolves.toEqual({ status: "success", data: { jobId: "j1" } });
     expect(enqueue).not.toHaveBeenCalled();
   });
@@ -125,7 +125,7 @@ describe("poll", () => {
     const result = await workflows
       .handlers()
       .resolve("poll_job")
-      .handle(message("poll_job", { jobId: "j1", pollAttempt: 3 }), {}, execution);
+      .handle(message("poll_job", { jobId: "j1" }), {}, execution(3));
 
     expect(result).toMatchObject({ status: "error" });
     expect(onExhausted).toHaveBeenCalledOnce();

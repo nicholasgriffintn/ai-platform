@@ -93,7 +93,7 @@ describe("executeSandboxRunStream", () => {
     mockGetWorkspace.mockResolvedValue({ id: "workspace-1" });
     mockGetMembership.mockResolvedValue({ role: "member" });
     mockEnqueueTask.mockResolvedValue("task-123");
-    mockContext.env = { TASK_QUEUE: { send: vi.fn() } };
+    mockContext.env = { TASK_WORKFLOW: { create: vi.fn() } };
     vi.mocked(resolveSandboxModel).mockResolvedValue("mistral-large");
     vi.mocked(listRunCoordinatorEvents).mockResolvedValue([
       {
@@ -197,7 +197,7 @@ describe("executeSandboxRunStream", () => {
 
     expect(response.status).toBe(500);
     expect(await response.json()).toEqual({
-      error: "TASK_QUEUE binding is not configured for sandbox run dispatch",
+      error: "TASK_WORKFLOW binding is not configured for sandbox run dispatch",
     });
     expect(mockUpdateActivity).toHaveBeenCalledWith(
       "record-1",

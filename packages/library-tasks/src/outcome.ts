@@ -1,42 +1,25 @@
-export type TaskResultStatus = "success" | "error" | "skipped" | "suspended";
+export type TaskResultStatus = "success" | "error" | "skipped" | "suspended" | "pending";
 
 export interface TaskResult {
   status: TaskResultStatus;
   message?: string;
   data?: Record<string, unknown>;
+  retryAfterSeconds?: number;
 }
 
 export type TaskSettlement =
   | { status: "completed"; completedAt: string }
   | { status: "suspended" }
   | { status: "failed"; attempts: number; error: string }
-  | { status: "queued"; attempts: number; error: string; retryDelayMs: number };
-
-export interface RetryBackoff {
-  baseDelayMs: number;
-  maxDelayMs?: number;
-  factor?: number;
-}
+  | { status: "queued"; attempts: number; error: string };
 
 export interface SettleTaskOptions {
   attempts: number;
   maxAttempts: number;
   retryable?: boolean;
-  backoff?: RetryBackoff;
-  now?: () => number;
 }
 
 export const DEFAULT_TASK_MAX_ATTEMPTS = 3;
-
-export function retryDelayMs(attempt: number, backoff?: RetryBackoff): number {
-  if (!backoff) {
-    return 0;
-  }
-
-  const delay = backoff.baseDelayMs * Math.pow(backoff.factor ?? 2, Math.max(0, attempt - 1));
-
-  return Math.min(delay, backoff.maxDelayMs ?? delay);
-}
 
 export function settleTaskSuccess(
   result: Pick<TaskResult, "status">,
@@ -58,10 +41,5 @@ export function settleTaskFailure(
     return { status: "failed", attempts, error: message };
   }
 
-  return {
-    status: "queued",
-    attempts,
-    error: message,
-    retryDelayMs: retryDelayMs(attempts, options.backoff),
-  };
+  return { status: "queued", attempts, error: message };
 }

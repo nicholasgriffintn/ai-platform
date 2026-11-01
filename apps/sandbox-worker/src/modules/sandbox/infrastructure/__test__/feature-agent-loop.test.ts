@@ -33,6 +33,7 @@ describe("executeAgentLoop", () => {
         client: {
           chatCompletion,
         } as any,
+        runId: "run-1",
         model: "test-model",
         repoDisplayName: "owner/repo",
         repoTargetDir: "repo",
@@ -95,6 +96,7 @@ describe("executeAgentLoop", () => {
         recordGoalIteration,
         listInstructions: vi.fn().mockResolvedValue([]),
       } as any,
+      runId: "run-1",
       model: "test-model",
       repoDisplayName: "owner/repo",
       repoTargetDir: "repo",
@@ -134,6 +136,7 @@ describe("executeAgentLoop", () => {
     const result = await executeAgentLoop({
       sandbox: { exec: vi.fn() } as any,
       client: { chatCompletion } as any,
+      runId: "run-1",
       model: "test-model",
       repoDisplayName: "owner/repo",
       repoTargetDir: "repo",
@@ -180,6 +183,7 @@ describe("executeAgentLoop", () => {
       client: {
         chatCompletion,
       } as any,
+      runId: "run-1",
       model: "test-model",
       repoDisplayName: "owner/repo",
       repoTargetDir: "repo",
@@ -235,6 +239,7 @@ describe("executeAgentLoop", () => {
       client: {
         chatCompletion,
       } as any,
+      runId: "run-1",
       model: "test-model",
       repoDisplayName: "owner/repo",
       repoTargetDir: "repo",
@@ -295,6 +300,7 @@ describe("executeAgentLoop", () => {
       client: {
         chatCompletion,
       } as any,
+      runId: "run-1",
       model: "test-model",
       repoDisplayName: "owner/repo",
       repoTargetDir: "repo",
@@ -359,6 +365,7 @@ describe("executeAgentLoop", () => {
       client: {
         chatCompletion,
       } as any,
+      runId: "run-1",
       model: "test-model",
       repoDisplayName: "owner/repo",
       repoTargetDir: "repo",
@@ -418,6 +425,7 @@ describe("executeAgentLoop", () => {
       client: {
         chatCompletion,
       } as any,
+      runId: "run-1",
       model: "test-model",
       repoDisplayName: "owner/repo",
       repoTargetDir: "/workspace/repo",
@@ -486,6 +494,7 @@ describe("executeAgentLoop", () => {
       client: {
         chatCompletion,
       } as any,
+      runId: "run-1",
       model: "test-model",
       repoDisplayName: "owner/repo",
       repoTargetDir: "repo",
@@ -547,6 +556,7 @@ describe("executeAgentLoop", () => {
       client: {
         chatCompletion,
       } as any,
+      runId: "run-1",
       model: "test-model",
       repoDisplayName: "owner/repo",
       repoTargetDir: "repo",
@@ -609,6 +619,7 @@ describe("executeAgentLoop", () => {
       client: {
         chatCompletion,
       } as any,
+      runId: "run-1",
       model: "test-model",
       repoDisplayName: "owner/repo",
       repoTargetDir: "repo",

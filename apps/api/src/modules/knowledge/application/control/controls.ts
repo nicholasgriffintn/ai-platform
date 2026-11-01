@@ -5,7 +5,7 @@ import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getKnowledgeDocumentState } from "~/modules/knowledge/application/control/state";
 import { publishKnowledgeChange } from "~/modules/knowledge/application/events";
-import { enqueueKnowledgeProcessing } from "~/modules/knowledge/application/index/indexing";
+import { enqueueKnowledgeReprocessing } from "~/modules/knowledge/application/index/indexing";
 import { KnowledgeDocumentRepository } from "~/modules/knowledge/infrastructure/KnowledgeDocumentRepository";
 import { requireSourceAccess } from "~/modules/sources/application/sources";
 
@@ -33,7 +33,7 @@ export async function setKnowledgeDocumentControls(
 export async function reprocessKnowledgeDocument(context: ServiceContext, sourceId: string) {
   const source = await requireSourceAccess(context, context.requireUser().id, sourceId, true);
 
-  await enqueueKnowledgeProcessing(context.env, source, context.requireUser().id);
+  await enqueueKnowledgeReprocessing(context.env, source, context.requireUser().id);
 
   return getKnowledgeDocumentState(context, source.id);
 }

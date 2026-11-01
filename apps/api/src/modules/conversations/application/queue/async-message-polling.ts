@@ -20,7 +20,6 @@ export const asyncMessagePolling = definePoll({
     messageId: z.string().min(1),
     asyncInvocation: z.custom<AsyncInvocationMetadata>(isRecord),
     userId: z.number(),
-    pollAttempt: z.number().optional(),
   }),
   check: async (data, { env }) => {
     const repositories = createRepositories(env);

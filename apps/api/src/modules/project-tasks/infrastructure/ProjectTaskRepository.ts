@@ -689,7 +689,7 @@ export class ProjectTaskRepository extends BaseRepository {
   async updateTask(
     taskId: string,
     updates: UpdateProjectTaskParams,
-    executionOwner?: { dispatchTaskId: string; ownerToken: string; now?: string },
+    executionOwner?: { dispatchTaskId: string; ownerToken: string },
   ): Promise<ProjectTask | null> {
     const columns: string[] = [];
     const values: unknown[] = [];
@@ -883,13 +883,11 @@ export class ProjectTaskRepository extends BaseRepository {
           WHERE tasks.id = ?
             AND tasks.status = 'running'
             AND tasks.execution_owner_token = ?
-            AND datetime(tasks.execution_lease_expires_at) > datetime(?)
         )`;
       values.push(
         executionOwner.dispatchTaskId,
         executionOwner.dispatchTaskId,
         executionOwner.ownerToken,
-        executionOwner.now ?? new Date().toISOString(),
       );
     }
 
@@ -982,9 +980,7 @@ export class ProjectTaskRepository extends BaseRepository {
     dispatchTaskId: string;
     executionOwnerToken: string;
     resumeInterrupted?: boolean;
-    now?: string;
   }): Promise<ProjectTask | null> {
-    const now = params.now ?? new Date().toISOString();
     const row = await this.runQuery<ProjectTaskRow>(
       `UPDATE project_task
        SET status = 'running',
@@ -1002,7 +998,6 @@ export class ProjectTaskRepository extends BaseRepository {
            WHERE tasks.id = ?
              AND tasks.status = 'running'
              AND tasks.execution_owner_token = ?
-             AND datetime(tasks.execution_lease_expires_at) > datetime(?)
          )
        RETURNING *`,
       [
@@ -1013,7 +1008,6 @@ export class ProjectTaskRepository extends BaseRepository {
         params.resumeInterrupted ? 1 : 0,
         params.dispatchTaskId,
         params.executionOwnerToken,
-        now,
       ],
       true,
     );
