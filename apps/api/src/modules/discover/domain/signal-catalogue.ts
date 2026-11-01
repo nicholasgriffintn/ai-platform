@@ -3,7 +3,10 @@ import {
   isoDaysBefore,
   isRecord,
   readPathValues,
+  sampleDeterministic,
   shiftCalendarDate,
+  YOUTUBE_VIDEO_ID_PATTERN,
+  youTubeWatchUrl,
 } from "@ngriffin_uk/polychat-utility-core";
 import { htmlToPlainText } from "@ngriffin_uk/polychat-utility-server/html-text";
 
@@ -32,6 +35,11 @@ export interface DiscoverSignalRead {
   topics: readonly string[];
 }
 
+export interface DiscoverSignalExpansion {
+  operation: string;
+  requests: (result: unknown, read: DiscoverSignalRead) => Record<string, unknown>[];
+}
+
 export interface DiscoverSignal {
   id: string;
   providerId: string;
@@ -41,7 +49,8 @@ export interface DiscoverSignal {
   operation: string;
   parameters: (read: DiscoverSignalRead) => Record<string, unknown>;
   digest: (result: unknown) => string[];
-  items?: (result: unknown) => DiscoverResearchResult[];
+  items?: (result: unknown, read: DiscoverSignalRead) => DiscoverResearchResult[];
+  expand?: DiscoverSignalExpansion;
   needsLocation?: boolean;
   needsTopics?: boolean;
 }
@@ -188,6 +197,84 @@ function redditPostLines(posts: Record<string, unknown>[]): string[] {
   return lines(posts, (post) =>
     joinParts(first(post, ["title"]), redditSubreddit(post), redditPostUrl(post)),
   );
+}
+
+const YOUTUBE_CHANNEL_LIMIT = 15;
+const YOUTUBE_VIDEOS_PER_CHANNEL = 3;
+const YOUTUBE_NEW_VIDEO_DAYS = 7;
+
+function youtubeSubscribedChannels(result: unknown): string[] {
+  return [
+    ...new Set(
+      items(result, ["data", "items"], ["items"]).flatMap((subscription) => {
+        const channelId = first(subscription, ["snippet", "resourceId", "channelId"]);
+
+        return channelId ? [channelId] : [];
+      }),
+    ),
+  ];
+}
+
+function youtubeVideos(results: unknown): Record<string, unknown>[] {
+  return (Array.isArray(results) ? results : []).flatMap((result) =>
+    items(result, ["data", "items"], ["data", "videos"], ["items"], ["videos"]).filter(isRecord),
+  );
+}
+
+function youtubeVideoId(video: Record<string, unknown>): string {
+  const videoId = first(
+    video,
+    ["contentDetails", "videoId"],
+    ["snippet", "resourceId", "videoId"],
+    ["id", "videoId"],
+    ["videoId"],
+    ["id"],
+  );
+
+  return YOUTUBE_VIDEO_ID_PATTERN.test(videoId) ? videoId : "";
+}
+
+function youtubeVideoIsPublic(video: Record<string, unknown>): boolean {
+  const privacy = first(video, ["status", "privacyStatus"]);
+
+  return !privacy || privacy === "public";
+}
+
+function youtubeChannelTitle(video: Record<string, unknown>): string {
+  return first(
+    video,
+    ["snippet", "videoOwnerChannelTitle"],
+    ["snippet", "channelTitle"],
+    ["channelTitle"],
+  );
+}
+
+function youtubeNewVideoItems(results: unknown, now: Date): DiscoverResearchResult[] {
+  const since = isoDaysBefore(now, YOUTUBE_NEW_VIDEO_DAYS);
+
+  return youtubeVideos(results)
+    .flatMap((video) => {
+      const videoId = youtubeVideoId(video);
+      const title = first(video, ["snippet", "title"], ["title"]);
+      const publishedAt = first(
+        video,
+        ["contentDetails", "videoPublishedAt"],
+        ["snippet", "publishedAt"],
+        ["publishedAt"],
+      );
+
+      return videoId && title && youtubeVideoIsPublic(video) && publishedAt >= since
+        ? [{ publishedAt, video, videoId, title }]
+        : [];
+    })
+    .sort((left, right) => right.publishedAt.localeCompare(left.publishedAt))
+    .map(({ publishedAt, video, videoId, title }) => ({
+      title,
+      url: youTubeWatchUrl(videoId),
+      snippet: first(video, ["snippet", "description"], ["description"]).slice(0, 400),
+      source: youtubeChannelTitle(video) || "YouTube",
+      date: publishedAt.slice(0, 10),
+    }));
 }
 
 export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
@@ -443,6 +530,33 @@ export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
           first(video, ["snippet", "channelTitle"]),
           first(video, ["snippet", "publishedAt"]).slice(0, 10),
         ),
+      ),
+  },
+  {
+    id: "youtube-new-videos",
+    providerId: "youtube",
+    group: "watching",
+    title: "YouTube new videos",
+    description: "Reads this week's new videos from the channels you subscribe to.",
+    operation: "YOUTUBE_LIST_USER_SUBSCRIPTIONS",
+    parameters: () => ({ part: "snippet", maxResults: 50 }),
+    expand: {
+      operation: "YOUTUBE_LIST_CHANNEL_VIDEOS",
+      requests: (result, { date, now }) =>
+        sampleDeterministic(
+          youtubeSubscribedChannels(result),
+          YOUTUBE_CHANNEL_LIMIT,
+          `${date}:${now.getUTCHours()}`,
+        ).map((channelId) => ({
+          channelId,
+          part: "snippet,contentDetails,status",
+          maxResults: YOUTUBE_VIDEOS_PER_CHANNEL,
+        })),
+    },
+    items: (results, { now }) => youtubeNewVideoItems(results, now),
+    digest: (results) =>
+      lines(youtubeVideos(results), (video) =>
+        joinParts(first(video, ["snippet", "title"], ["title"]), youtubeChannelTitle(video)),
       ),
   },
   {
@@ -765,6 +879,14 @@ export const DISCOVER_SIGNALS: readonly DiscoverSignal[] = [
       ),
   },
 ];
+
+export function listDiscoverSignalOperations(signal: DiscoverSignal): string[] {
+  return signal.expand ? [signal.operation, signal.expand.operation] : [signal.operation];
+}
+
+export function isDiscoverFeedSignal(signal: DiscoverSignal): boolean {
+  return signal.items !== undefined;
+}
 
 export function findDiscoverSignal(id: string): DiscoverSignal | undefined {
   return DISCOVER_SIGNALS.find((signal) => signal.id === id);

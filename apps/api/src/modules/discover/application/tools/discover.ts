@@ -10,9 +10,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { attachDiscoverArticles } from "~/modules/discover/domain/articles";
 import { describeDiscoverContext } from "~/modules/discover/domain/context";
-import { readDeviceActivitySource } from "~/modules/discover/domain/device-activity";
 import { buildDiscoverEdition } from "~/modules/discover/domain/edition";
-import { buildDiscoverFeedGroups } from "~/modules/discover/domain/feed";
+import { buildDiscoverFeedGroups, splitDiscoverSignalFeeds } from "~/modules/discover/domain/feed";
 import {
   DISCOVER_HEADLINES_TOPIC,
   selectCurrentResearch,
@@ -73,13 +72,7 @@ export const compose_discover_edition: ApiToolDefinition = {
       listDiscoverDocuments(context, user.id),
       listDiscoverArticleSources(context),
     ]);
-    const readable = documents.signals.filter((document) => !document.error);
-    const browsed = readable.filter(
-      (document) => readDeviceActivitySource(document.providerId) !== null,
-    );
-    const shared = readable.filter(
-      (document) => readDeviceActivitySource(document.providerId) === null,
-    );
+    const { browsed, shared } = splitDiscoverSignalFeeds(documents.signals);
     const edition = buildDiscoverEdition({
       draft: args,
       date: basis.date,

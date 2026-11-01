@@ -1,4 +1,8 @@
-import { DISCOVER_SIGNAL_GROUPS, type DiscoverSignal } from "./signal-catalogue";
+import {
+  DISCOVER_SIGNAL_GROUPS,
+  listDiscoverSignalOperations,
+  type DiscoverSignal,
+} from "./signal-catalogue";
 
 export interface DiscoverSignalSelectionInput {
   signals: readonly DiscoverSignal[];
@@ -29,7 +33,11 @@ export function selectDiscoverSignals(
       continue;
     }
 
-    if (!input.supports(signal.providerId, signal.operation)) {
+    if (
+      !listDiscoverSignalOperations(signal).every((operation) =>
+        input.supports(signal.providerId, operation),
+      )
+    ) {
       unsupported.push(signal);
       continue;
     }

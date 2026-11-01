@@ -4,7 +4,10 @@ import {
   DISCOVER_RECIPE_ID,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { DISCOVER_SIGNALS } from "~/modules/discover/domain/signal-catalogue";
+import {
+  DISCOVER_SIGNALS,
+  listDiscoverSignalOperations,
+} from "~/modules/discover/domain/signal-catalogue";
 import { listDiscoverSignalProviders } from "~/modules/discover/domain/signal-selection";
 
 import type { CatalogRecipe } from "./shared";
@@ -31,9 +34,13 @@ const DISCOVER_SIGNAL_INTEGRATIONS: CatalogRecipe["integrations"] = listDiscover
   description: provider.description,
   requiresConnection: false,
   connectionGroup: provider.group,
-  operationIds: DISCOVER_SIGNALS.filter((signal) => signal.providerId === provider.providerId).map(
-    (signal) => signal.operation,
-  ),
+  operationIds: [
+    ...new Set(
+      DISCOVER_SIGNALS.filter((signal) => signal.providerId === provider.providerId).flatMap(
+        listDiscoverSignalOperations,
+      ),
+    ),
+  ],
 }));
 
 export const personalUtilityRecipes: CatalogRecipe[] = [

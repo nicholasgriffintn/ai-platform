@@ -5,6 +5,7 @@ import {
   truncateSingleLine,
 } from "@ngriffin_uk/polychat-utility-core";
 
+import { readDeviceActivitySource } from "./device-activity";
 import { discoverTopicKey } from "./edition";
 import { claimUnseenLink, type SeenDiscoverLinks } from "./links";
 import type { DiscoverResearchResult } from "./research";
@@ -68,6 +69,17 @@ function researchRank(topic: string, sources: DiscoverFeedSources): number {
   }
 
   return key === discoverTopicKey(sources.headlinesTopic) ? 3 : 2;
+}
+
+export function splitDiscoverSignalFeeds<T extends { providerId: string; error: string | null }>(
+  signals: readonly T[],
+): { browsed: T[]; shared: T[] } {
+  const readable = signals.filter((signal) => !signal.error);
+
+  return {
+    browsed: readable.filter((signal) => readDeviceActivitySource(signal.providerId) !== null),
+    shared: readable.filter((signal) => readDeviceActivitySource(signal.providerId) === null),
+  };
 }
 
 export function buildDiscoverFeedGroups(sources: DiscoverFeedSources): DiscoverFeedGroup[] {

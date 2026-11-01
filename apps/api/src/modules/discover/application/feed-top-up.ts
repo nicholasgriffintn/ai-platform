@@ -7,7 +7,11 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { attachDiscoverArticles } from "~/modules/discover/domain/articles";
 import { discoverTopicKey, listEditionLinks } from "~/modules/discover/domain/edition";
-import { buildDiscoverFeedGroups, fillDiscoverFeed } from "~/modules/discover/domain/feed";
+import {
+  buildDiscoverFeedGroups,
+  fillDiscoverFeed,
+  splitDiscoverSignalFeeds,
+} from "~/modules/discover/domain/feed";
 import { summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
 import { collectSeenLinks } from "~/modules/discover/domain/links";
 import {
@@ -44,6 +48,7 @@ export async function topUpDiscoverFeed(
   const hiddenTopics = new Set(
     summariseDiscoverFeedback(feedback).hiddenTopics.map(discoverTopicKey),
   );
+  const { browsed, shared } = splitDiscoverSignalFeeds(documents.signals);
   const research = selectCurrentResearch(documents.research, {
     today: input.today,
     hiddenTopics,
@@ -52,15 +57,16 @@ export async function topUpDiscoverFeed(
     fillDiscoverFeed({
       groups: buildDiscoverFeedGroups({
         research,
-        signals: [],
+        signals: shared.map((document) => ({ title: document.title, items: document.items })),
         headlinesTopic: DISCOVER_HEADLINES_TOPIC,
         followedTopics: new Set(follows.map((follow) => discoverTopicKey(follow.topic))),
         curate: input.curate,
         interestOrder: content.interests.map((interest) => interest.topic),
       }),
-      seen: collectSeenLinks(
-        listEditionLinks([content, ...earlier.map((edition) => edition.content)]),
-      ),
+      seen: collectSeenLinks([
+        ...listEditionLinks([content, ...earlier.map((edition) => edition.content)]),
+        ...browsed.flatMap((document) => document.items),
+      ]),
       skipTopics: hiddenTopics,
       limit: DISCOVER_MAX_EDITION_CARDS - content.cards.length,
       createId: generateId,

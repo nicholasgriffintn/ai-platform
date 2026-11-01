@@ -40,7 +40,12 @@ import {
   DISCOVER_HEADLINES_TOPIC,
   mergeResearchDocument,
 } from "~/modules/discover/domain/research";
-import { DISCOVER_SIGNALS, type DiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
+import {
+  DISCOVER_SIGNALS,
+  isDiscoverFeedSignal,
+  type DiscoverSignal,
+  type DiscoverSignalExpansion,
+} from "~/modules/discover/domain/signal-catalogue";
 import { renderSignalDocument } from "~/modules/discover/domain/signal-document";
 import { selectDiscoverSignals } from "~/modules/discover/domain/signal-selection";
 import { readKnowledgeText, withKnowledgeText } from "~/modules/knowledge/application/intake/body";
@@ -70,6 +75,7 @@ const TOPIC_NEWS_DAYS = 3;
 const DISCOVER_NEWS_LANGUAGE = "en";
 const CURATE_TOPIC_LIMIT = 4;
 const TOPIC_RESEARCH_CONCURRENCY = 3;
+const SIGNAL_EXPANSION_CONCURRENCY = 4;
 
 export interface DiscoverGatherSummary {
   read: string[];
@@ -134,6 +140,39 @@ async function researchSourceId(userId: number, topic: string): Promise<string> 
   return `discover_research_${(await sha256Hex(`${userId}:${discoverTopicKey(topic)}`)).slice(0, 24)}`;
 }
 
+type SignalOperationRunner = (
+  operation: string,
+  params: Record<string, unknown>,
+) => Promise<unknown>;
+
+async function expandSignal(
+  signal: DiscoverSignal,
+  expansion: DiscoverSignalExpansion,
+  listed: unknown,
+  read: Parameters<DiscoverSignal["parameters"]>[0],
+  run: SignalOperationRunner,
+): Promise<unknown[]> {
+  const requests = expansion.requests(listed, read);
+  const failures: unknown[] = [];
+  const results = await mapWithConcurrency(requests, SIGNAL_EXPANSION_CONCURRENCY, (params) =>
+    run(expansion.operation, params).catch((error: unknown) => {
+      failures.push(error);
+      logger.warn("Part of a Discover signal could not be read", {
+        signal: signal.id,
+        error_message: getErrorMessage(error),
+      });
+
+      return null;
+    }),
+  );
+
+  if (requests.length > 0 && failures.length === requests.length) {
+    throw failures[0];
+  }
+
+  return results.filter((result) => result !== null);
+}
+
 async function readSignal(
   context: ServiceContext,
   notebookId: string,
@@ -145,22 +184,27 @@ async function readSignal(
   const readAt = new Date().toISOString();
 
   try {
-    const result = await executeRecipeConnectorOperation({
-      context,
-      userId: user.id,
-      request: {
-        provider: recipeConnectorProviderSchema.parse(signal.providerId),
-        operation: signal.operation,
-        params: signal.parameters(read),
-      },
-      scope: {
-        completionId: context.connectorRunId,
-        conversationId: null,
-        recipeId: DISCOVER_RECIPE_ID,
-      },
-    });
+    const run: SignalOperationRunner = (operation, params) =>
+      executeRecipeConnectorOperation({
+        context,
+        userId: user.id,
+        request: {
+          provider: recipeConnectorProviderSchema.parse(signal.providerId),
+          operation,
+          params,
+        },
+        scope: {
+          completionId: context.connectorRunId,
+          conversationId: null,
+          recipeId: DISCOVER_RECIPE_ID,
+        },
+      });
+    const listed = await run(signal.operation, signal.parameters(read));
+    const result = signal.expand
+      ? await expandSignal(signal, signal.expand, listed, read, run)
+      : listed;
     const lines = signal.digest(result);
-    const feedItems = signal.items?.(result) ?? [];
+    const feedItems = signal.items?.(result, read) ?? [];
 
     if (lines.length === 0 && feedItems.length === 0 && containsRecordList(result)) {
       throw new AssistantError(
@@ -389,8 +433,8 @@ export async function runDiscoverGather(
     z.string(),
     async () => (await ensureDiscoverNotebook(context)).id,
   );
-  const { selected } =
-    scope === "full" ? await resolveDiscoverSignals(context, settings) : { selected: [] };
+  const { selected: available } = await resolveDiscoverSignals(context, settings);
+  const selected = scope === "full" ? available : available.filter(isDiscoverFeedSignal);
   const read: string[] = [];
   const stale: string[] = [];
   let topics: string[] = [];
@@ -413,7 +457,7 @@ export async function runDiscoverGather(
         continue;
       }
 
-      const ok = await steps.value(`signal-${signal.providerId}`, z.boolean(), async () => {
+      const ok = await steps.value(`signal-${signal.id}`, z.boolean(), async () => {
         try {
           return await readSignal(context, notebookId, signal, {
             date: zoned.date,

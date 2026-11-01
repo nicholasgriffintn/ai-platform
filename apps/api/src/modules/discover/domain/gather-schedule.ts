@@ -32,7 +32,7 @@ export function nextDiscoverGatherSlot(input: {
   ];
 
   return (
-    slots.find((slot) => slot.hour > input.hour) ?? {
+    slots.sort((left, right) => left.hour - right.hour).find((slot) => slot.hour > input.hour) ?? {
       date: shiftCalendarDate(input.date, 1),
       hour: DISCOVER_GATHER_HOUR,
       scope: "full",
