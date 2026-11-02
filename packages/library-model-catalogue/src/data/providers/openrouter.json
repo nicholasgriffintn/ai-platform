@@ -1846,7 +1846,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "September 15, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -2254,7 +2254,7 @@
       "overrides": {
         "maxTokens": 131072,
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "lastUpdated": "July 21, 2025",
@@ -2272,7 +2272,7 @@
       "matchingModel": "qwen/qwen3-235b-a22b-07-25:free",
       "overrides": {
         "isFree": true,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2417,8 +2417,8 @@
         "maxTokens": 235929,
         "speed": 4,
         "lastUpdated": "July 31, 2025",
-        "costPer1kInputTokens": 0.00007,
-        "costPer1kOutputTokens": 0.00028,
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": false
       }
     },
@@ -2854,8 +2854,8 @@
         "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "December 22, 2025",
-        "costPer1kInputTokens": 0.00054,
-        "costPer1kOutputTokens": 0.00198,
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0022,
         "supportsAttachments": false
       }
     },
@@ -2989,8 +2989,8 @@
         "name": "MoonshotAI Kimi Latest",
         "releaseDate": "April 27, 2026",
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.0001548,
-        "costPer1kOutputTokens": 0.0093388,
+        "costPer1kInputTokens": 0.0001495,
+        "costPer1kOutputTokens": 0.00715,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -3287,7 +3287,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6",
       "matchingModel": "anthropic/claude-sonnet-4.6",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "isFeatured": false,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
@@ -3613,7 +3613,7 @@
         ],
         "contextComplexity": 3,
         "reliability": 1,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 28, 2026",
         "costPer1kInputTokens": 0.0002574,
         "costPer1kOutputTokens": 0.0010287,
@@ -4008,7 +4008,6 @@
       "matchingModel": "google/gemma-4-26b-a4b-it",
       "overrides": {
         "name": "Gemma 4 26B A4B ",
-        "maxTokens": 235929,
         "modalities": {
           "input": [
             "image",
@@ -4027,11 +4026,11 @@
         ],
         "contextComplexity": 4,
         "reliability": 2,
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.0000675,
-        "costPer1kOutputTokens": 0.000225,
+        "costPer1kInputTokens": 0.000023,
+        "costPer1kOutputTokens": 0.000069,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -4045,7 +4044,7 @@
       "matchingModel": "google/gemma-4-26b-a4b-it:free",
       "overrides": {
         "isFree": true,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -4354,10 +4353,10 @@
       "matchingModel": "meta-llama/llama-3.2-3b-instruct",
       "overrides": {
         "contextWindow": 131072,
-        "maxTokens": 117964,
+        "maxTokens": 72000,
         "lastUpdated": "September 25, 2024",
-        "costPer1kInputTokens": 0.00005,
-        "costPer1kOutputTokens": 0.00033,
+        "costPer1kInputTokens": 0.0000509,
+        "costPer1kOutputTokens": 0.000335,
         "supportsToolCalls": false,
         "supportsAttachments": false
       }
@@ -4540,7 +4539,7 @@
         "name": "MiniMax M2.7",
         "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
         "maxTokens": 131072,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -5052,7 +5051,7 @@
           "vision",
           "document"
         ],
-        "speed": 2,
+        "speed": 3,
         "multimodal": true,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.0025,
@@ -5791,7 +5790,7 @@
       "matchingModel": "qwen/qwen3-vl-235b-a22b-instruct",
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.00021,
         "costPer1kOutputTokens": 0.0019
@@ -6631,7 +6630,7 @@
       "model": "openrouter/stepfun/step-3.7-flash/step-3-7-flash",
       "matchingModel": "stepfun/step-3.7-flash",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "May 29, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00115
@@ -6810,7 +6809,7 @@
         "speed": 3,
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.000006,
-        "costPer1kOutputTokens": 0.007,
+        "costPer1kOutputTokens": 0.0068,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -7124,7 +7123,7 @@
       "matchingModel": "openai/gpt-5.6-sol",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
@@ -7434,8 +7433,8 @@
       "matchingModel": "~deepseek/deepseek-v4-flash-latest",
       "overrides": {
         "lastUpdated": "August 1, 2026",
-        "costPer1kInputTokens": 0.0000369,
-        "costPer1kOutputTokens": 0.0001751,
+        "costPer1kInputTokens": 0.000059,
+        "costPer1kOutputTokens": 0.0003,
         "supportsAttachments": false
       }
     },
@@ -7749,8 +7748,8 @@
         "maxTokens": 943718,
         "speed": 3,
         "lastUpdated": "August 14, 2026",
-        "costPer1kInputTokens": 0.0000699,
-        "costPer1kOutputTokens": 0.0014,
+        "costPer1kInputTokens": 0.00008,
+        "costPer1kOutputTokens": 0.0036,
         "supportsAttachments": false
       }
     },
@@ -7879,7 +7878,7 @@
         "name": "MiniMax M2.7 (free)",
         "maxTokens": 176947,
         "isFree": true,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -8028,8 +8027,8 @@
         ],
         "speed": 3,
         "lastUpdated": "August 26, 2026",
-        "costPer1kInputTokens": 0.0000237,
-        "costPer1kOutputTokens": 0.0001142
+        "costPer1kInputTokens": 0.0000285,
+        "costPer1kOutputTokens": 0.0000923
       }
     },
     "ibm-granite/granite-4.2-8b": {
@@ -8048,8 +8047,8 @@
       "matchingModel": "~z-ai/glm-flash-latest",
       "overrides": {
         "lastUpdated": "August 27, 2026",
-        "costPer1kInputTokens": 0.0000237,
-        "costPer1kOutputTokens": 0.0001142
+        "costPer1kInputTokens": 0.0000285,
+        "costPer1kOutputTokens": 0.0000923
       }
     },
     "anthropic/claude-fable-5.1": {
@@ -8304,7 +8303,7 @@
       "overrides": {
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
         "maxTokens": 943718,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.000045,
         "costPer1kOutputTokens": 0.0005,
@@ -8428,8 +8427,8 @@
         "maxTokens": 943718,
         "releaseDate": "September 14, 2026",
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.0000205,
-        "costPer1kOutputTokens": 0.000228,
+        "costPer1kInputTokens": 0.000035,
+        "costPer1kOutputTokens": 0.0005,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -8453,7 +8452,7 @@
         "releaseDate": "September 14, 2026",
         "lastUpdated": "September 14, 2026",
         "costPer1kInputTokens": 0.0001035,
-        "costPer1kOutputTokens": 0.004,
+        "costPer1kOutputTokens": 0.008,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -8652,7 +8651,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00028
@@ -8675,7 +8674,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.000435,
         "costPer1kOutputTokens": 0.00087
@@ -8958,7 +8957,15 @@
         "speed": 4,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.0007,
-        "costPer1kOutputTokens": 0.0021
+        "costPer1kOutputTokens": 0.0021,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "anthropic/claude-haiku-5.5": {

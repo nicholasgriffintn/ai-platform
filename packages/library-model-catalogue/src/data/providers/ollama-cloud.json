@@ -2,6 +2,7 @@
   "defaults": {
     "supportsToolCalls": true,
     "supportsResponseFormat": false,
+    "supportsAttachments": true,
     "supportsTemperature": true
   },
   "models": {
@@ -20,7 +21,8 @@
         "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.0006
+        "costPer1kOutputTokens": 0.0006,
+        "supportsAttachments": false
       }
     },
     "gpt-oss:20b": {
@@ -37,7 +39,8 @@
         "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00007,
-        "costPer1kOutputTokens": 0.0003
+        "costPer1kOutputTokens": 0.0003,
+        "supportsAttachments": false
       }
     },
     "deepseek-v4-flash": {
@@ -51,6 +54,7 @@
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00066,
+        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high",
@@ -76,6 +80,7 @@
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00066,
         "costPer1kOutputTokens": 0.00198,
+        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -105,7 +110,8 @@
         "releaseDate": "March 27, 2026",
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.0032
+        "costPer1kOutputTokens": 0.0032,
+        "supportsAttachments": false
       },
       "unset": [
         "supportsResponseFormat",
@@ -124,6 +130,7 @@
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
+        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high",
@@ -261,7 +268,8 @@
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012
+        "costPer1kOutputTokens": 0.0012,
+        "supportsAttachments": false
       },
       "unset": [
         "supportsTemperature",
@@ -275,10 +283,11 @@
         "name": "minimax-m2.7",
         "contextWindow": 196608,
         "maxTokens": 196608,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012
+        "costPer1kOutputTokens": 0.0012,
+        "supportsAttachments": false
       }
     },
     "minimax-m3": {
@@ -324,7 +333,8 @@
       "overrides": {
         "lastUpdated": "December 15, 2025",
         "costPer1kInputTokens": 0.00006,
-        "costPer1kOutputTokens": 0.00024
+        "costPer1kOutputTokens": 0.00024,
+        "supportsAttachments": false
       }
     },
     "nemotron-3-super": {
@@ -336,7 +346,8 @@
         "knowledgeCutoffDate": "June 2025",
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.000015,
-        "costPer1kOutputTokens": 0.0006
+        "costPer1kOutputTokens": 0.0006,
+        "supportsAttachments": false
       }
     },
     "nemotron-3-ultra": {
@@ -349,6 +360,7 @@
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.003,
+        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -381,7 +393,8 @@
         "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044
+        "costPer1kOutputTokens": 0.0044,
+        "supportsAttachments": false
       }
     },
     "deepseek-v4.1-flash": {
@@ -389,7 +402,7 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "maxTokens": 384000,
-        "speed": 4,
+        "speed": 5,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00015,
@@ -421,7 +434,8 @@
       "matchingModel": "beam",
       "overrides": {
         "description": "Sparse mixture-of-experts reasoning model with 23B active parameters for coding and agentic workflows",
-        "lastUpdated": "October 16, 2026"
+        "lastUpdated": "October 16, 2026",
+        "supportsAttachments": false
       }
     },
     "minimax-m3.1-flash": {
@@ -467,6 +481,44 @@
           ],
           "defaultEffort": "low"
         }
+      }
+    },
+    "mimo-v2.6-flash": {
+      "model": "mimo/mimo-v2-6-flash",
+      "matchingModel": "mimo-v2.6-flash",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 2,
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.00014,
+        "costPer1kOutputTokens": 0.00028
+      }
+    },
+    "mimo-v2.6-pro": {
+      "model": "mimo/mimo-v2-6-pro",
+      "matchingModel": "mimo-v2.6-pro",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 2,
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.000435,
+        "costPer1kOutputTokens": 0.00087
       }
     }
   }

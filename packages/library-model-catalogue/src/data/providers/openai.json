@@ -732,7 +732,7 @@
           "vision",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "deprecated": true,
         "lastUpdated": "September 15, 2025",
         "dataRetention": {
@@ -1327,7 +1327,7 @@
           "document",
           "search"
         ],
-        "speed": 2,
+        "speed": 3,
         "multimodal": true,
         "lastUpdated": "March 5, 2026",
         "dataRetention": {
@@ -2100,7 +2100,7 @@
           "search",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "isFeatured": false,
         "lastUpdated": "July 9, 2026",
         "dataRetention": {

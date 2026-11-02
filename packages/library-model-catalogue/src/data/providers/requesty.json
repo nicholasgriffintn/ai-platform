@@ -585,7 +585,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 17, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -630,7 +630,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "October 1, 2024",
         "lastUpdated": "September 15, 2025",
         "costPer1kInputTokens": 0.00125,
@@ -898,7 +898,7 @@
       "model": "gpt/gpt-5-4",
       "matchingModel": "openai/gpt-5.4",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.015,
@@ -1255,7 +1255,7 @@
       "overrides": {
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -1277,7 +1277,7 @@
       "overrides": {
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.0033,
         "costPer1kOutputTokens": 0.0165,
@@ -1518,7 +1518,7 @@
       "model": "gpt/gpt-5-4-eu",
       "matchingModel": "gpt-5.4@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.00275,
         "costPer1kOutputTokens": 0.0165
@@ -1550,7 +1550,7 @@
       "model": "gpt-sol/gpt-5-6-sol-eu",
       "matchingModel": "gpt-5.6-sol@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0044,
         "costPer1kOutputTokens": 0.022,
@@ -1985,7 +1985,6 @@
       "model": "gemma/gemma-4-26b-a4b-it",
       "matchingModel": "gemma-4-26b-a4b-it",
       "overrides": {
-        "maxTokens": 32768,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.00034,
@@ -2158,7 +2157,7 @@
       "model": "gpt/gpt-5-4",
       "matchingModel": "gpt-5.4",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.00275,
         "costPer1kOutputTokens": 0.0165,
@@ -2329,7 +2328,7 @@
       "model": "gpt-sol/gpt-5-6-sol",
       "matchingModel": "gpt-5.6-sol",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
@@ -2804,7 +2803,7 @@
         "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
         "contextWindow": 200000,
         "maxTokens": 128000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -3555,7 +3554,7 @@
       "model": "requesty/step-3.7-flash/step-3-7-flash",
       "matchingModel": "step-3.7-flash",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "May 29, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00115
@@ -3862,7 +3861,7 @@
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
         "maxTokens": 393216,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015,
@@ -3882,7 +3881,7 @@
       "model": "deepseek-flash/deepseek-v4-1-flash-eu",
       "matchingModel": "deepseek-v4.1-flash@eu",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015
@@ -3998,7 +3997,18 @@
       "model": "mimo/mimo-v2-6-flash",
       "matchingModel": "mimo-v2.6-flash",
       "overrides": {
-        "speed": 3,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00028,
@@ -4018,7 +4028,18 @@
       "model": "mimo/mimo-v2-6-pro",
       "matchingModel": "mimo-v2.6-pro",
       "overrides": {
-        "speed": 3,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00043,

@@ -533,7 +533,7 @@
           ]
         },
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -750,7 +750,7 @@
       "model": "gpt-sol/gpt-5-6-sol",
       "matchingModel": "gpt-5.6-sol",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02

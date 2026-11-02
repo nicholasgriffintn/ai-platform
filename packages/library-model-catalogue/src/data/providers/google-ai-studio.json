@@ -776,7 +776,6 @@
       "matchingModel": "gemma-4-26b-a4b-it",
       "overrides": {
         "name": "Gemma 4 26B",
-        "maxTokens": 32768,
         "isFree": true,
         "lastUpdated": "April 2, 2026",
         "dataRetention": {

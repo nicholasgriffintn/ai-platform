@@ -294,7 +294,6 @@
       "matchingModel": "google/gemma-4-26B-A4B-it",
       "overrides": {
         "name": "Gemma 4 26B",
-        "maxTokens": 32768,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.00034
@@ -789,7 +788,7 @@
       "model": "deepseek/deepseek-v3",
       "matchingModel": "deepseek-ai/DeepSeek-V3",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 26, 2024",
         "costPer1kInputTokens": 0.00032,
         "costPer1kOutputTokens": 0.00089,
@@ -815,7 +814,7 @@
       "overrides": {
         "name": "Qwen3 235B-A22B Instruct 2507",
         "maxTokens": 16384,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.00055,
@@ -917,7 +916,7 @@
       "model": "qwen/qwen3-vl-235b-a22b-instruct",
       "matchingModel": "Qwen/Qwen3-VL-235B-A22B-Instruct",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00088
@@ -1012,7 +1011,7 @@
       "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash",
       "overrides": {
         "maxTokens": 384000,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0006,
@@ -1071,7 +1070,18 @@
       "model": "mimo/mimo-v2-6-flash",
       "matchingModel": "XiaomiMiMo/MiMo-V2.6-Flash",
       "overrides": {
-        "speed": 3,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00014,
@@ -1082,7 +1092,18 @@
       "model": "mimo/mimo-v2-6-pro",
       "matchingModel": "XiaomiMiMo/MiMo-V2.6-Pro",
       "overrides": {
-        "speed": 3,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00043,
