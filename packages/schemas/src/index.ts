@@ -152,6 +152,7 @@ export * from "./work-outputs.js";
 export * from "./study-outputs.js";
 export * from "./notebooks.js";
 export * from "./discover.js";
+export * from "./discover-day.js";
 export * from "./discover-episodes.js";
 export * from "./discover-wind-down.js";
 export * from "./ocr.js";
@@ -247,3 +248,5 @@ export * from "./project-task-integrations.js";
 export * from "./site-data.js";
 export * from "./site-browser.js";
 export * from "./document-collaboration.js";
+
+export * from "./places.js";

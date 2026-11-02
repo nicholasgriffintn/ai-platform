@@ -20,7 +20,7 @@ export function DiscoverStoryTile({
   onStart: (card: DiscoverStoryCard) => void;
 }) {
   return (
-    <div data-discover-item="media:story" className="flex">
+    <div data-discover-item="media:story" data-discover-feed-id={card.id} className="flex">
       <MediaTile
         art={
           <DiscoverSceneArt>

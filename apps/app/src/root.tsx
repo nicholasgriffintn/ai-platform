@@ -43,9 +43,11 @@ function AppProviders({ children }: { children: React.ReactNode }) {
           <CustomResponseViewProvider views={customResponseViews}>
             <ArtifactDataProvider>
               <PolychatProvider>
-                <MediaDockProvider>
-                  <WebShellHost>{children}</WebShellHost>
-                </MediaDockProvider>
+                <LoadingProvider>
+                  <MediaDockProvider>
+                    <WebShellHost>{children}</WebShellHost>
+                  </MediaDockProvider>
+                </LoadingProvider>
               </PolychatProvider>
             </ArtifactDataProvider>
           </CustomResponseViewProvider>
@@ -66,18 +68,16 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
 export default function Root() {
   return (
     <>
-      <LoadingProvider>
-        <AppInitializer>
-          <CaptchaProvider>
-            <PageViewTracker />
-            <Outlet />
-            <ServiceWorkerRegistration />
-            <ClientUpdateWatcher />
-            <ThemedToaster />
-            <AgeGateDialog />
-          </CaptchaProvider>
-        </AppInitializer>
-      </LoadingProvider>
+      <AppInitializer>
+        <CaptchaProvider>
+          <PageViewTracker />
+          <Outlet />
+          <ServiceWorkerRegistration />
+          <ClientUpdateWatcher />
+          <ThemedToaster />
+          <AgeGateDialog />
+        </CaptchaProvider>
+      </AppInitializer>
       <ReactQueryDevtools initialIsOpen={false} />
     </>
   );

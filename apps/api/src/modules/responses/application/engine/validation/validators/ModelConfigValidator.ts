@@ -1,5 +1,6 @@
 import { resolveRequestUser } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { selectModels } from "~/modules/models/application/access";
@@ -46,25 +47,18 @@ export class ModelConfigValidator implements Validator {
 
     const lastMessageContent = Array.isArray(context.lastMessage.content)
       ? context.lastMessage.content
-      : [
-          {
-            type: "text" as const,
-            text: context.lastMessage.content as string,
-          },
-        ];
+      : [];
 
     const { allAttachments } = getAllAttachments(lastMessageContent);
 
     const storedSelection = await resolveConversationModelSelection(options);
     const userSettings = options.context ? await getRequestUserSettings(options.context) : null;
     const hasExplicitModel = Boolean(requestedModel || requestedModels?.length);
+    const followsModelTier = Boolean(options.model_tier || storedSelection.modelTier);
     const effectiveModel =
       requestedModel ??
-      (!requestedModels?.length
-        ? (storedSelection.modelId ??
-          (!storedSelection.conversationExists && !options.model_tier
-            ? (userSettings?.default_model_id ?? undefined)
-            : undefined))
+      (!requestedModels?.length && !followsModelTier
+        ? (storedSelection.modelId ?? userSettings?.default_model_id ?? undefined)
         : undefined);
     const usesModelTier = !hasExplicitModel && !effectiveModel;
     const tier = await resolveProjectModelTier(options);
@@ -130,7 +124,7 @@ export class ModelConfigValidator implements Validator {
             : {}),
         },
       };
-    } catch (error: any) {
+    } catch (error) {
       if (
         error instanceof AssistantError &&
         (error.type === ErrorType.AUTHENTICATION_ERROR ||
@@ -144,7 +138,7 @@ export class ModelConfigValidator implements Validator {
       return {
         validation: {
           isValid: false,
-          error: `Model validation failed: ${error.message}`,
+          error: `Model validation failed: ${getErrorMessage(error, "Unknown error")}`,
           validationType: "model",
         },
         context: {},

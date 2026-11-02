@@ -338,6 +338,7 @@ struct ProjectConversation: Decodable, Identifiable, Equatable {
 struct WorkInboxItem: Decodable, Identifiable, Hashable {
     let id: String
     let kind: String
+    var readAt: String? = nil
     let workspaceId: String?
     let projectId: String?
     let taskId: String?

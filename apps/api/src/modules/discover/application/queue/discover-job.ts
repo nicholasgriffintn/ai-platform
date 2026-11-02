@@ -16,13 +16,16 @@ import type { TaskResult } from "~/modules/queue/application/types";
 import { loadUserContext } from "~/modules/queue/application/user-context";
 import { defineTask } from "~/modules/queue/application/workflows";
 
+import { produceDiscoverAudio } from "../audio-releases";
 import { researchDiscoverEdition } from "../briefings";
 import { drawDiscoverCovers } from "../covers";
+import { refreshDiscoverCurrent } from "../current";
 import { renderDiscoverEpisode } from "../episode-render";
 import { produceDiscoverEpisode } from "../episodes";
 import { fileDiscoverLinks } from "../follows";
 import { runDiscoverGather } from "../gather";
 import { produceDiscoverListen } from "../listen";
+import { deliverDiscoverNotification } from "../notification-delivery";
 import { tidyDiscover } from "../retention";
 import { produceSeasonListen } from "../season-listen";
 import { produceYourWeek } from "../week";
@@ -122,7 +125,28 @@ async function runDiscoverJob(
   context: ServiceContext,
   job: DiscoverJobTaskData,
   steps: TaskSteps,
+  assertOwned: () => Promise<void>,
 ): Promise<TaskResult> {
+  if (job.job === "notification") {
+    await deliverDiscoverNotification(context, job.notificationId, assertOwned);
+
+    return { status: "success", message: "Discover notification evaluated" };
+  }
+
+  if (job.job === "current") {
+    const result = await refreshDiscoverCurrent(context, { ...job, assertOwned });
+
+    return { status: "success", message: `Added ${result.added} Discover developments` };
+  }
+
+  if (job.job === "audio") {
+    await assertOwned();
+    await refreshDiscoverCurrent(context, { installationId: job.installationId, assertOwned });
+    await produceDiscoverAudio(context, { ...job, assertOwned, steps });
+
+    return { status: "success", message: "Discover briefing evaluated" };
+  }
+
   if (job.job === "edition") {
     return runEditionJob(context, job, steps);
   }
@@ -131,13 +155,15 @@ async function runDiscoverJob(
     const startedAt = await steps.value("started", z.number(), async () => Date.now());
     const gathered = await runDiscoverGather(context, {
       scope: job.scope,
+      installationId: job.installationId,
+      scheduledAt: job.scheduledAt,
       now: new Date(startedAt),
       steps,
     });
 
     return {
       status: "success",
-      message: `Read ${gathered.read.length} services, researched ${gathered.topics.length} topics and added ${gathered.added} feed items`,
+      message: `Read ${gathered.read.length} services and researched ${gathered.topics.length} topics`,
     };
   }
 
@@ -189,6 +215,7 @@ export const discoverJob = defineTask<DiscoverJobTaskData>({
       job.runId ? withExecutionRunContext(owner, job.runId) : owner,
       job,
       execution.steps,
+      () => execution.fence.assertOwned(),
     );
   },
 });

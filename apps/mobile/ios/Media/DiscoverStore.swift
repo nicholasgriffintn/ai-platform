@@ -12,18 +12,26 @@ final class DiscoverStore: ObservableObject {
     @Published private(set) var mediaArt: [DiscoverMediaItem: UIImage] = [:]
     @Published private(set) var credentialRejected = false
     @Published var error: String?
+    @Published private(set) var selectedBriefingId: String?
+    @Published private(set) var laterFeedItems: [DiscoverFeedItem] = []
+    @Published private(set) var nextFeedCursor: String?
+    @Published private(set) var isLoadingMore = false
+    private var pendingSeen = Set<String>()
+    private var currentRefreshRequestedAt: Date?
 
     private var artCache: [String: UIImage] = [:]
 
     private let apiClient: APIClient
     private let onEdition: (DiscoverEdition?) -> Void
+    private let onDiscover: (DiscoverResponse?) -> Void
     private static let coverPixelSize: CGFloat = 768
     private static let artPixelSize: CGFloat = 1920
     private static let imageConcurrency = 4
 
-    init(apiClient: APIClient = .shared, onEdition: @escaping (DiscoverEdition?) -> Void = { _ in }) {
+    init(apiClient: APIClient = .shared, onEdition: @escaping (DiscoverEdition?) -> Void = { _ in }, onDiscover: @escaping (DiscoverResponse?) -> Void = { _ in }) {
         self.apiClient = apiClient
         self.onEdition = onEdition
+        self.onDiscover = onDiscover
     }
 
     func loadIfNeeded() async {
@@ -36,8 +44,15 @@ final class DiscoverStore: ObservableObject {
         defer { isLoading = false }
 
         do {
-            discover = try await apiClient.fetchDiscover()
+            let updated = try await apiClient.fetchDiscover()
+            if updated.feed?.updatedAt != discover?.feed?.updatedAt || discover == nil {
+                laterFeedItems = []
+                nextFeedCursor = updated.feed?.nextCursor
+            }
+            discover = updated
             onEdition(discover?.edition)
+            onDiscover(discover)
+            await requestCurrentRefreshIfNeeded(updated)
             if discover?.edition != nil {
                 isWriting = false
             }
@@ -59,7 +74,97 @@ final class DiscoverStore: ObservableObject {
     }
 
     var edition: DiscoverEdition? {
-        viewedEdition ?? discover?.edition
+        if let viewedEdition { return viewedEdition }
+        guard var edition = discover?.edition ?? DiscoverLivePresentation.edition(items: feedItems, reference: nil, now: discover?.now) else { return nil }
+        let release = discover?.briefings?.first { $0.id == selectedBriefingId } ?? discover?.briefings?.first { $0.date == discover?.now?.context.date && $0.sourceId != nil && $0.status != "failed" }
+        edition.listenSourceId = release?.sourceId ?? edition.listenSourceId
+        return edition
+    }
+
+    var currentBrief: [DiscoverBriefLine] {
+        if let viewedEdition { return viewedEdition.brief }
+        return DiscoverLivePresentation.brief(discover: discover)
+    }
+
+    func selectBriefing(_ id: String?) async {
+        selectedBriefingId = id
+        await loadMedia()
+    }
+
+    var feedItems: [DiscoverFeedItem] {
+        DiscoverLivePresentation.merge(discover?.feed?.items ?? [], laterFeedItems)
+    }
+
+    var cardEdition: DiscoverEdition? {
+        guard isViewingLatest, discover?.feed != nil else { return edition }
+        return DiscoverLivePresentation.edition(items: feedItems, reference: edition, now: discover?.now, mutedTopics: discover?.dayProfile?.mutedTopics ?? [], feedUpdatedAt: discover?.feed?.updatedAt) ?? edition
+    }
+
+    func edition(for item: DiscoverItem) -> DiscoverEdition? {
+        guard let card = item.card else { return edition }
+        return feedItems.contains { $0.card.id == card.id } ? cardEdition : edition
+    }
+
+    func loadMore() async {
+        guard let cursor = nextFeedCursor, !isLoadingMore else { return }
+        isLoadingMore = true
+        let version = discover?.feed?.updatedAt
+        defer { isLoadingMore = false }
+        do {
+            let page = try await apiClient.fetchDiscoverFeed(before: cursor)
+            guard version == discover?.feed?.updatedAt else { return }
+            laterFeedItems = DiscoverLivePresentation.merge(laterFeedItems, page.items)
+            nextFeedCursor = page.nextCursor
+            await loadCovers()
+        } catch { self.error = "More stories could not be loaded: \(error.localizedDescription)" }
+    }
+
+    func markSeen(_ item: DiscoverFeedItem) async {
+        let key = "\(item.id):\(item.revision)"
+        guard !item.seen, pendingSeen.insert(key).inserted else { return }
+        defer { pendingSeen.remove(key) }
+        do {
+            _ = try await apiClient.markDiscoverSeen(DiscoverSeenRequest(items: [.init(id: item.id, revision: item.revision)]))
+            if let index = discover?.feed?.items.firstIndex(where: { $0.id == item.id && $0.revision == item.revision }) {
+                discover?.feed?.items[index].seen = true
+            }
+            if let index = laterFeedItems.firstIndex(where: { $0.id == item.id && $0.revision == item.revision }) { laterFeedItems[index].seen = true }
+        } catch { return }
+    }
+
+    func dismiss(_ item: DiscoverFeedItem) async {
+        do {
+            _ = try await apiClient.dismissDiscoverItem(item.id)
+            discover?.feed?.items.removeAll { $0.id == item.id }
+            laterFeedItems.removeAll { $0.id == item.id }
+        } catch { self.error = "That story could not be dismissed: \(error.localizedDescription)" }
+    }
+
+    func refreshCurrent() async {
+        do { _ = try await apiClient.refreshDiscoverCurrent(); await refresh() }
+        catch { self.error = "Current updates could not be checked: \(error.localizedDescription)" }
+    }
+
+    private func requestCurrentRefreshIfNeeded(_ response: DiscoverResponse) async {
+        guard response.settings.enabled,
+              let deadline = response.now.flatMap({ AppDateParser.parse($0.nextRefreshAt) }),
+              deadline <= Date() else { return }
+        if let requested = currentRefreshRequestedAt, Date().timeIntervalSince(requested) < 5 * 60 { return }
+        currentRefreshRequestedAt = Date()
+        _ = try? await apiClient.refreshDiscoverCurrent()
+    }
+
+    func saveDay(_ request: DiscoverDayRequest) async throws {
+        discover?.dayProfile = try await apiClient.updateDiscoverDay(request)
+        await refresh()
+    }
+
+    func cardForLink(_ id: String) async -> DiscoverCard? {
+        while !feedItems.contains(where: { $0.id == id }), let cursor = nextFeedCursor {
+            await loadMore()
+            if nextFeedCursor == cursor { break }
+        }
+        return cardEdition?.cards.first { $0.id == id }
     }
 
     var isViewingLatest: Bool {
@@ -111,7 +216,7 @@ final class DiscoverStore: ObservableObject {
     }
 
     var items: [DiscoverItem] {
-        let cards = (edition?.cards ?? []).filter { !signals(for: $0).contains("hide") }
+        let cards = (cardEdition?.cards ?? []).filter { !signals(for: $0).contains("hide") }
         return DiscoverItem.ordered(media: visibleMedia, cards: cards)
     }
 
@@ -142,7 +247,7 @@ final class DiscoverStore: ObservableObject {
         }
 
         async let episode = fetchEpisode(edition.episodeId)
-        async let perch = fetchRecording(.listen, of: edition, present: edition.listenSourceId != nil)
+        async let perch = fetchSource(edition.listenSourceId)
         async let week = fetchRecording(.week, of: edition, present: edition.weekSourceId != nil)
         async let windDown = fetchWindDown(discover.windDownId)
 
@@ -181,6 +286,11 @@ final class DiscoverStore: ObservableObject {
         return try? await apiClient.fetchDiscoverEpisode(id: id)
     }
 
+    private func fetchSource(_ id: String?) async -> MediaSource? {
+        guard let id else { return nil }
+        return try? await apiClient.fetchSource(id: id)
+    }
+
     private func fetchRecording(_ recording: DiscoverRecording, of edition: DiscoverEdition, present: Bool) async -> MediaSource? {
         guard present else { return nil }
         return try? await apiClient.fetchDiscoverRecording(editionId: edition.id, recording: recording)
@@ -207,6 +317,7 @@ final class DiscoverStore: ObservableObject {
     }
 
     func reset() {
+        currentRefreshRequestedAt = nil
         discover = nil
         viewedEdition = nil
         media = [:]
@@ -214,6 +325,10 @@ final class DiscoverStore: ObservableObject {
         covers = [:]
         artCache = [:]
         isWriting = false
+        laterFeedItems = []
+        nextFeedCursor = nil
+        pendingSeen = []
+        selectedBriefingId = nil
         error = nil
     }
 
@@ -249,24 +364,27 @@ final class DiscoverStore: ObservableObject {
     }
 
     func send(_ signal: String, for card: DiscoverCard) async {
-        guard let edition else { return }
+        guard let edition = edition(for: .card(card)) else { return }
 
         do {
             let response = try await apiClient.sendDiscoverFeedback(
                 DiscoverFeedbackRequest(editionId: edition.id, cardId: card.id, signal: signal)
             )
-            updateEdition { $0.feedback[response.cardId] = response.signals }
+            if isViewingLatest, feedItems.contains(where: { $0.card.id == card.id }) {
+                if let index = discover?.feed?.items.firstIndex(where: { $0.id == card.id }) { discover?.feed?.items[index].signals = response.signals }
+                if let index = laterFeedItems.firstIndex(where: { $0.id == card.id }) { laterFeedItems[index].signals = response.signals }
+            } else { updateEdition { $0.feedback[response.cardId] = response.signals } }
         } catch {
             self.error = "That feedback did not save: \(error.localizedDescription)"
         }
     }
 
     func signals(for card: DiscoverCard) -> [String] {
-        edition?.feedback[card.id] ?? []
+        cardEdition?.feedback[card.id] ?? []
     }
 
     func cards(in section: DiscoverSection) -> [DiscoverCard] {
-        (edition?.cards ?? []).filter { $0.section == section && !signals(for: $0).contains("hide") }
+        (cardEdition?.cards ?? []).filter { $0.section == section && !signals(for: $0).contains("hide") }
     }
 
     private static let refreshMessages = [
@@ -286,7 +404,7 @@ final class DiscoverStore: ObservableObject {
     }
 
     private func loadCovers() async {
-        let missing = Set((edition?.cards ?? []).compactMap(\.coverId)).subtracting(covers.keys)
+        let missing = Set((cardEdition?.cards ?? []).compactMap(\.coverId)).subtracting(covers.keys)
         guard !missing.isEmpty else { return }
 
         let loaded = await ImageDownsampling.images(

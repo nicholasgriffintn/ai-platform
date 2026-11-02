@@ -43,7 +43,8 @@ export function DiscoverItemPanel({
   shown: DiscoverItem | null;
   occupied: boolean;
 }) {
-  const { ownEdition: edition, mediaPlaying, media, closePanel } = controller;
+  const { panelEdition: edition, mediaPlaying, media, closePanel } = controller;
+  const mediaEdition = controller.mediaEdition;
   const playingMedia = useMemo<DiscoverItem>(() => ({ type: "media", media }), [media]);
   const mediaItem =
     shown?.type === "media" ? shown : shown?.type === "card" && mediaPlaying ? playingMedia : null;
@@ -86,12 +87,12 @@ export function DiscoverItemPanel({
             <DiscoverIdlePane />
           </>
         ) : null}
-        {edition && mediaItem ? (
+        {mediaEdition && mediaItem ? (
           <div className={cn("flex min-h-0 flex-1 flex-col", cardItem && "hidden")}>
             <DiscoverItemView
               key={discoverItemKey(mediaItem)}
               item={mediaItem}
-              edition={edition}
+              edition={mediaEdition}
               controller={controller}
               playEntrance={playEntrance}
             />

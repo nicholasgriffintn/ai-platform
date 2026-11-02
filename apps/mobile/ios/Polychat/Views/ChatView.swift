@@ -175,6 +175,11 @@ struct ChatView: View {
         .task(id: activeModelId) {
             await modelsStore.refreshModelsIfNeeded(for: activeModelId)
         }
+        .task(id: "\(conversation?.id ?? ""):\(conversationManager.composerPrefill?.id.uuidString ?? "")") {
+            guard let prefill = conversationManager.composerPrefill, prefill.conversationId == conversation?.id else { return }
+            messageText += messageText.isEmpty ? prefill.text : "\n\n\(prefill.text)"
+            conversationManager.composerPrefill = nil
+        }
         .onChange(of: isStreaming) { _, streaming in
             if !streaming {
                 Task { await conversationManager.submitApprovalsIfReady() }

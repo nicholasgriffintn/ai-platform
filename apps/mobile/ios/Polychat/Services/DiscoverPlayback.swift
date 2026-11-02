@@ -16,12 +16,12 @@ final class DiscoverPlayback: ObservableObject {
         observe(windDown.$isPlaying, as: .windDown)
     }
 
-    func listen(_ item: DiscoverMediaItem, editionId: String) -> ListenPlaybackController {
-        if let existing = listens[item], existing.editionId == editionId {
+    func listen(_ item: DiscoverMediaItem, editionId: String, sourceId: String? = nil) -> ListenPlaybackController {
+        if let existing = listens[item], existing.editionId == editionId, existing.sourceId == sourceId {
             return existing
         }
         listens[item]?.stop()
-        let controller = ListenPlaybackController(item: item, editionId: editionId)
+        let controller = ListenPlaybackController(item: item, editionId: editionId, sourceId: sourceId)
         listens[item] = controller
         observe(controller.player.$isPlaying, as: item)
         return controller

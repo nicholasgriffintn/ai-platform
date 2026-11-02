@@ -8,6 +8,7 @@ import {
   resolveServiceContext,
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
+import { getImageProvider } from "~/infrastructure/providers/capabilities/image";
 import { hasUserProviderApiKey } from "~/infrastructure/providers/credentials";
 import { requireSystemModel } from "~/modules/models/application/resolve";
 import type { IEnv, IUser } from "~/types";
@@ -119,9 +120,11 @@ export async function generateImage({
       },
     };
 
-    const imageData = await ai.image(request, {
-      provider: providerName,
-    });
+    const imageData = await getImageProvider(providerName, {
+      env: runtimeEnv,
+      user: runtimeUser,
+      serviceContext,
+    }).generate(request);
 
     return {
       status: "success",

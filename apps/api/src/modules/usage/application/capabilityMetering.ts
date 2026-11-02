@@ -31,16 +31,15 @@ export function withCapabilityMetering<T>(
     return instance;
   }
 
-  const target = instance as object;
-  const canonicalName =
-    typeof (target as { name?: unknown }).name === "string"
-      ? (target as { name: string }).name
-      : providerName;
+  const target = instance;
+  const name: unknown = Reflect.get(target, "name");
+  const canonicalName = typeof name === "string" ? name : providerName;
   const runtime = createUsageRuntime({
     env,
     repositories: context?.serviceContext?.repositories,
   });
   const runId = context?.serviceContext?.executionRunId;
+  const activityId = context?.serviceContext?.executionActivityId;
   const runAttempt = context?.serviceContext?.executionRunAttempt;
 
   return new Proxy(target, {
@@ -65,6 +64,7 @@ export function withCapabilityMetering<T>(
           providerName: canonicalName,
           userId,
           runId,
+          activityId,
           runAttempt,
           args,
           result,
@@ -74,5 +74,5 @@ export function withCapabilityMetering<T>(
         return result;
       };
     },
-  }) as T;
+  });
 }

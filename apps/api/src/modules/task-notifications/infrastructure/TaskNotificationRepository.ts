@@ -17,6 +17,7 @@ import {
   sha256Hex,
 } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
+import z from "zod/v4";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { TaskNotificationDeliveryRow } from "~/infrastructure/database/schema";
@@ -142,7 +143,53 @@ function formatRegistration(row: RegistrationRow): TaskNotificationRegistration 
   };
 }
 
+const webDestinationSchema = z.object({
+  endpoint: z.url().refine((url) => url.startsWith("https://")),
+  p256dh: z.string(),
+  authSecret: z.string().optional(),
+  auth: z.string().optional(),
+});
+
 export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" | "PRIVATE_KEY">> {
+  async readWebDestination(userId: number, endpointId: string) {
+    const row = await this.runQuery<{ installation_id: string; destination_json: unknown }>(
+      "SELECT installation_id, destination_json FROM notification_endpoint WHERE user_id = ? AND id = ? AND platform = 'web' AND state = 'registered'",
+      [userId, endpointId],
+      true,
+    );
+
+    return row ? this.decryptDestination(userId, row) : null;
+  }
+
+  private async decryptDestination(
+    userId: number,
+    row: Pick<RegistrationRow, "installation_id" | "destination_json">,
+  ) {
+    const encrypted =
+      typeof row.destination_json === "string"
+        ? safeParseJson(row.destination_json)
+        : row.destination_json;
+
+    if (!this.env.PRIVATE_KEY || !isEncryptedJsonPayload(encrypted)) {
+      return null;
+    }
+
+    const decrypted = await decryptJsonPayload({
+      keyMaterial: this.env.PRIVATE_KEY,
+      encrypted,
+      additionalData: `${userId}:web:${row.installation_id}`,
+    });
+    const parsed = webDestinationSchema.safeParse(decrypted);
+
+    return parsed.success
+      ? {
+          endpoint: parsed.data.endpoint,
+          p256dh: parsed.data.p256dh,
+          auth: parsed.data.auth ?? parsed.data.authSecret,
+        }
+      : null;
+  }
+
   async getPreferences(userId: number): Promise<TaskNotificationPreferences> {
     const row = await this.runQuery<PreferenceRow>(
       `SELECT COALESCE(json_extract(task_notification_preferences, '$.enabled'), 1) AS enabled, COALESCE(json_extract(task_notification_preferences, '$.decisions'), 1) AS decisions, COALESCE(json_extract(task_notification_preferences, '$.failures'), 1) AS failures, COALESCE(json_extract(task_notification_preferences, '$.completions'), 1) AS completions, COALESCE(json_extract(task_notification_preferences, '$.assignments'), 1) AS assignments
@@ -428,25 +475,10 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
       return null;
     }
 
-    const storedDestination =
-      typeof row.destination_json === "string"
-        ? safeParseJson(row.destination_json)
-        : row.destination_json;
+    const destination = await this.decryptDestination(row.user_id, row);
 
-    if (!isEncryptedJsonPayload(storedDestination) || !this.env.PRIVATE_KEY) {
-      throw new Error("Notification destination is not decryptable");
-    }
-
-    const destination = await decryptJsonPayload({
-      keyMaterial: this.env.PRIVATE_KEY,
-      encrypted: storedDestination,
-      additionalData: `${row.user_id}:${row.platform}:${row.installation_id}`,
-      invalidMessage: "Notification destination is invalid",
-      reconnectMessage: "Notification registration must be replaced",
-    });
-
-    if (typeof destination.endpoint !== "string") {
-      throw new Error("Notification destination endpoint is missing");
+    if (!destination) {
+      throw new Error("Notification destination is invalid");
     }
 
     return {
@@ -460,7 +492,7 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
         destination_json: row.destination_json,
         endpoint: destination.endpoint,
         p256dh: typeof destination.p256dh === "string" ? destination.p256dh : null,
-        authSecret: typeof destination.authSecret === "string" ? destination.authSecret : null,
+        authSecret: destination.auth ?? null,
         state: row.state,
         failure_code: row.failure_code,
         updated_at: row.registration_updated_at,

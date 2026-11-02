@@ -179,6 +179,7 @@ purge-keys.json
 *.DS_Store
 apps/app/stats.html
 apps/app/build
+apps/mobile/**/build
 
 .react-router
 

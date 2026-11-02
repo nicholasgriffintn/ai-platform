@@ -77,15 +77,15 @@ export function useStreamingResponse(
   const { stopLoading, updateLoading } = useLoadingActions();
   const {
     chatMode,
-    computeSite,
-    model,
+    computeSite: sharedComputeSite,
+    model: sharedModel,
     chatSettings,
     isAuthenticated,
     isPro,
     temporaryChat,
     temporaryChatsDefault,
     useMultiModel,
-    modelTier,
+    modelTier: sharedModelTier,
     permissionMode,
     selectedTeammateId,
     markConversationRemoteAvailable,
@@ -134,7 +134,11 @@ export function useStreamingResponse(
     currentConversationId,
     agent: scopeAgent,
     defaultAgent: scopeDefaultAgent,
+    modelSelection,
   } = useConversationScope();
+  const model = modelSelection ? modelSelection.model : sharedModel;
+  const modelTier = modelSelection ? modelSelection.modelTier : sharedModelTier;
+  const computeSite = modelSelection ? modelSelection.computeSite : sharedComputeSite;
   const currentStream = useStreamActivityStore((state) =>
     currentConversationId ? state.streams[currentConversationId] : undefined,
   );
@@ -176,7 +180,13 @@ export function useStreamingResponse(
         return;
       }
 
-      const cancelled = await apiService.cancelResponse(observed.id, observed.attempt);
+      const { response: latest } = await apiService.getResponse(observed.id);
+
+      if (isTerminalResponseStatus(latest.status)) {
+        return;
+      }
+
+      const cancelled = await apiService.cancelResponse(latest.id, latest.attempt);
 
       observedRunsRef.current[conversationId] = {
         id: cancelled.id,
@@ -935,7 +945,7 @@ export function useStreamingResponse(
 
         console.error("Error generating response:", streamError);
 
-        if (streamError.code === "model_not_found") {
+        if (streamError.code === "model_not_found" && !modelSelection) {
           setModel(null);
         }
 
@@ -955,6 +965,7 @@ export function useStreamingResponse(
       stopLoading,
       endStreamActivity,
       setModel,
+      modelSelection,
       onTitleGeneration,
     ],
   );
@@ -963,8 +974,8 @@ export function useStreamingResponse(
     if (currentStream?.controller) {
       currentStream.controller.abort();
     } else if (currentStream?.source === "remote" && currentConversationId) {
-      void cancelObservedRun(currentConversationId).catch(() => {
-        toast.error("Could not stop the response. Please try again.");
+      void cancelObservedRun(currentConversationId).catch((error) => {
+        toast.error(getErrorMessage(error, "Could not stop the response. Please try again."));
       });
     }
   }, [cancelObservedRun, currentStream, currentConversationId]);

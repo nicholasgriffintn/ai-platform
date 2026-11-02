@@ -45,9 +45,12 @@ export function ToolApprovalBatchBar({ batch }: { batch: ToolApprovalBatch }) {
         Poly asked for these together, so your decisions go back together once each one is made.
       </p>
       {batch.error ? (
-        <p role="alert" className="text-xs text-failure">
-          {batch.error}
-        </p>
+        <div role="alert" className="space-y-2 text-xs text-failure">
+          <p>{batch.error}</p>
+          <Button type="button" size="xs" variant="outline" onClick={batch.retry}>
+            Retry sending decisions
+          </Button>
+        </div>
       ) : null}
     </section>
   );

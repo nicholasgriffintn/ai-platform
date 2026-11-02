@@ -14,7 +14,7 @@ struct TVHomeView: View {
                     header
 
                     if let discover = store.discover {
-                        if let edition = discover.edition {
+                        if let edition = store.edition {
                             editionContent(edition)
                         } else if discover.settings.enabled {
                             notice(
@@ -74,8 +74,8 @@ struct TVHomeView: View {
 
     @ViewBuilder
     private func editionContent(_ edition: DiscoverEdition) -> some View {
-        if !edition.brief.isEmpty {
-            TVBriefPanel(lines: edition.brief)
+        if !store.currentBrief.isEmpty {
+            TVBriefPanel(lines: store.currentBrief)
         }
 
         if !store.visibleMedia.isEmpty {

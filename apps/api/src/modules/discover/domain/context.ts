@@ -1,4 +1,4 @@
-import type { DiscoverHealthSummary } from "@ngriffin_uk/polychat-schemas";
+import type { DiscoverHealthSummary, DiscoverDayContext } from "@ngriffin_uk/polychat-schemas";
 import {
   formatHoursAndMinutes,
   markdownBullets,
@@ -26,6 +26,7 @@ export interface DiscoverResearchContext {
 }
 
 export interface DiscoverContextSnapshot {
+  day?: DiscoverDayContext;
   date: string;
   weekday: string;
   partOfDay: PartOfDay;
@@ -56,6 +57,11 @@ function minutesLine(label: string, minutes: number | null): string[] {
 export function describeDiscoverContext(snapshot: DiscoverContextSnapshot): string {
   return [
     `Today is ${snapshot.weekday} ${snapshot.date} (${snapshot.timezone}), ${snapshot.partOfDay}.`,
+    ...(snapshot.day
+      ? [
+          `Their explicit day preferences say this is a ${snapshot.day.mode} day${snapshot.day.overridden ? ", from a dated override" : ""}. The current window is ${snapshot.day.moment}. ${snapshot.day.working ? "They are in their working hours." : "They are outside their working hours."} Respect these settings over inferred routine or memory.`,
+        ]
+      : []),
     ...(snapshot.partOfDay === "evening"
       ? [
           "This is the evening edition: lead the brief with tomorrow's calendar and tasks, keep to six cards, include one long read for the evening and one thing to watch or listen to, and leave out anything the morning edition already showed. Add one wind_down card: a slow, uneventful story for tonight that wanders through a topic they follow or enjoyed lately, nothing alarming or sad.",

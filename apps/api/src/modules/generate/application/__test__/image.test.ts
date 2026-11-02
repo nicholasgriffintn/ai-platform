@@ -6,9 +6,11 @@ const image = vi.hoisted(() => vi.fn(async () => ({ url: "https://example.com/im
 
 vi.mock("~/infrastructure/ai", () => ({
   ai: {
-    image,
     resolveMediaProvider: async () => ({ providerName: "workers-ai" }),
   },
+}));
+vi.mock("~/infrastructure/providers/capabilities/image", () => ({
+  getImageProvider: () => ({ generate: image }),
 }));
 vi.mock("~/modules/models/application/resolve", () => ({
   requireSystemModel: async () => ({
@@ -44,7 +46,7 @@ describe("generateImage seeds", () => {
   it("reuses a given seed so an edited prompt keeps its composition", async () => {
     const result = await generate(123);
 
-    expect(image).toHaveBeenCalledWith(expect.objectContaining({ seed: 123 }), expect.anything());
+    expect(image).toHaveBeenCalledWith(expect.objectContaining({ seed: 123 }));
     expect(result.data.seed).toBe(123);
     expect(result.content).toContain("seed 123");
   });

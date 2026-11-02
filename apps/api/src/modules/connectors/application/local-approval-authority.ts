@@ -67,6 +67,10 @@ export const resolveLocalApprovalAuthority: ResolveConnectorApprovalAuthority = 
       provider: provider.id,
     });
 
+    if (!authority.connection) {
+      rejectConnectorApprovalAuthority();
+    }
+
     const isAuthorised = authorise("grant.revision", {
       connectionId: authority.connection.id,
       approvedConnectionId: connection.id,

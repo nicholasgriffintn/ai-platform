@@ -1,5 +1,6 @@
 import {
   approvalSchema,
+  type Place,
   type RecipeConnectorAccount,
   type RecipeConnectorAccountUpdateRequest,
   type RecipeConnectorApiKeyRequest,
@@ -10,7 +11,7 @@ import {
   type RecipeConnectorStartResponse,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { requestJson, resource } from "./resource.js";
+import { requestJson, resource, withQuery } from "./resource.js";
 
 function connectorPath(provider: RecipeConnectorProvider, suffix = ""): string {
   return `/connectors/${encodeURIComponent(provider)}${suffix}`;
@@ -88,4 +89,11 @@ export async function resolveConnectorOperationApproval(
   );
 
   return { approval: { id: approval.id, state: resolution } };
+}
+
+export function searchConnectorPlaces(
+  provider: RecipeConnectorProvider,
+  query: string,
+): Promise<{ places: Place[] }> {
+  return requestJson(withQuery(connectorPath(provider, "/places"), { query }), "GET");
 }

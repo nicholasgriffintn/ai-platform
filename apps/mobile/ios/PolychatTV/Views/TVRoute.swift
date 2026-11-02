@@ -6,6 +6,7 @@ enum TVRoute: Hashable {
     case week
     case windDown
     case card(String)
+    case briefing(String)
 
     init(item: DiscoverMediaItem) {
         switch item {
@@ -31,6 +32,8 @@ enum TVRoute: Hashable {
             self = .windDown
         case "cards" where parts.count > 1:
             self = .card(parts[1])
+        case "briefings" where parts.count > 1:
+            self = .briefing(parts[1])
         default:
             return nil
         }
@@ -46,11 +49,11 @@ enum TVRoute: Hashable {
             return URL(string: "polychat://discover/week")!
         case .windDown:
             return URL(string: "polychat://discover/wind-down")!
-        case .card(let id):
+        case .card(let id), .briefing(let id):
             var components = URLComponents()
             components.scheme = "polychat"
             components.host = "discover"
-            components.path = "/cards/\(id)"
+            components.path = (self == .card(id) ? "/cards/" : "/briefings/") + id
             return components.url!
         }
     }

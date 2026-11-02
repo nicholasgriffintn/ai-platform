@@ -1,11 +1,7 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { TaskSteps } from "@ngriffin_uk/polychat-ai-workflows";
 import { getBenchmark, type Benchmark } from "@ngriffin_uk/polychat-library-benchmarks";
-import {
-  buildJudgePrompt,
-  parseJudgeScore,
-  summariseScores,
-} from "@ngriffin_uk/polychat-library-model-registry";
+import { summariseScores } from "@ngriffin_uk/polychat-library-model-registry";
 import {
   BENCHMARK_RUN_TASK_TYPE,
   benchmarkIdSchema,
@@ -28,11 +24,9 @@ import {
 import { z } from "zod/v4";
 
 import { BENCHMARKS_CONFIG } from "~/config/benchmarks";
-import { ai } from "~/infrastructure/ai";
 import type { Repositories } from "~/infrastructure/database/repositories";
 import { BenchmarkRunRepository } from "~/modules/benchmarks/infrastructure/BenchmarkRunRepository";
 import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
-import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import type { TaskResult } from "~/modules/queue/application/types";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
@@ -42,6 +36,7 @@ import type { IEnv, IUser } from "~/types";
 
 import { BenchmarkResultStore } from "../infrastructure/BenchmarkResultStore";
 import type { BenchmarkRunRecord } from "../infrastructure/BenchmarkRunRepository";
+import { judgeBenchmarkArtefact } from "./artefact-judge";
 import {
   isFatalEntrantError,
   officialRunRefusal,
@@ -101,43 +96,6 @@ export async function enqueueBenchmarkRunTask(
     task_data: data,
     priority: RUN_TASK_PRIORITY,
   });
-}
-
-async function judgeArtefact(
-  env: IEnv,
-  benchmark: Benchmark,
-  itemId: string,
-  content: string,
-): Promise<number | null> {
-  if (!benchmark.judgeRubric) {
-    return null;
-  }
-
-  try {
-    const judge = await getAuxiliaryModel(env);
-    const verdict = await ai.complete({
-      env,
-      model: judge.model,
-      provider: judge.provider,
-      reasoning_effort: judge.effort,
-      disable_functions: true,
-      prompt: buildJudgePrompt({
-        rubric: benchmark.judgeRubric,
-        input: benchmark.prompt(itemId).user,
-        output: content,
-      }),
-    });
-
-    return parseJudgeScore(verdict.text);
-  } catch (error) {
-    logger.warn("Benchmark judge failed, keeping the gate score", {
-      benchmarkId: benchmark.summary.id,
-      itemId,
-      error: getErrorMessage(error, "Unknown error"),
-    });
-
-    return null;
-  }
 }
 
 function hintedRetryMs(error: unknown): number | undefined {
@@ -249,7 +207,12 @@ async function runItem(
     const artefact = benchmark.artefact(itemId, response.answer);
     const judged =
       artefact && benchmark.summary.scoring === "votes"
-        ? await judgeArtefact(env, benchmark, itemId, artefact.content)
+        ? await judgeBenchmarkArtefact(
+            { env, user: user ?? undefined, workspaceId: run.workspace_id },
+            benchmark,
+            itemId,
+            artefact.content,
+          )
         : null;
 
     return {

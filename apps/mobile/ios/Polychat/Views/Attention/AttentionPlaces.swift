@@ -55,7 +55,7 @@ enum AttentionEntry: Identifiable {
 
     var needsAction: Bool {
         switch self {
-        case .decision: return true
+        case .decision(let item): return item.kind != "update"
         case .attention(let item): return item.needsAction
         case .notification(let item): return item.requiresAction
         }
@@ -63,7 +63,7 @@ enum AttentionEntry: Identifiable {
 
     var isUnread: Bool {
         switch self {
-        case .decision: return true
+        case .decision(let item): return item.readAt == nil
         case .attention(let item): return item.isUnread
         case .notification(let item): return !item.isRead
         }
@@ -120,7 +120,7 @@ enum AttentionPlaces {
         notifications: [TaskInboxItem]
     ) -> [AttentionEntry] {
         let needsYou = view == .needsYou
-        let decisionEntries = needsYou ? decisions.map(AttentionEntry.decision) : []
+        let decisionEntries = decisions.filter { ($0.kind != "update") == needsYou }.map(AttentionEntry.decision)
         let runEntries = runs
             .filter { $0.type == "run" && $0.needsAction == needsYou }
             .map(AttentionEntry.attention)

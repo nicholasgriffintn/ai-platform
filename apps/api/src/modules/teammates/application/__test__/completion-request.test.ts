@@ -5,6 +5,26 @@ import { prepareTeammateCompletionRequest } from "../completion-request";
 import { buildTeammatePersona } from "../completion-tools";
 
 describe("prepareTeammateCompletionRequest", () => {
+  it("keeps a teammate's configured model over a caller's model list", () => {
+    const request = prepareTeammateCompletionRequest({
+      teammate: {
+        id: "teammate-123",
+        kind: "colleague",
+        model: "mistral-large-latest",
+        temperature: null,
+        max_steps: null,
+        enabled_tools: null,
+        skill_ids: null,
+        mode: null,
+      },
+      settings: { models: ["other-model"] },
+      modelProvider: "mistral",
+    });
+
+    expect(request.model).toBe("mistral-large-latest");
+    expect(request.models).toBeUndefined();
+  });
+
   it.each([undefined, 0, 0.4])(
     "preserves automatic or explicit caller sampling (%s)",
     (temperature) => {

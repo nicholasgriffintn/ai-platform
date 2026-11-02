@@ -11,6 +11,7 @@ enum AppTab: Hashable {
 enum DiscoverLink: Equatable {
     case media(DiscoverMediaItem)
     case card(String)
+    case briefing(String)
 }
 
 enum AppRoute: Equatable {
@@ -49,12 +50,22 @@ enum AppRoute: Equatable {
 
     static func parse(_ url: URL) -> AppRoute? {
         let isNative = url.scheme == "polychat"
-        guard isNative || url.host == "polychat.app" else {
+        guard isNative || (url.scheme == "https" && url.host == "polychat.app") else {
             return nil
         }
 
         let segments = ((isNative ? [url.host].compactMap { $0 } : []) + url.pathComponents)
             .filter { $0 != "/" && !$0.isEmpty }
+        if segments.isEmpty || segments.first == "discover" || segments.first == "home" {
+            let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+            if let id = query.first(where: { $0.name == "discoverItem" })?.value, !id.isEmpty, id.count <= 100 {
+                return .discover(.card(id))
+            }
+            if let id = query.first(where: { $0.name == "discoverBriefing" })?.value, !id.isEmpty, id.count <= 100 {
+                return .discover(.briefing(id))
+            }
+            if query.contains(where: { $0.name == "discoverObservation" }) { return .tab(.home) }
+        }
 
         guard let first = segments.first else {
             return isNative ? .tab(.home) : nil

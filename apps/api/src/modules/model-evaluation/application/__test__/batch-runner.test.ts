@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/ModelEvalRepository";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
+import { getAuxiliaryModel } from "~/modules/models/application/resolve";
+import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
 import type {
@@ -15,7 +17,7 @@ vi.mock("~/infrastructure/providers/capabilities/batch", () => ({
   getBatchProvider: () => provider,
 }));
 vi.mock("~/modules/models/application/resolve", () => ({
-  getAuxiliaryModel: async () => ({ model: "judge", provider: "workers-ai" }),
+  getAuxiliaryModel: vi.fn(async () => ({ model: "judge", provider: "workers-ai" })),
 }));
 vi.mock("~/modules/model-registry/application/decisions", () => ({
   openRouteReview: vi.fn(),
@@ -62,6 +64,7 @@ const run = {
   trigger: "manual",
   version_id: "v-1",
   cases_total: 2,
+  created_by: 7,
 } as unknown as ModelEvalRunRecord;
 const route = {
   id: "route-1",
@@ -84,6 +87,7 @@ function repositories() {
       },
     ],
     [ModelGovernanceRepository, { addEvidence: vi.fn() }],
+    [UserRepository, { getUserById: vi.fn(async () => ({ id: 7 })) }],
   ]);
 }
 
@@ -155,6 +159,7 @@ describe("executeBatchedEvalRun", () => {
       expect.objectContaining({ correct: expect.objectContaining({ mean: 0.5, n: 2 }) }),
       null,
     );
+    expect(getAuxiliaryModel).toHaveBeenCalledWith({}, { id: 7 }, { workspaceId: "ws-1" });
   });
 
   it("fails the run once the batch window has passed", async () => {

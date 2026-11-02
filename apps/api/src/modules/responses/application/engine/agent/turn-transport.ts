@@ -5,6 +5,7 @@ import {
   extractImpactPayload,
   normaliseTokenUsage,
 } from "@ngriffin_uk/polychat-ai-telemetry";
+import { abortable } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -27,6 +28,7 @@ export interface TurnTransportContext {
   userId?: number;
   serviceContext?: ServiceContext;
   shouldStop?: () => boolean;
+  signal?: AbortSignal;
   retry?: ProviderRetryExecutionOptions;
   step?: number;
   messageId: string;
@@ -36,9 +38,21 @@ async function requestProviderResponse(
   request: ChatCompletionParameters,
   context: TurnTransportContext,
 ) {
-  const operation = () => getAIResponse(request);
+  context.signal?.throwIfAborted();
 
-  return context.retry ? runProviderCallWithRetry(operation, context.retry) : operation();
+  const operation = () =>
+    getAIResponse(request).then((response) => {
+      if (context.signal?.aborted && response instanceof ReadableStream) {
+        void response.cancel().catch(() => {});
+      }
+
+      return response;
+    });
+
+  return abortable(
+    context.retry ? runProviderCallWithRetry(operation, context.retry) : operation(),
+    context.signal,
+  );
 }
 
 export interface ChatTurnTransport {

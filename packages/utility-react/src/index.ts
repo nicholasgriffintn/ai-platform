@@ -6,6 +6,7 @@ export * from "./useMediaLoudness.js";
 export * from "./useMediaTrack.js";
 export * from "./useMediaVolume.js";
 export * from "./useCopyToClipboard.js";
+export * from "./useCurrentTime.js";
 export * from "./useCrossfadeLoop.js";
 export * from "./useDebouncedValue.js";
 export * from "./useElementSize.js";

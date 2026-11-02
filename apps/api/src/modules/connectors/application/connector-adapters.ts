@@ -4,6 +4,7 @@ import {
   executeAudiobookshelfOperation,
   executeHardcoverOperation,
   executeOuraOperation,
+  executeTflOperation,
   executeJamendoOperation,
   executeLastfmOperation,
   executeMarqueeOperation,
@@ -45,6 +46,7 @@ const localExecutors: Partial<Record<RecipeConnectorProvider, ConnectorOperation
   hardcover: executeHardcoverOperation,
   podcastindex: executePodcastIndexOperation,
   oura: executeOuraOperation,
+  tfl: executeTflOperation,
   audiobookshelf: executeAudiobookshelfOperation,
   marquee: executeMarqueeOperation,
 };

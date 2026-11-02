@@ -8,6 +8,7 @@ import {
   DELEGATION_RUN_TASK_TYPE,
   DELEGATION_WAKE_TASK_TYPE,
 } from "./delegations.js";
+import { discoverRoutineOperationSchema } from "./discover-day.js";
 import { DISCOVER_JOB_TASK_TYPE } from "./discover.js";
 import {
   MEMORY_CONSOLIDATION_TASK_TYPE,
@@ -47,6 +48,10 @@ export const SOURCE_KNOWLEDGE_ENRICH_TASK_TYPE = "source_knowledge_enrich";
 export const SOURCE_GENERATION_POLLING_TASK_TYPE = "source_generation_polling";
 export const SOURCE_MEDIA_TRANSCRIPTION_TASK_TYPE = "source_media_transcription";
 export const SOURCE_PODCAST_GENERATION_TASK_TYPE = "source_podcast_generation";
+export const sourcePodcastGenerationTaskSchema = z.object({
+  sourceId: z.string().min(1),
+  runId: z.string().min(1).optional(),
+});
 export const SOURCE_LISTEN_TASK_TYPE = "source_listen";
 export const WEBHOOK_DELIVERY_TASK_TYPE = "webhook_delivery";
 export const WORK_TEAMMATE_WAKE_TASK_TYPE = "work_teammate_wake";
@@ -144,6 +149,9 @@ export const recipeExecutionTaskDataSchema = z.object({
   recipeId: z.string().min(1),
   installationId: z.string().min(1).optional(),
   occurrenceId: z.string().min(1).optional(),
+  triggerId: z.string().min(1).optional(),
+  scheduledAt: z.iso.datetime().optional(),
+  discoverOperation: discoverRoutineOperationSchema.optional(),
   projectId: z.string().min(1).nullable().optional(),
   input: z.string().optional(),
   channel: z

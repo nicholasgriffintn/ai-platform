@@ -12,7 +12,7 @@ import { discoverStoryGroupId } from "~/modules/discover/domain/wind-down";
 import { readOutputContent } from "~/modules/outputs/application/content";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 
-import { requireDiscoverEdition } from "./editions";
+import { requireDiscoverCardCollection } from "./card-collection";
 import { retryDiscoverWindDown, startDiscoverWindDown } from "./wind-down";
 
 export async function startDiscoverStory(
@@ -21,7 +21,7 @@ export async function startDiscoverStory(
   cardId: string,
 ): Promise<DiscoverWindDown> {
   const user = context.requireUser();
-  const edition = await requireDiscoverEdition(context, user.id, editionId);
+  const edition = await requireDiscoverCardCollection(context, user.id, editionId);
   const card = findDiscoverCard(edition.content.cards, cardId, "wind_down");
 
   if (!card) {

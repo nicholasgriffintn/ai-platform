@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   getRecipeConnectorAccessToken: vi.fn(),
+  executeTflOperation: vi.fn(),
   listComposioConnectedAccounts: vi.fn(),
   createComposioToolSession: vi.fn(),
   executeComposioSessionTool: vi.fn(),
@@ -19,6 +20,7 @@ vi.mock("../index", () => ({
 
 vi.mock("@ngriffin_uk/polychat-ai-integrations", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@ngriffin_uk/polychat-ai-integrations")>()),
+  executeTflOperation: mocks.executeTflOperation,
   listComposioConnectedAccounts: mocks.listComposioConnectedAccounts,
   createComposioToolSession: mocks.createComposioToolSession,
   executeComposioSessionTool: mocks.executeComposioSessionTool,
@@ -37,6 +39,10 @@ vi.mock("../accounts", async (importOriginal) => ({
 }));
 
 import { executeRecipeConnectorOperation } from "../operations";
+
+const context = {
+  env: { COMPOSIO_API_KEY: "secret", COMPOSIO_USER_NAMESPACE: "test" },
+} as Parameters<typeof executeRecipeConnectorOperation>[0]["context"];
 
 describe("recipe connector operations", () => {
   beforeEach(() => {
@@ -59,10 +65,6 @@ describe("recipe connector operations", () => {
   });
 
   it("executes only the registry-mapped Composio tool on the explicit user account", async () => {
-    const context = {
-      env: { COMPOSIO_API_KEY: "secret", COMPOSIO_USER_NAMESPACE: "test" },
-    } as Parameters<typeof executeRecipeConnectorOperation>[0]["context"];
-
     await expect(
       executeRecipeConnectorOperation({
         context,
@@ -96,10 +98,6 @@ describe("recipe connector operations", () => {
   });
 
   it("passes Outlook arguments using the generated Composio schema", async () => {
-    const context = {
-      env: { COMPOSIO_API_KEY: "secret", COMPOSIO_USER_NAMESPACE: "test" },
-    } as Parameters<typeof executeRecipeConnectorOperation>[0]["context"];
-
     await executeRecipeConnectorOperation({
       context,
       userId: 42,
@@ -125,9 +123,6 @@ describe("recipe connector operations", () => {
 
   it("surfaces an unknown non-idempotent write without exposing provider details", async () => {
     mocks.executeComposioRunTool.mockRejectedValueOnce(new TypeError("socket secret closed"));
-    const context = {
-      env: { COMPOSIO_API_KEY: "secret", COMPOSIO_USER_NAMESPACE: "test" },
-    } as Parameters<typeof executeRecipeConnectorOperation>[0]["context"];
 
     await expect(
       executeRecipeConnectorOperation({
@@ -145,9 +140,6 @@ describe("recipe connector operations", () => {
     mocks.executeComposioRunTool.mockRejectedValueOnce(
       new AssistantError("gateway timed out", ErrorType.EXTERNAL_API_ERROR, 504),
     );
-    const context = {
-      env: { COMPOSIO_API_KEY: "secret", COMPOSIO_USER_NAMESPACE: "test" },
-    } as Parameters<typeof executeRecipeConnectorOperation>[0]["context"];
 
     await expect(
       executeRecipeConnectorOperation({
@@ -197,9 +189,6 @@ describe("recipe connector operations", () => {
     { status: "ACTIVE", isDisabled: true },
   ])("does not execute with an unusable explicit account", async (account) => {
     mocks.listComposioConnectedAccounts.mockResolvedValue([{ id: "ca_gmail", ...account }]);
-    const context = {
-      env: { COMPOSIO_API_KEY: "secret", COMPOSIO_USER_NAMESPACE: "test" },
-    } as Parameters<typeof executeRecipeConnectorOperation>[0]["context"];
 
     await expect(
       executeRecipeConnectorOperation({
@@ -226,9 +215,6 @@ describe("recipe connector operations", () => {
         createdAt: "2026-08-12T10:00:00.000Z",
       },
     ]);
-    const context = {
-      env: { COMPOSIO_API_KEY: "secret", COMPOSIO_USER_NAMESPACE: "test" },
-    } as Parameters<typeof executeRecipeConnectorOperation>[0]["context"];
 
     await executeRecipeConnectorOperation({
       context,
@@ -262,9 +248,6 @@ describe("recipe connector operations", () => {
       },
     ]);
     mocks.getSelectedRecipeConnectorAccountId.mockResolvedValue("ca_selected");
-    const context = {
-      env: { COMPOSIO_API_KEY: "secret", COMPOSIO_USER_NAMESPACE: "test" },
-    } as Parameters<typeof executeRecipeConnectorOperation>[0]["context"];
 
     await executeRecipeConnectorOperation({
       context,
@@ -277,5 +260,40 @@ describe("recipe connector operations", () => {
         connectedAccount: expect.objectContaining({ id: "ca_selected" }),
       }),
     );
+  });
+  it("keeps public TfL calls away from stored credentials", async () => {
+    mocks.executeTflOperation.mockResolvedValue({ matches: [] });
+    await executeRecipeConnectorOperation({
+      context,
+      userId: 42,
+      request: {
+        provider: "tfl",
+        operation: "search_stops",
+        params: { query: "Waterloo" },
+        credentialSource: "public",
+      },
+    });
+
+    expect(mocks.getRecipeConnectorAccessToken).not.toHaveBeenCalled();
+    expect(mocks.executeTflOperation).toHaveBeenCalledWith("", "search_stops", {
+      query: "Waterloo",
+    });
+  });
+
+  it("rejects public credential selection for private connector operations", async () => {
+    await expect(
+      executeRecipeConnectorOperation({
+        context,
+        userId: 42,
+        request: {
+          provider: "gmail",
+          operation: "GMAIL_FETCH_EMAILS",
+          params: {},
+          credentialSource: "public",
+        },
+      }),
+    ).rejects.toThrow("Public access is not available");
+    expect(mocks.getRecipeConnectorAccessToken).not.toHaveBeenCalled();
+    expect(mocks.executeComposioRunTool).not.toHaveBeenCalled();
   });
 });

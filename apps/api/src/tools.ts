@@ -3,6 +3,7 @@ import { apply_edit_completion } from "~/modules/code/application/tools/apply_ed
 import { fill_in_middle_completion } from "~/modules/code/application/tools/fill_in_middle";
 import { next_edit_completion } from "~/modules/code/application/tools/next_edit";
 import { use_computer } from "~/modules/computer-use/application/tools/use_computer";
+import { search_places } from "~/modules/connectors/application/tools/search-places";
 import { list_saved_messages } from "~/modules/conversations/application/tools/list_saved_messages";
 import { react } from "~/modules/conversations/application/tools/react";
 import { search_conversations } from "~/modules/conversations/application/tools/search_conversations";
@@ -15,6 +16,7 @@ import {
 import { decide } from "~/modules/decisions/application/tools/decide";
 import { delegate } from "~/modules/delegations/application/tools/delegate";
 import { messageParent } from "~/modules/delegations/application/tools/message-parent";
+import { read_discover_day, update_discover_day } from "~/modules/discover/application/tools/day";
 import {
   compose_discover_edition,
   prepare_wind_down,
@@ -167,6 +169,9 @@ registerTools([
   ...polyNavigationTools,
   read_discover_context,
   compose_discover_edition,
+  read_discover_day,
+  search_places,
+  update_discover_day,
   prepare_wind_down,
   file_in_notebook,
 ]);

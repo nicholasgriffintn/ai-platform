@@ -4,15 +4,56 @@ import type { Message } from "./conversation-types.js";
 import {
   applyToolInteractionResolutions,
   collectPendingApprovals,
+  collectInteractionToolResponseContents,
   COMPUTER_OBSERVATION_RENDERER,
   getComputerObservations,
   getResolvedToolUseIndexes,
   resolveToolMessageDisplay,
   resolveToolResultPartDisplay,
   shouldHideToolChrome,
+  isRedundantInteractionAssistantMessage,
 } from "./tool-results.js";
 
 type ToolResultPart = Extract<NonNullable<Message["parts"]>[number], { type: "tool_result" }>;
+
+describe("interactive tool summaries", () => {
+  it("shows a question card once while keeping a different assistant explanation", () => {
+    const contents = collectInteractionToolResponseContents([
+      {
+        id: "question-1",
+        role: "tool",
+        name: "ask_user",
+        status: "pending",
+        content: "Which station?",
+        data: { renderer: "user_question" },
+      },
+    ]);
+
+    expect(
+      isRedundantInteractionAssistantMessage(
+        { id: "summary-1", role: "assistant", status: "pending", content: "Which station?" },
+        contents,
+      ),
+    ).toBe(true);
+    expect(
+      isRedundantInteractionAssistantMessage(
+        {
+          id: "summary-2",
+          role: "assistant",
+          status: "pending",
+          content: "Choose a station to continue.",
+        },
+        contents,
+      ),
+    ).toBe(false);
+    expect(
+      isRedundantInteractionAssistantMessage(
+        { id: "answer-1", role: "assistant", status: "success", content: "Which station?" },
+        contents,
+      ),
+    ).toBe(false);
+  });
+});
 
 describe("resolveToolResultPartDisplay", () => {
   it("carries the presentation metadata the API attached, for any tool", () => {

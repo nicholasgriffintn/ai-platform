@@ -159,3 +159,5 @@ export {
   type McpOAuthTokens,
 } from "./mcp/oauth/metadata.js";
 export { createPkcePair, type PkcePair } from "./mcp/oauth/pkce.js";
+
+export { executeTflOperation } from "./executors/tfl.js";

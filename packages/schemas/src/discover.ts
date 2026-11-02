@@ -1,7 +1,13 @@
 import z from "zod/v4";
 
+import {
+  discoverAudioReleaseSchema,
+  discoverDayProfileSchema,
+  discoverNowSchema,
+} from "./discover-day.js";
 import { discoverEpisodeLengthSchema } from "./discover-episodes.js";
 import { externalHttpUrlSchema, internalNavigationPathSchema } from "./navigation.js";
+import { listSchema } from "./platform/list.js";
 import { videoOverviewStyleSchema } from "./study-outputs.js";
 
 export const DISCOVER_CAPABILITY_ID = "discover";
@@ -33,9 +39,6 @@ export const DISCOVER_ARTICLE_METADATA_KEY = "discoverArticle";
 export const DISCOVER_COVERAGE_METADATA_KEY = "discoverCoverage";
 export const DISCOVER_COVERAGE_MIN_ARTICLES = 2;
 export const DISCOVER_BRIEFING_METADATA_KEY = "discoverBriefing";
-export const DISCOVER_GATHER_HOUR = 5;
-export const DISCOVER_EVENING_GATHER_HOUR = 17;
-export const DISCOVER_FEED_GATHER_HOURS = [8, 10, 13, 15, 19, 21] as const;
 export const DISCOVER_FRESH_HOURS = 10;
 export const DISCOVER_RESEARCH_DAYS_KEPT = 7;
 export const DISCOVER_LISTEN_RESEARCH_MINUTES = 30;
@@ -273,6 +276,14 @@ export const DISCOVER_CARD_KINDS = [
 
 export const DISCOVER_INTEREST_EVIDENCE_LIMIT = 3;
 
+export const DISCOVER_LIVE_CARD_KINDS: readonly DiscoverCardKind[] = [
+  "topic",
+  "read",
+  "watch",
+  "listen",
+  "wind_down",
+];
+
 const discoverInterestEvidenceSchema = z
   .array(text().max(200))
   .min(1)
@@ -319,7 +330,6 @@ export const composeDiscoverEditionInputSchema = z
     greeting: text().describe("A short greeting for the top of the page, without their name."),
     interests: z
       .array(discoverInterestSchema)
-      .min(1)
       .max(DISCOVER_MAX_INTERESTS)
       .describe("The interests this edition is built around, strongest first."),
     brief: z
@@ -328,7 +338,6 @@ export const composeDiscoverEditionInputSchema = z
       .describe("The brief at the top of the page, most important first."),
     cards: z
       .array(discoverCardDraftSchema)
-      .min(1)
       .max(DISCOVER_MAX_CARDS)
       .describe("The cards, in the order they should appear."),
   })
@@ -484,12 +493,41 @@ export const discoverEditionSummarySchema = z.object({
   edition: discoverEditionTimeSchema,
 });
 
+export const discoverFeedItemSchema = z.object({
+  id: z.string().min(1).max(80),
+  revision: z.number().int().positive(),
+  sequence: z.number().int().positive(),
+  editionId: z.string().min(1),
+  providerId: z.string().min(1).optional(),
+  card: discoverCardSchema,
+  publishedAt: z.iso.datetime().nullable(),
+  observedAt: z.iso.datetime(),
+  firstShownAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+  expiresAt: z.iso.datetime(),
+  seen: z.boolean(),
+  dismissed: z.boolean(),
+  signals: z.array(discoverFeedbackSignalSchema).default([]),
+});
+
+export const discoverFeedPageSchema = listSchema(discoverFeedItemSchema).extend({
+  unseenCount: z.number().int().nonnegative(),
+  updatedAt: z.iso.datetime().nullable(),
+});
+
+export type DiscoverFeedItem = z.infer<typeof discoverFeedItemSchema>;
+export type DiscoverFeedPage = z.infer<typeof discoverFeedPageSchema>;
+
 export const discoverResponseSchema = z.object({
   settings: discoverSettingsSchema,
   edition: discoverEditionSchema.nullable(),
   editions: z.array(discoverEditionSummarySchema),
   follows: z.array(discoverFollowSchema),
   windDownId: z.string().nullable(),
+  dayProfile: discoverDayProfileSchema.optional(),
+  now: discoverNowSchema.optional(),
+  feed: discoverFeedPageSchema.optional(),
+  briefings: z.array(discoverAudioReleaseSchema).optional(),
 });
 
 export const discoverSeasonParamsSchema = z.object({ season_id: z.string().min(1) });
@@ -613,6 +651,30 @@ export const discoverJobTaskDataSchema = z.discriminatedUnion("job", [
   z
     .object({
       ...discoverJobRun,
+      job: z.literal("notification"),
+      notificationId: z.string().min(1),
+    })
+    .strict(),
+  z
+    .object({
+      ...discoverJobRun,
+      job: z.literal("current"),
+      installationId: z.string().min(1),
+      scheduledAt: z.iso.datetime().optional(),
+    })
+    .strict(),
+  z
+    .object({
+      ...discoverJobRun,
+      job: z.literal("audio"),
+      installationId: z.string().min(1),
+      date: z.iso.date(),
+      slot: z.enum(["morning", "evening"]),
+    })
+    .strict(),
+  z
+    .object({
+      ...discoverJobRun,
       job: z.literal("edition"),
       editionId: z.string().min(1),
       covers: z.boolean().optional(),
@@ -626,6 +688,8 @@ export const discoverJobTaskDataSchema = z.discriminatedUnion("job", [
     .object({
       ...discoverJobRun,
       job: z.literal("gather"),
+      installationId: z.string().min(1).optional(),
+      scheduledAt: z.iso.datetime().optional(),
       scope: discoverGatherScopeSchema.optional(),
     })
     .strict(),

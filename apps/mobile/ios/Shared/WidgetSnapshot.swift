@@ -5,6 +5,7 @@ struct WidgetSnapshot: Codable, Equatable {
         let title: String
         let detail: String?
         let systemImage: String
+        var expiresAt: Date? = nil
     }
 
     struct Today: Codable, Equatable {

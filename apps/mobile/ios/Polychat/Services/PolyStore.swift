@@ -22,4 +22,11 @@ final class PolyStore: ObservableObject {
     func reset() {
         agenda = nil
     }
+
+    func prepareDiscoverSetup(using conversations: ConversationManager) async -> String? {
+        if agenda == nil { await refresh() }
+        guard let id = agenda?.conversationId else { return nil }
+        conversations.composerPrefill = ComposerPrefill(conversationId: id, text: DiscoverDayForm.setupPrompt)
+        return id
+    }
 }

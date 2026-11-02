@@ -602,6 +602,7 @@ export class ChatOrchestrator {
       runResult = await runAgentLoop({
         ...runParams,
         shouldStop: stopSignal.shouldStop,
+        signal: stopSignal.signal,
         ...(detachedProgressSink ? { sink: detachedProgressSink } : {}),
       });
       await runLifecycle?.complete(runResult);

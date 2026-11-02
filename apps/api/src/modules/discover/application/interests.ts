@@ -30,6 +30,7 @@ import {
 } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { listRecentDiscoverChatTitles, readMemorySummary } from "./context";
+import { readDiscoverDayProfile } from "./day-profile";
 import { listDiscoverFeedback } from "./feedback";
 import { listDiscoverFollows } from "./follows";
 import { readDiscoverDocuments } from "./notebook";
@@ -126,12 +127,13 @@ export async function chooseDiscoverInterests(
   input: { today: string; now: Date; refresh: boolean },
 ): Promise<DiscoverInterestChoice> {
   const user = context.requireUser();
-  const [profile, feedback] = await Promise.all([
+  const [profile, feedback, dayProfile] = await Promise.all([
     readDiscoverInterestProfile(context, user.id),
     listDiscoverFeedback(context, user.id),
+    readDiscoverDayProfile(context),
   ]);
   const summary = summariseDiscoverFeedback(feedback);
-  const hidden = [...summary.hiddenTopics, ...summary.lessTopics];
+  const hidden = [...summary.hiddenTopics, ...summary.lessTopics, ...dayProfile.mutedTopics];
   const kept = {
     interests: profile?.interests ?? [],
     more: summary.moreTopics,
@@ -194,7 +196,7 @@ export async function chooseDiscoverResearchTopics(
   input: { asked: readonly string[]; today: string; now: Date; timezone: string; refresh: boolean },
 ): Promise<string[]> {
   const user = context.requireUser();
-  const [follows, interests, sources] = await Promise.all([
+  const [follows, interests, sources, dayProfile] = await Promise.all([
     listDiscoverFollows(context, user.id),
     chooseDiscoverInterests(context, notebookId, {
       today: input.today,
@@ -202,10 +204,11 @@ export async function chooseDiscoverResearchTopics(
       refresh: input.refresh,
     }),
     context.repositories.get(SourceRepository).listCollectionSources(notebookId),
+    readDiscoverDayProfile(context),
   ]);
 
   return chooseResearchTopics({
-    followed: follows.map((follow) => follow.topic),
+    followed: [...dayProfile.topics, ...follows.map((follow) => follow.topic)],
     asked: input.asked,
     more: interests.more,
     saved: interests.saved,

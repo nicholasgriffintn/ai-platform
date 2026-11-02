@@ -4,6 +4,7 @@ export * from "./async-queue.js";
 export * from "./binary.js";
 export * from "./captions.js";
 export * from "./collections.js";
+export * from "./clock-time.js";
 export * from "./colors.js";
 export * from "./crypto.js";
 export * from "./csv.js";

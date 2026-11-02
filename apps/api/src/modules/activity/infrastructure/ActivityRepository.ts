@@ -29,6 +29,7 @@ export interface ActivityRecord {
 }
 
 interface ActivityListOptions {
+  kind?: string;
   conversationId?: string;
   capabilityId?: string;
   status?: ActivityStatus;
@@ -108,7 +109,7 @@ export class ActivityRepository extends BaseRepository {
   async recordActivityOnce(input: {
     id: string;
     createdByUserId: number;
-    conversationId: string;
+    conversationId: string | null;
     capabilityId: string;
     groupId: string;
     kind: string;
@@ -212,6 +213,7 @@ export class ActivityRepository extends BaseRepository {
       ["conversation_id", options.conversationId],
       ["capability_id", options.capabilityId],
       ["status", options.status],
+      ["kind", options.kind],
     ];
 
     for (const [column, value] of filters) {

@@ -41,6 +41,7 @@ class TeammateCompletionRequestPreparer {
     return {
       ...settings,
       model: teammate.model || settings.model,
+      models: teammate.model ? undefined : settings.models,
       provider: teammate.model ? this.input.modelProvider : settings.provider,
       mode: this.resolveMode(enabledTools),
       max_steps: this.input.maxStepsOverride ?? teammate.max_steps ?? settings.max_steps ?? 20,

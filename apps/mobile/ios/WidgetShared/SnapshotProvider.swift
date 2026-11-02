@@ -16,8 +16,11 @@ struct SnapshotProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<SnapshotEntry>) -> Void) {
-        let entry = SnapshotEntry(date: .now, snapshot: WidgetSnapshotStore.read())
-        completion(Timeline(entries: [entry], policy: .after(.now.addingTimeInterval(30 * 60))))
+        let snapshot = WidgetSnapshotStore.read()
+        let now = Date()
+        let expiries = Set(((snapshot.today?.brief ?? []) + (snapshot.today?.cards ?? [])).compactMap(\.expiresAt).filter { $0 > now && $0 < now.addingTimeInterval(30 * 60) })
+        let entries = ([now] + expiries.sorted()).map { SnapshotEntry(date: $0, snapshot: snapshot) }
+        completion(Timeline(entries: entries, policy: .after(now.addingTimeInterval(30 * 60))))
     }
 }
 

@@ -7,9 +7,13 @@ struct SettingsView: View {
     @EnvironmentObject private var pushNotificationManager: PushNotificationManager
     @EnvironmentObject private var discoverStore: DiscoverStore
     @EnvironmentObject private var healthSync: HealthSyncController
+    @EnvironmentObject private var polyStore: PolyStore
+    @EnvironmentObject private var conversationManager: ConversationManager
+    let onOpenConversation: (String) -> Void
     @AppStorage("autoTitleGeneration") private var autoTitleGeneration = true
     @State private var showingModelSelector = false
     @State private var confirmingSignOut = false
+    @State private var showingDay = false
 
     var body: some View {
         NavigationStack {
@@ -25,6 +29,11 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .sheet(isPresented: $showingModelSelector) {
                 ModelSelectorView()
+            }
+            .sheet(isPresented: $showingDay) {
+                if let profile = discoverStore.discover?.dayProfile {
+                    DiscoverDaySheet(profile: profile, audioEnabled: discoverStore.discover?.settings.listen ?? false, onPoly: setUpDiscover)
+                }
             }
             .confirmationDialog("Sign out of Polychat?", isPresented: $confirmingSignOut, titleVisibility: .visible) {
                 Button("Sign out", role: .destructive) {
@@ -90,8 +99,12 @@ struct SettingsView: View {
 
     private var discoverSection: some View {
         Section {
+            Button(discoverStore.discover?.dayProfile?.onboarded == true ? "Update Discover with Poly" : "Set up Discover with Poly", action: setUpDiscover)
+            if discoverStore.discover?.dayProfile != nil {
+                Button("Review your day") { showingDay = true }
+            }
             Toggle(
-                "Daily editions",
+                "Discover updates",
                 isOn: Binding(
                     get: { discoverStore.discover?.settings.enabled == true },
                     set: { enabled in Task { await discoverStore.setEnabled(enabled) } }
@@ -105,13 +118,6 @@ struct SettingsView: View {
                     isOn: Binding(
                         get: { discoverStore.discover?.settings.evening == true },
                         set: { enabled in Task { await discoverStore.setPreference(DiscoverSettingsRequest(evening: enabled)) } }
-                    )
-                )
-                Toggle(
-                    "The Perch",
-                    isOn: Binding(
-                        get: { discoverStore.discover?.settings.listen == true },
-                        set: { enabled in Task { await discoverStore.setPreference(DiscoverSettingsRequest(listen: enabled)) } }
                     )
                 )
             }
@@ -143,6 +149,16 @@ struct SettingsView: View {
             Text(healthSync.isAvailable
                  ? "The evening edition arrives at 19:00 and looks at tomorrow. Apple Health shares yesterday's sleep, mindful and exercise minutes each morning for one line in your brief, and is never used to choose topics."
                  : "Poly writes an edition each morning from what you've been working on, and a shorter one at 19:00 when the evening edition is on.")
+        }
+    }
+
+    private func setUpDiscover() {
+        Task {
+            guard let id = await polyStore.prepareDiscoverSetup(using: conversationManager) else {
+                discoverStore.error = "Poly could not be reached. Please try again."
+                return
+            }
+            onOpenConversation(id)
         }
     }
 

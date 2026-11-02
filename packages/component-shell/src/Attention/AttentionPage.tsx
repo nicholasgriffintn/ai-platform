@@ -1,4 +1,4 @@
-import { ButtonLink, EmptyState, SegmentedControl } from "@ngriffin_uk/polychat-component-ui";
+import { SegmentedControl } from "@ngriffin_uk/polychat-component-ui";
 import {
   inboxEntriesFor,
   WorkInbox,
@@ -15,7 +15,6 @@ import {
   useWorkspaces,
 } from "@ngriffin_uk/polychat-library-react";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
-import { BriefcaseBusiness } from "lucide-react";
 import { toast } from "sonner";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
@@ -60,40 +59,9 @@ export function AttentionPage({ surface }: { surface: "chat" | "work" }) {
 
       {isAuthenticationLoading ? null : !isAuthenticated ? (
         <SignInEmptyState
-          title="Sign in to review your work"
-          message="Your inbox only includes workspaces you can currently access."
+          title="Sign in to see your inbox"
+          message="Your personal updates and work that needs you appear here."
         />
-      ) : !isPro ? (
-        <div className="space-y-6">
-          <WorkInbox
-            view="needs"
-            decisions={decisionItems}
-            tasks={[]}
-            names={names}
-            personalFirst={surface === "chat"}
-            projectHref={getProjectBasePath}
-            isLoading={decisions.isLoading}
-            errorMessage={
-              decisions.error ? getErrorMessage(decisions.error, "Inbox unavailable") : undefined
-            }
-            canDecideHire={() => false}
-            isBusy={false}
-            onDecideHire={() => undefined}
-            onRead={() => undefined}
-            onDismiss={() => undefined}
-          />
-          <EmptyState
-            variant="inset"
-            icon={<BriefcaseBusiness className="text-muted-foreground" size={22} />}
-            title="Shared project work lives in Work"
-            message="Upgrade to see approvals, hires and escalations from every workspace you belong to here."
-            action={
-              <ButtonLink href="/work" variant="outline" size="sm">
-                See what Work includes
-              </ButtonLink>
-            }
-          />
-        </div>
       ) : (
         <div className="space-y-6">
           <SegmentedControl
@@ -110,7 +78,9 @@ export function AttentionPage({ surface }: { surface: "chat" | "work" }) {
                 label: "Updates",
                 count: inboxEntriesFor("updates", decisionItems, tasks.items).length,
               },
-              { id: "mine", label: "My tasks", count: myTasks.data?.tasks.length },
+              ...(isPro
+                ? [{ id: "mine" as const, label: "My tasks", count: myTasks.data?.tasks.length }]
+                : []),
             ]}
             onChange={setView}
           />

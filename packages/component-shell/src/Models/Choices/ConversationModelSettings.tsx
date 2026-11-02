@@ -141,14 +141,14 @@ export function ConversationModelSettings() {
           Conversations and coding
         </h2>
         <p className="max-w-3xl text-sm text-muted-foreground">
-          What new conversations and sandbox coding runs start with. You can still switch model in
-          the composer at any time.
+          What new conversations, Poly and sandbox coding runs start with. You can still switch
+          model in a conversation's composer.
         </p>
       </div>
       <ul className="grid gap-3 md:grid-cols-3">
         <SettingCard
           title="Default tier"
-          description="New conversations pick the best model your plan can run in this tier."
+          description="New conversations and Poly pick the best model your plan can run in this tier."
         >
           <FormSelect
             value={userSettings?.default_model_tier ?? ""}
@@ -163,12 +163,12 @@ export function ConversationModelSettings() {
         </SettingCard>
         <SettingCard
           title="Default model"
-          description="Start new conversations on one model instead of the tier."
+          description="Use one model for new conversations and Poly instead of the tier."
         >
           <ModelSetting
             value={userSettings?.default_model_id}
             options={chatOptions}
-            fallback="New conversations follow your default tier."
+            fallback="New conversations and Poly follow your default tier."
             saving={isUpdatingUserSettings}
             onChange={(modelId) => save("default_model_id", modelId)}
           />

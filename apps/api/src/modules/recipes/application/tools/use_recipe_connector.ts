@@ -64,10 +64,7 @@ function buildConnectorToolError(params: {
   return {
     status: "error",
     name: "use_recipe_connector",
-    content:
-      params.error.type === ErrorType.PARAMS_ERROR
-        ? `${params.error.message}. Retry use_recipe_connector with corrected params. If this is a recipe chat, use the savedConfiguration values from this tool result as defaults.`
-        : params.error.message,
+    content: params.error.message,
     data: {
       provider: params.provider,
       operation: params.operation,
@@ -79,6 +76,8 @@ function buildConnectorToolError(params: {
       ...(recoverable
         ? {
             recoverable: true,
+            modelContext:
+              "Retry with corrected params matching the discovered operation schema. Use savedConfiguration as defaults when available.",
             ...(params.savedConfiguration ? { savedConfiguration: params.savedConfiguration } : {}),
           }
         : {}),
@@ -319,7 +318,8 @@ export const use_recipe_connector: ApiToolDefinition = {
             })
           : undefined;
       const localConnection =
-        providerConfig?.auth.authType === "api_key"
+        providerConfig?.auth.authType === "api_key" &&
+        teammateAuthority?.credentialSource !== "public"
           ? (teammateAuthority?.connection ??
             (await request.context.repositories
               .get(ProviderConnectionRepository)
@@ -378,6 +378,7 @@ export const use_recipe_connector: ApiToolDefinition = {
           params: executionParams,
           sessionId: typeof args.sessionId === "string" ? args.sessionId : undefined,
           connectedAccountId: teammateAuthority?.connectedAccountId,
+          credentialSource: teammateAuthority?.credentialSource,
         },
         scope,
       });

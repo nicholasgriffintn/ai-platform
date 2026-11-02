@@ -26,6 +26,7 @@ export interface RecipeConnectorOperationRequest {
   params?: Record<string, unknown>;
   sessionId?: string;
   connectedAccountId?: string;
+  credentialSource?: "public";
 }
 
 export async function getActiveComposioAccountForProvider(params: {
@@ -139,6 +140,30 @@ export async function executeRecipeConnectorOperation(params: {
     throw new AssistantError("Unsupported recipe connector operation", ErrorType.PARAMS_ERROR, 400);
   }
 
+  const publicAccess = params.request.credentialSource === "public";
+
+  const supportsPublicRead =
+    adapter.provider.auth.authType === "api_key" &&
+    adapter.provider.auth.optionalCredentials &&
+    operation.access === "read" &&
+    !operation.destructive;
+
+  if (publicAccess && !supportsPublicRead) {
+    throw new AssistantError(
+      "Public access is not available for this connector operation",
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
+
+  if (publicAccess && (params.request.sessionId || params.request.connectedAccountId)) {
+    throw new AssistantError(
+      "A public connector call cannot select private credentials",
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
+
   if (adapter.provider.auth.authType === "composio") {
     const account = params.request.sessionId
       ? undefined
@@ -196,11 +221,13 @@ export async function executeRecipeConnectorOperation(params: {
     );
   }
 
-  const token = await getRecipeConnectorAccessToken({
-    context: params.context,
-    userId: params.userId,
-    provider: params.request.provider,
-  });
+  const token = publicAccess
+    ? { accessToken: "" }
+    : await getRecipeConnectorAccessToken({
+        context: params.context,
+        userId: params.userId,
+        provider: params.request.provider,
+      });
 
   try {
     await requireActiveExecutionRun(params.context);

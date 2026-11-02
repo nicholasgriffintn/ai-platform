@@ -1,5 +1,7 @@
 import {
   listPageOf,
+  placeSearchQuerySchema,
+  placesResponseSchema,
   recipeConnectorAccountSchema,
   recipeConnectorAccountUpdateRequestSchema,
   recipeConnectorApiKeyRequestSchema,
@@ -23,6 +25,7 @@ import {
   verifyComposioConnectorAuthorization,
 } from "../application";
 import { listRecipeConnectorAccounts, updateRecipeConnectorAccount } from "../application/accounts";
+import { searchConnectorPlaces } from "../application/places";
 
 const app = new Hono();
 const connectorParamsSchema = z.object({ connector_id: recipeConnectorProviderSchema });
@@ -125,6 +128,16 @@ defineResource(app, { idParam: "connector_id", tags: ["connectors"] }, (connecto
           requestUrl: raw.req.url,
         }),
     });
+
+  connectors.singleton("places").read({
+    auth: true,
+    summary: "Search places with a connected account",
+    paramSchema: connectorParamsSchema,
+    querySchema: placeSearchQuerySchema,
+    responses: { 200: { description: "Matching places", schema: placesResponseSchema } },
+    handler: ({ serviceContext, params, query }) =>
+      searchConnectorPlaces(serviceContext, params.connector_id, query.query),
+  });
 
   connectors.singleton("api_key").create({
     auth: true,

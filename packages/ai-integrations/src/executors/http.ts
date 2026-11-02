@@ -41,6 +41,7 @@ interface ConnectorJsonRequest {
   headers?: Record<string, string>;
   body?: unknown;
   allowNullResponse?: boolean;
+  additionalSuccessStatuses?: readonly number[];
 }
 
 export function createConnectorJsonClient(baseUrl: string) {
@@ -60,7 +61,7 @@ export function createConnectorJsonClient(baseUrl: string) {
     const response = await fetch(url, {
       method: params.method ?? "GET",
       headers: {
-        Authorization: `Bearer ${params.token}`,
+        ...(params.token ? { Authorization: `Bearer ${params.token}` } : {}),
         Accept: "application/json",
         "User-Agent": "Polychat",
         ...(params.body ? { "Content-Type": "application/json" } : {}),
@@ -72,7 +73,7 @@ export function createConnectorJsonClient(baseUrl: string) {
     const text = await response.text();
     const data = text.trim() ? safeParseJson(text) : {};
 
-    if (!response.ok) {
+    if (!response.ok && !params.additionalSuccessStatuses?.includes(response.status)) {
       const redactedText = redactSensitiveTokens(text);
 
       throw new AssistantError(

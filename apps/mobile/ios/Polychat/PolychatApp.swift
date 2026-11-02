@@ -12,7 +12,7 @@ struct PolychatApp: App {
     @StateObject private var polyStore = PolyStore()
     @StateObject private var teammatesStore = TeammatesStore()
     @StateObject private var ageGateStore = AgeGateStore()
-    @StateObject private var discoverStore = DiscoverStore(onEdition: WidgetPublisher.publish(edition:))
+    @StateObject private var discoverStore = DiscoverStore(onDiscover: WidgetPublisher.publish(discover:))
     @StateObject private var discoverPlayback = DiscoverPlayback()
     @StateObject private var attentionStore = AttentionStore()
     @StateObject private var workStore = WorkStore()
@@ -47,6 +47,9 @@ struct PolychatApp: App {
         }
         .backgroundTask(.appRefresh(HealthSyncController.refreshTaskId)) {
             await HealthSyncController.shared.syncIfNeeded()
+        }
+        .backgroundTask(.appRefresh(DiscoverBackgroundRefresh.taskId)) {
+            await DiscoverBackgroundRefresh.run()
         }
     }
 }

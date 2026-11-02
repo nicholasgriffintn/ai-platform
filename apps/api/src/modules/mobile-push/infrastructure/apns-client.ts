@@ -92,6 +92,8 @@ export async function sendApnsAlert(params: {
   try {
     response = await fetch(apnsEndpoint(params.device), {
       method: "POST",
+      redirect: "error",
+      signal: AbortSignal.timeout(10_000),
       headers: {
         authorization: `bearer ${params.providerToken}`,
         "apns-topic": params.topic,

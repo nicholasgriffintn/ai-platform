@@ -45,6 +45,7 @@ async function isTurnCancellationRequested(
 }
 
 export interface TurnStopSignal {
+  signal: AbortSignal;
   shouldStop: () => boolean;
   wasCancellationObserved: () => boolean;
   stop: () => void;
@@ -58,6 +59,7 @@ export function watchTurnCancellation(params: {
 }): TurnStopSignal {
   const { env, completionId, isDetached, isRunCancellationRequested } = params;
   const startedAt = Date.now();
+  const controller = new AbortController();
   let stopRequested = false;
   let stopped = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -94,6 +96,10 @@ export function watchTurnCancellation(params: {
       .then((cancelled) => {
         stopRequested ||= cancelled;
 
+        if (cancelled) {
+          controller.abort();
+        }
+
         return cancelled;
       })
       .catch((error) => {
@@ -109,6 +115,7 @@ export function watchTurnCancellation(params: {
   scheduleNext();
 
   return {
+    signal: controller.signal,
     shouldStop: () => stopRequested,
     wasCancellationObserved: () => stopRequested,
     stop: () => {

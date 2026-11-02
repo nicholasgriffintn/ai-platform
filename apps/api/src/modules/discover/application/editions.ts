@@ -18,16 +18,26 @@ import {
   discoverEditionGroupId,
   readDiscoverEditionGroupId,
 } from "~/modules/discover/domain/edition";
-import { collectCardSignals, type DiscoverFeedbackEntry } from "~/modules/discover/domain/feedback";
+import {
+  collectCardSignals,
+  summariseDiscoverFeedback,
+  type DiscoverFeedbackEntry,
+} from "~/modules/discover/domain/feedback";
+import { presentDiscoverFeed } from "~/modules/discover/domain/live";
+import { DiscoverSeenRepository } from "~/modules/discover/infrastructure/DiscoverSeenRepository";
 import { readOutputContent } from "~/modules/outputs/application/content";
 import {
   OutputRepository,
   type OutputRecord,
 } from "~/modules/outputs/infrastructure/OutputRepository";
 
+import { listDiscoverAudio } from "./audio-releases";
+import { readDiscoverDayProfile } from "./day-profile";
 import { publishDiscoverChanged } from "./events";
 import { listDiscoverFeedback } from "./feedback";
 import { listDiscoverFollows } from "./follows";
+import { readDiscoverLive, discoverLiveId } from "./live-store";
+import { readDiscoverNow } from "./now";
 import { readDiscoverSettings } from "./settings";
 import { latestDiscoverWindDownId } from "./wind-down";
 
@@ -156,13 +166,28 @@ async function listDiscoverEditionHistory(
 
 export async function readDiscover(context: ServiceContext): Promise<DiscoverResponse> {
   const user = context.requireUser();
-  const [settings, latest, editions, follows, windDownId, feedback] = await Promise.all([
+  const [
+    settings,
+    latest,
+    editions,
+    follows,
+    windDownId,
+    feedback,
+    dayProfile,
+    live,
+    seen,
+    briefings,
+  ] = await Promise.all([
     readDiscoverSettings(context),
     listRecentDiscoverEditions(context, user.id, 1),
     listDiscoverEditionHistory(context, user.id),
     listDiscoverFollows(context, user.id),
     latestDiscoverWindDownId(context, user.id),
     listDiscoverFeedback(context, user.id),
+    readDiscoverDayProfile(context),
+    readDiscoverLive(context),
+    context.repositories.get(DiscoverSeenRepository).list(user.id),
+    listDiscoverAudio(context),
   ]);
 
   return {
@@ -171,6 +196,26 @@ export async function readDiscover(context: ServiceContext): Promise<DiscoverRes
     windDownId,
     edition: presentEdition(latest[0] ?? null, feedback),
     editions,
+    dayProfile,
+    now: await readDiscoverNow(context, {
+      live,
+      profile: dayProfile,
+      sources: settings.sources,
+      now: new Date(),
+    }),
+    feed: presentDiscoverFeed(live, {
+      allowedProviders: new Set(
+        settings.sources
+          .filter((source) => source.connected && source.used)
+          .map((source) => source.providerId),
+      ),
+      seen,
+      limit: 24,
+      now: new Date(),
+      mutedTopics: [...dayProfile.mutedTopics, ...summariseDiscoverFeedback(feedback).hiddenTopics],
+      feedback: collectCardSignals(feedback, discoverLiveId(user.id)),
+    }),
+    briefings,
   };
 }
 

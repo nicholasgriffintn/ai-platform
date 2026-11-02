@@ -1729,6 +1729,7 @@ export const scopedConfiguration = sqliteTable(
     excluded: integer({ mode: "boolean" }).default(false).notNull(),
     created_by: integer().references(() => user.id),
     configuration_id: text(),
+    configuration_revision: integer().default(0).notNull(),
     configuration_created_at: text(),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)

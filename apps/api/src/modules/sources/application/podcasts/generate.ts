@@ -38,6 +38,8 @@ import {
   addCollectionSources,
   requireCollectionAccess,
   requireSourcesAccess,
+  requireSourceAccess,
+  formatSource,
 } from "~/modules/sources/application/sources";
 import {
   SourceRepository,
@@ -55,9 +57,10 @@ const podcastRecordingSchema = z.object({
   byteSize: z.number(),
 });
 
-export async function startPodcastGeneration(
+export async function preparePodcastGeneration(
   context: ServiceContext,
   input: GeneratePodcastInput,
+  options: { sourceId?: string } = {},
 ): Promise<Source> {
   const user = context.requireUser();
   const projectId = input.projectId ?? null;
@@ -78,6 +81,20 @@ export async function startPodcastGeneration(
       ErrorType.PARAMS_ERROR,
       400,
     );
+  }
+
+  const existing = options.sourceId
+    ? await context.repositories.get(SourceRepository).getSource(options.sourceId)
+    : null;
+
+  if (existing) {
+    const owned = await requireSourceAccess(context, user.id, existing.id, true);
+
+    if (owned.kind !== "podcast" || owned.project_id !== projectId) {
+      throw new AssistantError("That episode belongs to another scope", ErrorType.FORBIDDEN, 403);
+    }
+
+    return formatSource(owned);
   }
 
   const accessible = await requireSourcesAccess(context, user.id, input.sourceIds, (source) => {
@@ -101,6 +118,7 @@ export async function startPodcastGeneration(
 
   const material = input.material
     ? await fileKnowledgeSource(context, {
+        id: options.sourceId ? `${options.sourceId}_research` : undefined,
         origin: "note",
         projectId,
         kind: "text",
@@ -112,6 +130,7 @@ export async function startPodcastGeneration(
   const sourceIds = material ? [...input.sourceIds, material.id] : [...input.sourceIds];
 
   const episode = await fileKnowledgeSource(context, {
+    id: options.sourceId,
     origin: "generated",
     projectId,
     provider: null,
@@ -139,13 +158,31 @@ export async function startPodcastGeneration(
     );
   }
 
-  await new TaskService(context.env, new TaskRepository(context.env)).enqueueTask({
-    task_type: SOURCE_PODCAST_GENERATION_TASK_TYPE,
-    user_id: user.id,
-    project_id: projectId ?? undefined,
-    task_data: { sourceId: episode.id, runId: context.executionRunId },
-    priority: 6,
-  });
+  return episode;
+}
+
+export async function startPodcastGeneration(
+  context: ServiceContext,
+  input: GeneratePodcastInput,
+  options: { sourceId?: string } = {},
+): Promise<Source> {
+  const episode = await preparePodcastGeneration(context, input, options);
+  const user = context.requireUser();
+  const projectId = input.projectId ?? null;
+
+  if (episode.status === "processing") {
+    await new TaskService(context.env, new TaskRepository(context.env)).enqueueTask({
+      id: options.sourceId ? `podcast_${episode.id}` : undefined,
+      task_type: SOURCE_PODCAST_GENERATION_TASK_TYPE,
+      user_id: user.id,
+      project_id: projectId ?? undefined,
+      task_data: {
+        sourceId: episode.id,
+        runId: context.executionRunId,
+      },
+      priority: 6,
+    });
+  }
 
   return episode;
 }
@@ -165,13 +202,16 @@ async function produceEpisode(
   sourceId: string,
   generation: SourceGeneration,
   steps: TaskSteps,
+  assertCurrent: () => Promise<void>,
 ): Promise<void> {
   const user = context.requireUser();
   const language =
     typeof generation.input?.language === "string" ? generation.input.language : "en";
   const key = `sources/${sourceId}/episode.mp3`;
-  const script = await steps.value("script", podcastScriptSchema, async () =>
-    writePodcastScript(context, {
+  const script = await steps.value("script", podcastScriptSchema, async () => {
+    await assertCurrent();
+
+    return writePodcastScript(context, {
       sources: await withKnowledgeText(
         context,
         await requireSourcesAccess(context, user.id, generation.sourceIds ?? []),
@@ -180,9 +220,10 @@ async function produceEpisode(
       length: podcastLengthSchema.catch("default").parse(generation.input?.length),
       language,
       focus: generation.prompt,
-    }),
-  );
+    });
+  });
   const recording = await steps.value("voice", podcastRecordingSchema, async () => {
+    await assertCurrent();
     const { audio, turnStarts, durationSeconds } = await synthesisePodcastAudio(
       context,
       script.turns,
@@ -236,6 +277,7 @@ async function produceEpisode(
 
   try {
     await steps.run("cover", async () => {
+      await assertCurrent();
       await storeSourceCover(context, await requireEpisode(context, sourceId), script.description);
     });
   } catch (error) {
@@ -247,7 +289,9 @@ export async function runPodcastGeneration(
   context: ServiceContext,
   sourceId: string,
   steps: TaskSteps,
+  assertCurrent: () => Promise<void> = async () => {},
 ): Promise<"ready" | "failed" | "skipped"> {
+  await requireSourceAccess(context, context.requireUser().id, sourceId, true);
   const generation = await steps.value("load", sourceGenerationSchema.nullable(), async () => {
     const episode = await context.repositories.get(SourceRepository).getSource(sourceId);
 
@@ -261,7 +305,8 @@ export async function runPodcastGeneration(
   }
 
   try {
-    await produceEpisode(context, sourceId, generation, steps);
+    await assertCurrent();
+    await produceEpisode(context, sourceId, generation, steps, assertCurrent);
 
     return "ready";
   } catch (error) {

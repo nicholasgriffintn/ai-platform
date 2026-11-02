@@ -28,7 +28,7 @@ import {
 import { completeWorkspaceRoute } from "~/modules/model-serving/application/route-completion";
 import { resolveScopedModelRoute } from "~/modules/model-serving/application/scoped-model-route";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
-import type { IEnv } from "~/types";
+import type { IEnv, IUser } from "~/types";
 
 import { toGrader } from "./mappers";
 
@@ -38,6 +38,7 @@ export async function scoreWithGrader(
     repositories: Repositories;
     workspaceId: string;
     projectId: string | null;
+    user?: IUser;
   },
   config: GraderConfig,
   item: { input: string; output: string; expected?: string },
@@ -74,9 +75,10 @@ export async function scoreWithGrader(
   const { env } = scope;
   const model = config.judgeModelId
     ? { model: config.judgeModelId, provider: undefined }
-    : (judge ?? (await getAuxiliaryModel(env)));
+    : (judge ?? (await getAuxiliaryModel(env, scope.user, { workspaceId: scope.workspaceId })));
   const verdict = await ai.complete({
     env,
+    user: scope.user,
     model: model.model,
     provider: model.provider,
     reasoning_effort: "effort" in model ? model.effort : undefined,
@@ -220,6 +222,7 @@ export async function previewGrader(
         repositories: context.repositories,
         workspaceId,
         projectId: grader.project_id,
+        user: context.requireUser(),
       },
       grader.config,
       {

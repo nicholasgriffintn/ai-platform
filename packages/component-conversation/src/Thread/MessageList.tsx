@@ -18,11 +18,11 @@ import { getGoalMessageMarker } from "@ngriffin_uk/polychat-library-chat/message
 import {
   applyToolInteractionResolutions,
   collectApprovalToolCallIds,
-  collectApprovalToolResponseContents,
+  collectInteractionToolResponseContents,
   isApprovalOnlyAssistantMessage,
   isApprovalResolutionMessage,
   isHiddenToolResponse,
-  isRedundantApprovalAssistantMessage,
+  isRedundantInteractionAssistantMessage,
 } from "@ngriffin_uk/polychat-library-chat/tool-results";
 import { useChatStore, useStreamActivityStore } from "@ngriffin_uk/polychat-library-client";
 import {
@@ -155,8 +155,8 @@ export const MessageList = ({
       return next;
     });
   const approvalToolCallIds = useMemo(() => collectApprovalToolCallIds(messages), [messages]);
-  const approvalToolResponseContents = useMemo(
-    () => collectApprovalToolResponseContents(messages),
+  const interactionToolResponseContents = useMemo(
+    () => collectInteractionToolResponseContents(messages),
     [messages],
   );
   const availableModels = useMemo(
@@ -233,13 +233,13 @@ export const MessageList = ({
               Boolean(goalMarker) ||
               (!isApprovalResolutionMessage(message) &&
                 !isApprovalOnlyAssistantMessage(message, approvalToolCallIds) &&
-                !isRedundantApprovalAssistantMessage(message, approvalToolResponseContents) &&
+                !isRedundantInteractionAssistantMessage(message, interactionToolResponseContents) &&
                 !isHiddenToolResponse(message) &&
                 isRenderableMessage(message, resolvedToolCallIds))),
         ),
     [
       approvalToolCallIds,
-      approvalToolResponseContents,
+      interactionToolResponseContents,
       handoffRuns,
       expandedHandoffs,
       hideInlineUserQuestions,

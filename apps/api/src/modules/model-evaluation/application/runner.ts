@@ -13,7 +13,6 @@ import { ModelRouteRepository } from "~/modules/model-registry/infrastructure/Mo
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
 import { completeWorkspaceRoute } from "~/modules/model-serving/application/route-completion";
 import { ModelDeploymentRepository } from "~/modules/model-serving/infrastructure/ModelDeploymentRepository";
-import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import type { IEnv } from "~/types";
@@ -24,6 +23,7 @@ import type {
 } from "../infrastructure/ModelEvalRepository";
 import type { ModelGraderRecord } from "../infrastructure/ModelGraderRepository";
 import { executeBatchedEvalRun } from "./batch-runner";
+import { resolveEvaluationJudge } from "./judge";
 import {
   casesForRun,
   completeEvalRun,
@@ -177,7 +177,7 @@ export async function executeEvalRun(
     await repositories.get(ModelEvalRepository).updateRun(run.id, { status: "running" });
 
     const cases = casesForRun(suite, run);
-    const judge = await getAuxiliaryModel(env);
+    const judge = await resolveEvaluationJudge(env, repositories, suite, run);
     const graders = await repositories.get(ModelGraderRepository).listByIds(suite.grader_ids);
     const previous = data.offset > 0 ? await readEvalResults(bucket, run.id) : [];
     const batch = cases.slice(data.offset, data.offset + CASES_PER_TASK);

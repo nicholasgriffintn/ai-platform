@@ -18,6 +18,7 @@ export interface DiscoverNewsCategory {
 export interface DiscoverNewsItem extends DiscoverResearchResult {
   category: string;
   publishedAt: string;
+  observedAt?: string;
 }
 
 const TOPIC_WORD_MIN_LENGTH = 2;

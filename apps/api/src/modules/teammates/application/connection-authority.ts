@@ -20,7 +20,8 @@ import { requireProjectTeammate, requireWorkspaceTeammate } from "./access";
 
 export interface TeammateConnectorAuthority {
   allowedOperations: string[];
-  connection: ProviderConnectionRecord;
+  connection: ProviderConnectionRecord | null;
+  credentialSource?: "public";
   connectedAccountId?: string;
   grantRevision: number;
 }
@@ -160,6 +161,19 @@ export async function resolveTeammateConnectorAuthority(params: {
     if (inherited) {
       return inherited;
     }
+  }
+
+  if (
+    matching.length === 0 &&
+    provider.auth.authType === "api_key" &&
+    provider.auth.optionalCredentials
+  ) {
+    return {
+      allowedOperations: connectorOperationsForAccess(provider, "read"),
+      connection: null,
+      credentialSource: "public",
+      grantRevision: 0,
+    };
   }
 
   if (matching.length !== 1) {

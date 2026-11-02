@@ -339,8 +339,13 @@ export class UsageEventRepository extends BaseRepository {
     }
 
     if (params.recipeInstallationId) {
-      conditions.push("r.recipe_installation_id = ?");
-      bindings.push(params.recipeInstallationId);
+      conditions.push(`(r.recipe_installation_id = ? OR EXISTS (
+        SELECT 1 FROM activity_record a
+        WHERE a.id = ue.activity_id AND a.created_by_user_id = ue.user_id
+          AND a.project_id IS NULL
+          AND a.kind = 'recipe.execution' AND a.group_id = ?
+      ))`);
+      bindings.push(params.recipeInstallationId, params.recipeInstallationId);
     }
 
     if (conditions.length === 0) {
@@ -352,7 +357,7 @@ export class UsageEventRepository extends BaseRepository {
               COALESCE(SUM(ue.cost_micros), 0) AS cost_micros,
               COUNT(DISTINCT ue.run_id) AS run_count
        FROM usage_event ue
-       JOIN conversation_run r ON r.id = ue.run_id
+       LEFT JOIN conversation_run r ON r.id = ue.run_id
        WHERE ue.period = ? AND (${conditions.join(" OR ")})`,
       bindings,
     );

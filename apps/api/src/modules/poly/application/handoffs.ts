@@ -5,7 +5,7 @@ import {
   type PolyHandoffDecision,
   type PolyHandoffUrgency,
 } from "@ngriffin_uk/polychat-schemas";
-import { DAY_MS, truncateSingleLine } from "@ngriffin_uk/polychat-utility-core";
+import { truncateSingleLine } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
@@ -13,14 +13,13 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ActivityRecord } from "~/modules/activity/infrastructure/ActivityRepository";
 import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
 import { CorrectionRepository } from "~/modules/corrections/infrastructure/CorrectionRepository";
-import { admitPolyNotification } from "~/modules/poly/domain/budgets";
 import { handoffOverrideRef } from "~/modules/poly/domain/handoff-overrides";
 import type { IUser } from "~/types";
 
 import { judgeRoutineResult } from "./handoff-judgement";
+import { admitSharedPolyNotification } from "./notification-budget";
 
 const STORED_SUMMARY_CHARS = 1_600;
-const HANDOFFS_PER_DAY_SCAN = 200;
 
 export interface RoutineHandoffInput {
   context: ServiceContext;
@@ -94,17 +93,14 @@ export async function admitRoutineHandoff(
 
   const now = Date.now();
   const { urgency, receipt } = await resolveUrgency(input);
-  const recent = await activities.listConversationActivitiesSince({
-    conversationId: input.polyConversationId,
-    capabilityId: POLY_HANDOFF_CAPABILITY_ID,
-    since: new Date(now - DAY_MS).toISOString(),
-    limit: HANDOFFS_PER_DAY_SCAN,
+  const admission = await admitSharedPolyNotification(input.context, {
+    id,
+    category: "routine",
+    urgency,
+    now,
+    paused: input.paused,
+    polyConversationId: input.polyConversationId,
   });
-  const notifiedAt = recent
-    .map(readPolyHandoff)
-    .filter((handoff) => handoff?.data.decision === "notified")
-    .map((handoff) => Date.parse(handoff?.createdAt ?? ""));
-  const admission = admitPolyNotification({ urgency, notifiedAt, now, paused: input.paused });
   const data: PolyHandoffData = {
     sourceKind: "routine",
     sourceId: input.installationId,

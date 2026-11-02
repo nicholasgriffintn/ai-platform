@@ -49,14 +49,14 @@ struct DiscoverItemContent: View {
             )
         case .media(.perch):
             SourceListenView(
-                controller: playback.listen(.perch, editionId: edition.id),
+                controller: playback.listen(.perch, editionId: edition.id, sourceId: edition.listenSourceId),
                 sourceId: edition.listenSourceId,
                 artwork: store.mediaArt[.perch],
                 onRefresh: { await store.refresh() }
             )
         case .media(.week):
             SourceListenView(
-                controller: playback.listen(.week, editionId: edition.id),
+                controller: playback.listen(.week, editionId: edition.id, sourceId: edition.weekSourceId),
                 sourceId: edition.weekSourceId,
                 artwork: store.mediaArt[.week],
                 onRefresh: { await store.refresh() }
@@ -99,7 +99,7 @@ struct DiscoverItemContent: View {
             let controller = playback.episode
             return DiscoverItemTransport(player: controller.player) { await controller.togglePlayback() }
         case .media(let media) where media == .perch || media == .week:
-            let controller = playback.listen(media, editionId: edition.id)
+            let controller = playback.listen(media, editionId: edition.id, sourceId: media == .perch ? edition.listenSourceId : edition.weekSourceId)
             return DiscoverItemTransport(player: controller.player) { await controller.togglePlayback() }
         default:
             return nil

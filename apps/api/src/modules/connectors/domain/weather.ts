@@ -57,31 +57,6 @@ interface DailyAccumulator {
 const MAX_HOURLY_ITEMS = 8;
 const MAX_DAILY_ITEMS = 5;
 
-export async function getOpenWeatherForecast(
-  apiKey: string,
-  location: { latitude: number; longitude: number },
-): Promise<WeatherForecast | undefined> {
-  try {
-    const forecastResponse = await fetch(getOpenWeatherUrl("forecast", apiKey, location));
-
-    if (!forecastResponse.ok) {
-      return undefined;
-    }
-
-    return normaliseWeatherForecast(await forecastResponse.json());
-  } catch {
-    return undefined;
-  }
-}
-
-export function getOpenWeatherUrl(
-  resource: "weather" | "forecast",
-  apiKey: string,
-  location: { latitude: number; longitude: number },
-) {
-  return `https://api.openweathermap.org/data/2.5/${resource}?lat=${location.latitude}&lon=${location.longitude}&units=metric&appid=${apiKey}`;
-}
-
 export function normaliseWeatherForecast(
   forecast: OpenWeatherForecastResponse,
 ): WeatherForecast | undefined {

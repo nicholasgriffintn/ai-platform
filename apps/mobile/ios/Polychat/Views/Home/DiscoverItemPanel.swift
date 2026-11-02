@@ -17,7 +17,7 @@ struct DiscoverItemPanel: View {
     private var items: [DiscoverItem] { store.items }
 
     private var openConversationId: String? {
-        guard let edition = store.edition, current.subject(in: edition) != nil,
+        guard let edition = store.edition(for: current), current.subject(in: edition) != nil,
               let conversation = conversationManager.currentConversation,
               !conversation.messages.isEmpty else { return nil }
         return conversation.id
@@ -28,7 +28,7 @@ struct DiscoverItemPanel: View {
             if current.card != nil, let playing = playback.current {
                 StillPlayingBar(item: playing) { show(.media(playing), direction: -1) }
             }
-            if let edition = store.edition {
+            if let edition = store.edition(for: current) {
                 DiscoverItemContent(
                     item: current,
                     edition: edition,

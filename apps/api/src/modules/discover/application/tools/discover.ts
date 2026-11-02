@@ -22,7 +22,7 @@ import type { ApiToolDefinition } from "~/types/functions";
 
 import { listDiscoverArticleSources } from "../articles";
 import { buildDiscoverContextSnapshot, readDiscoverEditionBasis } from "../context";
-import { canAffordDiscoverListen } from "../cost";
+import { queueDiscoverCurrent } from "../current";
 import { saveDiscoverEdition } from "../editions";
 import { queueDiscoverEditionWork } from "../listen";
 import { listDiscoverDocuments } from "../notebook";
@@ -122,20 +122,16 @@ export const compose_discover_edition: ApiToolDefinition = {
     });
 
     const morning = editionTime === "morning";
-    const listen =
-      morning &&
-      basis.activeReader &&
-      basis.preferences.listen &&
-      (await canAffordDiscoverListen(context, basis.installationId));
     const episode = morning && basis.watchedLatestEpisode && basis.preferences.episode !== "off";
 
     await queueDiscoverEditionWork(context, saved, {
       covers: edition.cards.some((card) => card.kind === "topic"),
-      research: [...(listen ? ["listen" as const] : []), ...(episode ? ["episode" as const] : [])],
+      research: episode ? ["episode"] : [],
       links: basis.follows.length > 0 && edition.cards.some((card) => card.kind === "read"),
       yourWeek: morning && basis.preferences.listen && isSundayEdition(edition.date),
       tidy: edition.date,
     });
+    await queueDiscoverCurrent(context);
 
     const dropped = args.cards.length - edition.cards.length;
 

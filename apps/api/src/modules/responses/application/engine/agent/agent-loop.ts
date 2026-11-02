@@ -201,6 +201,7 @@ export interface AgentLoopExecutionParams {
   guardrailPrompt?: string;
   emit?: (event: AgentEvent) => Promise<void>;
   shouldStop?: () => boolean;
+  signal?: AbortSignal;
   isCancellationRequested?: () => Promise<boolean>;
   assessFinish?: (context: {
     summary: string;
@@ -313,6 +314,7 @@ async function runChatAgentLoop(
     userId: params.context?.user?.id,
     serviceContext: params.context,
     shouldStop: params.shouldStop,
+    signal: params.signal,
   };
 
   let openMessageId: string | undefined;

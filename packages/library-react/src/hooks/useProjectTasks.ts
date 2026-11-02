@@ -243,7 +243,11 @@ export function useTaskAttention() {
   const updateReceipt = useMutation({
     mutationFn: ({ itemIds, action }: { itemIds: string[]; action: "read" | "dismiss" }) =>
       updateTaskInboxReceipts(itemIds, action),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: TASK_ATTENTION_QUERY_KEY }),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: TASK_ATTENTION_QUERY_KEY }),
+        queryClient.invalidateQueries({ queryKey: ["work", "inbox"] }),
+      ]),
   });
 
   return {

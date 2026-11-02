@@ -252,6 +252,14 @@ function validateRecipeInstallationTriggers(
   const supportedRecipeTriggers = new Set(recipe.triggers.map((trigger) => trigger.type));
 
   for (const trigger of triggers) {
+    if (trigger.discoverOperation && recipe.id !== "poly-discover") {
+      throw new AssistantError(
+        "Discover operations belong to the Discover routine",
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+
     if (
       (trigger.type === "schedule" || trigger.type === "once") &&
       !supportedRecipeTriggers.has("schedule")

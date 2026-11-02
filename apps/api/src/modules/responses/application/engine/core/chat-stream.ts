@@ -150,6 +150,7 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
             )
           : stream,
         shouldStop: stopSignal.shouldStop,
+        signal: stopSignal.signal,
         onRetryState: createChatRetryStatePublisher({ sink: stream, runLifecycle }),
         onContextSnapshot:
           createChatContextPublisher({ sink: stream, runLifecycle }) ?? params.onContextSnapshot,

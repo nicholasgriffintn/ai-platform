@@ -73,7 +73,7 @@ export interface UserSettings {
   speech_expressiveness?: number | null;
   speech_voices?: SavedSpeechVoice[];
   search_provider?: string;
-  sandbox_model?: string;
+  sandbox_model?: string | null;
   default_model_tier?: ModelTier | null;
   default_model_id?: string | null;
   default_compute_site?: ComputeSite | null;

@@ -1,5 +1,6 @@
 import {
   disconnectRecipeConnector,
+  searchConnectorPlaces,
   getRecipeConnector,
   listRecipeConnectorAccounts,
   listRecipeConnectors,
@@ -13,6 +14,7 @@ import type {
   RecipeConnectorProvider,
   RecipeConnectorStatus,
 } from "@ngriffin_uk/polychat-schemas";
+import { useDebouncedValue } from "@ngriffin_uk/polychat-utility-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useCanAccessProFeatures } from "./useCanAccessProFeatures.js";
@@ -117,5 +119,21 @@ export function useUpdateRecipeConnectorAccount(provider: RecipeConnectorProvide
         }),
       );
     },
+  });
+}
+
+export function useConnectorPlaces(
+  provider: RecipeConnectorProvider,
+  input: string,
+  enabled: boolean,
+) {
+  const query = useDebouncedValue(input.trim(), 350);
+
+  return useQuery({
+    queryKey: [...RECIPE_CONNECTORS_QUERY_KEY, provider, "places", query],
+    queryFn: () => searchConnectorPlaces(provider, query),
+    enabled: enabled && query.length >= 2,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
   });
 }

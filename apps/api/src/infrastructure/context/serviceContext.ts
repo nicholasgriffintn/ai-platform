@@ -44,6 +44,7 @@ export interface ServiceContext {
   connectorApprovalExecutionToken?: string;
   originDeviceId?: string | null;
   executionRunId?: string;
+  executionActivityId?: string;
   executionRunAttempt?: number;
   repositories: Repositories;
   requestCache: RequestCache;
@@ -71,6 +72,21 @@ export function withExecutionRunContext(
 
       if (property === "executionRunAttempt") {
         return runAttempt;
+      }
+
+      return Reflect.get(target, property, receiver);
+    },
+  });
+}
+
+export function withExecutionActivityContext(
+  context: ServiceContext,
+  activityId: string,
+): ServiceContext {
+  return new Proxy(context, {
+    get(target, property, receiver) {
+      if (property === "executionActivityId") {
+        return activityId;
       }
 
       return Reflect.get(target, property, receiver);

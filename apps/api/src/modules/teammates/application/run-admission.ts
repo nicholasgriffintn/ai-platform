@@ -19,7 +19,6 @@ import { ConversationRunRepository } from "~/modules/conversations/infrastructur
 import { resolveDelegationContinuation } from "~/modules/delegations/application/continuation";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { chooseWorkMachineModel } from "~/modules/machines/application/work-placement";
-import { findModelConfig, requireSystemModel } from "~/modules/models/application/resolve";
 import { recordPolyApprovalOutcome } from "~/modules/poly/application/earned-trust";
 import { buildWorkRunTools, grantWorkBoardTools } from "~/modules/project-tasks/domain/work-tools";
 import {
@@ -40,6 +39,7 @@ import { prepareAdmittedTeammateContinuation, prepareTeammateRun } from "./execu
 import { resolveTeammateMcpServers } from "./mcp-servers";
 import { assertTeammateEmploymentAvailable } from "./organisation";
 import { admitTeammateContextAuthority, requirePolyHomeRun } from "./poly-home";
+import { resolveTeammateRunModel } from "./run-model";
 import { prepareTeammateRunResume } from "./run-resume";
 import { readTeammateSkillIds } from "./teammateResponse";
 
@@ -275,21 +275,14 @@ export async function enqueueTeammateRun({
     skill_ids: effectiveSkillIds,
   };
 
-  const requestedModel = effectiveTeammate.model || effectiveSettings.model || undefined;
-  const fallbackModel = requestedModel
-    ? undefined
-    : await requireSystemModel(serviceContext.env, user, "routines", { workspaceId });
-  const modelToUse = requestedModel ?? fallbackModel?.model;
-  const modelDetails = await findModelConfig(
-    modelToUse || "",
-    env,
-    desktopModel ? undefined : (effectiveSettings.provider ?? fallbackModel?.provider),
-    user?.id,
-  );
-
-  if (!modelDetails) {
-    throw new AssistantError("Invalid model", ErrorType.PARAMS_ERROR);
-  }
+  const modelSelection = await resolveTeammateRunModel({
+    context: serviceContext,
+    teammate: effectiveTeammate,
+    settings: effectiveSettings,
+    messages: body.messages,
+    workspaceId,
+  });
+  const modelDetails = modelSelection.config;
 
   if (mcpServers.length > 0 && !modelDetails.supportsMcp) {
     throw new AssistantError(
@@ -317,7 +310,7 @@ export async function enqueueTeammateRun({
 
   const settings = prepareTeammateCompletionRequest({
     teammate: effectiveTeammate,
-    settings: effectiveSettings,
+    settings: { ...effectiveSettings, ...modelSelection.settings },
     modelProvider: modelDetails.provider,
     mcpServers,
     maxStepsOverride,
@@ -356,7 +349,7 @@ export async function enqueueTeammateRun({
           behaviour: preparedInvocation?.resolution.behaviour ?? "colleague",
           ...(resolvedInvocation ? { invocation: resolvedInvocation } : {}),
           persona,
-          model: modelDetails.matchingModel,
+          model: modelSelection.modelId,
           mode: settings.mode,
           skillIds: effectiveSkillIds,
           enabledTools: settings.enabled_tools ?? [],

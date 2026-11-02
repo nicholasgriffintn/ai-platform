@@ -24,7 +24,16 @@ export const get_weather: ApiToolDefinition = {
       };
     }
 
-    return getWeatherForLocation(req.env, {
+    if (!req.context) {
+      return {
+        status: "error",
+        name: "get_weather",
+        content: "Sign in and connect OpenWeather to check the weather.",
+        data: {},
+      };
+    }
+
+    return getWeatherForLocation(req.context, {
       latitude: location.latitude,
       longitude: location.longitude,
     });

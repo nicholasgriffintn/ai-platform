@@ -1,6 +1,5 @@
 import {
   TASK_NOTIFICATION_DELIVERY_TASK_TYPE,
-  TASK_NOTIFICATION_PROTOCOL_VERSION,
   createTaskInboxItemId,
   type TaskNotificationCategory,
 } from "@ngriffin_uk/polychat-schemas";
@@ -8,6 +7,7 @@ import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { isTaskNotificationPreferenceEnabled } from "~/modules/notifications/application/preferences";
+import { sendWebGatewayNotification } from "~/modules/notifications/infrastructure/web-gateway";
 import { attentionState, isTaskInboxEligible } from "~/modules/project-tasks/application/attention";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import type {
@@ -80,12 +80,6 @@ export class TaskNotificationDeliveryHandler implements TaskHandler {
       return { status: "skipped", message: "Task notification provider is not configured" };
     }
 
-    const providerUrl = new URL(env.TASK_NOTIFICATION_PROVIDER_URL);
-
-    if (providerUrl.protocol !== "https:") {
-      throw new Error("Task notification provider URL must use HTTPS");
-    }
-
     const itemId = createTaskInboxItemId(candidate.task.id, candidate.task.attentionVersion);
     const deepLink = `${env.APP_BASE_URL ?? "https://polychat.app"}/work/${encodeURIComponent(
       candidate.task.workspaceId,
@@ -95,28 +89,16 @@ export class TaskNotificationDeliveryHandler implements TaskHandler {
 
     try {
       await context.fence.assertOwned();
-      const response = await fetch(providerUrl, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${env.TASK_NOTIFICATION_PROVIDER_TOKEN}`,
-          "Content-Type": "application/json",
-          "Idempotency-Key": deliveryId,
+      const response = await sendWebGatewayNotification(env, {
+        deliveryId,
+        destination: {
+          endpoint: candidate.registration.endpoint,
+          p256dh: candidate.registration.p256dh,
+          auth: candidate.registration.authSecret,
         },
-        body: JSON.stringify({
-          protocolVersion: TASK_NOTIFICATION_PROTOCOL_VERSION,
-          deliveryId,
-          platform: candidate.registration.platform,
-          destination: {
-            endpoint: candidate.registration.endpoint,
-            p256dh: candidate.registration.p256dh,
-            auth: candidate.registration.authSecret,
-          },
-          notification: {
-            title: "Polychat task update",
-            body: NOTIFICATION_COPY[candidate.delivery.category],
-            data: { itemId, deepLink },
-          },
-        }),
+        title: "Polychat task update",
+        body: NOTIFICATION_COPY[candidate.delivery.category],
+        data: { itemId, deepLink },
       });
 
       if (response.status === 404 || response.status === 410) {

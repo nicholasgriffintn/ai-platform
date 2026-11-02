@@ -46,6 +46,7 @@ export interface RecordModelTurnUsageParams {
   completionId: string;
   messageId?: string | null;
   conversationId?: string | null;
+  activityId?: string | null;
   runId?: string | null;
   runAttempt?: number | null;
   occurredAt?: string;
@@ -61,6 +62,7 @@ export interface RecordOffPlatformRunUsageParams {
   messageId?: string | null;
   conversationId?: string | null;
   runId?: string | null;
+  activityId?: string | null;
   runAttempt?: number | null;
   occurredAt?: string;
 }
@@ -104,6 +106,7 @@ export async function recordOffPlatformRunUsage(
           messageId: params.messageId ?? null,
           completionId: params.completionId,
           runId: params.runId ?? null,
+          activityId: params.activityId ?? null,
           runAttempt: params.runAttempt ?? null,
           raw,
           projectId: attribution.projectId,
@@ -138,6 +141,7 @@ export async function recordModelTurnUsage(
       messageId: params.messageId,
       conversationId: params.conversationId,
       runId: params.runId,
+      activityId: params.activityId,
       runAttempt: params.runAttempt,
       occurredAt: params.occurredAt,
     });
@@ -198,6 +202,7 @@ export async function recordModelTurnUsage(
       projectId: attribution.projectId,
       workspaceId: attribution.workspaceId,
       runId: params.runId ?? null,
+      activityId: params.activityId ?? null,
       runAttempt: params.runAttempt ?? null,
       rates,
       raw: params.rawUsage ?? usage,

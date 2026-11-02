@@ -33,6 +33,8 @@ export interface DiscoverSignalDocument {
   title: string;
   readAt: string | null;
   attemptedAt: string | null;
+  date?: string | null;
+  timezone?: string | null;
   error: string | null;
   lines: string[];
   items: DiscoverResearchResult[];
@@ -118,6 +120,8 @@ export function readDiscoverDocuments(sources: readonly SourceRecord[]): Discove
         title: source.title,
         readAt: readNonEmptyString(metadata.readAt) ?? null,
         attemptedAt: readNonEmptyString(metadata.attemptedAt) ?? null,
+        date: readNonEmptyString(metadata.date) ?? null,
+        timezone: readNonEmptyString(metadata.timezone) ?? null,
         error: readNonEmptyString(metadata.error) ?? null,
         lines: readStringArray(metadata.lines),
         items: readResearchResults(metadata.items),

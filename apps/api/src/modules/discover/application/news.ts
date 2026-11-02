@@ -1,9 +1,12 @@
+import type { KVNamespace } from "@cloudflare/workers-types";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { fetchSyndicationFeed } from "@ngriffin_uk/polychat-utility-server/feeds";
 import { z } from "zod/v4";
 
+import { KVCache } from "~/infrastructure/cache";
 import type {
   DiscoverNewsCategory,
   DiscoverNewsItem,
@@ -24,20 +27,31 @@ export const discoverNewsItemsSchema = z.array(
     date: z.string().optional(),
     category: z.string(),
     publishedAt: z.string(),
+    observedAt: z.string().optional(),
   }),
 );
 
 export async function readDiscoverNews(
   categories: readonly DiscoverNewsCategory[],
+  cacheBinding?: KVNamespace,
 ): Promise<DiscoverNewsItem[]> {
+  const cache = cacheBinding ? new KVCache(cacheBinding, 900) : null;
   const feeds = categories.flatMap((category) =>
     category.feeds.map((feed) => ({ ...feed, category: category.id })),
   );
   const read = await mapWithConcurrency(feeds, NEWS_FEED_CONCURRENCY, async (feed) => {
     try {
-      const parsed = await fetchSyndicationFeed(feed.url, NEWS_FEED_BYTES);
+      const cacheKey = `discover:public-news:${await sha256Hex(feed.url)}`;
+      const cached = discoverNewsItemsSchema.safeParse(await cache?.get<unknown>(cacheKey));
 
-      return parsed.items.slice(0, NEWS_ITEMS_PER_FEED).flatMap((item) =>
+      if (cached.success) {
+        return cached.data;
+      }
+
+      const parsed = await fetchSyndicationFeed(feed.url, NEWS_FEED_BYTES);
+      const observedAt = new Date().toISOString();
+
+      const items = parsed.items.slice(0, NEWS_ITEMS_PER_FEED).flatMap((item) =>
         item.publishedAt
           ? [
               {
@@ -48,10 +62,15 @@ export async function readDiscoverNews(
                 date: item.publishedAt.slice(0, 10),
                 category: feed.category,
                 publishedAt: item.publishedAt,
+                observedAt,
               },
             ]
           : [],
       );
+
+      await cache?.set(cacheKey, items, { ttl: 900 });
+
+      return items;
     } catch (error) {
       logger.warn("A Discover news feed could not be read", {
         feed: feed.name,

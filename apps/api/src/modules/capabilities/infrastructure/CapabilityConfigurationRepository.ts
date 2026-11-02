@@ -34,6 +34,7 @@ export interface CapabilityConfigurationRow {
   configuration: string;
   created_at: string;
   updated_at: string | null;
+  configuration_revision?: number;
 }
 
 export interface CapabilityConfigurationRecord {
@@ -136,6 +137,79 @@ function formatConfiguration(row: CapabilityConfigurationRow): CapabilityConfigu
 }
 
 export class CapabilityConfigurationRepository extends BaseRepository {
+  async getVersioned(params: Omit<SaveCapabilityConfigurationParams, "configuration">): Promise<{
+    configuration: Record<string, unknown>;
+    revision: number;
+    updatedAt: string | null;
+  } | null> {
+    const row = await this.runQuery<CapabilityConfigurationRow>(
+      `SELECT ${CAPABILITY_CONFIGURATION_COLUMNS.join(", ")}, configuration_revision FROM scoped_configuration
+       WHERE kind = 'capability' AND scope_type = ? AND scope_id = ? AND target_kind = ? AND target_id = ?`,
+      [params.scope.type, String(params.scope.id), params.capabilityKind, params.capabilityId],
+      true,
+    );
+
+    if (!row) {
+      return null;
+    }
+
+    const revision = row.configuration_revision ?? 0;
+
+    if (!Number.isSafeInteger(revision) || revision < 0) {
+      throw new AssistantError("Invalid configuration revision", ErrorType.DATABASE_ERROR, 500);
+    }
+
+    return {
+      configuration: parseJsonRecord(row.configuration),
+      revision,
+      updatedAt: row.updated_at,
+    };
+  }
+
+  async saveVersioned(
+    params: SaveCapabilityConfigurationParams & { expectedRevision: number },
+  ): Promise<boolean> {
+    const insert = buildCapabilityConfigurationValues(params);
+    const row =
+      params.expectedRevision === 0
+        ? await this.runQuery<{ id: string }>(
+            `INSERT INTO scoped_configuration
+           (kind, id, user_id, project_id, target_kind, target_id, payload, configuration_revision, updated_at)
+           VALUES ('capability', ?, ?, ?, ?, ?, ?, 1, ?)
+           ON CONFLICT(scope_type, scope_id, target_kind, target_id) WHERE kind = 'capability'
+           DO UPDATE SET payload = excluded.payload, configuration_revision = 1, updated_at = excluded.updated_at
+           WHERE scoped_configuration.configuration_revision = 0 RETURNING id`,
+            [
+              insert.id,
+              insert.user_id,
+              insert.project_id,
+              insert.target_kind,
+              insert.target_id,
+              insert.payload,
+              new Date().toISOString(),
+            ],
+            true,
+          )
+        : await this.runQuery<{ id: string }>(
+            `UPDATE scoped_configuration SET payload = ?, configuration_revision = ? + 1, updated_at = ?
+           WHERE kind = 'capability' AND scope_type = ? AND scope_id = ? AND target_kind = ? AND target_id = ?
+           AND configuration_revision = ? RETURNING id`,
+            [
+              insert.payload,
+              params.expectedRevision,
+              new Date().toISOString(),
+              params.scope.type,
+              String(params.scope.id),
+              params.capabilityKind,
+              params.capabilityId,
+              params.expectedRevision,
+            ],
+            true,
+          );
+
+    return Boolean(row);
+  }
+
   async list(
     scope: CapabilityConfigurationScope,
     capabilityKind?: CapabilityConfigurationKind,

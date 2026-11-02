@@ -13,11 +13,13 @@ final class ListenPlaybackController: ObservableObject {
     let editionId: String
     private let apiClient: APIClient
     private var artwork: UIImage?
+    let sourceId: String?
 
-    init(item: DiscoverMediaItem, editionId: String, apiClient: APIClient = .shared) {
+    init(item: DiscoverMediaItem, editionId: String, sourceId: String? = nil, apiClient: APIClient = .shared) {
         self.item = item
         self.editionId = editionId
         self.apiClient = apiClient
+        self.sourceId = sourceId
     }
 
     var recording: DiscoverRecording {
@@ -27,7 +29,8 @@ final class ListenPlaybackController: ObservableObject {
     func follow(hasRecording: Bool, artwork: UIImage?) async {
         self.artwork = artwork
         while hasRecording || requested, !Task.isCancelled {
-            source = try? await apiClient.fetchDiscoverRecording(editionId: editionId, recording: recording)
+            if let sourceId { source = try? await apiClient.fetchSource(id: sourceId) }
+            else { source = try? await apiClient.fetchDiscoverRecording(editionId: editionId, recording: recording) }
             if source?.isPlayable == true || source?.status == "failed" {
                 return
             }
@@ -45,7 +48,9 @@ final class ListenPlaybackController: ObservableObject {
         isWorking = true
         defer { isWorking = false }
         do {
-            let data = try await apiClient.fetchDiscoverRecordingAudio(editionId: editionId, recording: recording)
+            let data: Data
+            if let sourceId { data = try await apiClient.fetchSourceContent(id: sourceId) }
+            else { data = try await apiClient.fetchDiscoverRecordingAudio(editionId: editionId, recording: recording) }
             try await player.load(data, autoplay: true)
             NowPlayingCenter.shared.bind(
                 isPlaying: { [weak self] in self?.player.isPlaying ?? false },

@@ -1,4 +1,5 @@
 import { ConversationThread } from "@ngriffin_uk/polychat-component-conversation";
+import { resolveAccountModelSelection } from "@ngriffin_uk/polychat-library-chat";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   ArtifactWorkbenchProvider,
@@ -20,6 +21,7 @@ import { POLY_TEAMMATE_ID, type ResponseAgent } from "@ngriffin_uk/polychat-sche
 import { useMemo } from "react";
 import { useLocation } from "react-router";
 
+import { usePolyComposerPrefill } from "./usePolyComposerPrefill.js";
 import { usePolyNavigation } from "./usePolyNavigation.js";
 
 const POLY_AGENT: ResponseAgent = { type: "teammate", id: POLY_TEAMMATE_ID };
@@ -65,12 +67,19 @@ export function PolyThread({
   conversationId: string;
   onNavigate: (href: string) => void;
 }) {
-  const scope = useLocalConversationScope(conversationId, undefined, POLY_AGENT);
+  const localScope = useLocalConversationScope(conversationId, undefined, POLY_AGENT);
+  const userSettings = useChatStore((state) => state.userSettings);
+  const scope = useMemo(
+    () => ({ ...localScope, modelSelection: resolveAccountModelSelection(userSettings) }),
+    [localScope, userSettings],
+  );
   const standingApprovals = usePolyStandingApprovals();
   const polySpeaks = useUIStore((state) => state.polySpeaks);
   const { pathname } = useLocation();
   const openConversationId = useChatStore((state) => state.currentConversationId);
   const draft = useLocalComposerDraft();
+
+  usePolyComposerPrefill(draft);
   const { data: conversation } = useChat(scope.currentConversationId);
   const agentApprovals = useConversationAgentApprovals(scope.currentConversationId);
   const uiContext = useMemo(

@@ -3,13 +3,14 @@ import SwiftUI
 struct TVListenView: View {
     @EnvironmentObject private var store: DiscoverStore
     let item: DiscoverMediaItem
+    var briefingId: String? = nil
 
     var body: some View {
-        if let edition = store.discover?.edition {
+        if let edition = store.edition {
             TVListenPlayer(
                 item: item,
                 edition: edition,
-                sourceId: item == .week ? edition.weekSourceId : edition.listenSourceId,
+                sourceId: briefingId.flatMap { id in store.discover?.briefings?.first { $0.id == id }?.sourceId } ?? (item == .week ? edition.weekSourceId : edition.listenSourceId),
                 artwork: store.mediaArt[item]
             )
         } else {
@@ -28,7 +29,7 @@ private struct TVListenPlayer: View {
     let artwork: UIImage?
 
     init(item: DiscoverMediaItem, edition: DiscoverEdition, sourceId: String?, artwork: UIImage?) {
-        _controller = StateObject(wrappedValue: ListenPlaybackController(item: item, editionId: edition.id))
+        _controller = StateObject(wrappedValue: ListenPlaybackController(item: item, editionId: edition.id, sourceId: sourceId))
         self.sourceId = sourceId
         self.artwork = artwork
     }

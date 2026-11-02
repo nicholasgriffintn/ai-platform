@@ -7,6 +7,7 @@ import {
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { listWaitingRunInboxItems } from "~/modules/conversations/application/waiting-items";
 import { listOutdatedModelChoiceInboxItems } from "~/modules/models/application/choices";
+import { listNotificationInboxItems } from "~/modules/notifications/application/inbox";
 import { listProjectTaskInboxItems } from "~/modules/project-tasks/application/inbox-items";
 import { listTeammateInboxItems } from "~/modules/teammates/application/inbox-items";
 import { canAccessWork } from "~/modules/workspaces/application/access";
@@ -22,17 +23,20 @@ export async function getWorkInbox(context: ServiceContext): Promise<WorkInboxRe
   const managed = workspaces.filter((workspace) =>
     WORKSPACE_MANAGER_ROLES.includes(workspace.role),
   );
-  const [waitingItems, teammateItems, taskItems, modelItems, projects] = await Promise.all([
-    listWaitingRunInboxItems(context, { userId: user.id, workspaceIds: new Set(workspaceIds) }),
-    listTeammateInboxItems(context, {
-      workspaceIds,
-      managedWorkspaceIds: new Set(managed.map((workspace) => workspace.id)),
-    }),
-    listProjectTaskInboxItems(context, { userId: user.id, workspaceIds }),
-    listOutdatedModelChoiceInboxItems(context, managed),
-    context.repositories.get(WorkspaceRepository).listProjectNamesForWorkspaces(workspaceIds),
-  ]);
+  const [waitingItems, teammateItems, taskItems, modelItems, projects, notificationItems] =
+    await Promise.all([
+      listWaitingRunInboxItems(context, { userId: user.id, workspaceIds: new Set(workspaceIds) }),
+      listTeammateInboxItems(context, {
+        workspaceIds,
+        managedWorkspaceIds: new Set(managed.map((workspace) => workspace.id)),
+      }),
+      listProjectTaskInboxItems(context, { userId: user.id, workspaceIds }),
+      listOutdatedModelChoiceInboxItems(context, managed),
+      context.repositories.get(WorkspaceRepository).listProjectNamesForWorkspaces(workspaceIds),
+      listNotificationInboxItems(context),
+    ]);
   const items = [
+    ...notificationItems,
     ...waitingItems,
     ...teammateItems,
     ...taskItems,

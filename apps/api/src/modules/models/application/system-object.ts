@@ -51,6 +51,7 @@ export async function generateSystemObject<TObject>(
         provider,
         completionId: `${request.name}_${generateId()}`,
         runId: context.executionRunId ?? null,
+        activityId: context.executionActivityId ?? null,
         runAttempt: context.executionRunAttempt ?? null,
       });
 

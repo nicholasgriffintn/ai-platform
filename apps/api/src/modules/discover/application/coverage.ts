@@ -20,8 +20,9 @@ import { generateSystemObject } from "~/modules/models/application/system-object
 import { formatSource, requireSourceAccess } from "~/modules/sources/application/sources";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
+import { requireDiscoverCardCollection, updateDiscoverCardCollection } from "./card-collection";
 import { requireDiscoverBudgetLeft } from "./cost";
-import { requireDiscoverEdition, updateDiscoverEdition, withEditionRun } from "./editions";
+import { withEditionRun } from "./editions";
 import { ensureDiscoverNotebook } from "./notebook";
 import { readDiscoverRoutine } from "./settings";
 import { writeDiscoverDocument } from "./signal-documents";
@@ -41,7 +42,7 @@ export async function compareDiscoverCoverage(
 ): Promise<Source> {
   const user = context.requireUser();
   const sources = context.repositories.get(SourceRepository);
-  const edition = await requireDiscoverEdition(context, user.id, editionId);
+  const edition = await requireDiscoverCardCollection(context, user.id, editionId);
   const card = findDiscoverCard(edition.content.cards, cardId, "topic");
 
   if (!card) {
@@ -106,7 +107,7 @@ export async function compareDiscoverCoverage(
     },
   });
 
-  await updateDiscoverEdition(context, editionId, (content) => ({
+  await updateDiscoverCardCollection(context, editionId, (content) => ({
     ...content,
     cards: content.cards.map((candidate) =>
       candidate.id === card.id && candidate.kind === "topic"

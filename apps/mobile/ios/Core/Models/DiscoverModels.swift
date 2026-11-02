@@ -91,6 +91,8 @@ struct DiscoverCard: Decodable, Equatable, Identifiable {
 
     var isStory: Bool { kind == "wind_down" }
 
+    var isLiveFeedCard: Bool { ["topic", "read", "watch", "listen", "wind_down"].contains(kind) }
+
     func subject(editionId: String) -> ConversationSubject {
         if kind == "read", let sourceId {
             return ConversationSubject(type: "source", id: sourceId)
@@ -130,7 +132,7 @@ struct DiscoverEdition: Decodable, Equatable {
     let brief: [DiscoverBriefLine]
     let cards: [DiscoverCard]
     var feedback: [String: [String]]
-    let listenSourceId: String?
+    var listenSourceId: String?
     let weekSourceId: String?
     let edition: String?
     let episodeId: String?
@@ -182,6 +184,10 @@ struct DiscoverResponse: Decodable, Equatable {
     let editions: [DiscoverEditionSummary]
     var follows: [DiscoverFollow]
     let windDownId: String?
+    var dayProfile: DiscoverDayProfile? = nil
+    var now: DiscoverNow? = nil
+    var feed: DiscoverFeedPage? = nil
+    var briefings: [DiscoverAudioRelease]? = nil
 }
 
 struct DiscoverRefreshResponse: Decodable {

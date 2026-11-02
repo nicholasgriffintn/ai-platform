@@ -107,7 +107,7 @@ export const updateUserSettingsSchema = z
     speech_voice: z.string().trim().min(1).max(128).nullable().optional(),
     speech_expressiveness: speechExpressivenessSchema.nullable().optional(),
     search_provider: z.union([searchProviderSchema, z.literal("")]).optional(),
-    sandbox_model: z.string().optional(),
+    sandbox_model: z.string().nullable().optional(),
     default_model_tier: modelTierSchema.nullable().optional(),
     default_model_id: z.string().trim().min(1).nullable().optional(),
     default_compute_site: computeSiteSchema.nullable().optional(),

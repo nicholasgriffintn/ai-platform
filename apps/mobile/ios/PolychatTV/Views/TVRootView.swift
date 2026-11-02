@@ -24,6 +24,8 @@ struct TVRootView: View {
                                 TVWindDownView()
                             case .card(let id):
                                 TVCardView(cardId: id)
+                            case .briefing(let id):
+                                TVListenView(item: .perch, briefingId: id)
                             }
                         }
                 }

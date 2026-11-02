@@ -1,24 +1,27 @@
 import { Button, cn, LoadingSpinner } from "@ngriffin_uk/polychat-component-ui";
-import { useChatStore } from "@ngriffin_uk/polychat-library-client";
-import { getErrorMessage, partOfDay } from "@ngriffin_uk/polychat-utility-core";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useElementSize } from "@ngriffin_uk/polychat-utility-react";
 import { Settings2 } from "lucide-react";
 import { useLayoutEffect, useRef, useState, type ReactNode, type UIEvent } from "react";
 
 import { PageShell } from "../../Shell/PageShell.js";
+import { DiscoverDayDialog } from "./day/DiscoverDayDialog.js";
 import { DiscoverBrief } from "./DiscoverBrief.js";
 import { DiscoverFeed } from "./DiscoverFeed.js";
-import { DiscoverMasthead, type DiscoverGreeting } from "./DiscoverMasthead.js";
+import { DiscoverMasthead } from "./DiscoverMasthead.js";
 import { DiscoverMediaShelf } from "./DiscoverMediaShelf.js";
 import { DiscoverSettingsDialog } from "./DiscoverSettingsDialog.js";
 import { DiscoverNoEdition, DiscoverPreparing, DiscoverTurnOn } from "./DiscoverStates.js";
 import { slideInPanel } from "./item/discover-motion.js";
 import { DISCOVER_PANEL_WIDTH, DiscoverItemPanel } from "./item/DiscoverItemPanel.js";
 import { useDiscoverPanelMotion } from "./item/useDiscoverPanelMotion.js";
+import { discoverCurrentBrief } from "./live/discover-feed-edition.js";
+import { DiscoverLiveContent } from "./live/DiscoverLiveContent.js";
 import {
   useDiscoverEditionController,
   type DiscoverEditionController,
 } from "./useDiscoverEditionController.js";
+import { useDiscoverGreeting } from "./useDiscoverGreeting.js";
 
 const REFRESH_MESSAGES = {
   blocked: "Discover can't run right now. Check your Scheduled page.",
@@ -41,24 +44,6 @@ export interface DiscoverChatSlot {
   thread: ReactNode;
 }
 
-function useGreeting(): DiscoverGreeting {
-  const user = useChatStore((state) => state.user);
-  const nickname = useChatStore((state) => state.userSettings?.nickname);
-  const name = nickname?.trim() || user?.name?.trim().split(/\s+/)[0] || null;
-
-  const [opener] = useState(() => `Good ${partOfDay(new Date().getHours())}`);
-
-  return { opener, name };
-}
-
-function todayLine(): string {
-  return new Intl.DateTimeFormat(undefined, {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  }).format(new Date());
-}
-
 function DiscoverEditionBody({ controller }: { controller: DiscoverEditionController }) {
   const { edition, ownEdition, settings, selectedCard, isAuthenticated } = controller;
   const refreshMessage =
@@ -68,7 +53,14 @@ function DiscoverEditionBody({ controller }: { controller: DiscoverEditionContro
   const showTurnOn = isAuthenticated && settings !== null && !settings.enabled && !ownEdition;
   const showNoEdition =
     isAuthenticated && settings?.enabled === true && !ownEdition && !controller.isAwaitingEdition;
-  const feed = edition ? (
+  const live =
+    isAuthenticated &&
+    settings?.enabled &&
+    controller.discover.data?.now &&
+    controller.discover.data.dayProfile;
+  const feed = live ? (
+    <DiscoverLiveContent controller={controller} />
+  ) : edition ? (
     <DiscoverFeed
       edition={edition}
       selectedId={selectedCard?.id ?? null}
@@ -108,13 +100,13 @@ function DiscoverEditionBody({ controller }: { controller: DiscoverEditionContro
           onTurnOn={() => void controller.turnOn()}
         />
       )}
-      {showNoEdition && (
+      {showNoEdition && !live && (
         <DiscoverNoEdition
           isRefreshing={controller.isRefreshing}
           onWriteNow={() => void controller.writeEditionNow()}
         />
       )}
-      {controller.isAwaitingEdition ? <DiscoverPreparing /> : feed}
+      {controller.isAwaitingEdition && !live ? <DiscoverPreparing /> : feed}
     </>
   );
 }
@@ -122,8 +114,8 @@ function DiscoverEditionBody({ controller }: { controller: DiscoverEditionContro
 export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
   const controller = useDiscoverEditionController();
   const [showSettings, setShowSettings] = useState(false);
-  const greeting = useGreeting();
-  const [today] = useState(todayLine);
+  const [showDay, setShowDay] = useState(false);
+  const { greeting, today } = useDiscoverGreeting(controller.discover.data?.dayProfile?.timezone);
   const { ref: composerRef, height: composerHeight } = useElementSize<HTMLDivElement>();
   const [scrolled, setScrolled] = useState(false);
   const { feedRef, panelRef, capture, playEntrance, open, shown, occupied } =
@@ -166,22 +158,31 @@ export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
 
   const headerActions =
     isAuthenticated && settings ? (
-      <Button
-        variant="outline"
-        size="sm"
-        collapseLabel
-        icon={<Settings2 size={14} aria-hidden />}
-        aria-label="Discover settings"
-        title="Discover settings"
-        onClick={() => setShowSettings(true)}
-      >
-        Settings
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          collapseLabel
+          icon={<Settings2 size={14} aria-hidden />}
+          aria-label="Discover settings"
+          title="Discover settings"
+          onClick={() => setShowSettings(true)}
+        >
+          {discover.data?.dayProfile?.onboarded ? "Settings" : "Set up Discover"}
+        </Button>
+      </div>
     ) : undefined;
 
   return (
     <>
       <PageShell.Header title="Discover" actionContent={headerActions} bordered />
+      {showDay && discover.data?.dayProfile ? (
+        <DiscoverDayDialog
+          profile={discover.data.dayProfile}
+          audioEnabled={settings?.listen ?? false}
+          onClose={() => setShowDay(false)}
+        />
+      ) : null}
       {isAuthenticated && settings && (
         <DiscoverSettingsDialog
           open={showSettings}
@@ -199,6 +200,11 @@ export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
           onSaveFeeds={controller.saveFeeds}
           onSaveNewsCategories={controller.saveNewsCategories}
           onSavePreferences={controller.savePreferences}
+          dayProfile={discover.data?.dayProfile}
+          onEditDay={() => {
+            setShowSettings(false);
+            setShowDay(true);
+          }}
         />
       )}
       <div className="relative flex h-full min-h-0 overflow-hidden">
@@ -221,7 +227,9 @@ export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
               }
             >
               <DiscoverMasthead today={today} greeting={greeting}>
-                {edition ? <DiscoverBrief lines={edition.brief} /> : null}
+                {edition ? (
+                  <DiscoverBrief lines={discoverCurrentBrief(discover.data, edition.brief)} />
+                ) : null}
               </DiscoverMasthead>
               <DiscoverEditionBody controller={controller} />
             </div>

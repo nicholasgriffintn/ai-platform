@@ -50,6 +50,9 @@ export const POLY_NAVIGATION_TOOL_NAMES = [
   "start_conversation",
   "hire_teammate",
   "list_attention",
+  "read_discover_day",
+  "search_places",
+  "update_discover_day",
 ] as const;
 
 const polyNavigationToolNameSet: ReadonlySet<string> = new Set(POLY_NAVIGATION_TOOL_NAMES);

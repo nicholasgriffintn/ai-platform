@@ -22,7 +22,7 @@ import {
 import { collectCardSignals, type DiscoverFeedbackEntry } from "~/modules/discover/domain/feedback";
 
 import { keepDiscoverPage } from "./articles";
-import { requireDiscoverEdition } from "./editions";
+import { requireDiscoverCardCollection } from "./card-collection";
 
 const FEEDBACK_SCAN_LIMIT = 300;
 
@@ -60,6 +60,7 @@ export async function listDiscoverFeedback(
     .get(ActivityRepository)
     .listPersonalActivities(userId, {
       capabilityId: DISCOVER_CAPABILITY_ID,
+      kind: DISCOVER_FEEDBACK_KIND,
       limit: FEEDBACK_SCAN_LIMIT,
     });
 
@@ -75,7 +76,7 @@ export async function recordDiscoverFeedback(
   input: DiscoverFeedbackRequest,
 ): Promise<DiscoverFeedbackResponse> {
   const user = context.requireUser();
-  const edition = await requireDiscoverEdition(context, user.id, input.editionId);
+  const edition = await requireDiscoverCardCollection(context, user.id, input.editionId);
   const card = edition.content.cards.find((candidate) => candidate.id === input.cardId);
 
   if (!card) {

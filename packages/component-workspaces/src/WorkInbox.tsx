@@ -21,6 +21,7 @@ const DECISION_LABELS: Record<WorkInboxItem["kind"], { label: string; tone: Tone
   waiting: { label: "Waiting", tone: "info" },
   breakdown: { label: "Breakdown", tone: "info" },
   models: { label: "Models", tone: "warning" },
+  update: { label: "Update", tone: "info" },
 };
 
 const TASK_LABELS: Record<ProjectTaskAttentionKind, { label: string; tone: Tone }> = {
@@ -45,7 +46,13 @@ function entriesOf(
     ...tasks.map((item) => ({ type: "task" as const, since: item.since, item })),
   ];
   const needsAction = (entry: InboxEntry) =>
-    entry.type === "decision" || entry.item.requiresAction ? 0 : 1;
+    entry.type === "decision"
+      ? entry.item.kind === "update"
+        ? 1
+        : 0
+      : entry.item.requiresAction
+        ? 0
+        : 1;
 
   return entries.sort(
     (left, right) =>
@@ -120,7 +127,7 @@ export function inboxEntriesFor(
   tasks: readonly ProjectTaskAttentionItem[],
 ): InboxEntry[] {
   return entriesOf(
-    view === "needs" ? decisions : [],
+    decisions.filter((item) => (item.kind !== "update") === (view === "needs")),
     tasks.filter((item) => item.requiresAction === (view === "needs")),
   );
 }
@@ -202,8 +209,8 @@ export function WorkInbox({
   canDecideHire: (workspaceId: string) => boolean;
   isBusy: boolean;
   onDecideHire: (item: WorkInboxItem, decision: "approve" | "reject") => void;
-  onRead: (item: ProjectTaskAttentionItem) => void;
-  onDismiss: (item: ProjectTaskAttentionItem) => void;
+  onRead: (item: { id: string }) => void;
+  onDismiss: (item: { id: string }) => void;
 }) {
   const entries = inboxEntriesFor(view, decisions, tasks);
 
@@ -231,7 +238,7 @@ export function WorkInbox({
       <EmptyState
         icon={<Inbox className="text-muted-foreground" size={24} />}
         title="No updates"
-        message="Finished work and handovers from your teams show up here."
+        message="Your updates, finished work and team handovers show up here."
         className="min-h-[240px]"
       />
     );
@@ -293,8 +300,8 @@ function InboxEntryRow({
   canDecideHire: (workspaceId: string) => boolean;
   isBusy: boolean;
   onDecideHire: (item: WorkInboxItem, decision: "approve" | "reject") => void;
-  onRead: (item: ProjectTaskAttentionItem) => void;
-  onDismiss: (item: ProjectTaskAttentionItem) => void;
+  onRead: (item: { id: string }) => void;
+  onDismiss: (item: { id: string }) => void;
 }) {
   if (entry.type === "decision") {
     const { item } = entry;
@@ -309,12 +316,22 @@ function InboxEntryRow({
         detail={item.detail}
         since={item.since}
         href={item.deepLink}
-        unread
+        unread={item.kind !== "update" || !item.readAt}
+        onOpen={item.kind === "update" ? () => onRead(item) : undefined}
         actions={
-          item.kind === "hire" &&
-          item.teammateId &&
-          item.workspaceId &&
-          canDecideHire(item.workspaceId) ? (
+          item.kind === "update" ? (
+            <Button
+              size="icon"
+              variant="ghost"
+              aria-label={`Dismiss ${item.title}`}
+              onClick={() => onDismiss(item)}
+            >
+              <X size={15} />
+            </Button>
+          ) : item.kind === "hire" &&
+            item.teammateId &&
+            item.workspaceId &&
+            canDecideHire(item.workspaceId) ? (
             <>
               <Button
                 size="xs"

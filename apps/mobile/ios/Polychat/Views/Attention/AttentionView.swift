@@ -196,7 +196,7 @@ struct AttentionView: View {
     private func row(for entry: AttentionEntry) -> some View {
         switch entry {
         case .decision(let item):
-            link(to: InboxDestination.of(item)) {
+            link(to: InboxDestination.of(item), onOpen: { if item.kind == "update" { Task { await store.updateReceipt(item, action: "read") } } }) {
                 WorkDecisionRow(
                     item: item,
                     isBusy: decidingItemId == item.id,
@@ -207,6 +207,13 @@ struct AttentionView: View {
                 )
             }
             .listRowBackground(Color.polychat.surface)
+            .swipeActions(edge: .trailing) {
+                if item.kind == "update" {
+                    Button(role: .destructive) {
+                        Task { await store.updateReceipt(item, action: "dismiss"); await publish() }
+                    } label: { Label("Dismiss", systemImage: "xmark") }
+                }
+            }
         case .attention(let item):
             link(to: InboxDestination.of(item)) {
                 AttentionItemRow(item: item)
@@ -247,7 +254,12 @@ struct AttentionView: View {
         case .web(let deepLink):
             Button {
                 onOpen?()
-                openURL(WebLinks.url(path: deepLink))
+                let url = WebLinks.url(path: deepLink)
+                if AppRoute.parse(url) != nil, let native = URL(string: "polychat:/\(deepLink)") {
+                    openURL(native)
+                } else {
+                    openURL(url)
+                }
             } label: {
                 HStack {
                     label()

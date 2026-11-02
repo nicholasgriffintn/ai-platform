@@ -23,7 +23,7 @@ enum TopShelfPublisher {
             ))
         }
 
-        for card in edition.cards.prefix(cardLimit) where !store.signals(for: card).contains("hide") {
+        for card in (store.cardEdition?.cards ?? edition.cards).prefix(cardLimit) where !store.signals(for: card).contains("hide") {
             items.append(TopShelfSnapshot.Item(
                 id: card.id,
                 title: card.headline,

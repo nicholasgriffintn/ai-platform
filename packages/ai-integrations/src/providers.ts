@@ -16,6 +16,7 @@ export interface ApiKeyConnectorConfig {
   authType: "api_key";
   credentialFields: readonly ConnectorCredentialField[];
   credentialSeparator?: string;
+  optionalCredentials?: boolean;
   scopes: readonly string[];
 }
 
@@ -72,6 +73,60 @@ export const RECIPE_CONNECTOR_APP_ID = "recipe_connector_connection";
 export const RECIPE_CONNECTOR_ITEM_TYPE = "oauth_connection";
 
 const localConnectorProviders: ConnectorProviderConfig[] = [
+  {
+    id: "tfl",
+    name: "Transport for London",
+    description:
+      "Read London stops, planned journeys and disruptions. Public access works without a key; add your own TfL subscription key for a higher request allowance.",
+    appUrl: "https://tfl.gov.uk/plan-a-journey/",
+    categories: [{ id: "places-&-weather", name: "Places & Weather" }],
+    setupUrl: "/chat/plugins?connector=tfl",
+    auth: {
+      authType: "api_key",
+      optionalCredentials: true,
+      credentialFields: [{ label: "TfL subscription key", secret: true }],
+      scopes: [],
+    },
+    operations: [
+      {
+        id: "search_stops",
+        access: "read",
+        readOnly: true,
+        inputSchema: {
+          type: "object",
+          required: ["query"],
+          properties: { query: { type: "string", minLength: 2, maxLength: 120 } },
+        },
+      },
+      {
+        id: "plan_journey",
+        access: "read",
+        readOnly: true,
+        inputSchema: {
+          type: "object",
+          required: ["from", "to", "date", "time"],
+          properties: {
+            from: {
+              type: "string",
+              minLength: 1,
+              maxLength: 160,
+              description:
+                "Journey origin: a station name, a stop ID returned by search_stops, UK postcode, or latitude,longitude. Prefer the returned stop ID for a specific station. Resolve any disambiguation before choosing a journey.",
+            },
+            to: {
+              type: "string",
+              minLength: 1,
+              maxLength: 160,
+              description:
+                "Journey destination, using the same formats as from. Use the requested station, not a nearby bus stop with a similar name.",
+            },
+            date: { type: "string", format: "date" },
+            time: { type: "string", pattern: "^([01]\\d|2[0-3]):[0-5]\\d$" },
+          },
+        },
+      },
+    ],
+  },
   {
     id: "devin",
     name: "Devin",

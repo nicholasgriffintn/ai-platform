@@ -185,6 +185,7 @@ export interface RecordCapabilityCallParams {
   providerName: string;
   userId: number;
   runId?: string;
+  activityId?: string;
   runAttempt?: number;
   args: readonly unknown[];
   result: unknown;
@@ -230,6 +231,7 @@ export async function recordCapabilityCall(
       workspaceId: attribution.workspaceId,
       rates,
       runId: params.runId ?? null,
+      activityId: params.activityId ?? null,
       runAttempt: params.runAttempt ?? null,
     };
 

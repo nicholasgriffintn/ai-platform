@@ -172,6 +172,7 @@ export function createModelEnsembleStream(params: CreateModelEnsembleStreamParam
         openedMessageId: messageId,
         sink: primarySink,
         shouldStop: stopSignal.shouldStop,
+        signal: stopSignal.signal,
         onRetryState: createChatRetryStatePublisher({
           sink: primarySink,
           runLifecycle,

@@ -74,6 +74,7 @@ app.use(
       "X-CSRF-Token",
       "x-captcha-token",
       "X-Notification-Installation",
+      "X-Platform",
       DEVICE_SYNC_DEVICE_ID_HEADER,
       "sentry-trace",
       "baggage",

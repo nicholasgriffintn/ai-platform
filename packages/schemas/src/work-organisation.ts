@@ -332,6 +332,7 @@ export const WORK_INBOX_KINDS = [
   "waiting",
   "breakdown",
   "models",
+  "update",
 ] as const;
 export const workInboxKindSchema = z.enum(WORK_INBOX_KINDS);
 export type WorkInboxKind = z.infer<typeof workInboxKindSchema>;
@@ -339,6 +340,7 @@ export type WorkInboxKind = z.infer<typeof workInboxKindSchema>;
 export const workInboxItemSchema = z.object({
   id: z.string(),
   kind: workInboxKindSchema,
+  readAt: z.string().nullable().optional(),
   workspaceId: z.string().nullable(),
   projectId: z.string().nullable(),
   taskId: z.string().nullable(),

@@ -124,6 +124,26 @@ final class APIClient: ObservableObject {
         try await send(path: "/discover", method: "GET")
     }
 
+    func fetchDiscoverFeed(before: String) async throws -> DiscoverFeedPage {
+        try await send(path: "/discover/feed", method: "GET", queryItems: [URLQueryItem(name: "after", value: before)])
+    }
+
+    func refreshDiscoverCurrent() async throws -> DiscoverRefreshResponse {
+        try await send(path: "/discover/current/refresh", method: "POST", emptyBody: true)
+    }
+
+    func markDiscoverSeen(_ request: DiscoverSeenRequest) async throws -> DiscoverMutationResponse {
+        try await send(path: "/discover/feed/seen", method: "POST", body: request)
+    }
+
+    func dismissDiscoverItem(_ id: String) async throws -> DiscoverMutationResponse {
+        try await send(path: "/discover/feed/\(id)/dismiss", method: "POST", emptyBody: true)
+    }
+
+    func updateDiscoverDay(_ request: DiscoverDayRequest) async throws -> DiscoverDayProfile {
+        try await send(path: "/discover/day-profile", method: "PATCH", body: request)
+    }
+
     func fetchDiscoverEdition(date: String, edition: String) async throws -> DiscoverEdition {
         try await send(
             path: "/discover/editions/\(date)",
@@ -696,7 +716,7 @@ final class APIClient: ObservableObject {
             path: "/conversations/\(id)/items",
             method: "GET",
             queryItems: [
-                URLQueryItem(name: "before", value: before),
+                URLQueryItem(name: "after", value: before),
                 URLQueryItem(name: "limit", value: String(limit))
             ]
         )

@@ -350,7 +350,8 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
   );
   const approvalBatch = useToolApprovalBatch({
     messages,
-    isStreaming: isStreamLoading || streamStarted,
+    isStreaming:
+      streamStarted && (streamSource !== "remote" || latestResponseStatus !== "awaiting_approval"),
     submit: submitApprovalBatch,
   });
 

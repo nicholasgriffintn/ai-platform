@@ -7,7 +7,7 @@ export interface LatestUserMessage {
 }
 
 export function findLatestUserMessage(
-  history: readonly { id?: string; role: string; content: unknown }[],
+  history: readonly { id?: string; role: string; content?: unknown }[],
 ): LatestUserMessage | null {
   for (let index = history.length - 1; index >= 0; index--) {
     const message = history[index];

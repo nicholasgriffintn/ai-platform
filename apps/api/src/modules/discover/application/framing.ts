@@ -9,8 +9,9 @@ import { runKnowledgeEnricher } from "~/modules/knowledge/application/enrichment
 import { readKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { formatSource, requireSourceAccess } from "~/modules/sources/application/sources";
 
+import { requireDiscoverCardCollection } from "./card-collection";
 import { requireDiscoverBudgetLeft } from "./cost";
-import { requireDiscoverEdition, withEditionRun } from "./editions";
+import { withEditionRun } from "./editions";
 import { readDiscoverRoutine } from "./settings";
 
 export async function frameDiscoverArticle(
@@ -19,7 +20,7 @@ export async function frameDiscoverArticle(
   cardId: string,
 ): Promise<Source> {
   const user = context.requireUser();
-  const edition = await requireDiscoverEdition(context, user.id, editionId);
+  const edition = await requireDiscoverCardCollection(context, user.id, editionId);
   const card = findDiscoverCard(edition.content.cards, cardId, "read");
 
   if (!card) {

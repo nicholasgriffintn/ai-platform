@@ -80,7 +80,9 @@ export function useDiscover(
         isAwaitingEdition(current.state.data, requestedAt) ||
           isAwaitingMedia(current.state.data, mediaRequestedAt)
           ? AWAITING_EDITION_POLL_MS
-          : false,
+          : current.state.data?.settings.enabled
+            ? 60_000
+            : false,
         "discover.changed",
       ),
   });
@@ -135,6 +137,9 @@ export function useDiscoverFeedback() {
             }
           : current,
       );
+      if (input.editionId.startsWith("discover_live_")) {
+        void queryClient.invalidateQueries({ queryKey: DISCOVER_QUERY_KEY });
+      }
     },
   });
 }

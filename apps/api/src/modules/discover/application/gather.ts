@@ -5,7 +5,6 @@ import {
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { inlineTaskSteps, type TaskSteps } from "@ngriffin_uk/polychat-ai-workflows";
 import {
-  DISCOVER_JOB_TASK_TYPE,
   DISCOVER_RECIPE_ID,
   DISCOVER_RESEARCH_METADATA_KEY,
   DISCOVER_SIGNAL_METADATA_KEY,
@@ -16,8 +15,8 @@ import {
   containsRecordList,
   describeZonedInstant,
   isoDaysBefore,
+  readStringArray,
   sha256Hex,
-  zonedTimeToInstant,
 } from "@ngriffin_uk/polychat-utility-core";
 import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 import {
@@ -25,16 +24,13 @@ import {
   ErrorType,
   getErrorMessage,
 } from "@ngriffin_uk/polychat-utility-server/errors";
+import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 import { z } from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { closeComposioConnectorRun } from "~/modules/connectors/application/composio-run";
 import { discoverTopicKey } from "~/modules/discover/domain/edition";
 import { isDiscoverGatherFresh } from "~/modules/discover/domain/freshness";
-import {
-  discoverGatherTaskId,
-  nextDiscoverGatherSlot,
-} from "~/modules/discover/domain/gather-schedule";
 import {
   listDiscoverCategoryNews,
   matchDiscoverNews,
@@ -44,6 +40,7 @@ import {
 import {
   DISCOVER_HEADLINES_TOPIC,
   mergeResearchDocument,
+  readResearchResults,
   type DiscoverResearchResult,
 } from "~/modules/discover/domain/research";
 import {
@@ -60,13 +57,14 @@ import type {
 } from "~/modules/discover/domain/signal-sources/types";
 import { readKnowledgeText, withKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { findTopicArticles } from "~/modules/knowledge/application/syncs/topics";
-import { TaskService } from "~/modules/queue/application/TaskService";
-import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
+import { requirePolyContext } from "~/modules/poly/application/poly-context";
+import { isPolyContextPaused } from "~/modules/poly/domain/pause";
 import { getAssistantRecipe } from "~/modules/recipes/application";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import { readDiscoverArticles } from "./articles";
-import { topUpDiscoverFeed } from "./feed-top-up";
+import { queueDiscoverCurrent } from "./current";
+import { readDiscoverDayProfile } from "./day-profile";
 import { listDiscoverFollows } from "./follows";
 import { chooseDiscoverResearchTopics } from "./interests";
 import { discoverNewsItemsSchema, readDiscoverNews } from "./news";
@@ -93,7 +91,6 @@ export interface DiscoverGatherSummary {
   read: string[];
   stale: string[];
   topics: string[];
-  added: number;
 }
 
 function supportsSignal(providerId: string, operation: string): boolean {
@@ -156,7 +153,7 @@ async function researchSourceId(userId: number, topic: string): Promise<string> 
   return `discover_research_${(await sha256Hex(`${userId}:${discoverTopicKey(topic)}`)).slice(0, 24)}`;
 }
 
-async function readSignal(
+export async function readSignal(
   context: ServiceContext,
   notebookId: string,
   signal: DiscoverSignal,
@@ -196,6 +193,8 @@ async function readSignal(
         providerId: signal.providerId,
         readAt,
         attemptedAt: readAt,
+        date: read.date,
+        timezone: read.timezone,
         error: null,
         lines,
         items: feedItems,
@@ -211,6 +210,7 @@ async function readSignal(
       error_message: message,
     });
     const existing = await context.repositories.get(SourceRepository).getSource(sourceId);
+    const retained = parseJsonRecord(existing?.metadata);
 
     await writeDiscoverDocument(context, notebookId, {
       id: sourceId,
@@ -229,11 +229,13 @@ async function readSignal(
       metadata: {
         [DISCOVER_SIGNAL_METADATA_KEY]: signal.id,
         providerId: signal.providerId,
-        readAt: null,
+        readAt: retained.readAt ?? null,
         attemptedAt: readAt,
+        date: retained.date ?? null,
+        timezone: retained.timezone ?? null,
         error: message.slice(0, 200),
-        lines: [],
-        items: [],
+        lines: readStringArray(retained.lines),
+        items: readResearchResults(retained.items),
       },
     }).catch((writeError: unknown) => {
       logger.warn("A Discover signal error could not be recorded", {
@@ -341,14 +343,22 @@ export async function listDiscoverTopics(
   context: ServiceContext,
   curate: string,
 ): Promise<string[]> {
-  const follows = await listDiscoverFollows(context, context.requireUser().id);
+  const [follows, profile] = await Promise.all([
+    listDiscoverFollows(context, context.requireUser().id),
+    readDiscoverDayProfile(context),
+  ]);
+  const hidden = new Set(profile.mutedTopics.map(discoverTopicKey));
   const seen = new Set<string>();
   const topics: string[] = [];
 
-  for (const topic of [...follows.map((follow) => follow.topic), ...curateTopics(curate)]) {
+  for (const topic of [
+    ...profile.topics,
+    ...follows.map((follow) => follow.topic),
+    ...curateTopics(curate),
+  ]) {
     const key = discoverTopicKey(topic);
 
-    if (!seen.has(key)) {
+    if (!seen.has(key) && !hidden.has(key)) {
       seen.add(key);
       topics.push(topic);
     }
@@ -363,12 +373,27 @@ export async function runDiscoverGather(
     now = new Date(),
     scope = "full",
     steps = inlineTaskSteps,
-  }: { now?: Date; scope?: DiscoverGatherScope; steps?: TaskSteps } = {},
+    installationId,
+    scheduledAt,
+  }: {
+    now?: Date;
+    scope?: DiscoverGatherScope;
+    steps?: TaskSteps;
+    installationId?: string;
+    scheduledAt?: string;
+  } = {},
 ): Promise<DiscoverGatherSummary> {
   const settings = await readDiscoverRoutine(context);
 
-  if (!settings.enabled) {
-    return { read: [], stale: [], topics: [], added: 0 };
+  const poly = await requirePolyContext(context);
+
+  if (
+    !settings.enabled ||
+    isPolyContextPaused(poly, now.getTime()) ||
+    (installationId && settings.installationId !== installationId) ||
+    (scheduledAt && now.getTime() - Date.parse(scheduledAt) > 2 * 60 * 60 * 1000)
+  ) {
+    return { read: [], stale: [], topics: [] };
   }
 
   const timezone = settings.timezone ?? "UTC";
@@ -383,121 +408,116 @@ export async function runDiscoverGather(
   const read: string[] = [];
   const stale: string[] = [];
   let topics: string[] = [];
-  let added = 0;
 
-  try {
-    const signalTopics =
-      selected.length > 0
-        ? await steps.value("signal-topics", z.array(z.string()), () =>
-            chooseDiscoverResearchTopics(context, notebookId, {
-              asked: curateTopics(settings.curate),
-              today: zoned.date,
-              now,
-              timezone,
-              refresh: false,
-            }),
-          )
-        : [];
-
-    for (const signal of selected) {
-      if (signal.needsTopics && signalTopics.length === 0) {
-        continue;
-      }
-
-      const ok = await steps.value(`signal-${signal.id}`, z.boolean(), async () => {
-        try {
-          return await readSignal(context, notebookId, signal, {
-            date: zoned.date,
-            timezone,
+  const signalTopics =
+    selected.length > 0
+      ? await steps.value("signal-topics", z.array(z.string()), () =>
+          chooseDiscoverResearchTopics(context, notebookId, {
+            asked: curateTopics(settings.curate),
+            today: zoned.date,
             now,
-            location: settings.location,
-            topics: signalTopics,
-          });
-        } finally {
-          await closeComposioConnectorRun(context);
-        }
-      });
+            timezone,
+            refresh: false,
+          }),
+        )
+      : [];
 
-      (ok ? read : stale).push(signal.providerId);
+  for (const signal of selected) {
+    if (signal.needsTopics && signalTopics.length === 0) {
+      continue;
     }
 
-    const newsCategories = selectDiscoverNewsCategories(settings.newsCategoryIds);
-    const news =
-      newsCategories.length > 0
-        ? await steps.value("news", discoverNewsItemsSchema, () => readDiscoverNews(newsCategories))
-        : [];
-    const headlineSince = isoDaysBefore(now, HEADLINE_NEWS_DAYS);
-    const topicSince = isoDaysBefore(now, TOPIC_NEWS_DAYS);
-
-    await steps.run("headlines", async () => {
-      await researchTopic(context, notebookId, {
-        topic: DISCOVER_HEADLINES_TOPIC,
-        date: zoned.date,
-        country: settings.country,
-        query: headlinesQuery(settings.location),
-        days: HEADLINE_NEWS_DAYS,
-        ...(news.length > 0
-          ? {
-              candidates: pickDiscoverHeadlines(news, {
-                since: headlineSince,
-                limit: RESEARCH_RESULT_LIMIT,
-              }),
-            }
-          : {}),
-      });
+    const ok = await steps.value(`signal-${signal.id}`, z.boolean(), async () => {
+      try {
+        return await readSignal(context, notebookId, signal, {
+          date: zoned.date,
+          timezone,
+          now,
+          location: settings.location,
+          topics: signalTopics,
+        });
+      } finally {
+        await closeComposioConnectorRun(context);
+      }
     });
 
-    await mapWithConcurrency(newsCategories, TOPIC_RESEARCH_CONCURRENCY, (category) =>
-      steps.run(`news-${category.id}`, async () => {
-        await researchTopic(context, notebookId, {
-          topic: category.topic,
-          date: zoned.date,
-          country: settings.country,
-          candidates: listDiscoverCategoryNews(news, {
-            category: category.id,
-            since: topicSince,
-            limit: RESEARCH_RESULT_LIMIT,
-          }),
-        });
-      }),
-    );
-
-    topics = await steps.value("topics", z.array(z.string()), () =>
-      chooseDiscoverResearchTopics(context, notebookId, {
-        asked: curateTopics(settings.curate),
-        today: zoned.date,
-        now,
-        timezone,
-        refresh: scope === "full",
-      }),
-    );
-
-    await mapWithConcurrency(topics, TOPIC_RESEARCH_CONCURRENCY, (topic, index) =>
-      steps.run(`topic-${index}`, async () => {
-        const matched = matchDiscoverNews(topic, news, {
-          since: topicSince,
-          limit: RESEARCH_RESULT_LIMIT,
-        });
-
-        await researchTopic(context, notebookId, {
-          topic,
-          date: zoned.date,
-          country: settings.country,
-          ...(matched.length >= NEWS_TOPIC_MIN_MATCHES ? { candidates: matched } : {}),
-        });
-      }),
-    );
-
-    added = await steps.value("feed", z.number(), () =>
-      topUpDiscoverFeed(context, { today: zoned.date, curate: settings.curate }),
-    );
-  } finally {
-    await steps.run("schedule-next", () =>
-      scheduleNextDiscoverGather(context, settings, zoned, timezone),
-    );
+    (ok ? read : stale).push(signal.providerId);
   }
 
-  return { read: [...new Set(read)], stale: [...new Set(stale)], topics, added };
+  const newsCategories = selectDiscoverNewsCategories(settings.newsCategoryIds);
+  const news =
+    newsCategories.length > 0
+      ? await steps.value("news", discoverNewsItemsSchema, () =>
+          readDiscoverNews(newsCategories, context.env.CACHE),
+        )
+      : [];
+  const headlineSince = isoDaysBefore(now, HEADLINE_NEWS_DAYS);
+  const topicSince = isoDaysBefore(now, TOPIC_NEWS_DAYS);
+
+  await steps.run("headlines", async () => {
+    await researchTopic(context, notebookId, {
+      topic: DISCOVER_HEADLINES_TOPIC,
+      date: zoned.date,
+      country: settings.country,
+      query: headlinesQuery(settings.location),
+      days: HEADLINE_NEWS_DAYS,
+      ...(news.length > 0
+        ? {
+            candidates: pickDiscoverHeadlines(news, {
+              since: headlineSince,
+              limit: RESEARCH_RESULT_LIMIT,
+            }),
+          }
+        : {}),
+    });
+  });
+
+  await mapWithConcurrency(newsCategories, TOPIC_RESEARCH_CONCURRENCY, (category) =>
+    steps.run(`news-${category.id}`, async () => {
+      await researchTopic(context, notebookId, {
+        topic: category.topic,
+        date: zoned.date,
+        country: settings.country,
+        candidates: listDiscoverCategoryNews(news, {
+          category: category.id,
+          since: topicSince,
+          limit: RESEARCH_RESULT_LIMIT,
+        }),
+      });
+    }),
+  );
+
+  topics = await steps.value("topics", z.array(z.string()), () =>
+    chooseDiscoverResearchTopics(context, notebookId, {
+      asked: curateTopics(settings.curate),
+      today: zoned.date,
+      now,
+      timezone,
+      refresh: scope === "full",
+    }),
+  );
+
+  await mapWithConcurrency(topics, TOPIC_RESEARCH_CONCURRENCY, (topic, index) =>
+    steps.run(`topic-${index}`, async () => {
+      const matched = matchDiscoverNews(topic, news, {
+        since: topicSince,
+        limit: RESEARCH_RESULT_LIMIT,
+      });
+
+      await researchTopic(context, notebookId, {
+        topic,
+        date: zoned.date,
+        country: settings.country,
+        ...(matched.length >= NEWS_TOPIC_MIN_MATCHES ? { candidates: matched } : {}),
+      });
+    }),
+  );
+
+  await steps.run("current", async () => {
+    await queueDiscoverCurrent(context);
+  });
+
+  return { read: [...new Set(read)], stale: [...new Set(stale)], topics };
 }
 
 export async function ensureDiscoverGathered(
@@ -532,28 +552,4 @@ export async function ensureDiscoverGathered(
       await context.repositories.get(SourceRepository).listCollectionSources(notebook.id),
     ),
   );
-}
-
-async function scheduleNextDiscoverGather(
-  context: ServiceContext,
-  settings: Pick<DiscoverRoutineSettings, "evening">,
-  zoned: { date: string; time: string },
-  timezone: string,
-): Promise<void> {
-  const user = context.requireUser();
-  const slot = nextDiscoverGatherSlot({
-    date: zoned.date,
-    hour: Number.parseInt(zoned.time.slice(0, 2), 10),
-    evening: settings.evening,
-  });
-
-  await new TaskService(context.env, new TaskRepository(context.env)).enqueueTask({
-    id: discoverGatherTaskId(user.id, slot),
-    task_type: DISCOVER_JOB_TASK_TYPE,
-    user_id: user.id,
-    task_data: { job: "gather", scope: slot.scope },
-    schedule_type: "scheduled",
-    scheduled_at: zonedTimeToInstant(slot.date, slot.hour, timezone).toISOString(),
-    priority: 6,
-  });
 }

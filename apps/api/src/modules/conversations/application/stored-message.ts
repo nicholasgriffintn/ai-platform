@@ -57,7 +57,7 @@ export function formatStoredMessage(dbMessage: Record<string, unknown>): Message
     }).filter(([, value]) => value !== null),
   ) as Message;
 
-  if (!message.parts || message.parts.length === 0) {
+  if (message.role === "tool" || !message.parts || message.parts.length === 0) {
     message.parts = buildMessageParts(message);
   }
 

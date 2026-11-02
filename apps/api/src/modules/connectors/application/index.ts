@@ -256,7 +256,12 @@ async function getConnectorStatus(
         connectedAt: stored.token.connectedAt,
         updatedAt: stored.token.updatedAt,
       }
-    : { status: "disconnected" };
+    : {
+        status:
+          provider.auth.authType === "api_key" && provider.auth.optionalCredentials
+            ? "connected"
+            : "disconnected",
+      };
 }
 
 export async function listRecipeConnectors(params: {
@@ -615,6 +620,10 @@ export async function getRecipeConnectorAccessToken(params: {
   const stored = await readStoredToken(params.context, params.userId, params.provider);
 
   if (!stored) {
+    if (provider.auth.optionalCredentials) {
+      return { accessToken: "" };
+    }
+
     throw new AssistantError("Connector is not connected", ErrorType.AUTHORISATION_ERROR, 403);
   }
 

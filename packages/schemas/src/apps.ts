@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { isSupportedCronExpression } from "./cron.js";
+import { discoverRoutineOperationSchema } from "./discover-day.js";
 import composioRecipeConnectorProviders from "./generated/composio-recipe-connector-providers.generated.json" with { type: "json" };
 import { externalHttpUrlSchema, internalNavigationPathSchema } from "./navigation.js";
 import { listSchema } from "./platform/list.js";
@@ -869,6 +870,7 @@ export const recipeConnectionStatusSchema = z.enum([
 ]);
 
 const nonComposioRecipeConnectorProviders = [
+  "tfl",
   "devin",
   "hindsight",
   "honcho",
@@ -1132,6 +1134,7 @@ export const recipeInstallationTriggerSchema = z
     timezone: z.string().min(1).max(120).default("UTC").optional(),
     scheduledAt: z.iso.datetime().optional(),
     prompt: z.string().optional(),
+    discoverOperation: discoverRoutineOperationSchema.optional(),
     notificationChannel: z.enum(["sms", "slack", "telegram"]).optional(),
     notificationTarget: z.string().optional(),
   })

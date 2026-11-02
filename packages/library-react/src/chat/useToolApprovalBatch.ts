@@ -18,6 +18,7 @@ export interface ToolApprovalBatch {
   error: string | null;
   record: (decision: ToolApprovalDecision) => boolean;
   decideRemaining: (resolution: "approved" | "rejected") => void;
+  retry: () => void;
 }
 
 function decisionFor(
@@ -48,15 +49,18 @@ export function useToolApprovalBatch({
   const [decisions, setDecisions] = useState<Record<string, ToolApprovalDecision>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [retryAttempt, setRetryAttempt] = useState(0);
   const submittedKey = useRef<string | null>(null);
   const decidedCount = pending.filter((approval) => decisions[approval.interactionId]).length;
   const batchKey = pending.map((approval) => approval.interactionId).join("|");
+  const submissionKey = `${batchKey}:${retryAttempt}`;
 
   const record = useCallback(
     (decision: ToolApprovalDecision) => {
       const interactionId = decision.response.interactionId;
 
       if (
+        pending.length < 2 ||
         typeof interactionId !== "string" ||
         !pending.some((approval) => approval.interactionId === interactionId)
       ) {
@@ -64,6 +68,7 @@ export function useToolApprovalBatch({
       }
 
       setError(null);
+      submittedKey.current = null;
       setDecisions((current) => ({ ...current, [interactionId]: decision }));
 
       return true;
@@ -73,6 +78,8 @@ export function useToolApprovalBatch({
 
   const decideRemaining = useCallback(
     (resolution: "approved" | "rejected") => {
+      setError(null);
+      submittedKey.current = null;
       setDecisions((current) => {
         const next = { ...current };
 
@@ -94,7 +101,7 @@ export function useToolApprovalBatch({
       decidedCount === pending.length &&
       !isStreaming &&
       !isSubmitting &&
-      submittedKey.current !== batchKey;
+      submittedKey.current !== submissionKey;
 
     if (!ready) {
       return;
@@ -106,16 +113,28 @@ export function useToolApprovalBatch({
       return decision ? [decision] : [];
     });
 
-    submittedKey.current = batchKey;
+    submittedKey.current = submissionKey;
     setIsSubmitting(true);
     submit(batch)
       .then(() => setDecisions({}))
       .catch((cause: unknown) => {
-        submittedKey.current = null;
         setError(getErrorMessage(cause, "The approvals could not be sent"));
       })
       .finally(() => setIsSubmitting(false));
-  }, [batchKey, decidedCount, decisions, isStreaming, isSubmitting, pending, submit]);
+  }, [submissionKey, decidedCount, decisions, isStreaming, isSubmitting, pending, submit]);
 
-  return { pending, decidedCount, isSubmitting, error, record, decideRemaining };
+  return {
+    pending,
+    decidedCount,
+    isSubmitting,
+    error,
+    record,
+    decideRemaining,
+    retry: () => {
+      if (error && !isSubmitting) {
+        setError(null);
+        setRetryAttempt((attempt) => attempt + 1);
+      }
+    },
+  };
 }

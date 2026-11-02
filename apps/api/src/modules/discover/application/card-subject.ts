@@ -5,7 +5,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { describeDiscoverCard } from "~/modules/discover/domain/edition";
 
-import { requireDiscoverEdition } from "./editions";
+import { requireDiscoverCardCollection } from "./card-collection";
 
 export interface DiscoverCardSubjectContent {
   title: string;
@@ -24,7 +24,7 @@ export async function requireDiscoverCardSubject(
     throw new AssistantError("Discover card not found", ErrorType.NOT_FOUND, 404);
   }
 
-  const edition = await requireDiscoverEdition(context, userId, reference.editionId);
+  const edition = await requireDiscoverCardCollection(context, userId, reference.editionId);
   const card = edition.content.cards.find((candidate) => candidate.id === reference.cardId);
 
   if (!card) {

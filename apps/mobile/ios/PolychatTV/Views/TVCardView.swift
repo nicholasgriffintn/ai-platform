@@ -6,7 +6,7 @@ struct TVCardView: View {
     let cardId: String
 
     private var card: DiscoverCard? {
-        store.discover?.edition?.cards.first { $0.id == cardId }
+        store.cardEdition?.cards.first { $0.id == cardId }
     }
 
     var body: some View {

@@ -45,10 +45,14 @@ export function UserQuestionView({
       <div className="flex items-start gap-3 border-b border-border px-4 py-3">
         <CircleQuestionMark className="mt-0.5 h-4 w-4 shrink-0 text-attention" aria-hidden="true" />
         <div className="min-w-0 flex-1">
-          <p className="font-medium text-foreground">The agent needs your input</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Answer these questions to continue the task.
+          <p className="font-medium text-foreground">
+            {isResolved ? "Questions answered" : "The agent needs your input"}
           </p>
+          {!isResolved ? (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Answer these questions to continue the task.
+            </p>
+          ) : null}
         </div>
         {questionSet.questions.length > 1 && !isResolved ? (
           <span className="shrink-0 text-xs text-muted-foreground">

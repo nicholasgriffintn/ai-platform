@@ -222,13 +222,17 @@ export function collectPendingApprovals(messages: readonly Message[]): PendingAp
   return latestRunId ? approvals.filter((approval) => approval.runId === latestRunId) : approvals;
 }
 
-export function collectApprovalToolResponseContents(messages: readonly Message[]): Set<string> {
+function isInteractiveRequestData(data: unknown): boolean {
+  return isApprovalRequestData(data) || (isRecord(data) && data.renderer === "user_question");
+}
+
+export function collectInteractionToolResponseContents(messages: readonly Message[]): Set<string> {
   const contents = new Set<string>();
 
   for (const message of messages) {
     if (
       message.role === "tool" &&
-      isApprovalRequestData(message.data) &&
+      isInteractiveRequestData(message.data) &&
       typeof message.content === "string"
     ) {
       contents.add(message.content.trim());
@@ -237,7 +241,7 @@ export function collectApprovalToolResponseContents(messages: readonly Message[]
     for (const part of message.parts ?? []) {
       if (
         part.type === "tool_result" &&
-        isApprovalRequestData(part.data) &&
+        isInteractiveRequestData(part.data) &&
         typeof part.content === "string"
       ) {
         contents.add(part.content.trim());
@@ -248,17 +252,20 @@ export function collectApprovalToolResponseContents(messages: readonly Message[]
   return contents;
 }
 
-export function isRedundantApprovalAssistantMessage(
+export function isRedundantInteractionAssistantMessage(
   message: Message,
-  approvalToolResponseContents: ReadonlySet<string>,
+  interactionToolResponseContents: ReadonlySet<string>,
 ): boolean {
   return (
     message.role === "assistant" &&
     message.status === "pending" &&
     typeof message.content === "string" &&
-    approvalToolResponseContents.has(message.content.trim())
+    interactionToolResponseContents.has(message.content.trim())
   );
 }
+
+export const collectApprovalToolResponseContents = collectInteractionToolResponseContents;
+export const isRedundantApprovalAssistantMessage = isRedundantInteractionAssistantMessage;
 
 export function isApprovalResolutionMessage(message: Message): boolean {
   if (message.role !== "user" || !isRecord(message.data)) {

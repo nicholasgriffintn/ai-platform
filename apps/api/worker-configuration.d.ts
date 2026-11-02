@@ -11,7 +11,6 @@ import type { Pipeline } from "cloudflare:pipelines";
 interface Env {
   EMBEDDING_PROVIDER: "bedrock";
   ACCESS_TOKEN: string;
-  OPENWEATHERMAP_API_KEY: string;
   ANTHROPIC_API_KEY: string;
   GROK_API_KEY: string;
   HUGGINGFACE_TOKEN: string;

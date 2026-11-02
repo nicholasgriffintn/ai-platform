@@ -124,6 +124,20 @@ final class AttentionStore: ObservableObject {
         }
     }
 
+    func updateReceipt(_ item: WorkInboxItem, action: String) async {
+        guard item.kind == "update" else { return }
+        do {
+            _ = try await apiClient.updateTaskInbox(itemIds: [item.id], action: action)
+            if action == "dismiss" {
+                decisions.removeAll { $0.id == item.id }
+            } else if let index = decisions.firstIndex(where: { $0.id == item.id }) {
+                decisions[index].readAt = ISO8601DateFormatter().string(from: Date())
+            }
+        } catch {
+            self.error = "This update could not be changed: \(error.localizedDescription)"
+        }
+    }
+
     var workspaceNames: [String: String] {
         Dictionary(places.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
     }

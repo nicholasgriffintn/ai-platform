@@ -4,6 +4,7 @@ import Combine
 @MainActor
 class ConversationManager: ObservableObject {
     @Published var currentConversation: Conversation?
+    @Published var composerPrefill: ComposerPrefill?
     private(set) var teammateIdsByConversation: [String: String] = [:]
     @Published var conversations: [Conversation] = []
     @Published var selectedModelId: String?
@@ -39,6 +40,7 @@ class ConversationManager: ObservableObject {
     }
 
     func reset() {
+        composerPrefill = nil
         currentConversation = nil
         conversations = []
         knownConversations = [:]

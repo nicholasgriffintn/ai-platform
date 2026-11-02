@@ -76,7 +76,7 @@ private struct RootTabView: View {
             .badge(attentionStore.badgeCount(notifications: notificationManager.items))
 
             Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
-                SettingsView()
+                SettingsView(onOpenConversation: openConversation)
             }
         }
         .sheet(item: $outputReviewTarget) { target in
@@ -135,6 +135,7 @@ private struct RootTabView: View {
     }
 
     private func start() async {
+        DiscoverBackgroundRefresh.schedule()
         ageGateStore.reset()
         if let userId = authManager.user?.id {
             companionSync = CompanionSync(
@@ -165,6 +166,7 @@ private struct RootTabView: View {
     }
 
     private func stop() async {
+        DiscoverBackgroundRefresh.cancel()
         syncClient.stop()
         companionSync = nil
         await pushNotificationManager.unregisterForSignedOutUser()
@@ -185,10 +187,8 @@ private struct RootTabView: View {
 
     private func refreshOnForeground() async {
         companionSync?.refreshEverything()
+        DiscoverBackgroundRefresh.schedule()
         await healthSync.syncIfNeeded()
-        if selectedTab == .home {
-            await discoverStore.refresh()
-        }
     }
 
     private func bindTeammates() async {

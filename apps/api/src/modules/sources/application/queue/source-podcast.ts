@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { sourcePodcastGenerationTaskSchema } from "@ngriffin_uk/polychat-schemas";
 
 import { withExecutionRunContext } from "~/infrastructure/context/serviceContext";
 import { loadUserContext } from "~/modules/queue/application/user-context";
@@ -7,7 +7,7 @@ import { runPodcastGeneration } from "~/modules/sources/application/podcasts/gen
 
 export const sourcePodcastGeneration = defineTask({
   durable: true,
-  payload: z.object({ sourceId: z.string().min(1), runId: z.string().min(1).optional() }),
+  payload: sourcePodcastGenerationTaskSchema,
   handle: async ({ sourceId, runId }, { env, message, execution }) => {
     const owner = await loadUserContext(env, message.user_id);
 
@@ -16,7 +16,9 @@ export const sourcePodcastGeneration = defineTask({
     }
 
     const context = runId ? withExecutionRunContext(owner, runId) : owner;
-    const outcome = await runPodcastGeneration(context, sourceId, execution.steps);
+    const outcome = await runPodcastGeneration(context, sourceId, execution.steps, () =>
+      execution.fence.assertOwned(),
+    );
 
     return {
       status: outcome === "failed" ? "error" : "success",

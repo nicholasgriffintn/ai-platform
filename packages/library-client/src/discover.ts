@@ -17,6 +17,11 @@ import type {
   DiscoverSettings,
   Source,
   UpdateDiscoverSettings,
+  DiscoverDayProfile,
+  UpdateDiscoverDayProfile,
+  DiscoverFeedPage,
+  DiscoverFeedQuery,
+  DiscoverSeenRequest,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiMediaUrl } from "./media-url.js";
@@ -24,6 +29,31 @@ import { requestBlob, requestJson, withQuery } from "./resource.js";
 
 export function getDiscover(): Promise<DiscoverResponse> {
   return requestJson("/discover", "GET");
+}
+
+export function updateDiscoverDayProfile(
+  input: UpdateDiscoverDayProfile,
+): Promise<DiscoverDayProfile> {
+  return requestJson("/discover/day-profile", "PATCH", input);
+}
+
+export function getDiscoverFeed(input: Partial<DiscoverFeedQuery> = {}): Promise<DiscoverFeedPage> {
+  return requestJson(
+    withQuery("/discover/feed", { after: input.after, limit: input.limit }),
+    "GET",
+  );
+}
+
+export function markDiscoverSeen(input: DiscoverSeenRequest): Promise<{ updated: number }> {
+  return requestJson("/discover/feed/seen", "POST", input);
+}
+
+export function dismissDiscoverItem(itemId: string): Promise<{ updated: number }> {
+  return requestJson(`/discover/feed/${encodeURIComponent(itemId)}/dismiss`, "POST", {});
+}
+
+export function refreshDiscoverCurrent(): Promise<DiscoverRefreshResponse> {
+  return requestJson("/discover/current/refresh", "POST", {});
 }
 
 export function getHouseDiscoverEdition(): Promise<DiscoverEdition> {

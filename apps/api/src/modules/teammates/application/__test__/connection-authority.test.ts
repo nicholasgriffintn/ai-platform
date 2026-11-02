@@ -113,4 +113,31 @@ describe("resolveTeammateConnectorAuthority", () => {
       }),
     ).rejects.toThrow("This teammate has no lastfm account grant");
   });
+  it("uses public TfL reads without granting a project's access to the owner's subscription key", async () => {
+    const authority = await resolveTeammateConnectorAuthority({
+      context: createContext({
+        scope: { type: "project", id: "proj_1" },
+        connections: [connection({ provider: "tfl" })],
+      }),
+      contextId: "ctx_1",
+      userId: USER_ID,
+      provider: "tfl",
+    });
+
+    expect(authority.connection).toBeNull();
+    expect(authority.credentialSource).toBe("public");
+    expect(authority.allowedOperations).toEqual(["plan_journey", "search_stops"]);
+  });
+
+  it("lets personal Poly read public TfL data without inventing an account connection", async () => {
+    const authority = await resolveTeammateConnectorAuthority({
+      context: createContext({ scope: { type: "personal", id: String(USER_ID) }, connections: [] }),
+      contextId: "ctx_1",
+      userId: USER_ID,
+      provider: "tfl",
+    });
+
+    expect(authority.connection).toBeNull();
+    expect(authority.credentialSource).toBe("public");
+  });
 });

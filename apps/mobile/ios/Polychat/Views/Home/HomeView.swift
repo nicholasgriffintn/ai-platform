@@ -5,10 +5,12 @@ struct HomeView: View {
     @EnvironmentObject private var store: DiscoverStore
     @EnvironmentObject private var playback: DiscoverPlayback
     @EnvironmentObject private var polyStore: PolyStore
+    @EnvironmentObject private var conversationManager: ConversationManager
     @Environment(\.openURL) private var openURL
     @State private var panelItem: DiscoverItem?
     @State private var storyWindDownId: String?
     @State private var expandedSections: Set<DiscoverSection> = []
+    @State private var showingDay = false
     @Binding var link: DiscoverLink?
     let onOpenConversation: (String) -> Void
 
@@ -44,7 +46,7 @@ struct HomeView: View {
                                 Task { await store.writeNow() }
                             }
                         } else {
-                            DiscoverIntro {
+                            DiscoverIntro(onSetUp: planWithPoly) {
                                 Task { await store.turnOn() }
                             }
                         }
@@ -71,6 +73,11 @@ struct HomeView: View {
             }
             .task { await store.loadIfNeeded() }
             .task(id: link) { follow(link) }
+            .sheet(isPresented: $showingDay) {
+                if let profile = store.discover?.dayProfile {
+                    DiscoverDaySheet(profile: profile, audioEnabled: store.discover?.settings.listen ?? false, onPoly: planWithPoly)
+                }
+            }
             .navigationDestination(item: $panelItem) { item in
                 DiscoverItemPanel(item: item, onOpenConversation: onOpenConversation)
             }
@@ -88,6 +95,9 @@ struct HomeView: View {
             Spacer()
             if store.discover?.settings.enabled == true {
                 Menu {
+                    Button("Set up or update with Poly", action: planWithPoly)
+                    Button("Your day") { showingDay = true }
+                    Button("Check current updates") { Task { await store.refreshCurrent() } }
                     Button {
                         Task { await store.writeNow() }
                     } label: {
@@ -109,8 +119,8 @@ struct HomeView: View {
 
     @ViewBuilder
     private func editionContent(_ edition: DiscoverEdition) -> some View {
-        if !edition.brief.isEmpty {
-            DiscoverBriefCard(lines: edition.brief, onOpen: open)
+        if !store.currentBrief.isEmpty {
+            DiscoverBriefCard(lines: store.currentBrief, onOpen: open)
         }
 
         if !store.visibleMedia.isEmpty {
@@ -125,11 +135,13 @@ struct HomeView: View {
                     ForEach(topics) { card in
                         if card.isStory {
                             DiscoverStoryTile(card: card) { startStory(card) }
+                                .modifier(DiscoverCardExposure(cardId: card.id))
                         } else {
                             DiscoverTopicTile(card: card, cover: card.coverId.flatMap { store.covers[$0] }) {
                                 panelItem = .card(card)
                             }
                             .contextMenu { feedbackMenu(card) }
+                            .modifier(DiscoverCardExposure(cardId: card.id))
                         }
                     }
                 }
@@ -163,6 +175,7 @@ struct HomeView: View {
                             }
                             DiscoverRow(card: card) { panelItem = .card(card) }
                                 .contextMenu { feedbackMenu(card) }
+                                .modifier(DiscoverCardExposure(cardId: card.id))
                         }
                     }
                     .background(Color.polychat.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -175,6 +188,11 @@ struct HomeView: View {
             Text("Built around \(interests.map(\.topic).joined(separator: " · "))")
                 .font(.caption)
                 .foregroundStyle(Color.polychat.textMuted)
+        }
+
+        if store.isViewingLatest && store.nextFeedCursor != nil {
+            Color.clear.frame(height: 1)
+                .task(id: store.nextFeedCursor) { await store.loadMore() }
         }
     }
 
@@ -209,7 +227,7 @@ struct HomeView: View {
     }
 
     private func startStory(_ card: DiscoverCard) {
-        guard card.isStory, let edition = store.edition else { return }
+        guard card.isStory, let edition = store.cardEdition else { return }
         Task {
             await store.send("opened", for: card)
             guard let id = await playback.windDown.startStory(editionId: edition.id, cardId: card.id) else { return }
@@ -219,6 +237,9 @@ struct HomeView: View {
     }
 
     private func openShelf(_ item: DiscoverMediaItem) {
+        if item == .perch, !playback.isPlaying {
+            Task { await store.selectBriefing(nil) }
+        }
         if item == .windDown, storyWindDownId != nil, playback.windDown.windDown?.id == storyWindDownId {
             playback.windDown.reset()
             storyWindDownId = nil
@@ -233,7 +254,26 @@ struct HomeView: View {
         case .media(let item):
             panelItem = .media(item)
         case .card(let id):
-            panelItem = store.edition?.cards.first { $0.id == id }.map(DiscoverItem.card)
+            Task {
+                await store.refresh()
+                panelItem = await store.cardForLink(id).map(DiscoverItem.card)
+            }
+        case .briefing(let id):
+            Task {
+                await store.refresh()
+                await store.selectBriefing(id)
+                panelItem = .media(.perch)
+            }
+        }
+    }
+
+    private func planWithPoly() {
+        Task {
+            guard let id = await polyStore.prepareDiscoverSetup(using: conversationManager) else {
+                store.error = "Poly could not be reached. Please try again."
+                return
+            }
+            onOpenConversation(id)
         }
     }
 
@@ -404,18 +444,20 @@ private struct DiscoverRow: View {
 }
 
 private struct DiscoverIntro: View {
+    let onSetUp: () -> Void
     let onTurnOn: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             PolyMark(size: 56)
-            Text("A morning edition, made for you")
+            Text("Discover, made for your day")
                 .font(.polychatDisplay(.title2))
-            Text("Each morning Poly reads what you've been working on and leaves an edition here: a short brief, topics worth a look, links and things worth doing next.")
+            Text("Tell Poly about your week and what interests you. Your brief and stories stay up to date here, with podcasts at the times you choose.")
                 .font(.subheadline)
                 .foregroundStyle(Color.polychat.textMuted)
-            Button("Turn on Discover", action: onTurnOn)
+            Button("Set up Discover with Poly", action: onSetUp)
                 .buttonStyle(.borderedProminent)
+            Button("Use the defaults", action: onTurnOn)
                 .tint(Color.polychat.primary)
         }
         .polychatCard(padding: 20)

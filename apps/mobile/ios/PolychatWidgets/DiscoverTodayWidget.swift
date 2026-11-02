@@ -6,7 +6,10 @@ struct DiscoverTodayWidgetView: View {
     @Environment(\.widgetFamily) private var family
 
     private var today: WidgetSnapshot.Today? {
-        entry.snapshot.today
+        guard let today = entry.snapshot.today else { return nil }
+        return WidgetSnapshot.Today(date: today.date, greeting: today.greeting,
+            brief: today.brief.filter { $0.expiresAt.map { $0 > entry.date } ?? true },
+            cards: today.cards.filter { $0.expiresAt.map { $0 > entry.date } ?? true })
     }
 
     var body: some View {
@@ -23,7 +26,7 @@ struct DiscoverTodayWidgetView: View {
         case .accessoryRectangular:
             VStack(alignment: .leading, spacing: 2) {
                 Text(today?.greeting ?? "Discover").font(.headline).lineLimit(1)
-                Text(today?.brief.first?.title ?? "Your edition arrives each morning.")
+                Text(today?.brief.first?.title ?? "Open Discover for current updates.")
                     .font(.caption)
                     .lineLimit(2)
             }
@@ -34,7 +37,7 @@ struct DiscoverTodayWidgetView: View {
                     .font(.system(.headline, design: .serif))
                     .lineLimit(2)
                 Spacer(minLength: 0)
-                Text(today?.brief.first?.title ?? today?.cards.first?.title ?? "Your edition arrives each morning.")
+                Text(today?.brief.first?.title ?? today?.cards.first?.title ?? "Open Discover for current updates.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(3)
@@ -52,7 +55,12 @@ struct DiscoverTodayWidgetView: View {
                     ForEach(today.brief.prefix(family == .systemLarge ? 4 : 2), id: \.self) { line in
                         WidgetLineView(line: line)
                     }
-                    if family == .systemLarge && !today.cards.isEmpty {
+                    if today.brief.isEmpty {
+                        ForEach(today.cards.prefix(2), id: \.self) { card in
+                            WidgetLineView(line: card)
+                        }
+                    }
+                    if family == .systemLarge && !today.cards.isEmpty && !today.brief.isEmpty {
                         Divider()
                         Text("Worth a look").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
                         ForEach(today.cards.prefix(3), id: \.self) { card in

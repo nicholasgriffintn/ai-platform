@@ -1,3 +1,4 @@
+import type { AccountModelSelection } from "@ngriffin_uk/polychat-library-chat";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import type { ResponseAgent } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
@@ -19,6 +20,7 @@ export interface ConversationScope {
   getCurrentConversationId: () => string | undefined;
   agent?: ResponseAgent;
   defaultAgent?: ResponseAgent;
+  modelSelection?: AccountModelSelection;
 }
 
 const ConversationScopeContext = createContext<ConversationScope | null>(null);
@@ -79,6 +81,8 @@ export function useLocalConversationScope(
   }, [onChange]);
 
   return useMemo<ConversationScope>(() => {
+    const modelSelection: AccountModelSelection | undefined =
+      agent || defaultAgent ? { model: null, modelTier: null, computeSite: "hosted" } : undefined;
     const update = (id: string | undefined) => {
       conversationIdRef.current = id;
       setConversationId(id);
@@ -98,6 +102,7 @@ export function useLocalConversationScope(
       },
       clearCurrentConversation: () => update(undefined),
       getCurrentConversationId: () => conversationIdRef.current,
+      ...(modelSelection ? { modelSelection } : {}),
       ...(agent ? { agent } : {}),
       ...(defaultAgent ? { defaultAgent } : {}),
     };

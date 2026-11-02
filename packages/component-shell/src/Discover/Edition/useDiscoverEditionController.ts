@@ -10,6 +10,7 @@ import {
   useRequestDiscoverEpisode,
   useStartDiscoverStory,
   useUpdateDiscoverSettings,
+  useDiscoverFeedPages,
 } from "@ngriffin_uk/polychat-library-react";
 import type {
   DiscoverCard,
@@ -31,6 +32,7 @@ import {
   type DiscoverItem,
 } from "./item/discover-items.js";
 import type { DiscoverCardFeedback } from "./item/DiscoverCardActions.js";
+import { discoverFeedEdition, discoverMediaEdition } from "./live/discover-feed-edition.js";
 import type { DiscoverMedia } from "./media/media-status.js";
 
 export type DiscoverEditionViewState = "feed" | "card" | "media";
@@ -71,16 +73,26 @@ export function useDiscoverEditionController() {
   const [view, setView] = useState<DiscoverEditionViewState>(linkedMedia ? "media" : "feed");
   const [chosenMedia, setChosenMedia] = useState<DiscoverMedia | null>(linkedMedia);
   const [mediaPlaying, setMediaPlaying] = useState(false);
+  const [selectedBriefingId, setSelectedBriefingId] = useState<string | null>(null);
   const discover = useDiscover(isAuthenticated, requestedAt, episodeRequestedAt);
   const ownEdition = discover.data?.edition ?? null;
+  const liveFeed = useDiscoverFeedPages(discover.data?.feed, discover.data?.dayProfile?.revision);
+  const feedEdition = useMemo(
+    () => discoverFeedEdition(discover.data, liveFeed.items),
+    [discover.data, liveFeed.items],
+  );
+  const mediaEdition = useMemo(
+    () => discoverMediaEdition(discover.data, liveFeed.items, selectedBriefingId),
+    [discover.data, liveFeed.items, selectedBriefingId],
+  );
   const settings = discover.data?.settings ?? null;
   const isAwaitingEdition = discover.isAwaitingEdition;
   const needsHouseEdition =
     !isAuthenticationLoading &&
-    (!isAuthenticated || (discover.isFetched && !ownEdition && !isAwaitingEdition));
+    (!isAuthenticated || (discover.isFetched && !ownEdition && !feedEdition && !isAwaitingEdition));
   const house = useHouseDiscoverEdition(needsHouseEdition);
-  const edition = ownEdition ?? (needsHouseEdition ? (house.data ?? null) : null);
-  const isHouseEdition = !ownEdition && edition !== null;
+  const edition = feedEdition ?? ownEdition ?? (needsHouseEdition ? (house.data ?? null) : null);
+  const isHouseEdition = !ownEdition && !feedEdition && edition !== null;
   const requestEpisode = useRequestDiscoverEpisode();
   const requestListen = useRequestDiscoverListen();
   const requestWeek = useRequestDiscoverWeek();
@@ -104,22 +116,22 @@ export function useDiscoverEditionController() {
   const media: DiscoverMedia =
     chosenMedia ?? (settings && settings.episode !== "off" ? "episode" : "perch");
   const mediaShelf = useMemo(
-    () => (ownEdition && settings ? discoverMediaShelf(ownEdition, settings) : []),
-    [ownEdition, settings],
+    () => (mediaEdition && settings ? discoverMediaShelf(mediaEdition, settings) : []),
+    [mediaEdition, settings],
   );
   const items = useMemo(
-    () => (ownEdition ? orderDiscoverItems(mediaShelf, groupDiscoverCards(ownEdition.cards)) : []),
-    [mediaShelf, ownEdition],
+    () => (edition ? orderDiscoverItems(mediaShelf, groupDiscoverCards(edition.cards)) : []),
+    [mediaShelf, edition],
   );
   const mediaOpen = view === "media" && isAuthenticated;
   const panelItem = useMemo<DiscoverItem | null>(
     () =>
-      selectedCard && ownEdition
+      selectedCard && edition
         ? { type: "card", card: selectedCard }
         : mediaOpen
           ? { type: "media", media }
           : null,
-    [media, mediaOpen, ownEdition, selectedCard],
+    [media, mediaOpen, edition, selectedCard],
   );
   const panelIndex = panelItem
     ? items.findIndex((item) => discoverItemKey(item) === discoverItemKey(panelItem))
@@ -156,7 +168,11 @@ export function useDiscoverEditionController() {
     return result;
   };
 
-  const openMedia = (next: DiscoverMedia) => {
+  const openMedia = (next: DiscoverMedia, briefingId?: string) => {
+    if (next === "perch" && !mediaPlaying) {
+      setSelectedBriefingId(briefingId ?? null);
+    }
+
     setChosenMedia(next);
     setSelectedId(null);
     setView("media");
@@ -170,11 +186,14 @@ export function useDiscoverEditionController() {
   };
 
   const sendFeedback = (card: DiscoverCard, signal: DiscoverFeedbackSignal) => {
-    if (!ownEdition) {
+    const collectionId =
+      liveFeed.items.find((item) => item.card.id === card.id)?.editionId ?? ownEdition?.id;
+
+    if (!collectionId) {
       return;
     }
 
-    feedback.mutate({ editionId: ownEdition.id, cardId: card.id, signal });
+    feedback.mutate({ editionId: collectionId, cardId: card.id, signal });
   };
 
   const toggleFollow = (card: DiscoverCard) => {
@@ -204,19 +223,22 @@ export function useDiscoverEditionController() {
     setView(card ? "card" : "feed");
     setPlayParam(null);
 
-    if (card && ownEdition && !ownEdition.feedback[card.id]?.includes("opened")) {
-      feedback.mutate({ editionId: ownEdition.id, cardId: card.id, signal: "opened" });
+    if (card && !edition?.feedback[card.id]?.includes("opened")) {
+      sendFeedback(card, "opened");
     }
   };
 
   const playStory = (cardId: string) => {
-    if (!ownEdition) {
+    const collectionId =
+      liveFeed.items.find((item) => item.card.id === cardId)?.editionId ?? ownEdition?.id;
+
+    if (!collectionId) {
       return;
     }
 
     setStoryCardId(cardId);
     startStory.mutate(
-      { editionId: ownEdition.id, cardId },
+      { editionId: collectionId, cardId },
       {
         onSuccess: (windDown) => {
           setStoryWindDownId(windDown.id);
@@ -233,6 +255,13 @@ export function useDiscoverEditionController() {
     house,
     edition,
     ownEdition,
+    mediaEdition,
+    openBriefing: (id: string) => openMedia("perch", id),
+    panelEdition:
+      selectedCard && liveFeed.items.some((item) => item.card.id === selectedCard.id)
+        ? feedEdition
+        : ownEdition,
+    liveFeed,
     isHouseEdition,
     settings,
     selectedCard,
@@ -298,7 +327,7 @@ export function useDiscoverEditionController() {
     follows: followed,
     followFor,
     feedbackFor: (card: DiscoverCard): DiscoverCardFeedback => ({
-      signals: ownEdition?.feedback[card.id] ?? [],
+      signals: edition?.feedback[card.id] ?? [],
       isSending: feedback.isPending,
       follow: followFor(card),
       isChangingFollow: follows.follow.isPending || follows.unfollow.isPending,

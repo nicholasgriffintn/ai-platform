@@ -17,7 +17,7 @@ import {
 import { ModelGovernanceRepository } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 import type { AddEvidenceInput } from "~/modules/model-registry/infrastructure/ModelGovernanceRepository";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
-import type { IEnv } from "~/types";
+import type { IEnv, IUser } from "~/types";
 
 import type {
   ModelEvalRunRecord,
@@ -32,6 +32,7 @@ export interface EvalJudge {
   model: string;
   provider: string;
   effort?: ReasoningEffort;
+  user?: IUser;
 }
 
 function resultsKey(runId: string): string {
@@ -100,7 +101,13 @@ export async function gradeCaseOutput(
 
   for (const grader of graders) {
     const score = await scoreWithGrader(
-      { env, repositories, workspaceId: suite.workspace_id, projectId: suite.project_id },
+      {
+        env,
+        repositories,
+        workspaceId: suite.workspace_id,
+        projectId: suite.project_id,
+        user: judge.user,
+      },
       grader.config,
       { input: item.input, output, expected: item.expected },
       judge,

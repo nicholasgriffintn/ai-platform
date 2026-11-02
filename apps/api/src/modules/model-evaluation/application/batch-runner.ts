@@ -6,7 +6,6 @@ import { getBatchProvider } from "~/infrastructure/providers/capabilities/batch"
 import { ModelEvalRepository } from "~/modules/model-evaluation/infrastructure/ModelEvalRepository";
 import { ModelGraderRepository } from "~/modules/model-evaluation/infrastructure/ModelGraderRepository";
 import type { ModelRouteRecord } from "~/modules/model-registry/infrastructure/ModelRouteRepository";
-import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import type { TaskResult } from "~/modules/queue/application/types";
 import type { IEnv } from "~/types";
 
@@ -14,6 +13,7 @@ import type {
   ModelEvalRunRecord,
   ModelEvalSuiteRecord,
 } from "../infrastructure/ModelEvalRepository";
+import { resolveEvaluationJudge } from "./judge";
 import {
   casesForRun,
   completeEvalRun,
@@ -132,7 +132,7 @@ export async function executeBatchedEvalRun(
     return { status: "error", message: poll.reason };
   }
 
-  const judge = await getAuxiliaryModel(env);
+  const judge = await resolveEvaluationJudge(env, repositories, suite, run);
   const graders = await repositories.get(ModelGraderRepository).listByIds(suite.grader_ids);
   const byId = new Map(poll.results.map((result) => [result.id, result]));
   const results: EvalCaseResult[] = [];

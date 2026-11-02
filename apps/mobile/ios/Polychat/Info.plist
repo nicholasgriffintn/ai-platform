@@ -11,6 +11,7 @@
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>com.polychat-app.app.health-sync</string>
+		<string>com.polychat-app.app.discover-refresh</string>
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>

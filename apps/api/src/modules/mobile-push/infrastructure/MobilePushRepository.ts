@@ -72,10 +72,10 @@ export class MobilePushRepository extends BaseRepository {
     );
   }
 
-  async invalidateDevice(deviceId: string): Promise<void> {
+  async invalidateDevice(deviceId: string, userId?: number): Promise<void> {
     await this.executeRun(
-      "UPDATE notification_endpoint SET invalidated_at = CURRENT_TIMESTAMP WHERE platform = 'ios' AND id = ?",
-      [deviceId],
+      `UPDATE notification_endpoint SET invalidated_at = CURRENT_TIMESTAMP WHERE platform = 'ios' AND id = ?${userId === undefined ? "" : " AND user_id = ?"}`,
+      [deviceId, ...(userId === undefined ? [] : [userId])],
     );
   }
 }

@@ -70,6 +70,9 @@ final class CompanionSync {
     }
 
     func refreshEverything() {
+        debounce("discover") { [discover] in
+            await discover.refresh()
+        }
         refreshConversationList(projectId: nil)
         refreshAttention()
         debounce("current-conversation") { [conversations] in

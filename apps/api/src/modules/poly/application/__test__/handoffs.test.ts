@@ -4,6 +4,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import type { ActivityRecord } from "~/modules/activity/infrastructure/ActivityRepository";
 import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
+import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import { CorrectionRepository } from "~/modules/corrections/infrastructure/CorrectionRepository";
 import type { IUser } from "~/types";
 
@@ -42,9 +43,33 @@ function notifiedRecord(index: number): ActivityRecord {
 function memoryActivities(notifiedToday: number) {
   const records = new Map<string, ActivityRecord>();
   const earlier = Array.from({ length: notifiedToday }, (_, index) => notifiedRecord(index));
+  let configuration: {
+    configuration: Record<string, unknown>;
+    revision: number;
+    updatedAt: string | null;
+  } | null = null;
 
   return {
     records,
+    budget: {
+      getVersioned: async () => configuration,
+      saveVersioned: async (input: {
+        configuration: Record<string, unknown>;
+        expectedRevision: number;
+      }) => {
+        if (input.expectedRevision !== (configuration?.revision ?? 0)) {
+          return false;
+        }
+
+        configuration = {
+          configuration: input.configuration,
+          revision: input.expectedRevision + 1,
+          updatedAt: new Date().toISOString(),
+        };
+
+        return true;
+      },
+    },
     getActivityById: async (id: string) => records.get(id) ?? null,
     listConversationActivitiesSince: async () => [...earlier, ...records.values()],
     recordActivityOnce: async (input: {
@@ -96,9 +121,11 @@ function input(
   return {
     context: {
       env: {},
+      requireUser: () => ({ id: 7 }),
       repositories: fakeRepositories([
         [ActivityRepository, activities],
         [CorrectionRepository, corrections],
+        [CapabilityConfigurationRepository, activities.budget],
       ]),
     } as unknown as ServiceContext,
     user: { id: 7 } as IUser,
@@ -123,6 +150,22 @@ function onlyHandoff(activities: ReturnType<typeof memoryActivities>) {
 
 describe("admitRoutineHandoff", () => {
   beforeEach(() => judge.mockReset());
+
+  it("atomically admits only one concurrent non-critical interruption", async () => {
+    judge.mockResolvedValue({ urgency: "high", receipt: {} });
+    const activities = memoryActivities(0);
+    const decisions = await Promise.all([
+      admitRoutineHandoff(input(activities, { occurrenceId: "concurrent_a" })),
+      admitRoutineHandoff(input(activities, { occurrenceId: "concurrent_b" })),
+    ]);
+
+    expect(decisions.filter((decision) => decision === "notified")).toHaveLength(1);
+    expect(
+      [...activities.records.values()]
+        .map(readPolyHandoff)
+        .find((handoff) => handoff?.data.decision === "noted")?.data.reason,
+    ).toBe("spacing");
+  });
 
   it("notes a routine result the judgement says can wait, without interrupting", async () => {
     judge.mockResolvedValue({ urgency: "normal", receipt: { policy: "poly.handoff_urgency" } });

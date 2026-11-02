@@ -34,13 +34,23 @@ import {
   errorResponseSchema,
   sourceSchema,
   updateDiscoverSettingsSchema,
+  discoverDayProfileSchema,
+  updateDiscoverDayProfileSchema,
+  discoverFeedQuerySchema,
+  discoverFeedPageSchema,
+  discoverSeenRequestSchema,
+  discoverMutationResponseSchema,
+  discoverFeedItemParamsSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { readCountryCode } from "@ngriffin_uk/polychat-utility-core";
 import { Hono } from "hono";
 
+import { defineResource, defineSingleton } from "~/infrastructure/http/resource";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { compareDiscoverCoverage } from "~/modules/discover/application/coverage";
 import { readDiscoverCover } from "~/modules/discover/application/covers";
+import { queueDiscoverCurrent } from "~/modules/discover/application/current";
+import { configureDiscoverDay } from "~/modules/discover/application/day-settings";
 import { readDiscover, readDiscoverEditionByDate } from "~/modules/discover/application/editions";
 import {
   readEpisodeChapterAudio,
@@ -62,6 +72,11 @@ import {
 import { readHouseEdition } from "~/modules/discover/application/house-edition";
 import { requestDiscoverListen } from "~/modules/discover/application/listen";
 import {
+  dismissDiscoverItem,
+  markDiscoverSeen,
+  readDiscoverFeed,
+} from "~/modules/discover/application/live-feed";
+import {
   readEditionRecording,
   readEditionRecordingAudio,
 } from "~/modules/discover/application/recordings";
@@ -81,6 +96,62 @@ import { readWindDownTonight } from "~/modules/discover/application/wind-down-co
 import { startDiscoverStory } from "~/modules/discover/application/wind-down-story";
 
 const app = new Hono();
+
+defineSingleton(app, { path: "/day-profile", tags: ["discover"] }, (day) => {
+  day.update({
+    summary: "Configure your day",
+    auth: true,
+    bodySchema: updateDiscoverDayProfileSchema,
+    responses: {
+      200: { description: "Your saved day preferences", schema: discoverDayProfileSchema },
+      409: {
+        description: "Your preferences changed on another device",
+        schema: errorResponseSchema,
+      },
+    },
+    handler: async ({ serviceContext, body }) => configureDiscoverDay(serviceContext, body),
+  });
+});
+
+defineResource(app, { path: "/feed", idParam: "item_id", tags: ["discover"] }, (feed) => {
+  feed
+    .list({
+      summary: "Read current Discover stories",
+      auth: true,
+      querySchema: discoverFeedQuerySchema,
+      responses: { 200: { description: "Your current feed", schema: discoverFeedPageSchema } },
+      cache: { maxAge: 0, staleWhileRevalidate: 0 },
+      handler: async ({ serviceContext, query }) => readDiscoverFeed(serviceContext, query),
+    })
+    .collectionAction("seen", {
+      summary: "Record the stories you have seen",
+      auth: true,
+      bodySchema: discoverSeenRequestSchema,
+      responses: {
+        200: { description: "Exposure recorded", schema: discoverMutationResponseSchema },
+      },
+      handler: async ({ serviceContext, body }) => markDiscoverSeen(serviceContext, body),
+    })
+    .action("dismiss", {
+      summary: "Dismiss a Discover story",
+      auth: true,
+      paramSchema: discoverFeedItemParamsSchema,
+      responses: {
+        200: { description: "Story dismissed", schema: discoverMutationResponseSchema },
+      },
+      handler: async ({ serviceContext, params }) =>
+        dismissDiscoverItem(serviceContext, params.item_id),
+    });
+});
+
+defineSingleton(app, { path: "/current", tags: ["discover"] }, (current) => {
+  current.action("refresh", {
+    summary: "Check for relevant updates now",
+    auth: true,
+    responses: { 200: { description: "Refresh admission", schema: discoverRefreshResponseSchema } },
+    handler: async ({ serviceContext }) => queueDiscoverCurrent(serviceContext),
+  });
+});
 
 addRoute(app, "get", "/", {
   tags: ["discover"],

@@ -1,6 +1,5 @@
 import { ConversationThread } from "@ngriffin_uk/polychat-component-conversation";
 import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
-import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   ArtifactWorkbenchProvider,
   type ChatSuggestion,
@@ -11,7 +10,7 @@ import {
   useLocalComposerDraft,
   useLocalConversationScope,
 } from "@ngriffin_uk/polychat-library-react";
-import { DEFAULT_MODEL_TIER, type NotebookDetail } from "@ngriffin_uk/polychat-schemas";
+import type { NotebookDetail } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { toast } from "sonner";
 
@@ -43,7 +42,6 @@ export function NotebookChatPanel({
 }) {
   const scope = useLocalConversationScope(conversationId, onConversationChange);
   const draft = useLocalComposerDraft();
-  const modelTier = useChatStore((state) => state.modelTier);
   const projectId = notebook.scope.kind === "project" ? notebook.scope.projectId : undefined;
   const isWritingGuide = notebook.guideStatus === "writing";
 
@@ -92,7 +90,6 @@ export function NotebookChatPanel({
                     id: notebook.id,
                     source_ids: [...selectedSourceIds],
                   },
-                  model_tier: modelTier ?? DEFAULT_MODEL_TIER,
                   ...(projectId ? { metadata: { project_id: projectId } } : {}),
                 },
               }}

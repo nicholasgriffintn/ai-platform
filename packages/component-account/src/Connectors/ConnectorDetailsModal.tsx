@@ -36,7 +36,10 @@ export function ConnectorDetailsModal({
 
   const isConnected = connector.status === "connected";
   const isUnavailable = connector.status === "unconfigured";
-  const authLabel = connector.authConfigs?.[0]?.authScheme ?? "API key";
+  const publicAccess = isConnected && connector.authType === "api_key" && !connector.connectedAt;
+  const authLabel = publicAccess
+    ? "Optional API key"
+    : (connector.authConfigs?.[0]?.authScheme ?? "API key");
 
   return (
     <Dialog open onOpenChange={onOpenChange}>
@@ -67,7 +70,7 @@ export function ConnectorDetailsModal({
                     : "size-2 rounded-full bg-selection"
                 }
               />
-              {isConnected ? "Connected" : "Not connected"}
+              {publicAccess ? "Public access" : isConnected ? "Connected" : "Not connected"}
             </span>
           </div>
 
@@ -86,9 +89,15 @@ export function ConnectorDetailsModal({
               ) : (
                 <Plug className="mr-2 size-4" />
               )}
-              {isConnected ? "Reconnect" : isUnavailable ? "Unavailable" : "Connect"}
+              {publicAccess
+                ? "Add subscription key"
+                : isConnected
+                  ? "Reconnect"
+                  : isUnavailable
+                    ? "Unavailable"
+                    : "Connect"}
             </Button>
-            {isConnected && (
+            {isConnected && !publicAccess && (
               <Button
                 variant="outline"
                 className="w-full text-failure hover:text-failure"

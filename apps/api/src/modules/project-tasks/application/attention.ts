@@ -20,13 +20,19 @@ import {
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { notifyMobileProjectTask } from "~/modules/mobile-push/application";
+import { resolveInboxNotification } from "~/modules/notifications/application/inbox";
+import { NotificationRepository } from "~/modules/notifications/infrastructure/NotificationRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { publishUserEvent } from "~/modules/sync/application/conversation-events";
 import type { TaskInboxRow } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
 import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
-import { requireProjectAccess, requireWorkAccess } from "~/modules/workspaces/application/access";
+import {
+  canAccessWork,
+  requireProjectAccess,
+  requireWorkAccess,
+} from "~/modules/workspaces/application/access";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { projectTaskLink } from "../domain/links";
@@ -215,10 +221,16 @@ export async function updateTaskInboxReceipts(
   itemIds: string[],
   action: "read" | "dismiss",
 ) {
-  const user = requireWorkAccess(context);
-  const updated = await context.repositories
-    .get(TaskNotificationRepository)
-    .updateInboxReceipts(user.id, itemIds, action);
+  const user = context.requireUser();
+  const [notifications, tasks] = await Promise.all([
+    context.repositories.get(NotificationRepository).updateReceipts(user.id, itemIds, action),
+    canAccessWork(user)
+      ? context.repositories
+          .get(TaskNotificationRepository)
+          .updateInboxReceipts(user.id, itemIds, action)
+      : Promise.resolve(0),
+  ]);
+  const updated = notifications + tasks;
 
   if (updated > 0) {
     publishUserEvent(context, user.id, "attention.changed", { action });
@@ -228,6 +240,10 @@ export async function updateTaskInboxReceipts(
 }
 
 export async function resolveTaskNotificationDeepLink(context: ServiceContext, itemId: string) {
+  if (itemId.startsWith("notification:")) {
+    return resolveInboxNotification(context, itemId);
+  }
+
   const user = requireWorkAccess(context);
   const parsed = parseTaskInboxItemId(itemId);
 

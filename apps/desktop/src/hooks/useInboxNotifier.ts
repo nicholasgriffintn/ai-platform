@@ -1,6 +1,6 @@
 import { getLocalChatScope } from "@ngriffin_uk/polychat-library-chat";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
-import { useTaskAttention, useTaskNotificationSettings } from "@ngriffin_uk/polychat-library-react";
+import { useTaskAttention, useNotificationSettings } from "@ngriffin_uk/polychat-library-react";
 import { useEffect, useRef } from "react";
 
 import { tauriDesktopBackend } from "../infrastructure/desktop-backend";
@@ -13,7 +13,7 @@ import {
 export function useInboxNotifier() {
   const userId = useChatStore((state) => state.user?.id);
   const { items, unread } = useTaskAttention();
-  const { settings } = useTaskNotificationSettings();
+  const { settings } = useNotificationSettings();
   const preferences = settings?.preferences;
   const announcedSignature = useRef("");
 

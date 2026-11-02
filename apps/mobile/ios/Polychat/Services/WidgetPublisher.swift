@@ -2,6 +2,10 @@ import Foundation
 import WidgetKit
 
 enum WidgetPublisher {
+    static func publish(discover: DiscoverResponse?) {
+        write { $0.today = discover.map(WidgetSnapshot.Today.init(discover:)) }
+    }
+
     static func publish(edition: DiscoverEdition?) {
         write { $0.today = edition.map(WidgetSnapshot.Today.init(edition:)) }
     }

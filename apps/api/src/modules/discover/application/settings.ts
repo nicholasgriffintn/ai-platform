@@ -1,6 +1,4 @@
 import {
-  DISCOVER_CRON,
-  DISCOVER_EVENING_CRON,
   DISCOVER_RECIPE_ID,
   RECIPE_EXCLUDED_CONNECTOR_PROVIDERS_KEY,
   type DiscoverRefreshResponse,
@@ -21,6 +19,7 @@ import {
   readDeviceActivitySource,
 } from "~/modules/discover/domain/device-activity";
 import { DISCOVER_NEWS_CATEGORIES } from "~/modules/discover/domain/news-categories";
+import { buildDiscoverScheduleTriggers } from "~/modules/discover/domain/schedules";
 import {
   DEFAULT_DISCOVER_PREFERENCES,
   applyDiscoverSourceChange,
@@ -49,6 +48,7 @@ import {
 } from "~/modules/recipes/application";
 
 import { estimateDiscoverCosts } from "./cost";
+import { readDiscoverDayProfile, saveDiscoverDayProfile } from "./day-profile";
 import { forgetDeviceActivity } from "./device-documents";
 import { enqueueDiscoverJob } from "./jobs";
 import { listDiscoverSignalDocuments } from "./notebook";
@@ -286,8 +286,13 @@ export async function updateDiscoverSettings(
   const current = existing ? storedPreferences(existing) : DEFAULT_DISCOVER_PREFERENCES;
   const currentTimezone =
     existing?.triggers.find((trigger) => trigger.type === "schedule")?.timezone ?? null;
+  let profile = await readDiscoverDayProfile(context);
   const timezone =
-    input.timezone && isValidTimeZone(input.timezone) ? input.timezone : (currentTimezone ?? "UTC");
+    input.timezone && isValidTimeZone(input.timezone)
+      ? input.timezone
+      : profile.revision > 0
+        ? profile.timezone
+        : (currentTimezone ?? "UTC");
   const preferences: DiscoverPreferences = {
     curate: input.curate ?? current.curate,
     listen: input.listen ?? current.listen,
@@ -301,24 +306,20 @@ export async function updateDiscoverSettings(
     ...applyDiscoverSourceChange(current, input.source, isDiscoverOptInProvider),
     country: requestCountry ?? current.country,
   };
+
+  if (profile.timezone !== timezone) {
+    profile = await saveDiscoverDayProfile(context, {
+      expectedRevision: profile.revision,
+      timezone,
+    });
+  }
+
   const installed = await installAssistantRecipe(DISCOVER_RECIPE_ID, {
     context,
     userId: user.id,
     channel: "web",
     teammateContextId: polyContext.id,
-    triggers: [
-      { type: "schedule", enabled: true, cronExpression: DISCOVER_CRON, timezone },
-      ...(preferences.evening
-        ? [
-            {
-              type: "schedule" as const,
-              enabled: true,
-              cronExpression: DISCOVER_EVENING_CRON,
-              timezone,
-            },
-          ]
-        : []),
-    ],
+    triggers: buildDiscoverScheduleTriggers(profile, preferences),
     configuration: preferences,
   });
 

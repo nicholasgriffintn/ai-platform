@@ -18,6 +18,7 @@ import type {
   DiscoverResearchContext,
   DiscoverSignalContext,
 } from "~/modules/discover/domain/context";
+import { resolveDiscoverDay } from "~/modules/discover/domain/day";
 import {
   deviceActivityContextNote,
   deviceActivityGroup,
@@ -45,6 +46,7 @@ import { describeMemoryDocument } from "~/modules/memory-documents/domain/detail
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { loadPolyAgenda } from "~/modules/poly/application/read-agenda";
 
+import { readDiscoverDayProfile } from "./day-profile";
 import { listRecentDiscoverEditions } from "./editions";
 import { wasLatestEpisodeWatched } from "./episodes";
 import { listDiscoverFeedback } from "./feedback";
@@ -137,10 +139,11 @@ async function loadDiscoverBasis(context: ServiceContext, now: Date) {
   const settings = await readDiscoverRoutine(context);
   const timezone = settings.timezone ?? "UTC";
   const zoned = describeZonedInstant(now, timezone);
-  const [feedback, editions, follows] = await Promise.all([
+  const [feedback, editions, follows, dayProfile] = await Promise.all([
     listDiscoverFeedback(context, user.id),
     listRecentDiscoverEditions(context, user.id, RECENT_EDITION_COUNT),
     listDiscoverFollows(context, user.id),
+    readDiscoverDayProfile(context),
   ]);
   const edition = discoverEditionTimeAt(Number.parseInt(zoned.time.slice(0, 2), 10));
   const recentEditions = editions
@@ -156,10 +159,19 @@ async function loadDiscoverBasis(context: ServiceContext, now: Date) {
     timezone,
     zoned,
     edition,
-    feedback: summariseDiscoverFeedback(feedback),
+    feedback: {
+      ...summariseDiscoverFeedback(feedback),
+      hiddenTopics: [
+        ...new Set([
+          ...summariseDiscoverFeedback(feedback).hiddenTopics,
+          ...dayProfile.mutedTopics,
+        ]),
+      ],
+    },
     feedbackEntries: feedback,
     recentEditions,
     follows,
+    dayProfile,
   };
 }
 
@@ -191,7 +203,11 @@ export async function readDiscoverEditionBasis(
     date: basis.zoned.date,
     timezone: basis.timezone,
     hiddenTopics: new Set(basis.feedback.hiddenTopics.map(discoverTopicKey)),
-    followedTopics: new Set(basis.follows.map((follow) => discoverTopicKey(follow.topic))),
+    followedTopics: new Set(
+      [...basis.dayProfile.topics, ...basis.follows.map((follow) => follow.topic)].map(
+        discoverTopicKey,
+      ),
+    ),
     curate: basis.settings.curate,
     resurfaceHrefs: new Set(resurface.map((item) => item.href)),
     edition: basis.edition,
@@ -258,7 +274,10 @@ export async function buildDiscoverContextSnapshot(
     partOfDay: partOfDay(Number.parseInt(basis.zoned.time.slice(0, 2), 10)),
     timezone: basis.timezone,
     curate: basis.settings.curate,
-    followedTopics: basis.follows.map((follow) => follow.topic),
+    followedTopics: [
+      ...new Set([...basis.dayProfile.topics, ...basis.follows.map((follow) => follow.topic)]),
+    ],
+    day: resolveDiscoverDay(basis.dayProfile, now),
     chatTitles: selectChatTitles(conversations.data, now.getTime()),
     memorySummary,
     feedback: basis.feedback,

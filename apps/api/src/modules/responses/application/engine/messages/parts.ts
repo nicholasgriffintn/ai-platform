@@ -194,6 +194,23 @@ export function buildMessageParts(message: Message): MessagePart[] | undefined {
   const timestamp = extractTimestamp(message.timestamp, Date.now());
   const parts: MessagePart[] = [];
 
+  if (message.role === "tool") {
+    return [
+      {
+        type: "tool_result",
+        name: message.name,
+        toolCallId: message.tool_call_id,
+        status: message.status,
+        content:
+          typeof message.content === "string" || isObjectOrArray(message.content)
+            ? message.content
+            : undefined,
+        data: message.data ?? undefined,
+        timestamp,
+      },
+    ];
+  }
+
   if (typeof message.content === "string") {
     appendTextPart(parts, message.content, timestamp);
   } else if (Array.isArray(message.content)) {
@@ -250,21 +267,6 @@ export function buildMessageParts(message: Message): MessagePart[] | undefined {
         parts.push(toolUsePart);
       }
     }
-  }
-
-  if (message.role === "tool") {
-    parts.push({
-      type: "tool_result",
-      name: message.name,
-      toolCallId: message.tool_call_id,
-      status: message.status,
-      content:
-        typeof message.content === "string" || isObjectOrArray(message.content)
-          ? message.content
-          : undefined,
-      data: message.data ?? undefined,
-      timestamp,
-    });
   }
 
   if (isRecord(message.data) && Array.isArray(message.data.attachments)) {
