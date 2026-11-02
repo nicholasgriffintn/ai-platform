@@ -181,8 +181,8 @@
       "matchingModel": "~deepseek/deepseek-flash-latest",
       "overrides": {
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.0000205,
-        "costPer1kOutputTokens": 0.000228
+        "costPer1kInputTokens": 0.000035,
+        "costPer1kOutputTokens": 0.0005
       },
       "unset": [
         "contextComplexity"
@@ -194,7 +194,7 @@
       "overrides": {
         "lastUpdated": "September 14, 2026",
         "costPer1kInputTokens": 0.0001035,
-        "costPer1kOutputTokens": 0.004,
+        "costPer1kOutputTokens": 0.008,
         "supportsAttachments": false
       }
     },
@@ -203,7 +203,7 @@
       "matchingModel": "~deepseek/deepseek-v4-flash-latest",
       "overrides": {
         "lastUpdated": "August 1, 2026",
-        "costPer1kInputTokens": 0.0000331,
+        "costPer1kInputTokens": 0.000059,
         "costPer1kOutputTokens": 0.0003,
         "supportsAttachments": false
       }
@@ -233,8 +233,8 @@
       "matchingModel": "~moonshotai/kimi-latest",
       "overrides": {
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.0001824,
-        "costPer1kOutputTokens": 0.0093388
+        "costPer1kInputTokens": 0.0001495,
+        "costPer1kOutputTokens": 0.00715
       }
     },
     "~openai/gpt-astra-latest": {
@@ -321,8 +321,8 @@
       "matchingModel": "~z-ai/glm-flash-latest",
       "overrides": {
         "lastUpdated": "August 27, 2026",
-        "costPer1kInputTokens": 0.0000259,
-        "costPer1kOutputTokens": 0.0001142
+        "costPer1kInputTokens": 0.0000285,
+        "costPer1kOutputTokens": 0.0000923
       }
     },
     "~z-ai/glm-latest": {
@@ -717,7 +717,7 @@
       "matchingModel": "anthropic/claude-sonnet-4.6",
       "overrides": {
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -1102,7 +1102,7 @@
       "overrides": {
         "description": "DeepSeek V4.1 Flash is a sparse mixture-of-experts model from DeepSeek, and the cost-efficient tier of the V4.1 family. DeepSeek reports that it exceeds V4 Pro on performance, speed, and task...",
         "maxTokens": 943718,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -1657,7 +1657,6 @@
       "model": "gemma/gemma-4-26b-a4b-it",
       "matchingModel": "google/gemma-4-26b-a4b-it",
       "overrides": {
-        "maxTokens": 235929,
         "modalities": {
           "input": [
             "image",
@@ -1669,8 +1668,8 @@
           ]
         },
         "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.00001,
-        "costPer1kOutputTokens": 0.00003,
+        "costPer1kInputTokens": 0.000024,
+        "costPer1kOutputTokens": 0.0001,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1697,8 +1696,8 @@
           ]
         },
         "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.00034,
+        "costPer1kInputTokens": 0.000086,
+        "costPer1kOutputTokens": 0.000144,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -2323,7 +2322,7 @@
       "overrides": {
         "name": "MiniMax-M2.7",
         "maxTokens": 131072,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -3422,7 +3421,7 @@
       "matchingModel": "openai/gpt-5.4",
       "overrides": {
         "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.015,
@@ -3550,7 +3549,7 @@
       "matchingModel": "openai/gpt-5.6-sol",
       "overrides": {
         "description": "GPT-5.6 Sol is the flagship model in OpenAI's GPT-5.6 series. It is suited for complex reasoning, coding, and agentic workflows, and is particularly strong at command-line and multi-step coding tasks...",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
@@ -3562,7 +3561,7 @@
       "matchingModel": "openai/gpt-5.6-sol-pro",
       "overrides": {
         "description": "GPT-5.6 Sol Pro is the same underlying model as [GPT-5.6 Sol](https://openrouter.ai/openai/gpt-5.6-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. Learn more in OpenAI's docs: https://developers.openai.com/api/docs/guides/reasoning#reasoning-mode",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
@@ -4259,8 +4258,8 @@
         "maxTokens": 235929,
         "speed": 4,
         "lastUpdated": "July 31, 2025",
-        "costPer1kInputTokens": 0.00007,
-        "costPer1kOutputTokens": 0.00028,
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": false
       }
     },
@@ -4366,7 +4365,7 @@
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 131072,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.00021,
         "costPer1kOutputTokens": 0.0019
@@ -5075,7 +5074,7 @@
       "model": "claude-sonnet/stealth-claude-sonnet-4-6-20-off",
       "matchingModel": "stealth/claude-sonnet-4.6",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 26, 2025",
         "costPer1kInputTokens": 0.0024,
         "costPer1kOutputTokens": 0.012,
@@ -5131,7 +5130,7 @@
       "model": "kilo/stepfun/step-3.7-flash/step-3-7-flash",
       "matchingModel": "stepfun/step-3.7-flash",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "May 29, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00115
@@ -5569,10 +5568,21 @@
       "matchingModel": "xiaomi/mimo-v2.6-flash",
       "overrides": {
         "description": "MiMo-V2.6-Flash is an open-source foundation model developed by Xiaomi. Built on a Mixture-of-Experts architecture with 309B total parameters and 15B activated per token, it employs a hybrid attention mechanism for...",
-        "speed": 3,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
-        "costPer1kInputTokens": 0.000087,
-        "costPer1kOutputTokens": 0.000187,
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.00028,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -5587,9 +5597,20 @@
       "matchingModel": "xiaomi/mimo-v2.6-pro",
       "overrides": {
         "description": "MiMo-V2.6-Pro is the flagship foundation model developed by Xiaomi. Built at a scale of over 1T parameters, it is designed to push the ceiling of capability for the most demanding...",
-        "speed": 3,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
-        "costPer1kInputTokens": 0.000435,
+        "costPer1kInputTokens": 0.00043,
         "costPer1kOutputTokens": 0.00087,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -5750,12 +5771,12 @@
       "matchingModel": "z-ai/glm-4.7",
       "overrides": {
         "name": "GLM-4.7",
-        "contextWindow": 204800,
+        "contextWindow": 202752,
         "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "December 22, 2025",
-        "costPer1kInputTokens": 0.00054,
-        "costPer1kOutputTokens": 0.00198,
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0022,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [

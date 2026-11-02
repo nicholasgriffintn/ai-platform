@@ -93,7 +93,7 @@
           "tool_use"
         ],
         "reliability": 2,
-        "speed": 4,
+        "speed": 5,
         "isFeatured": true,
         "lastUpdated": "October 17, 2026",
         "costPer1kInputTokens": 0.00015,

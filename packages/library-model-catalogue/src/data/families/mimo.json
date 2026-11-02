@@ -136,17 +136,6 @@
         "name": "MiMo-V2.6-Flash",
         "description": "MiMo Flash model for multimodal coding agents and long-context automation",
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "audio",
@@ -194,17 +183,6 @@
         "name": "MiMo-V2.6-Pro",
         "description": "Stronger MiMo Pro tier for multimodal reasoning and coding-agent execution",
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "audio",

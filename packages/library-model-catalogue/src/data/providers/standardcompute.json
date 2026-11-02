@@ -11,7 +11,7 @@
       "matchingModel": "standardcompute",
       "overrides": {
         "isFeatured": true,
-        "lastUpdated": "October 13, 2026",
+        "lastUpdated": "October 31, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       }
@@ -221,7 +221,7 @@
         "contextWindow": 1000000,
         "maxTokens": 50000,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00042,
@@ -409,7 +409,7 @@
       "overrides": {
         "maxTokens": 50000,
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
@@ -625,8 +625,19 @@
       "matchingModel": "xiaomi/mimo-v2.6-flash",
       "overrides": {
         "maxTokens": 50000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00028
@@ -637,8 +648,19 @@
       "matchingModel": "xiaomi/mimo-v2.6-pro",
       "overrides": {
         "maxTokens": 50000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00043,
         "costPer1kOutputTokens": 0.00087
