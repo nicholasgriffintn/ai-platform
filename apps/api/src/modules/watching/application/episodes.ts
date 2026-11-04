@@ -11,6 +11,7 @@ import { findShelfEntry, saveShelfEntry, saveShelfEpisodes } from "~/modules/wat
 
 import { requireTitleRef, requireTmdbToken } from "./catalogue";
 import { readShelfContent, updateShelfContent } from "./shelf-store";
+import { syncEpisodesToTrakt } from "./trakt";
 
 const FINISHED_SERIES_STATUSES = new Set(["Ended", "Canceled"]);
 
@@ -60,11 +61,14 @@ export async function markEpisodes(context: ServiceContext, input: MarkEpisodesI
     };
   });
 
+  const entry = findShelfEntry(shelf, details.id);
+
   return {
     id: details.id,
     title: details.title,
     marked: targets.length,
-    status: findShelfEntry(shelf, details.id)?.status ?? null,
+    status: entry?.status ?? null,
+    trakt: entry ? await syncEpisodesToTrakt(context, entry, targets, input.watched) : "failed",
   };
 }
 

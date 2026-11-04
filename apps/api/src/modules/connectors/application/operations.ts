@@ -18,7 +18,7 @@ import {
 import { discoverComposioRunTools, executeComposioRunTool } from "./composio-run";
 import { getRecipeConnectorAdapter } from "./connector-adapters";
 import type { ConnectorRunScope } from "./connector-run-scope";
-import { getRecipeConnectorAccessToken } from "./index";
+import { getRecipeConnectorAccessToken, type ConnectorAccess } from "./index";
 
 export interface RecipeConnectorOperationRequest {
   provider: RecipeConnectorProvider;
@@ -221,7 +221,7 @@ export async function executeRecipeConnectorOperation(params: {
     );
   }
 
-  const token = publicAccess
+  const token: ConnectorAccess = publicAccess
     ? { accessToken: "" }
     : await getRecipeConnectorAccessToken({
         context: params.context,
@@ -232,11 +232,11 @@ export async function executeRecipeConnectorOperation(params: {
   try {
     await requireActiveExecutionRun(params.context);
 
-    return await adapter.executeOperation(
-      token.accessToken,
-      params.request.operation,
-      operationParams,
-    );
+    return await (token.oauthClientId
+      ? adapter.executeOperation(token.accessToken, params.request.operation, operationParams, {
+          oauthClientId: token.oauthClientId,
+        })
+      : adapter.executeOperation(token.accessToken, params.request.operation, operationParams));
   } catch (error) {
     const normalised = normaliseConnectorOperationFailure({
       provider: adapter.provider.name,

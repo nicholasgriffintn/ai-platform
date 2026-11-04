@@ -157,6 +157,11 @@ export const personalMediaConnectorProviders: ConnectorProviderConfig[] = [
     })),
     auth: {
       authType: "api_key",
+      oauth: {
+        authorizeUrl: "https://auth.trakt.tv/oauth/authorize",
+        tokenUrl: "https://auth.trakt.tv/oauth/token",
+        clientIdEnv: "TRAKT_CLIENT_ID",
+      },
       credentialFields: [
         { label: "Client ID", secret: true },
         { label: "Trakt username", secret: false },

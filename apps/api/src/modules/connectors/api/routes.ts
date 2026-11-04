@@ -15,8 +15,10 @@ import { Hono } from "hono";
 import z from "zod/v4";
 
 import { defineResource } from "~/infrastructure/http/resource";
+import { noStore } from "~/middleware/noStore";
 
 import {
+  completeRecipeConnectorOAuth,
   deleteRecipeConnectorConnection,
   getRecipeConnector,
   listRecipeConnectorSummaries,
@@ -45,11 +47,13 @@ const composioCallbackQuerySchema = z.union([
     }),
 ]);
 
-app.use("/composio_callback", async (context, next) => {
-  context.header("Cache-Control", "no-store");
-  await next();
-  context.header("Cache-Control", "no-store");
+const connectorOAuthCallbackQuerySchema = z.object({
+  state: z.string().min(1).max(256),
+  code: z.string().min(1).max(2048).optional(),
 });
+
+app.use("/oauth_callback", noStore);
+app.use("/composio_callback", noStore);
 
 defineResource(app, { idParam: "connector_id", tags: ["connectors"] }, (connectors) => {
   connectors
@@ -79,6 +83,21 @@ defineResource(app, { idParam: "connector_id", tags: ["connectors"] }, (connecto
           userId: user.id,
           provider: params.connector_id,
         }),
+    })
+    .view("oauth_callback", {
+      auth: false,
+      summary: "Complete a connector OAuth connection",
+      description: "The browser lands here after the provider's authorisation screen.",
+      querySchema: connectorOAuthCallbackQuerySchema,
+      handler: async ({ raw, query, serviceContext }) => {
+        const redirectUrl = await completeRecipeConnectorOAuth({
+          context: serviceContext,
+          state: query.state,
+          code: query.code,
+        });
+
+        return raw.redirect(redirectUrl);
+      },
     })
     .view("composio_callback", {
       auth: true,

@@ -17,7 +17,7 @@ import {
 } from "~/modules/watching/domain/format";
 import type { ApiToolDefinition } from "~/types/functions";
 
-import { requireContext, success, withFilmAndTvCompanions } from "./shared";
+import { describeTraktSync, requireContext, success, withFilmAndTvCompanions } from "./shared";
 
 const titleIdSchema = z.string().describe("A title id such as movie:550 or tv:1399.");
 
@@ -144,7 +144,7 @@ export const mark_episodes: ApiToolDefinition = {
 
     return success(
       "mark_episodes",
-      `${result.title}: ${result.marked} episode${result.marked === 1 ? "" : "s"} updated.`,
+      `${result.title}: ${result.marked} episode${result.marked === 1 ? "" : "s"} updated.${describeTraktSync(result.trakt ?? "")}`,
       result,
     );
   },

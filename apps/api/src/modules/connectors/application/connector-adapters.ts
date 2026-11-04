@@ -24,6 +24,7 @@ export type ConnectorOperationExecutor = (
   token: string,
   operation: string,
   params: Record<string, unknown>,
+  options?: { oauthClientId?: string },
 ) => Promise<unknown>;
 
 export interface RecipeConnectorAdapter {

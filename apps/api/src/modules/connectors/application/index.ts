@@ -5,28 +5,33 @@ import {
   disconnectComposioAccount,
   getConnectorProviderOperationAccess,
   isComposioConfigured,
+  createPkcePair,
   isComposioOAuthAuthConfig,
   isComposioProviderConfigured,
   joinConnectorCredential,
   listComposioConnectedAccounts,
   RECIPE_CONNECTOR_CONNECTION_KIND,
   type ComposioConnectedAccount,
+  type ConnectorOAuthConfig,
   type ConnectorProviderConfig,
 } from "@ngriffin_uk/polychat-ai-integrations";
-import type {
-  RecipeConnectorManifest,
-  RecipeConnectorProvider,
-  RecipeConnectorStatus,
+import {
+  recipeConnectorProviderSchema,
+  type RecipeConnectorManifest,
+  type RecipeConnectorProvider,
+  type RecipeConnectorStatus,
 } from "@ngriffin_uk/polychat-schemas";
 import {
   decryptJsonPayload,
   encryptJsonPayload,
   type EncryptedJsonPayload,
+  sha256Hex,
 } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { OAuthStateRepository } from "~/modules/auth/infrastructure/OAuthStateRepository";
 import { ComposioConnectorSessionRepository } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
 import type { ProviderConnectionRecord } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
@@ -42,12 +47,26 @@ import {
   getRecipeConnectorProviderConfig,
   getRecipeConnectorProviderConfigs,
 } from "./connector-adapters";
+import {
+  buildConnectorAuthorizationUrl,
+  readConnectorOAuthClient,
+  requestConnectorTokens,
+  type ConnectorOAuthClient,
+  type ConnectorOAuthTokens,
+} from "./oauth";
 
 const COMPOSIO_CONNECTION_SESSION_TTL_MS = 60 * 60 * 1000;
 const PLUGINS_PATH = "/chat/plugins";
 
+const CONNECTOR_OAUTH_STATE_PROVIDER = "recipe_connector";
+const CONNECTOR_OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
+const CONNECTOR_TOKEN_REFRESH_MARGIN_MS = 60 * 60 * 1000;
+
 export interface ConnectorTokenPayload {
   accessToken: string;
+  refreshToken?: string;
+  redirectUri?: string;
+  expiresAt?: string;
   scope?: string;
   connectedAt: string;
   updatedAt: string;
@@ -172,6 +191,8 @@ async function decryptStoredToken(
     record,
     token: {
       accessToken: decrypted.accessToken,
+      refreshToken: typeof decrypted.refreshToken === "string" ? decrypted.refreshToken : undefined,
+      expiresAt: typeof decrypted.expiresAt === "string" ? decrypted.expiresAt : undefined,
       scope: typeof decrypted.scope === "string" ? decrypted.scope : undefined,
       connectedAt:
         typeof decrypted.connectedAt === "string" ? decrypted.connectedAt : record.created_at,
@@ -448,7 +469,187 @@ export async function startRecipeConnectorAuthorization(params: {
     return { provider: params.provider, authorizationUrl: link.redirectUrl };
   }
 
-  throw new AssistantError("Connector uses API-key setup", ErrorType.PARAMS_ERROR, 400);
+  const oauth = provider.auth.oauth;
+  const client = oauth ? readConnectorOAuthClient(params.context.env, oauth) : null;
+
+  if (!oauth || !client) {
+    throw new AssistantError("Connector uses API-key setup", ErrorType.PARAMS_ERROR, 400);
+  }
+
+  const state = crypto.randomUUID();
+  const redirectUri = `${getApiBaseUrl(params.context, params.requestUrl)}/connectors/oauth_callback`;
+  const now = new Date();
+  const pkce = await createPkcePair();
+
+  await params.context.repositories.get(OAuthStateRepository).create({
+    stateHash: await sha256Hex(state),
+    provider: CONNECTOR_OAUTH_STATE_PROVIDER,
+    codeVerifier: pkce.verifier,
+    redirectUri,
+    context: { userId: String(params.userId), provider: params.provider },
+    createdAt: now,
+    expiresAt: new Date(now.getTime() + CONNECTOR_OAUTH_STATE_TTL_MS),
+  });
+
+  return {
+    provider: params.provider,
+    authorizationUrl: buildConnectorAuthorizationUrl({
+      config: oauth,
+      clientId: client.clientId,
+      redirectUri,
+      state,
+      codeChallenge: pkce.challenge,
+    }),
+  };
+}
+
+export async function completeRecipeConnectorOAuth(params: {
+  context: ServiceContext;
+  state: string;
+  code?: string;
+}): Promise<string> {
+  const failure = new URL(
+    `${PLUGINS_PATH}?connector_error=1`,
+    getAppBaseUrl(params.context),
+  ).toString();
+  const record = await params.context.repositories
+    .get(OAuthStateRepository)
+    .consumeByStateHash(await sha256Hex(params.state));
+
+  if (
+    !record ||
+    !params.code ||
+    !record.redirectUri ||
+    !record.codeVerifier ||
+    record.provider !== CONNECTOR_OAUTH_STATE_PROVIDER ||
+    record.expiresAt.getTime() < Date.now()
+  ) {
+    return failure;
+  }
+
+  const parsedProvider = recipeConnectorProviderSchema.safeParse(record.context?.provider);
+  const userId = Number(record.context?.userId);
+  const provider = parsedProvider.success
+    ? getRecipeConnectorProviderConfig(parsedProvider.data)
+    : undefined;
+  const oauth = provider?.auth.authType === "api_key" ? provider.auth.oauth : undefined;
+  const client = oauth ? readConnectorOAuthClient(params.context.env, oauth) : null;
+
+  if (!provider || !oauth || !client || !Number.isInteger(userId)) {
+    return failure;
+  }
+
+  const tokens = await requestConnectorTokens({
+    config: oauth,
+    client,
+    grant: {
+      code: params.code,
+      code_verifier: record.codeVerifier,
+      redirect_uri: record.redirectUri,
+      grant_type: "authorization_code",
+    },
+  }).catch(() => null);
+
+  if (!tokens) {
+    return failure;
+  }
+
+  const now = new Date().toISOString();
+
+  await writeStoredToken({
+    context: params.context,
+    userId,
+    providerId: provider.id,
+    payload: {
+      ...tokens,
+      redirectUri: record.redirectUri,
+      scope: provider.auth.scopes.join(" "),
+      connectedAt: now,
+      updatedAt: now,
+    },
+  });
+
+  return new URL(PLUGINS_PATH, getAppBaseUrl(params.context)).toString();
+}
+
+async function refreshConnectorToken(params: {
+  context: ServiceContext;
+  userId: number;
+  providerId: RecipeConnectorProvider;
+  config: ConnectorOAuthConfig;
+  client: ConnectorOAuthClient;
+  token: ConnectorTokenPayload;
+}): Promise<ConnectorTokenPayload> {
+  const { refreshToken, redirectUri } = params.token;
+  const expiresAt = params.token.expiresAt ? Date.parse(params.token.expiresAt) : Number.NaN;
+
+  if (
+    !refreshToken ||
+    !redirectUri ||
+    !Number.isFinite(expiresAt) ||
+    expiresAt - Date.now() > CONNECTOR_TOKEN_REFRESH_MARGIN_MS
+  ) {
+    return params.token;
+  }
+
+  let tokens: ConnectorOAuthTokens;
+
+  try {
+    tokens = await requestConnectorTokens({
+      config: params.config,
+      client: params.client,
+      grant: {
+        refresh_token: refreshToken,
+        redirect_uri: redirectUri,
+        grant_type: "refresh_token",
+      },
+    });
+  } catch (error) {
+    const latest = await readStoredToken(params.context, params.userId, params.providerId);
+
+    if (latest && latest.token.refreshToken !== refreshToken) {
+      return latest.token;
+    }
+
+    throw error;
+  }
+
+  const payload = { ...params.token, ...tokens, updatedAt: new Date().toISOString() };
+
+  await writeStoredToken({
+    context: params.context,
+    userId: params.userId,
+    providerId: params.providerId,
+    payload,
+  });
+
+  return payload;
+}
+
+export async function getRecipeConnectorOAuthAccess(params: {
+  context: ServiceContext;
+  userId: number;
+  provider: RecipeConnectorProvider;
+}): Promise<{ clientId: string; accessToken: string } | null> {
+  const provider = getRecipeConnectorProviderConfig(params.provider);
+  const oauth = provider?.auth.authType === "api_key" ? provider.auth.oauth : undefined;
+  const client = oauth ? readConnectorOAuthClient(params.context.env, oauth) : null;
+  const stored = await readStoredToken(params.context, params.userId, params.provider);
+
+  if (!oauth || !client || !stored?.token.refreshToken) {
+    return null;
+  }
+
+  const token = await refreshConnectorToken({
+    context: params.context,
+    userId: params.userId,
+    providerId: params.provider,
+    config: oauth,
+    client,
+    token: stored.token,
+  });
+
+  return { clientId: client.clientId, accessToken: token.accessToken };
 }
 
 export async function verifyComposioConnectorAuthorization(params: {
@@ -602,11 +803,16 @@ export async function storeRecipeConnectorApiKey(params: {
   return { success: true };
 }
 
+export type ConnectorAccess = Partial<ConnectorTokenPayload> & {
+  accessToken: string;
+  oauthClientId?: string;
+};
+
 export async function getRecipeConnectorAccessToken(params: {
   context: ServiceContext;
   userId: number;
   provider: RecipeConnectorProvider;
-}) {
+}): Promise<ConnectorAccess> {
   const provider = getRecipeConnectorProviderConfig(params.provider);
 
   if (!provider || provider.auth.authType !== "api_key") {
@@ -627,5 +833,21 @@ export async function getRecipeConnectorAccessToken(params: {
     throw new AssistantError("Connector is not connected", ErrorType.AUTHORISATION_ERROR, 403);
   }
 
-  return stored.token;
+  const oauth = provider.auth.oauth;
+  const client = oauth ? readConnectorOAuthClient(params.context.env, oauth) : null;
+
+  if (!oauth || !client || !stored.token.refreshToken) {
+    return stored.token;
+  }
+
+  const token = await refreshConnectorToken({
+    context: params.context,
+    userId: params.userId,
+    providerId: params.provider,
+    config: oauth,
+    client,
+    token: stored.token,
+  });
+
+  return { ...token, oauthClientId: client.clientId };
 }

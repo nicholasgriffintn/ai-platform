@@ -2,12 +2,19 @@ import { fetchTmdbTitle, searchTmdbPerson } from "@ngriffin_uk/polychat-ai-integ
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { listRecentEntries, saveShelfEntry, setShelfFollow } from "~/modules/watching/domain/shelf";
+import {
+  findShelfEntry,
+  listRecentEntries,
+  saveShelfEntry,
+  setShelfFollow,
+  type ShelfEntry,
+} from "~/modules/watching/domain/shelf";
 import type { ViewingStatus } from "~/modules/watching/domain/titles";
 
 import { requireTitleRef, requireTmdbToken } from "./catalogue";
 import { readShelfContent, updateShelfContent } from "./shelf-store";
 import { indexTitleIfMissing } from "./title-index";
+import { syncShelfChangeToTrakt } from "./trakt";
 
 export async function readShelf(context: ServiceContext, status?: ViewingStatus) {
   const shelf = await readShelfContent(context);
@@ -31,8 +38,11 @@ export async function saveToShelf(
 ) {
   const details = await fetchTmdbTitle(requireTmdbToken(context), requireTitleRef(input.titleId));
 
-  await updateShelfContent(context, (shelf) =>
-    saveShelfEntry(shelf, {
+  let previous: ShelfEntry | undefined;
+  const shelf = await updateShelfContent(context, (content) => {
+    previous = findShelfEntry(content, details.id);
+
+    return saveShelfEntry(content, {
       titleId: details.id,
       mediaType: details.mediaType,
       title: details.title,
@@ -40,11 +50,18 @@ export async function saveToShelf(
       status: input.status,
       rating: input.rating,
       thoughts: input.thoughts,
-    }),
-  );
+    });
+  });
+  const saved = findShelfEntry(shelf, details.id);
+
   await indexTitleIfMissing(context.env, details.id);
 
-  return { id: details.id, title: details.title, status: input.status };
+  return {
+    id: details.id,
+    title: details.title,
+    status: input.status,
+    trakt: saved ? await syncShelfChangeToTrakt(context, previous, saved) : "failed",
+  };
 }
 
 export async function setPersonFollowed(

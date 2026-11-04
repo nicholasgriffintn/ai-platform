@@ -128,6 +128,7 @@ export type IEnv = {
   OMDB_API_KEY?: string;
   MAL_CLIENT_ID?: string;
   KINOCHECK_API_KEY?: string;
+  TRAKT_CLIENT_ID?: string;
   WATCHING_VECTORS?: Vectorize;
   PERPLEXITY_API_KEY?: string;
   BROWSER_RENDERING_API_KEY?: string;

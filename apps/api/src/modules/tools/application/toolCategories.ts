@@ -16,6 +16,8 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
   ],
   "Film and TV": [
     "cinema_listings",
+    "connect_trakt",
+    "import_from_trakt",
     "discover_titles",
     "find_similar_titles",
     "follow_person",

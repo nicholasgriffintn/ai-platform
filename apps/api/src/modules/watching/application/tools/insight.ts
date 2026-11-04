@@ -1,6 +1,7 @@
 import z from "zod/v4";
 
 import { recommendFromTaste, searchByMeaning } from "~/modules/watching/application/semantic";
+import { importFromTrakt, startTraktConnection } from "~/modules/watching/application/trakt";
 import { describeTitle, MEDIA_TYPES } from "~/modules/watching/domain/titles";
 import type { ApiToolDefinition } from "~/types/functions";
 
@@ -56,4 +57,49 @@ export const recommend_from_taste: ApiToolDefinition = {
   },
 };
 
-export const INSIGHT_TOOLS = withFilmAndTvCompanions([search_by_meaning, recommend_from_taste]);
+const noInput = z.object({});
+
+export const connect_trakt: ApiToolDefinition = {
+  name: "connect_trakt",
+  capabilityHint: "link a Trakt account so saves sync there",
+  type: "normal",
+  permissions: ["write"],
+  effects: { effectClass: "credential" },
+  description:
+    "Create a link the person opens to connect their Trakt account, so shelf saves and ticked episodes are also sent to Trakt.",
+  inputSchema: noInput,
+  execute: async (_args: z.infer<typeof noInput>, toolContext) => {
+    const url = await startTraktConnection(requireContext(toolContext));
+
+    return success("connect_trakt", `Open this link within ten minutes: ${url}`, { url });
+  },
+};
+
+export const import_from_trakt: ApiToolDefinition = {
+  name: "import_from_trakt",
+  capabilityHint: "bring Trakt history onto the shelf",
+  type: "normal",
+  permissions: ["write"],
+  effects: { effectClass: "write" },
+  intentEvidence: () => ({
+    operation: "import_from_trakt",
+    destination: "the person's film and TV shelf",
+  }),
+  description:
+    "Bring Trakt history, ratings, watchlist and watched episodes onto the shelf. Titles already on the shelf keep what the person set here.",
+  inputSchema: noInput,
+  execute: async (_args: z.infer<typeof noInput>, toolContext) => {
+    const result = await importFromTrakt(requireContext(toolContext));
+
+    return result
+      ? success("import_from_trakt", `${result.added} titles added to the shelf.`, result)
+      : success("import_from_trakt", "Connect Trakt first with connect_trakt.", {});
+  },
+};
+
+export const INSIGHT_TOOLS = withFilmAndTvCompanions([
+  search_by_meaning,
+  recommend_from_taste,
+  connect_trakt,
+  import_from_trakt,
+]);

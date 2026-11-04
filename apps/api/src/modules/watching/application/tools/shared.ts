@@ -17,7 +17,9 @@ const FILM_AND_TV_CORE_TOOLS = [
 const TOOLS_WITHOUT_TMDB = new Set([
   "cinema_listings",
   "get_episode_progress",
+  "connect_trakt",
   "get_shelf",
+  "import_from_trakt",
   "latest_trailers",
   "search_anime",
   "title_background",
@@ -43,6 +45,14 @@ export function withFilmAndTvCompanions(tools: ApiToolDefinition[]): ApiToolDefi
     companionTools: FILM_AND_TV_CORE_TOOLS,
     ...(TOOLS_WITHOUT_TMDB.has(tool.name) ? {} : { requiredEnv: ["TMDB_API_TOKEN"] }),
   }));
+}
+
+export function describeTraktSync(outcome: string): string {
+  if (outcome === "synced") {
+    return " Sent to Trakt.";
+  }
+
+  return outcome === "failed" ? " It could not be sent to Trakt." : "";
 }
 
 export function success(name: string, content: string, data: Record<string, unknown>) {

@@ -25,7 +25,7 @@ import {
 } from "~/modules/watching/domain/titles";
 import type { ApiToolDefinition } from "~/types/functions";
 
-import { requireContext, success, withFilmAndTvCompanions } from "./shared";
+import { describeTraktSync, requireContext, success, withFilmAndTvCompanions } from "./shared";
 
 const titleIdSchema = z.string().describe("A title id such as movie:550 or tv:1399.");
 const limitSchema = z.number().int().min(1).max(25).default(10);
@@ -277,12 +277,16 @@ export const save_to_shelf: ApiToolDefinition = {
     rating: input.rating,
   }),
   description:
-    "Record a film or series on the person's shelf as watched, watching, watchlist or dropped, with an optional rating out of five and their thoughts. Find the title with search_titles first. An existing rating or thoughts stay unless new ones are given.",
+    "Record a film or series on the person's shelf as watched, watching, watchlist or dropped, with an optional rating out of five and their thoughts. Find the title with search_titles first. An existing rating or thoughts stay unless new ones are given. If the person connected Trakt, the change is also sent there; thoughts and dropped titles stay here.",
   inputSchema: saveInput,
   execute: async (args: z.infer<typeof saveInput>, toolContext) => {
     const saved = await saveToShelf(requireContext(toolContext), args);
 
-    return success("save_to_shelf", `${saved.title} saved as ${saved.status}.`, saved);
+    return success(
+      "save_to_shelf",
+      `${saved.title} saved as ${saved.status}.${describeTraktSync(saved.trakt)}`,
+      saved,
+    );
   },
 };
 

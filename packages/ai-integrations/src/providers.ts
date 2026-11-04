@@ -12,11 +12,18 @@ export interface ConnectorCredentialField {
   secret: boolean;
 }
 
+export interface ConnectorOAuthConfig {
+  authorizeUrl: string;
+  tokenUrl: string;
+  clientIdEnv: string;
+}
+
 export interface ApiKeyConnectorConfig {
   authType: "api_key";
   credentialFields: readonly ConnectorCredentialField[];
   credentialSeparator?: string;
   optionalCredentials?: boolean;
+  oauth?: ConnectorOAuthConfig;
   scopes: readonly string[];
 }
 

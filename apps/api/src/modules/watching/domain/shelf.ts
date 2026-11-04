@@ -45,6 +45,15 @@ export interface ShelfEntryChange {
   thoughts?: string;
 }
 
+interface ImportedTitle {
+  titleId: string;
+  mediaType: MediaType;
+  title: string;
+  year: number | null;
+  rating: number | null;
+  episodes: readonly EpisodeRef[];
+}
+
 export function emptyShelf(): ShelfContent {
   return { entries: [], following: [] };
 }
@@ -124,4 +133,52 @@ export function setShelfFollow(
     ...shelf,
     following: follow ? [...others, { tmdbPersonId: person.id, name: person.name }] : others,
   };
+}
+
+export function addMissingShelfEntries(
+  shelf: ShelfContent,
+  library: {
+    watched: readonly ImportedTitle[];
+    ratings: readonly ImportedTitle[];
+    watchlist: readonly ImportedTitle[];
+  },
+): { shelf: ShelfContent; added: number } {
+  const ratings = new Map(
+    library.ratings.map((title) => [
+      title.titleId,
+      Math.max(1, Math.round((title.rating ?? 2) / 2)),
+    ]),
+  );
+  const importable = [
+    ...library.watched.map((title) => ({ title, status: "watched" as const })),
+    ...library.ratings.map((title) => ({ title, status: "watched" as const })),
+    ...library.watchlist.map((title) => ({ title, status: "watchlist" as const })),
+  ];
+  const known = new Set(shelf.entries.map((entry) => entry.titleId));
+  const now = new Date().toISOString();
+  const added: ShelfEntry[] = [];
+
+  for (const { title, status } of importable) {
+    if (!known.has(title.titleId)) {
+      known.add(title.titleId);
+      added.push({
+        titleId: title.titleId,
+        mediaType: title.mediaType,
+        title: title.title,
+        year: title.year,
+        status,
+        rating: ratings.get(title.titleId) ?? null,
+        thoughts: null,
+        updatedAt: now,
+        episodes: title.episodes.map((episode) => ({
+          ...episode,
+          watched: true,
+          rating: null,
+          notes: null,
+        })),
+      });
+    }
+  }
+
+  return { shelf: { ...shelf, entries: [...shelf.entries, ...added] }, added: added.length };
 }

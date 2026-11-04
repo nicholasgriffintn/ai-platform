@@ -99,7 +99,15 @@ export { executeNetlifyOperation } from "./executors/netlify.js";
 export { executeReadwiseOperation } from "./executors/readwise.js";
 export { executeJamendoOperation } from "./executors/jamendo.js";
 export { executeLastfmOperation } from "./executors/lastfm.js";
-export { executeTraktOperation } from "./executors/trakt.js";
+export {
+  executeTraktOperation,
+  fetchTraktLibrary,
+  selectUnplayedOnTrakt,
+  sendTraktSync,
+  type TraktLibrary,
+  type TraktLibraryTitle,
+  type TraktSyncItem,
+} from "./executors/trakt.js";
 export { joinConnectorCredential } from "./connector-credentials.js";
 export { executeHardcoverOperation } from "./executors/hardcover.js";
 export { executePodcastIndexOperation } from "./executors/podcastindex.js";
@@ -197,3 +205,4 @@ export {
 export { createPkcePair, type PkcePair } from "./mcp/oauth/pkce.js";
 
 export { executeTflOperation } from "./executors/tfl.js";
+export type { ConnectorOAuthConfig } from "./providers.js";
