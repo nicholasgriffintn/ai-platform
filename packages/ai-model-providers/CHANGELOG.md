@@ -1,5 +1,18 @@
 # @ngriffin_uk/polychat-ai-model-providers
 
+## 0.3.10
+
+### Patch Changes
+
+- Updated dependencies [7be58a1]
+- Updated dependencies [18e8453]
+- Updated dependencies [7be58a1]
+- Updated dependencies [18e8453]
+  - @ngriffin_uk/polychat-schemas@1.16.0
+  - @ngriffin_uk/polychat-utility-core@0.11.0
+  - @ngriffin_uk/polychat-utility-server@0.7.1
+  - @ngriffin_uk/polychat-ai-providers@0.9.2
+
 ## 0.3.9
 
 ### Patch Changes

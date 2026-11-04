@@ -1,5 +1,50 @@
 # @assistant/api
 
+## 1.15.0
+
+### Minor Changes
+
+- 7be58a1: Make Discover fit your day with editable weekly routines, dated exceptions, catch-up times, interests and mutes. See current context and a continuous feed with visible-story read receipts, and schedule morning and evening podcasts independently. Use TfL for optional London travel updates and connect OpenWeather for weather, then opt into quiet, budgeted updates in your shared Inbox and on your devices. Configure Your day directly or ask Poly to update it.
+
+  Read place matches directly in Poly without duplicate tool messages, and stop a response after answering a setup question.
+
+  Prevent Discover and Poly from crashing during interface updates.
+
+  Keep stories removed from the live feed from reappearing through an older briefing on web, iOS and widgets.
+
+- 18e8453: Connect Pashi to your Polychat account. Approve Pashi in Polychat and it runs its AI on your plan and your default models, with a key that cannot reach your chats, projects or files. Polychat can then use Pashi tools for you, and on Pro that includes converting images, audio, video and documents from your chat. Connecting again replaces the old key, and you can revoke it from Profile or disconnect from Pashi. Device sign-in now tells you when a name comes from the device itself, so Polychat cannot vouch for it.
+
+### Patch Changes
+
+- 7be58a1: Use your default model for Poly and keep teammate replies on their configured models. Model and tier choices now stay separate between chats, notebook and file conversations respect selected models, and evaluations and benchmark judges follow your personal and workspace model choices.
+- Updated dependencies [7be58a1]
+- Updated dependencies [18e8453]
+- Updated dependencies [7be58a1]
+- Updated dependencies [18e8453]
+  - @ngriffin_uk/polychat-schemas@1.16.0
+  - @ngriffin_uk/polychat-utility-core@0.11.0
+  - @ngriffin_uk/polychat-ai-billing@0.3.9
+  - @ngriffin_uk/polychat-library-chat@1.4.2
+  - @ngriffin_uk/polychat-ai-integrations@0.7.0
+  - @ngriffin_uk/polychat-ai-prompts@0.6.3
+  - @ngriffin_uk/polychat-library-tools@0.4.6
+  - @ngriffin_uk/polychat-utility-server@0.7.1
+  - @ngriffin_uk/polychat-ai-agents@0.4.9
+  - @ngriffin_uk/polychat-ai-experiments@0.2.9
+  - @ngriffin_uk/polychat-ai-functions@0.3.9
+  - @ngriffin_uk/polychat-ai-model-providers@0.3.10
+  - @ngriffin_uk/polychat-ai-providers@0.9.2
+  - @ngriffin_uk/polychat-ai-sandbox@0.2.9
+  - @ngriffin_uk/polychat-ai-skills@0.2.8
+  - @ngriffin_uk/polychat-ai-telemetry@0.4.2
+  - @ngriffin_uk/polychat-library-benchmarks@0.2.7
+  - @ngriffin_uk/polychat-library-flags@0.3.2
+  - @ngriffin_uk/polychat-library-interactions@0.1.9
+  - @ngriffin_uk/polychat-library-model-registry@0.3.7
+  - @ngriffin_uk/polychat-library-sandbox@0.3.8
+  - @ngriffin_uk/polychat-library-sites@0.3.7
+  - @ngriffin_uk/polychat-library-skills-catalogue@0.4.7
+
 ## 1.14.0
 
 ### Minor Changes

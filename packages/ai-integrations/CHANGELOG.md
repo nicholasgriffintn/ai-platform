@@ -1,5 +1,30 @@
 # @ngriffin_uk/polychat-ai-integrations
 
+## 0.7.0
+
+### Minor Changes
+
+- 7be58a1: Make Discover fit your day with editable weekly routines, dated exceptions, catch-up times, interests and mutes. See current context and a continuous feed with visible-story read receipts, and schedule morning and evening podcasts independently. Use TfL for optional London travel updates and connect OpenWeather for weather, then opt into quiet, budgeted updates in your shared Inbox and on your devices. Configure Your day directly or ask Poly to update it.
+
+  Read place matches directly in Poly without duplicate tool messages, and stop a response after answering a setup question.
+
+  Prevent Discover and Poly from crashing during interface updates.
+
+  Keep stories removed from the live feed from reappearing through an older briefing on web, iOS and widgets.
+
+- 18e8453: Connect Pashi to your Polychat account. Approve Pashi in Polychat and it runs its AI on your plan and your default models, with a key that cannot reach your chats, projects or files. Polychat can then use Pashi tools for you, and on Pro that includes converting images, audio, video and documents from your chat. Connecting again replaces the old key, and you can revoke it from Profile or disconnect from Pashi. Device sign-in now tells you when a name comes from the device itself, so Polychat cannot vouch for it.
+- 18e8453: Film and TV are now built in. Ask for something to watch and the assistant can search by title or by what a film is about, filter by genre, runtime, certificate and streaming service, and read IMDb, Rotten Tomatoes and Metacritic scores, awards, box office and per-episode ratings. It also covers anime, trailers, where to stream, rent or buy, and what is on at UK cinemas. Keep a shelf with ratings and notes, tick off episodes, follow actors and directors, and get recommendations from your taste. Discover reads your shelf and the week ahead, and tells you about new seasons, arrivals, trailers and new work from people you follow, and a new Weekly Watching Digest recipe writes up the week. This replaces the Marquee connector, which has been removed. Connect Trakt and your shelf saves and ticked episodes are sent there too, and you can bring your Trakt history onto the shelf.
+
+### Patch Changes
+
+- Updated dependencies [7be58a1]
+- Updated dependencies [18e8453]
+- Updated dependencies [7be58a1]
+- Updated dependencies [18e8453]
+  - @ngriffin_uk/polychat-schemas@1.16.0
+  - @ngriffin_uk/polychat-utility-core@0.11.0
+  - @ngriffin_uk/polychat-utility-server@0.7.1
+
 ## 0.6.3
 
 ### Patch Changes

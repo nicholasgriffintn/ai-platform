@@ -1,5 +1,14 @@
 # @ngriffin_uk/polychat-ai-experiments
 
+## 0.2.9
+
+### Patch Changes
+
+- Updated dependencies [7be58a1]
+  - @ngriffin_uk/polychat-utility-core@0.11.0
+  - @ngriffin_uk/polychat-ai-telemetry@0.4.2
+  - @ngriffin_uk/polychat-library-flags@0.3.2
+
 ## 0.2.8
 
 ### Patch Changes

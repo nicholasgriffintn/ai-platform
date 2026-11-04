@@ -1,5 +1,18 @@
 # @ngriffin_uk/polychat-library-tools
 
+## 0.4.6
+
+### Patch Changes
+
+- 18e8453: Film and TV are now built in. Ask for something to watch and the assistant can search by title or by what a film is about, filter by genre, runtime, certificate and streaming service, and read IMDb, Rotten Tomatoes and Metacritic scores, awards, box office and per-episode ratings. It also covers anime, trailers, where to stream, rent or buy, and what is on at UK cinemas. Keep a shelf with ratings and notes, tick off episodes, follow actors and directors, and get recommendations from your taste. Discover reads your shelf and the week ahead, and tells you about new seasons, arrivals, trailers and new work from people you follow, and a new Weekly Watching Digest recipe writes up the week. This replaces the Marquee connector, which has been removed. Connect Trakt and your shelf saves and ticked episodes are sent there too, and you can bring your Trakt history onto the shelf.
+- Updated dependencies [7be58a1]
+- Updated dependencies [18e8453]
+- Updated dependencies [7be58a1]
+- Updated dependencies [18e8453]
+  - @ngriffin_uk/polychat-schemas@1.16.0
+  - @ngriffin_uk/polychat-utility-core@0.11.0
+  - @ngriffin_uk/polychat-utility-server@0.7.1
+
 ## 0.4.5
 
 ### Patch Changes
