@@ -1,5 +1,6 @@
 {
   "defaults": {
+    "openWeights": true,
     "modalities": {
       "input": [
         "text"
@@ -93,7 +94,6 @@
     "minimax-01": {
       "defaults": {
         "name": "MiniMax-01",
-        "openWeights": true,
         "description": "MiniMax multimodal coding model for long-context reasoning and agent tasks",
         "contextWindow": 1000192,
         "maxTokens": 40000,
@@ -116,7 +116,6 @@
     "minimax-h3": {
       "defaults": {
         "name": "MiniMax H3",
-        "openWeights": true,
         "description": "MiniMax general-purpose video model with multimodal references and synchronized stereo audio. Open H3-Base checkpoints; Context-IR and 2K regeneration are not included in the initial weights release.",
         "contextWindow": 0,
         "maxTokens": 0,
@@ -242,7 +241,6 @@
     "minimax-m1-80k": {
       "defaults": {
         "name": "MiniMax M1 80K",
-        "openWeights": true,
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 1000000,
         "maxTokens": 80000,
@@ -271,7 +269,6 @@
     "minimax-m2": {
       "defaults": {
         "name": "MiniMax-M2",
-        "openWeights": true,
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "strengths": [
           "tool_use"
@@ -297,7 +294,6 @@
     "minimax-m2-1": {
       "defaults": {
         "name": "MiniMax-M2.1",
-        "openWeights": true,
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 204800,
         "maxTokens": 131072,
@@ -352,7 +348,6 @@
     },
     "minimax-m2-5": {
       "defaults": {
-        "openWeights": true,
         "description": "Prior MiniMax coding model for agent workflows, office edits, and automation",
         "contextWindow": 204800,
         "strengths": [
@@ -407,7 +402,6 @@
     "minimax-m2-5-high-speed": {
       "defaults": {
         "name": "MiniMax M2.5 High Speed",
-        "openWeights": true,
         "description": "High-speed MiniMax model for low-latency coding and agent workflows",
         "contextWindow": 204800,
         "maxTokens": 131000,
@@ -424,7 +418,6 @@
     "minimax-m2-5-tee": {
       "defaults": {
         "name": "MiniMax M2.5 TEE",
-        "openWeights": true,
         "description": "MiniMax M2.5 TEE accepts text and produces text.",
         "contextWindow": 196608,
         "maxTokens": 65536,
@@ -441,7 +434,6 @@
     },
     "minimax-m2-7": {
       "defaults": {
-        "openWeights": true,
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 204800,
         "strengths": [
@@ -467,7 +459,6 @@
     },
     "minimax-m2-7-free": {
       "defaults": {
-        "openWeights": true,
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196608,
         "strengths": [
@@ -494,7 +485,6 @@
     "minimax-m2-7-high-speed": {
       "defaults": {
         "name": "MiniMax M2.7 High Speed",
-        "openWeights": true,
         "description": "Low-latency M2.7 variant for interactive coding plans and agent loops",
         "contextWindow": 204800,
         "maxTokens": 131100,
@@ -520,7 +510,6 @@
     "minimax-m2-7-highspeed": {
       "defaults": {
         "name": "MiniMax-M2.7-highspeed",
-        "openWeights": true,
         "description": "Low-latency M2.7 variant for interactive coding plans and agent loops",
         "contextWindow": 200000,
         "maxTokens": 128000,
@@ -552,7 +541,6 @@
     "minimax-m3": {
       "defaults": {
         "name": "MiniMax-M3",
-        "openWeights": true,
         "description": "MiniMax multimodal model for long-context coding, perception, and agent planning",
         "modalities": {
           "input": [
@@ -593,7 +581,6 @@
     "minimax-m3-1-flash": {
       "defaults": {
         "name": "MiniMax-M3.1-Flash",
-        "openWeights": false,
         "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
         "contextWindow": 1000000,
         "modalities": {
@@ -638,7 +625,6 @@
     "minimax-m3-1-flash-eu": {
       "defaults": {
         "name": "MiniMax-M3.1-Flash (EU)",
-        "openWeights": false,
         "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
         "contextWindow": 1048576,
         "maxTokens": 1048576,
@@ -684,7 +670,6 @@
     "minimax-m3-eu": {
       "defaults": {
         "name": "MiniMax-M3 (EU)",
-        "openWeights": true,
         "description": "MiniMax multimodal model for long-context coding, perception, and agent planning",
         "contextWindow": 1048576,
         "maxTokens": 1048576,
@@ -729,7 +714,6 @@
     },
     "minimax-m3-free": {
       "defaults": {
-        "openWeights": true,
         "description": "MiniMax multimodal coding model for long-context reasoning and agent tasks",
         "contextWindow": 1048576,
         "contextComplexity": 5,
@@ -751,7 +735,7 @@
         }
       }
     },
-    "minimax-minimax-01": {
+    "minimax-minimax-01-retires-nov-5": {
       "defaults": {
         "name": "MiniMax: MiniMax-01",
         "openWeights": false,
@@ -801,7 +785,6 @@
     "minimax-minimax-m3-1-flash": {
       "defaults": {
         "name": "MiniMax: MiniMax M3.1 Flash",
-        "openWeights": false,
         "description": "MiniMax-M3.1-Flash is a multimodal model from MiniMax. Compared with M3, it delivers significant improvements across multiple benchmarks, particularly in complex agentic tasks, coding, and cybersecurity. It is built for complex,...",
         "contextWindow": 1048576,
         "maxTokens": 524288,

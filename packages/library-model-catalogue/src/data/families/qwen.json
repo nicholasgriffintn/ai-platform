@@ -611,7 +611,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 903,
+              "value": 904,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 18
@@ -657,7 +657,7 @@
             {
               "key": "image_editingElo",
               "label": "Image-editing arena",
-              "value": 889,
+              "value": 890,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 20
@@ -697,10 +697,10 @@
             {
               "key": "image_editingElo",
               "label": "Image-editing arena",
-              "value": 991,
+              "value": 993,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 18
+              "confidenceInterval95": 17
             }
           ]
         }
@@ -1627,7 +1627,6 @@
         "strengths": [
           "tool_use"
         ],
-        "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "July 21, 2025",
         "artificialAnalysis": {

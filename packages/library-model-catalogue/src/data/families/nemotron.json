@@ -836,6 +836,8 @@
     "nvidia-nemotron-3-5-super-vl": {
       "defaults": {
         "description": "Nemotron multimodal model for visual reasoning and agentic AI workflows",
+        "contextWindow": 1048576,
+        "contextComplexity": 5,
         "reliability": 1,
         "releaseDate": "October 15, 2026",
         "supportsAttachments": true,

@@ -192,11 +192,11 @@
         "name": "Llama 3.1 70B Instruct",
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
         "contextWindow": 131072,
-        "maxTokens": 16384,
+        "maxTokens": 8192,
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "July 23, 2024",
-        "supportsToolCalls": true,
-        "supportsResponseFormat": true
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
       }
     },
     "llama-3-1-70b-turbo": {

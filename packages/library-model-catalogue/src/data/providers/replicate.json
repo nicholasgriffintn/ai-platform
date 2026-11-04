@@ -1313,7 +1313,8 @@
       },
       "unset": [
         "supportsToolCalls",
-        "supportsTemperature"
+        "supportsTemperature",
+        "openWeights"
       ]
     },
     "replicate-chatterbox-turbo": {
@@ -2669,7 +2670,8 @@
       },
       "unset": [
         "supportsToolCalls",
-        "supportsTemperature"
+        "supportsTemperature",
+        "openWeights"
       ]
     },
     "replicate-veo-3-1": {

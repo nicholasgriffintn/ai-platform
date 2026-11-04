@@ -159,7 +159,7 @@
       "model": "minimax/minimax-m2-1",
       "matchingModel": "MiniMaxAI/MiniMax-M2.1",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "October 2025",
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -253,7 +253,7 @@
       "overrides": {
         "name": "Qwen3-Next-80B-A3B-Instruct",
         "maxTokens": 32768,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.001
@@ -347,6 +347,7 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro",
       "overrides": {
+        "contextWindow": 1048576,
         "maxTokens": 393216,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
@@ -367,7 +368,7 @@
         "name": "MiniMax-M2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "maxTokens": 131072,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -857,7 +858,7 @@
       "model": "huggingface/stepfun-ai/Step-3.7-Flash/step-3-7-flash",
       "matchingModel": "stepfun-ai/Step-3.7-Flash",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "May 29, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00115,
@@ -1069,7 +1070,8 @@
         "name": "Qwen3 235B-A22B Instruct 2507",
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "maxTokens": 16384,
-        "speed": 3,
+        "contextComplexity": 3,
+        "speed": 2,
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.000855,
         "costPer1kOutputTokens": 0.002565

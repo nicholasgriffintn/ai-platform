@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1048576,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 2, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "high",
+        "max"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The opencode/pulse alpha free family includes models that produce text.",
+  "models": {
+    "pulse-alpha-free": {
+      "defaults": {
+        "name": "Pulse Alpha Free",
+        "description": "Stealth reasoning model with text and image input and tool use"
+      }
+    }
+  }
+}

@@ -783,7 +783,7 @@
       "model": "claude-opus/claude-opus-4-5",
       "matchingModel": "anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 24, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -942,7 +942,7 @@
       "model": "claude-opus/claude-opus-4-5-eu",
       "matchingModel": "eu.anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 24, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -999,7 +999,7 @@
       "model": "claude-opus/claude-opus-4-5-global",
       "matchingModel": "global.anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 24, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1308,7 +1308,7 @@
       "overrides": {
         "name": "Qwen/Qwen3-Next-80B-A3B-Instruct",
         "maxTokens": 262000,
-        "speed": 4,
+        "speed": 5,
         "releaseDate": "September 11, 2025",
         "lastUpdated": "November 25, 2025",
         "dataRetention": {
@@ -1353,7 +1353,7 @@
       "model": "claude-opus/claude-opus-4-5-us",
       "matchingModel": "us.anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 24, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1611,7 +1611,7 @@
         "name": "MiniMax M2.5",
         "contextWindow": 196608,
         "maxTokens": 98304,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 18, 2026",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -1660,7 +1660,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "December 2, 2025",
         "dataRetention": {
           "zeroRetention": "account_setting",
@@ -3252,7 +3252,7 @@
       "model": "gpt-terra/gpt-6-1-terra-global",
       "matchingModel": "global.openai.gpt-6.1-terra",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
@@ -3263,7 +3263,7 @@
       "model": "gpt-terra/gpt-6-1-terra-us",
       "matchingModel": "us.openai.gpt-6.1-terra",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0055,

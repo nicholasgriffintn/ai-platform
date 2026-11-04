@@ -51,7 +51,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -189,7 +189,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 4,
+        "speed": 5,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -339,7 +339,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 3,
+        "speed": 2,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -395,7 +395,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 3,
+        "speed": 4,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -732,7 +732,7 @@
           "vision",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "deprecated": true,
         "lastUpdated": "September 15, 2025",
         "dataRetention": {
@@ -824,7 +824,7 @@
           "search",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "lastUpdated": "November 13, 2025",
         "dataRetention": {
@@ -962,7 +962,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "lastUpdated": "December 11, 2025",
         "dataRetention": {
@@ -1052,7 +1052,7 @@
           "search",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 5, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -2477,7 +2477,7 @@
       "model": "gpt-terra/gpt-6-1-terra",
       "matchingModel": "gpt-6.1-terra",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005

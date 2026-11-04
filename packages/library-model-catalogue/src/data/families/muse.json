@@ -325,7 +325,6 @@
         "name": "Muse Spark Open",
         "openWeights": true,
         "description": "Open Llama multimodal model for image understanding and text reasoning",
-        "maxTokens": 131072,
         "contextComplexity": 5,
         "reliability": 1,
         "knowledgeCutoffDate": "January 4, 2026",
