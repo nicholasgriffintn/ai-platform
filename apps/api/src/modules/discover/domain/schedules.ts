@@ -8,6 +8,16 @@ import {
   shiftClockTime,
 } from "@ngriffin_uk/polychat-utility-core";
 
+export function keepDiscoverTriggerState(
+  triggers: readonly RecipeInstallationTrigger[],
+  current: readonly RecipeInstallationTrigger[],
+): RecipeInstallationTrigger[] {
+  return triggers.map((trigger) => ({
+    ...trigger,
+    enabled: current.find((candidate) => candidate.id === trigger.id)?.enabled ?? trigger.enabled,
+  }));
+}
+
 export function buildDiscoverScheduleTriggers(
   profile: DiscoverDayProfileContent,
   input: { listen: boolean; evening: boolean },

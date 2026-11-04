@@ -36,21 +36,47 @@ describe("rollUpUsageMessages", () => {
     vi.clearAllMocks();
   });
 
-  it("writes every request in the batch in one emission and acknowledges them", async () => {
+  it("sums each user's requests into one ledger event and acknowledges them", async () => {
     mocks.emitUsageEvents.mockResolvedValue("written");
     const first = requestUsage(1, "request-1");
-    const second = requestUsage(2, "request-2");
+    const second = requestUsage(1, "request-2");
+    const other = requestUsage(2, "request-3");
 
-    await rollUpUsageMessages({} as any, [first, second]);
+    await rollUpUsageMessages({} as any, [first, second, other]);
 
-    expect(mocks.emitUsageEvents).toHaveBeenCalledOnce();
-    expect(
-      mocks.emitUsageEvents.mock.calls[0][1].drafts.map(
-        (draft: { idempotencyKey: string }) => draft.idempotencyKey,
-      ),
-    ).toEqual(["infra:request-1:d1_rows_read", "infra:request-2:d1_rows_read"]);
+    const drafts = mocks.emitUsageEvents.mock.calls.flatMap(([, params]) => params.drafts);
+
+    expect(drafts.map((draft: { quantity: number }) => draft.quantity)).toEqual([80, 40]);
     expect(first.ack).toHaveBeenCalledOnce();
     expect(second.ack).toHaveBeenCalledOnce();
+    expect(other.ack).toHaveBeenCalledOnce();
+  });
+
+  it("retries only the user whose ledger write failed", async () => {
+    mocks.emitUsageEvents.mockResolvedValueOnce("written").mockResolvedValueOnce("failed");
+    const written = requestUsage(1, "request-1");
+    const failed = requestUsage(2, "request-2");
+
+    await rollUpUsageMessages({} as any, [written, failed]);
+
+    expect(written.ack).toHaveBeenCalledOnce();
+    expect(written.retry).not.toHaveBeenCalled();
+    expect(failed.retry).toHaveBeenCalledOnce();
+    expect(failed.ack).not.toHaveBeenCalled();
+  });
+
+  it("sheds request usage but still records model usage while the breaker is open", async () => {
+    mocks.applyUsageRollup.mockResolvedValue({ inserted: 1 });
+    const request = requestUsage(1, "request-1");
+    const events = usageMessage({ kind: "usage_events", events: [{ id: "event-1" }] });
+    const env = { CACHE: { get: vi.fn(async () => "52428800") } };
+
+    await rollUpUsageMessages(env as any, [request, events]);
+
+    expect(mocks.emitUsageEvents).not.toHaveBeenCalled();
+    expect(request.ack).toHaveBeenCalledOnce();
+    expect(mocks.applyUsageRollup).toHaveBeenCalledOnce();
+    expect(events.ack).toHaveBeenCalledOnce();
   });
 
   it("retries the batch when the ledger write fails and drops malformed messages", async () => {

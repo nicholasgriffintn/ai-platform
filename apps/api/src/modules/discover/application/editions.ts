@@ -1,6 +1,7 @@
 import {
   DISCOVER_CAPABILITY_ID,
   DISCOVER_EDITION_KIND,
+  DISCOVER_FEED_PAGE_SIZE,
   discoverEditionContentSchema,
   type DiscoverEdition,
   type DiscoverEditionContent,
@@ -23,7 +24,7 @@ import {
   summariseDiscoverFeedback,
   type DiscoverFeedbackEntry,
 } from "~/modules/discover/domain/feedback";
-import { presentDiscoverFeed } from "~/modules/discover/domain/live";
+import { listDiscoverFeedProviders, presentDiscoverFeed } from "~/modules/discover/domain/live";
 import { DiscoverSeenRepository } from "~/modules/discover/infrastructure/DiscoverSeenRepository";
 import { readOutputContent } from "~/modules/outputs/application/content";
 import {
@@ -204,13 +205,9 @@ export async function readDiscover(context: ServiceContext): Promise<DiscoverRes
       now: new Date(),
     }),
     feed: presentDiscoverFeed(live, {
-      allowedProviders: new Set(
-        settings.sources
-          .filter((source) => source.connected && source.used)
-          .map((source) => source.providerId),
-      ),
+      allowedProviders: listDiscoverFeedProviders(settings.sources),
       seen,
-      limit: 24,
+      limit: DISCOVER_FEED_PAGE_SIZE,
       now: new Date(),
       mutedTopics: [...dayProfile.mutedTopics, ...summariseDiscoverFeedback(feedback).hiddenTopics],
       feedback: collectCardSignals(feedback, discoverLiveId(user.id)),

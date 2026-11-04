@@ -2,11 +2,19 @@ import {
   PashiClientError,
   searchPashiTools,
   type PashiClient,
+  type PashiFile,
   type PashiOperation,
   type PashiToolType,
 } from "@ngriffin_uk/polychat-ai-integrations";
 
 import type { IFunctionResponse } from "~/types";
+
+export interface PashiFileStore {
+  read(url: string): Promise<PashiFile>;
+  save(file: PashiFile, toolId: string): Promise<{ outputId: string; url: string }>;
+}
+
+type ParsedPashiOperation = Omit<PashiOperation, "file"> & { fileUrl?: string };
 
 export async function searchPashiCatalog(
   client: PashiClient,
@@ -31,6 +39,7 @@ export async function searchPashiCatalog(
     const results = searchPashiTools({
       limit,
       query: typeof args.query === "string" ? args.query : undefined,
+      supportsFiles: client.supportsFiles,
       toolTypes,
       tools: info.tools,
     });
@@ -55,6 +64,7 @@ export async function searchPashiCatalog(
 export async function runPashiOperations(
   client: PashiClient,
   args: Record<string, unknown>,
+  files?: PashiFileStore,
 ): Promise<IFunctionResponse> {
   if (!Array.isArray(args.operations) || args.operations.length === 0) {
     return pashiErrorResponse(
@@ -87,12 +97,13 @@ export async function runPashiOperations(
     }
 
     try {
-      const result = await client.execute(operation);
+      const { file, ...result } = await executeOperation(client, operation, files);
 
       results.push({
         index,
         status: "success",
         ...result,
+        ...(file && files ? { output: await files.save(file, operation.toolId) } : {}),
       });
     } catch (error) {
       results.push({
@@ -126,6 +137,22 @@ export async function runPashiOperations(
   };
 }
 
+async function executeOperation(
+  client: PashiClient,
+  { fileUrl, ...operation }: ParsedPashiOperation,
+  files: PashiFileStore | undefined,
+) {
+  if (!fileUrl) {
+    return client.execute(operation);
+  }
+
+  if (!files) {
+    throw new PashiClientError("invalid_input", "Files are not available in this context.");
+  }
+
+  return client.execute({ ...operation, file: await files.read(fileUrl) });
+}
+
 function normaliseToolTypes(value: unknown): PashiToolType[] {
   if (!Array.isArray(value)) {
     return [];
@@ -138,7 +165,7 @@ function normaliseToolTypes(value: unknown): PashiToolType[] {
   );
 }
 
-function parsePashiOperation(value: unknown): PashiOperation | null {
+function parsePashiOperation(value: unknown): ParsedPashiOperation | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
   }
@@ -150,6 +177,10 @@ function parsePashiOperation(value: unknown): PashiOperation | null {
   }
 
   if (record.input !== undefined && typeof record.input !== "string") {
+    return null;
+  }
+
+  if (record.file_url !== undefined && typeof record.file_url !== "string") {
     return null;
   }
 
@@ -169,6 +200,7 @@ function parsePashiOperation(value: unknown): PashiOperation | null {
   return {
     toolId: record.tool_id,
     ...(typeof record.input === "string" ? { input: record.input } : {}),
+    ...(typeof record.file_url === "string" ? { fileUrl: record.file_url } : {}),
     fields: rawFields as Record<string, string>,
   };
 }

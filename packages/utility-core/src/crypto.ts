@@ -8,6 +8,15 @@ export function sha256Hex(input: string): Promise<string> {
   return digestHex("SHA-256", input);
 }
 
+export async function sha256Base64Url(input: string): Promise<string> {
+  const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
+
+  return btoa(String.fromCharCode(...new Uint8Array(hash)))
+    .replaceAll("+", "-")
+    .replaceAll("/", "_")
+    .replace(/=+$/, "");
+}
+
 export function sha1Hex(input: string): Promise<string> {
   return digestHex("SHA-1", input);
 }

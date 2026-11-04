@@ -15,7 +15,6 @@ import { listAssistantRecipes, listRecipeInstallations } from "~/modules/recipes
 import { resolveEnabledFunctionToolNames } from "~/modules/tools/application/availability";
 import { listFunctionToolDefinitions } from "~/modules/tools/application/catalogue";
 import { formatFunctionName } from "~/modules/tools/application/functions";
-import { INTERNAL_FUNCTION_TOOLS } from "~/modules/tools/application/internal-tools";
 import { PermissionChecker } from "~/modules/tools/application/permissions";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import { resolveProjectRecipeConnectorScope } from "~/modules/workspaces/application/projectRecipeConnectorScope";
@@ -86,10 +85,7 @@ export async function loadCapabilityDiscoverySources(
     catalogue.filter((entry) => entry.activation.allowed).map((entry) => entry.tool.name),
   );
   let tools: DiscoverableFunctionTool[] = catalogue
-    .filter(
-      ({ tool }) =>
-        tool.name !== CAPABILITY_DISCOVERY_TOOL_NAME && !INTERNAL_FUNCTION_TOOLS.has(tool.name),
-    )
+    .filter(({ tool }) => tool.name !== CAPABILITY_DISCOVERY_TOOL_NAME && !tool.system)
     .map(({ tool, activation }) => ({
       id: tool.name,
       name: formatFunctionName(tool.name),

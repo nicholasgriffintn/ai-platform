@@ -22,7 +22,9 @@ export const infraMeteringMiddleware = async (c: Context, next: Next) => {
     const env = c.env as IEnv;
     const quantities = drainRequestInfraMeter(meter);
 
-    if (user?.id && requestId && env?.DB && quantities.length > 0) {
+    const rateLimited = c.get("rateLimited") === true;
+
+    if (!rateLimited && user?.id && requestId && env?.DB && quantities.length > 0) {
       const emission = meterRequestInfraUsage(env, {
         userId: user.id,
         scopeKey: requestId,

@@ -4,6 +4,7 @@ import type { FunctionToolDescriptor } from "~/types/functions";
 
 export const next_edit_completion: FunctionToolDescriptor = {
   name: "next_edit_completion",
+  system: true,
   description:
     "Request the next code edit suggestion from Mercury Coder using contextual project snippets.",
   type: "premium",

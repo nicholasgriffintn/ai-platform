@@ -75,14 +75,34 @@ export type PashiInfo = z.infer<typeof pashiInfoSchema>;
 export type PashiTool = z.infer<typeof pashiToolSchema>;
 export type PashiToolType = PashiTool["toolType"];
 
+export const pashiConversionJobSchema = z
+  .object({
+    result: z
+      .object({
+        error: z.string().optional(),
+        jobId: z.string().min(1),
+        outputFormat: z.string().min(1),
+        status: z.enum(["complete", "failed", "processing", "queued"]),
+      })
+      .passthrough(),
+  })
+  .passthrough();
+
+export interface PashiFile {
+  blob: Blob;
+  name: string;
+}
+
 export interface PashiOperation {
   fields?: Record<string, string>;
+  file?: PashiFile;
   input?: string;
   toolId: string;
 }
 
 export interface PashiOperationResult {
   data: unknown;
+  file?: PashiFile;
   resultKind: string;
   toolId: string;
   toolType: PashiToolType;

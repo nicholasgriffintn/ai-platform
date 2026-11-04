@@ -7,7 +7,10 @@ import {
   SKILL_LOAD_TOOL_NAME,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { expandFunctionToolNames } from "~/modules/tools/application/catalogue";
+import {
+  expandFunctionToolNames,
+  getFunctionToolCatalogue,
+} from "~/modules/tools/application/catalogue";
 import type { Message } from "~/types";
 
 const ACTIVATING_TOOL_NAMES = new Set<string>([
@@ -58,4 +61,19 @@ export function getResponseScopedCapabilityToolNames(
   }
 
   return expandFunctionToolNames([...toolNames]);
+}
+
+export function canActivateOnDemand(
+  toolName: string,
+  enabledToolNames: ReadonlySet<string>,
+  inProjectScope: boolean,
+): boolean {
+  const tool = getFunctionToolCatalogue().find(toolName);
+
+  return (
+    tool !== undefined &&
+    !tool.system &&
+    !inProjectScope &&
+    enabledToolNames.has(CAPABILITY_DISCOVERY_TOOL_NAME)
+  );
 }

@@ -65,6 +65,7 @@ export function createUseRecipeConnectorInputSchema(
 
 export const use_recipe_connector: FunctionToolDescriptor = {
   name: "use_recipe_connector",
+  system: true,
   maxIdenticalCalls: 2,
   description:
     "Discover and use the exact tools available from a connector. Start with useCase to receive the operations and their schemas (and, for Composio connectors, a sessionId), then call again with an exact operation, its params, and that sessionId where one was given. Treat identifiers as operation-specific: never pass an ID returned by one operation to another unless their schemas explicitly describe the same identifier. Recipe configuration is merged into execution params as defaults.",

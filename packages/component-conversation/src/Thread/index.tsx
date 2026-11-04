@@ -295,6 +295,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
       placeholder: "Queue a follow-up for when this reply finishes",
       submitLabel: "Queue message",
       help: "Press Enter to queue it. It sends as soon as the reply finishes, even if you close this tab.",
+      allowStop: true,
       onSubmit: followUpQueue.onQueue,
     };
   }, [followUpQueue, isReplyLive, modeConfig?.runSteering]);

@@ -27,8 +27,8 @@ export function useUpdateDiscoverDay() {
       queries.setQueryData<DiscoverResponse>(DISCOVER_QUERY_KEY, (current) =>
         current ? { ...current, dayProfile } : current,
       );
-      void queries.invalidateQueries({ queryKey: DISCOVER_QUERY_KEY });
     },
+    onSettled: () => queries.invalidateQueries({ queryKey: DISCOVER_QUERY_KEY }),
   });
 }
 

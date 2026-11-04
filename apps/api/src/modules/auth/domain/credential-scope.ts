@@ -1,18 +1,21 @@
 import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import type { DeviceCredentialScope } from "@ngriffin_uk/polychat-schemas";
 
-const DISCOVER_ROUTES: Array<{ method?: string; path: RegExp }> = [
-  { path: /^\/discover(?:\/|$)/ },
-  { method: "GET", path: /^\/sources\/[^/]+\/cover$/ },
-  { method: "GET", path: /^\/auth\/me$/ },
-];
+type LimitedScope = Exclude<DeviceCredentialScope, "full">;
 
-export function credentialRouteScope(method: string, path: string): DeviceCredentialScope {
-  const discover = DISCOVER_ROUTES.some(
+const SCOPED_ROUTES: Record<LimitedScope, Array<{ method?: string; path: RegExp }>> = {
+  discover: [
+    { path: /^\/discover(?:\/|$)/ },
+    { method: "GET", path: /^\/sources\/[^/]+\/cover$/ },
+    { method: "GET", path: /^\/auth\/me$/ },
+  ],
+  pashi: [{ method: "POST", path: /^\/chat\/completions$/ }, { path: /^\/pashi\/link$/ }],
+};
+
+function routeAllows(scope: LimitedScope, method: string, path: string): boolean {
+  return SCOPED_ROUTES[scope].some(
     (route) => (!route.method || route.method === method) && route.path.test(path),
   );
-
-  return discover ? "discover" : "full";
 }
 
 export function credentialAuthenticates(
@@ -27,6 +30,6 @@ export function credentialAuthenticates(
   return authorise("service.call", {
     authenticated: true,
     scopes: [scope],
-    requiredScope: credentialRouteScope(method, path),
+    requiredScope: routeAllows(scope, method, path) ? scope : "full",
   }).allowed;
 }

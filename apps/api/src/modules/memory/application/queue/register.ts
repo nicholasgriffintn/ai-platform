@@ -6,6 +6,7 @@ import {
 
 import { SCHEDULES } from "~/config/schedules";
 import { evaluateServerFlag, taskFlags } from "~/modules/experiments/application";
+import { d1WritesAllowed } from "~/modules/infra/application/write-breaker";
 import { defineSchedule, type AppWorkflows } from "~/modules/queue/application/workflows";
 
 import { memoryConsolidation } from "./memory-consolidation";
@@ -23,7 +24,8 @@ export function registerMemoryQueue(workflows: AppWorkflows): void {
     SCHEDULES.MEMORIES_SYNTHESIS,
     defineSchedule({
       name: "memory-synthesis",
-      enabledWhen: (env) => evaluateServerFlag(env, taskFlags(env).memory_synthesis),
+      enabledWhen: async (env) =>
+        (await d1WritesAllowed(env)) && evaluateServerFlag(env, taskFlags(env).memory_synthesis),
       run: ({ env }) => scheduleDailySynthesis(env),
     }),
   );

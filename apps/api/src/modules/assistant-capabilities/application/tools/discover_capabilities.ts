@@ -17,6 +17,7 @@ export const discover_capabilities: ApiToolDefinition = {
   ...discover_capabilitiesDescriptor,
   execute: async (args, toolContext) => {
     let result;
+    const filters = { ...args, ...(args.kinds ? { kinds: [args.kinds].flat() } : {}) };
 
     try {
       const sources = await loadCapabilityDiscoverySources(toolContext.request);
@@ -24,11 +25,11 @@ export const discover_capabilities: ApiToolDefinition = {
         env: toolContext.request.env,
         user: toolContext.request.user,
         query: args.query,
-        items: filterCapabilityItems(collectCapabilityItems(sources), args),
+        items: filterCapabilityItems(collectCapabilityItems(sources), filters),
         completionId: toolContext.completionId,
       });
 
-      result = discoverAssistantCapabilities(sources, args, new Date(), relevance);
+      result = discoverAssistantCapabilities(sources, filters, new Date(), relevance);
     } catch (error) {
       if (
         error instanceof AssistantError &&

@@ -394,7 +394,9 @@ export function filterCapabilityItems(
   return items
     .filter((item) => !allowedKinds || allowedKinds.has(item.kind))
     .filter((item) =>
-      filters.configured === undefined ? true : item.configured === filters.configured,
+      filters.configured === undefined || item.kind === "tool"
+        ? true
+        : item.configured === filters.configured,
     );
 }
 

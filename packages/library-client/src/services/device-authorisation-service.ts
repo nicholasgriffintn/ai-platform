@@ -1,6 +1,7 @@
 import type {
   DeviceAuthorisation,
   DeviceAuthorisationDecision,
+  DeviceAuthorisationDecisionResult,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { fetchApi } from "../fetch-wrapper.js";
@@ -25,7 +26,7 @@ export class DeviceAuthorisationService {
   async decideDeviceAuthorisation(
     userCode: string,
     decision: DeviceAuthorisationDecision["decision"],
-  ): Promise<{ status: "approved" | "denied" }> {
+  ): Promise<DeviceAuthorisationDecisionResult> {
     const response = await fetchApi(`/auth/device/${encodeURIComponent(userCode)}/decision`, {
       method: "POST",
       headers: await this.getHeaders(),
@@ -36,6 +37,6 @@ export class DeviceAuthorisationService {
       throw await createApiErrorFromResponse(response, "That decision was not recorded");
     }
 
-    return returnFetchedData<{ status: "approved" | "denied" }>(response);
+    return returnFetchedData<DeviceAuthorisationDecisionResult>(response);
   }
 }

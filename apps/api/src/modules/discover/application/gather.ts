@@ -49,7 +49,10 @@ import {
   listDiscoverFeedSignals,
 } from "~/modules/discover/domain/signal-catalogue";
 import { renderSignalDocument } from "~/modules/discover/domain/signal-document";
-import { selectDiscoverSignals } from "~/modules/discover/domain/signal-selection";
+import {
+  keepUsedDiscoverDocuments,
+  selectDiscoverSignals,
+} from "~/modules/discover/domain/signal-selection";
 import { DISCOVER_FEED_PROVIDER_ID } from "~/modules/discover/domain/signal-sources/feeds";
 import type {
   DiscoverSignal,
@@ -530,6 +533,13 @@ export async function ensureDiscoverGathered(
     listDiscoverDocuments(context, user.id),
     resolveDiscoverSignals(context, settings),
   ]);
+  const keepUsed = (current: DiscoverDocuments): DiscoverDocuments => ({
+    ...current,
+    signals: keepUsedDiscoverDocuments(current.signals, {
+      selected,
+      excludedProviders: settings.excludedProviders,
+    }),
+  });
 
   if (
     isDiscoverGatherFresh({
@@ -539,17 +549,19 @@ export async function ensureDiscoverGathered(
       now: now.getTime(),
     })
   ) {
-    return documents;
+    return keepUsed(documents);
   }
 
   await runDiscoverGather(context, { now });
 
   const notebook = await ensureDiscoverNotebook(context);
 
-  return readDiscoverDocuments(
-    await withKnowledgeText(
-      context,
-      await context.repositories.get(SourceRepository).listCollectionSources(notebook.id),
+  return keepUsed(
+    readDiscoverDocuments(
+      await withKnowledgeText(
+        context,
+        await context.repositories.get(SourceRepository).listCollectionSources(notebook.id),
+      ),
     ),
   );
 }

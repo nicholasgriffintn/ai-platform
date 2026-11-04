@@ -23,7 +23,7 @@ const SIGNALS = [
   signal({ id: "outlook-mail", providerId: "outlook", group: "mail" }),
   signal({ id: "outlook-calendar", providerId: "outlook", group: "calendar" }),
   signal({ id: "lastfm", providerId: "lastfm", group: "listening" }),
-  signal({ id: "marquee", providerId: "marquee", group: "watching" }),
+  signal({ id: "trakt", providerId: "trakt", group: "watching" }),
   signal({ id: "weather", providerId: "openweather_api", group: "places", needsLocation: true }),
 ];
 
@@ -31,15 +31,15 @@ describe("selectDiscoverSignals", () => {
   it("keeps every connected, supported signal and one provider per exclusive group", () => {
     const { selected, unsupported } = selectDiscoverSignals({
       signals: SIGNALS,
-      connectedProviders: new Set(["gmail", "outlook", "lastfm", "marquee", "openweather_api"]),
+      connectedProviders: new Set(["gmail", "outlook", "lastfm", "trakt", "openweather_api"]),
       excludedProviders: new Set(["lastfm"]),
       includedProviders: new Set(),
-      supports: (provider) => provider !== "marquee",
+      supports: (provider) => provider !== "trakt",
       hasLocation: false,
     });
 
     expect(selected.map((item) => item.id)).toEqual(["gmail", "outlook-calendar"]);
-    expect(unsupported.map((item) => item.id)).toEqual(["marquee"]);
+    expect(unsupported.map((item) => item.id)).toEqual(["trakt"]);
   });
 
   it("falls back to the next connected provider in an exclusive group", () => {
@@ -92,11 +92,13 @@ describe("DISCOVER_SIGNALS", () => {
     const providers = listDiscoverSignalProviders(DISCOVER_SIGNALS);
 
     expect(new Set(providers.map((provider) => provider.providerId)).size).toBe(providers.length);
-    expect(providers.find((provider) => provider.providerId === "marquee")?.group).toBe("watching");
+    expect(providers.find((provider) => provider.providerId === "watching")?.group).toBe(
+      "watching",
+    );
   });
 
-  it("digests a Marquee week into one line per entry", () => {
-    const week = DISCOVER_SIGNALS.find((item) => item.id === "marquee-week");
+  it("digests the week ahead into one line per entry", () => {
+    const week = DISCOVER_SIGNALS.find((item) => item.id === "watching-week");
 
     expect(
       week?.digest({
@@ -104,17 +106,15 @@ describe("DISCOVER_SIGNALS", () => {
         entries: [
           {
             kind: "episode",
-            titleId: "show:1",
+            titleId: "tv:1",
             title: "Slow Horses",
             season: 5,
             episode: 3,
             name: "Hello Goodbye",
-            when: "2026-10-26T21:00:00Z",
-            precision: "time",
-            network: "Apple TV+",
+            when: "2026-10-26",
           },
         ],
       }),
-    ).toEqual(["2026-10-26 21:00 · Slow Horses · S5E3 · Hello Goodbye · Apple TV+"]);
+    ).toEqual(["2026-10-26 · Slow Horses · S5E3 · Hello Goodbye"]);
   });
 });

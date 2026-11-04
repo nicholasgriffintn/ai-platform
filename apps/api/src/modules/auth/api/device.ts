@@ -1,4 +1,5 @@
 import {
+  deviceAuthorisationDecisionResultSchema,
   deviceAuthorisationDecisionSchema,
   deviceAuthorisationParamsSchema,
   deviceAuthorisationSchema,
@@ -79,10 +80,7 @@ addRoute(app, "post", "/:userCode/decision", {
   paramSchema: deviceAuthorisationParamsSchema,
   bodySchema: deviceAuthorisationDecisionSchema,
   responses: {
-    200: {
-      description: "Decision recorded",
-      schema: z.object({ status: z.enum(["approved", "denied"]) }),
-    },
+    200: { description: "Decision recorded", schema: deviceAuthorisationDecisionResultSchema },
     404: { description: "Expired or already used", schema: errorResponseSchema },
   },
   handler: async ({ params, body, serviceContext }) =>

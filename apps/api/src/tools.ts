@@ -87,6 +87,9 @@ import { get_user_information } from "~/modules/tools/application/builtin/user_i
 import { get_weather } from "~/modules/tools/application/builtin/weather";
 import { web_search } from "~/modules/tools/application/builtin/web_search";
 import { registerTools } from "~/modules/tools/application/catalogue";
+import { INSIGHT_TOOLS } from "~/modules/watching/application/tools/insight";
+import { SCREENING_TOOLS } from "~/modules/watching/application/tools/screenings";
+import { WATCHING_TOOLS } from "~/modules/watching/application/tools/watching";
 
 registerTools([
   configure_knowledge_sync,
@@ -143,6 +146,9 @@ registerTools([
   list_tasks,
   update_task,
   ...WORK_TOOLS,
+  ...WATCHING_TOOLS,
+  ...SCREENING_TOOLS,
+  ...INSIGHT_TOOLS,
   capture_screenshot,
   create_speech,
   discover_capabilities,

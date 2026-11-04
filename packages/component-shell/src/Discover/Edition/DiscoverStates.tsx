@@ -69,9 +69,11 @@ export function DiscoverTurnOn({
 }
 
 export function DiscoverNoEdition({
+  morning,
   isRefreshing,
   onWriteNow,
 }: {
+  morning: string;
   isRefreshing: boolean;
   onWriteNow: () => void;
 }) {
@@ -79,7 +81,7 @@ export function DiscoverNoEdition({
     <div className="flex max-w-2xl flex-col items-start gap-3 rounded-3xl border border-border bg-surface-elevated p-5">
       <p className="font-display text-2xl font-medium text-foreground">Nothing yet</p>
       <p className="text-sm text-muted-foreground">
-        Your first edition arrives tomorrow at seven. Or Poly can write one now.
+        Your first edition arrives tomorrow at {morning}. Or Poly can write one now.
       </p>
       <Button size="sm" variant="primary" disabled={isRefreshing} onClick={onWriteNow}>
         <RefreshCw size={14} aria-hidden />

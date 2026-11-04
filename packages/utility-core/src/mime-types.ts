@@ -1,0 +1,35 @@
+const EXTENSIONS_BY_MIME_TYPE: Record<string, string> = {
+  "application/epub+zip": "epub",
+  "application/msword": "doc",
+  "application/pdf": "pdf",
+  "application/rtf": "rtf",
+  "application/vnd.oasis.opendocument.text": "odt",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+  "audio/aac": "aac",
+  "audio/flac": "flac",
+  "audio/mp4": "m4a",
+  "audio/mpeg": "mp3",
+  "audio/ogg": "ogg",
+  "audio/wav": "wav",
+  "audio/webm": "webm",
+  "audio/x-wav": "wav",
+  "image/avif": "avif",
+  "image/bmp": "bmp",
+  "image/gif": "gif",
+  "image/heic": "heic",
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/svg+xml": "svg",
+  "image/tiff": "tiff",
+  "image/webp": "webp",
+  "text/html": "html",
+  "text/markdown": "md",
+  "text/plain": "txt",
+  "video/mp4": "mp4",
+  "video/quicktime": "mov",
+  "video/webm": "webm",
+};
+
+export function fileExtensionForMimeType(mimeType: string): string | undefined {
+  return EXTENSIONS_BY_MIME_TYPE[mimeType.split(";")[0]?.trim().toLowerCase() ?? ""];
+}

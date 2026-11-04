@@ -1,5 +1,9 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import { findToolRule, isOwnerStartedTrigger } from "@ngriffin_uk/polychat-schemas";
+import {
+  CAPABILITY_DISCOVERY_TOOL_NAME,
+  findToolRule,
+  isOwnerStartedTrigger,
+} from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
@@ -18,6 +22,7 @@ import {
   checkToolCallRepeat,
   type ToolCallLedger,
 } from "~/modules/responses/application/engine/tools/call-ledger";
+import { canActivateOnDemand } from "~/modules/responses/application/engine/tools/capability-activation";
 import {
   evaluateToolIntentGate,
   requiresToolIntentVerification,
@@ -28,6 +33,7 @@ import {
 } from "~/modules/responses/application/engine/tools/tool-responses";
 import { resolveEnabledFunctionToolNames } from "~/modules/tools/application/availability";
 import {
+  getFunctionToolCatalogue,
   resolveFunctionTool,
   resolveToolRepeatLimit,
   validateFunctionArgs,
@@ -65,6 +71,12 @@ function isUnknownToolError(error: ToolCallError): boolean {
 function buildUnknownToolCorrection(functionName: string): string {
   if (isArtifactMarkupToolName(functionName)) {
     return ARTIFACT_MARKUP_TOOL_CORRECTION;
+  }
+
+  const tool = getFunctionToolCatalogue().find(functionName);
+
+  if (tool && !tool.system) {
+    return `Tool "${functionName}" exists but is not loaded yet. Call ${CAPABILITY_DISCOVERY_TOOL_NAME} with the query "${functionName}", then call it again with the same arguments.`;
   }
 
   return `Tool "${functionName}" is not available. Continue using only the tools provided in this request, or answer directly without a tool.`;
@@ -156,9 +168,14 @@ export const handleToolCalls = async (
         throw new AssistantError("Missing tool call ID", ErrorType.TOOL_CALL_ERROR);
       }
 
+      const enabledToolNames = req.request?.enabled_tools
+        ? resolveEnabledFunctionToolNames(req.request.enabled_tools, req.user)
+        : null;
+
       if (
-        req.request?.enabled_tools &&
-        !resolveEnabledFunctionToolNames(req.request.enabled_tools, req.user).has(functionName)
+        enabledToolNames &&
+        !enabledToolNames.has(functionName) &&
+        !canActivateOnDemand(functionName, enabledToolNames, req.memoryScope?.type === "project")
       ) {
         throw new AssistantError(
           `Tool "${functionName}" was not enabled for this run`,

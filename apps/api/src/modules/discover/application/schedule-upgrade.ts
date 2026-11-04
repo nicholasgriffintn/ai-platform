@@ -1,7 +1,10 @@
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { buildDiscoverScheduleTriggers } from "~/modules/discover/domain/schedules";
+import {
+  buildDiscoverScheduleTriggers,
+  keepDiscoverTriggerState,
+} from "~/modules/discover/domain/schedules";
 import {
   parseRecipeInstallationRecord,
   updateRecipeInstallation,
@@ -43,14 +46,10 @@ export async function ensureDiscoverLiveSchedule(
     });
   }
 
-  const added = buildDiscoverScheduleTriggers(profile, settings)
-    .filter((trigger) => trigger.discoverOperation)
-    .map((trigger) => ({
-      ...trigger,
-      enabled:
-        installation.triggers.find((current) => current.id === trigger.id)?.enabled ??
-        trigger.enabled,
-    }));
+  const added = keepDiscoverTriggerState(
+    buildDiscoverScheduleTriggers(profile, settings).filter((trigger) => trigger.discoverOperation),
+    installation.triggers,
+  );
   const current = installation.triggers.filter((trigger) => trigger.discoverOperation);
 
   if (JSON.stringify(current) === JSON.stringify(added)) {

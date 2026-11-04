@@ -99,4 +99,89 @@ describe("Pashi client", () => {
       status: 500,
     });
   });
+
+  describe("file converters", () => {
+    const fileInfo = {
+      name: "Pashi",
+      tools: [
+        {
+          ...info.tools[0],
+          endpoint: "/api/image-format",
+          id: "image-format",
+          input: { kind: "file", label: "Image", required: true },
+          status: "available",
+          toolType: "converter",
+        },
+      ],
+    };
+    const file = { blob: new Blob(["pixels"], { type: "image/png" }), name: "photo.png" };
+    const job = (status: string, error = "") =>
+      jsonResponse({ result: { error, jobId: "job-1", outputFormat: "webp", status } }, 200);
+
+    function linkedClient(fetchMock: typeof fetch) {
+      return new PashiClient({
+        apiKey: "pashi-link",
+        fetch: fetchMock,
+        sleep: async () => {},
+        supportsFiles: true,
+      });
+    }
+
+    it("uploads, waits for the job and returns the converted file", async () => {
+      const fetchMock = vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(jsonResponse(fileInfo))
+        .mockResolvedValueOnce(job("queued"))
+        .mockResolvedValueOnce(job("processing"))
+        .mockResolvedValueOnce(job("complete"))
+        .mockResolvedValueOnce(
+          new Response("converted", { headers: { "Content-Type": "image/webp" } }),
+        );
+
+      const result = await linkedClient(fetchMock).execute({ file, toolId: "image-format" });
+
+      expect(await result.file?.blob.text()).toBe("converted");
+      expect(result.file?.name).toBe("pashi-job-1.webp");
+      expect(String(fetchMock.mock.calls[4]?.[0])).toBe(
+        "https://pashi.app/api/image-format?download=job-1",
+      );
+    });
+
+    it("reports a failed conversion with the reason Pashi gave", async () => {
+      const fetchMock = vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(jsonResponse(fileInfo))
+        .mockResolvedValueOnce(job("failed", "Corrupt image."));
+
+      await expect(
+        linkedClient(fetchMock).execute({ file, toolId: "image-format" }),
+      ).rejects.toThrow("Corrupt image.");
+    });
+
+    it("explains that conversion needs Pro when Pashi refuses", async () => {
+      const fetchMock = vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(jsonResponse(fileInfo))
+        .mockResolvedValueOnce(jsonResponse({ error: "Pro only" }, 403));
+
+      await expect(
+        linkedClient(fetchMock).execute({ file, toolId: "image-format" }),
+      ).rejects.toMatchObject({ code: "tool_unavailable", status: 403 });
+    });
+
+    it("refuses file tools on the shared key and when no file is given", async () => {
+      const shared = new PashiClient({
+        apiKey: "pashi-secret",
+        fetch: vi.fn<typeof fetch>(async () => jsonResponse(fileInfo)),
+      });
+      const linked = linkedClient(vi.fn<typeof fetch>(async () => jsonResponse(fileInfo)));
+
+      await expect(shared.execute({ file, toolId: "image-format" })).rejects.toMatchObject({
+        code: "tool_unavailable",
+      });
+      await expect(linked.execute({ toolId: "image-format" })).rejects.toMatchObject({
+        code: "invalid_input",
+      });
+    });
+  });
 });

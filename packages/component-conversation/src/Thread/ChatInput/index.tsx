@@ -136,6 +136,7 @@ export interface ConversationRunSteering {
   isSubmitting?: boolean;
   submitLabel?: string;
   help?: string;
+  allowStop?: boolean;
   onSubmit: (content: string) => Promise<void>;
 }
 
@@ -754,7 +755,22 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
     const isSteeringBlocked = Boolean(runSteering?.disabledReason);
     const isInputDisabled = isSteering ? isSteeringBlocked : isLoading;
     const isStoppable =
-      !isSteering && isLoading && streamStarted && Boolean(onStopResponse || controller);
+      (!isSteering || Boolean(runSteering?.allowStop)) &&
+      isLoading &&
+      streamStarted &&
+      Boolean(onStopResponse || controller);
+    const stopButton = (
+      <Button
+        type="button"
+        onClick={() => (onStopResponse ? onStopResponse() : controller?.abort())}
+        variant="icon"
+        className="cursor-pointer rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+        title="Stop generating"
+        aria-label="Stop generating"
+      >
+        <Pause className="h-5 w-5" />
+      </Button>
+    );
     const showComposerActionMenu = !hideComposerActionMenu && canShowActionMenu;
     const showVoiceControls = !hideVoiceControls && Boolean(canUseDictation || liveModeCommand);
     const hasComposerActions =
@@ -878,17 +894,8 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
             )
           }
           actions={
-            !hasComposerActions ? undefined : isStoppable ? (
-              <Button
-                type="button"
-                onClick={() => (onStopResponse ? onStopResponse() : controller?.abort())}
-                variant="icon"
-                className="cursor-pointer rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                title="Stop generating"
-                aria-label="Stop generating"
-              >
-                <Pause className="h-5 w-5" />
-              </Button>
+            !hasComposerActions ? undefined : isStoppable && !isSteering ? (
+              stopButton
             ) : (
               <>
                 {showComposerActionMenu && (
@@ -943,6 +950,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                     }
                   />
                 )}
+                {isStoppable && stopButton}
                 {!hideSubmitButton && (
                   <Button
                     type="submit"

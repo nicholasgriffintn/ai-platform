@@ -47,6 +47,7 @@ addRoute(app, "post", "/", {
     createChatCompletionThroughPort({
       context: serviceContext,
       request: body,
+      credentialScope: raw.get("credentialScope"),
       user,
       anonymousUser,
       executionCtx: requireCloudflareExecutionContext(raw.executionCtx),

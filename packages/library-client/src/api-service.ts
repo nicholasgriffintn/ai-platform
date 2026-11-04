@@ -12,6 +12,7 @@ import type {
   CreateTeammateInput,
   DeviceAuthorisation,
   DeviceAuthorisationDecision,
+  DeviceAuthorisationDecisionResult,
   EnqueueChatMessageRequest,
   HireTeammateInput,
   ItemReactionRequest,
@@ -253,7 +254,7 @@ class ApiService {
   decideDeviceAuthorisation = (
     userCode: string,
     decision: DeviceAuthorisationDecision["decision"],
-  ): Promise<{ status: "approved" | "denied" }> =>
+  ): Promise<DeviceAuthorisationDecisionResult> =>
     this.deviceAuthorisationService.decideDeviceAuthorisation(userCode, decision);
 
   readPolyAgenda = (): Promise<PolyAgenda> => this.polyService.readPolyAgenda();

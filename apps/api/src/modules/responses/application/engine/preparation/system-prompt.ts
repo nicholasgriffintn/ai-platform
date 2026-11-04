@@ -12,6 +12,7 @@ import type {
 import { readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Repositories } from "~/infrastructure/database/repositories";
+import type { CapabilityMap } from "~/modules/assistant-capabilities/domain/capability-map";
 import { CorrectionRepository } from "~/modules/corrections/infrastructure/CorrectionRepository";
 import {
   describeMemoryDocument,
@@ -43,6 +44,7 @@ export interface BuildSystemPromptParams {
   projectContext: ProjectChatContext | null;
   memoryScope?: MemoryScope;
   skills?: readonly SkillAvailability[];
+  capabilityMap?: CapabilityMap | null;
   activeGoal?: Goal | null;
 }
 
@@ -257,6 +259,7 @@ export async function buildSystemPrompt({
   projectContext,
   memoryScope = { type: "personal" },
   skills,
+  capabilityMap,
   activeGoal,
 }: BuildSystemPromptParams): Promise<SystemPromptResult> {
   const {
@@ -342,6 +345,7 @@ export async function buildSystemPrompt({
     user: user || undefined,
     userSettings,
     skills,
+    capabilityMap,
     memory: memoryPolicy,
     persona: options.persona,
   });

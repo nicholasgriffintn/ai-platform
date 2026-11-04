@@ -61,9 +61,9 @@ export function resolveDiscoverNotificationSubject(input: {
       return null;
     }
 
-    const topic = item && "topic" in item.card ? discoverTopicKey(item.card.topic) : null;
+    const topic = "topic" in item.card ? discoverTopicKey(item.card.topic) : null;
 
-    if (!item || !topic || profile.mutedTopics.some((muted) => discoverTopicKey(muted) === topic)) {
+    if (!topic || profile.mutedTopics.some((muted) => discoverTopicKey(muted) === topic)) {
       return null;
     }
 

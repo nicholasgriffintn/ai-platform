@@ -16,6 +16,7 @@ import {
   DISCOVER_HEADLINES_TOPIC,
   selectCurrentResearch,
 } from "~/modules/discover/domain/research";
+import { keepUsedDiscoverDocuments } from "~/modules/discover/domain/signal-selection";
 import { isSundayEdition } from "~/modules/discover/domain/week";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
@@ -24,8 +25,10 @@ import { listDiscoverArticleSources } from "../articles";
 import { buildDiscoverContextSnapshot, readDiscoverEditionBasis } from "../context";
 import { queueDiscoverCurrent } from "../current";
 import { saveDiscoverEdition } from "../editions";
+import { resolveDiscoverSignals } from "../gather";
 import { queueDiscoverEditionWork } from "../listen";
 import { listDiscoverDocuments } from "../notebook";
+import { readDiscoverRoutine } from "../settings";
 import { startDiscoverWindDown } from "../wind-down";
 import {
   compose_discover_edition as composeDescriptor,
@@ -67,12 +70,18 @@ export const compose_discover_edition: ApiToolDefinition = {
   execute: async (args: ComposeDiscoverEditionInput, toolContext) => {
     const context = requireToolContext(toolContext);
     const user = context.requireUser();
-    const [basis, documents, articleSources] = await Promise.all([
+    const [basis, documents, articleSources, routine] = await Promise.all([
       readDiscoverEditionBasis(context),
       listDiscoverDocuments(context, user.id),
       listDiscoverArticleSources(context),
+      readDiscoverRoutine(context),
     ]);
-    const { browsed, shared } = splitDiscoverSignalFeeds(documents.signals);
+    const { selected } = await resolveDiscoverSignals(context, routine);
+    const usedSignals = keepUsedDiscoverDocuments(documents.signals, {
+      selected,
+      excludedProviders: routine.excludedProviders,
+    });
+    const { browsed, shared } = splitDiscoverSignalFeeds(usedSignals);
     const edition = buildDiscoverEdition({
       draft: args,
       date: basis.date,
@@ -106,16 +115,14 @@ export const compose_discover_edition: ApiToolDefinition = {
       signals: {
         read: [
           ...new Set(
-            documents.signals
+            usedSignals
               .filter((document) => document.readAt && !document.error)
               .map((document) => document.providerId),
           ),
         ],
         stale: [
           ...new Set(
-            documents.signals
-              .filter((document) => document.error)
-              .map((document) => document.providerId),
+            usedSignals.filter((document) => document.error).map((document) => document.providerId),
           ),
         ],
       },

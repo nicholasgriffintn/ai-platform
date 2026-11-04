@@ -40,6 +40,7 @@ import models from "~/modules/models/api/routes";
 import notebooks from "~/modules/notebooks/api/routes";
 import notifications from "~/modules/notifications/api/routes";
 import outputs from "~/modules/outputs/api/routes";
+import pashiLink from "~/modules/pashi-link/api/routes";
 import pets from "~/modules/pets/api/routes";
 import plans from "~/modules/plans/api/routes";
 import poly from "~/modules/poly/api/routes";
@@ -110,6 +111,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/providers", providers);
   app.route("/devices", devices);
   app.route("/usage", usage);
+  app.route("/pashi", pashiLink);
   app.route("/pets", pets);
   app.route("/plans", plans);
   app.route("/flags", flags);

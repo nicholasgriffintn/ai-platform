@@ -883,7 +883,6 @@ const nonComposioRecipeConnectorProviders = [
   "podcastindex",
   "oura",
   "audiobookshelf",
-  "marquee",
   "cloudflare_ai_search",
   "bedrock_knowledge_base",
 ];

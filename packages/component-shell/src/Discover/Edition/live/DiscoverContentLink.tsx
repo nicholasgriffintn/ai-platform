@@ -20,7 +20,7 @@ export function DiscoverContentLink({
   const [params, setParams] = useSearchParams();
   const itemId = params.get("discoverItem");
   const briefingId = params.get("discoverBriefing");
-  const id = itemId ?? briefingId;
+  const id = itemId ?? briefingId ?? params.get("discoverObservation");
   const handled = useRef<string | null>(null);
 
   useEffect(() => {

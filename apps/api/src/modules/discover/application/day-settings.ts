@@ -1,7 +1,10 @@
 import type { DiscoverDayProfile, UpdateDiscoverDayProfile } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { buildDiscoverScheduleTriggers } from "~/modules/discover/domain/schedules";
+import {
+  buildDiscoverScheduleTriggers,
+  keepDiscoverTriggerState,
+} from "~/modules/discover/domain/schedules";
 import {
   getRecipeInstallationRecord,
   updateRecipeInstallation,
@@ -38,7 +41,10 @@ export async function configureDiscoverDay(
       userId: context.requireUser().id,
       installationId: routine.installationId,
       update: {
-        triggers: buildDiscoverScheduleTriggers(saved, { ...routine, listen }),
+        triggers: keepDiscoverTriggerState(
+          buildDiscoverScheduleTriggers(saved, { ...routine, listen }),
+          existing?.data.triggers ?? [],
+        ),
         ...(existing && input.audio
           ? { configuration: { ...existing.data.configuration, listen } }
           : {}),

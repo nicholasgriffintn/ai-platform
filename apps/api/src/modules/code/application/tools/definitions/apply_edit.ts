@@ -4,6 +4,7 @@ import type { FunctionToolDescriptor } from "~/types/functions";
 
 export const apply_edit_completion: FunctionToolDescriptor = {
   name: "apply_edit_completion",
+  system: true,
   description: "Apply a code snippet update using Mercury Coder's apply-edit capability.",
   type: "premium",
   permissions: ["network"],

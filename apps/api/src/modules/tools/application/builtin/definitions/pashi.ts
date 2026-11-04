@@ -4,6 +4,7 @@ import type { FunctionToolDescriptor } from "~/types/functions";
 
 export const search_pashi_tools: FunctionToolDescriptor = {
   name: "search_pashi_tools",
+  system: true,
   description:
     "Search Pashi's live catalogue of generators and converters. Call this before run_pashi_tools to choose an exact tool ID and retrieve its current input fields.",
   type: "normal",
@@ -41,7 +42,7 @@ export const search_pashi_tools: FunctionToolDescriptor = {
 export const run_pashi_tools: FunctionToolDescriptor = {
   name: "run_pashi_tools",
   description:
-    "Run Pashi generator or text-converter operations sequentially. Discover current tool IDs and fields with search_pashi_tools first. Do not send existing passwords, private keys, access tokens, personal data, or other secrets as input.",
+    "Run Pashi generator and converter operations sequentially. Discover current tool IDs and fields with search_pashi_tools first. File converters take file_url and save the converted file as an output. Do not send existing passwords, private keys, access tokens, personal data, or other secrets as input.",
   type: "normal",
   permissions: ["read"],
   effects: { effectClass: "read" },
@@ -62,6 +63,11 @@ export const run_pashi_tools: FunctionToolDescriptor = {
             input: {
               type: "string",
               description: "Primary text input when the selected tool requires it.",
+            },
+            file_url: {
+              type: "string",
+              description:
+                "URL of a file already in this chat, for tools whose input kind is file. Outside URLs are refused.",
             },
             fields: {
               type: "object",

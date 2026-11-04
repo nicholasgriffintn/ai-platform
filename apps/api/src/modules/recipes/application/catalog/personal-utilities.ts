@@ -213,6 +213,53 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
     ],
   },
   {
+    id: "weekly-watching-digest",
+    title: "Weekly Watching Digest",
+    summary: "Write up the week ahead on screen from your film and TV shelf.",
+    description:
+      "Reads your shelf, finds the episodes and releases coming up, and suggests what to watch next with critic and audience scores.",
+    kind: "automate",
+    category: "Productivity",
+    featured: false,
+    enabledTools: [
+      "get_shelf",
+      "whats_on",
+      "discover_titles",
+      "find_similar_titles",
+      "titles_by_person",
+      "get_title",
+    ],
+    integrations: [],
+    triggers: [
+      {
+        type: "schedule",
+        label: "Weekly digest",
+        description: "Run the watching digest once a week.",
+      },
+    ],
+    actions: [
+      "Read the film and TV shelf and followed people",
+      "List episodes and releases for the week ahead",
+      "Suggest fresh titles near the person's taste, with scores and where to stream them",
+    ],
+    setupPrompt:
+      "Set up the Weekly Watching Digest recipe. Ask which day to run it, which streaming services the person pays for, and any genres to avoid. Each run, use get_shelf and whats_on for the week ahead, titles_by_person for anyone they follow, and discover_titles and get_title for two or three new suggestions. Keep it short and do not change the shelf.",
+    configurationFields: [
+      {
+        key: "services",
+        label: "Streaming services",
+        type: "string_list",
+        placeholder: "Netflix, BBC iPlayer, Disney Plus",
+      },
+      {
+        key: "avoidGenres",
+        label: "Genres to avoid",
+        type: "string_list",
+        placeholder: "Horror, Reality",
+      },
+    ],
+  },
+  {
     id: "weekly-reading-suggestion",
     title: "Weekly Reading Suggestion",
     summary: "Suggest articles or books from recent interests and newsletters.",

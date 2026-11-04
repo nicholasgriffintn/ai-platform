@@ -57,6 +57,9 @@ export interface ToolDefinition<
   normaliseInput?: (input: unknown) => unknown;
   maxIdenticalCalls?: number;
   companionTools?: readonly string[];
+  requiredEnv?: readonly string[];
+  system?: boolean;
+  capabilityHint?: string;
   intentEvidence?: (input: TInput) => unknown;
   effects?: ToolEffects<TInput, ToolEffectHost<TContext>>;
 }

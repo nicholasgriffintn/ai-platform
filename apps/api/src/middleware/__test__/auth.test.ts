@@ -575,6 +575,39 @@ describe("Auth Middleware", () => {
       expect(await authenticate("GET", "/sources/source-1/content")).toBeNull();
     });
 
+    it("authenticates a Pashi key only for model calls and its own link", async () => {
+      const mockUser = { id: "user-123", email: "test@example.com" };
+      const authenticate = async (method: string, path: string) => {
+        const context = createMockContext();
+
+        Object.assign(context.req, { method, path });
+        // @ts-expect-error - mock implementation
+        context.req.header.mockImplementation((name: string) =>
+          name === "user-agent" ? "Mozilla/5.0" : name === "Authorization" ? "Bearer ak_app" : null,
+        );
+        mockRepositories.apiKeys.findApiKeyPrincipal.mockResolvedValue({
+          user: mockUser,
+          scope: "pashi",
+        });
+        mockRepositories.anonymousUsers.getOrCreateAnonymousUser.mockResolvedValue(null);
+
+        await authMiddleware(context, mockNext);
+
+        return { scope: context.get("credentialScope"), user: context.get("user") };
+      };
+
+      expect(await authenticate("POST", "/chat/completions")).toEqual({
+        scope: "pashi",
+        user: mockUser,
+      });
+      expect((await authenticate("PUT", "/pashi/link")).user).toEqual(mockUser);
+      expect((await authenticate("GET", "/chat/completions")).user).toBeNull();
+      expect((await authenticate("POST", "/responses")).user).toBeNull();
+      expect((await authenticate("GET", "/conversations")).user).toBeNull();
+      expect((await authenticate("GET", "/auth/me")).user).toBeNull();
+      expect((await authenticate("GET", "/api_keys")).user).toBeNull();
+    });
+
     it("should authenticate user with JWT token", async () => {
       const mockUser = { id: "user-123", email: "test@example.com" };
       const context = createMockContext();

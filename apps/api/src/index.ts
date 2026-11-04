@@ -28,6 +28,7 @@ import { addRoute } from "./infrastructure/http/routeBuilder";
 import { captureApiError, captureLoggedError, getSentryOptions } from "./infrastructure/sentry";
 import { authMiddleware } from "./middleware/auth";
 import { infraMeteringMiddleware } from "./middleware/infraMetering";
+import { ipRateLimit } from "./middleware/ipRateLimit";
 import { loggerMiddleware } from "./middleware/loggerMiddleware";
 import { rateLimit } from "./middleware/rateLimit";
 import { securityHeaders } from "./middleware/securityHeaders";
@@ -102,6 +103,8 @@ app.use("*", infraMeteringMiddleware);
 
 app.use("/status", async (_c, next) => next());
 app.use("/openapi", async (_c, next) => next());
+
+app.use("*", ipRateLimit);
 
 app.use("*", authMiddleware);
 

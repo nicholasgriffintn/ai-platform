@@ -26,17 +26,20 @@ export interface PashiToolSummary {
   unavailableReason?: string;
 }
 
-export function isPashiToolExecutable(tool: PashiTool): boolean {
+export function isPashiToolExecutable(tool: PashiTool, supportsFiles = false): boolean {
   if (tool.toolType === "converter") {
-    return tool.status === "available" && tool.input.kind !== "file";
+    return tool.status === "available" && (supportsFiles || tool.input.kind !== "file");
   }
 
   return true;
 }
 
-export function getPashiToolUnavailableReason(tool: PashiTool): string | undefined {
-  if (tool.toolType === "converter" && tool.input.kind === "file") {
-    return "File converters are not supported by the chat integration yet.";
+export function getPashiToolUnavailableReason(
+  tool: PashiTool,
+  supportsFiles = false,
+): string | undefined {
+  if (tool.toolType === "converter" && tool.input.kind === "file" && !supportsFiles) {
+    return "File converters need Pashi linked to this account, from the sign-in page on pashi.app.";
   }
 
   if (tool.toolType === "converter" && tool.status !== "available") {
@@ -69,8 +72,8 @@ export function getPashiToolFields(tool: PashiTool): PashiField[] {
   return fields;
 }
 
-export function toPashiToolSummary(tool: PashiTool): PashiToolSummary {
-  const unavailableReason = getPashiToolUnavailableReason(tool);
+export function toPashiToolSummary(tool: PashiTool, supportsFiles = false): PashiToolSummary {
+  const unavailableReason = getPashiToolUnavailableReason(tool, supportsFiles);
   const fields = getPashiToolFields(tool);
 
   return {
@@ -78,7 +81,7 @@ export function toPashiToolSummary(tool: PashiTool): PashiToolSummary {
     audience: tool.audience,
     category: tool.display.category,
     description: tool.description,
-    executable: isPashiToolExecutable(tool),
+    executable: isPashiToolExecutable(tool, supportsFiles),
     fields: fields.map((field) => ({
       id: field.id,
       required: field.required ?? false,
@@ -135,6 +138,7 @@ function scorePashiTool(tool: PashiTool, queryTerms: string[]): number {
 export function searchPashiTools(params: {
   limit: number;
   query?: string;
+  supportsFiles?: boolean;
   toolTypes: PashiToolType[];
   tools: PashiTool[];
 }): PashiToolSummary[] {
@@ -151,5 +155,5 @@ export function searchPashiTools(params: {
     .filter(({ score }) => score > 0)
     .sort((left, right) => right.score - left.score || left.index - right.index)
     .slice(0, params.limit)
-    .map(({ tool }) => toPashiToolSummary(tool));
+    .map(({ tool }) => toPashiToolSummary(tool, params.supportsFiles));
 }

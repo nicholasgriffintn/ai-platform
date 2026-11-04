@@ -53,7 +53,15 @@ export interface DiscoverPublicSignal extends DiscoverSignalBase {
   url: (read: DiscoverSignalRead) => string;
 }
 
-export type DiscoverSignal = DiscoverConnectorSignal | DiscoverPublicSignal;
+export interface DiscoverFirstPartySignal extends DiscoverSignalBase {
+  kind: "first_party";
+  source: "shelf" | "week_ahead" | "news";
+}
+
+export type DiscoverSignal =
+  | DiscoverConnectorSignal
+  | DiscoverPublicSignal
+  | DiscoverFirstPartySignal;
 
 export const DISCOVER_SIGNAL_GROUPS: Record<
   DiscoverSignalGroup,

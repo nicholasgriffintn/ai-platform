@@ -348,6 +348,21 @@ export const chatPromptEntries = [
 - Never repeat credentials, tokens or private conversation content into the reply.`,
   },
   {
+    id: "chat/capabilities/intro",
+    task: "chat-section",
+    title: "Capability map instructions",
+    description:
+      "Instructions that accompany the <available_capabilities> list, telling the model to find tools on demand.",
+    text: "These tools exist but are not loaded yet. To use one, call {{discoveryTool}} with its name or the use case, then call it. Recipes and more connectors can also be found this way. Use web search, or memory for something a tool here records, only when nothing here fits.",
+    variables: [
+      {
+        name: "discoveryTool",
+        description: "Name of the tool that finds and activates capabilities.",
+        example: "discover_capabilities",
+      },
+    ],
+  },
+  {
     id: "chat/skills/intro",
     task: "chat-section",
     title: "Skills disclosure instructions",

@@ -19,6 +19,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
 import { createRepositories, type Repositories } from "~/infrastructure/database/repositories";
+import { resolveCapabilityMap } from "~/modules/assistant-capabilities/application/capability-map";
 import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import {
   getConnectedRecipeConnectorProviders,
@@ -528,6 +529,16 @@ export class RequestPreparer {
         });
     const activeGoal = await activeGoalPromise;
 
+    const capabilityMap = await resolveCapabilityMap({
+      env: scope.options.env,
+      repositories,
+      user: scope.user,
+      mode: scope.options.mode,
+      requestedToolNames: this.resolveRequestTools(scope),
+      projectTools: scope.projectContext?.enabledTools,
+      projectConnectorProviders: scope.projectContext?.connectorProviders,
+      settingsDisabledTools: this.resolveSettingsDisabledTools(scope, userSettings, false),
+    });
     const systemPromptTask = buildSystemPrompt({
       options: scope.options,
       repositories,
@@ -539,6 +550,7 @@ export class RequestPreparer {
       projectContext,
       memoryScope: scope.memoryScope,
       skills,
+      capabilityMap,
       activeGoal,
     });
     const polyAgendaPromise = loadPolyAgendaPrompt(scope.options, repositories);

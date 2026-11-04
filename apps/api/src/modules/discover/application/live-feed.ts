@@ -7,7 +7,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { collectCardSignals, summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
-import { presentDiscoverFeed } from "~/modules/discover/domain/live";
+import { listDiscoverFeedProviders, presentDiscoverFeed } from "~/modules/discover/domain/live";
 import { DiscoverSeenRepository } from "~/modules/discover/infrastructure/DiscoverSeenRepository";
 
 import { readDiscoverDayProfile } from "./day-profile";
@@ -33,11 +33,7 @@ export async function readDiscoverFeed(
     ...query,
     seen,
     mutedTopics: [...profile.mutedTopics, ...summariseDiscoverFeedback(feedback).hiddenTopics],
-    allowedProviders: new Set(
-      settings.sources
-        .filter((source) => source.connected && source.used)
-        .map((source) => source.providerId),
-    ),
+    allowedProviders: listDiscoverFeedProviders(settings.sources),
     feedback: collectCardSignals(feedback, discoverLiveId(user.id)),
     now: new Date(),
   });

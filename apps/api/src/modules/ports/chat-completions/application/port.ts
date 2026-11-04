@@ -1,11 +1,13 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import {
   createResponseRequestSchema,
+  DEFAULT_MODEL_TIER,
   itemsToMessages,
   messagesToItems,
   responseStreamEventSchema,
   parseResponseStreamSseBuffer,
   type ChatCompletionResponseBody,
+  type DeviceCredentialScope,
   type ParsedChatCompletionsPortRequest,
   type PlatformResponse,
   type ResponseTool,
@@ -17,9 +19,11 @@ import {
   generateId,
   isRecord,
 } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { SSE_HEADERS } from "~/infrastructure/http/streaming";
+import { selectModels } from "~/modules/models/application/access";
 import { createResponse } from "~/modules/responses/application/create";
 import { ToolCallType, type AnonymousUser, type IUser, type Message, type ToolCall } from "~/types";
 
@@ -28,6 +32,7 @@ import { completionChunk, createModelCompletion } from "./model-port";
 export interface ChatCompletionsPortInput {
   context: ServiceContext;
   request: ParsedChatCompletionsPortRequest;
+  credentialScope?: DeviceCredentialScope;
   user?: IUser;
   anonymousUser?: AnonymousUser;
   executionCtx?: ExecutionContext;
@@ -45,6 +50,45 @@ function isStateless(request: ParsedChatCompletionsPortRequest): boolean {
     !request.response_id &&
     !request.mode
   );
+}
+
+function isTierOnly(request: ParsedChatCompletionsPortRequest): boolean {
+  return (
+    isStateless(request) &&
+    !request.model &&
+    !request.models?.length &&
+    !request.provider &&
+    !request.tools?.length &&
+    !request.tool_choice
+  );
+}
+
+async function selectCompletionModel(
+  context: ServiceContext,
+  request: ParsedChatCompletionsPortRequest,
+  credentialScope: DeviceCredentialScope | undefined,
+  user: IUser | undefined,
+) {
+  if (credentialScope !== "pashi") {
+    return { model: request.model, reasoningEffort: undefined };
+  }
+
+  if (!user || !isTierOnly(request)) {
+    throw new AssistantError(
+      "This key can only run a model tier, without tools, conversations, agents or environments.",
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
+
+  const { models, reasoningEffort } = await selectModels({
+    attachments: [],
+    env: context.env,
+    tier: request.model_tier ?? DEFAULT_MODEL_TIER,
+    user,
+  });
+
+  return { model: models[0], reasoningEffort };
 }
 
 function isResponseToolList(
@@ -325,6 +369,7 @@ export function toChatCompletionChunkStream(
 export async function createChatCompletionThroughPort({
   context,
   request,
+  credentialScope,
   user,
   anonymousUser,
   executionCtx,
@@ -332,12 +377,19 @@ export async function createChatCompletionThroughPort({
   platform,
   conversationHint,
 }: ChatCompletionsPortInput): Promise<ChatCompletionResponseBody | Response> {
-  if (isStateless(request) && user && request.model && !request.models?.length) {
+  const { model, reasoningEffort } = await selectCompletionModel(
+    context,
+    request,
+    credentialScope,
+    user,
+  );
+
+  if (isStateless(request) && user && model && !request.models?.length) {
     return createModelCompletion({
       context,
       user,
       request: {
-        model: request.model,
+        model,
         messages: request.messages,
         tools: isResponseToolList(request.tools) ? undefined : request.tools,
         tool_choice: request.tool_choice,
@@ -346,11 +398,12 @@ export async function createChatCompletionThroughPort({
         top_p: request.top_p,
         max_tokens: request.max_tokens,
         max_completion_tokens: request.max_completion_tokens,
-        reasoning_effort: request.reasoning_effort ?? request.reasoning?.effort,
+        reasoning_effort: request.reasoning_effort ?? request.reasoning?.effort ?? reasoningEffort,
         response_format: request.response_format,
         stream: request.stream,
       },
-      conversationId: conversationHint ?? "chat-completions",
+      conversationId:
+        (credentialScope === "pashi" ? undefined : conversationHint) ?? "chat-completions",
     });
   }
 

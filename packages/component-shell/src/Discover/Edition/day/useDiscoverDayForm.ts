@@ -8,12 +8,8 @@ import {
 import { getErrorMessage, parseCommaSeparatedList } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 
-export function useDiscoverDayForm(
-  profile: DiscoverDayProfile,
-  onSaved: () => void,
-  audioEnabled: boolean,
-) {
-  const [draft, setDraft] = useState(() => ({
+function createDiscoverDayDraft(profile: DiscoverDayProfile, audioEnabled: boolean) {
+  return {
     ...profile,
     audio: audioEnabled
       ? profile.audio
@@ -21,7 +17,15 @@ export function useDiscoverDayForm(
           morning: { ...profile.audio.morning, enabled: false },
           evening: { ...profile.audio.evening, enabled: false },
         },
-  }));
+  };
+}
+
+export function useDiscoverDayForm(
+  profile: DiscoverDayProfile,
+  onSaved: () => void,
+  audioEnabled: boolean,
+) {
+  const [draft, setDraft] = useState(() => createDiscoverDayDraft(profile, audioEnabled));
   const [topicsText, setTopicsText] = useState(profile.topics.join(", "));
   const [mutedText, setMutedText] = useState(profile.mutedTopics.join(", "));
   const [origin, setOrigin] = useState<DiscoverPlace | null>(profile.commute?.origin ?? null);
@@ -100,7 +104,7 @@ export function useDiscoverDayForm(
     mutedText,
     setMutedText,
     reload: () => {
-      setDraft(profile);
+      setDraft(createDiscoverDayDraft(profile, audioEnabled));
       setOverrideDate("");
       setRemoveOverride(undefined);
       setError(null);

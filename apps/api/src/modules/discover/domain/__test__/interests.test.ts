@@ -60,8 +60,11 @@ function inferred(topic: string, evidence: string[]) {
 }
 
 const today = "2026-11-01";
-const doctorWho = inferred("Doctor Who", ["Marquee shelf: Doctor Who", "Reddit: r/doctorwho"]);
-const simpsons = inferred("The Simpsons", ["Marquee week ahead: S38E5", "Reddit: r/TheSimpsons"]);
+const doctorWho = inferred("Doctor Who", ["Film and TV shelf: Doctor Who", "Reddit: r/doctorwho"]);
+const simpsons = inferred("The Simpsons", [
+  "Film and TV week ahead: S38E5",
+  "Reddit: r/TheSimpsons",
+]);
 const asimovInterest = inferred("Isaac Asimov", ["Readwise: Foundation", "Readwise: I, Robot"]);
 const weeknd = inferred("The Weeknd", ["Last.fm: 22 plays", "Reddit: r/popculturechat"]);
 

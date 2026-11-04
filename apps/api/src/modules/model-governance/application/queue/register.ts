@@ -8,6 +8,7 @@ import {
 
 import { SCHEDULES } from "~/config/schedules";
 import { createRepositories } from "~/infrastructure/database/repositories";
+import { d1WritesAllowed } from "~/modules/infra/application/write-breaker";
 import {
   runModelGovernanceMaintenance,
   scheduleModelPlatformReconciles,
@@ -33,6 +34,7 @@ export function registerModelPlatformQueue(workflows: AppWorkflows): void {
     SCHEDULES.MODEL_PLATFORM_RECONCILE,
     defineSchedule({
       name: "model-platform-reconcile",
+      enabledWhen: d1WritesAllowed,
       run: async ({ env }) => {
         await scheduleModelPlatformReconciles(env, createRepositories(env));
       },
@@ -43,6 +45,7 @@ export function registerModelPlatformQueue(workflows: AppWorkflows): void {
     SCHEDULES.MODEL_GOVERNANCE,
     defineSchedule({
       name: "model-governance",
+      enabledWhen: d1WritesAllowed,
       run: async ({ env }) => {
         await runModelGovernanceMaintenance(env, createRepositories(env));
       },

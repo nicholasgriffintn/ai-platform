@@ -2,31 +2,32 @@ import type { AuthChallengeRecord } from "@ngriffin_uk/auth-core";
 import {
   DEVICE_CODE_EXPIRES_IN_SECONDS,
   DEVICE_CODE_POLL_INTERVAL_SECONDS,
-  DEVICE_USER_CODE_ALPHABET,
-  DEVICE_USER_CODE_LENGTH,
   deviceCredentialScopeSchema,
   formatDeviceUserCode,
+  isAppClientScope,
   normaliseDeviceUserCode,
   type DeviceAuthorisation,
+  type DeviceAuthorisationDecisionResult,
   type DeviceCodeResponse,
   type DeviceCredentialScope,
   type DeviceTokenError,
   type DeviceTokenResponse,
 } from "@ngriffin_uk/polychat-schemas";
-import {
-  randomFromAlphabet,
-  randomHex,
-  readNonEmptyString,
-  sha256Hex,
-} from "@ngriffin_uk/polychat-utility-core";
+import { randomHex, readNonEmptyString, sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { AuthChallengeRepository } from "~/modules/auth/infrastructure/AuthChallengeRepository";
 import { createUserApiKey } from "~/modules/user/application/apiKeys";
 
-const DEVICE_CHALLENGE_PROVIDER = "device";
-const USER_CODE_ATTEMPTS = 3;
+import { decideAppAuthorisation, isAppRequest } from "./app-authorisation";
+import {
+  createDeviceRequest,
+  DEVICE_CHALLENGE_PROVIDER,
+  requestKey,
+  requireAppBaseUrl,
+} from "./device-requests";
+
 const EXPIRED_OR_USED =
   "This code has expired or was already used. Start sign-in again on your device.";
 
@@ -53,26 +54,8 @@ function codeKey(deviceCodeHash: string): Promise<string> {
   return sha256Hex(`device-code:${deviceCodeHash}`);
 }
 
-function requestKey(userCode: string): Promise<string> {
-  return sha256Hex(`device-request:${userCode}`);
-}
-
 function decisionKey(deviceCodeHash: string): Promise<string> {
   return sha256Hex(`device-decision:${deviceCodeHash}`);
-}
-
-function requireAppBaseUrl(context: ServiceContext): string {
-  const baseUrl = context.env.APP_BASE_URL;
-
-  if (!baseUrl) {
-    throw new AssistantError(
-      "Device sign-in is unavailable because the app address is not configured",
-      ErrorType.CONFIGURATION_ERROR,
-      503,
-    );
-  }
-
-  return baseUrl.replace(/\/+$/, "");
 }
 
 function requireUserCode(input: string): string {
@@ -89,37 +72,20 @@ function requireUserCode(input: string): string {
   return userCode;
 }
 
-async function createDeviceRequest(
-  context: ServiceContext,
-  record: Omit<AuthChallengeRecord, "tokenHash" | "provider" | "kind" | "attempts">,
-): Promise<string> {
-  for (let attempt = 1; ; attempt++) {
-    const userCode = randomFromAlphabet(DEVICE_USER_CODE_LENGTH, DEVICE_USER_CODE_ALPHABET);
-
-    try {
-      await context.repositories.get(AuthChallengeRepository).create({
-        ...record,
-        tokenHash: await requestKey(userCode),
-        provider: DEVICE_CHALLENGE_PROVIDER,
-        kind: "custom",
-        attempts: 0,
-      });
-
-      return userCode;
-    } catch (error) {
-      if (attempt >= USER_CODE_ATTEMPTS) {
-        throw error;
-      }
-    }
-  }
-}
-
 export async function startDeviceAuthorisation(
   context: ServiceContext,
   clientName: string,
   scope: DeviceCredentialScope,
   now = new Date(),
 ): Promise<DeviceCodeResponse> {
+  if (isAppClientScope(scope)) {
+    throw new AssistantError(
+      "That access is only available to its registered app.",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
   const verificationUri = `${requireAppBaseUrl(context)}/device`;
   const deviceCode = randomHex(64).toLowerCase();
   const deviceCodeHash = await sha256Hex(deviceCode);
@@ -225,6 +191,7 @@ export async function getDeviceAuthorisation(
     userCode: formatDeviceUserCode(userCode),
     clientName,
     scope: readScope(request.payload.scope),
+    verified: isAppRequest(request),
     createdAt: request.createdAt.toISOString(),
     expiresAt: request.expiresAt.toISOString(),
   };
@@ -235,15 +202,24 @@ export async function decideDeviceAuthorisation(
   userCodeInput: string,
   decision: "approve" | "deny",
   now = new Date(),
-): Promise<{ status: "approved" | "denied" }> {
+): Promise<DeviceAuthorisationDecisionResult> {
   const user = context.requireUser();
   const challenges = context.repositories.get(AuthChallengeRepository);
   const request = await challenges.consumeByTokenHash(
     await requestKey(requireUserCode(userCodeInput)),
   );
-  const deviceCodeHash = readNonEmptyString(request?.payload.deviceCodeHash);
 
-  if (!request || !deviceCodeHash || request.expiresAt.getTime() <= now.getTime()) {
+  if (!request || request.expiresAt.getTime() <= now.getTime()) {
+    throw new AssistantError(EXPIRED_OR_USED, ErrorType.NOT_FOUND, 404);
+  }
+
+  if (isAppRequest(request)) {
+    return decideAppAuthorisation(context, request, user.id, decision, now);
+  }
+
+  const deviceCodeHash = readNonEmptyString(request.payload.deviceCodeHash);
+
+  if (!deviceCodeHash) {
     throw new AssistantError(EXPIRED_OR_USED, ErrorType.NOT_FOUND, 404);
   }
 

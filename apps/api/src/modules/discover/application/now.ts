@@ -8,7 +8,11 @@ import { sha256Hex, truncateSingleLine } from "@ngriffin_uk/polychat-utility-cor
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveDiscoverDay } from "~/modules/discover/domain/day";
-import { presentDiscoverNow, type DiscoverLiveContent } from "~/modules/discover/domain/live";
+import {
+  listDiscoverFeedProviders,
+  presentDiscoverNow,
+  type DiscoverLiveContent,
+} from "~/modules/discover/domain/live";
 import { loadPolyAgenda } from "~/modules/poly/application/read-agenda";
 
 export async function readDiscoverNow(
@@ -21,9 +25,7 @@ export async function readDiscoverNow(
   },
 ): Promise<DiscoverNow> {
   const { live, profile, sources, now } = input;
-  const allowed = new Set(
-    sources.filter((source) => source.connected && source.used).map((source) => source.providerId),
-  );
+  const allowed = listDiscoverFeedProviders(sources);
   const agenda = await loadPolyAgenda(context.repositories, context.requireUser().id);
   const priorities: DiscoverObservation[] = await Promise.all(
     agenda.needs_you.slice(0, 3).map(async (item) => ({

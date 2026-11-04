@@ -222,17 +222,6 @@ export async function scheduleDiscoverNotifications(
       continue;
     }
 
-    if (
-      previous.observations.some(
-        (item) =>
-          item.id === observation.id &&
-          item.fingerprint === observation.fingerprint &&
-          item.actionable,
-      )
-    ) {
-      continue;
-    }
-
     await createDiscoverNotification(context, {
       category,
       subjectId: observation.id,

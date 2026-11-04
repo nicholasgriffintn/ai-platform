@@ -1836,7 +1836,7 @@ export const userCredential = sqliteTable(
     encrypted_value: text(),
     token_hash: text(),
     name: text().default("API Key"),
-    scope: text({ enum: ["full", "discover"] }),
+    scope: text({ enum: ["full", "discover", "pashi"] }),
     public_key: text({ mode: "json" }).$type<JsonWebKey>(),
     counter: integer(),
     device_type: text(),

@@ -68,6 +68,11 @@ export interface ChannelContextInput {
   to?: string | null;
 }
 
+export interface CapabilityMapInput {
+  groups: readonly { label: string; tools: readonly string[] }[];
+  connectedApps: readonly string[];
+}
+
 export interface SkillDisclosure {
   id: string;
   description: string;
@@ -403,6 +408,25 @@ export function buildSkillsSection(
   return builder.addLine("</available_skills>").addLine().build();
 }
 
+export function buildCapabilityMapSection(
+  map: CapabilityMapInput | null | undefined,
+  discoveryTool = "discover_capabilities",
+): string {
+  if (!map) {
+    return "";
+  }
+
+  return [
+    "<available_capabilities>",
+    renderPrompt("chat/capabilities/intro", { discoveryTool }),
+    ...map.groups.map((group) => `- ${group.label}: ${group.tools.join(", ")}`),
+    ...(map.connectedApps.length > 0 ? [`- Connected apps: ${map.connectedApps.join(", ")}`] : []),
+    "</available_capabilities>",
+    "",
+    "",
+  ].join("\n");
+}
+
 export function buildUserContextSection({
   date,
   userNickname,
@@ -517,6 +541,7 @@ export interface StandardChatPromptOptions {
   simulatedThinking?: boolean;
   isCoding?: boolean;
   skills?: readonly SkillDisclosure[];
+  capabilityMap?: CapabilityMapInput | null;
   memoryPolicy?: PromptMemoryPolicy;
   persona?: AssistantPersonaInput | null;
   channel?: ChannelContextInput | null;
@@ -542,6 +567,7 @@ export function buildStandardChatPrompt({
   simulatedThinking,
   isCoding = false,
   skills,
+  capabilityMap,
   memoryPolicy = { enabled: false, canRetrieve: false, canStore: false },
   persona,
   channel,
@@ -597,6 +623,7 @@ export function buildStandardChatPrompt({
     .addIf(isTeammate, buildAgentGuidelinesSection())
     .add(buildChannelSection(channel))
     .add(buildSkillsSection(skills, { skillLoadTool }))
+    .addIf(capabilities.supportsToolCalls, buildCapabilityMapSection(capabilityMap))
     .add(
       buildUserContextSection(
         capabilities.supportsToolCalls

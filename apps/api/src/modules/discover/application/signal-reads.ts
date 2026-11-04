@@ -17,14 +17,18 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { executeRecipeConnectorOperation } from "~/modules/connectors/application/operations";
 import type {
   DiscoverConnectorSignal,
+  DiscoverFirstPartySignal,
   DiscoverPublicSignal,
   DiscoverSignal,
   DiscoverSignalRead,
 } from "~/modules/discover/domain/signal-sources/types";
+import { readShelf } from "~/modules/watching/application/shelf";
+import { readWatchingNews, readWeekAhead } from "~/modules/watching/application/updates";
 
 const logger = getLogger({ prefix: "discover/signal-reads" });
 const SIGNAL_EXPANSION_CONCURRENCY = 4;
 const PUBLIC_RESPONSE_BYTES = 5_000_000;
+const WEEK_AHEAD_SIGNAL_DAYS = 7;
 
 type SignalOperationRunner = (
   operation: string,
@@ -131,12 +135,29 @@ async function readPublicSignal(
   return parsed;
 }
 
+function readFirstPartySignal(
+  context: ServiceContext,
+  signal: DiscoverFirstPartySignal,
+): Promise<unknown> {
+  if (signal.source === "news") {
+    return readWatchingNews(context);
+  }
+
+  return signal.source === "shelf"
+    ? readShelf(context)
+    : readWeekAhead(context, WEEK_AHEAD_SIGNAL_DAYS);
+}
+
 export function readDiscoverSignalResult(
   context: ServiceContext,
   signal: DiscoverSignal,
   read: DiscoverSignalRead,
 ): Promise<unknown> {
-  return signal.kind === "public"
-    ? readPublicSignal(signal, read)
+  if (signal.kind === "public") {
+    return readPublicSignal(signal, read);
+  }
+
+  return signal.kind === "first_party"
+    ? readFirstPartySignal(context, signal)
     : readConnectorSignal(context, signal, read);
 }

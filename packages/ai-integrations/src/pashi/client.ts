@@ -2,6 +2,7 @@ import { readEnvString } from "@ngriffin_uk/polychat-utility-server/env";
 
 import { getPashiToolFields, isPashiToolExecutable } from "./catalogue.js";
 import {
+  pashiConversionJobSchema,
   pashiInfoSchema,
   type PashiInfo,
   type PashiOperation,
@@ -14,6 +15,8 @@ const PASHI_INFO_PATH = "/api/info";
 const PASHI_CONFIGURATION_ERROR_MESSAGE = "PASHI_API_KEY is required to access Pashi.";
 const DEFAULT_CATALOG_TTL_MS = 5 * 60 * 1000;
 const DEFAULT_TIMEOUT_MS = 10_000;
+const CONVERSION_POLL_INTERVAL_MS = 2_000;
+const CONVERSION_TIMEOUT_MS = 120_000;
 
 export interface PashiEnvironment {
   PASHI_API_KEY?: string;
@@ -45,14 +48,18 @@ interface PashiClientOptions {
   catalogTtlMs?: number;
   fetch?: typeof fetch;
   now?: () => number;
+  sleep?: (milliseconds: number) => Promise<void>;
+  supportsFiles?: boolean;
   timeoutMs?: number;
 }
 
 export class PashiClient {
+  readonly supportsFiles: boolean;
   private readonly apiKey: string;
   private readonly catalogTtlMs: number;
   private readonly fetch: typeof fetch;
   private readonly now: () => number;
+  private readonly sleep: (milliseconds: number) => Promise<void>;
   private readonly timeoutMs: number;
   private cachedInfo?: { expiresAt: number; value: PashiInfo };
   private pendingInfo?: Promise<PashiInfo>;
@@ -68,6 +75,9 @@ export class PashiClient {
     this.catalogTtlMs = options.catalogTtlMs ?? DEFAULT_CATALOG_TTL_MS;
     this.fetch = options.fetch ?? fetch;
     this.now = options.now ?? Date.now;
+    this.sleep =
+      options.sleep ?? ((milliseconds) => new Promise((done) => setTimeout(done, milliseconds)));
+    this.supportsFiles = options.supportsFiles ?? false;
     this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   }
 
@@ -106,13 +116,17 @@ export class PashiClient {
       );
     }
 
-    if (!isPashiToolExecutable(tool)) {
+    if (!isPashiToolExecutable(tool, this.supportsFiles)) {
       throw new PashiClientError(
         "tool_unavailable",
         tool.input.kind === "file"
-          ? `Pashi tool "${tool.id}" requires a file upload, which this integration does not support yet.`
+          ? `Pashi tool "${tool.id}" needs Pashi linked to this account, from the sign-in page on pashi.app.`
           : `Pashi tool "${tool.id}" is currently unavailable.`,
       );
+    }
+
+    if (tool.input.kind === "file") {
+      return this.convertFile(tool, operation);
     }
 
     const fields = validateOperation(tool, operation);
@@ -149,6 +163,70 @@ export class PashiClient {
       toolId: tool.id,
       toolType: tool.toolType,
     };
+  }
+
+  private async convertFile(
+    tool: PashiTool,
+    operation: PashiOperation,
+  ): Promise<PashiOperationResult> {
+    if (!operation.file) {
+      throw new PashiClientError(
+        "invalid_input",
+        `Pashi tool "${tool.id}" converts a file. Pass file_url with a file from this chat.`,
+      );
+    }
+
+    const form = new FormData();
+
+    form.set("file", operation.file.blob, operation.file.name);
+
+    for (const [id, value] of Object.entries(validateOperation(tool, operation))) {
+      form.set(id, value);
+    }
+
+    const queued = parseConversionJob(
+      await this.requestJson(tool.endpoint, { body: form, method: "POST" }, false),
+    );
+    const finished = await this.waitForConversion(tool, queued);
+    const response = await this.send(
+      `${tool.endpoint}?download=${encodeURIComponent(finished.jobId)}`,
+      {},
+      false,
+    );
+    const name = `pashi-${finished.jobId}.${finished.outputFormat}`;
+
+    return {
+      data: { jobId: finished.jobId, name, outputFormat: finished.outputFormat },
+      file: { blob: await response.blob(), name },
+      resultKind: "file",
+      toolId: tool.id,
+      toolType: tool.toolType,
+    };
+  }
+
+  private async waitForConversion(tool: PashiTool, queued: PashiConversionJob) {
+    const deadline = this.now() + CONVERSION_TIMEOUT_MS;
+    let job = queued;
+
+    while (job.status === "queued" || job.status === "processing") {
+      if (this.now() >= deadline) {
+        throw new PashiClientError("timeout", "Pashi is still converting that file.");
+      }
+
+      await this.sleep(CONVERSION_POLL_INTERVAL_MS);
+      job = parseConversionJob(
+        await this.requestJson(`${tool.endpoint}?job=${encodeURIComponent(job.jobId)}`, {}),
+      );
+    }
+
+    if (job.status === "failed") {
+      throw new PashiClientError(
+        "upstream_error",
+        job.error || "Pashi could not convert that file.",
+      );
+    }
+
+    return job;
   }
 
   private async fetchInfo(): Promise<PashiInfo> {
@@ -195,6 +273,25 @@ export class PashiClient {
     init: Omit<RequestInit, "headers"> & { headers?: Record<string, string> },
     bounded = true,
   ): Promise<unknown> {
+    const response = await this.send(path, init, bounded);
+    const body = await response.text();
+
+    try {
+      return JSON.parse(body);
+    } catch {
+      throw new PashiClientError(
+        "upstream_error",
+        "Pashi returned an invalid JSON response.",
+        response.status,
+      );
+    }
+  }
+
+  private async send(
+    path: string,
+    init: Omit<RequestInit, "headers"> & { headers?: Record<string, string> },
+    bounded: boolean,
+  ): Promise<Response> {
     const url = resolvePashiUrl(path);
     const controller = new AbortController();
     const timeoutId = bounded ? setTimeout(() => controller.abort(), this.timeoutMs) : undefined;
@@ -221,7 +318,15 @@ export class PashiClient {
       clearTimeout(timeoutId);
     }
 
-    const body = await response.text();
+    if (response.status === 401 || response.status === 403) {
+      throw new PashiClientError(
+        "tool_unavailable",
+        response.status === 401
+          ? "Pashi no longer accepts this link. Reconnect from the sign-in page on pashi.app."
+          : "Media conversion in Pashi needs Polychat Pro.",
+        response.status,
+      );
+    }
 
     if (!response.ok) {
       throw new PashiClientError(
@@ -231,16 +336,20 @@ export class PashiClient {
       );
     }
 
-    try {
-      return JSON.parse(body);
-    } catch {
-      throw new PashiClientError(
-        "upstream_error",
-        "Pashi returned an invalid JSON response.",
-        response.status,
-      );
-    }
+    return response;
   }
+}
+
+type PashiConversionJob = ReturnType<typeof parseConversionJob>;
+
+function parseConversionJob(value: unknown) {
+  const parsed = pashiConversionJobSchema.safeParse(value);
+
+  if (!parsed.success) {
+    throw new PashiClientError("upstream_error", "Pashi returned an unexpected conversion job.");
+  }
+
+  return parsed.data.result;
 }
 
 const clientsByEnvironment = new WeakMap<
@@ -323,7 +432,7 @@ function validateOperation(tool: PashiTool, operation: PashiOperation): Record<s
       ? tool.input.required
       : tool.input.mode !== "none" && tool.input.required && !hasStructuredFields;
 
-  if (requiresInput && !input.trim()) {
+  if (requiresInput && !input.trim() && !operation.file) {
     throw new PashiClientError(
       "invalid_input",
       `Pashi tool "${tool.id}" requires ${tool.input.label.toLowerCase()}.`,

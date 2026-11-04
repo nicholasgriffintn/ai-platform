@@ -30,6 +30,7 @@ import {
 import {
   DISCOVER_SIGNALS,
   isDiscoverOptInProvider,
+  isDiscoverFirstPartySignal,
   isDiscoverPublicSignal,
 } from "~/modules/discover/domain/signal-catalogue";
 import { listDiscoverSignalProviders } from "~/modules/discover/domain/signal-selection";
@@ -154,6 +155,15 @@ async function describeSources(
         connected: true,
         ...health(source.providerId),
         used: preferences.includedProviders.includes(source.providerId),
+      }),
+    ),
+    ...listDiscoverSignalProviders(DISCOVER_SIGNALS.filter(isDiscoverFirstPartySignal)).map(
+      (source) => ({
+        providerId: source.providerId,
+        name: source.title,
+        description: source.description,
+        connected: true,
+        ...health(source.providerId),
       }),
     ),
     ...(preferences.feeds.length > 0

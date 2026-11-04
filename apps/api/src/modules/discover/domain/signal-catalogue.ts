@@ -12,6 +12,7 @@ import { REDDIT_SIGNALS } from "./signal-sources/reddit";
 import { STACK_EXCHANGE_SIGNALS } from "./signal-sources/stack-exchange";
 import type {
   DiscoverConnectorSignal,
+  DiscoverFirstPartySignal,
   DiscoverPublicSignal,
   DiscoverSignal,
 } from "./signal-sources/types";
@@ -43,7 +44,13 @@ export function isDiscoverPublicSignal(signal: DiscoverSignal): signal is Discov
 export function isDiscoverConnectorSignal(
   signal: DiscoverSignal,
 ): signal is DiscoverConnectorSignal {
-  return signal.kind !== "public";
+  return signal.kind !== "public" && signal.kind !== "first_party";
+}
+
+export function isDiscoverFirstPartySignal(
+  signal: DiscoverSignal,
+): signal is DiscoverFirstPartySignal {
+  return signal.kind === "first_party";
 }
 
 export function listDiscoverSignalOperations(signal: DiscoverConnectorSignal): string[] {

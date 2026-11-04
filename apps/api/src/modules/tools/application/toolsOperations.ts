@@ -6,13 +6,9 @@ import { getComputerUseAvailability } from "~/modules/computer-use/application/a
 import { resolveManagedFunctionToolNames } from "~/modules/tools/application/availability";
 import { listFunctionToolDefinitions } from "~/modules/tools/application/catalogue";
 import { formatFunctionName } from "~/modules/tools/application/functions";
-import { NON_RUNNABLE_FUNCTION_TOOLS } from "~/modules/tools/application/internal-tools";
+import { isRunnableByHand } from "~/modules/tools/application/internal-tools";
 
 import { getToolCategory } from "./toolCategories";
-
-function isUserFacingTool(toolName: string): boolean {
-  return !NON_RUNNABLE_FUNCTION_TOOLS.has(toolName);
-}
 
 export async function getScopedAvailableTools(
   context: ServiceContext,
@@ -29,7 +25,7 @@ export async function getScopedAvailableTools(
 
 export function listCatalogueTools(): Tool[] {
   return listFunctionToolDefinitions()
-    .filter((tool) => isUserFacingTool(tool.name))
+    .filter((tool) => isRunnableByHand(tool))
     .map((tool) => ({
       id: tool.name,
       name: formatFunctionName(tool.name),
@@ -43,7 +39,7 @@ export function getAvailableTools(isPro = false, isSignedIn = false): Tool[] {
   const managedToolNames = new Set(resolveManagedFunctionToolNames({ isSignedIn }));
 
   return listFunctionToolDefinitions()
-    .filter((tool) => isUserFacingTool(tool.name))
+    .filter((tool) => isRunnableByHand(tool))
     .filter((tool) => {
       if (tool.type === "premium" && !isPro) {
         return false;

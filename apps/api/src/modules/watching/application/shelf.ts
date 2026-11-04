@@ -1,0 +1,63 @@
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+
+import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { listRecentEntries, saveShelfEntry, setShelfFollow } from "~/modules/watching/domain/shelf";
+import type { ViewingStatus } from "~/modules/watching/domain/titles";
+import { fetchTmdbTitle, searchTmdbPerson } from "~/modules/watching/infrastructure/tmdb-client";
+
+import { requireTitleRef, requireTmdbToken } from "./catalogue";
+import { readShelfContent, updateShelfContent } from "./shelf-store";
+import { indexTitleIfMissing } from "./title-index";
+
+export async function readShelf(context: ServiceContext, status?: ViewingStatus) {
+  const shelf = await readShelfContent(context);
+
+  return {
+    entries: listRecentEntries(shelf, status ? [status] : undefined).map((entry) => ({
+      id: entry.titleId,
+      title: entry.title,
+      year: entry.year,
+      status: entry.status,
+      rating: entry.rating,
+      thoughts: entry.thoughts,
+    })),
+    following: shelf.following.map((person) => person.name),
+  };
+}
+
+export async function saveToShelf(
+  context: ServiceContext,
+  input: { titleId: string; status: ViewingStatus; rating?: number; thoughts?: string },
+) {
+  const details = await fetchTmdbTitle(requireTmdbToken(context), requireTitleRef(input.titleId));
+
+  await updateShelfContent(context, (shelf) =>
+    saveShelfEntry(shelf, {
+      titleId: details.id,
+      mediaType: details.mediaType,
+      title: details.title,
+      year: details.year,
+      status: input.status,
+      rating: input.rating,
+      thoughts: input.thoughts,
+    }),
+  );
+  await indexTitleIfMissing(context.env, details.id);
+
+  return { id: details.id, title: details.title, status: input.status };
+}
+
+export async function setPersonFollowed(
+  context: ServiceContext,
+  input: { name: string; follow: boolean },
+) {
+  const person = await searchTmdbPerson(requireTmdbToken(context), input.name);
+
+  if (!person) {
+    throw new AssistantError(`No one called ${input.name} was found`, ErrorType.NOT_FOUND, 404);
+  }
+
+  await updateShelfContent(context, (shelf) => setShelfFollow(shelf, person, input.follow));
+
+  return person;
+}

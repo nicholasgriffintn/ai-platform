@@ -7,7 +7,6 @@ import {
   executeTflOperation,
   executeJamendoOperation,
   executeLastfmOperation,
-  executeMarqueeOperation,
   executeNetlifyOperation,
   executePodcastIndexOperation,
   executeReadwiseOperation,
@@ -48,7 +47,6 @@ const localExecutors: Partial<Record<RecipeConnectorProvider, ConnectorOperation
   oura: executeOuraOperation,
   tfl: executeTflOperation,
   audiobookshelf: executeAudiobookshelfOperation,
-  marquee: executeMarqueeOperation,
 };
 
 const connectorAdapters: RecipeConnectorAdapter[] = connectorProviders.map((provider) => ({

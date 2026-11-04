@@ -37,6 +37,7 @@ import {
   selectCurrentResearch,
 } from "~/modules/discover/domain/research";
 import { findDiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
+import { keepUsedDiscoverDocuments } from "~/modules/discover/domain/signal-selection";
 
 import { listDiscoverArticleSources } from "./articles";
 import { listRecentDiscoverEditions } from "./editions";
@@ -68,9 +69,11 @@ export async function collectDiscoverLiveCandidates(
     ),
   );
   const { selected } = await resolveDiscoverSignals(context, settings);
-  const allowedSignals = new Set(selected.map((signal) => signal.id));
   const { browsed, shared } = splitDiscoverSignalFeeds(
-    documents.signals.filter((signal) => allowedSignals.has(signal.signalId)),
+    keepUsedDiscoverDocuments(documents.signals, {
+      selected,
+      excludedProviders: settings.excludedProviders,
+    }),
   );
   const research = selectCurrentResearch(documents.research, {
     today: describeZonedInstant(now, profile.timezone).date,

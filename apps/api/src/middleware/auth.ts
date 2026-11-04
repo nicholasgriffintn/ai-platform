@@ -20,6 +20,7 @@ import { getUserByJwtToken } from "~/modules/auth/application/jwt";
 import { authenticateSession } from "~/modules/auth/application/session-renewal";
 import { createSessionCookie } from "~/modules/auth/application/sessions";
 import { credentialAuthenticates } from "~/modules/auth/domain/credential-scope";
+import { d1WritesAllowed } from "~/modules/infra/application/write-breaker";
 import { WORK_MCP_PATH } from "~/modules/ports/mcp/application/work-access";
 import { AnonymousUserRepository } from "~/modules/user/infrastructure/AnonymousUserRepository";
 import { ApiKeyRepository } from "~/modules/user/infrastructure/ApiKeyRepository";
@@ -30,7 +31,12 @@ const logger = getLogger({ prefix: "middleware/auth" });
 
 const ANONYMOUS_ID_COOKIE = "anon_id";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const DEVICE_CLIENT_PATHS = new Set(["/auth/device/code", "/auth/device/token"]);
+const DEVICE_CLIENT_PATHS = new Set([
+  "/auth/apps/start",
+  "/auth/apps/token",
+  "/auth/device/code",
+  "/auth/device/token",
+]);
 const DESKTOP_DISTRIBUTION_PREFIX = "/desktop/";
 
 function isBotUserAgent(userAgent: string): boolean {
@@ -154,10 +160,16 @@ export async function authMiddleware(context: Context, next: Next) {
         try {
           const principal = await new ApiKeyRepository(context.env).findApiKeyPrincipal(authToken);
 
-          return principal &&
-            credentialAuthenticates(principal.scope, context.req.method, context.req.path)
-            ? principal.user
-            : null;
+          if (
+            !principal ||
+            !credentialAuthenticates(principal.scope, context.req.method, context.req.path)
+          ) {
+            return null;
+          }
+
+          context.set("credentialScope", principal.scope);
+
+          return principal.user;
         } catch (error) {
           logger.error("API Key authentication check failed:", { error });
 
@@ -221,7 +233,7 @@ export async function authMiddleware(context: Context, next: Next) {
         );
       }
 
-      if (!anonymousUser) {
+      if (!anonymousUser && (await d1WritesAllowed(context.env))) {
         anonymousUser = await new AnonymousUserRepository(context.env).getOrCreateAnonymousUser(
           ipAddress,
           userAgent,

@@ -51,9 +51,12 @@ export async function judgeDiscoverNewsAlert(
     return false;
   }
 
+  let backgroundContext: ServiceContext | null = null;
+
   try {
     const profile = await readDiscoverDayProfile(context);
-    const backgroundContext = await beginDiscoverBackgroundWork(context, {
+
+    backgroundContext = await beginDiscoverBackgroundWork(context, {
       id: `discover_news_activity_${context.requireUser().id}_${item.id}_${item.revision}`,
       installationId: input.installationId,
       data: {
@@ -80,6 +83,10 @@ export async function judgeDiscoverNewsAlert(
       result.reason === "practical_action"
     );
   } catch {
+    if (backgroundContext) {
+      await finishDiscoverBackgroundWork(backgroundContext, "failed");
+    }
+
     return false;
   }
 }

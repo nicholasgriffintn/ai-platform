@@ -7,6 +7,8 @@ import {
   type DiscoverDayContext,
   type DiscoverFeedPage,
   type DiscoverNow,
+  type DiscoverObservation,
+  type DiscoverSettings,
   type DiscoverFeedbackSignal,
 } from "@ngriffin_uk/polychat-schemas";
 import {
@@ -158,6 +160,12 @@ export function mergeDiscoverLiveItems(
   };
 }
 
+export function listDiscoverFeedProviders(sources: DiscoverSettings["sources"]): Set<string> {
+  return new Set(
+    sources.filter((source) => source.connected && source.used).map((source) => source.providerId),
+  );
+}
+
 export function presentDiscoverFeed(
   content: DiscoverLiveContent,
   input: {
@@ -198,6 +206,14 @@ export function presentDiscoverFeed(
   };
 }
 
+function discoverObservationRank(observation: DiscoverObservation): number {
+  if (observation.stale) {
+    return 2;
+  }
+
+  return observation.kind === "travel" || observation.actionable ? 0 : 1;
+}
+
 export function presentDiscoverNow(
   content: DiscoverLiveContent,
   day: DiscoverDayContext,
@@ -227,7 +243,8 @@ export function presentDiscoverNow(
           observation.expiresAt <= now.toISOString() ||
           ((observation.kind === "calendar" || observation.kind === "task") &&
             describeZonedInstant(new Date(observation.observedAt), day.timezone).date !== day.date),
-      })),
+      }))
+      .sort((left, right) => discoverObservationRank(left) - discoverObservationRank(right)),
     checkedAt: content.checkedAt,
     updatedAt: content.updatedAt,
     nextRefreshAt: content.checkedAt

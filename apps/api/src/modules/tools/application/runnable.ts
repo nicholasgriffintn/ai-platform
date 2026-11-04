@@ -6,7 +6,7 @@ import {
   getFunctionIcon,
   getFunctionResponseType,
 } from "~/modules/tools/application/functions";
-import { NON_RUNNABLE_FUNCTION_TOOLS } from "~/modules/tools/application/internal-tools";
+import { isRunnableByHand } from "~/modules/tools/application/internal-tools";
 import { getToolCategory } from "~/modules/tools/application/toolCategories";
 import { buildToolFormSchema } from "~/modules/tools/utils/form-schema";
 
@@ -26,11 +26,7 @@ export const buildRunnableTool = (tool: FunctionTool): RunnableTool => ({
 });
 
 export const getRunnableTool = (id: string): RunnableTool | null => {
-  if (NON_RUNNABLE_FUNCTION_TOOLS.has(id)) {
-    return null;
-  }
-
   const tool = listFunctionToolDefinitions().find((candidate) => candidate.name === id);
 
-  return tool ? buildRunnableTool(tool) : null;
+  return tool && isRunnableByHand(tool) ? buildRunnableTool(tool) : null;
 };

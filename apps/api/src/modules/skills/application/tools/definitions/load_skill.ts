@@ -4,6 +4,7 @@ import type { FunctionToolDescriptor } from "~/types/functions";
 
 export const load_skill: FunctionToolDescriptor = {
   name: SKILL_LOAD_TOOL_NAME,
+  system: true,
   description:
     "Load the full SKILL.md instructions for one of the skills listed in available_skills, or one relative resource path listed by that skill. Call this before starting work the skill covers, and follow what it returns.",
   type: "normal",

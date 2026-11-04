@@ -53,11 +53,14 @@ function DiscoverEditionBody({ controller }: { controller: DiscoverEditionContro
   const showTurnOn = isAuthenticated && settings !== null && !settings.enabled && !ownEdition;
   const showNoEdition =
     isAuthenticated && settings?.enabled === true && !ownEdition && !controller.isAwaitingEdition;
+  const dayProfile = controller.discover.data?.dayProfile;
   const live =
     isAuthenticated &&
     settings?.enabled &&
     controller.discover.data?.now &&
-    controller.discover.data.dayProfile;
+    dayProfile &&
+    edition &&
+    !controller.isHouseEdition;
   const feed = live ? (
     <DiscoverLiveContent controller={controller} />
   ) : edition ? (
@@ -102,6 +105,7 @@ function DiscoverEditionBody({ controller }: { controller: DiscoverEditionContro
       )}
       {showNoEdition && !live && (
         <DiscoverNoEdition
+          morning={dayProfile?.moments.morning ?? "07:00"}
           isRefreshing={controller.isRefreshing}
           onWriteNow={() => void controller.writeEditionNow()}
         />

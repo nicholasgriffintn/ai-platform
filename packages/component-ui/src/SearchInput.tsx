@@ -51,7 +51,7 @@ export function SearchInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-auto bg-surface py-2 pr-12 pl-10 text-sm"
+        className="h-auto appearance-none bg-surface py-2 pr-12 pl-10 text-sm [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none"
         {...props}
       />
       <div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center gap-1">

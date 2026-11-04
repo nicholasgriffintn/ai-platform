@@ -32,6 +32,7 @@ export {
   type PashiField,
   type PashiInfo,
   type PashiOperation,
+  type PashiFile,
   type PashiOperationResult,
   type PashiTool,
   type PashiToolType,
@@ -104,7 +105,6 @@ export { executeHardcoverOperation } from "./executors/hardcover.js";
 export { executePodcastIndexOperation } from "./executors/podcastindex.js";
 export { executeOuraOperation } from "./executors/oura.js";
 export { executeAudiobookshelfOperation } from "./executors/audiobookshelf.js";
-export { executeMarqueeOperation, MARQUEE_MCP_URL } from "./executors/marquee.js";
 export {
   COMPOSIO_CONNECTOR_SESSION_HANDLE_PATTERN,
   configuredComposioToolkits,

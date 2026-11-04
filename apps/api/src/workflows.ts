@@ -33,6 +33,7 @@ import { registerTeammatesQueue } from "~/modules/teammates/application/queue/re
 import { rollUpUsageMessages } from "~/modules/usage/application/infra-usage-queue";
 import { registerUsageQueue } from "~/modules/usage/application/queue/register";
 import { registerUserQueue } from "~/modules/user/application/queue/register";
+import { registerWatchingQueue } from "~/modules/watching/application/queue/register";
 import { registerWebhookEndpointsQueue } from "~/modules/webhook-endpoints/application/queue/register";
 import type { IEnv } from "~/types";
 
@@ -50,6 +51,7 @@ registerMemoryQueue(workflows);
 registerModelDatasetsQueue(workflows);
 registerModelPlatformQueue(workflows);
 registerSubscriptionQueue(workflows);
+registerWatchingQueue(workflows);
 registerRecipesQueue(workflows);
 registerConnectorsQueue(workflows);
 registerBenchmarksQueue(workflows);

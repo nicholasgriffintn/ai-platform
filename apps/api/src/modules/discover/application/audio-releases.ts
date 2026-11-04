@@ -1,3 +1,4 @@
+import { hasPlanEntitlement } from "@ngriffin_uk/polychat-ai-billing";
 import type { TaskSteps } from "@ngriffin_uk/polychat-ai-workflows";
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
@@ -16,7 +17,7 @@ import {
   DISCOVER_LISTEN_SHOW,
   buildDiscoverListenMaterial,
 } from "~/modules/discover/domain/listen";
-import { presentDiscoverFeed } from "~/modules/discover/domain/live";
+import { listDiscoverFeedProviders, presentDiscoverFeed } from "~/modules/discover/domain/live";
 import { readOutputContent } from "~/modules/outputs/application/content";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { requirePolyContext } from "~/modules/poly/application/poly-context";
@@ -88,6 +89,11 @@ export async function produceDiscoverAudio(
   now = new Date(),
 ): Promise<void> {
   const user = context.requireUser();
+
+  if (!hasPlanEntitlement(user.plan_id, "pro")) {
+    return;
+  }
+
   const [settings, profile, live, editions, poly] = await Promise.all([
     readDiscoverRoutine(context),
     readDiscoverDayProfile(context),
@@ -140,11 +146,7 @@ export async function produceDiscoverAudio(
   );
 
   const available = await readDiscoverSettings(context);
-  const allowedProviders = new Set(
-    available.sources
-      .filter((source) => source.connected && source.used)
-      .map((source) => source.providerId),
-  );
+  const allowedProviders = listDiscoverFeedProviders(available.sources);
   const mutedTopics = [
     ...profile.mutedTopics,
     ...summariseDiscoverFeedback(await listDiscoverFeedback(context, user.id)).hiddenTopics,
@@ -243,26 +245,34 @@ export async function produceDiscoverAudio(
         expiresAt: new Date(now.getTime() + 2 * 60 * 60 * 1000).toISOString(),
       },
     });
-    const episode = await preparePodcastGeneration(
-      backgroundContext,
-      {
-        sourceIds: [
-          ...new Set(
-            content.cards.flatMap((card) =>
-              card.kind === "read" && card.sourceId ? [card.sourceId] : [],
+    let episode: Awaited<ReturnType<typeof preparePodcastGeneration>>;
+
+    try {
+      episode = await preparePodcastGeneration(
+        backgroundContext,
+        {
+          sourceIds: [
+            ...new Set(
+              content.cards.flatMap((card) =>
+                card.kind === "read" && card.sourceId ? [card.sourceId] : [],
+              ),
             ),
-          ),
-        ].slice(0, 10),
-        material: buildDiscoverListenMaterial(content),
-        title: `${DISCOVER_LISTEN_SHOW}, ${input.slot}, ${input.date}`,
-        focus: `A source-backed ${input.slot} conversation for one listener. Explain meaningful developments and practical priorities. Use only the supplied material, identify uncertainty and keep dated or stale information out.`,
-        format: "deep_dive",
-        length: "default",
-        language: "en",
-        showId: show.id,
-      },
-      { sourceId },
-    );
+          ].slice(0, 10),
+          material: buildDiscoverListenMaterial(content),
+          title: `${DISCOVER_LISTEN_SHOW}, ${input.slot}, ${input.date}`,
+          focus: `A source-backed ${input.slot} conversation for one listener. Explain meaningful developments and practical priorities. Use only the supplied material, identify uncertainty and keep dated or stale information out.`,
+          format: "deep_dive",
+          length: "default",
+          language: "en",
+          showId: show.id,
+        },
+        { sourceId },
+      );
+    } catch (error) {
+      await finishDiscoverBackgroundWork(backgroundContext, "failed");
+
+      throw error;
+    }
 
     release.sourceId = episode.id;
 
@@ -309,12 +319,10 @@ export async function produceDiscoverAudio(
       },
     );
 
-    if (outcome !== "skipped") {
-      await finishDiscoverBackgroundWork(
-        generationContext,
-        outcome === "ready" ? "succeeded" : "failed",
-      );
-    }
+    await finishDiscoverBackgroundWork(
+      generationContext,
+      outcome === "failed" ? "failed" : "succeeded",
+    );
 
     await publishDiscoverChanged(context);
   }

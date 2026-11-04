@@ -22,13 +22,13 @@ export const WATCHING_SIGNALS: readonly DiscoverSignal[] = [
       ),
   },
   {
-    id: "marquee-shelf",
-    providerId: "marquee",
+    id: "watching-shelf",
+    kind: "first_party",
+    source: "shelf",
+    providerId: "watching",
     group: "watching",
-    title: "Marquee shelf",
-    description: "Reads what you are watching and want to watch on Marquee.",
-    operation: "get_shelf",
-    parameters: () => ({}),
+    title: "Film and TV shelf",
+    description: "Reads what you are watching and want to watch.",
     digest: (result) =>
       lines(
         items(result, ["entries"]).filter(
@@ -44,22 +44,48 @@ export const WATCHING_SIGNALS: readonly DiscoverSignal[] = [
       ),
   },
   {
-    id: "marquee-week",
-    providerId: "marquee",
+    id: "watching-week",
+    kind: "first_party",
+    source: "week_ahead",
+    providerId: "watching",
     group: "watching",
-    title: "Marquee week ahead",
-    description: "Reads the episodes and releases coming this week on your Marquee shelf.",
-    operation: "whats_on_this_week",
-    parameters: () => ({ days: 7 }),
+    title: "Film and TV week ahead",
+    description: "Reads the episodes and releases coming this week from your shelf.",
     digest: (result) =>
       lines(items(result, ["entries"]), (entry) =>
         joinParts(
-          first(entry, ["when"]).slice(0, 16).replace("T", " "),
+          first(entry, ["when"]),
           first(entry, ["title"]),
           first(entry, ["season"]) && `S${first(entry, ["season"])}E${first(entry, ["episode"])}`,
           first(entry, ["name"]),
-          first(entry, ["network"]),
         ),
+      ),
+  },
+  {
+    id: "watching-news",
+    kind: "first_party",
+    source: "news",
+    providerId: "watching",
+    group: "watching",
+    title: "Film and TV news",
+    description: "Reads new seasons, arrivals, trailers and people you follow.",
+    items: (result) =>
+      items(result, ["news"]).flatMap((entry) =>
+        first(entry, ["url"])
+          ? [
+              {
+                title: first(entry, ["headline"]),
+                url: first(entry, ["url"]),
+                snippet: first(entry, ["detail"]),
+                source: "Film and TV",
+                media: "watch" as const,
+              },
+            ]
+          : [],
+      ),
+    digest: (result) =>
+      lines(items(result, ["news"]), (entry) =>
+        joinParts(first(entry, ["headline"]), first(entry, ["detail"])),
       ),
   },
 ];

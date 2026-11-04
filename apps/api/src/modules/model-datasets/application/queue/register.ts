@@ -1,5 +1,6 @@
 import { SCHEDULES } from "~/config/schedules";
 import { evaluateServerFlag, taskFlags } from "~/modules/experiments/application";
+import { d1WritesAllowed } from "~/modules/infra/application/write-breaker";
 import { defineSchedule, type AppWorkflows } from "~/modules/queue/application/workflows";
 
 import { scheduleTrainingQualityScoring } from "./schedule";
@@ -12,7 +13,9 @@ export function registerModelDatasetsQueue(workflows: AppWorkflows): void {
     SCHEDULES.TRAINING_QUALITY_SCORING,
     defineSchedule({
       name: "training-quality-scoring",
-      enabledWhen: (env) => evaluateServerFlag(env, taskFlags(env).training_quality_scoring),
+      enabledWhen: async (env) =>
+        (await d1WritesAllowed(env)) &&
+        evaluateServerFlag(env, taskFlags(env).training_quality_scoring),
       run: ({ env }) => scheduleTrainingQualityScoring(env),
     }),
   );

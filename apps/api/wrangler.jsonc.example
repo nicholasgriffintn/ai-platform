@@ -73,6 +73,11 @@
       "binding": "VECTOR_DB",
       "index_name": "polychat",
       "remote": true
+    },
+    {
+      "binding": "WATCHING_VECTORS",
+      "index_name": "polychat-film-and-tv",
+      "remote": true
     }
   ],
   "send_email": [
@@ -199,6 +204,14 @@
       "namespace_id": "1002",
       "simple": {
         "limit": 120,
+        "period": 60
+      }
+    },
+    {
+      "name": "IP_RATE_LIMITER",
+      "namespace_id": "1003",
+      "simple": {
+        "limit": 600,
         "period": 60
       }
     }

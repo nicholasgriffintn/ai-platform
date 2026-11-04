@@ -4,6 +4,7 @@ import { SCHEDULES } from "~/config/schedules";
 import { createRepositories } from "~/infrastructure/database/repositories";
 import { refreshBenchmarkRatings } from "~/modules/benchmarks/application/arena";
 import { queueOfficialRuns } from "~/modules/benchmarks/application/official";
+import { d1WritesAllowed } from "~/modules/infra/application/write-breaker";
 import { defineSchedule, type AppWorkflows } from "~/modules/queue/application/workflows";
 
 import { benchmarkRun } from "./benchmark-run";
@@ -15,6 +16,7 @@ export function registerBenchmarksQueue(workflows: AppWorkflows): void {
     SCHEDULES.BENCHMARK_QUEUE,
     defineSchedule({
       name: "benchmark-official-queue",
+      enabledWhen: d1WritesAllowed,
       run: async ({ env }) => {
         await queueOfficialRuns(env, createRepositories(env));
       },
@@ -25,6 +27,7 @@ export function registerBenchmarksQueue(workflows: AppWorkflows): void {
     SCHEDULES.RECIPE_EXECUTION,
     defineSchedule({
       name: "benchmark-ratings",
+      enabledWhen: d1WritesAllowed,
       run: async ({ env }) => {
         await refreshBenchmarkRatings(createRepositories(env));
       },

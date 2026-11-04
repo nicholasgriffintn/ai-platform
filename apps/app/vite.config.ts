@@ -10,6 +10,7 @@ import type { Plugin } from "vite";
 import { defaultClientConditions, defaultServerConditions, defineConfig } from "vite";
 
 import { buildVersion } from "./plugins/build-version.ts";
+import { collapseLeadingSlashes } from "./plugins/collapse-leading-slashes.ts";
 import { sitePreviewAssets } from "./plugins/site-preview-assets.ts";
 
 export default defineConfig(({ command }) => ({
@@ -43,6 +44,7 @@ export default defineConfig(({ command }) => ({
     },
   },
   plugins: [
+    collapseLeadingSlashes(),
     buildVersion(),
     sitePreviewAssets(),
     stubBrowserOnlyModules(),

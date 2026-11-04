@@ -41,6 +41,10 @@ import {
   finaliseAssistantTurn,
   type TurnOutput,
 } from "~/modules/responses/application/engine/agent/assistant-turn";
+import {
+  CONTROL_TOKEN_LEAK_FAILURE,
+  hasControlTokenLeak,
+} from "~/modules/responses/application/engine/agent/control-token-leak";
 import { startConversationTitle } from "~/modules/responses/application/engine/agent/conversation-title";
 import {
   EMPTY_REPLY_FAILURE,
@@ -632,6 +636,28 @@ async function runChatAgentLoop(
 
       try {
         turn = await requestModelTurn(request);
+
+        if (hasControlTokenLeak(turn) && !(await shouldStop())) {
+          logger.warn("Model leaked control tokens into its reply", {
+            failure: CONTROL_TOKEN_LEAK_FAILURE,
+            completionId: params.completionId,
+            model: activeModel.model,
+            provider: activeModel.provider,
+            step,
+          });
+
+          const leakedTurn = turn;
+          const retried = await requestModelTurn(request);
+
+          turn = {
+            ...retried,
+            usage: sumTokenUsage(leakedTurn.usage, retried.usage) ?? retried.usage,
+          };
+        }
+
+        if (hasControlTokenLeak(turn)) {
+          turn = { ...turn, content: "", parts: [] };
+        }
 
         let emptyReplyAttempts = 0;
         let next = nextEmptyReplyAttempt(emptyReplyAttempts);

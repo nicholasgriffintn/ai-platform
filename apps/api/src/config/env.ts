@@ -124,6 +124,11 @@ export type IEnv = {
   POLLY_SECRET_ACCESS_KEY?: string;
   DEEPSEEK_API_KEY?: string;
   TAVILY_API_KEY?: string;
+  TMDB_API_TOKEN?: string;
+  OMDB_API_KEY?: string;
+  MAL_CLIENT_ID?: string;
+  KINOCHECK_API_KEY?: string;
+  WATCHING_VECTORS?: Vectorize;
   PERPLEXITY_API_KEY?: string;
   BROWSER_RENDERING_API_KEY?: string;
   GITHUB_CLIENT_ID?: string;
@@ -185,6 +190,7 @@ export type IEnv = {
   AGE_GATE_ENABLED?: string;
   FREE_RATE_LIMITER?: RateLimit;
   PRO_RATE_LIMITER?: RateLimit;
+  IP_RATE_LIMITER?: RateLimit;
   ENV?: string;
   EMBEDDINGS_OUTPUT_BUCKET_OWNER?: string;
   EMBEDDINGS_OUTPUT_BUCKET?: string;

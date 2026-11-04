@@ -48,6 +48,8 @@ export async function rateLimit(context: Context, next: Next) {
   const result = await timeServerPhase("ratelimit", () => rateLimiter.limit({ key }));
 
   if (!result.success) {
+    context.set("rateLimited", true);
+
     const errorMessage =
       userId || isCredentialBroker
         ? "Rate limit exceeded: 100 requests per minute"

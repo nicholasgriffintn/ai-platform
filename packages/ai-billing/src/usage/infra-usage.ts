@@ -4,6 +4,7 @@ import {
   CLOUDFLARE_VENDOR,
   type UsageUnit,
 } from "@ngriffin_uk/polychat-schemas";
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 
 import { userCreditActor } from "./credit-actor.js";
 import { emitUsageEvents, type UsageEmissionDelivery, type UsageEventDraft } from "./ledger.js";
@@ -46,6 +47,62 @@ export interface InfraUsageParams {
   conversationId?: string | null;
   activityId?: string | null;
   raw?: unknown;
+}
+
+export type QueuedInfraUsage = Pick<
+  InfraUsageParams,
+  "userId" | "scopeKey" | "occurredAt" | "quantities"
+>;
+
+interface InfraUsageGroup {
+  userId: number;
+  occurredAt?: string;
+  scopeKeys: string[];
+  totals: Map<UsageUnit, number>;
+}
+
+export async function aggregateInfraUsage(
+  entries: readonly QueuedInfraUsage[],
+): Promise<QueuedInfraUsage[]> {
+  const unique = new Map(entries.map((entry) => [entry.scopeKey, entry]));
+  const groups = new Map<string, InfraUsageGroup>();
+
+  for (const entry of unique.values()) {
+    const key = `${entry.userId}:${entry.occurredAt?.slice(0, 10) ?? ""}`;
+    const group = groups.get(key) ?? {
+      userId: entry.userId,
+      occurredAt: entry.occurredAt,
+      scopeKeys: [],
+      totals: new Map<UsageUnit, number>(),
+    };
+
+    group.scopeKeys.push(entry.scopeKey);
+
+    if (entry.occurredAt && (!group.occurredAt || entry.occurredAt < group.occurredAt)) {
+      group.occurredAt = entry.occurredAt;
+    }
+
+    for (const { unit, quantity } of entry.quantities) {
+      if (Number.isFinite(quantity) && quantity > 0) {
+        group.totals.set(unit, (group.totals.get(unit) ?? 0) + quantity);
+      }
+    }
+
+    groups.set(key, group);
+  }
+
+  return Promise.all(
+    Array.from(groups.values(), async (group) => {
+      const scopeKey = [...group.scopeKeys].sort().join("\n");
+
+      return {
+        userId: group.userId,
+        scopeKey: group.scopeKeys.length === 1 ? scopeKey : `batch-${await sha256Hex(scopeKey)}`,
+        occurredAt: group.occurredAt,
+        quantities: Array.from(group.totals, ([unit, quantity]) => ({ unit, quantity })),
+      };
+    }),
+  );
 }
 
 export function buildInfraUsageDrafts(params: InfraUsageParams): UsageEventDraft[] {

@@ -18,6 +18,7 @@ export const USER_INFORMATION_TOOL_NAME = "get_user_information";
 
 export const toolCategories = [
   "Research",
+  "Film and TV",
   "Creative",
   "Code",
   "Productivity",

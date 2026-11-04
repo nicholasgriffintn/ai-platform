@@ -4,6 +4,7 @@ import type { FunctionToolDescriptor } from "~/types/functions";
 
 export const configure_recipe: FunctionToolDescriptor = {
   name: "configure_recipe",
+  system: true,
   description:
     "Save configuration and triggers for the active recipe setup chat after the user confirms the details or asks you to choose sensible defaults. Call get_recipe first if you need the exact configuration field keys.",
   type: "premium",

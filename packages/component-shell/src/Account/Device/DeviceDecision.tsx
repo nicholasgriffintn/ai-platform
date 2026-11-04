@@ -8,6 +8,7 @@ import { readDeviceUserCodeCharacters } from "@ngriffin_uk/polychat-schemas";
 import { formatDuration } from "@ngriffin_uk/polychat-utility-core";
 import { useSecondsUntil } from "@ngriffin_uk/polychat-utility-react";
 import { Clock3, Gauge, KeyRound, Loader2, Undo2, type LucideIcon } from "lucide-react";
+import { useEffect } from "react";
 
 import { DeviceCodeCells } from "./DeviceCodeInput.js";
 import { deviceIcon } from "./deviceIcon.js";
@@ -27,6 +28,14 @@ const GRANTS: Record<DeviceCredentialScope, Array<{ icon: LucideIcon; text: stri
       text: "Its own API key for Discover only. Chats, projects and files stay out of reach.",
     },
     { icon: Gauge, text: "Episodes and wind downs it starts count against your plan." },
+    { icon: Undo2, text: "Revoke it from Profile whenever you like." },
+  ],
+  pashi: [
+    {
+      icon: KeyRound,
+      text: "Its own API key for running models and linking Pashi tools to your chats. Chats, projects and files stay out of reach.",
+    },
+    { icon: Gauge, text: "AI it runs counts against your plan, and it can see if you are on Pro." },
     { icon: Undo2, text: "Revoke it from Profile whenever you like." },
   ],
 };
@@ -55,8 +64,28 @@ function PendingRequest({
 }) {
   const decide = useDecideDeviceAuthorisation(authorisation.userCode);
   const secondsLeft = useSecondsUntil(authorisation.expiresAt);
-  const { clientName, scope } = authorisation;
+  const { clientName, scope, verified } = authorisation;
   const device = deviceIcon(clientName);
+  const redirectUrl = decide.data?.redirect_url;
+
+  useEffect(() => {
+    if (redirectUrl) {
+      window.location.assign(redirectUrl);
+    }
+  }, [redirectUrl]);
+
+  if (redirectUrl) {
+    return (
+      <DevicePairingCard
+        device={device}
+        state="waiting"
+        eyebrow={clientName}
+        title={`Taking you back to ${clientName}`}
+      >
+        <Loader2 className="mx-auto h-6 w-6 animate-spin text-active-work" aria-hidden="true" />
+      </DevicePairingCard>
+    );
+  }
 
   if (decide.data?.status === "approved") {
     return (
@@ -114,10 +143,16 @@ function PendingRequest({
           Connect <span className="text-active-work">{clientName}</span>?
         </>
       }
-      description="Only approve this if you started sign-in yourself and the device shows exactly this code."
+      description={
+        verified
+          ? `Only approve this if you just asked ${clientName} to connect. You will go back there next.`
+          : "Only approve this if you started sign-in yourself and the device shows exactly this code. The device chose this name itself, so Polychat cannot vouch for it."
+      }
     >
       <div className="flex flex-col items-center gap-2">
-        <DeviceCodeCells characters={readDeviceUserCodeCharacters(authorisation.userCode)} />
+        {verified ? null : (
+          <DeviceCodeCells characters={readDeviceUserCodeCharacters(authorisation.userCode)} />
+        )}
         <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground tabular-nums">
           <Clock3 className="h-3.5 w-3.5" aria-hidden="true" />
           Expires in {formatDuration(secondsLeft)}

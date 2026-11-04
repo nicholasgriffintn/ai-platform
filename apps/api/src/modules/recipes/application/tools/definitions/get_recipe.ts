@@ -4,6 +4,7 @@ import type { FunctionToolDescriptor } from "~/types/functions";
 
 export const get_recipe: FunctionToolDescriptor = {
   name: "get_recipe",
+  system: true,
   description:
     "Get the active recipe setup contract, including exact configuration field keys, saved configuration, trigger types, and enabled tools. Use this before configure_recipe when setting up or correcting a recipe.",
   type: "premium",

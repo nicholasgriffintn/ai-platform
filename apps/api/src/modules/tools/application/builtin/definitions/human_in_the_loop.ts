@@ -8,6 +8,7 @@ import type { FunctionToolDescriptor } from "~/types/functions";
 
 export const request_approval: FunctionToolDescriptor = {
   name: "request_approval",
+  system: true,
   description:
     "Request human approval before proceeding with an action. Use this for critical operations, irreversible changes, or when user confirmation is needed. Returns approval/rejection status.",
   type: "normal",
@@ -40,6 +41,7 @@ export const request_approval: FunctionToolDescriptor = {
 
 export const ask_user: FunctionToolDescriptor = {
   name: "ask_user",
+  system: true,
   description:
     "Ask the user up to three concise questions and wait for their response. Use this only when missing information or an unresolved decision prevents progress, never to ask the user to approve or confirm your output. Reuse answers already present in the conversation. Offer useful choices where possible and allow a written answer when the choices are incomplete.",
   type: "normal",

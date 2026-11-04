@@ -10,6 +10,7 @@ import type { FunctionToolDescriptor } from "~/types/functions";
 
 export const select_council_members: FunctionToolDescriptor = {
   name: "select_council_members",
+  system: true,
   description:
     "Ask the user which council members should debate their question. Renders a picker in the conversation, pre-ticked with the members you recommend. Call this before run_council whenever the user has not already named the members they want, then convene the council with what they choose.",
   type: "normal",
@@ -86,6 +87,7 @@ export const run_council: FunctionToolDescriptor = {
 
 export const review_output: FunctionToolDescriptor = {
   name: "review_output",
+  system: true,
   description:
     "Ask a four-seat council (sceptic, researcher, customer, strategist) to review a finished Output before it is sent or published. Each seat critiques it, reads the others and votes; an adjudicator returns ship, revise or hold with a revision brief and any dissent, saved on the Output. Use it before sending or publishing work that matters, or when the user asks for a review. It costs about nine model calls.",
   type: "normal",

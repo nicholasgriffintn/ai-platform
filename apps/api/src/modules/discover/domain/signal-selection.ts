@@ -1,4 +1,9 @@
-import { isDiscoverPublicSignal, listDiscoverSignalOperations } from "./signal-catalogue";
+import { readDeviceActivitySource } from "./device-activity";
+import {
+  isDiscoverFirstPartySignal,
+  isDiscoverPublicSignal,
+  listDiscoverSignalOperations,
+} from "./signal-catalogue";
 import { DISCOVER_SIGNAL_GROUPS, type DiscoverSignal } from "./signal-sources/types";
 
 export interface DiscoverSignalSelectionInput {
@@ -38,6 +43,11 @@ export function selectDiscoverSignals(
       continue;
     }
 
+    if (isDiscoverFirstPartySignal(signal)) {
+      selected.push(signal);
+      continue;
+    }
+
     if (!input.connectedProviders.has(signal.providerId)) {
       continue;
     }
@@ -65,6 +75,20 @@ export function selectDiscoverSignals(
   }
 
   return { selected, unsupported };
+}
+
+export function keepUsedDiscoverDocuments<T extends { signalId: string; providerId: string }>(
+  documents: readonly T[],
+  input: { selected: readonly DiscoverSignal[]; excludedProviders: readonly string[] },
+): T[] {
+  const used = new Set(input.selected.map((signal) => signal.id));
+
+  return documents.filter(
+    (document) =>
+      used.has(document.signalId) ||
+      (readDeviceActivitySource(document.providerId) !== null &&
+        !input.excludedProviders.includes(document.providerId)),
+  );
 }
 
 export function listDiscoverSignalProviders(

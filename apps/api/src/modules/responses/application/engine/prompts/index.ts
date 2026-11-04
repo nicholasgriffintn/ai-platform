@@ -18,6 +18,7 @@ import {
 import { trimTemplateWhitespace } from "@ngriffin_uk/polychat-utility-server/strings";
 
 import { APP_DESCRIPTION, APP_NAME } from "~/config/app";
+import type { CapabilityMap } from "~/modules/assistant-capabilities/domain/capability-map";
 import { getModelConfigByMatchingModel } from "~/modules/models/application/resolve";
 import { toAssistantModelMetadata } from "~/modules/responses/application/engine/prompts/model-metadata";
 import { getInboundChannelProfile } from "~/modules/responses/domain/channels";
@@ -34,6 +35,7 @@ export interface SystemPromptOptions {
   user?: IUser;
   userSettings?: IUserSettings;
   skills?: readonly SkillAvailability[];
+  capabilityMap?: CapabilityMap | null;
   memory?: PromptMemoryPolicy;
   persona?: AssistantPersona | null;
 }
@@ -94,7 +96,7 @@ function toSandboxContext(options: ChatRequestOptions["sandbox"]): SandboxContex
 }
 
 export async function getSystemPrompt(options: SystemPromptOptions): Promise<string> {
-  const { request, model, user, userSettings, skills, persona } = options;
+  const { request, model, user, userSettings, skills, persona, capabilityMap } = options;
   const modelConfig = await getModelConfigByMatchingModel(model, undefined, request.provider);
   const supportsToolCalls = modelConfig?.supportsToolCalls || false;
   const memoryPolicy = options.memory ?? resolveMemoryPolicy({ user, userSettings });
@@ -157,6 +159,7 @@ export async function getSystemPrompt(options: SystemPromptOptions): Promise<str
         skills: (skills ?? [])
           .filter((skill) => skill.state === "ready")
           .map((skill) => ({ id: skill.id, description: skill.description })),
+        capabilityMap,
         memoryPolicy,
         persona,
         channel: channel
