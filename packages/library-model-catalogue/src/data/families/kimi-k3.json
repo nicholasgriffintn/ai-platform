@@ -311,6 +311,7 @@
         "contextComplexity": 5,
         "reliability": 2,
         "releaseDate": "October 23, 2026",
+        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

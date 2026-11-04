@@ -675,13 +675,27 @@
         "name": "DeepSeek V4.1 Flash 1017",
         "openWeights": true,
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
+        "contextWindow": 0,
+        "maxTokens": 0,
         "strengths": [
           "vision",
           "document",
           "tool_use"
         ],
+        "contextComplexity": 1,
         "reliability": 1,
+        "releaseDate": "October 26, 2026",
+        "supportsToolCalls": false,
         "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 32.5,
           "codingIndex": null,

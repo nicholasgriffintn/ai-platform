@@ -28,24 +28,7 @@
   },
   "description": "The mercury family includes models that produce text.",
   "models": {
-    "inception-mercury-2": {
-      "defaults": {
-        "name": "Inception: Mercury 2",
-        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
-        "contextWindow": 128000,
-        "maxTokens": 50000,
-        "contextComplexity": 3,
-        "reliability": 2,
-        "releaseDate": "February 24, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "inception-mercury-2-5": {
+    "inception-mercury-2-5-retires-nov-8": {
       "defaults": {
         "name": "Inception: Mercury 2.5",
         "description": "Mercury 2.5 is the fastest reasoning LLM, and the latest diffusion LLM (dLLM) from Inception. Instead of generating tokens sequentially, Mercury 2.5 produces and refines multiple tokens in parallel, achieving...",
@@ -62,7 +45,24 @@
         }
       }
     },
-    "inception-mercury-3": {
+    "inception-mercury-2-retires-nov-8": {
+      "defaults": {
+        "name": "Inception: Mercury 2",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 128000,
+        "maxTokens": 50000,
+        "contextComplexity": 3,
+        "reliability": 2,
+        "releaseDate": "February 24, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "inception-mercury-3-retires-nov-8": {
       "defaults": {
         "name": "Inception: Mercury 3",
         "description": "Mercury 3 is a diffusion-based language model from Inception, and the lab's most capable model to date. It is suited for agentic workflows and real-time applications where latency compounds, such...",

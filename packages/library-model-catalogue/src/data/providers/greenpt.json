@@ -366,7 +366,7 @@
       "overrides": {
         "name": "MiniMax-M2.5",
         "maxTokens": 131072,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.00049346,
         "costPer1kOutputTokens": 0.0024673,
@@ -404,7 +404,7 @@
       "model": "mistral-small/mistral-small-3-2",
       "matchingModel": "mistral-small-3.2-24b-instruct-2506",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 20, 2025",
         "costPer1kInputTokens": 0.000228,
         "costPer1kOutputTokens": 0.000456,
@@ -420,7 +420,8 @@
       "overrides": {
         "description": "Qwen3 235B MoE instruct model for long-context multilingual chat and reasoning",
         "maxTokens": 16384,
-        "speed": 3,
+        "contextComplexity": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.001026,
@@ -618,29 +619,6 @@
       "unset": [
         "supportsResponseFormat"
       ]
-    },
-    "deepseek-v4.1-flash-1017": {
-      "model": "deepseek/deepseek-v4-1-flash-1017",
-      "matchingModel": "deepseek-v4.1-flash-1017",
-      "overrides": {
-        "contextWindow": 1000000,
-        "contextComplexity": 4,
-        "speed": 4,
-        "lastUpdated": "October 17, 2026",
-        "costPer1kInputTokens": 0.0004104,
-        "costPer1kOutputTokens": 0.001653,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
-      }
     },
     "minimax-m3": {
       "model": "minimax/minimax-m3",

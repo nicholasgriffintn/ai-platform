@@ -75,6 +75,7 @@
       "overrides": {
         "name": "deepseek-v4-pro",
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
+        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
@@ -264,7 +265,7 @@
         "name": "minimax-m2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "maxTokens": 131072,
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -454,6 +455,7 @@
       "matchingModel": "muse-spark-open",
       "overrides": {
         "description": "Muse Spark Open is an 816B total / 42B active open-weight multimodal reasoning model from Meta for coding and long-horizon agentic work, with 1M-token context.",
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -468,7 +470,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425,

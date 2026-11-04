@@ -519,7 +519,7 @@
       "overrides": {
         "contextWindow": 65536,
         "maxTokens": 65536,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 2, 2026",
         "costPer1kInputTokens": 0.00033,
         "costPer1kOutputTokens": 0.001005
@@ -534,7 +534,7 @@
       "overrides": {
         "contextWindow": 262144,
         "maxTokens": 262144,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 2, 2026",
         "costPer1kInputTokens": 0.00033,
         "costPer1kOutputTokens": 0.001005

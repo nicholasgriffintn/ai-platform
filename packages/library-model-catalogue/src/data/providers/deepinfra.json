@@ -10,7 +10,7 @@
       "model": "kimi/kimi-k2",
       "matchingModel": "moonshotai/Kimi-K2-Instruct",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 11, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.002,
@@ -168,7 +168,7 @@
         "name": "MiniMax M2.1",
         "contextWindow": 196608,
         "maxTokens": 196608,
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "June 2025",
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.00028,
@@ -272,6 +272,7 @@
       "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro",
       "overrides": {
+        "contextWindow": 1048576,
         "maxTokens": 16384,
         "contextComplexity": 4,
         "speed": 3,
@@ -604,7 +605,7 @@
       "overrides": {
         "name": "Qwen3-Next 80B-A3B Instruct",
         "maxTokens": 32768,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.0011,
@@ -814,7 +815,8 @@
       "overrides": {
         "name": "Qwen3 235B-A22B Instruct 2507",
         "maxTokens": 16384,
-        "speed": 3,
+        "contextComplexity": 3,
+        "speed": 2,
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.00055,

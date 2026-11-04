@@ -1781,7 +1781,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1073,
+              "value": 1072,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12

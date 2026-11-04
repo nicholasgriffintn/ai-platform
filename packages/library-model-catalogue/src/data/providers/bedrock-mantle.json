@@ -341,7 +341,7 @@
       "model": "gpt-terra/gpt-6-1-terra",
       "matchingModel": "openai.gpt-6.1-terra",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0055

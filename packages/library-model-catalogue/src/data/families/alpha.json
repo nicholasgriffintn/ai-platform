@@ -3,10 +3,44 @@
     "openWeights": false,
     "supportsToolCalls": true,
     "supportsResponseFormat": false,
+    "supportsAttachments": true,
     "supportsTemperature": true
   },
   "description": "The alpha family includes models that produce text.",
   "models": {
+    "crouton-alpha": {
+      "defaults": {
+        "name": "Crouton Alpha",
+        "description": "Crouton Alpha is a lightweight model built for scalable coding, agentic, and multimodal workflows. It's ideal for executing agentic sub-tasks, tool use, and document analysis in high-volume, repeated work. Developers...",
+        "contextWindow": 1048576,
+        "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 3, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    },
     "mancer-weaver-alpha": {
       "defaults": {
         "name": "Mancer: Weaver (alpha)",
@@ -63,7 +97,6 @@
           ]
         },
         "releaseDate": "August 20, 2026",
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -90,7 +123,6 @@
           ]
         },
         "releaseDate": "September 23, 2026",
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -118,8 +150,7 @@
             "text"
           ]
         },
-        "releaseDate": "September 16, 2026",
-        "supportsAttachments": true
+        "releaseDate": "September 16, 2026"
       }
     },
     "weaver-alpha": {

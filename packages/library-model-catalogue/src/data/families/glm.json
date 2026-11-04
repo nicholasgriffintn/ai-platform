@@ -886,6 +886,24 @@
         }
       }
     },
+    "glm-5-3-flashx-legal": {
+      "defaults": {
+        "name": "GLM 5.3 FlashX Legal",
+        "openWeights": false,
+        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+        "maxTokens": 131072,
+        "releaseDate": "November 2, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "glm-5-3-global": {
       "defaults": {
         "name": "GLM-5.3 (Global)",
@@ -1082,6 +1100,35 @@
         },
         "releaseDate": "September 18, 2026",
         "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "z-ai-glm-5-3-flashx-legal": {
+      "defaults": {
+        "name": "Z.ai: GLM 5.3 FlashX Legal",
+        "openWeights": false,
+        "description": "GLM-5.3-FlashX-Legal (GLM-Legal) is Z.ai's legal-domain variant of GLM-5.3-FlashX, a native multimodal model that accepts text, image, and video input and produces text. It adds legal-domain mid-training and post-training with reinforcement...",
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 2, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [

@@ -19,7 +19,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "September 29, 2025",
         "costPer1kInputTokens": 0.002989,
         "costPer1kOutputTokens": 0.014945,
@@ -80,7 +80,7 @@
       "model": "claude-opus/claude-opus-4-5-latest",
       "matchingModel": "claude-opus4-5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005313,
         "costPer1kOutputTokens": 0.026568,
@@ -436,7 +436,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.002192,
         "costPer1kOutputTokens": 0.008769,
@@ -624,7 +624,7 @@
       "overrides": {
         "contextWindow": 196000,
         "maxTokens": 196000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.000359,
         "costPer1kOutputTokens": 0.001435,
@@ -639,7 +639,7 @@
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196000,
         "maxTokens": 196000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.000348,
         "costPer1kOutputTokens": 0.00139,
@@ -671,7 +671,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "December 2, 2025",
         "costPer1kInputTokens": 0.000613,
         "costPer1kOutputTokens": 0.001838
@@ -769,7 +769,7 @@
         "contextWindow": 262000,
         "maxTokens": 262000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.000199,
@@ -1107,8 +1107,8 @@
         "maxTokens": 32768,
         "speed": 4,
         "lastUpdated": "April 17, 2026",
-        "costPer1kInputTokens": 0.000167,
-        "costPer1kOutputTokens": 0.000557
+        "costPer1kInputTokens": 0.000279,
+        "costPer1kOutputTokens": 0.001671
       }
     },
     "glm-5v-turbo": {
@@ -1477,7 +1477,7 @@
       "matchingModel": "gpt-5.1",
       "overrides": {
         "name": "GPT 5.1",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.01096,
@@ -1916,7 +1916,7 @@
             "text"
           ]
         },
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "August 6, 2024",
         "costPer1kInputTokens": 0.002659,
         "costPer1kOutputTokens": 0.010635,
@@ -1935,7 +1935,7 @@
       "matchingModel": "gpt-5-mini",
       "overrides": {
         "name": "GPT 5 Mini",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.000279,
         "costPer1kOutputTokens": 0.002192,
@@ -1956,7 +1956,7 @@
       "matchingModel": "gpt-5-nano",
       "overrides": {
         "name": "GPT 5 Nano",
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.000439,
@@ -2077,8 +2077,8 @@
       "model": "minimax/minimax-m3",
       "matchingModel": "minimax-m3",
       "overrides": {
-        "contextWindow": 1048576,
-        "maxTokens": 1048576,
+        "contextWindow": 1000000,
+        "maxTokens": 500000,
         "contextComplexity": 5,
         "speed": 4,
         "lastUpdated": "June 1, 2026",
@@ -2827,7 +2827,7 @@
       "model": "gpt-terra/gpt-6-1-terra",
       "matchingModel": "gpt-6.1-terra",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001176,
         "costPer1kOutputTokens": 0.005882,

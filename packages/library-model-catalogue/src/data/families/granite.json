@@ -13,13 +13,7 @@
     "reliability": 1,
     "supportsToolCalls": true,
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "artificialAnalysis": {
-      "intelligenceIndex": null,
-      "codingIndex": null,
-      "agenticIndex": null,
-      "intelligenceIndexVersion": 5
-    }
+    "supportsTemperature": true
   },
   "description": "The granite family includes models that produce text.",
   "models": {
@@ -41,7 +35,13 @@
         "maxTokens": 117900,
         "releaseDate": "October 20, 2025",
         "supportsToolCalls": false,
-        "supportsResponseFormat": false
+        "supportsResponseFormat": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "granite-4-1-8b": {
@@ -54,7 +54,13 @@
           "tool_use"
         ],
         "releaseDate": "April 30, 2026",
-        "supportsResponseFormat": true
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "granite-4-2-8b": {
@@ -75,6 +81,12 @@
             "high"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 5.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -108,6 +120,12 @@
             "high"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 5.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     }

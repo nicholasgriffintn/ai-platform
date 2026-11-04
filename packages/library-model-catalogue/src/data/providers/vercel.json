@@ -21,7 +21,7 @@
       "model": "gpt/gpt-4o",
       "matchingModel": "openai/gpt-4o",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "August 6, 2024",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01
@@ -31,7 +31,7 @@
       "model": "gpt-mini/gpt-5-mini",
       "matchingModel": "openai/gpt-5-mini",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
@@ -57,7 +57,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008
@@ -89,7 +89,7 @@
       "model": "gpt-nano/gpt-5-nano",
       "matchingModel": "openai/gpt-5-nano",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0004,
@@ -418,7 +418,8 @@
       "overrides": {
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "maxTokens": 16384,
-        "speed": 3,
+        "contextComplexity": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.00022,
@@ -627,7 +628,7 @@
         "name": "Qwen3 Next 80B A3B Instruct",
         "contextWindow": 262114,
         "maxTokens": 262114,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0012,
@@ -753,7 +754,7 @@
       "model": "claude-opus/claude-opus-4-5",
       "matchingModel": "anthropic/claude-opus-4.5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -1402,17 +1403,13 @@
       "overrides": {
         "lastUpdated": "August 30, 2025",
         "supportsAttachments": false
-      },
-      "unset": [
-        "reasoningConfig"
-      ]
+      }
     },
     "meta/llama-3.1-70b": {
       "model": "llama/llama-3-1-70b-instruct",
       "matchingModel": "meta/llama-3.1-70b",
       "overrides": {
         "contextWindow": 128000,
-        "maxTokens": 8192,
         "lastUpdated": "July 23, 2024",
         "costPer1kInputTokens": 0.00072,
         "costPer1kOutputTokens": 0.00072,
@@ -1532,7 +1529,7 @@
       "model": "llama/llama-4-scout-17b-16e-instruct-fp8",
       "matchingModel": "meta/llama-4-scout",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 5, 2025",
         "costPer1kInputTokens": 0.00017,
         "costPer1kOutputTokens": 0.00066
@@ -1560,7 +1557,7 @@
       "overrides": {
         "name": "MiniMax M2.1",
         "description": "Earlier MiniMax agent model for practical coding and productivity tasks",
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -1673,7 +1670,7 @@
           "vision",
           "document"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "December 2, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015,
@@ -1944,7 +1941,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "September 15, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -2184,7 +2181,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -3362,7 +3359,7 @@
       "overrides": {
         "name": "MiniMax M2.5",
         "maxTokens": 131000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -3490,7 +3487,7 @@
       "matchingModel": "openai/gpt-5.3-codex",
       "overrides": {
         "name": "GPT 5.3 Codex",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -4347,7 +4344,7 @@
       "model": "step/step-3-7-flash",
       "matchingModel": "stepfun/step-3.7-flash",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "May 29, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00115
@@ -5061,7 +5058,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "December 31, 2024",
         "lastUpdated": "July 11, 2025",
         "costPer1kInputTokens": 0.00057,
@@ -6428,7 +6425,7 @@
       "model": "gpt/gpt-4-1-fast",
       "matchingModel": "openai/gpt-4.1-fast",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.0035,
         "costPer1kOutputTokens": 0.014
@@ -6458,7 +6455,7 @@
       "model": "gpt/gpt-4o-fast",
       "matchingModel": "openai/gpt-4o-fast",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "August 6, 2024",
         "costPer1kInputTokens": 0.00425,
         "costPer1kOutputTokens": 0.017
@@ -6489,7 +6486,7 @@
       "model": "gpt-mini/gpt-5-mini-fast",
       "matchingModel": "openai/gpt-5-mini-fast",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0036,
@@ -6523,7 +6520,7 @@
       "model": "gpt-codex/gpt-5-3-codex-fast",
       "matchingModel": "openai/gpt-5.3-codex-fast",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.0035,
         "costPer1kOutputTokens": 0.028
@@ -6608,7 +6605,7 @@
       "model": "o-mini/o4-mini-fast",
       "matchingModel": "openai/o4-mini-fast",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 16, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008,
@@ -7488,7 +7485,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425
@@ -8674,7 +8671,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "October 12, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02
@@ -8867,7 +8864,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425
@@ -8983,7 +8980,6 @@
       "matchingModel": "nvidia/nemotron-3.5-super-vl",
       "overrides": {
         "name": "NVIDIA Nemotron 3.5 Super VL",
-        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "modalities": {
           "input": [
@@ -8999,7 +8995,6 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 5,
         "speed": 5,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.0002,
@@ -9064,7 +9059,7 @@
       "matchingModel": "openai/gpt-6.1-terra",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
@@ -9075,7 +9070,7 @@
       "model": "gpt-terra/gpt-6-1-terra-fast",
       "matchingModel": "openai/gpt-6.1-terra-fast",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
@@ -9089,6 +9084,34 @@
         "lastUpdated": "October 28, 2026",
         "costPer1kInputTokens": 0.000125,
         "costPer1kOutputTokens": 0.0005
+      }
+    },
+    "meituan/longcat-2.5": {
+      "model": "longcat/longcat-2-5",
+      "matchingModel": "meituan/longcat-2.5",
+      "overrides": {
+        "lastUpdated": "November 2, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012
+      }
+    },
+    "zai/glm-5.3-flashx-legal": {
+      "model": "glm/glm-5-3-flashx-legal",
+      "matchingModel": "zai/glm-5.3-flashx-legal",
+      "overrides": {
+        "contextWindow": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "November 2, 2026",
+        "costPer1kInputTokens": 0.00037,
+        "costPer1kOutputTokens": 0.00125
       }
     }
   }

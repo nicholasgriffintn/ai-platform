@@ -34,14 +34,24 @@
       ]
     },
     "deepseek-v4-pro": {
-      "model": "deepseek-thinking/deepseek-v4-pro-new",
+      "model": "deepseek-thinking/deepseek-v4-pro",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
+        "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00066,
         "costPer1kOutputTokens": 0.00198,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high",
+            "max"
+          ],
+          "defaultEffort": "high"
+        }
       }
     },
     "glm-5.1": {
