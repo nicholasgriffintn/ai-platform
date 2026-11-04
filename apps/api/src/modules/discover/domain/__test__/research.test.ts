@@ -1,10 +1,49 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  keepDiscoverTopicResults,
   keepRecentDiscoverResults,
   latestResearchSection,
   mergeResearchDocument,
 } from "../research";
+
+describe("keepDiscoverTopicResults", () => {
+  const result = (title: string, url = "https://example.com/story", snippet = "") => ({
+    title,
+    url,
+    snippet,
+  });
+
+  it("drops search results that are not about the topic", () => {
+    const kept = keepDiscoverTopicResults("Xiaomi OCR models", [
+      result("Xiaomi-OCR-0: A 0.8B AI Model for Document Parsing and OCR"),
+      result("Pika H3 Flex Brings More Control to AI Video Generation"),
+    ]);
+
+    expect(kept.map((item) => item.title)).toEqual([
+      "Xiaomi-OCR-0: A 0.8B AI Model for Document Parsing and OCR",
+    ]);
+  });
+
+  it("accepts a topic named only in the snippet", () => {
+    expect(
+      keepDiscoverTopicResults("Linux distributions", [
+        result("Mint brings back hibernation", undefined, "The popular Linux desktop returns"),
+      ]),
+    ).toHaveLength(1);
+  });
+
+  it("drops press wires, stock pictures and ranked buying guides", () => {
+    expect(
+      keepDiscoverTopicResults("Self-hosting and Linux", [
+        result("Self-hosting on Linux announced", "https://www.einnews.com/pr_news/1"),
+        result("Licensable picture: Linux self-hosting rally"),
+        result("10 Best VPS Services for self-hosting Linux"),
+        result("Best Linux self-hosting providers in 2026"),
+      ]),
+    ).toEqual([]);
+  });
+});
 
 describe("keepRecentDiscoverResults", () => {
   it("drops results dated before yesterday and keeps undated ones", () => {

@@ -89,6 +89,7 @@ export async function updateDiscoverLive(
           content,
           expectedRevision: record.revision,
           updatedByUserId: user.id,
+          keepRevision: false,
         });
       } else {
         await outputs.createOutput({

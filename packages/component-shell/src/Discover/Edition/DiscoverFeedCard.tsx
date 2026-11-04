@@ -4,6 +4,8 @@ import type { DiscoverCard } from "@ngriffin_uk/polychat-schemas";
 import { readUrlHost } from "@ngriffin_uk/polychat-utility-core";
 import { CalendarDays, ChevronRight, Headphones, History, Mail, Play, Repeat } from "lucide-react";
 
+import { discoverCardBody } from "./discover-card-drafts.js";
+
 export type DiscoverRowCard = Exclude<DiscoverCard, { kind: "topic" | "wind_down" }>;
 
 function describeReadSource(source: string, url: string): string {
@@ -82,7 +84,7 @@ function cardText(card: DiscoverRowCard): { kicker: string; title: string; detai
       return {
         kicker: describeReadSource(card.source, card.url),
         title: card.title,
-        detail: card.summary,
+        detail: discoverCardBody(card),
       };
     case "resurface":
       return { kicker: "From before", title: card.title, detail: card.detail };

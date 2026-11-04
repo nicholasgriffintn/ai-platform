@@ -4,6 +4,15 @@ import { describe, expect, it } from "vitest";
 import { buildDiscoverScheduleTriggers } from "../schedules";
 
 describe("Discover scheduled work", () => {
+  it("rereads public feeds through the day, not just at the morning research", () => {
+    const profile = discoverDayProfileContentSchema.parse({ timezone: "Europe/London" });
+    const feed = buildDiscoverScheduleTriggers(profile, { listen: false, evening: false }).find(
+      (trigger) => trigger.discoverOperation === "feed",
+    );
+
+    expect(feed?.cronExpression).toMatch(/^30 7,9,11,13,15,17,19,21 /u);
+  });
+
   it("schedules audio separately from editions, including evening audio without an evening edition", () => {
     const profile = discoverDayProfileContentSchema.parse({
       timezone: "Europe/London",

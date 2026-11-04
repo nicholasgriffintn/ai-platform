@@ -1,6 +1,7 @@
 import { discoverCardSchema, type DiscoverCard } from "@ngriffin_uk/polychat-schemas";
 import {
   comparableHttpUrl,
+  interleaveBy,
   readUrlHost,
   truncateSingleLine,
 } from "@ngriffin_uk/polychat-utility-core";
@@ -124,8 +125,11 @@ export function buildDiscoverFeedGroups(sources: DiscoverFeedSources): DiscoverF
   return [...research, ...signals];
 }
 
-function describeItemSource(item: DiscoverResearchResult): string {
-  return [item.source ?? "", item.date ?? ""].filter(Boolean).join(", ");
+function describeItemSource(item: DiscoverResearchResult, topic: string): string {
+  const source = item.source ?? "";
+  const origin = source.startsWith(topic) ? source.slice(topic.length).replace(/^, /u, "") : source;
+
+  return [origin, item.date ?? ""].filter(Boolean).join(", ");
 }
 
 function newestFirst(items: readonly DiscoverResearchResult[]): DiscoverResearchResult[] {
@@ -151,7 +155,7 @@ function takeCard(
       continue;
     }
 
-    const source = describeItemSource(item);
+    const source = describeItemSource(item, queue.group.topic);
     const card = discoverCardSchema.safeParse({
       id: createId(),
       kind: item.media ?? "read",
@@ -211,7 +215,9 @@ export function fillDiscoverFeed(input: DiscoverFeedFill): DiscoverCard[] {
     .filter((group) => !input.skipTopics.has(discoverTopicKey(group.topic)))
     .map((group) => ({
       group,
-      remaining: group.ranked ? [...group.items] : newestFirst(group.items),
+      remaining: group.ranked
+        ? [...group.items]
+        : interleaveBy(newestFirst(group.items), (item) => item.source ?? ""),
       credit: 0,
     }));
   const tiers = [

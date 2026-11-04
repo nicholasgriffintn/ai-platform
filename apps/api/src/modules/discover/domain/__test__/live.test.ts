@@ -1,4 +1,4 @@
-import type { DiscoverCard } from "@ngriffin_uk/polychat-schemas";
+import { DISCOVER_LIVE_LIMIT, type DiscoverCard } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -73,7 +73,109 @@ const readFirstPage = (content: ReturnType<typeof feedWithBuriedTopic>) =>
     now,
   });
 
+function storyCandidate(index: number, title: string, source: string): DiscoverLiveCandidate {
+  return {
+    ...candidate,
+    id: `story_${index}`,
+    fingerprint: `story_${index}`,
+    card: {
+      id: `card_${index}`,
+      kind: "read",
+      topic: "AI",
+      title,
+      url: `https://example.com/${index}`,
+      source,
+      summary: "The story's details.",
+      reason: "You follow AI",
+      sensitive: false,
+    },
+  };
+}
+
 describe("Discover live feed", () => {
+  it("does not bring back stories that aged out of a full feed", () => {
+    const stories = Array.from({ length: DISCOVER_LIVE_LIMIT + 40 }, (_, index) =>
+      storyCandidate(index, `Headline ${index}`, "Example"),
+    );
+    const initial = emptyDiscoverLive();
+    const first = { ...initial, ...mergeDiscoverLiveItems(initial, stories, now) };
+    const second = mergeDiscoverLiveItems(first, stories, new Date(now.getTime() + 900_000));
+
+    expect(first.items).toHaveLength(DISCOVER_LIVE_LIMIT);
+    expect(second.sequence).toBe(first.sequence);
+    expect(second.items.map((item) => item.id)).toEqual(first.items.map((item) => item.id));
+  });
+
+  it("keeps one card when different outlets report the same story", () => {
+    const initial = emptyDiscoverLive();
+    const merged = mergeDiscoverLiveItems(
+      initial,
+      [
+        storyCandidate(
+          1,
+          "Binance says fake job interviews used as part of crypto hack",
+          "BBC News",
+        ),
+        storyCandidate(
+          2,
+          "Binance says hackers used fake job interviews to pull off its crypto hack",
+          "The Verge",
+        ),
+      ],
+      now,
+    );
+
+    expect(merged.items).toHaveLength(1);
+  });
+
+  it("keeps a reply from the same outlet as a separate story", () => {
+    const initial = emptyDiscoverLive();
+    const merged = mergeDiscoverLiveItems(
+      initial,
+      [
+        storyCandidate(
+          1,
+          "Astra can read and write weights to improve Qwen",
+          "Hacker News, 969 points",
+        ),
+        storyCandidate(
+          2,
+          "The 'Astra can read and write weights to improve Qwen' post is misleading",
+          "Hacker News, 961 points",
+        ),
+      ],
+      now,
+    );
+
+    expect(merged.items).toHaveLength(2);
+  });
+
+  it("updates a reworded headline where it stands", () => {
+    const initial = emptyDiscoverLive();
+    const original = storyCandidate(
+      1,
+      "Ryanair may freeze workers' pay as fuel prices rise",
+      "BBC News",
+    );
+    const first = { ...initial, ...mergeDiscoverLiveItems(initial, [original], now) };
+    const reworded = {
+      ...original,
+      fingerprint: "reworded",
+      card: {
+        ...original.card,
+        title: "Ryanair may freeze workers' pay and raise fares as fuel prices rise",
+      },
+    };
+    const next = mergeDiscoverLiveItems(first, [reworded], now);
+
+    expect(next.sequence).toBe(first.sequence);
+    expect(next.items[0]).toMatchObject({
+      revision: 1,
+      fingerprint: "reworded",
+      card: { title: reworded.card.title },
+    });
+  });
+
   it("keeps today's topics on the first page without losing stories across pages", () => {
     const content = feedWithBuriedTopic();
     const first = readFirstPage(content);
@@ -143,7 +245,17 @@ describe("Discover live feed", () => {
     const first = { ...initial, ...mergeDiscoverLiveItems(initial, [candidate], now) };
     const content = {
       ...first,
-      ...mergeDiscoverLiveItems(first, [{ ...candidate, fingerprint: "changed" }], now),
+      ...mergeDiscoverLiveItems(
+        first,
+        [
+          {
+            ...candidate,
+            fingerprint: "changed",
+            card: { ...card, title: "Regulators block the deal after a surprise ruling" },
+          },
+        ],
+        now,
+      ),
     };
     const page = presentDiscoverFeed(content, {
       seen: new Map([[candidate.id, 1]]),

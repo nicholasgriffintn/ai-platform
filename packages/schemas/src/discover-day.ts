@@ -17,6 +17,7 @@ export const discoverDayModeSchema = z.enum(["office", "remote", "off"]);
 export const discoverMomentSchema = z.enum(["morning", "lunch", "afternoon", "evening"]);
 export const discoverRoutineOperationSchema = z.enum([
   "current",
+  "feed",
   "research",
   "morning_audio",
   "evening_audio",

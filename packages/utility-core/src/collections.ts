@@ -21,6 +21,15 @@ export function toggleSetMember<T>(set: ReadonlySet<T>, value: T): Set<T> {
   return next;
 }
 
+export function interleaveBy<T, K>(items: Iterable<T>, keyOf: (item: T) => K): T[] {
+  const queues = [...groupBy(items, keyOf).values()];
+  const rounds = Math.max(0, ...queues.map((queue) => queue.length));
+
+  return Array.from({ length: rounds }, (_, round) =>
+    queues.flatMap((queue) => queue.slice(round, round + 1)),
+  ).flat();
+}
+
 export function groupBy<T, K>(items: Iterable<T>, keyOf: (item: T) => K): Map<K, T[]> {
   const groups = new Map<K, T[]>();
 

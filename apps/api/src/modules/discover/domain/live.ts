@@ -1,6 +1,7 @@
 import {
   toListPage,
   DISCOVER_LIVE_LIMIT,
+  discoverSourceOutlet,
   discoverFeedItemSchema,
   discoverObservationSchema,
   type DiscoverCard,
@@ -14,6 +15,8 @@ import {
 import {
   comparableHeadline,
   comparableHttpUrl,
+  headlineTerms,
+  isSameStory,
   normaliseComparableText,
   describeZonedInstant,
 } from "@ngriffin_uk/polychat-utility-core";
@@ -29,6 +32,9 @@ const DISCOVER_FEED_SHELF_KINDS: ReadonlySet<DiscoverCard["kind"]> = new Set([
   "wind_down",
 ]);
 const DISCOVER_FEED_SHELF_LIMIT = 8;
+const DISCOVER_LIVE_RETIRED_LIMIT = 1_000;
+const DISCOVER_LIVE_RETIRED_KEY_LENGTH = 16;
+const DISCOVER_HEADLINE_MIN_LENGTH = 12;
 
 export const discoverLiveContentSchema = z
   .object({
@@ -41,6 +47,7 @@ export const discoverLiveContentSchema = z
     items: z
       .array(discoverFeedItemSchema.extend({ fingerprint: z.string().min(1) }))
       .max(DISCOVER_LIVE_LIMIT),
+    retired: z.array(z.string()).max(DISCOVER_LIVE_RETIRED_LIMIT).default([]),
   })
   .strict();
 
@@ -66,6 +73,7 @@ export function emptyDiscoverLive(): DiscoverLiveContent {
     updatedAt: null,
     observations: [],
     items: [],
+    retired: [],
   };
 }
 
@@ -93,21 +101,62 @@ export function discoverCardMaterial(card: DiscoverCard): string {
   });
 }
 
+function retiredKey(id: string): string {
+  return id.slice(-DISCOVER_LIVE_RETIRED_KEY_LENGTH);
+}
+
+interface DiscoverStoryIndexEntry {
+  id: string;
+  headline: string;
+  terms: ReadonlySet<string>;
+  outlet: string | null;
+}
+
+function indexDiscoverStory(id: string, card: DiscoverCard): DiscoverStoryIndexEntry {
+  const title = describeDiscoverCard(card);
+
+  return {
+    id,
+    headline: comparableHeadline(title),
+    terms: headlineTerms(title),
+    outlet: "source" in card ? discoverSourceOutlet(card.source) : null,
+  };
+}
+
+function repeatsDiscoverStory(
+  candidate: DiscoverStoryIndexEntry,
+  stories: readonly DiscoverStoryIndexEntry[],
+): boolean {
+  return stories.some(
+    (story) =>
+      story.id !== candidate.id &&
+      ((candidate.headline.length >= DISCOVER_HEADLINE_MIN_LENGTH &&
+        story.headline === candidate.headline) ||
+        (story.outlet !== null &&
+          candidate.outlet !== null &&
+          story.outlet !== candidate.outlet &&
+          isSameStory(story.terms, candidate.terms))),
+  );
+}
+
+function isDiscoverRewording(previous: DiscoverCard, next: DiscoverCard): boolean {
+  const before = describeDiscoverCard(previous);
+  const after = describeDiscoverCard(next);
+
+  return before === after || isSameStory(headlineTerms(before), headlineTerms(after));
+}
+
 export function mergeDiscoverLiveItems(
   current: DiscoverLiveContent,
   candidates: readonly DiscoverLiveCandidate[],
   now: Date,
-): Pick<DiscoverLiveContent, "items" | "sequence" | "updatedAt"> {
+): Pick<DiscoverLiveContent, "items" | "sequence" | "updatedAt" | "retired"> {
   const instant = now.toISOString();
   const items = new Map(
     current.items.filter((item) => item.expiresAt > instant).map((item) => [item.id, item]),
   );
-  const headlines = new Map(
-    [...items.values()].map((item) => [
-      comparableHeadline(describeDiscoverCard(item.card)),
-      item.id,
-    ]),
-  );
+  const retired = new Set(current.retired);
+  const stories = [...items.values()].map((item) => indexDiscoverStory(item.id, item.card));
   let sequence = current.sequence;
 
   for (const candidate of [...candidates].reverse()) {
@@ -122,10 +171,12 @@ export function mergeDiscoverLiveItems(
     }
 
     const previous = items.get(candidate.id);
-    const headline = comparableHeadline(describeDiscoverCard(candidate.card));
-    const duplicateId = headlines.get(headline);
+    const story = indexDiscoverStory(candidate.id, candidate.card);
 
-    if (!previous && headline.length >= 12 && duplicateId && duplicateId !== candidate.id) {
+    if (
+      !previous &&
+      (retired.has(retiredKey(candidate.id)) || repeatsDiscoverStory(story, stories))
+    ) {
       continue;
     }
 
@@ -139,7 +190,22 @@ export function mergeDiscoverLiveItems(
       continue;
     }
 
-    if (previous?.dismissed || now.getTime() - evidenceAt > DISCOVER_LIVE_FRESH_MS) {
+    if (previous?.dismissed) {
+      continue;
+    }
+
+    if (previous && isDiscoverRewording(previous.card, candidate.card)) {
+      items.set(candidate.id, {
+        ...previous,
+        card: { ...previous.card, ...candidate.card },
+        fingerprint: candidate.fingerprint,
+        observedAt: candidate.observedAt,
+        providerId: candidate.providerId,
+      });
+      continue;
+    }
+
+    if (now.getTime() - evidenceAt > DISCOVER_LIVE_FRESH_MS) {
       continue;
     }
 
@@ -155,15 +221,21 @@ export function mergeDiscoverLiveItems(
       dismissed: false,
       signals: [],
     });
-    headlines.set(headline, candidate.id);
+    stories.push(story);
   }
+
+  const ordered = [...items.values()].sort((left, right) => right.sequence - left.sequence);
+  const kept = ordered.slice(0, DISCOVER_LIVE_LIMIT);
+  const keptIds = new Set(kept.map((item) => item.id));
+  const left = [...current.items, ...ordered.slice(DISCOVER_LIVE_LIMIT)]
+    .filter((item) => !keptIds.has(item.id))
+    .map((item) => retiredKey(item.id));
 
   return {
     sequence,
     updatedAt: sequence === current.sequence ? current.updatedAt : instant,
-    items: [...items.values()]
-      .sort((left, right) => right.sequence - left.sequence)
-      .slice(0, DISCOVER_LIVE_LIMIT),
+    items: kept,
+    retired: [...new Set([...left, ...current.retired])].slice(0, DISCOVER_LIVE_RETIRED_LIMIT),
   };
 }
 

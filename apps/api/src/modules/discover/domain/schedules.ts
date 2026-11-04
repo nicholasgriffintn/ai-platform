@@ -8,6 +8,8 @@ import {
   shiftClockTime,
 } from "@ngriffin_uk/polychat-utility-core";
 
+const DISCOVER_FEED_REFRESH_EVERY_HOURS = 2;
+
 export function keepDiscoverTriggerState(
   triggers: readonly RecipeInstallationTrigger[],
   current: readonly RecipeInstallationTrigger[],
@@ -48,6 +50,8 @@ export function buildDiscoverScheduleTriggers(
     hours.add(Number(clock.slice(0, 2)));
   }
 
+  const sortedHours = [...hours].sort((left, right) => left - right);
+  const feedHours = sortedHours.filter((hour) => hour % DISCOVER_FEED_REFRESH_EVERY_HOURS === 1);
   const triggers: RecipeInstallationTrigger[] = [
     {
       id: "discover-research-morning",
@@ -68,9 +72,17 @@ export function buildDiscoverScheduleTriggers(
       id: "discover-current",
       type: "schedule",
       enabled: true,
-      cronExpression: `*/15 ${[...hours].sort((left, right) => left - right).join(",")} * * *`,
+      cronExpression: `*/15 ${sortedHours.join(",")} * * *`,
       timezone: profile.timezone,
       discoverOperation: "current",
+    },
+    {
+      id: "discover-feed",
+      type: "schedule",
+      enabled: true,
+      cronExpression: `30 ${feedHours.join(",")} * * *`,
+      timezone: profile.timezone,
+      discoverOperation: "feed",
     },
   ];
 

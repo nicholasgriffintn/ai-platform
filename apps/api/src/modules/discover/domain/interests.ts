@@ -183,6 +183,7 @@ export function describeInterestMaterial(input: {
   signals: ReadonlyArray<{ title: string; lines: readonly string[] }>;
   chatTitles: readonly string[];
   memorySummary: string | null;
+  opened: readonly string[];
   more: readonly string[];
   less: readonly string[];
   profile: DiscoverInterestProfile | null;
@@ -203,6 +204,7 @@ export function describeInterestMaterial(input: {
           ),
         ]),
     section("What Poly remembers", input.memorySummary ? [input.memorySummary] : []),
+    section("Stories they opened in Discover", input.opened),
     section("Asked for more of", input.more),
     section("Asked for less of, never choose", input.less),
     section(

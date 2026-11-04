@@ -71,6 +71,18 @@ export function keepDiscoverFeedbackSince(
   return entries.filter((entry) => Date.parse(entry.createdAt) >= since);
 }
 
+export function listOpenedDiscoverTitles(
+  entries: readonly DiscoverFeedbackEntry[],
+  limit: number,
+): string[] {
+  const titles = sortCopy(entries, byCreatedAt)
+    .reverse()
+    .filter((entry) => entry.signal === "opened" || entry.signal === "saved")
+    .map((entry) => entry.title);
+
+  return [...new Set(titles)].slice(0, limit);
+}
+
 export function collectCardSignals(
   entries: readonly DiscoverFeedbackEntry[],
   editionId: string,

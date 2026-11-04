@@ -7,6 +7,8 @@ import type { DiscoverSignal } from "./types";
 const REDDIT_TOPIC_LIMIT = 5;
 const REDDIT_FRONT_MIN_SCORE = 20;
 const REDDIT_TOPIC_MIN_SCORE = 50;
+const REDDIT_MEDIA_HINTS = new Set(["hosted:video", "image", "rich:video"]);
+const REDDIT_MEDIA_URL = /^https?:\/\/(?:i|preview|v)\.redd\.it\//u;
 
 function redditPosts(result: unknown): Record<string, unknown>[] {
   return items(
@@ -39,6 +41,16 @@ function redditSubreddit(post: Record<string, unknown>): string {
   return subreddit.startsWith("r/") || !subreddit ? subreddit : `r/${subreddit}`;
 }
 
+function isBareMediaPost(post: Record<string, unknown>): boolean {
+  return (
+    !first(post, ["selftext"]) &&
+    (post.is_gallery === true ||
+      post.is_video === true ||
+      REDDIT_MEDIA_HINTS.has(first(post, ["post_hint"])) ||
+      REDDIT_MEDIA_URL.test(first(post, ["url"])))
+  );
+}
+
 function redditPostItems(
   posts: readonly Record<string, unknown>[],
   minScore: number,
@@ -48,7 +60,7 @@ function redditPostItems(
     const url = redditPostUrl(post);
     const score = count(post, ["score"]);
 
-    return title && url && score >= minScore
+    return title && url && score >= minScore && !isBareMediaPost(post)
       ? [
           {
             title,

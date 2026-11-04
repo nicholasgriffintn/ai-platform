@@ -26,6 +26,7 @@ export const DEVTO_SIGNALS: readonly DiscoverSignal[] = [
     providerId: "devto",
     group: "reading",
     title: "DEV this week",
+    notActivity: true,
     description: "Reads the most popular DEV articles from the last week.",
     operation: "DEVTO_LIST_ARTICLES",
     parameters: () => ({ top: 7, per_page: 20 }),

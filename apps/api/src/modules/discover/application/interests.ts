@@ -16,6 +16,7 @@ import { discoverTopicKey } from "~/modules/discover/domain/edition";
 import { summariseDiscoverFeedPreferences } from "~/modules/discover/domain/feed-weights";
 import {
   keepDiscoverFeedbackSince,
+  listOpenedDiscoverTitles,
   summariseDiscoverFeedback,
 } from "~/modules/discover/domain/feedback";
 import { isDiscoverSignalCurrent } from "~/modules/discover/domain/freshness";
@@ -42,6 +43,7 @@ import { listDiscoverDocumentSources, readDiscoverDocuments } from "./notebook";
 import { writeDiscoverDocument } from "./signal-documents";
 
 const logger = getLogger({ prefix: "discover/interests" });
+const OPENED_TITLE_LIMIT = 20;
 
 export interface DiscoverInterestChoice {
   interests: DiscoverInterestProfile["interests"];
@@ -80,6 +82,7 @@ async function inferInterests(
   input: {
     now: Date;
     profile: DiscoverInterestProfile | null;
+    opened: readonly string[];
     more: readonly string[];
     hidden: readonly string[];
   },
@@ -111,6 +114,7 @@ async function inferInterests(
         signals,
         chatTitles,
         memorySummary,
+        opened: input.opened,
         more: input.more,
         less: input.hidden,
         profile: input.profile,
@@ -140,14 +144,16 @@ export async function chooseDiscoverInterests(
   ]);
   const summary = summariseDiscoverFeedback(feedback);
   const hidden = [...summary.hiddenTopics, ...summary.lessTopics, ...dayProfile.mutedTopics];
+  const recent = keepDiscoverFeedbackSince(
+    feedback,
+    input.now.getTime() - INTEREST_OPENED_DAYS * DAY_MS,
+  );
   const kept = {
     interests: profile?.interests ?? [],
     more: summary.moreTopics,
     saved: summary.savedTopics,
     hidden,
-    engaged: summariseDiscoverFeedPreferences(
-      keepDiscoverFeedbackSince(feedback, input.now.getTime() - INTEREST_OPENED_DAYS * DAY_MS),
-    ).engaged,
+    engaged: summariseDiscoverFeedPreferences(recent).engaged,
   };
 
   if (!input.refresh || profile?.updatedOn === input.today) {
@@ -157,6 +163,7 @@ export async function chooseDiscoverInterests(
   const found = await inferInterests(context, notebookId, {
     now: input.now,
     profile,
+    opened: listOpenedDiscoverTitles(recent, OPENED_TITLE_LIMIT),
     more: summary.moreTopics,
     hidden,
   });

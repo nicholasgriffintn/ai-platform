@@ -34,6 +34,19 @@ describe("showsDiscoverActivity", () => {
     ).toEqual([]);
   });
 
+  it("rejects public front pages, which say what is popular rather than what they do", () => {
+    expect(
+      [
+        "hackernews-front",
+        "lobsters-hottest",
+        "huggingface-papers",
+        "devto-top-today",
+        "nasa-apod",
+        "artificial-analysis-models",
+      ].filter(showsDiscoverActivity),
+    ).toEqual([]);
+  });
+
   it("keeps what the person did, including sources outside the catalogue", () => {
     expect(["reddit-front", "trakt-history", "device-browsing"].every(showsDiscoverActivity)).toBe(
       true,
@@ -41,7 +54,50 @@ describe("showsDiscoverActivity", () => {
   });
 });
 
+describe("Hugging Face papers", () => {
+  it("leaves out old papers that are trending again", () => {
+    const paper = (id: string, publishedAt: string) => ({
+      title: id,
+      publishedAt,
+      paper: { id, upvotes: 20 },
+    });
+
+    expect(
+      findDiscoverSignal("huggingface-papers")
+        ?.items?.(
+          [paper("recent", "2026-10-27T10:00:00.000Z"), paper("old", "2023-09-12T10:00:00.000Z")],
+          read,
+        )
+        .map((item) => item.title),
+    ).toEqual(["recent"]);
+  });
+});
+
 describe("Reddit signals", () => {
+  it("skips picture posts with nothing to read", () => {
+    const post = (title: string, extra: Record<string, unknown>) => ({
+      data: { title, score: 500, permalink: `/r/test/${title}`, ...extra },
+    });
+
+    expect(
+      findDiscoverSignal("reddit-front")
+        ?.items?.(
+          {
+            data: {
+              children: [
+                post("picture", { post_hint: "image" }),
+                post("hosted", { url: "https://i.redd.it/a.jpg" }),
+                post("discussion", { selftext: "A real post", post_hint: "image" }),
+                post("link", { url: "https://example.com/story" }),
+              ],
+            },
+          },
+          read,
+        )
+        .map((item) => item.title),
+    ).toEqual(["discussion", "link"]);
+  });
+
   it("searches the week's top posts on the person's topics and links search and front page posts alike", () => {
     const topics = connector("reddit-topics");
     const front = findDiscoverSignal("reddit-front");

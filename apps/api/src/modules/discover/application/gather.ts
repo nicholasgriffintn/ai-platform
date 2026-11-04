@@ -39,13 +39,14 @@ import {
 } from "~/modules/discover/domain/news-categories";
 import {
   DISCOVER_HEADLINES_TOPIC,
+  keepDiscoverTopicResults,
   mergeResearchDocument,
   readResearchResults,
   type DiscoverResearchResult,
 } from "~/modules/discover/domain/research";
 import {
   DISCOVER_SIGNALS,
-  isDiscoverFeedSignal,
+  isDiscoverPublicSignal,
   listDiscoverFeedSignals,
 } from "~/modules/discover/domain/signal-catalogue";
 import { renderSignalDocument } from "~/modules/discover/domain/signal-document";
@@ -292,7 +293,7 @@ async function researchTopic(
     const results = await readDiscoverArticles(context, notebookId, {
       topic,
       date,
-      results: found,
+      results: candidates || query !== topic ? found : keepDiscoverTopicResults(topic, found),
     });
     const existing = await context.repositories.get(SourceRepository).getSource(sourceId);
 
@@ -408,23 +409,22 @@ export async function runDiscoverGather(
     async () => (await ensureDiscoverNotebook(context)).id,
   );
   const { selected: available } = await resolveDiscoverSignals(context, settings);
-  const selected = scope === "full" ? available : available.filter(isDiscoverFeedSignal);
+  const selected = scope === "full" ? available : available.filter(isDiscoverPublicSignal);
   const read: string[] = [];
   const stale: string[] = [];
   let topics: string[] = [];
 
-  const signalTopics =
-    selected.length > 0
-      ? await steps.value("signal-topics", z.array(z.string()), () =>
-          chooseDiscoverResearchTopics(context, notebookId, {
-            asked: curateTopics(settings.curate),
-            today: zoned.date,
-            now,
-            timezone,
-            refresh: false,
-          }),
-        )
-      : [];
+  const signalTopics = selected.some((signal) => signal.needsTopics)
+    ? await steps.value("signal-topics", z.array(z.string()), () =>
+        chooseDiscoverResearchTopics(context, notebookId, {
+          asked: curateTopics(settings.curate),
+          today: zoned.date,
+          now,
+          timezone,
+          refresh: false,
+        }),
+      )
+    : [];
 
   for (const signal of selected) {
     if (signal.needsTopics && signalTopics.length === 0) {
@@ -446,6 +446,14 @@ export async function runDiscoverGather(
     });
 
     (ok ? read : stale).push(signal.providerId);
+  }
+
+  if (scope === "feed") {
+    await steps.run("current", async () => {
+      await queueDiscoverCurrent(context);
+    });
+
+    return { read: [...new Set(read)], stale: [...new Set(stale)], topics };
   }
 
   const newsCategories = selectDiscoverNewsCategories(settings.newsCategoryIds);

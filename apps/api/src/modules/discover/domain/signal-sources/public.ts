@@ -1,3 +1,4 @@
+import { isoDaysBefore } from "@ngriffin_uk/polychat-utility-core";
 import { htmlToPlainText } from "@ngriffin_uk/polychat-utility-server/html-text";
 
 import { count, describeEngagement, first, joinParts, lines, records } from "./read";
@@ -6,6 +7,7 @@ import type { DiscoverPublicSignal } from "./types";
 const HACKER_NEWS_MIN_POINTS = 100;
 const LOBSTERS_MIN_SCORE = 10;
 const HUGGING_FACE_MIN_UPVOTES = 5;
+const HUGGING_FACE_RECENT_DAYS = 14;
 
 function hackerNewsStories(result: unknown): Record<string, unknown>[] {
   return records(result, ["hits"]);
@@ -104,20 +106,22 @@ export const PUBLIC_SIGNALS: readonly DiscoverPublicSignal[] = [
     description: "Reads the AI research papers trending on Hugging Face.",
     format: "json",
     url: () => "https://huggingface.co/api/daily_papers?sort=trending&limit=30",
-    items: (result) =>
+    items: (result, read) =>
       huggingFacePapers(result).flatMap((paper) => {
         const title = first(paper, ["title"], ["paper", "title"]);
         const url = huggingFacePaperUrl(paper);
         const upvotes = count(paper, ["paper", "upvotes"]);
+        const published = first(paper, ["publishedAt"]);
+        const recent = !published || published >= isoDaysBefore(read.now, HUGGING_FACE_RECENT_DAYS);
 
-        return title && url && upvotes >= HUGGING_FACE_MIN_UPVOTES
+        return title && url && upvotes >= HUGGING_FACE_MIN_UPVOTES && recent
           ? [
               {
                 title,
                 url,
                 snippet: first(paper, ["summary"], ["paper", "summary"]).slice(0, 400),
                 source: describeEngagement("Hugging Face papers", upvotes, "upvotes"),
-                date: first(paper, ["publishedAt"]).slice(0, 10),
+                date: published.slice(0, 10),
               },
             ]
           : [];

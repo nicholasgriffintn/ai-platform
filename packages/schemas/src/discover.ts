@@ -641,6 +641,11 @@ export const discoverBriefingDraftSchema = z
 export type DiscoverBriefingDraft = z.infer<typeof discoverBriefingDraftSchema>;
 
 const discoverJobRun = { runId: z.string().min(1).optional() };
+const DISCOVER_SOURCE_ENGAGEMENT = /, [\d,.]+ (?:points|upvotes|reactions|votes)$/u;
+
+export function discoverSourceOutlet(source: string): string {
+  return source.replace(DISCOVER_SOURCE_ENGAGEMENT, "");
+}
 
 export const discoverGatherScopeSchema = z.enum(["full", "feed"]);
 export type DiscoverGatherScope = z.infer<typeof discoverGatherScopeSchema>;

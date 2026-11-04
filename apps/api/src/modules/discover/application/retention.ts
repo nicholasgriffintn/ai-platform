@@ -4,6 +4,7 @@ import { OutputRepository } from "~/modules/outputs/infrastructure/OutputReposit
 
 import { listRecentDiscoverEditions } from "./editions";
 import { listDiscoverFeedback } from "./feedback";
+import { discoverLiveId } from "./live-store";
 
 const EDITION_SCAN_LIMIT = 100;
 
@@ -25,6 +26,8 @@ export async function tidyDiscover(
   if (expired.length > 0) {
     await context.repositories.get(OutputRepository).deleteOutputs(expired);
   }
+
+  await context.repositories.get(OutputRepository).deleteRevisions(discoverLiveId(user.id));
 
   return { editions: expired.length };
 }

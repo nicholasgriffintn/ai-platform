@@ -7,6 +7,7 @@ export const MODEL_SIGNALS: readonly DiscoverSignal[] = [
     providerId: "artificial_analysis",
     group: "models",
     title: "Artificial Analysis",
+    notActivity: true,
     description: "Reads the current language model index.",
     operation: "ARTIFICIAL_ANALYSIS_LIST_LANGUAGE_MODELS",
     parameters: () => ({}),

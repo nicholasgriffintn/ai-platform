@@ -41,6 +41,7 @@ export const NASA_SIGNALS: readonly DiscoverSignal[] = [
     providerId: "nasa",
     group: "pictures",
     title: "Astronomy picture of the day",
+    notActivity: true,
     description: "Reads NASA's astronomy picture of the day.",
     operation: "NASA_GET_APOD",
     parameters: () => ({}),

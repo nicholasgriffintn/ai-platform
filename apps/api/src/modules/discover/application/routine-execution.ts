@@ -37,21 +37,21 @@ export async function executeDiscoverRoutineOccurrence(
     };
   }
 
-  if (operation === "research") {
+  if (operation === "research" || operation === "feed") {
     await new TaskService(context.env, new TaskRepository(context.env)).enqueueTask({
-      id: `discover_research_${installationId}_${data.occurrenceId}`,
+      id: `discover_${operation}_${installationId}_${data.occurrenceId}`,
       task_type: DISCOVER_JOB_TASK_TYPE,
       user_id: user.id,
       task_data: {
         job: "gather",
-        scope: "full",
+        scope: operation === "research" ? "full" : "feed",
         installationId,
         scheduledAt: scheduled.toISOString(),
       },
       priority: 6,
     });
 
-    return { status: "success", message: "Discover research queued" };
+    return { status: "success", message: `Discover ${operation} read queued` };
   }
 
   const profile = await readDiscoverDayProfile(context);

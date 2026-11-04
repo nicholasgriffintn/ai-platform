@@ -112,6 +112,41 @@ export function comparableHeadline(title: string): string {
   return normaliseComparableText(cut > 0 ? title.slice(0, cut) : title);
 }
 
+const HEADLINE_FILLER_WORDS = new Set(
+  "a about after amid an and are as at be been but by can could for from get gets had has have he her his how i in into is it its just may might more most new no not now of on or our out over said say says she than that the their then these they this those to up was we were what when where which who whom why will with would you your".split(
+    " ",
+  ),
+);
+const SAME_STORY_MIN_SHARED_TERMS = 3;
+const SAME_STORY_CONFIDENT_SHARED_TERMS = 4;
+const SAME_STORY_MIN_OVERLAP = 0.5;
+const SAME_STORY_CONFIDENT_OVERLAP = 0.6;
+
+function singularTerm(word: string): string {
+  return word.length > 3 && word.endsWith("s") && !word.endsWith("ss") ? word.slice(0, -1) : word;
+}
+
+export function headlineTerms(text: string): Set<string> {
+  return new Set(
+    normaliseComparableText(text)
+      .split(" ")
+      .filter(
+        (word) => !HEADLINE_FILLER_WORDS.has(word) && (word.length > 2 || /^\d+$/u.test(word)),
+      )
+      .map(singularTerm),
+  );
+}
+
+export function isSameStory(left: ReadonlySet<string>, right: ReadonlySet<string>): boolean {
+  const shared = [...left].filter((term) => right.has(term)).length;
+  const overlap = shared / Math.max(1, Math.min(left.size, right.size));
+
+  return (
+    (shared >= SAME_STORY_CONFIDENT_SHARED_TERMS && overlap >= SAME_STORY_MIN_OVERLAP) ||
+    (shared >= SAME_STORY_MIN_SHARED_TERMS && overlap >= SAME_STORY_CONFIDENT_OVERLAP)
+  );
+}
+
 export function normalizeStatus(status?: string): string {
   return status?.toLowerCase() ?? "";
 }

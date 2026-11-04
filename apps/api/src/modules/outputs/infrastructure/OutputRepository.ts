@@ -88,6 +88,7 @@ export interface UpdateOutputRecord {
   updatedByUserId: number;
   operation?: Exclude<OutputRevisionOperation, "created">;
   restoredFromRevision?: number | null;
+  keepRevision?: boolean;
 }
 
 export interface OutputAuditRecord {
@@ -646,7 +647,8 @@ export class OutputRepository extends BaseRepository {
       existing.restored_from_revision ?? null,
     );
     const updateStatement = this.env.DB.prepare(update.query).bind(...update.values);
-    const statements = [revisionInsert, updateStatement];
+    const keepRevision = input.keepRevision ?? true;
+    const statements = keepRevision ? [revisionInsert, updateStatement] : [updateStatement];
 
     if (audit) {
       statements.push(
@@ -671,7 +673,7 @@ export class OutputRepository extends BaseRepository {
       throw new AssistantError("Failed to update output", ErrorType.DATABASE_ERROR);
     }
 
-    if ((results[1]?.meta?.changes ?? 0) < 1) {
+    if ((results[keepRevision ? 1 : 0]?.meta?.changes ?? 0) < 1) {
       throw new AssistantError("Output has changed", ErrorType.CONFLICT_ERROR, 409);
     }
 
@@ -916,6 +918,13 @@ export class OutputRepository extends BaseRepository {
     await this.executeRun(
       "UPDATE resource_grant SET revoked_at = ? WHERE kind = 'output' AND id = ? AND output_id = ? AND revoked_at IS NULL",
       [new Date().toISOString(), shareId, outputId],
+    );
+  }
+
+  async deleteRevisions(outputId: string): Promise<void> {
+    await this.executeRun(
+      "DELETE FROM resource_revision WHERE resource_type = 'output' AND output_id = ?",
+      [outputId],
     );
   }
 

@@ -57,14 +57,10 @@ export function listDiscoverSignalOperations(signal: DiscoverConnectorSignal): s
   return signal.expand ? [signal.operation, signal.expand.operation] : [signal.operation];
 }
 
-export function isDiscoverFeedSignal(signal: DiscoverSignal): boolean {
-  return signal.items !== undefined;
-}
-
 export function showsDiscoverActivity(signalId: string): boolean {
   const signal = findDiscoverSignal(signalId);
 
-  return !signal?.needsTopics && !signal?.notActivity;
+  return signal?.kind !== "public" && !signal?.needsTopics && !signal?.notActivity;
 }
 
 export function isDiscoverOptInProvider(providerId: string): boolean {

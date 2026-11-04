@@ -1,5 +1,5 @@
 import type { ChatSuggestion } from "@ngriffin_uk/polychat-library-react";
-import type { DiscoverCard } from "@ngriffin_uk/polychat-schemas";
+import { discoverSourceOutlet, type DiscoverCard } from "@ngriffin_uk/polychat-schemas";
 import { normaliseComparableText } from "@ngriffin_uk/polychat-utility-core";
 
 import type { DiscoverMedia } from "./media/media-status.js";
@@ -41,7 +41,7 @@ export function discoverCardBody(card: DiscoverCard): string | null {
     case "watch":
     case "listen":
     case "inbox":
-      return card.summary;
+      return card.summary === card.title ? null : card.summary;
     case "event":
     case "action":
     case "resurface":
@@ -61,11 +61,13 @@ export interface DiscoverCardLink {
 export function discoverCardLink(card: DiscoverCard): DiscoverCardLink | null {
   switch (card.kind) {
     case "read":
-      return { href: card.url, label: `Open on ${card.source}` };
+      return { href: card.url, label: `Open on ${discoverSourceOutlet(card.source)}` };
     case "watch":
     case "listen":
     case "inbox":
-      return card.url ? { href: card.url, label: `Open on ${card.source}` } : null;
+      return card.url
+        ? { href: card.url, label: `Open on ${discoverSourceOutlet(card.source)}` }
+        : null;
     case "event":
       return card.url ? { href: card.url, label: "Open it" } : null;
     case "resurface":
@@ -190,13 +192,13 @@ export function discoverCardSuggestions(card: DiscoverCard): ChatSuggestion[] {
           card,
           "about",
           "What is this about?",
-          `Tell me about "${card.title}" from ${card.source} (${card.url}) and whether it is worth my time.`,
+          `Tell me about "${card.title}" from ${discoverSourceOutlet(card.source)} (${card.url}) and whether it is worth my time.`,
         ),
         suggestion(
           card,
           "more",
           "More like this",
-          `Find me more like "${card.title}" from ${card.source}, given what you know I like.`,
+          `Find me more like "${card.title}" from ${discoverSourceOutlet(card.source)}, given what you know I like.`,
         ),
       ];
     case "event":
@@ -220,13 +222,13 @@ export function discoverCardSuggestions(card: DiscoverCard): ChatSuggestion[] {
           card,
           "gist",
           "Give me the gist",
-          `Give me the gist of "${card.title}" from ${card.source}${card.url ? ` (${card.url})` : ""} in five bullet points.`,
+          `Give me the gist of "${card.title}" from ${discoverSourceOutlet(card.source)}${card.url ? ` (${card.url})` : ""} in five bullet points.`,
         ),
         suggestion(
           card,
           "save",
           "Save it for later",
-          `Save "${card.title}" from ${card.source}${card.url ? ` (${card.url})` : ""} to my reading list.`,
+          `Save "${card.title}" from ${discoverSourceOutlet(card.source)}${card.url ? ` (${card.url})` : ""} to my reading list.`,
         ),
       ];
     case "wind_down":

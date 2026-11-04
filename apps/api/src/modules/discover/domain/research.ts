@@ -1,9 +1,11 @@
 import { DISCOVER_RESEARCH_DAYS_KEPT } from "@ngriffin_uk/polychat-schemas";
 import {
+  headlineTerms,
   isBoilerplate,
   isRecord,
   leadParagraphs,
   markdownToPlainText,
+  readUrlHost,
   shiftCalendarDate,
 } from "@ngriffin_uk/polychat-utility-core";
 
@@ -12,6 +14,22 @@ import { discoverTopicKey } from "./edition";
 
 export const DISCOVER_HEADLINES_TOPIC = "Today's headlines";
 const RESEARCH_CURRENT_DAYS = 1;
+const RESEARCH_NOISE_HOSTS = [
+  "accessnewswire.com",
+  "businesswire.com",
+  "einnews.com",
+  "einpresswire.com",
+  "globenewswire.com",
+  "openpr.com",
+  "prnewswire.com",
+  "prweb.com",
+  "reutersconnect.com",
+];
+const RESEARCH_NOISE_TITLES = [
+  /^(?:the )?\d+ (?:best|top)\b/iu,
+  /^(?:the )?best\b.*\b20\d{2}\b/iu,
+  /^licensable (?:image|picture)\b/iu,
+];
 
 export type DiscoverResultMedia = "watch" | "listen";
 
@@ -138,6 +156,29 @@ export function mergeResearchDocument(existing: string, section: DiscoverResearc
 
 export function latestResearchSection(content: string): DiscoverResearchSection | null {
   return parseResearchDocument(content)[0] ?? null;
+}
+
+function isResearchNoise(result: DiscoverResearchResult): boolean {
+  const host = readUrlHost(result.url).toLowerCase();
+
+  return (
+    RESEARCH_NOISE_HOSTS.some((noise) => host === noise || host.endsWith(`.${noise}`)) ||
+    RESEARCH_NOISE_TITLES.some((title) => title.test(result.title))
+  );
+}
+
+export function keepDiscoverTopicResults<T extends DiscoverResearchResult>(
+  topic: string,
+  results: readonly T[],
+): T[] {
+  const terms = [...headlineTerms(topic)];
+  const needed = Math.ceil(terms.length / 2);
+
+  return results.filter((result) => {
+    const text = headlineTerms(`${result.title} ${result.snippet}`);
+
+    return !isResearchNoise(result) && terms.filter((term) => text.has(term)).length >= needed;
+  });
 }
 
 export function keepRecentDiscoverResults(
