@@ -281,7 +281,23 @@ export function formatBackground(background: {
   );
 }
 
+interface ImportedProgress {
+  seasons: readonly { season: number; watched: number }[];
+  watched: number;
+  unwatched?: number | null;
+}
+
+function formatImportedProgress(progress: ImportedProgress): string {
+  const seasons = progress.seasons.map((entry) => `S${entry.season}: ${entry.watched}`).join(", ");
+
+  return `${join([
+    `On Trakt: ${progress.watched} watched`,
+    progress.unwatched == null ? null : `${progress.unwatched} not watched`,
+  ])}${seasons ? ` (${seasons})` : ""}.`;
+}
+
 export function formatEpisodeProgress(progress: {
+  imported: ImportedProgress | null;
   watchedCount: number;
   furthest: { season: number; episode: number } | null;
   episodes: readonly {
@@ -292,8 +308,10 @@ export function formatEpisodeProgress(progress: {
     notes?: string | null;
   }[];
 }): string {
+  const imported = progress.imported ? formatImportedProgress(progress.imported) : null;
+
   if (!progress.furthest) {
-    return "No episodes ticked off yet.";
+    return imported ?? "No episodes ticked off yet.";
   }
 
   const annotated = progress.episodes
@@ -310,6 +328,7 @@ export function formatEpisodeProgress(progress: {
   return [
     `${progress.watchedCount} watched, furthest ${episodeLabel(progress.furthest.season, progress.furthest.episode)}.`,
     ...annotated,
+    ...(imported ? [imported] : []),
   ].join("\n");
 }
 

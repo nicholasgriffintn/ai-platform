@@ -198,13 +198,15 @@ function fillRound(
   return cards;
 }
 
-export function fillDiscoverFeed(input: {
+interface DiscoverFeedFill {
   groups: readonly DiscoverFeedGroup[];
   seen: SeenDiscoverLinks;
   skipTopics: ReadonlySet<string>;
   limit: number;
   createId: () => string;
-}): DiscoverCard[] {
+}
+
+export function fillDiscoverFeed(input: DiscoverFeedFill): DiscoverCard[] {
   const queues = input.groups
     .filter((group) => !input.skipTopics.has(discoverTopicKey(group.topic)))
     .map((group) => ({
@@ -219,10 +221,27 @@ export function fillDiscoverFeed(input: {
   const cards: DiscoverCard[] = [];
 
   for (const tier of tiers) {
-    while (tier.some((queue) => queue.remaining.length > 0)) {
+    while (cards.length < input.limit && tier.some((queue) => queue.remaining.length > 0)) {
       cards.push(...fillRound(tier, input.seen, input.createId));
     }
   }
 
   return cards.slice(0, Math.max(0, input.limit));
+}
+
+export function fillDiscoverLiveFeed(
+  input: DiscoverFeedFill & { newsSlots: number },
+): DiscoverCard[] {
+  const news = input.groups.filter((group) => isDiscoverNewsTopic(group.topic));
+  const supply = news.reduce((total, group) => total + group.items.length, 0);
+  const others = fillDiscoverFeed({
+    ...input,
+    groups: input.groups.filter((group) => !isDiscoverNewsTopic(group.topic)),
+    limit: input.limit - Math.min(input.newsSlots, supply),
+  });
+
+  return [
+    ...others,
+    ...fillDiscoverFeed({ ...input, groups: news, limit: input.limit - others.length }),
+  ];
 }

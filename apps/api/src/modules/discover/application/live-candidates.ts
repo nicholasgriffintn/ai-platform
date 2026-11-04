@@ -17,23 +17,26 @@ import { rankDiscoverDayCards } from "~/modules/discover/domain/day-ranking";
 import { discoverTopicKey } from "~/modules/discover/domain/edition";
 import {
   buildDiscoverFeedGroups,
-  fillDiscoverFeed,
+  fillDiscoverLiveFeed,
   splitDiscoverSignalFeeds,
 } from "~/modules/discover/domain/feed";
 import { summariseDiscoverFeedPreferences } from "~/modules/discover/domain/feed-weights";
 import { summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
 import { collectSeenLinks } from "~/modules/discover/domain/links";
 import {
+  DISCOVER_LIVE_FRESH_MS,
   discoverCardIdentity,
   discoverCardMaterial,
   type DiscoverLiveCandidate,
 } from "~/modules/discover/domain/live";
 import {
   DISCOVER_NEWS_CATEGORIES,
+  listDiscoverCategoryNews,
   type DiscoverNewsItem,
 } from "~/modules/discover/domain/news-categories";
 import {
   DISCOVER_HEADLINES_TOPIC,
+  keepRecentDiscoverResults,
   selectCurrentResearch,
 } from "~/modules/discover/domain/research";
 import { findDiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
@@ -47,6 +50,9 @@ import { resolveDiscoverSignals } from "./gather";
 import { discoverLiveId } from "./live-store";
 import { listDiscoverDocuments } from "./notebook";
 import type { DiscoverRoutineSettings } from "./settings";
+
+const LIVE_CARD_LIMIT = 80;
+const LIVE_NEWS_SLOTS = 24;
 
 export async function collectDiscoverLiveCandidates(
   context: ServiceContext,
@@ -75,23 +81,26 @@ export async function collectDiscoverLiveCandidates(
       excludedProviders: settings.excludedProviders,
     }),
   );
-  const research = selectCurrentResearch(documents.research, {
-    today: describeZonedInstant(now, profile.timezone).date,
-    hiddenTopics: hidden,
-  });
+  const today = describeZonedInstant(now, profile.timezone).date;
+  const research = keepRecentDiscoverResults(
+    selectCurrentResearch(documents.research, { today, hiddenTopics: hidden }),
+    today,
+  );
+  const freshSince = new Date(now.getTime() - DISCOVER_LIVE_FRESH_MS).toISOString();
+  const liveNews = DISCOVER_NEWS_CATEGORIES.map((category) => ({
+    topic: category.topic,
+    results: listDiscoverCategoryNews(news, {
+      category: category.id,
+      since: freshSince,
+      limit: LIVE_CARD_LIMIT,
+    }),
+  })).filter((document) => document.results.length > 0);
+  const liveTopics = new Set(liveNews.map((document) => document.topic));
   const explicitTopics = new Set(
     [...profile.topics, ...follows.map((follow) => follow.topic)].map(discoverTopicKey),
   );
   const groups = buildDiscoverFeedGroups({
-    research: [
-      ...research,
-      ...DISCOVER_NEWS_CATEGORIES.filter((category) =>
-        news.some((item) => item.category === category.id),
-      ).map((category) => ({
-        topic: category.topic,
-        results: news.filter((item) => item.category === category.id),
-      })),
-    ],
+    research: [...research.filter((document) => !liveTopics.has(document.topic)), ...liveNews],
     signals: shared.map((signal) => ({ title: signal.title, items: signal.items })),
     headlinesTopic: DISCOVER_HEADLINES_TOPIC,
     followedTopics: explicitTopics,
@@ -102,11 +111,12 @@ export async function collectDiscoverLiveCandidates(
     ],
     preferences: summariseDiscoverFeedPreferences(feedback),
   });
-  const cards = fillDiscoverFeed({
+  const cards = fillDiscoverLiveFeed({
     groups,
     seen: collectSeenLinks(browsed.flatMap((signal) => signal.items)),
     skipTopics: hidden,
-    limit: 80,
+    limit: LIVE_CARD_LIMIT,
+    newsSlots: LIVE_NEWS_SLOTS,
     createId: generateId,
   });
   const chosen: Array<{ card: DiscoverCard; editionId: string }> = [

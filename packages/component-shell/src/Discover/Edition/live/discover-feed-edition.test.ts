@@ -1,7 +1,7 @@
 import type { DiscoverResponse } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { discoverFeedEdition } from "./discover-feed-edition";
+import { discoverCurrentBrief, discoverFeedEdition } from "./discover-feed-edition";
 
 const instant = "2026-11-02T12:00:00Z";
 const response: DiscoverResponse = {
@@ -95,5 +95,36 @@ describe("Discover feed and briefing merge", () => {
 
   it("keeps the briefing available before the first live feed has arrived", () => {
     expect(discoverFeedEdition({ ...response, feed: undefined }, [])).toBeNull();
+  });
+
+  it("keeps the edition's other brief lines beside a live observation", () => {
+    const weather = {
+      id: "weather",
+      kind: "weather" as const,
+      title: "Weather in London",
+      text: "9°C, broken clouds.",
+      source: "OpenWeather",
+      observedAt: instant,
+      expiresAt: instant,
+      actionable: false,
+      fingerprint: "weather",
+      stale: false,
+    };
+    const live = {
+      ...response,
+      now: response.now ? { ...response.now, observations: [weather] } : undefined,
+    };
+
+    const lines = discoverCurrentBrief(live, [
+      { kind: "weather", label: "Weather", text: "Written this morning." },
+      { kind: "waiting", label: "Nothing waiting", text: "No tasks tonight." },
+      { kind: "note", label: "Yesterday", text: "Twenty minutes of exercise." },
+    ]);
+
+    expect(lines.map((line) => line.label)).toEqual([
+      "Weather in London",
+      "Nothing waiting",
+      "Yesterday",
+    ]);
   });
 });

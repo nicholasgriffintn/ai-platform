@@ -35,6 +35,7 @@ export async function readDiscoverFeed(
     mutedTopics: [...profile.mutedTopics, ...summariseDiscoverFeedback(feedback).hiddenTopics],
     allowedProviders: listDiscoverFeedProviders(settings.sources),
     feedback: collectCardSignals(feedback, discoverLiveId(user.id)),
+    leadWithShelf: true,
     now: new Date(),
   });
 }

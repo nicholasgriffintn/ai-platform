@@ -15,8 +15,15 @@ const episodeSchema = z.object({
   notes: z.string().nullable(),
 });
 
+const importedProgressSchema = z.object({
+  seasons: z.array(z.object({ season: z.number().int(), watched: z.number().int() })),
+  watched: z.number().int(),
+  unwatched: z.number().int().nullable(),
+});
+
 const entrySchema = z.object({
   titleId: z.string(),
+  imdbId: z.string().nullable().default(null),
   mediaType: z.enum(MEDIA_TYPES),
   title: z.string(),
   year: z.number().int().nullable(),
@@ -25,6 +32,7 @@ const entrySchema = z.object({
   thoughts: z.string().nullable(),
   updatedAt: z.string(),
   episodes: z.array(episodeSchema),
+  importedProgress: importedProgressSchema.nullable().default(null),
 });
 
 export const shelfContentSchema = z.object({
@@ -47,11 +55,12 @@ export interface ShelfEntryChange {
 
 interface ImportedTitle {
   titleId: string;
+  imdbId: string | null;
   mediaType: MediaType;
   title: string;
   year: number | null;
   rating: number | null;
-  episodes: readonly EpisodeRef[];
+  progress: ShelfEntry["importedProgress"];
 }
 
 export function emptyShelf(): ShelfContent {
@@ -60,6 +69,12 @@ export function emptyShelf(): ShelfContent {
 
 export function findShelfEntry(shelf: ShelfContent, titleId: string): ShelfEntry | undefined {
   return shelf.entries.find((entry) => entry.titleId === titleId);
+}
+
+export function countWatchedEpisodes(
+  entry: Pick<ShelfEntry, "episodes" | "importedProgress">,
+): number {
+  return Math.max(entry.episodes.length, entry.importedProgress?.watched ?? 0);
 }
 
 export function listRecentEntries(
@@ -75,6 +90,7 @@ export function saveShelfEntry(shelf: ShelfContent, change: ShelfEntryChange): S
   const current = findShelfEntry(shelf, change.titleId);
   const entry: ShelfEntry = {
     titleId: change.titleId,
+    imdbId: current?.imdbId ?? null,
     mediaType: change.mediaType,
     title: change.title,
     year: change.year,
@@ -83,6 +99,7 @@ export function saveShelfEntry(shelf: ShelfContent, change: ShelfEntryChange): S
     thoughts: change.thoughts ?? current?.thoughts ?? null,
     updatedAt: new Date().toISOString(),
     episodes: current?.episodes ?? [],
+    importedProgress: current?.importedProgress ?? null,
   };
 
   return {
@@ -135,14 +152,18 @@ export function setShelfFollow(
   };
 }
 
-export function addMissingShelfEntries(
+function readWatchedStatus(title: ImportedTitle): ViewingStatus {
+  return (title.progress?.unwatched ?? 0) > 0 ? "watching" : "watched";
+}
+
+export function mergeImportedLibrary(
   shelf: ShelfContent,
   library: {
     watched: readonly ImportedTitle[];
     ratings: readonly ImportedTitle[];
     watchlist: readonly ImportedTitle[];
   },
-): { shelf: ShelfContent; added: number } {
+): { shelf: ShelfContent; added: number; updated: number } {
   const ratings = new Map(
     library.ratings.map((title) => [
       title.titleId,
@@ -150,35 +171,56 @@ export function addMissingShelfEntries(
     ]),
   );
   const importable = [
-    ...library.watched.map((title) => ({ title, status: "watched" as const })),
+    ...library.watched.map((title) => ({ title, status: readWatchedStatus(title) })),
     ...library.ratings.map((title) => ({ title, status: "watched" as const })),
     ...library.watchlist.map((title) => ({ title, status: "watchlist" as const })),
   ];
-  const known = new Set(shelf.entries.map((entry) => entry.titleId));
-  const now = new Date().toISOString();
-  const added: ShelfEntry[] = [];
+  const imported = new Map<string, (typeof importable)[number]>();
 
-  for (const { title, status } of importable) {
-    if (!known.has(title.titleId)) {
-      known.add(title.titleId);
-      added.push({
-        titleId: title.titleId,
-        mediaType: title.mediaType,
-        title: title.title,
-        year: title.year,
-        status,
-        rating: ratings.get(title.titleId) ?? null,
-        thoughts: null,
-        updatedAt: now,
-        episodes: title.episodes.map((episode) => ({
-          ...episode,
-          watched: true,
-          rating: null,
-          notes: null,
-        })),
-      });
+  for (const item of importable) {
+    if (!imported.has(item.title.titleId)) {
+      imported.set(item.title.titleId, item);
     }
   }
 
-  return { shelf: { ...shelf, entries: [...shelf.entries, ...added] }, added: added.length };
+  const known = new Set(shelf.entries.map((entry) => entry.titleId));
+  const now = new Date().toISOString();
+  const added: ShelfEntry[] = [...imported.values()]
+    .filter(({ title }) => !known.has(title.titleId))
+    .map(({ title, status }) => ({
+      titleId: title.titleId,
+      imdbId: title.imdbId,
+      mediaType: title.mediaType,
+      title: title.title,
+      year: title.year,
+      status,
+      rating: ratings.get(title.titleId) ?? null,
+      thoughts: null,
+      updatedAt: now,
+      episodes: [],
+      importedProgress: title.progress,
+    }));
+  let updated = 0;
+  const existing = shelf.entries.map((entry) => {
+    const title = imported.get(entry.titleId)?.title;
+    const refreshed = {
+      ...entry,
+      imdbId: title?.imdbId ?? entry.imdbId,
+      importedProgress: title?.progress ?? entry.importedProgress,
+    };
+
+    if (JSON.stringify(refreshed) === JSON.stringify(entry)) {
+      return entry;
+    }
+
+    updated += 1;
+
+    return refreshed;
+  });
+
+  return {
+    shelf: { ...shelf, entries: [...existing, ...added] },
+    added: added.length,
+    updated,
+  };
 }

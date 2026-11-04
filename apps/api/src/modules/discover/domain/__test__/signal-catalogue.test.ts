@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { findDiscoverSignal, isDiscoverConnectorSignal } from "../signal-catalogue";
+import {
+  findDiscoverSignal,
+  isDiscoverConnectorSignal,
+  showsDiscoverActivity,
+} from "../signal-catalogue";
 import type { DiscoverConnectorSignal } from "../signal-sources/types";
 
 const read = {
@@ -20,6 +24,22 @@ function connector(id: string): DiscoverConnectorSignal {
 
   return signal;
 }
+
+describe("showsDiscoverActivity", () => {
+  it("rejects signals that only echo topics or list what is scheduled", () => {
+    expect(
+      ["reddit-topics", "listennotes-topics", "watching-week", "watching-news"].filter(
+        showsDiscoverActivity,
+      ),
+    ).toEqual([]);
+  });
+
+  it("keeps what the person did, including sources outside the catalogue", () => {
+    expect(["reddit-front", "trakt-history", "device-browsing"].every(showsDiscoverActivity)).toBe(
+      true,
+    );
+  });
+});
 
 describe("Reddit signals", () => {
   it("searches the week's top posts on the person's topics and links search and front page posts alike", () => {

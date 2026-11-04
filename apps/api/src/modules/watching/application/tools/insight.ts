@@ -86,13 +86,17 @@ export const import_from_trakt: ApiToolDefinition = {
     destination: "the person's film and TV shelf",
   }),
   description:
-    "Bring Trakt history, ratings, watchlist and watched episodes onto the shelf. Titles already on the shelf keep what the person set here.",
+    "Bring Trakt history, ratings and watchlist onto the shelf, with IMDb IDs and each show's watched and unwatched episode counts. Titles already on the shelf keep what the person set here and get their Trakt counts refreshed.",
   inputSchema: noInput,
   execute: async (_args: z.infer<typeof noInput>, toolContext) => {
     const result = await importFromTrakt(requireContext(toolContext));
 
     return result
-      ? success("import_from_trakt", `${result.added} titles added to the shelf.`, result)
+      ? success(
+          "import_from_trakt",
+          `${result.added} titles added to the shelf. Trakt details refreshed on ${result.updated} others.`,
+          result,
+        )
       : success("import_from_trakt", "Connect Trakt first with connect_trakt.", {});
   },
 };

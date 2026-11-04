@@ -29,7 +29,96 @@ const candidate: DiscoverLiveCandidate = {
   observedAt: now.toISOString(),
 };
 
+const topicCandidate: DiscoverLiveCandidate = {
+  id: "topic_1",
+  fingerprint: "topic",
+  card: {
+    id: "topic_card",
+    kind: "topic",
+    topic: "AI",
+    title: "Today's angle on assistants",
+    angle: "What changed today.",
+    prompt: "Tell me more",
+    reason: "You follow AI",
+    sensitive: false,
+  },
+  editionId: "edition_1",
+  publishedAt: null,
+  observedAt: now.toISOString(),
+};
+const newerStories: DiscoverLiveCandidate[] = Array.from({ length: 30 }, (_, index) => ({
+  ...candidate,
+  id: `story_${index}`,
+  fingerprint: `story_${index}`,
+  card: {
+    ...card,
+    id: `card_${index}`,
+    title: `Distinct headline ${String.fromCharCode(97 + (index % 26))} ${index} about the news`,
+    url: `https://example.com/${index}`,
+  },
+}));
+
+function feedWithBuriedTopic() {
+  const initial = emptyDiscoverLive();
+
+  return { ...initial, ...mergeDiscoverLiveItems(initial, [...newerStories, topicCandidate], now) };
+}
+
+const readFirstPage = (content: ReturnType<typeof feedWithBuriedTopic>) =>
+  presentDiscoverFeed(content, {
+    seen: new Map(),
+    mutedTopics: [],
+    limit: 24,
+    leadWithShelf: true,
+    now,
+  });
+
 describe("Discover live feed", () => {
+  it("keeps today's topics on the first page without losing stories across pages", () => {
+    const content = feedWithBuriedTopic();
+    const first = readFirstPage(content);
+    const second = presentDiscoverFeed(content, {
+      seen: new Map(),
+      mutedTopics: [],
+      after: first.last_id ?? undefined,
+      limit: 24,
+      leadWithShelf: true,
+      now,
+    });
+    const ids = [...first.data, ...second.data].map((item) => item.id);
+
+    expect(first.data[0]?.id).toBe(topicCandidate.id);
+    expect(first.data).toHaveLength(24);
+    expect(ids).toHaveLength(31);
+    expect(new Set(ids).size).toBe(31);
+  });
+
+  it("leaves the newest-first order alone for callers that do not ask for the shelf", () => {
+    const page = presentDiscoverFeed(feedWithBuriedTopic(), {
+      seen: new Map(),
+      mutedTopics: [],
+      limit: 16,
+      now,
+    });
+
+    expect(page.data.map((item) => item.id)).not.toContain(topicCandidate.id);
+  });
+
+  it.each([
+    ["dismissed", { dismissed: true }],
+    ["older than a day", { observedAt: "2026-10-31T12:15:00Z" }],
+  ])("does not lift a %s topic above newer stories", (_label, change) => {
+    const content = feedWithBuriedTopic();
+    const page = readFirstPage({
+      ...content,
+      items: content.items.map((item) =>
+        item.id === topicCandidate.id ? { ...item, ...change } : item,
+      ),
+    });
+
+    expect(page.data.map((item) => item.id)).not.toContain(topicCandidate.id);
+  });
+
   it("does not turn an unchanged check into a new development", () => {
     const initial = emptyDiscoverLive();
     const first = { ...initial, ...mergeDiscoverLiveItems(initial, [candidate], now) };
@@ -89,6 +178,26 @@ describe("Discover live feed", () => {
 
     expect(next.items).toHaveLength(1);
     expect(next.items[0]).toMatchObject({ dismissed: true, revision: 1 });
+  });
+
+  it("keeps stale stories out of the top of the feed and retires them by publication date", () => {
+    const initial = emptyDiscoverLive();
+    const first = { ...initial, ...mergeDiscoverLiveItems(initial, [candidate], now) };
+    const stale = {
+      ...candidate,
+      id: "story_stale",
+      card: { ...card, title: "An older story found late" },
+      publishedAt: "2026-10-31T12:00:00Z",
+    };
+    const next = mergeDiscoverLiveItems(
+      first,
+      [stale, { ...candidate, fingerprint: "changed", publishedAt: "2026-10-31T12:00:00Z" }],
+      now,
+    );
+
+    expect(next.items.map((item) => item.id)).toEqual([candidate.id]);
+    expect(next.items[0]).toMatchObject({ revision: 1, sequence: 1 });
+    expect(next.items[0]?.expiresAt).toBe("2026-11-05T12:00:00.000Z");
   });
 
   it("pages without advancing exposure and excludes expired or muted items", () => {

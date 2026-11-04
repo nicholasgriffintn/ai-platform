@@ -107,6 +107,14 @@ describe("chooseResearchTopics", () => {
     ]);
   });
 
+  it("stops researching an interest once its activity goes quiet", () => {
+    const quiet = { ...simpsons, lastSeen: "2026-10-29" };
+
+    expect(
+      choose({ inferred: [quiet, asimovInterest], engaged: new Map([["the simpsons", 4]]) }),
+    ).toEqual(["Isaac Asimov"]);
+  });
+
   it("lets opens move an interest up without making it daily", () => {
     const engaged = new Map([["the simpsons", 4]]);
 

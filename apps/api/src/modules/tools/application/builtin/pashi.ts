@@ -4,6 +4,7 @@ import {
   PashiClientError,
 } from "@ngriffin_uk/polychat-ai-integrations";
 import { fileExtensionForMimeType, generateId } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
@@ -19,11 +20,15 @@ import { runPashiOperations, searchPashiCatalog, type PashiFileStore } from "./p
 const MAX_PASHI_FILE_BYTES = 100 * 1024 * 1024;
 
 async function resolvePashiClient(context: ApiToolExecutionContext): Promise<PashiClient> {
-  const token = context.user ? await readPashiLinkToken(context.env, context.user.id) : null;
+  const { env, request, user } = context;
+  const token = user
+    ? await readPashiLinkToken(
+        resolveServiceContext({ context: request.context, env, user }),
+        user.id,
+      )
+    : null;
 
-  return token
-    ? new PashiClient({ apiKey: token, supportsFiles: true })
-    : getPashiClient(context.env);
+  return token ? new PashiClient({ apiKey: token, supportsFiles: true }) : getPashiClient(env);
 }
 
 function createPashiFileStore(context: ApiToolExecutionContext): PashiFileStore | undefined {
@@ -40,12 +45,21 @@ function createPashiFileStore(context: ApiToolExecutionContext): PashiFileStore 
 
   return {
     read: async (url) => {
-      const blob = await storage().getPrivateAssetBlob(url, user.id, undefined, {
-        maxBytes: MAX_PASHI_FILE_BYTES,
-      });
+      const blob = await storage()
+        .getPrivateAssetBlob(url, user.id, undefined, { maxBytes: MAX_PASHI_FILE_BYTES })
+        .catch((error: unknown) => {
+          if (error instanceof AssistantError) {
+            return null;
+          }
+
+          throw error;
+        });
 
       if (!blob) {
-        throw new PashiClientError("invalid_input", "file_url must be a file from this chat.");
+        throw new PashiClientError(
+          "invalid_input",
+          "file_url must be a file from this chat, up to 100 MB.",
+        );
       }
 
       const extension = fileExtensionForMimeType(blob.type);

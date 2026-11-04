@@ -1,7 +1,8 @@
 import { ApiError } from "@ngriffin_uk/polychat-library-client";
-import type {
-  RecipeConnectorManifest,
-  RecipeConnectorProvider,
+import {
+  requireExternalHttpUrl,
+  type RecipeConnectorManifest,
+  type RecipeConnectorProvider,
 } from "@ngriffin_uk/polychat-schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
@@ -173,6 +174,13 @@ export function useConnectorSetup({
   const connect = async (connector: RecipeConnectorManifest) => {
     if (connector.status === "unconfigured") {
       toast.error(`${connector.name} is not configured for this deployment.`);
+
+      return;
+    }
+
+    if (connector.connectUrl) {
+      window.addEventListener("focus", () => void refreshConnection(connector.id), { once: true });
+      window.open(requireExternalHttpUrl(connector.connectUrl), "_blank", "noopener,noreferrer");
 
       return;
     }

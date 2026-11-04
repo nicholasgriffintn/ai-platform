@@ -211,14 +211,11 @@ export class ApiKeyRepository extends BaseRepository {
     }
   }
 
-  public async deleteApiKeyByValue(userId: number, apiKey: string): Promise<void> {
-    const { query, values } = this.buildDeleteQuery("user_credential", {
-      kind: "api_key",
-      token_hash: await this.hashApiKey(apiKey),
-      user_id: userId,
-    });
-
-    await this.executeRun(query, values);
+  public async deleteApiKeysForScope(userId: number, scope: DeviceCredentialScope): Promise<void> {
+    await this.executeRun(
+      "DELETE FROM user_credential WHERE kind = 'api_key' AND user_id = ? AND scope = ?",
+      [userId, scope],
+    );
   }
 
   public async deleteOtherApiKeysForScope(

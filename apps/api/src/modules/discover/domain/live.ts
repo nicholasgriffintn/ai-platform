@@ -22,6 +22,14 @@ import z from "zod/v4";
 import { discoverTravelWindow } from "./day";
 import { discoverCardUrl, describeDiscoverCard } from "./edition";
 
+export const DISCOVER_LIVE_FRESH_MS = 24 * 60 * 60 * 1000;
+const DISCOVER_LIVE_RETENTION_MS = 3 * 24 * 60 * 60 * 1000;
+const DISCOVER_FEED_SHELF_KINDS: ReadonlySet<DiscoverCard["kind"]> = new Set([
+  "topic",
+  "wind_down",
+]);
+const DISCOVER_FEED_SHELF_LIMIT = 8;
+
 export const discoverLiveContentSchema = z
   .object({
     version: z.literal(1),
@@ -91,7 +99,6 @@ export function mergeDiscoverLiveItems(
   now: Date,
 ): Pick<DiscoverLiveContent, "items" | "sequence" | "updatedAt"> {
   const instant = now.toISOString();
-  const expiresAt = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
   const items = new Map(
     current.items.filter((item) => item.expiresAt > instant).map((item) => [item.id, item]),
   );
@@ -109,7 +116,7 @@ export function mergeDiscoverLiveItems(
     if (
       !Number.isFinite(evidenceAt) ||
       evidenceAt > now.getTime() + 5 * 60 * 1000 ||
-      now.getTime() - evidenceAt > 3 * 24 * 60 * 60 * 1000
+      now.getTime() - evidenceAt > DISCOVER_LIVE_RETENTION_MS
     ) {
       continue;
     }
@@ -132,7 +139,7 @@ export function mergeDiscoverLiveItems(
       continue;
     }
 
-    if (previous?.dismissed) {
+    if (previous?.dismissed || now.getTime() - evidenceAt > DISCOVER_LIVE_FRESH_MS) {
       continue;
     }
 
@@ -143,7 +150,7 @@ export function mergeDiscoverLiveItems(
       sequence,
       firstShownAt: previous?.firstShownAt ?? instant,
       updatedAt: instant,
-      expiresAt,
+      expiresAt: new Date(evidenceAt + DISCOVER_LIVE_RETENTION_MS).toISOString(),
       seen: false,
       dismissed: false,
       signals: [],
@@ -166,6 +173,20 @@ export function listDiscoverFeedProviders(sources: DiscoverSettings["sources"]):
   );
 }
 
+function selectDiscoverShelfItems(
+  items: readonly DiscoverLiveItem[],
+  limit: number,
+  now: Date,
+): DiscoverLiveItem[] {
+  return items
+    .filter(
+      (item) =>
+        DISCOVER_FEED_SHELF_KINDS.has(item.card.kind) &&
+        now.getTime() - Date.parse(item.observedAt) <= DISCOVER_LIVE_FRESH_MS,
+    )
+    .slice(0, Math.min(DISCOVER_FEED_SHELF_LIMIT, Math.floor(limit / 2)));
+}
+
 export function presentDiscoverFeed(
   content: DiscoverLiveContent,
   input: {
@@ -175,6 +196,7 @@ export function presentDiscoverFeed(
     feedback?: Readonly<Record<string, DiscoverFeedbackSignal[]>>;
     after?: string;
     limit: number;
+    leadWithShelf?: boolean;
     now: Date;
   },
 ): DiscoverFeedPage {
@@ -191,13 +213,20 @@ export function presentDiscoverFeed(
   const unseenCount = available.filter(
     (item) => (input.seen.get(item.id) ?? 0) < item.revision,
   ).length;
+  const shelf = input.leadWithShelf
+    ? selectDiscoverShelfItems(available, input.limit, input.now)
+    : [];
+  const shelved = new Set(shelf.map((item) => item.id));
   const before = input.after ? Number(input.after) : Number.POSITIVE_INFINITY;
-  const page = available.filter((item) => item.sequence < before);
-  const items = page.slice(0, input.limit + 1).map(({ fingerprint: _fingerprint, ...item }) => ({
-    ...item,
-    seen: (input.seen.get(item.id) ?? 0) >= item.revision,
-    signals: input.feedback?.[item.card.id] ?? [],
-  }));
+  const page = available.filter((item) => !shelved.has(item.id) && item.sequence < before);
+  const lead = input.after ? [] : shelf;
+  const items = [...lead, ...page.slice(0, input.limit + 1 - lead.length)].map(
+    ({ fingerprint: _fingerprint, ...item }) => ({
+      ...item,
+      seen: (input.seen.get(item.id) ?? 0) >= item.revision,
+      signals: input.feedback?.[item.card.id] ?? [],
+    }),
+  );
 
   return {
     ...toListPage(items, input.limit, (item) => String(item.sequence)),

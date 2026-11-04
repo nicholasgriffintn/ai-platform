@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   collectCardSignals,
+  keepDiscoverFeedbackSince,
   summariseDiscoverFeedback,
   type DiscoverFeedbackEntry,
 } from "../feedback";
@@ -39,6 +40,17 @@ describe("summariseDiscoverFeedback", () => {
 
     expect(summary.saved).toEqual([{ title: "Rye", url: null }]);
     expect(summary.hiddenTopics).toEqual([]);
+  });
+});
+
+describe("keepDiscoverFeedbackSince", () => {
+  it("drops feedback older than the cut-off, in the stored date format", () => {
+    const old = entry({ signal: "opened", createdAt: "2026-10-27 15:03:23" });
+    const recent = entry({ signal: "opened", createdAt: "2026-10-31 15:03:23" });
+
+    expect(keepDiscoverFeedbackSince([old, recent], Date.parse("2026-10-28T00:00:00Z"))).toEqual([
+      recent,
+    ]);
   });
 });
 

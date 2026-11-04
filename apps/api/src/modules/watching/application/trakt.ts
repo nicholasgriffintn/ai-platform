@@ -13,7 +13,7 @@ import {
   startRecipeConnectorAuthorization,
 } from "~/modules/connectors/application";
 import type { EpisodeRef } from "~/modules/watching/domain/episodes";
-import { addMissingShelfEntries, type ShelfEntry } from "~/modules/watching/domain/shelf";
+import { mergeImportedLibrary, type ShelfEntry } from "~/modules/watching/domain/shelf";
 import { parseTitleId } from "~/modules/watching/domain/titles";
 
 import { updateShelfContent } from "./shelf-store";
@@ -145,17 +145,20 @@ export async function importFromTrakt(context: ServiceContext) {
 
   const library = await fetchTraktLibrary(access.clientId, access.accessToken);
   let added = 0;
+  let updated = 0;
 
   await updateShelfContent(context, (shelf) => {
-    const result = addMissingShelfEntries(shelf, library);
+    const result = mergeImportedLibrary(shelf, library);
 
     added = result.added;
+    updated = result.updated;
 
     return result.shelf;
   });
 
   return {
     added,
+    updated,
     watched: library.watched.length,
     watchlist: library.watchlist.length,
     rated: library.ratings.length,

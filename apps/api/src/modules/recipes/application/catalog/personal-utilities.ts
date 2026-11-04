@@ -475,7 +475,7 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
       "Run the requested operations in order and return each result",
     ],
     setupPrompt:
-      "Set up the Pashi Generator Toolkit recipe. Ask what I want to generate or convert and any required format constraints. Call search_pashi_tools with an explicit tool_types list before choosing a tool, then call run_pashi_tools with only exact executable tool IDs and documented fields. Preserve user-supplied text exactly. File converters are not supported yet. Never send existing passwords, private keys, access tokens, personal data, or other secrets to Pashi; ask for confirmation when input may be sensitive.",
+      "Set up the Pashi Generator Toolkit recipe. Ask what I want to generate or convert and any required format constraints. Call search_pashi_tools with an explicit tool_types list before choosing a tool, then call run_pashi_tools with only exact executable tool IDs and documented fields. Preserve user-supplied text exactly. File converters need Pashi linked to this account and take a file_url from this chat. Never send existing passwords, private keys, access tokens, personal data, or other secrets to Pashi; ask for confirmation when input may be sensitive.",
     configurationFields: [
       {
         key: "preferredToolTypes",

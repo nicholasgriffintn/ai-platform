@@ -1,9 +1,15 @@
 import { describe, expect, it } from "vitest";
 
 import { discoverTopicKey } from "../edition";
-import { buildDiscoverFeedGroups, fillDiscoverFeed, type DiscoverFeedGroup } from "../feed";
+import {
+  buildDiscoverFeedGroups,
+  fillDiscoverFeed,
+  fillDiscoverLiveFeed,
+  type DiscoverFeedGroup,
+} from "../feed";
 import { summariseDiscoverFeedPreferences } from "../feed-weights";
 import { collectSeenLinks } from "../links";
+import { DISCOVER_NEWS_CATEGORIES } from "../news-categories";
 
 function item(slug: string, source = "Example") {
   return {
@@ -151,6 +157,45 @@ describe("fillDiscoverFeed", () => {
       source: "Example",
       reason: "You follow Rust. Example, 2026-10-25",
     });
+  });
+});
+
+describe("fillDiscoverLiveFeed", () => {
+  const research = (count: number): DiscoverFeedGroup => ({
+    topic: "Rust",
+    lead: "You follow Rust",
+    items: Array.from({ length: count }, (_, index) => item(`research-${index}`)),
+    spoken: true,
+  });
+  const news = (count: number): DiscoverFeedGroup => ({
+    topic: DISCOVER_NEWS_CATEGORIES[0]?.topic ?? "",
+    lead: "From the news",
+    items: Array.from({ length: count }, (_, index) => item(`news-${index}`)),
+  });
+  const fillLive = (groups: DiscoverFeedGroup[]) => {
+    let next = 0;
+    const cards = fillDiscoverLiveFeed({
+      groups,
+      seen: collectSeenLinks([]),
+      skipTopics: new Set(),
+      limit: 10,
+      newsSlots: 3,
+      createId: () => `feed_${(next += 1)}`,
+    });
+
+    return {
+      total: cards.length,
+      news: cards.filter((card) => card.kind === "read" && card.url.includes("/news-")).length,
+    };
+  };
+
+  it("holds slots for news when research would otherwise fill the feed", () => {
+    expect(fillLive([research(20), news(20)])).toEqual({ total: 10, news: 3 });
+  });
+
+  it("gives slots back to whichever side has more to show", () => {
+    expect(fillLive([research(20), news(1)])).toEqual({ total: 10, news: 1 });
+    expect(fillLive([research(2), news(20)])).toEqual({ total: 10, news: 8 });
   });
 });
 

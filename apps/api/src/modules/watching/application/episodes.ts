@@ -75,7 +75,8 @@ export async function markEpisodes(context: ServiceContext, input: MarkEpisodesI
 export async function readEpisodeProgress(context: ServiceContext, titleId: string) {
   const ref = requireTitleRef(titleId);
   const shelf = await readShelfContent(context);
-  const episodes = findShelfEntry(shelf, `${ref.mediaType}:${ref.tmdbId}`)?.episodes ?? [];
+  const entry = findShelfEntry(shelf, `${ref.mediaType}:${ref.tmdbId}`);
+  const episodes = entry?.episodes ?? [];
   const watched = episodes.filter((episode) => episode.watched);
   const furthest = watched.at(-1);
 
@@ -83,5 +84,6 @@ export async function readEpisodeProgress(context: ServiceContext, titleId: stri
     watchedCount: watched.length,
     furthest: furthest ? { season: furthest.season, episode: furthest.episode } : null,
     episodes,
+    imported: entry?.importedProgress ?? null,
   };
 }

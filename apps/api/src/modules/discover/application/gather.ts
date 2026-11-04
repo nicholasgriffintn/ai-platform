@@ -73,6 +73,7 @@ import { chooseDiscoverResearchTopics } from "./interests";
 import { discoverNewsItemsSchema, readDiscoverNews } from "./news";
 import {
   ensureDiscoverNotebook,
+  listDiscoverDocumentSources,
   listDiscoverDocuments,
   readDiscoverDocuments,
   type DiscoverDocuments,
@@ -558,10 +559,7 @@ export async function ensureDiscoverGathered(
 
   return keepUsed(
     readDiscoverDocuments(
-      await withKnowledgeText(
-        context,
-        await context.repositories.get(SourceRepository).listCollectionSources(notebook.id),
-      ),
+      await withKnowledgeText(context, await listDiscoverDocumentSources(context, notebook.id)),
     ),
   );
 }

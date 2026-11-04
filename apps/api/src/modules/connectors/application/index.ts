@@ -35,6 +35,7 @@ import { OAuthStateRepository } from "~/modules/auth/infrastructure/OAuthStateRe
 import { ComposioConnectorSessionRepository } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
 import type { ProviderConnectionRecord } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
+import { ApiKeyRepository } from "~/modules/user/infrastructure/ApiKeyRepository";
 
 import { ensureRecipeConnectorAccountReference } from "./accounts";
 import {
@@ -324,6 +325,8 @@ export async function listRecipeConnectors(params: {
       status: state.status,
       setupUrl: provider.setupUrl,
       authorizationUrl: undefined,
+      connectUrl:
+        provider.auth.authType === "api_key" ? provider.auth.appLink?.connectUrl : undefined,
       connectedAt: state.connectedAt,
       updatedAt: state.updatedAt,
       credentialFields:
@@ -766,6 +769,12 @@ export async function deleteRecipeConnectorConnection(params: {
     return { success: true };
   }
 
+  if (provider.auth.appLink) {
+    await params.context.repositories
+      .get(ApiKeyRepository)
+      .deleteApiKeysForScope(params.userId, provider.auth.appLink.credentialScope);
+  }
+
   await params.context.repositories
     .get(ProviderConnectionRepository)
     .deleteConnection(params.userId, params.provider, RECIPE_CONNECTOR_CONNECTION_KIND);
@@ -781,26 +790,65 @@ export async function storeRecipeConnectorApiKey(params: {
 }) {
   const provider = getRecipeConnectorProviderConfig(params.provider);
 
-  if (!provider || provider.auth.authType !== "api_key") {
+  if (!provider || provider.auth.authType !== "api_key" || provider.auth.appLink) {
     throw new AssistantError("Connector does not use API-key setup", ErrorType.PARAMS_ERROR, 400);
   }
 
-  const apiKey = joinConnectorCredential(provider.auth, params.credentials);
+  await storeConnectorToken(
+    params.context,
+    params.userId,
+    params.provider,
+    joinConnectorCredential(provider.auth, params.credentials),
+    provider.auth.scopes,
+  );
+
+  return { success: true };
+}
+
+export async function storeRecipeConnectorAppLink(params: {
+  context: ServiceContext;
+  userId: number;
+  provider: RecipeConnectorProvider;
+  token: string;
+}) {
+  const provider = getRecipeConnectorProviderConfig(params.provider);
+
+  if (!provider || provider.auth.authType !== "api_key" || !provider.auth.appLink) {
+    throw new AssistantError("Connector does not link to an app", ErrorType.PARAMS_ERROR, 400);
+  }
+
+  await storeConnectorToken(
+    params.context,
+    params.userId,
+    params.provider,
+    params.token,
+    provider.auth.scopes,
+  );
+}
+
+async function storeConnectorToken(
+  context: ServiceContext,
+  userId: number,
+  providerId: RecipeConnectorProvider,
+  accessToken: string,
+  scopes: readonly string[],
+) {
   const now = new Date().toISOString();
 
   await writeStoredToken({
-    context: params.context,
-    userId: params.userId,
-    providerId: params.provider,
-    payload: {
-      accessToken: apiKey,
-      scope: provider.auth.scopes.join(" "),
-      connectedAt: now,
-      updatedAt: now,
-    },
+    context,
+    userId,
+    providerId,
+    payload: { accessToken, scope: scopes.join(" "), connectedAt: now, updatedAt: now },
   });
+}
 
-  return { success: true };
+export async function readRecipeConnectorToken(
+  context: ServiceContext,
+  userId: number,
+  provider: RecipeConnectorProvider,
+): Promise<string | null> {
+  return (await readStoredToken(context, userId, provider))?.token.accessToken ?? null;
 }
 
 export type ConnectorAccess = Partial<ConnectorTokenPayload> & {

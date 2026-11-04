@@ -5,7 +5,15 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { listRecentEntries } from "~/modules/watching/domain/shelf";
-import { blendTaste, type TasteVector } from "~/modules/watching/domain/taste";
+import {
+  blendTaste,
+  interleaveMatches,
+  isWorthRecommending,
+  selectTasteAnchors,
+  selectTasteEntries,
+  tasteWeight,
+  type TasteVector,
+} from "~/modules/watching/domain/taste";
 import {
   parseTitleId,
   type MediaType,
@@ -13,20 +21,17 @@ import {
   type TitleSummary,
 } from "~/modules/watching/domain/titles";
 
-import { requireTmdbToken, withScores } from "./catalogue";
+import { requireTmdbToken, SCORED_TITLE_LIMIT, withScores } from "./catalogue";
 import { readShelfContent } from "./shelf-store";
 import { EMBEDDING_MODEL } from "./title-index";
 
 const HYDRATE_CONCURRENCY = 6;
 const VECTOR_QUERY_LIMIT = 50;
-const TASTE_SAMPLE = 60;
+const TASTE_SAMPLE = 120;
+const TASTE_ANCHORS = 10;
+const SAME_FRANCHISE_SCORE = 0.62;
+const CANDIDATE_LIMIT = 48;
 const VECTOR_ID_CHUNK = 20;
-const STATUS_WEIGHTS: Record<string, number> = {
-  watched: 1,
-  watching: 0.8,
-  watchlist: 0.4,
-  dropped: -0.5,
-};
 
 function requireVectors(context: ServiceContext) {
   const vectors = context.env.WATCHING_VECTORS;
@@ -97,16 +102,10 @@ export async function searchByMeaning(
   return hydrate(context, refs);
 }
 
-function tasteWeight(entry: { status: string; rating?: number | null }): number {
-  const base = STATUS_WEIGHTS[entry.status] ?? 0;
-
-  return entry.rating == null ? base : base * ((entry.rating - 2.5) / 2.5);
-}
-
 async function readTasteVectors(context: ServiceContext) {
   const vectors = requireVectors(context);
   const entries = listRecentEntries(await readShelfContent(context));
-  const sample = entries.slice(0, TASTE_SAMPLE);
+  const sample = selectTasteEntries(entries, TASTE_SAMPLE);
   const found = await Promise.all(
     chunkArray(sample, VECTOR_ID_CHUNK).map((chunk) =>
       vectors.getByIds(chunk.map((entry) => entry.titleId)),
@@ -121,25 +120,48 @@ async function readTasteVectors(context: ServiceContext) {
         : [],
     );
 
-  return { entries, tasteVectors };
+  const byId = new Map(tasteVectors.map((vector) => [vector.id, vector]));
+  const anchors = selectTasteAnchors(sample, TASTE_ANCHORS).flatMap(
+    (entry) => byId.get(entry.titleId) ?? [],
+  );
+
+  return { entries, tasteVectors, anchors };
+}
+
+async function queryNeighbours(context: ServiceContext, vector: readonly number[]) {
+  const { matches } = await requireVectors(context).query([...vector], {
+    topK: VECTOR_QUERY_LIMIT,
+    returnValues: true,
+  });
+
+  return matches.filter((match) => match.score < SAME_FRANCHISE_SCORE).map((match) => match.id);
 }
 
 export async function recommendFromTaste(context: ServiceContext, limit: number) {
-  const { entries, tasteVectors } = await readTasteVectors(context);
+  const { entries, tasteVectors, anchors } = await readTasteVectors(context);
 
   if (tasteVectors.length === 0) {
     return [];
   }
 
   const seen = new Set(entries.map((entry) => entry.titleId));
-  const matches = await requireVectors(context).query(blendTaste(tasteVectors), {
-    topK: VECTOR_QUERY_LIMIT,
-    returnValues: true,
-  });
-  const refs = matches.matches
-    .filter((match) => !seen.has(match.id))
-    .flatMap((match) => parseTitleId(match.id) ?? [])
-    .slice(0, limit);
+  const neighbours = await Promise.all(
+    [...anchors.map((anchor) => anchor.values), blendTaste(tasteVectors)].map((vector) =>
+      queryNeighbours(context, vector),
+    ),
+  );
+  const refs = interleaveMatches(neighbours, seen)
+    .flatMap((id) => parseTitleId(id) ?? [])
+    .slice(0, CANDIDATE_LIMIT);
+  const kept: TitleSummary[] = [];
 
-  return hydrate(context, refs);
+  for (const batch of chunkArray(refs, SCORED_TITLE_LIMIT)) {
+    kept.push(...(await hydrate(context, batch)).filter(isWorthRecommending));
+
+    if (kept.length >= limit) {
+      break;
+    }
+  }
+
+  return kept.slice(0, limit);
 }

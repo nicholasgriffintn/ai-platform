@@ -39,7 +39,10 @@ export function ConnectorDetailsModal({
   const publicAccess = isConnected && connector.authType === "api_key" && !connector.connectedAt;
   const authLabel = publicAccess
     ? "Optional API key"
-    : (connector.authConfigs?.[0]?.authScheme ?? "API key");
+    : connector.connectUrl
+      ? `${connector.name} sign-in`
+      : (connector.authConfigs?.[0]?.authScheme ?? "API key");
+  const connectTarget = connector.connectUrl ? ` on ${connector.name}` : "";
 
   return (
     <Dialog open onOpenChange={onOpenChange}>
@@ -56,9 +59,11 @@ export function ConnectorDetailsModal({
             {connector.description}
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-2 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5">
-              <Wrench className="size-3.5" /> {connector.toolCount} tools
-            </span>
+            {connector.toolCount > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5">
+                <Wrench className="size-3.5" /> {connector.toolCount} tools
+              </span>
+            )}
             <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5">
               <KeyRound className="size-3.5" /> {authLabel.replaceAll("_", " ")}
             </span>
@@ -92,10 +97,10 @@ export function ConnectorDetailsModal({
               {publicAccess
                 ? "Add subscription key"
                 : isConnected
-                  ? "Reconnect"
+                  ? `Reconnect${connectTarget}`
                   : isUnavailable
                     ? "Unavailable"
-                    : "Connect"}
+                    : `Connect${connectTarget}`}
             </Button>
             {isConnected && !publicAccess && (
               <Button

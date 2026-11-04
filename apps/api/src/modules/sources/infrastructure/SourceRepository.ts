@@ -419,6 +419,23 @@ export class SourceRepository extends BaseRepository {
     );
   }
 
+  async listCollectionSourcesWithMetadata(
+    collectionId: string,
+    metadataKeys: readonly string[],
+  ): Promise<SourceRecord[]> {
+    const hasKey = metadataKeys
+      .map(() => "CASE WHEN json_valid(s.metadata) THEN json_type(s.metadata, ?) END IS NOT NULL")
+      .join(" OR ");
+
+    return this.runQuery<SourceRecord>(
+      `SELECT s.* FROM ${sourceResourceSql} s
+			 JOIN resource_link scm ON scm.kind = 'source_collection' AND scm.source_id = s.id
+			 WHERE scm.collection_id = ? AND ${sourceVisibilitySql("s")} AND (${hasKey})
+			 ORDER BY s.updated_at DESC, s.created_at DESC`,
+      [collectionId, ...metadataKeys.map((key) => `$.${key}`)],
+    );
+  }
+
   async listCollectionSourceSummaries(collectionId: string): Promise<SourceSummaryRecord[]> {
     return this.runQuery<SourceSummaryRecord>(
       `SELECT ${SOURCE_SUMMARY_COLUMNS.map((column) => `s.${column}`).join(", ")}

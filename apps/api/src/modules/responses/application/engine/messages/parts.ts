@@ -156,9 +156,10 @@ export function appendReasoningPart(
   }
 
   const lastPart = parts[parts.length - 1];
+  const target = lastPart?.type === "text" ? parts[parts.length - 2] : lastPart;
 
-  if (lastPart?.type === "reasoning") {
-    lastPart.text += reasoning;
+  if (target?.type === "reasoning") {
+    target.text += reasoning;
 
     return;
   }

@@ -61,6 +61,12 @@ export function isDiscoverFeedSignal(signal: DiscoverSignal): boolean {
   return signal.items !== undefined;
 }
 
+export function showsDiscoverActivity(signalId: string): boolean {
+  const signal = findDiscoverSignal(signalId);
+
+  return !signal?.needsTopics && !signal?.notActivity;
+}
+
 export function isDiscoverOptInProvider(providerId: string): boolean {
   return PUBLIC_SIGNALS.some((signal) => signal.providerId === providerId);
 }

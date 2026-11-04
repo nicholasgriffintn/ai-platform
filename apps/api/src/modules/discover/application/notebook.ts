@@ -99,6 +99,18 @@ export async function ensureDiscoverNotebook(context: ServiceContext): Promise<N
   return notebook;
 }
 
+export function listDiscoverDocumentSources(
+  context: ServiceContext,
+  notebookId: string,
+): Promise<SourceRecord[]> {
+  return context.repositories
+    .get(SourceRepository)
+    .listCollectionSourcesWithMetadata(notebookId, [
+      DISCOVER_SIGNAL_METADATA_KEY,
+      DISCOVER_RESEARCH_METADATA_KEY,
+    ]);
+}
+
 export function readDiscoverDocuments(sources: readonly SourceRecord[]): DiscoverDocuments {
   const signals: DiscoverSignalDocument[] = [];
   const research: DiscoverResearchDocument[] = [];
@@ -148,9 +160,7 @@ export async function listDiscoverSignalDocuments(
   const notebook = await findDiscoverNotebook(context, userId);
 
   return notebook
-    ? readDiscoverDocuments(
-        await context.repositories.get(SourceRepository).listCollectionSources(notebook.id),
-      ).signals
+    ? readDiscoverDocuments(await listDiscoverDocumentSources(context, notebook.id)).signals
     : [];
 }
 
@@ -165,9 +175,6 @@ export async function listDiscoverDocuments(
   }
 
   return readDiscoverDocuments(
-    await withKnowledgeText(
-      context,
-      await context.repositories.get(SourceRepository).listCollectionSources(notebook.id),
-    ),
+    await withKnowledgeText(context, await listDiscoverDocumentSources(context, notebook.id)),
   );
 }

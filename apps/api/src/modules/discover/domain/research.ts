@@ -140,6 +140,18 @@ export function latestResearchSection(content: string): DiscoverResearchSection 
   return parseResearchDocument(content)[0] ?? null;
 }
 
+export function keepRecentDiscoverResults(
+  documents: readonly DiscoverCurrentResearch[],
+  today: string,
+): DiscoverCurrentResearch[] {
+  const earliest = shiftCalendarDate(today, -RESEARCH_CURRENT_DAYS);
+
+  return documents.map((document) => ({
+    ...document,
+    results: document.results.filter((result) => !result.date || result.date >= earliest),
+  }));
+}
+
 export function selectCurrentResearch(
   documents: ReadonlyArray<{ topic: string; content: string }>,
   { today, hiddenTopics }: { today: string; hiddenTopics: ReadonlySet<string> },

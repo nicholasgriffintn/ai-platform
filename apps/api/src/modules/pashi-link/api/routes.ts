@@ -4,7 +4,6 @@ import {
   pashiLinkSaveResultSchema,
   pashiLinkStatusSchema,
 } from "@ngriffin_uk/polychat-schemas";
-import { parseBearerToken } from "@ngriffin_uk/polychat-utility-server/http";
 import { Hono } from "hono";
 import z from "zod/v4";
 
@@ -43,19 +42,14 @@ addRoute(app, "delete", "/link", {
   tags: ["auth"],
   summary: "Remove the Pashi link",
   description:
-    "Forgets the Pashi credential. A Pashi-scoped key that makes this call is revoked with it.",
+    "Disconnects Pashi in both directions: forgets its credential and revokes its Polychat key.",
   auth: true,
   responses: {
     200: { description: "Link removed", schema: z.object({ linked: z.literal(false) }) },
     401: { description: "Authentication error", schema: errorResponseSchema },
   },
-  handler: async ({ serviceContext, user, raw }) => {
-    const callingKey =
-      raw.get("credentialScope") === "pashi"
-        ? parseBearerToken(raw.req.header("Authorization"))
-        : undefined;
-
-    await removePashiLink(serviceContext, user, callingKey ?? undefined);
+  handler: async ({ serviceContext, user }) => {
+    await removePashiLink(serviceContext, user);
 
     return { linked: false as const };
   },

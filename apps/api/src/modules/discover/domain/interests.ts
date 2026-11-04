@@ -8,6 +8,7 @@ import { shiftCalendarDate } from "@ngriffin_uk/polychat-utility-core";
 import { discoverTopicKey } from "./edition";
 
 export const DISCOVER_RESEARCH_TOPIC_LIMIT = 8;
+export const INTEREST_OPENED_DAYS = 7;
 const ROTATING_INTEREST_LIMIT = 2;
 const INTEREST_REST_DAYS = 3;
 const OPENED_WEIGHT = 0.25;
@@ -67,7 +68,7 @@ function chooseRotatingInterests(
       const researchedOn = input.researchedOn.get(key);
       const resting = researchedOn && researchedOn < input.today && researchedOn > restingSince;
 
-      if (!key || taken.has(key) || resting) {
+      if (!key || taken.has(key) || resting || interest.lastSeen <= restingSince) {
         return [];
       }
 

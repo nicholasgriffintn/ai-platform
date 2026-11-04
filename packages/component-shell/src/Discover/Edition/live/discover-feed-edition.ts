@@ -1,6 +1,7 @@
 import {
   DISCOVER_EDITION_VERSION,
   DISCOVER_LIVE_CARD_KINDS,
+  DISCOVER_MAX_BRIEF_LINES,
   type DiscoverEdition,
   type DiscoverFeedItem,
   type DiscoverResponse,
@@ -55,11 +56,7 @@ export function discoverCurrentBrief(
     ? (response.now?.observations.slice(0, 4) ?? [])
     : [];
 
-  if (observations.length === 0) {
-    return [...fallback];
-  }
-
-  return observations.map((observation) => ({
+  const live: DiscoverBriefLine[] = observations.map((observation) => ({
     kind:
       observation.kind === "weather"
         ? "weather"
@@ -72,6 +69,14 @@ export function discoverCurrentBrief(
     text: observation.text,
     href: observation.href,
   }));
+  const replaced = new Set<DiscoverBriefLine["kind"]>(
+    live.map((line) => line.kind).filter((kind) => kind !== "note"),
+  );
+
+  return [...live, ...fallback.filter((line) => !replaced.has(line.kind))].slice(
+    0,
+    DISCOVER_MAX_BRIEF_LINES,
+  );
 }
 
 export function discoverMediaEdition(

@@ -17,7 +17,7 @@ export async function listDeviceDocuments(
 ): Promise<SourceRecord[]> {
   const sources = await context.repositories
     .get(SourceRepository)
-    .listCollectionSources(notebookId);
+    .listCollectionSourcesWithMetadata(notebookId, [DEVICE_ACTIVITY_MACHINE_METADATA_KEY]);
 
   return sources.filter((source) => {
     const machineId = parseJsonRecord(source.metadata)[DEVICE_ACTIVITY_MACHINE_METADATA_KEY];

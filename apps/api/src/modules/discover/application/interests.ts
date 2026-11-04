@@ -7,21 +7,26 @@ import {
   type DiscoverInterestInference,
   type DiscoverInterestProfile,
 } from "@ngriffin_uk/polychat-schemas";
-import { describeZonedInstant, sha256Hex } from "@ngriffin_uk/polychat-utility-core";
+import { DAY_MS, describeZonedInstant, sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { discoverTopicKey } from "~/modules/discover/domain/edition";
 import { summariseDiscoverFeedPreferences } from "~/modules/discover/domain/feed-weights";
-import { summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
+import {
+  keepDiscoverFeedbackSince,
+  summariseDiscoverFeedback,
+} from "~/modules/discover/domain/feedback";
 import { isDiscoverSignalCurrent } from "~/modules/discover/domain/freshness";
 import {
   chooseResearchTopics,
   describeInterestMaterial,
+  INTEREST_OPENED_DAYS,
   mergeInterestProfile,
   renderInterestProfile,
 } from "~/modules/discover/domain/interests";
+import { showsDiscoverActivity } from "~/modules/discover/domain/signal-catalogue";
 import { condenseSignalLines } from "~/modules/discover/domain/signal-document";
 import { generateSystemObject } from "~/modules/models/application/system-object";
 import {
@@ -33,7 +38,7 @@ import { listRecentDiscoverChatTitles, readMemorySummary } from "./context";
 import { readDiscoverDayProfile } from "./day-profile";
 import { listDiscoverFeedback } from "./feedback";
 import { listDiscoverFollows } from "./follows";
-import { readDiscoverDocuments } from "./notebook";
+import { listDiscoverDocumentSources, readDiscoverDocuments } from "./notebook";
 import { writeDiscoverDocument } from "./signal-documents";
 
 const logger = getLogger({ prefix: "discover/interests" });
@@ -81,7 +86,7 @@ async function inferInterests(
 ): Promise<DiscoverInterestInference["interests"] | null> {
   const user = context.requireUser();
   const [sources, chatTitles, memorySummary] = await Promise.all([
-    context.repositories.get(SourceRepository).listCollectionSources(notebookId),
+    listDiscoverDocumentSources(context, notebookId),
     listRecentDiscoverChatTitles(context, user.id, input.now.getTime()),
     readMemorySummary(context, user.id),
   ]);
@@ -89,6 +94,7 @@ async function inferInterests(
     .signals.filter(
       (document) =>
         !document.error &&
+        showsDiscoverActivity(document.signalId) &&
         document.lines.length > 0 &&
         isDiscoverSignalCurrent(document.readAt, input.now.getTime()),
     )
@@ -139,7 +145,9 @@ export async function chooseDiscoverInterests(
     more: summary.moreTopics,
     saved: summary.savedTopics,
     hidden,
-    engaged: summariseDiscoverFeedPreferences(feedback).engaged,
+    engaged: summariseDiscoverFeedPreferences(
+      keepDiscoverFeedbackSince(feedback, input.now.getTime() - INTEREST_OPENED_DAYS * DAY_MS),
+    ).engaged,
   };
 
   if (!input.refresh || profile?.updatedOn === input.today) {
@@ -203,7 +211,7 @@ export async function chooseDiscoverResearchTopics(
       now: input.now,
       refresh: input.refresh,
     }),
-    context.repositories.get(SourceRepository).listCollectionSources(notebookId),
+    listDiscoverDocumentSources(context, notebookId),
     readDiscoverDayProfile(context),
   ]);
 

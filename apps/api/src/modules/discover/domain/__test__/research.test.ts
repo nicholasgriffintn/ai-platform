@@ -1,6 +1,38 @@
 import { describe, expect, it } from "vitest";
 
-import { latestResearchSection, mergeResearchDocument } from "../research";
+import {
+  keepRecentDiscoverResults,
+  latestResearchSection,
+  mergeResearchDocument,
+} from "../research";
+
+describe("keepRecentDiscoverResults", () => {
+  it("drops results dated before yesterday and keeps undated ones", () => {
+    const result = (slug: string, date?: string) => ({
+      title: slug,
+      url: `https://example.com/${slug}`,
+      snippet: slug,
+      date,
+    });
+    const [document] = keepRecentDiscoverResults(
+      [
+        {
+          topic: "Rust",
+          date: "2026-11-04",
+          results: [
+            result("today", "2026-11-04"),
+            result("yesterday", "2026-11-03"),
+            result("older", "2026-11-02"),
+            result("undated"),
+          ],
+        },
+      ],
+      "2026-11-04",
+    );
+
+    expect(document?.results.map((item) => item.title)).toEqual(["today", "yesterday", "undated"]);
+  });
+});
 
 describe("mergeResearchDocument", () => {
   it("keeps each page's publisher and date through the document", () => {

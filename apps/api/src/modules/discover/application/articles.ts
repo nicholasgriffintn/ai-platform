@@ -31,7 +31,7 @@ export async function listDiscoverArticleSources(
 
   const sources = await context.repositories
     .get(SourceRepository)
-    .listCollectionSources(notebook.id);
+    .listCollectionSourceSummaries(notebook.id);
   const byUrl = new Map<string, string>();
 
   for (const source of sources) {

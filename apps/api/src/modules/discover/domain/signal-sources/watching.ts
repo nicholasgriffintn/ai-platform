@@ -51,6 +51,7 @@ export const WATCHING_SIGNALS: readonly DiscoverSignal[] = [
     group: "watching",
     title: "Film and TV week ahead",
     description: "Reads the episodes and releases coming this week from your shelf.",
+    notActivity: true,
     digest: (result) =>
       lines(items(result, ["entries"]), (entry) =>
         joinParts(
@@ -69,6 +70,7 @@ export const WATCHING_SIGNALS: readonly DiscoverSignal[] = [
     group: "watching",
     title: "Film and TV news",
     description: "Reads new seasons, arrivals, trailers and people you follow.",
+    notActivity: true,
     items: (result) =>
       items(result, ["news"]).flatMap((entry) =>
         first(entry, ["url"])

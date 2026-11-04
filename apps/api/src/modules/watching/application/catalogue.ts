@@ -35,8 +35,9 @@ import {
   type TitleSummary,
 } from "~/modules/watching/domain/titles";
 
+export const SCORED_TITLE_LIMIT = 12;
+
 const logger = getLogger({ prefix: "watching/catalogue" });
-const SCORED_TITLE_LIMIT = 12;
 const SCORING_CONCURRENCY = 6;
 const FALLBACK_SEARCH_LIMIT = 5;
 

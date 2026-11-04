@@ -64,6 +64,13 @@ export function summariseDiscoverFeedback(
   };
 }
 
+export function keepDiscoverFeedbackSince(
+  entries: readonly DiscoverFeedbackEntry[],
+  since: number,
+): DiscoverFeedbackEntry[] {
+  return entries.filter((entry) => Date.parse(entry.createdAt) >= since);
+}
+
 export function collectCardSignals(
   entries: readonly DiscoverFeedbackEntry[],
   editionId: string,

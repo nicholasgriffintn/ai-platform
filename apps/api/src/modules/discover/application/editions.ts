@@ -208,6 +208,7 @@ export async function readDiscover(context: ServiceContext): Promise<DiscoverRes
       allowedProviders: listDiscoverFeedProviders(settings.sources),
       seen,
       limit: DISCOVER_FEED_PAGE_SIZE,
+      leadWithShelf: true,
       now: new Date(),
       mutedTopics: [...dayProfile.mutedTopics, ...summariseDiscoverFeedback(feedback).hiddenTopics],
       feedback: collectCardSignals(feedback, discoverLiveId(user.id)),

@@ -85,7 +85,8 @@ export async function executeTraktOperation(
   throw new AssistantError("Unsupported Trakt operation", ErrorType.PARAMS_ERROR, 400);
 }
 
-const TRAKT_PAGE_SIZE = 1000;
+const TRAKT_PAGE_SIZE = 250;
+const TRAKT_MAX_PAGES = 100;
 
 export interface TraktSyncItem {
   mediaType: MediaType;
@@ -94,13 +95,20 @@ export interface TraktSyncItem {
   episodes?: readonly TmdbEpisodeRef[];
 }
 
+export interface TraktShowProgress {
+  seasons: { season: number; watched: number }[];
+  watched: number;
+  unwatched: number | null;
+}
+
 export interface TraktLibraryTitle {
   titleId: string;
+  imdbId: string | null;
   mediaType: MediaType;
   title: string;
   year: number | null;
   rating: number | null;
-  episodes: TmdbEpisodeRef[];
+  progress: TraktShowProgress | null;
 }
 
 export interface TraktLibrary {
@@ -135,12 +143,14 @@ function readMediaIds(media: unknown) {
 
 function readLibraryTitle(entry: unknown, mediaType: MediaType) {
   const media = readMedia(entry, mediaType);
-  const tmdbId = readFiniteNumber(readMediaIds(media).tmdb);
+  const ids = readMediaIds(media);
+  const tmdbId = readFiniteNumber(ids.tmdb);
   const title = isRecord(media) ? readNonEmptyString(media.title) : undefined;
 
   return isRecord(media) && tmdbId && title
     ? {
         titleId: formatTitleId({ mediaType, tmdbId }),
+        imdbId: readNonEmptyString(ids.imdb) ?? null,
         mediaType,
         title,
         year: readFiniteNumber(media.year) ?? null,
@@ -170,10 +180,65 @@ function readWatchedEpisodes(
   });
 }
 
+function isCompletedEpisode(episode: Record<string, unknown>): boolean {
+  return episode.completed === true;
+}
+
+function readShowProgress(entry: unknown): TraktShowProgress {
+  const counts = new Map<number, number>();
+
+  for (const { season } of readWatchedEpisodes(entry)) {
+    if (season > 0) {
+      counts.set(season, (counts.get(season) ?? 0) + 1);
+    }
+  }
+
+  const seasons = [...counts].map(([season, watched]) => ({ season, watched }));
+  const watched = seasons.reduce((total, season) => total + season.watched, 0);
+  const media = readMedia(entry, "tv");
+  const aired = isRecord(media) ? readFiniteNumber(media.aired_episodes) : undefined;
+
+  return {
+    seasons,
+    watched,
+    unwatched: aired === undefined ? null : Math.max(0, aired - watched),
+  };
+}
+
+async function readTraktList(
+  clientId: string,
+  accessToken: string,
+  path: string,
+  extended?: string,
+): Promise<unknown[]> {
+  const entries: unknown[] = [];
+
+  for (let page = 1; page <= TRAKT_MAX_PAGES; page += 1) {
+    const query = new URLSearchParams({
+      ...(extended ? { extended } : {}),
+      limit: String(TRAKT_PAGE_SIZE),
+      page: String(page),
+    });
+    const items = readArray(await readTrakt(clientId, accessToken, `${path}?${query}`));
+
+    if (items.length === 0) {
+      return entries;
+    }
+
+    entries.push(...items);
+  }
+
+  throw new AssistantError(
+    "This Trakt library is too large to import",
+    ErrorType.EXTERNAL_API_ERROR,
+    502,
+  );
+}
+
 function readLibraryTitles(
   entries: readonly unknown[],
   mediaType: MediaType,
-  extras: (entry: unknown) => Pick<TraktLibraryTitle, "rating" | "episodes">,
+  extras: (entry: unknown) => Pick<TraktLibraryTitle, "rating" | "progress">,
 ): TraktLibraryTitle[] {
   return entries.flatMap((entry) => {
     const media = readLibraryTitle(entry, mediaType);
@@ -186,20 +251,20 @@ export async function fetchTraktLibrary(
   clientId: string,
   accessToken: string,
 ): Promise<TraktLibrary> {
-  const read = async (path: string) =>
-    readArray(await readTrakt(clientId, accessToken, `${path}?limit=${TRAKT_PAGE_SIZE}`));
+  const read = (list: string, extended?: string) =>
+    readTraktList(clientId, accessToken, `/users/me/${list}`, extended);
   const [movies, shows, movieRatings, showRatings, movieList, showList] = await Promise.all([
-    read("/sync/watched/movies"),
-    read("/sync/watched/shows"),
-    read("/sync/ratings/movies"),
-    read("/sync/ratings/shows"),
-    read("/sync/watchlist/movies"),
-    read("/sync/watchlist/shows"),
+    read("watched/movies"),
+    read("watched/shows", "progress"),
+    read("ratings/movies"),
+    read("ratings/shows"),
+    read("watchlist/movies"),
+    read("watchlist/shows"),
   ]);
-  const plain = () => ({ rating: null, episodes: [] });
+  const plain = () => ({ rating: null, progress: null });
   const rated = (entry: unknown) => ({
     rating: isRecord(entry) ? (readFiniteNumber(entry.rating) ?? null) : null,
-    episodes: [],
+    progress: null,
   });
 
   return {
@@ -207,7 +272,7 @@ export async function fetchTraktLibrary(
       ...readLibraryTitles(movies, "movie", plain),
       ...readLibraryTitles(shows, "tv", (entry) => ({
         rating: null,
-        episodes: readWatchedEpisodes(entry),
+        progress: readShowProgress(entry),
       })),
     ],
     ratings: [
@@ -266,9 +331,7 @@ export async function selectUnplayedOnTrakt(
     `/shows/${traktId}/progress/watched?hidden=true`,
   );
   const episodeKey = (entry: TmdbEpisodeRef) => `${entry.season}:${entry.episode}`;
-  const played = new Set(
-    readWatchedEpisodes(progress, (episode) => episode.completed === true).map(episodeKey),
-  );
+  const played = new Set(readWatchedEpisodes(progress, isCompletedEpisode).map(episodeKey));
   const episodes = (item.episodes ?? readWatchedEpisodes(progress)).filter(
     (entry) => !played.has(episodeKey(entry)),
   );

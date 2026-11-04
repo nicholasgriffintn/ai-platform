@@ -1,5 +1,5 @@
 import { configuredComposioToolkits } from "@ngriffin_uk/polychat-library-composio";
-import type { RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
+import type { DeviceCredentialScope, RecipeConnectorProvider } from "@ngriffin_uk/polychat-schemas";
 
 import { knowledgeBaseConnectorProviders } from "./knowledge-providers.js";
 import { personalMediaConnectorProviders } from "./personal-media-providers.js";
@@ -18,8 +18,14 @@ export interface ConnectorOAuthConfig {
   clientIdEnv: string;
 }
 
+export interface ConnectorAppLinkConfig {
+  connectUrl: string;
+  credentialScope: DeviceCredentialScope;
+}
+
 export interface ApiKeyConnectorConfig {
   authType: "api_key";
+  appLink?: ConnectorAppLinkConfig;
   credentialFields: readonly ConnectorCredentialField[];
   credentialSeparator?: string;
   optionalCredentials?: boolean;
@@ -133,6 +139,23 @@ const localConnectorProviders: ConnectorProviderConfig[] = [
         },
       },
     ],
+  },
+  {
+    id: "pashi",
+    name: "Pashi",
+    description:
+      "Run Pashi generators and converters from chat, and use your Polychat plan for AI on pashi.app. Converting files needs Pro.",
+    logoUrl: "https://pashi.app/icon-192.png",
+    appUrl: "https://pashi.app",
+    categories: [{ id: "developer-tools", name: "Developer tools" }],
+    setupUrl: "/chat/plugins?connector=pashi",
+    auth: {
+      authType: "api_key",
+      appLink: { connectUrl: "https://pashi.app/sign-in", credentialScope: "pashi" },
+      credentialFields: [],
+      scopes: [],
+    },
+    operations: [],
   },
   {
     id: "devin",

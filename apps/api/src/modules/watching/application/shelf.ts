@@ -22,6 +22,7 @@ export async function readShelf(context: ServiceContext, status?: ViewingStatus)
   return {
     entries: listRecentEntries(shelf, status ? [status] : undefined).map((entry) => ({
       id: entry.titleId,
+      imdbId: entry.imdbId,
       title: entry.title,
       year: entry.year,
       status: entry.status,

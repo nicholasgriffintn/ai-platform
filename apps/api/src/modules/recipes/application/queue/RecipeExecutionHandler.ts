@@ -11,7 +11,12 @@ import { ConversationRunRepository } from "~/modules/conversations/infrastructur
 import { isRunWaitingForDelegations } from "~/modules/delegations/application/wait-policy";
 import { executeDiscoverRoutineOccurrence } from "~/modules/discover/application/routine-execution";
 import { isPolyContextPaused } from "~/modules/poly/domain/pause";
-import type { TaskHandler, TaskMessage, TaskResult } from "~/modules/queue/application/types";
+import type {
+  TaskExecutionContext,
+  TaskHandler,
+  TaskMessage,
+  TaskResult,
+} from "~/modules/queue/application/types";
 import {
   invokeAssistantRecipe,
   parseRecipeInstallationRecord,
@@ -31,6 +36,11 @@ import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateR
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import type { IEnv } from "~/types";
 
+import {
+  chooseRecipeOccurrenceCommandId,
+  readRecipeOccurrenceRetryDelay,
+} from "./occurrence-recovery";
+
 const logger = getLogger({ prefix: "services/tasks/handlers/RecipeExecutionHandler" });
 
 function getRecipeExecutionConversationId(taskId: string): string {
@@ -38,7 +48,11 @@ function getRecipeExecutionConversationId(taskId: string): string {
 }
 
 export class RecipeExecutionHandler implements TaskHandler {
-  public async handle(message: TaskMessage, env: IEnv): Promise<TaskResult> {
+  public async handle(
+    message: TaskMessage,
+    env: IEnv,
+    taskExecution?: TaskExecutionContext,
+  ): Promise<TaskResult> {
     const parsedData = recipeExecutionTaskDataSchema.safeParse(message.task_data);
 
     if (!message.user_id || !parsedData.success) {
@@ -162,8 +176,14 @@ export class RecipeExecutionHandler implements TaskHandler {
       });
     }
 
-    const occurrenceCommandId = data.occurrenceId
-      ? `recipe_occurrence_${data.occurrenceId}`
+    const baseCommandId = data.occurrenceId ? `recipe_occurrence_${data.occurrenceId}` : undefined;
+    const previousReceipt = baseCommandId
+      ? await context.repositories
+          .get(ConversationRunRepository)
+          .getCommandReceipt(message.user_id, baseCommandId)
+      : null;
+    const occurrenceCommandId = baseCommandId
+      ? chooseRecipeOccurrenceCommandId(baseCommandId, previousReceipt?.run.status)
       : undefined;
 
     try {
@@ -230,6 +250,20 @@ export class RecipeExecutionHandler implements TaskHandler {
     }
 
     const runStatus = executionRun?.status ?? executionRunReceipt?.status;
+    const retryAfterSeconds = readRecipeOccurrenceRetryDelay({
+      commandId: occurrenceCommandId,
+      runStatus,
+      replayed: Boolean(taskExecution?.isRetry || taskExecution?.pollAttempt),
+    });
+
+    if (retryAfterSeconds !== null) {
+      return {
+        status: "pending",
+        message: "Waiting to confirm whether the recipe occurrence survived",
+        retryAfterSeconds,
+      };
+    }
+
     const waitingForUser =
       runStatus === "awaiting_input" ||
       runStatus === "awaiting_approval" ||

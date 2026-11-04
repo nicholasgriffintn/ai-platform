@@ -38,6 +38,7 @@ interface DiscoverSignalBase {
   items?: (result: unknown, read: DiscoverSignalRead) => DiscoverResearchResult[];
   needsLocation?: boolean;
   needsTopics?: boolean;
+  notActivity?: boolean;
 }
 
 export interface DiscoverConnectorSignal extends DiscoverSignalBase {

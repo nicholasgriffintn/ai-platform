@@ -2,19 +2,17 @@ import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type { PashiLinkSaveResult, PashiLinkStatus } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { storeProviderApiKey } from "~/modules/user/application/userOperations";
-import { ApiKeyRepository } from "~/modules/user/infrastructure/ApiKeyRepository";
-import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
-import type { IEnv, IUser } from "~/types";
+import {
+  deleteRecipeConnectorConnection,
+  readRecipeConnectorToken,
+  storeRecipeConnectorAppLink,
+} from "~/modules/connectors/application";
+import type { IUser } from "~/types";
 
-const PASHI_LINK_PROVIDER = "pashi";
+const PASHI_CONNECTOR = "pashi";
 
-export async function readPashiLinkToken(env: IEnv, userId: number): Promise<string | null> {
-  const settings = new UserSettingsRepository(env);
-
-  return (await settings.hasProviderApiKey(userId, PASHI_LINK_PROVIDER))
-    ? settings.getProviderApiKey(userId, PASHI_LINK_PROVIDER)
-    : null;
+export function readPashiLinkToken(context: ServiceContext, userId: number) {
+  return readRecipeConnectorToken(context, userId, PASHI_CONNECTOR);
 }
 
 export async function getPashiLinkStatus(
@@ -22,9 +20,7 @@ export async function getPashiLinkStatus(
   user: IUser,
 ): Promise<PashiLinkStatus> {
   return {
-    linked: await context.repositories
-      .get(UserSettingsRepository)
-      .hasProviderApiKey(user.id, PASHI_LINK_PROVIDER),
+    linked: (await readPashiLinkToken(context, user.id)) !== null,
     pro: hasProEntitlement(user),
   };
 }
@@ -34,26 +30,26 @@ export async function savePashiLink(
   user: IUser,
   token: string,
 ): Promise<PashiLinkSaveResult> {
-  const replacedToken = await readPashiLinkToken(context.env, user.id);
+  const replacedToken = await readPashiLinkToken(context, user.id);
 
-  await storeProviderApiKey(context, PASHI_LINK_PROVIDER, token, undefined, undefined, user.id);
+  await storeRecipeConnectorAppLink({
+    context,
+    userId: user.id,
+    provider: PASHI_CONNECTOR,
+    token,
+  });
 
   return {
-    ...(await getPashiLinkStatus(context, user)),
+    linked: true,
+    pro: hasProEntitlement(user),
     ...(replacedToken && replacedToken !== token ? { replaced_token: replacedToken } : {}),
   };
 }
 
-export async function removePashiLink(
-  context: ServiceContext,
-  user: IUser,
-  callingKey: string | undefined,
-): Promise<void> {
-  await context.repositories
-    .get(UserSettingsRepository)
-    .deleteProviderApiKey(user.id, PASHI_LINK_PROVIDER);
-
-  if (callingKey) {
-    await context.repositories.get(ApiKeyRepository).deleteApiKeyByValue(user.id, callingKey);
-  }
+export async function removePashiLink(context: ServiceContext, user: IUser): Promise<void> {
+  await deleteRecipeConnectorConnection({
+    context,
+    userId: user.id,
+    provider: PASHI_CONNECTOR,
+  });
 }
