@@ -7,6 +7,7 @@ import {
   type CharacterAgendaSignal,
   type CharacterPresence,
   deriveCharacterPresence,
+  keepCharacterPresence,
   PET_ACKNOWLEDGE_WINDOW_MS,
   PET_CHEER_WINDOW_MS,
   PET_REACTION_WINDOW_MS,
@@ -116,21 +117,21 @@ export function useCharacterPresence(options: CharacterPresenceOptions = {}): Ch
 
   useEffect(() => {
     function update() {
-      setPresence(
-        deriveCharacterPresence({
-          activity,
-          isRecovering: false,
-          voice,
-          reviewing,
-          agenda: isAuthenticated ? { needsYou, workingOn, pausedUntil } : null,
-          lastCompletedAt: lastCompletedAt.current,
-          lastActiveAt: lastActiveAt.current,
-          lastArrivedAt,
-          lastReaction,
-          now: Date.now(),
-          formatTime: formatClockTime,
-        }),
-      );
+      const next = deriveCharacterPresence({
+        activity,
+        isRecovering: false,
+        voice,
+        reviewing,
+        agenda: isAuthenticated ? { needsYou, workingOn, pausedUntil } : null,
+        lastCompletedAt: lastCompletedAt.current,
+        lastActiveAt: lastActiveAt.current,
+        lastArrivedAt,
+        lastReaction,
+        now: Date.now(),
+        formatTime: formatClockTime,
+      });
+
+      setPresence((current) => keepCharacterPresence(current, next));
     }
 
     update();

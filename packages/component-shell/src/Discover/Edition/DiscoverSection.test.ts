@@ -2,28 +2,22 @@ import { describe, expect, it } from "vitest";
 
 import { discoverRailTop } from "./DiscoverFeed";
 import { countDiscoverColumns, distributeDiscoverCards } from "./DiscoverMasonry";
-import { discoverShelfLayout } from "./DiscoverSection";
+import { discoverPosterWidth } from "./DiscoverSection";
 
-describe("discoverShelfLayout", () => {
-  it("stretches a few tiles across the whole row instead of leaving a gap", () => {
-    const { width } = discoverShelfLayout(1200, 3);
-
-    expect(width * 3 + 12 * 2).toBeCloseTo(1200);
-  });
-
-  it("caps the height, so wide tiles do not take over the page", () => {
-    expect(discoverShelfLayout(1800, 2).height).toBe(384);
+describe("discoverPosterWidth", () => {
+  it("never grows past the poster maximum, however much room there is", () => {
+    expect(discoverPosterWidth(1800, 2)).toBe(320);
   });
 
   it("shows only whole tiles and leaves the rest to scroll", () => {
-    const { width } = discoverShelfLayout(900, 7);
+    const width = discoverPosterWidth(900, 7);
 
     expect(width).toBeGreaterThanOrEqual(208);
     expect((900 - width) % (width + 12)).toBeCloseTo(0);
   });
 
   it("keeps two tiles side by side on a phone", () => {
-    expect(discoverShelfLayout(335, 4).width).toBeCloseTo((335 - 12) / 2);
+    expect(discoverPosterWidth(335, 4)).toBeCloseTo((335 - 12) / 2);
   });
 });
 

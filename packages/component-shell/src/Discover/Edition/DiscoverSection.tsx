@@ -13,8 +13,7 @@ const SHELF_GAP_PX = 0.75 * REM_PX;
 const SHELF_NARROW_PX = 40 * REM_PX;
 const POSTER_MIN_NARROW_PX = 9.5 * REM_PX;
 const POSTER_MIN_PX = 13 * REM_PX;
-const POSTER_MAX_HEIGHT_PX = 24 * REM_PX;
-const POSTER_PORTRAIT_RATIO = 1.25;
+const POSTER_MAX_PX = 20 * REM_PX;
 
 const POSTER_TRACK = `-m-1 flex scroll-px-1 gap-3 p-1 ${DISCOVER_CAROUSEL_TRACK} [&>*]:w-[var(--discover-poster,10.5rem)] [&>*]:shrink-0 [&>*]:snap-start`;
 
@@ -23,31 +22,18 @@ export const DISCOVER_SECTION_GRID = {
   cards: "grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(16rem,1fr))]",
 };
 
-export function discoverShelfLayout(
-  shelfWidth: number,
-  count: number,
-): { width: number; height: number } {
+export function discoverPosterWidth(shelfWidth: number, count: number): number {
   const minimum = shelfWidth < SHELF_NARROW_PX ? POSTER_MIN_NARROW_PX : POSTER_MIN_PX;
   const fitting = Math.floor((shelfWidth + SHELF_GAP_PX) / (minimum + SHELF_GAP_PX));
   const visible = clampNumber(fitting, 1, Math.max(1, count));
-  const width = (shelfWidth - SHELF_GAP_PX * (visible - 1)) / visible;
 
-  return { width, height: Math.min(width * POSTER_PORTRAIT_RATIO, POSTER_MAX_HEIGHT_PX) };
+  return Math.min(POSTER_MAX_PX, (shelfWidth - SHELF_GAP_PX * (visible - 1)) / visible);
 }
 
-type ShelfStyle = CSSProperties & Record<"--discover-poster" | "--media-tile-aspect", string>;
+type ShelfStyle = CSSProperties & Record<"--discover-poster", string>;
 
 function shelfStyle(width: number | undefined, count: number): ShelfStyle | undefined {
-  if (!width) {
-    return undefined;
-  }
-
-  const layout = discoverShelfLayout(width, count);
-
-  return {
-    "--discover-poster": `${layout.width}px`,
-    "--media-tile-aspect": `${layout.width} / ${layout.height}`,
-  };
+  return width ? { "--discover-poster": `${discoverPosterWidth(width, count)}px` } : undefined;
 }
 
 function DiscoverShelfHeading({ title, controls }: { title: string; controls: ReactNode }) {

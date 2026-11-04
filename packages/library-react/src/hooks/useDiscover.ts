@@ -145,9 +145,11 @@ export function useDiscoverFeedback() {
   });
 }
 
+const DISCOVER_MEDIA_QUERY_KEY = ["discover-media"] as const;
+
 export function useDiscoverCover(coverId: string | undefined) {
   return useQuery({
-    queryKey: [...DISCOVER_QUERY_KEY, "cover", coverId],
+    queryKey: [...DISCOVER_MEDIA_QUERY_KEY, "cover", coverId],
     queryFn: () => getDiscoverCover(coverId ?? ""),
     enabled: Boolean(coverId),
     staleTime: Number.POSITIVE_INFINITY,
@@ -157,7 +159,7 @@ export function useDiscoverCover(coverId: string | undefined) {
 
 export function useDiscoverItemImage(itemId: string | undefined) {
   return useQuery({
-    queryKey: [...DISCOVER_QUERY_KEY, "item-image", itemId],
+    queryKey: [...DISCOVER_MEDIA_QUERY_KEY, "item-image", itemId],
     queryFn: () => getDiscoverItemImage(itemId ?? ""),
     enabled: Boolean(itemId),
     staleTime: Number.POSITIVE_INFINITY,

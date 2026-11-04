@@ -66,27 +66,8 @@ export function useDismissDiscoverItem() {
 }
 
 export function useMarkDiscoverSeen() {
-  const queries = useQueryClient();
-
   return useMutation({
     mutationFn: (input: DiscoverSeenRequest) => markDiscoverSeen(input),
-    onSuccess: (_result, input) => {
-      const seen = new Map(input.items.map((item) => [item.id, item.revision]));
-
-      queries.setQueryData<DiscoverResponse>(DISCOVER_QUERY_KEY, (current) =>
-        current?.feed
-          ? {
-              ...current,
-              feed: {
-                ...current.feed,
-                data: current.feed.data.map((item) =>
-                  seen.get(item.id) === item.revision ? { ...item, seen: true } : item,
-                ),
-              },
-            }
-          : current,
-      );
-    },
   });
 }
 

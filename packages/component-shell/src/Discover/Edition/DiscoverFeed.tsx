@@ -1,5 +1,5 @@
 import type { DiscoverCard, DiscoverEdition } from "@ngriffin_uk/polychat-schemas";
-import { useElementSize } from "@ngriffin_uk/polychat-utility-react";
+import { useElementSize, useStableCallback } from "@ngriffin_uk/polychat-utility-react";
 import type { ReactNode } from "react";
 
 import { DiscoverFeedCard, type DiscoverRowCard } from "./DiscoverFeedCard.js";
@@ -121,7 +121,8 @@ export function DiscoverFeed({
   const railBeside = railCards.length > 0 && width >= RAIL_MIN_FEED_PX;
   const posterCount = topics.length + stories.length;
   const shelfCount = mediaCount + posterCount;
-  const cardProps = { selectedId, isTopicHidden, onSelect };
+  const selectCard = useStableCallback(onSelect);
+  const cardProps = { selectedId, isTopicHidden, onSelect: selectCard };
   const newReads = newCardIds ? reads.filter((card) => newCardIds.has(card.id)) : [];
   const earlierReads = newCardIds ? reads.filter((card) => !newCardIds.has(card.id)) : reads;
   const earlierTitle = !newCardIds

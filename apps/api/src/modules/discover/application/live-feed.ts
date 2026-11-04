@@ -16,7 +16,6 @@ import { listDiscoverFeedProviders, presentDiscoverFeed } from "~/modules/discov
 import { DiscoverSeenRepository } from "~/modules/discover/infrastructure/DiscoverSeenRepository";
 
 import { readDiscoverDayProfile } from "./day-profile";
-import { publishDiscoverChanged } from "./events";
 import { listDiscoverFeedback } from "./feedback";
 import { readDiscoverLive, updateDiscoverLive, discoverLiveId } from "./live-store";
 import { readDiscoverSettings } from "./settings";
@@ -64,10 +63,6 @@ export async function markDiscoverSeen(
     await context.repositories
       .get(DiscoverSeenRepository)
       .mark(user.id, receipt.id, receipt.revision, topic ? discoverTopicKey(topic) : null);
-  }
-
-  if (accepted.length > 0) {
-    await publishDiscoverChanged(context);
   }
 
   return { updated: accepted.length };

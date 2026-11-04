@@ -3,6 +3,7 @@ import { cn, Pet } from "@ngriffin_uk/polychat-component-ui";
 import type { DiscoverCard } from "@ngriffin_uk/polychat-schemas";
 import { readUrlHost } from "@ngriffin_uk/polychat-utility-core";
 import { CalendarDays, ChevronRight, Headphones, History, Mail, Play, Repeat } from "lucide-react";
+import { memo } from "react";
 
 import { discoverCardBody } from "./discover-card-drafts.js";
 import { DiscoverArticleImage } from "./DiscoverArticleImage.js";
@@ -109,7 +110,7 @@ function cardText(card: DiscoverRowCard): { kicker: string; title: string; detai
   }
 }
 
-export function DiscoverFeedCard({
+export const DiscoverFeedCard = memo(function DiscoverFeedCard({
   card,
   selected,
   hidden,
@@ -186,4 +187,4 @@ export function DiscoverFeedCard({
       )}
     </button>
   );
-}
+});

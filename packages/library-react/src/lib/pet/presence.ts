@@ -100,6 +100,19 @@ export function deriveTeammatePresence(
   return { state: "idle", status: READY, accent: null };
 }
 
+export function keepCharacterPresence(
+  current: CharacterPresence,
+  next: CharacterPresence,
+): CharacterPresence {
+  return current.state === next.state &&
+    current.status === next.status &&
+    current.accent === next.accent &&
+    current.needsYou === next.needsYou &&
+    current.workingOn === next.workingOn
+    ? current
+    : next;
+}
+
 export function deriveCharacterPresence(input: CharacterPresenceInput): CharacterPresence {
   const { agenda, now } = input;
 

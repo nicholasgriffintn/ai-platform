@@ -1,6 +1,6 @@
 import { Button, cn, LoadingSpinner } from "@ngriffin_uk/polychat-component-ui";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
-import { useElementSize } from "@ngriffin_uk/polychat-utility-react";
+import { useElementHeightVariable } from "@ngriffin_uk/polychat-utility-react";
 import { Settings2 } from "lucide-react";
 import { useLayoutEffect, useRef, useState, type ReactNode, type UIEvent } from "react";
 
@@ -35,6 +35,7 @@ const FLOATING_COMPOSER_CLASS =
   "pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col pt-24 pb-2 transition-[opacity,translate] duration-200 ease-[cubic-bezier(.2,.8,.2,1)] [background:linear-gradient(to_top,var(--background)_calc(100%-6rem),transparent)] sm:px-6 sm:pb-4 motion-reduce:transition-none";
 
 const COMPOSER_CLEARANCE = 40;
+const COMPOSER_HEIGHT_VARIABLE = "--discover-composer-height";
 
 const SCROLLED_THRESHOLD = 24;
 
@@ -120,7 +121,10 @@ export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
   const [showSettings, setShowSettings] = useState(false);
   const [showDay, setShowDay] = useState(false);
   const { greeting, today } = useDiscoverGreeting(controller.discover.data?.dayProfile?.timezone);
-  const { ref: composerRef, height: composerHeight } = useElementSize<HTMLDivElement>();
+  const { sourceRef: composerRef, targetRef: feedContentRef } = useElementHeightVariable<
+    HTMLDivElement,
+    HTMLDivElement
+  >(COMPOSER_HEIGHT_VARIABLE);
   const [scrolled, setScrolled] = useState(false);
   const { feedRef, panelRef, capture, playEntrance, open, shown, occupied } =
     useDiscoverPanelMotion(controller.panelItem);
@@ -223,10 +227,13 @@ export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
             }
           >
             <div
+              ref={feedContentRef}
               className="@container/discover flex w-full flex-col gap-10 px-4 pt-6 pb-12 sm:px-6 lg:px-16 lg:pt-8"
               style={
-                floatingComposer && composerHeight
-                  ? { paddingBottom: composerHeight + COMPOSER_CLEARANCE }
+                floatingComposer
+                  ? {
+                      paddingBottom: `calc(var(${COMPOSER_HEIGHT_VARIABLE}, 0px) + ${COMPOSER_CLEARANCE}px)`,
+                    }
                   : undefined
               }
             >

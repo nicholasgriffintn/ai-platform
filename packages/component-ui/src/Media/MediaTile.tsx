@@ -29,7 +29,7 @@ export function MediaTile({
       onClick={onSelect}
       className={cn(
         "group relative w-full overflow-hidden rounded-2xl bg-neutral-950 text-left ring-offset-2 ring-offset-canvas transition focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none active:scale-[.98] motion-reduce:active:scale-100",
-        wide ? "aspect-video" : "aspect-[var(--media-tile-aspect,4/5)]",
+        wide ? "aspect-video" : "aspect-[4/5]",
         selected && "ring-2 ring-active-work",
       )}
     >

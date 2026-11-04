@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   deriveCharacterPresence,
   deriveTeammatePresence,
+  keepCharacterPresence,
   type CharacterPresenceInput,
 } from "./presence.js";
 
@@ -105,5 +106,25 @@ describe("teammate presence", () => {
     });
     expect(deriveTeammatePresence(signal, "writer").state).toBe("work");
     expect(deriveTeammatePresence(signal, "editor").state).toBe("idle");
+  });
+});
+
+describe("keepCharacterPresence", () => {
+  const idle = {
+    state: "idle" as const,
+    status: "Ready when you are",
+    accent: null,
+    needsYou: 0,
+    workingOn: 0,
+  };
+
+  it("keeps the same object when nothing changed, so a timer tick renders nothing", () => {
+    expect(keepCharacterPresence(idle, { ...idle })).toBe(idle);
+  });
+
+  it("takes the new presence when anything changed", () => {
+    const working = { ...idle, workingOn: 1 };
+
+    expect(keepCharacterPresence(idle, working)).toBe(working);
   });
 });
