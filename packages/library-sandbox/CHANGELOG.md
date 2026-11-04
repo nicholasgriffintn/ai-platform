@@ -1,5 +1,14 @@
 # @ngriffin_uk/polychat-library-sandbox
 
+## 0.3.8
+
+### Patch Changes
+
+- Updated dependencies [7be58a1]
+- Updated dependencies [18e8453]
+  - @ngriffin_uk/polychat-utility-core@0.11.0
+  - @ngriffin_uk/polychat-utility-server@0.7.1
+
 ## 0.3.7
 
 ### Patch Changes

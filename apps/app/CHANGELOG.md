@@ -1,5 +1,37 @@
 # @assistant/app
 
+## 0.13.0
+
+### Minor Changes
+
+- 18e8453: Film and TV are now built in. Ask for something to watch and the assistant can search by title or by what a film is about, filter by genre, runtime, certificate and streaming service, and read IMDb, Rotten Tomatoes and Metacritic scores, awards, box office and per-episode ratings. It also covers anime, trailers, where to stream, rent or buy, and what is on at UK cinemas. Keep a shelf with ratings and notes, tick off episodes, follow actors and directors, and get recommendations from your taste. Discover reads your shelf and the week ahead, and tells you about new seasons, arrivals, trailers and new work from people you follow, and a new Weekly Watching Digest recipe writes up the week. This replaces the Marquee connector, which has been removed. Connect Trakt and your shelf saves and ticked episodes are sent there too, and you can bring your Trakt history onto the shelf.
+
+### Patch Changes
+
+- Updated dependencies [7be58a1]
+- Updated dependencies [7be58a1]
+- Updated dependencies [18e8453]
+- Updated dependencies [7be58a1]
+- Updated dependencies [18e8453]
+- Updated dependencies [18e8453]
+  - @ngriffin_uk/polychat-component-shell@2.9.0
+  - @ngriffin_uk/polychat-library-client@0.14.0
+  - @ngriffin_uk/polychat-library-react@0.15.0
+  - @ngriffin_uk/polychat-schemas@1.16.0
+  - @ngriffin_uk/polychat-utility-core@0.11.0
+  - @ngriffin_uk/polychat-utility-react@0.7.3
+  - @ngriffin_uk/polychat-component-conversation@2.2.5
+  - @ngriffin_uk/polychat-library-chat@1.4.2
+  - @ngriffin_uk/polychat-component-content@1.3.7
+  - @ngriffin_uk/polychat-component-account@1.1.6
+  - @ngriffin_uk/polychat-component-workspaces@1.2.0
+  - @ngriffin_uk/polychat-component-ui@0.7.3
+  - @ngriffin_uk/polychat-component-capabilities@1.0.7
+  - @ngriffin_uk/polychat-component-experiences@0.7.3
+  - @ngriffin_uk/polychat-component-models@1.2.8
+  - @ngriffin_uk/polychat-component-navigation@0.7.1
+  - @ngriffin_uk/polychat-library-realtime@0.4.2
+
 ## 0.12.0
 
 ### Minor Changes

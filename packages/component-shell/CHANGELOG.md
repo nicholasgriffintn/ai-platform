@@ -1,5 +1,48 @@
 # @ngriffin_uk/polychat-component-shell
 
+## 2.9.0
+
+### Minor Changes
+
+- 7be58a1: Make Discover fit your day with editable weekly routines, dated exceptions, catch-up times, interests and mutes. See current context and a continuous feed with visible-story read receipts, and schedule morning and evening podcasts independently. Use TfL for optional London travel updates and connect OpenWeather for weather, then opt into quiet, budgeted updates in your shared Inbox and on your devices. Configure Your day directly or ask Poly to update it.
+
+  Read place matches directly in Poly without duplicate tool messages, and stop a response after answering a setup question.
+
+  Prevent Discover and Poly from crashing during interface updates.
+
+  Keep stories removed from the live feed from reappearing through an older briefing on web, iOS and widgets.
+
+- 18e8453: Connect Pashi to your Polychat account. Approve Pashi in Polychat and it runs its AI on your plan and your default models, with a key that cannot reach your chats, projects or files. Polychat can then use Pashi tools for you, and on Pro that includes converting images, audio, video and documents from your chat. Connecting again replaces the old key, and you can revoke it from Profile or disconnect from Pashi. Device sign-in now tells you when a name comes from the device itself, so Polychat cannot vouch for it.
+
+### Patch Changes
+
+- 7be58a1: Use your default model for Poly and keep teammate replies on their configured models. Model and tier choices now stay separate between chats, notebook and file conversations respect selected models, and evaluations and benchmark judges follow your personal and workspace model choices.
+- Updated dependencies [7be58a1]
+- Updated dependencies [7be58a1]
+- Updated dependencies [18e8453]
+- Updated dependencies [7be58a1]
+- Updated dependencies [18e8453]
+- Updated dependencies [18e8453]
+  - @ngriffin_uk/polychat-library-client@0.14.0
+  - @ngriffin_uk/polychat-library-react@0.15.0
+  - @ngriffin_uk/polychat-schemas@1.16.0
+  - @ngriffin_uk/polychat-utility-core@0.11.0
+  - @ngriffin_uk/polychat-utility-react@0.7.3
+  - @ngriffin_uk/polychat-component-conversation@2.2.5
+  - @ngriffin_uk/polychat-library-chat@1.4.2
+  - @ngriffin_uk/polychat-component-content@1.3.7
+  - @ngriffin_uk/polychat-component-account@1.1.6
+  - @ngriffin_uk/polychat-component-workspaces@1.2.0
+  - @ngriffin_uk/polychat-component-ui@0.7.3
+  - @ngriffin_uk/polychat-component-capabilities@1.0.7
+  - @ngriffin_uk/polychat-component-experiences@0.7.3
+  - @ngriffin_uk/polychat-component-models@1.2.8
+  - @ngriffin_uk/polychat-component-navigation@0.7.1
+  - @ngriffin_uk/polychat-component-sites@0.2.9
+  - @ngriffin_uk/polychat-library-model-registry@0.3.7
+  - @ngriffin_uk/polychat-library-realtime@0.4.2
+  - @ngriffin_uk/polychat-library-sites@0.3.7
+
 ## 2.8.0
 
 ### Minor Changes

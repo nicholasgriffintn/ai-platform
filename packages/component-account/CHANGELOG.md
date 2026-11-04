@@ -1,5 +1,32 @@
 # @ngriffin_uk/polychat-component-account
 
+## 1.1.6
+
+### Patch Changes
+
+- 7be58a1: Make Discover fit your day with editable weekly routines, dated exceptions, catch-up times, interests and mutes. See current context and a continuous feed with visible-story read receipts, and schedule morning and evening podcasts independently. Use TfL for optional London travel updates and connect OpenWeather for weather, then opt into quiet, budgeted updates in your shared Inbox and on your devices. Configure Your day directly or ask Poly to update it.
+
+  Read place matches directly in Poly without duplicate tool messages, and stop a response after answering a setup question.
+
+  Prevent Discover and Poly from crashing during interface updates.
+
+  Keep stories removed from the live feed from reappearing through an older briefing on web, iOS and widgets.
+
+- 7be58a1: Choose Follow the tier in Sandbox coding to clear a previously selected model. The setting now saves correctly and restores tier-based selection.
+- Updated dependencies [7be58a1]
+- Updated dependencies [7be58a1]
+- Updated dependencies [18e8453]
+- Updated dependencies [7be58a1]
+- Updated dependencies [18e8453]
+  - @ngriffin_uk/polychat-library-client@0.14.0
+  - @ngriffin_uk/polychat-library-react@0.15.0
+  - @ngriffin_uk/polychat-schemas@1.16.0
+  - @ngriffin_uk/polychat-utility-core@0.11.0
+  - @ngriffin_uk/polychat-utility-react@0.7.3
+  - @ngriffin_uk/polychat-component-ui@0.7.3
+  - @ngriffin_uk/polychat-component-capabilities@1.0.7
+  - @ngriffin_uk/polychat-component-models@1.2.8
+
 ## 1.1.5
 
 ### Patch Changes
