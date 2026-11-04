@@ -1,15 +1,35 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, readRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { fetchJson } from "@ngriffin_uk/polychat-utility-server/http";
 
-import type { EpisodeRef, SeasonSize } from "~/modules/watching/domain/episodes";
-import {
-  DEFAULT_REGION,
-  formatTitleId,
-  readReleaseYear,
-  type MediaType,
-  type TitleRef,
-  type TitleSummary,
-} from "~/modules/watching/domain/titles";
+export const MEDIA_TYPES = ["movie", "tv"] as const;
+export const DEFAULT_REGION = "GB";
+
+export type MediaType = (typeof MEDIA_TYPES)[number];
+
+export interface TitleRef {
+  mediaType: MediaType;
+  tmdbId: number;
+}
+
+export interface TmdbTitleSummary {
+  id: string;
+  title: string;
+  year: number | null;
+  mediaType: MediaType;
+  overview: string;
+  tmdbScore: number | null;
+}
+
+export interface TmdbEpisodeRef {
+  season: number;
+  episode: number;
+}
+
+export interface TmdbSeasonSize {
+  season: number;
+  episodes: number;
+}
 
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_TIMEOUT_MS = 10_000;
@@ -39,6 +59,16 @@ export interface TmdbDiscoverFilters {
   maxCertification?: string;
 }
 
+export function formatTitleId(ref: TitleRef): string {
+  return `${ref.mediaType}:${ref.tmdbId}`;
+}
+
+export function readReleaseYear(date: string | null | undefined): number | null {
+  const year = Number(date?.slice(0, 4));
+
+  return Number.isInteger(year) && year > 0 ? year : null;
+}
+
 async function requestTmdb(
   token: string,
   path: string,
@@ -48,32 +78,13 @@ async function requestTmdb(
 
   url.search = new URLSearchParams(params).toString();
 
-  const response = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-    signal: AbortSignal.timeout(TMDB_TIMEOUT_MS),
-  });
-
-  if (response.status === 404) {
-    await response.body?.cancel();
-    throw new AssistantError("TMDB has no such record", ErrorType.NOT_FOUND, 404);
-  }
-
-  if (!response.ok) {
-    await response.body?.cancel();
-    throw new AssistantError(
-      `TMDB answered with ${response.status}`,
-      ErrorType.EXTERNAL_API_ERROR,
-      502,
-    );
-  }
-
-  const payload: unknown = await response.json();
-
-  if (!isRecord(payload)) {
-    throw new AssistantError("TMDB returned an invalid payload", ErrorType.EXTERNAL_API_ERROR, 502);
-  }
-
-  return payload;
+  return readRecord(
+    await fetchJson(url, {
+      service: "TMDB",
+      headers: { Authorization: `Bearer ${token}` },
+      timeoutMs: TMDB_TIMEOUT_MS,
+    }),
+  );
 }
 
 function readRecords(value: unknown): Record<string, unknown>[] {
@@ -87,7 +98,7 @@ function readString(value: unknown): string {
 function readSummary(
   entry: Record<string, unknown>,
   fallbackType?: MediaType,
-): TitleSummary | null {
+): TmdbTitleSummary | null {
   const mediaType =
     entry.media_type === "movie" || entry.media_type === "tv" ? entry.media_type : fallbackType;
 
@@ -107,7 +118,7 @@ function readSummary(
   };
 }
 
-function readSummaries(value: unknown, fallbackType?: MediaType): TitleSummary[] {
+function readSummaries(value: unknown, fallbackType?: MediaType): TmdbTitleSummary[] {
   return readRecords(value).flatMap((entry) => readSummary(entry, fallbackType) ?? []);
 }
 
@@ -173,7 +184,7 @@ function readKeywords(details: Record<string, unknown>): string[] {
   );
 }
 
-function readSeasonSizes(details: Record<string, unknown>): SeasonSize[] {
+function readSeasonSizes(details: Record<string, unknown>): TmdbSeasonSize[] {
   return readRecords(details.seasons).flatMap((entry) =>
     typeof entry.season_number === "number" && typeof entry.episode_count === "number"
       ? [{ season: entry.season_number, episodes: entry.episode_count }]
@@ -181,7 +192,7 @@ function readSeasonSizes(details: Record<string, unknown>): SeasonSize[] {
   );
 }
 
-function readLastAired(details: Record<string, unknown>): EpisodeRef | null {
+function readLastAired(details: Record<string, unknown>): TmdbEpisodeRef | null {
   const last = details.last_episode_to_air;
 
   return isRecord(last) &&

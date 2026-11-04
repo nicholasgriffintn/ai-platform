@@ -1,9 +1,9 @@
+import { fetchTmdbTitle, searchTmdbPerson } from "@ngriffin_uk/polychat-ai-integrations";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { listRecentEntries, saveShelfEntry, setShelfFollow } from "~/modules/watching/domain/shelf";
 import type { ViewingStatus } from "~/modules/watching/domain/titles";
-import { fetchTmdbTitle, searchTmdbPerson } from "~/modules/watching/infrastructure/tmdb-client";
 
 import { requireTitleRef, requireTmdbToken } from "./catalogue";
 import { readShelfContent, updateShelfContent } from "./shelf-store";

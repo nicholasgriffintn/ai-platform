@@ -1,3 +1,5 @@
+import { fetchTmdbTitle } from "@ngriffin_uk/polychat-ai-integrations";
+
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
   isEpisodeAtOrAfter,
@@ -6,7 +8,6 @@ import {
   type EpisodeRef,
 } from "~/modules/watching/domain/episodes";
 import { findShelfEntry, saveShelfEntry, saveShelfEpisodes } from "~/modules/watching/domain/shelf";
-import { fetchTmdbTitle } from "~/modules/watching/infrastructure/tmdb-client";
 
 import { requireTitleRef, requireTmdbToken } from "./catalogue";
 import { readShelfContent, updateShelfContent } from "./shelf-store";

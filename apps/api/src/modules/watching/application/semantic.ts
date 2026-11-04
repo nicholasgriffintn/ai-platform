@@ -1,3 +1,4 @@
+import { fetchTmdbTitle } from "@ngriffin_uk/polychat-ai-integrations";
 import { chunkArray } from "@ngriffin_uk/polychat-utility-core";
 import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -11,7 +12,6 @@ import {
   type TitleRef,
   type TitleSummary,
 } from "~/modules/watching/domain/titles";
-import { fetchTmdbTitle } from "~/modules/watching/infrastructure/tmdb-client";
 
 import { requireTmdbToken, withScores } from "./catalogue";
 import { readShelfContent } from "./shelf-store";

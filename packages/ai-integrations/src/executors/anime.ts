@@ -1,5 +1,5 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
-import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { fetchJson } from "@ngriffin_uk/polychat-utility-server/http";
 
 const ANILIST_URL = "https://graphql.anilist.co";
 const MAL_BASE_URL = "https://api.myanimelist.net/v2/anime";
@@ -105,23 +105,11 @@ function readAnime(entry: Record<string, unknown>): AnimeSummary | null {
 }
 
 export async function searchAniList(query: string, limit: number): Promise<AnimeSummary[]> {
-  const response = await fetch(ANILIST_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ query: SEARCH_QUERY, variables: { search: query, perPage: limit } }),
-    signal: AbortSignal.timeout(ANIME_TIMEOUT_MS),
+  const payload = await fetchJson(ANILIST_URL, {
+    service: "AniList",
+    body: { query: SEARCH_QUERY, variables: { search: query, perPage: limit } },
+    timeoutMs: ANIME_TIMEOUT_MS,
   });
-
-  if (!response.ok) {
-    await response.body?.cancel();
-    throw new AssistantError(
-      `AniList answered with ${response.status}`,
-      ErrorType.EXTERNAL_API_ERROR,
-      502,
-    );
-  }
-
-  const payload: unknown = await response.json();
   const data = isRecord(payload) && isRecord(payload.data) ? payload.data : {};
   const page = isRecord(data.Page) ? data.Page : {};
 
@@ -129,18 +117,11 @@ export async function searchAniList(query: string, limit: number): Promise<Anime
 }
 
 export async function fetchMalScores(clientId: string, malId: number) {
-  const response = await fetch(`${MAL_BASE_URL}/${malId}?fields=mean,rank`, {
-    headers: { "X-MAL-CLIENT-ID": clientId, Accept: "application/json" },
-    signal: AbortSignal.timeout(ANIME_TIMEOUT_MS),
+  const payload = await fetchJson(`${MAL_BASE_URL}/${malId}?fields=mean,rank`, {
+    service: "MyAnimeList",
+    headers: { "X-MAL-CLIENT-ID": clientId },
+    timeoutMs: ANIME_TIMEOUT_MS,
   });
-
-  if (!response.ok) {
-    await response.body?.cancel();
-
-    return null;
-  }
-
-  const payload: unknown = await response.json();
 
   return isRecord(payload)
     ? { malScore: readNumber(payload.mean), malRank: readNumber(payload.rank) }

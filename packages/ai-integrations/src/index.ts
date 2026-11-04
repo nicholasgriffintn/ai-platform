@@ -105,6 +105,42 @@ export { executeHardcoverOperation } from "./executors/hardcover.js";
 export { executePodcastIndexOperation } from "./executors/podcastindex.js";
 export { executeOuraOperation } from "./executors/oura.js";
 export { executeAudiobookshelfOperation } from "./executors/audiobookshelf.js";
+export { fetchMalScores, searchAniList, type AnimeSummary } from "./executors/anime.js";
+export {
+  fetchOmdbSeason,
+  fetchOmdbTitle,
+  searchOmdb,
+  type OmdbEpisode,
+  type OmdbSearchResult,
+  type OmdbTitle,
+} from "./executors/omdb.js";
+export {
+  DEFAULT_REGION,
+  discoverTmdbTitles,
+  fetchTmdbGenres,
+  fetchTmdbImdbId,
+  fetchTmdbPersonCredits,
+  fetchTmdbProviders,
+  fetchTmdbRecentTitleIds,
+  fetchTmdbRecommendations,
+  fetchTmdbReleases,
+  fetchTmdbTitle,
+  findTmdbTitleByImdbId,
+  formatTitleId,
+  MEDIA_TYPES,
+  readReleaseYear,
+  searchTmdbPerson,
+  searchTmdbTitles,
+  type MediaType,
+  type TitleRef,
+  type TmdbDiscoverFilters,
+  type TmdbEpisodeRef,
+  type TmdbNamedId,
+  type TmdbSeasonSize,
+  type TmdbTitleSummary,
+} from "./executors/tmdb.js";
+export { fetchTvmazeNextEpisode, type TvmazeNextEpisode } from "./executors/tvmaze.js";
+export { fetchTitleBackground, type TitleBackground } from "./executors/wikidata.js";
 export {
   COMPOSIO_CONNECTOR_SESSION_HANDLE_PATTERN,
   configuredComposioToolkits,

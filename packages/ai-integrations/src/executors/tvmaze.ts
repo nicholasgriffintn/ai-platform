@@ -1,4 +1,5 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { fetchJson } from "@ngriffin_uk/polychat-utility-server/http";
 
 const TVMAZE_BASE_URL = "https://api.tvmaze.com";
 const TVMAZE_TIMEOUT_MS = 10_000;
@@ -12,18 +13,10 @@ export interface TvmazeNextEpisode {
 }
 
 async function requestTvmaze(path: string): Promise<Record<string, unknown> | null> {
-  const response = await fetch(`${TVMAZE_BASE_URL}${path}`, {
-    headers: { Accept: "application/json" },
-    signal: AbortSignal.timeout(TVMAZE_TIMEOUT_MS),
-  });
-
-  if (!response.ok) {
-    await response.body?.cancel();
-
-    return null;
-  }
-
-  const payload: unknown = await response.json();
+  const payload = await fetchJson(`${TVMAZE_BASE_URL}${path}`, {
+    service: "TVmaze",
+    timeoutMs: TVMAZE_TIMEOUT_MS,
+  }).catch(() => null);
 
   return isRecord(payload) ? payload : null;
 }

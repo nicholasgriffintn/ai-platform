@@ -1,5 +1,5 @@
 import { isRecord, readFiniteNumber, readNonEmptyString } from "@ngriffin_uk/polychat-utility-core";
-import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { fetchJson } from "@ngriffin_uk/polychat-utility-server/http";
 
 import { formatTitleId } from "~/modules/watching/domain/titles";
 
@@ -59,23 +59,14 @@ export async function fetchTrailers(apiKey: string | undefined, feed: TrailerFee
 
   url.search = new URLSearchParams({ language: "en", limit: KINOCHECK_PAGE_SIZE }).toString();
 
-  const response = await fetch(url, {
+  const payload = await fetchJson(url, {
+    service: "KinoCheck",
     headers: {
-      Accept: "application/json",
       "x-api-host": "api.kinocheck.com",
       ...(apiKey ? { "x-api-key": apiKey } : {}),
     },
-    signal: AbortSignal.timeout(KINOCHECK_TIMEOUT_MS),
+    timeoutMs: KINOCHECK_TIMEOUT_MS,
   });
 
-  if (!response.ok) {
-    await response.body?.cancel();
-    throw new AssistantError(
-      `KinoCheck answered with ${response.status}`,
-      ErrorType.EXTERNAL_API_ERROR,
-      502,
-    );
-  }
-
-  return readEntries(await response.json()).flatMap((entry) => readTrailer(entry) ?? []);
+  return readEntries(payload).flatMap((entry) => readTrailer(entry) ?? []);
 }

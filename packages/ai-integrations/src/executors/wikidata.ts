@@ -1,7 +1,7 @@
 import { isRecord, readArray, readNonEmptyString } from "@ngriffin_uk/polychat-utility-core";
-import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { fetchJson } from "@ngriffin_uk/polychat-utility-server/http";
 
-import type { TitleRef } from "~/modules/watching/domain/titles";
+import type { TitleRef } from "./tmdb.js";
 
 const WIKIDATA_SPARQL_URL = "https://query.wikidata.org/sparql";
 const WIKIDATA_TIMEOUT_MS = 20_000;
@@ -37,21 +37,11 @@ export async function fetchTitleBackground(ref: TitleRef): Promise<TitleBackgrou
 
   url.search = new URLSearchParams({ query: backgroundQuery(ref), format: "json" }).toString();
 
-  const response = await fetch(url, {
+  const payload = await fetchJson(url, {
+    service: "Wikidata",
     headers: { Accept: "application/sparql-results+json", "User-Agent": "Polychat/1.0" },
-    signal: AbortSignal.timeout(WIKIDATA_TIMEOUT_MS),
+    timeoutMs: WIKIDATA_TIMEOUT_MS,
   });
-
-  if (!response.ok) {
-    await response.body?.cancel();
-    throw new AssistantError(
-      `Wikidata answered with ${response.status}`,
-      ErrorType.EXTERNAL_API_ERROR,
-      502,
-    );
-  }
-
-  const payload: unknown = await response.json();
   const results = isRecord(payload) && isRecord(payload.results) ? payload.results : {};
   const background: TitleBackground = { basedOn: [], filmingLocation: [], award: [] };
 

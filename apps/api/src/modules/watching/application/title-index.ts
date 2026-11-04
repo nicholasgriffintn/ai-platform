@@ -1,3 +1,4 @@
+import { fetchTmdbRecentTitleIds, fetchTmdbTitle } from "@ngriffin_uk/polychat-ai-integrations";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { chunkArray } from "@ngriffin_uk/polychat-utility-core";
 import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
@@ -5,10 +6,6 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { buildEmbeddingText } from "~/modules/watching/domain/title-index";
 import { parseTitleId, type TitleRef } from "~/modules/watching/domain/titles";
-import {
-  fetchTmdbRecentTitleIds,
-  fetchTmdbTitle,
-} from "~/modules/watching/infrastructure/tmdb-client";
 import type { IEnv } from "~/types";
 
 export const EMBEDDING_MODEL = "@cf/baai/bge-m3";

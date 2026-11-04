@@ -335,7 +335,7 @@ export function formatWhatsOn(input: {
     "**From your shelf**",
     input.shelf.length > 0
       ? formatWeekAhead(input.shelf)
-      : `Nothing from your shelf in the next ${input.days} days.`,
+      : `Nothing from your shelf in the next ${input.days === 1 ? "day" : `${input.days} days`}.`,
     "",
     ...formatReleaseList("New films", input.films),
     ...formatReleaseList("Series with new episodes", input.series),

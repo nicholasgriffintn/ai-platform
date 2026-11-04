@@ -1,6 +1,8 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { fetchJson } from "@ngriffin_uk/polychat-utility-server/http";
 
-import type { MediaType, TitleScores } from "./titles";
+import type { MediaType } from "./tmdb.js";
 
 const IMDB_ID_PATTERN = /^tt\d+$/u;
 const NOT_FOUND_ERRORS = [
@@ -11,7 +13,11 @@ const NOT_FOUND_ERRORS = [
   "too many results",
 ];
 
-export interface OmdbTitle extends TitleScores {
+export interface OmdbTitle {
+  imdbRating: number | null;
+  imdbVotes: number | null;
+  rottenTomatoes: string | null;
+  metascore: number | null;
   imdbId: string | null;
   title: string;
   year: number | null;
@@ -43,7 +49,7 @@ export interface OmdbSearchResult {
   mediaType: MediaType;
 }
 
-export type OmdbAnswer =
+type OmdbAnswer =
   | { kind: "found"; payload: Record<string, unknown> }
   | { kind: "missing" }
   | { kind: "limited" }
@@ -104,7 +110,7 @@ function readRuntime(value: unknown): number | null {
   return match ? Number(match[1]) : null;
 }
 
-export function classifyOmdbAnswer(payload: unknown): OmdbAnswer {
+function classifyOmdbAnswer(payload: unknown): OmdbAnswer {
   if (!isRecord(payload)) {
     return { kind: "failed", message: "OMDb returned an invalid payload" };
   }
@@ -125,7 +131,7 @@ export function classifyOmdbAnswer(payload: unknown): OmdbAnswer {
     : { kind: "failed", message: `OMDb reported an error: ${error.slice(0, 200)}` };
 }
 
-export function readOmdbTitle(payload: Record<string, unknown>): OmdbTitle {
+function readOmdbTitle(payload: Record<string, unknown>): OmdbTitle {
   return {
     imdbId: readImdbId(payload.imdbID),
     title: readText(payload.Title) ?? "",
@@ -148,7 +154,7 @@ export function readOmdbTitle(payload: Record<string, unknown>): OmdbTitle {
   };
 }
 
-export function readOmdbEpisodes(payload: Record<string, unknown>): OmdbEpisode[] {
+function readOmdbEpisodes(payload: Record<string, unknown>): OmdbEpisode[] {
   const episodes = Array.isArray(payload.Episodes) ? payload.Episodes : [];
 
   return episodes.flatMap((entry): OmdbEpisode[] => {
@@ -170,7 +176,7 @@ export function readOmdbEpisodes(payload: Record<string, unknown>): OmdbEpisode[
   });
 }
 
-export function readOmdbSearch(payload: Record<string, unknown>): OmdbSearchResult[] {
+function readOmdbSearch(payload: Record<string, unknown>): OmdbSearchResult[] {
   const results = Array.isArray(payload.Search) ? payload.Search : [];
 
   return results.flatMap((entry): OmdbSearchResult[] => {
@@ -183,4 +189,52 @@ export function readOmdbSearch(payload: Record<string, unknown>): OmdbSearchResu
 
     return [{ imdbId, title, year: readYear(entry.Year), mediaType: readMediaType(entry.Type) }];
   });
+}
+
+const OMDB_URL = "https://www.omdbapi.com/";
+const OMDB_TIMEOUT_MS = 10_000;
+
+async function requestOmdb(
+  apiKey: string,
+  params: Record<string, string>,
+): Promise<Record<string, unknown> | null> {
+  const url = new URL(OMDB_URL);
+
+  url.search = new URLSearchParams({ apikey: apiKey, ...params }).toString();
+
+  const answer = classifyOmdbAnswer(
+    await fetchJson(url, { service: "OMDb", timeoutMs: OMDB_TIMEOUT_MS }),
+  );
+
+  if (answer.kind === "limited") {
+    throw new AssistantError("OMDb request limit reached", ErrorType.RATE_LIMIT_ERROR, 429);
+  }
+
+  if (answer.kind === "failed") {
+    throw new AssistantError(answer.message, ErrorType.EXTERNAL_API_ERROR, 502);
+  }
+
+  return answer.kind === "found" ? answer.payload : null;
+}
+
+function omdbType(mediaType: MediaType | undefined): Record<string, string> {
+  return mediaType ? { type: mediaType === "tv" ? "series" : "movie" } : {};
+}
+
+export async function fetchOmdbTitle(apiKey: string, imdbId: string) {
+  const payload = await requestOmdb(apiKey, { i: imdbId, plot: "full" });
+
+  return payload ? readOmdbTitle(payload) : null;
+}
+
+export async function fetchOmdbSeason(apiKey: string, imdbId: string, season: number) {
+  const payload = await requestOmdb(apiKey, { i: imdbId, Season: String(season) });
+
+  return payload ? readOmdbEpisodes(payload) : [];
+}
+
+export async function searchOmdb(apiKey: string, query: string, mediaType?: MediaType) {
+  const payload = await requestOmdb(apiKey, { s: query.slice(0, 120), ...omdbType(mediaType) });
+
+  return payload ? readOmdbSearch(payload) : [];
 }

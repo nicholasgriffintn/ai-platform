@@ -1,3 +1,22 @@
+import {
+  discoverTmdbTitles,
+  fetchMalScores,
+  fetchOmdbSeason,
+  fetchOmdbTitle,
+  fetchTmdbGenres,
+  fetchTmdbImdbId,
+  fetchTmdbPersonCredits,
+  fetchTmdbProviders,
+  fetchTmdbRecommendations,
+  fetchTmdbTitle,
+  findTmdbTitleByImdbId,
+  type OmdbTitle,
+  searchAniList,
+  searchOmdb,
+  searchTmdbPerson,
+  searchTmdbTitles,
+  type TmdbNamedId,
+} from "@ngriffin_uk/polychat-ai-integrations";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 import {
@@ -7,7 +26,6 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import type { OmdbTitle } from "~/modules/watching/domain/omdb";
 import {
   DEFAULT_REGION,
   parseTitleId,
@@ -16,25 +34,6 @@ import {
   type TitleRef,
   type TitleSummary,
 } from "~/modules/watching/domain/titles";
-import { fetchMalScores, searchAniList } from "~/modules/watching/infrastructure/anime-client";
-import {
-  fetchOmdbSeason,
-  fetchOmdbTitle,
-  searchOmdb,
-} from "~/modules/watching/infrastructure/omdb-client";
-import {
-  discoverTmdbTitles,
-  fetchTmdbGenres,
-  fetchTmdbImdbId,
-  fetchTmdbPersonCredits,
-  fetchTmdbProviders,
-  fetchTmdbRecommendations,
-  fetchTmdbTitle,
-  findTmdbTitleByImdbId,
-  searchTmdbPerson,
-  searchTmdbTitles,
-  type TmdbNamedId,
-} from "~/modules/watching/infrastructure/tmdb-client";
 
 const logger = getLogger({ prefix: "watching/catalogue" });
 const SCORED_TITLE_LIMIT = 12;

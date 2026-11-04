@@ -4,6 +4,7 @@
 "@ngriffin_uk/polychat-schemas": minor
 "@ngriffin_uk/polychat-ai-prompts": patch
 "@ngriffin_uk/polychat-library-tools": patch
+"@ngriffin_uk/polychat-utility-server": patch
 "@ngriffin_uk/polychat-library-prompts-catalogue": patch
 ---
 

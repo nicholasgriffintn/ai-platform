@@ -1,3 +1,9 @@
+import {
+  fetchTmdbPersonCredits,
+  fetchTmdbReleases,
+  fetchTmdbTitle,
+  fetchTvmazeNextEpisode,
+} from "@ngriffin_uk/polychat-ai-integrations";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -27,12 +33,6 @@ import {
   type UpdatesContent,
 } from "~/modules/watching/domain/updates";
 import { fetchTrailers } from "~/modules/watching/infrastructure/kinocheck-client";
-import {
-  fetchTmdbPersonCredits,
-  fetchTmdbReleases,
-  fetchTmdbTitle,
-} from "~/modules/watching/infrastructure/tmdb-client";
-import { fetchTvmazeNextEpisode } from "~/modules/watching/infrastructure/tvmaze-client";
 
 import { requireTmdbToken } from "./catalogue";
 import {

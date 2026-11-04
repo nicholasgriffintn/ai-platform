@@ -1,3 +1,5 @@
+import { fetchTitleBackground, fetchTmdbTitle } from "@ngriffin_uk/polychat-ai-integrations";
+
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { TitleRef } from "~/modules/watching/domain/titles";
 import { fetchWatchOffers } from "~/modules/watching/infrastructure/justwatch-client";
@@ -5,8 +7,6 @@ import {
   fetchTrailers,
   type TrailerFeed,
 } from "~/modules/watching/infrastructure/kinocheck-client";
-import { fetchTmdbTitle } from "~/modules/watching/infrastructure/tmdb-client";
-import { fetchTitleBackground } from "~/modules/watching/infrastructure/wikidata-client";
 
 import { requireTitleRef, requireTmdbToken } from "./catalogue";
 

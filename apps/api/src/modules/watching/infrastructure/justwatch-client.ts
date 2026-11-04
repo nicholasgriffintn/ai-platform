@@ -4,7 +4,7 @@ import {
   readFiniteNumber,
   readNonEmptyString,
 } from "@ngriffin_uk/polychat-utility-core";
-import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { fetchJson } from "@ngriffin_uk/polychat-utility-server/http";
 
 import type { MediaType } from "~/modules/watching/domain/titles";
 
@@ -69,10 +69,9 @@ export async function fetchWatchOffers(input: {
   title: string;
   region: string;
 }): Promise<WatchOffer[]> {
-  const response = await fetch(JUSTWATCH_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  const payload = await fetchJson(JUSTWATCH_URL, {
+    service: "JustWatch",
+    body: {
       operationName: "TitleOffers",
       query: OFFERS_QUERY,
       variables: {
@@ -85,20 +84,9 @@ export async function fetchWatchOffers(input: {
           objectTypes: [input.mediaType === "movie" ? "MOVIE" : "SHOW"],
         },
       },
-    }),
-    signal: AbortSignal.timeout(JUSTWATCH_TIMEOUT_MS),
+    },
+    timeoutMs: JUSTWATCH_TIMEOUT_MS,
   });
-
-  if (!response.ok) {
-    await response.body?.cancel();
-    throw new AssistantError(
-      `JustWatch answered with ${response.status}`,
-      ErrorType.EXTERNAL_API_ERROR,
-      502,
-    );
-  }
-
-  const payload: unknown = await response.json();
   const data = isRecord(payload) && isRecord(payload.data) ? payload.data : {};
   const titles = isRecord(data.popularTitles) ? data.popularTitles : {};
   const match = readArray(titles.edges)

@@ -1,9 +1,11 @@
+import { AssistantError, ErrorType } from "./errors.js";
 import { safeParseJson } from "./json.js";
 import { isPrivateHostname } from "./urls.js";
 
 const BEARER_CREDENTIAL = /^Bearer +([A-Za-z0-9._~+/-]+=*)$/i;
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 const MAX_REDIRECTS = 5;
+const DEFAULT_JSON_TIMEOUT_MS = 15_000;
 
 export class UnsafeUrlError extends Error {
   constructor(_url: string) {
@@ -281,4 +283,45 @@ export function parseByteRange(header: string | null | undefined, size: number):
   const end = match[2] ? Math.min(Number(match[2]), size - 1) : size - 1;
 
   return start <= end && start < size ? { start, end } : null;
+}
+
+export interface FetchJsonOptions {
+  service: string;
+  method?: string;
+  headers?: Record<string, string>;
+  body?: unknown;
+  timeoutMs?: number;
+}
+
+function jsonRequestError(service: string, status: number): AssistantError {
+  const message = `${service} answered with ${status}`;
+
+  if (status === 404) {
+    return new AssistantError(message, ErrorType.NOT_FOUND, 404);
+  }
+
+  return status === 429
+    ? new AssistantError(message, ErrorType.RATE_LIMIT_ERROR, 429)
+    : new AssistantError(message, ErrorType.EXTERNAL_API_ERROR, 502);
+}
+
+export async function fetchJson(url: string | URL, options: FetchJsonOptions): Promise<unknown> {
+  const hasBody = options.body !== undefined;
+  const response = await fetch(url, {
+    method: options.method ?? (hasBody ? "POST" : "GET"),
+    headers: {
+      Accept: "application/json",
+      ...(hasBody ? { "Content-Type": "application/json" } : {}),
+      ...options.headers,
+    },
+    ...(hasBody ? { body: JSON.stringify(options.body) } : {}),
+    signal: AbortSignal.timeout(options.timeoutMs ?? DEFAULT_JSON_TIMEOUT_MS),
+  });
+
+  if (!response.ok) {
+    await response.body?.cancel();
+    throw jsonRequestError(options.service, response.status);
+  }
+
+  return response.json();
 }

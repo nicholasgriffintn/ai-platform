@@ -150,7 +150,7 @@
     {
       "binding": "TELEMETRY_STREAM",
       "stream": "<TELEMETRY_STREAM_ID>",
-      "remote": true
+      "remote": false
     }
   ],
   "r2_buckets": [
