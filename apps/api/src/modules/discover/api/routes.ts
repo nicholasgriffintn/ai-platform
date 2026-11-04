@@ -70,6 +70,7 @@ import {
   saveDiscoverHealthSummary,
 } from "~/modules/discover/application/health";
 import { readHouseEdition } from "~/modules/discover/application/house-edition";
+import { readDiscoverItemImage } from "~/modules/discover/application/item-image";
 import { requestDiscoverListen } from "~/modules/discover/application/listen";
 import {
   dismissDiscoverItem,
@@ -199,6 +200,16 @@ addRoute(app, "get", "/covers/:cover_id", {
   responses: { 200: { description: "Cover image" } },
   handler: async ({ serviceContext, params, raw }) =>
     readDiscoverCover(serviceContext, params.cover_id, raw.req.header("range")),
+});
+
+addRoute(app, "get", "/feed/:item_id/image", {
+  tags: ["discover"],
+  summary: "Download a story's image",
+  auth: true,
+  paramSchema: discoverFeedItemParamsSchema,
+  responses: { 200: { description: "Story image" } },
+  handler: async ({ serviceContext, params }) =>
+    readDiscoverItemImage(serviceContext, params.item_id),
 });
 
 addRoute(app, "patch", "/settings", {

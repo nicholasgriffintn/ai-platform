@@ -40,6 +40,8 @@ export interface DiscoverResearchResult {
   source?: string;
   date?: string;
   media?: DiscoverResultMedia;
+  image?: string;
+  discussion?: string;
 }
 
 function readResultMedia(value: unknown): DiscoverResultMedia | undefined {
@@ -93,6 +95,8 @@ export function readResearchResults(value: unknown): DiscoverResearchResult[] {
             ...(typeof entry.source === "string" ? { source: entry.source } : {}),
             ...(typeof entry.date === "string" ? { date: entry.date } : {}),
             ...(readResultMedia(entry.media) ? { media: readResultMedia(entry.media) } : {}),
+            ...(typeof entry.image === "string" ? { image: entry.image } : {}),
+            ...(typeof entry.discussion === "string" ? { discussion: entry.discussion } : {}),
           },
         ]
       : [],

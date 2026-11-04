@@ -14,7 +14,6 @@ import { useState, type ReactNode } from "react";
 
 import { episodeCoverUrl } from "../Episode/episode-cover.js";
 import { episodeStatus } from "../Episode/episode-status.js";
-import { DISCOVER_SHELF_VISIBLE, DiscoverSection } from "./DiscoverSection.js";
 import { discoverTopicGradient } from "./DiscoverTopicTile.js";
 import { PERCH_GRADIENT, WEEK_GRADIENT } from "./media/discover-art.js";
 import { listenStatus, windDownStatus, type DiscoverMedia } from "./media/media-status.js";
@@ -150,18 +149,9 @@ export function DiscoverMediaShelf({
     }
   };
 
-  return (
-    <DiscoverSection
-      title="Watch and listen"
-      kind="posters"
-      count={media.length}
-      maxVisible={DISCOVER_SHELF_VISIBLE.watch}
-    >
-      {media.map((entry) => (
-        <div key={entry} data-discover-item={`media:${entry}`} className="flex">
-          {tile(entry)}
-        </div>
-      ))}
-    </DiscoverSection>
-  );
+  return media.map((entry) => (
+    <div key={entry} data-discover-item={`media:${entry}`} className="flex">
+      {tile(entry)}
+    </div>
+  ));
 }

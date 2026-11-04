@@ -91,7 +91,7 @@ export interface DiscoverSettingsDialogProps {
 
 function describeSourceHealth(source: DiscoverSettings["sources"][number]): string {
   if (source.lastError) {
-    return `Could not be read: ${source.lastError}`;
+    return source.lastError;
   }
 
   if (source.lastReadAt) {

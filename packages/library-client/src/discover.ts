@@ -88,6 +88,10 @@ export function getDiscoverCover(coverId: string): Promise<Blob> {
   return requestBlob(`/discover/covers/${encodeURIComponent(coverId)}`);
 }
 
+export function getDiscoverItemImage(itemId: string): Promise<Blob> {
+  return requestBlob(`/discover/feed/${encodeURIComponent(itemId)}/image`);
+}
+
 export function followDiscoverTopic(topic: string): Promise<DiscoverFollow> {
   return requestJson("/discover/follows", "POST", { topic });
 }

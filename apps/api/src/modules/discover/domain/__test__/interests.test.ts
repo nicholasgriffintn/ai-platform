@@ -83,6 +83,35 @@ function choose(overrides: Partial<Parameters<typeof chooseResearchTopics>[0]> =
   });
 }
 
+describe("chooseResearchTopics listening interests", () => {
+  it("leaves artists known only from Last.fm to the new music lookup", () => {
+    const interest = (topic: string, evidence: string[]) => ({
+      topic,
+      evidence,
+      firstSeen: "2026-11-03",
+      lastSeen: "2026-11-04",
+      days: 2,
+    });
+
+    expect(
+      chooseResearchTopics({
+        followed: [],
+        asked: [],
+        more: [],
+        saved: [],
+        inferred: [
+          interest("Altare", ["Last.fm: Altare · 83 plays"]),
+          interest("The xx", ["Last.fm: The xx · Intro", "YouTube: The xx live"]),
+        ],
+        engaged: new Map(),
+        researchedOn: new Map(),
+        hidden: [],
+        today: "2026-11-04",
+      }),
+    ).toEqual(["The xx"]);
+  });
+});
+
 describe("chooseResearchTopics", () => {
   it("researches what you acted on every day but only two inferred interests", () => {
     expect(

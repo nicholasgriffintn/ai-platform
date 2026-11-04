@@ -88,6 +88,9 @@ function youtubeNewVideoItems(results: unknown, now: Date): DiscoverResearchResu
       source: youtubeChannelTitle(video) || "YouTube",
       date: publishedAt.slice(0, 10),
       media: "watch" as const,
+      image:
+        first(video, ["snippet", "thumbnails", "high", "url"], ["thumbnails", "high", "url"]) ||
+        undefined,
     }));
 }
 

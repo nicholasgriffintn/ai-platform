@@ -1,11 +1,13 @@
 import {
   toListPage,
+  DISCOVER_ALSO_IN_LIMIT,
   DISCOVER_LIVE_LIMIT,
   discoverSourceOutlet,
   discoverFeedItemSchema,
   discoverObservationSchema,
   type DiscoverCard,
   type DiscoverDayContext,
+  type DiscoverFeedItem,
   type DiscoverFeedPage,
   type DiscoverNow,
   type DiscoverObservation,
@@ -30,11 +32,14 @@ const DISCOVER_LIVE_RETENTION_MS = 3 * 24 * 60 * 60 * 1000;
 const DISCOVER_FEED_SHELF_KINDS: ReadonlySet<DiscoverCard["kind"]> = new Set([
   "topic",
   "wind_down",
+  "watch",
+  "listen",
 ]);
-const DISCOVER_FEED_SHELF_LIMIT = 8;
+const DISCOVER_FEED_SHELF_LIMIT = 12;
 const DISCOVER_LIVE_RETIRED_LIMIT = 1_000;
 const DISCOVER_LIVE_RETIRED_KEY_LENGTH = 16;
 const DISCOVER_HEADLINE_MIN_LENGTH = 12;
+const DISCOVER_IMAGE_TYPE = /^image\/(?:avif|gif|jpeg|png|webp)\b/iu;
 
 export const discoverLiveContentSchema = z
   .object({
@@ -62,6 +67,10 @@ export interface DiscoverLiveCandidate {
   providerId?: string;
   publishedAt: string | null;
   observedAt: string;
+}
+
+export function isDiscoverImageType(contentType: string): boolean {
+  return DISCOVER_IMAGE_TYPE.test(contentType);
 }
 
 export function emptyDiscoverLive(): DiscoverLiveContent {
@@ -123,11 +132,11 @@ function indexDiscoverStory(id: string, card: DiscoverCard): DiscoverStoryIndexE
   };
 }
 
-function repeatsDiscoverStory(
+function findRepeatedDiscoverStory(
   candidate: DiscoverStoryIndexEntry,
   stories: readonly DiscoverStoryIndexEntry[],
-): boolean {
-  return stories.some(
+): DiscoverStoryIndexEntry | undefined {
+  return stories.find(
     (story) =>
       story.id !== candidate.id &&
       ((candidate.headline.length >= DISCOVER_HEADLINE_MIN_LENGTH &&
@@ -137,6 +146,21 @@ function repeatsDiscoverStory(
           story.outlet !== candidate.outlet &&
           isSameStory(story.terms, candidate.terms))),
   );
+}
+
+function addDiscoverCoverage(item: DiscoverLiveItem, repeat: DiscoverCard): DiscoverLiveItem {
+  if (item.card.kind !== "read" || repeat.kind !== "read") {
+    return item;
+  }
+
+  const source = discoverSourceOutlet(repeat.source);
+  const alsoIn = item.card.alsoIn ?? [];
+
+  return source === discoverSourceOutlet(item.card.source) ||
+    alsoIn.some((outlet) => outlet.source === source) ||
+    alsoIn.length >= DISCOVER_ALSO_IN_LIMIT
+    ? item
+    : { ...item, card: { ...item.card, alsoIn: [...alsoIn, { source, url: repeat.url }] } };
 }
 
 function isDiscoverRewording(previous: DiscoverCard, next: DiscoverCard): boolean {
@@ -173,10 +197,19 @@ export function mergeDiscoverLiveItems(
     const previous = items.get(candidate.id);
     const story = indexDiscoverStory(candidate.id, candidate.card);
 
-    if (
-      !previous &&
-      (retired.has(retiredKey(candidate.id)) || repeatsDiscoverStory(story, stories))
-    ) {
+    if (!previous && retired.has(retiredKey(candidate.id))) {
+      continue;
+    }
+
+    const repeated = previous ? undefined : findRepeatedDiscoverStory(story, stories);
+
+    if (repeated) {
+      const original = items.get(repeated.id);
+
+      if (original) {
+        items.set(repeated.id, addDiscoverCoverage(original, candidate.card));
+      }
+
       continue;
     }
 
@@ -245,6 +278,19 @@ export function listDiscoverFeedProviders(sources: DiscoverSettings["sources"]):
   );
 }
 
+function rankDiscoverPage(
+  items: readonly DiscoverFeedItem[],
+  weighTopic: (topic: string) => number,
+): DiscoverFeedItem[] {
+  return items
+    .map((item, index) => ({
+      item,
+      position: (index + 1) / ("topic" in item.card ? weighTopic(item.card.topic) : 1),
+    }))
+    .sort((left, right) => left.position - right.position)
+    .map(({ item }) => item);
+}
+
 function selectDiscoverShelfItems(
   items: readonly DiscoverLiveItem[],
   limit: number,
@@ -269,6 +315,7 @@ export function presentDiscoverFeed(
     after?: string;
     limit: number;
     leadWithShelf?: boolean;
+    weighTopic?: (topic: string) => number;
     now: Date;
   },
 ): DiscoverFeedPage {
@@ -300,8 +347,16 @@ export function presentDiscoverFeed(
     }),
   );
 
+  const listed = toListPage(items, input.limit, (item) => String(item.sequence));
+
   return {
-    ...toListPage(items, input.limit, (item) => String(item.sequence)),
+    ...listed,
+    data: input.weighTopic
+      ? [
+          ...listed.data.slice(0, lead.length),
+          ...rankDiscoverPage(listed.data.slice(lead.length), input.weighTopic),
+        ]
+      : listed.data,
     unseenCount,
     updatedAt: content.updatedAt,
   };

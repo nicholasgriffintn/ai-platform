@@ -33,6 +33,7 @@ import {
   isDiscoverFirstPartySignal,
   isDiscoverPublicSignal,
 } from "~/modules/discover/domain/signal-catalogue";
+import { describeDiscoverSourceError } from "~/modules/discover/domain/signal-document";
 import { listDiscoverSignalProviders } from "~/modules/discover/domain/signal-selection";
 import { DISCOVER_FEED_PROVIDER_ID } from "~/modules/discover/domain/signal-sources/feeds";
 import {
@@ -115,6 +116,7 @@ async function describeSources(
 
   const health = (providerId: string) => {
     const read = signals.filter((document) => document.providerId === providerId);
+    const failed = read.find((document) => document.error);
 
     return {
       used: !excluded.includes(providerId),
@@ -124,7 +126,7 @@ async function describeSources(
           .filter((value): value is string => value !== null)
           .sort()
           .at(-1) ?? null,
-      lastError: read.find((document) => document.error)?.error ?? null,
+      lastError: failed?.error ? describeDiscoverSourceError(failed.error) : null,
     };
   };
 

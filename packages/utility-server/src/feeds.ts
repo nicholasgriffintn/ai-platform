@@ -16,6 +16,7 @@ export interface SyndicationItem {
   url: string;
   summary: string;
   publishedAt: string | null;
+  imageUrl: string | null;
 }
 
 export interface SyndicationFeed {
@@ -30,6 +31,7 @@ interface Element {
 
 const CDATA_OPEN = "<![CDATA[";
 const CDATA_CLOSE = "]]>";
+const INLINE_IMAGE = /<img\b[^>]*?\ssrc=["']([^"']+)["']/iu;
 
 function isNameBoundary(character: string | undefined): boolean {
   return (
@@ -177,6 +179,56 @@ function readPublishedAt(xml: string): string | null {
   return Number.isFinite(time) ? new Date(time).toISOString() : null;
 }
 
+function readAttachedImage(xml: string): string | null {
+  const images = ["media:content", "media:thumbnail", "enclosure"]
+    .flatMap((name) => findElements(xml, name))
+    .flatMap((element) => {
+      const url = readAttribute(element.tag, "url");
+      const type = readAttribute(element.tag, "type");
+      const medium = readAttribute(element.tag, "medium");
+      const isEnclosure = element.tag.startsWith("<enclosure");
+      const isImage =
+        type?.startsWith("image/") || medium === "image" || (!isEnclosure && !type && !medium);
+
+      return url && isImage
+        ? [{ url, width: Number(readAttribute(element.tag, "width")) || 0 }]
+        : [];
+    });
+
+  return images.sort((left, right) => right.width - left.width)[0]?.url ?? null;
+}
+
+function readInlineImage(xml: string): string | null {
+  for (const name of ["content:encoded", "content", "description", "summary"]) {
+    const [element] = findElements(xml, name);
+    const markup = element?.inner
+      .replaceAll("&lt;", "<")
+      .replaceAll("&gt;", ">")
+      .replaceAll("&quot;", '"')
+      .replaceAll("&#34;", '"')
+      .replaceAll("&#39;", "'");
+    const source = markup ? INLINE_IMAGE.exec(markup)?.[1] : undefined;
+
+    if (source) {
+      return htmlToPlainText(source);
+    }
+  }
+
+  return null;
+}
+
+function readImage(xml: string, pageUrl: string): string | null {
+  const image = readAttachedImage(xml) ?? readInlineImage(xml);
+
+  try {
+    const url = image ? new URL(image, pageUrl) : null;
+
+    return url?.protocol === "https:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 function readItem(xml: string, base: string | null): SyndicationItem | null {
   const link = readLink(xml);
   let url: string;
@@ -198,6 +250,7 @@ function readItem(xml: string, base: string | null): SyndicationItem | null {
     url,
     summary: readText(xml, "description", "summary", "content:encoded", "content"),
     publishedAt: readPublishedAt(xml),
+    imageUrl: readImage(xml, url),
   };
 }
 

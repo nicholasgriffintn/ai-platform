@@ -15,6 +15,7 @@ const OPENED_WEIGHT = 0.25;
 const OPENED_WEIGHT_CAP = 1;
 const INTEREST_KEPT_DAYS = 14;
 const INTEREST_PROFILE_LIMIT = 12;
+const LISTENING_EVIDENCE = "last.fm";
 
 type ProfileInterest = DiscoverInterestProfile["interests"][number];
 
@@ -44,8 +45,14 @@ function byStrength(left: ProfileInterest, right: ProfileInterest): number {
   return right.days - left.days;
 }
 
-function countEvidenceServices(interest: ProfileInterest): number {
-  return new Set(interest.evidence.map((line) => line.split(":")[0]?.trim().toLowerCase())).size;
+function listEvidenceServices(interest: ProfileInterest): Set<string | undefined> {
+  return new Set(interest.evidence.map((line) => line.split(":")[0]?.trim().toLowerCase()));
+}
+
+function isOnlyListening(interest: ProfileInterest): boolean {
+  const services = listEvidenceServices(interest);
+
+  return services.size === 1 && services.has(LISTENING_EVIDENCE);
 }
 
 function byRotation(left: RotatingInterest, right: RotatingInterest): number {
@@ -68,7 +75,13 @@ function chooseRotatingInterests(
       const researchedOn = input.researchedOn.get(key);
       const resting = researchedOn && researchedOn < input.today && researchedOn > restingSince;
 
-      if (!key || taken.has(key) || resting || interest.lastSeen <= restingSince) {
+      if (
+        !key ||
+        taken.has(key) ||
+        resting ||
+        interest.lastSeen <= restingSince ||
+        isOnlyListening(interest)
+      ) {
         return [];
       }
 
@@ -77,7 +90,7 @@ function chooseRotatingInterests(
           interest,
           researchedToday: researchedOn === input.today,
           weight:
-            countEvidenceServices(interest) +
+            listEvidenceServices(interest).size +
             Math.min(OPENED_WEIGHT_CAP, (input.engaged.get(key) ?? 0) * OPENED_WEIGHT),
         },
       ];

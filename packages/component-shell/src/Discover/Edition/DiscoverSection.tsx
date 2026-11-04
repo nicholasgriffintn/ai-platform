@@ -1,7 +1,6 @@
-import { cn } from "@ngriffin_uk/polychat-component-ui";
 import { clampNumber } from "@ngriffin_uk/polychat-utility-core";
-import { useHorizontalScroller } from "@ngriffin_uk/polychat-utility-react";
-import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import { useElementSize, useHorizontalScroller } from "@ngriffin_uk/polychat-utility-react";
+import type { CSSProperties, ReactNode } from "react";
 
 import {
   DISCOVER_CAROUSEL_TRACK,
@@ -9,164 +8,80 @@ import {
   DiscoverCarouselFade,
 } from "./DiscoverCarousel.js";
 
-export type DiscoverSectionKind = "posters" | "spotlight" | "cards";
-
-const GAP_REM = 0.75;
 const REM_PX = 16;
-const POSTER_GAP_PX = GAP_REM * REM_PX;
-const SECTION_GAP_PX = 2 * REM_PX;
-const POSTER_MIN_PX = 10.5 * REM_PX;
-const POSTER_MAX_PX = 20 * REM_PX;
+const SHELF_GAP_PX = 0.75 * REM_PX;
+const SHELF_NARROW_PX = 40 * REM_PX;
+const POSTER_MIN_NARROW_PX = 9.5 * REM_PX;
+const POSTER_MIN_PX = 13 * REM_PX;
+const POSTER_MAX_HEIGHT_PX = 24 * REM_PX;
+const POSTER_PORTRAIT_RATIO = 1.25;
 
-export type CardSectionKind = Exclude<DiscoverSectionKind, "posters">;
+const POSTER_TRACK = `-m-1 flex scroll-px-1 gap-3 p-1 ${DISCOVER_CAROUSEL_TRACK} [&>*]:w-[var(--discover-poster,10.5rem)] [&>*]:shrink-0 [&>*]:snap-start`;
 
-interface DiscoverSectionLayout {
-  minItemRem: number;
-  maxItemRem: number | null;
-  reservedItems: number;
-}
-
-const SECTION_LAYOUT: Record<CardSectionKind, DiscoverSectionLayout> = {
-  spotlight: { minItemRem: 20, maxItemRem: 26, reservedItems: 1 },
-  cards: { minItemRem: 16, maxItemRem: null, reservedItems: 2 },
-};
-
-export const DISCOVER_SHELF_VISIBLE = { watch: 4, worth: 3 };
-
-const POSTER_TRACK = `-m-1 flex scroll-px-1 gap-3 p-1 ${DISCOVER_CAROUSEL_TRACK} [&>*]:w-[calc((100%-0.75rem)/2)] [&>*]:shrink-0 [&>*]:snap-start sm:[&>*]:w-[var(--discover-poster,10.5rem)]`;
-
-export const DISCOVER_SECTION_GRID: Record<DiscoverSectionKind, string> = {
+export const DISCOVER_SECTION_GRID = {
   posters: POSTER_TRACK,
-  spotlight: "grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(19rem,1fr))]",
   cards: "grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(16rem,1fr))]",
 };
 
-const POSTER_SECTION_CLASS =
-  "sm:w-[calc(var(--poster-count)*var(--discover-poster,10.5rem)+(var(--poster-count)-1)*0.75rem)]";
+export function discoverShelfLayout(
+  shelfWidth: number,
+  count: number,
+): { width: number; height: number } {
+  const minimum = shelfWidth < SHELF_NARROW_PX ? POSTER_MIN_NARROW_PX : POSTER_MIN_PX;
+  const fitting = Math.floor((shelfWidth + SHELF_GAP_PX) / (minimum + SHELF_GAP_PX));
+  const visible = clampNumber(fitting, 1, Math.max(1, count));
+  const width = (shelfWidth - SHELF_GAP_PX * (visible - 1)) / visible;
 
-export function discoverPosterWidth(rowWidth: number, sections: readonly number[]): number {
-  const counts = sections.filter((count) => count > 0);
-  const total = counts.reduce((sum, count) => sum + count, 0);
-
-  if (total === 0) {
-    return POSTER_MIN_PX;
-  }
-
-  const sharedRow =
-    (rowWidth - SECTION_GAP_PX * (counts.length - 1) - POSTER_GAP_PX * (total - counts.length)) /
-    total;
-
-  if (sharedRow >= POSTER_MIN_PX) {
-    return Math.min(POSTER_MAX_PX, sharedRow);
-  }
-
-  const fitting = Math.max(
-    1,
-    Math.floor((rowWidth + POSTER_GAP_PX) / (POSTER_MIN_PX + POSTER_GAP_PX)),
-  );
-  const visible = Math.min(Math.max(...counts), fitting);
-
-  return clampNumber(
-    (rowWidth - POSTER_GAP_PX * (visible - 1)) / visible,
-    POSTER_MIN_PX,
-    POSTER_MAX_PX,
-  );
+  return { width, height: Math.min(width * POSTER_PORTRAIT_RATIO, POSTER_MAX_HEIGHT_PX) };
 }
 
-function rowWidth(items: number, itemRem: number): string {
-  return `${items * itemRem + (items - 1) * GAP_REM}rem`;
-}
+type ShelfStyle = CSSProperties & Record<"--discover-poster" | "--media-tile-aspect", string>;
 
-function sectionStyle(kind: CardSectionKind, count: number): CSSProperties {
-  const layout = SECTION_LAYOUT[kind];
-  const items = Math.max(count, 1);
-  const reserved = Math.min(items, layout.reservedItems);
+function shelfStyle(width: number | undefined, count: number): ShelfStyle | undefined {
+  if (!width) {
+    return undefined;
+  }
+
+  const layout = discoverShelfLayout(width, count);
 
   return {
-    flexBasis: rowWidth(reserved, layout.minItemRem),
-    flexGrow: items,
-    maxWidth: layout.maxItemRem ? `min(100%, ${rowWidth(items, layout.maxItemRem)})` : undefined,
+    "--discover-poster": `${layout.width}px`,
+    "--media-tile-aspect": `${layout.width} / ${layout.height}`,
   };
 }
 
-export function DiscoverSectionRow({
-  posters,
-  children,
-}: {
-  posters?: readonly number[];
-  children: ReactNode;
-}) {
-  const rowRef = useRef<HTMLDivElement>(null);
-
-  useLayoutEffect(() => {
-    const row = rowRef.current;
-
-    if (!row || !posters) {
-      return undefined;
-    }
-
-    const apply = () =>
-      row.style.setProperty(
-        "--discover-poster",
-        `${discoverPosterWidth(row.clientWidth, posters)}px`,
-      );
-    const observer = new ResizeObserver(apply);
-
-    apply();
-    observer.observe(row);
-
-    return () => observer.disconnect();
-  });
-
+function DiscoverShelfHeading({ title, controls }: { title: string; controls: ReactNode }) {
   return (
-    <div ref={rowRef} className={cn("flex flex-wrap gap-8", posters && "justify-between")}>
-      {children}
+    <div className="flex h-7 items-center gap-2 px-1">
+      <h3 className="polychat-eyebrow flex-1">{title}</h3>
+      {controls}
     </div>
   );
 }
 
-export function DiscoverSectionStack({
-  kind,
-  count,
-  children,
-}: {
-  kind: CardSectionKind;
-  count: number;
-  children: ReactNode;
-}) {
-  return (
-    <div className="flex max-w-full min-w-0 flex-col gap-8" style={sectionStyle(kind, count)}>
-      {children}
-    </div>
-  );
-}
-
-function DiscoverPosterSection({
+export function DiscoverPosterShelf({
   title,
   count,
-  maxVisible,
   children,
 }: {
   title: string;
   count: number;
-  maxVisible: number;
   children: ReactNode;
 }) {
+  const { ref, width } = useElementSize<HTMLElement>();
   const { ref: trackRef, ...scroller } = useHorizontalScroller<HTMLDivElement>();
-  const style: CSSProperties & Record<"--poster-count", number> = {
-    "--poster-count": clampNumber(count, 1, maxVisible),
-  };
 
   return (
     <section
+      ref={ref}
       aria-label={title}
-      className={`flex w-full max-w-full min-w-0 flex-col gap-3 ${POSTER_SECTION_CLASS}`}
-      style={style}
+      className="flex w-full max-w-full min-w-0 flex-col gap-3"
+      style={shelfStyle(width, count)}
     >
-      <div className="flex h-7 items-center gap-2 px-1">
-        <h3 className="polychat-eyebrow flex-1">{title}</h3>
-        <DiscoverCarouselControls scroller={scroller} label={title} />
-      </div>
+      <DiscoverShelfHeading
+        title={title}
+        controls={<DiscoverCarouselControls scroller={scroller} label={title} />}
+      />
       <div className="relative">
         <div ref={trackRef} className={POSTER_TRACK}>
           {children}
@@ -177,37 +92,24 @@ function DiscoverPosterSection({
   );
 }
 
-export function DiscoverSection({
-  title,
-  kind,
-  count,
-  maxVisible = count,
-  stacked = false,
-  children,
-}: {
-  title: string;
-  kind: DiscoverSectionKind;
-  count: number;
-  maxVisible?: number;
-  stacked?: boolean;
-  children: ReactNode;
-}) {
-  if (kind === "posters") {
-    return (
-      <DiscoverPosterSection title={title} count={count} maxVisible={maxVisible}>
-        {children}
-      </DiscoverPosterSection>
-    );
-  }
+export function DiscoverCardStrip({ title, children }: { title: string; children: ReactNode }) {
+  const { ref: trackRef, ...scroller } = useHorizontalScroller<HTMLDivElement>();
 
   return (
-    <section
-      aria-label={title}
-      className="flex max-w-full min-w-0 flex-col gap-3"
-      style={stacked ? undefined : sectionStyle(kind, count)}
-    >
-      <h3 className="polychat-eyebrow px-1">{title}</h3>
-      <div className={DISCOVER_SECTION_GRID[kind]}>{children}</div>
+    <section aria-label={title} className="flex max-w-full min-w-0 flex-col gap-3">
+      <DiscoverShelfHeading
+        title={title}
+        controls={<DiscoverCarouselControls scroller={scroller} label={title} />}
+      />
+      <div className="relative">
+        <div
+          ref={trackRef}
+          className={`-m-1 flex items-stretch gap-3 p-1 ${DISCOVER_CAROUSEL_TRACK} [&>*]:w-[17rem] [&>*]:shrink-0 [&>*]:snap-start`}
+        >
+          {children}
+        </div>
+        <DiscoverCarouselFade scroller={scroller} />
+      </div>
     </section>
   );
 }

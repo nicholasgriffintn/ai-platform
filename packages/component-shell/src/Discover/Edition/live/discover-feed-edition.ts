@@ -73,10 +73,14 @@ export function discoverCurrentBrief(
     live.map((line) => line.kind).filter((kind) => kind !== "note"),
   );
 
-  return [...live, ...fallback.filter((line) => !replaced.has(line.kind))].slice(
-    0,
-    DISCOVER_MAX_BRIEF_LINES,
-  );
+  const shown = new Set(live.map((line) => `${line.label}:${line.text}`));
+
+  return [
+    ...live,
+    ...fallback.filter(
+      (line) => !replaced.has(line.kind) && !shown.has(`${line.label}:${line.text}`),
+    ),
+  ].slice(0, DISCOVER_MAX_BRIEF_LINES);
 }
 
 export function discoverMediaEdition(

@@ -41,6 +41,7 @@ import {
 } from "~/modules/discover/domain/research";
 import { findDiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
 import { keepUsedDiscoverDocuments } from "~/modules/discover/domain/signal-selection";
+import { DiscoverSeenRepository } from "~/modules/discover/infrastructure/DiscoverSeenRepository";
 
 import { listDiscoverArticleSources } from "./articles";
 import { listRecentDiscoverEditions } from "./editions";
@@ -62,12 +63,13 @@ export async function collectDiscoverLiveCandidates(
   now: Date,
 ): Promise<DiscoverLiveCandidate[]> {
   const user = context.requireUser();
-  const [documents, editions, feedback, follows, articleSources] = await Promise.all([
+  const [documents, editions, feedback, follows, articleSources, exposure] = await Promise.all([
     listDiscoverDocuments(context, user.id),
     listRecentDiscoverEditions(context, user.id, 2),
     listDiscoverFeedback(context, user.id),
     listDiscoverFollows(context, user.id),
     listDiscoverArticleSources(context),
+    context.repositories.get(DiscoverSeenRepository).exposure(user.id),
   ]);
   const hidden = new Set(
     [...profile.mutedTopics, ...summariseDiscoverFeedback(feedback).hiddenTopics].map(
@@ -109,7 +111,7 @@ export async function collectDiscoverLiveCandidates(
       ...profile.topics,
       ...(editions[0]?.content.interests.map((interest) => interest.topic) ?? []),
     ],
-    preferences: summariseDiscoverFeedPreferences(feedback),
+    preferences: summariseDiscoverFeedPreferences(feedback, exposure),
   });
   const cards = fillDiscoverLiveFeed({
     groups,

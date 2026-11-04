@@ -1,7 +1,7 @@
 import { isoDaysBefore, isRecord, shiftCalendarDate } from "@ngriffin_uk/polychat-utility-core";
 import { htmlToPlainText } from "@ngriffin_uk/polychat-utility-server/html-text";
 
-import { first, items, lines, joinParts } from "./read";
+import { first, items, lines, joinParts, listsNothing } from "./read";
 import type { DiscoverSignal } from "./types";
 
 export const DAILY_SIGNALS: readonly DiscoverSignal[] = [
@@ -37,6 +37,7 @@ export const DAILY_SIGNALS: readonly DiscoverSignal[] = [
       maxResults: 20,
       timeZone: timezone,
     }),
+    isEmpty: (result) => listsNothing(result, ["data", "items"], ["items"], ["data", "events"]),
     digest: (result) =>
       lines(items(result, ["data", "items"], ["items"], ["data", "events"]), (event) =>
         joinParts(

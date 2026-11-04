@@ -45,6 +45,14 @@ export function records(
   return items(result, ...paths).filter(isRecord);
 }
 
+export function listsNothing(result: unknown, ...paths: readonly SignalPath[]): boolean {
+  return paths.some((path) => {
+    const [found] = readPathValues(result, path);
+
+    return Array.isArray(found) && found.length === 0;
+  });
+}
+
 export function lines(
   entries: unknown[],
   render: (entry: Record<string, unknown>) => string,

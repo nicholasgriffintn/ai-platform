@@ -49,7 +49,10 @@ import {
   isDiscoverPublicSignal,
   listDiscoverFeedSignals,
 } from "~/modules/discover/domain/signal-catalogue";
-import { renderSignalDocument } from "~/modules/discover/domain/signal-document";
+import {
+  isDiscoverQuotaError,
+  renderSignalDocument,
+} from "~/modules/discover/domain/signal-document";
 import {
   keepUsedDiscoverDocuments,
   selectDiscoverSignals,
@@ -158,12 +161,14 @@ async function researchSourceId(userId: number, topic: string): Promise<string> 
   return `discover_research_${(await sha256Hex(`${userId}:${discoverTopicKey(topic)}`)).slice(0, 24)}`;
 }
 
+const discoverSignalOutcomeSchema = z.enum(["read", "failed", "exhausted"]);
+
 export async function readSignal(
   context: ServiceContext,
   notebookId: string,
   signal: DiscoverSignal,
   read: DiscoverSignalRead,
-): Promise<boolean> {
+): Promise<z.infer<typeof discoverSignalOutcomeSchema>> {
   const user = context.requireUser();
   const sourceId = await discoverSignalSourceId(user.id, signal.id);
   const readAt = new Date().toISOString();
@@ -173,7 +178,12 @@ export async function readSignal(
     const lines = signal.digest(result);
     const feedItems = signal.items?.(result, read) ?? [];
 
-    if (lines.length === 0 && feedItems.length === 0 && containsRecordList(result)) {
+    if (
+      lines.length === 0 &&
+      feedItems.length === 0 &&
+      !signal.isEmpty?.(result) &&
+      containsRecordList(result)
+    ) {
       throw new AssistantError(
         `${signal.title} answered, but its reply was not in the shape Discover reads`,
         ErrorType.PROVIDER_ERROR,
@@ -206,7 +216,7 @@ export async function readSignal(
       },
     });
 
-    return true;
+    return "read";
   } catch (error) {
     const message = getErrorMessage(error, "This service could not be read");
 
@@ -249,7 +259,7 @@ export async function readSignal(
       });
     });
 
-    return false;
+    return isDiscoverQuotaError(message) ? "exhausted" : "failed";
   }
 }
 
@@ -426,26 +436,41 @@ export async function runDiscoverGather(
       )
     : [];
 
+  const exhausted = new Set<string>();
+
   for (const signal of selected) {
     if (signal.needsTopics && signalTopics.length === 0) {
       continue;
     }
 
-    const ok = await steps.value(`signal-${signal.id}`, z.boolean(), async () => {
-      try {
-        return await readSignal(context, notebookId, signal, {
-          date: zoned.date,
-          timezone,
-          now,
-          location: settings.location,
-          topics: signalTopics,
-        });
-      } finally {
-        await closeComposioConnectorRun(context);
-      }
-    });
+    if (exhausted.has(signal.providerId)) {
+      stale.push(signal.providerId);
+      continue;
+    }
 
-    (ok ? read : stale).push(signal.providerId);
+    const outcome = await steps.value(
+      `signal-read-${signal.id}`,
+      discoverSignalOutcomeSchema,
+      async () => {
+        try {
+          return await readSignal(context, notebookId, signal, {
+            date: zoned.date,
+            timezone,
+            now,
+            location: settings.location,
+            topics: signalTopics,
+          });
+        } finally {
+          await closeComposioConnectorRun(context);
+        }
+      },
+    );
+
+    (outcome === "read" ? read : stale).push(signal.providerId);
+
+    if (outcome === "exhausted") {
+      exhausted.add(signal.providerId);
+    }
   }
 
   if (scope === "feed") {

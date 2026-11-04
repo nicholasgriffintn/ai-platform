@@ -3,10 +3,12 @@ import { describe, expect, it } from "vitest";
 
 import {
   emptyDiscoverLive,
+  isDiscoverImageType,
   mergeDiscoverLiveItems,
   presentDiscoverFeed,
   type DiscoverLiveCandidate,
 } from "../live";
+import { describeDiscoverSourceError } from "../signal-document";
 
 const now = new Date("2026-11-02T12:15:00Z");
 const card: DiscoverCard = {
@@ -92,6 +94,31 @@ function storyCandidate(index: number, title: string, source: string): DiscoverL
   };
 }
 
+describe("describeDiscoverSourceError", () => {
+  it("turns provider replies into something readable", () => {
+    expect(
+      describeDiscoverSourceError(
+        'Composio tool execution failed: { "error": { "code": 403, "message": "you have exceeded your quota" } }',
+      ),
+    ).toBe("Its daily quota has run out, so it is paused until tomorrow.");
+    expect(describeDiscoverSourceError('Connector API request failed (404): {"errors": "x"}')).toBe(
+      "It could not find this on your account.",
+    );
+    expect(describeDiscoverSourceError('Composio tool execution failed: {"oops": true}')).toBe(
+      "It could not be read just now.",
+    );
+  });
+});
+
+describe("isDiscoverImageType", () => {
+  it("accepts photos and refuses anything that can carry script", () => {
+    expect(isDiscoverImageType("image/jpeg")).toBe(true);
+    expect(isDiscoverImageType("image/webp; charset=binary")).toBe(true);
+    expect(isDiscoverImageType("image/svg+xml")).toBe(false);
+    expect(isDiscoverImageType("text/html")).toBe(false);
+  });
+});
+
 describe("Discover live feed", () => {
   it("does not bring back stories that aged out of a full feed", () => {
     const stories = Array.from({ length: DISCOVER_LIVE_LIMIT + 40 }, (_, index) =>
@@ -126,6 +153,30 @@ describe("Discover live feed", () => {
     );
 
     expect(merged.items).toHaveLength(1);
+    expect(merged.items[0]?.card).toMatchObject({
+      alsoIn: [{ source: "BBC News", url: "https://example.com/1" }],
+    });
+  });
+
+  it("ranks a page by topic weight without losing its paging position", () => {
+    const stories = ["Reddit", "AI", "AI", "AI"].map((topic, index) => {
+      const story = storyCandidate(index, `Headline number ${index}`, "Example");
+
+      return { ...story, card: { ...story.card, topic } };
+    });
+    const initial = emptyDiscoverLive();
+    const content = { ...initial, ...mergeDiscoverLiveItems(initial, stories, now) };
+    const page = presentDiscoverFeed(content, {
+      seen: new Map(),
+      mutedTopics: [],
+      limit: 3,
+      weighTopic: (topic) => (topic === "AI" ? 2 : 0.5),
+      now,
+    });
+
+    expect(page.data.map((item) => item.id)).toEqual(["story_1", "story_2", "story_0"]);
+    expect(page.last_id).toBe("2");
+    expect(page.has_more).toBe(true);
   });
 
   it("keeps a reply from the same outlet as a separate story", () => {

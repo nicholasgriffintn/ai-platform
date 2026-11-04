@@ -28,6 +28,7 @@ export const discoverNewsItemsSchema = z.array(
     category: z.string(),
     publishedAt: z.string(),
     observedAt: z.string().optional(),
+    image: z.string().optional(),
   }),
 );
 
@@ -63,6 +64,7 @@ export async function readDiscoverNews(
                 category: feed.category,
                 publishedAt: item.publishedAt,
                 observedAt,
+                ...(item.imageUrl ? { image: item.imageUrl } : {}),
               },
             ]
           : [],

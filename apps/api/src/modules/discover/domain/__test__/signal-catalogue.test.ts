@@ -54,6 +54,82 @@ describe("showsDiscoverActivity", () => {
   });
 });
 
+describe("New music from your artists", () => {
+  const artists = { topartists: { artist: [{ name: "M83" }, { name: 'The "xx"' }] } };
+
+  it("searches MusicBrainz for the person's top artists around today", () => {
+    const url = new URL(connector("lastfm-new-releases").lookup?.(artists, read) ?? "");
+    const query = url.searchParams.get("query");
+
+    expect(url.host).toBe("musicbrainz.org");
+    expect(query).toContain('artist:"M83"');
+    expect(query).toContain('artist:"The xx"');
+    expect(query).toContain("firstreleasedate:[2026-09-28 TO 2026-11-11]");
+  });
+
+  it("does not look anything up without artists", () => {
+    expect(connector("lastfm-new-releases").lookup?.({}, read)).toBeNull();
+  });
+
+  it("keeps exact artist matches and leaves out fuzzy ones", () => {
+    const release = (id: string, name: string, kind = "Album") => ({
+      id,
+      title: id,
+      "primary-type": kind,
+      "first-release-date": "2026-10-20",
+      "artist-credit": [{ name }],
+    });
+
+    expect(
+      connector("lastfm-new-releases")
+        .items?.(
+          {
+            listed: artists,
+            found: {
+              "release-groups": [
+                release("kept", "M83"),
+                release("fuzzy", "M83 Tribute Band"),
+                release("broadcast", "M83", "Broadcast"),
+              ],
+            },
+          },
+          read,
+        )
+        .map((item) => [item.title, item.media]),
+    ).toEqual([["kept", "listen"]]);
+  });
+});
+
+describe("Google Calendar", () => {
+  it("treats a day with no events as empty, not as a misread reply", () => {
+    const calendar = connector("googlecalendar-today");
+    const reply = { data: { items: [], defaultReminders: [{ method: "popup", minutes: 10 }] } };
+
+    expect(calendar.digest(reply)).toEqual([]);
+    expect(calendar.isEmpty?.(reply)).toBe(true);
+    expect(calendar.isEmpty?.({ data: { somethingElse: [{ id: 1 }] } })).toBe(false);
+  });
+});
+
+describe("discussion links", () => {
+  it("links a Hacker News story to its comments, but not a text post to itself", () => {
+    const stories = findDiscoverSignal("hackernews-front")?.items?.(
+      {
+        hits: [
+          { objectID: "1", title: "Linked", url: "https://example.com/a", points: 200 },
+          { objectID: "2", title: "Ask HN", points: 200 },
+        ],
+      },
+      read,
+    );
+
+    expect(stories?.map((story) => story.discussion)).toEqual([
+      "https://news.ycombinator.com/item?id=1",
+      undefined,
+    ]);
+  });
+});
+
 describe("Hugging Face papers", () => {
   it("leaves out old papers that are trending again", () => {
     const paper = (id: string, publishedAt: string) => ({

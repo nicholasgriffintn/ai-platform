@@ -6,6 +6,11 @@ import type {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { discoverCardTopic, discoverTopicKey } from "~/modules/discover/domain/edition";
+import {
+  summariseDiscoverFeedPreferences,
+  weighDiscoverFeedTopic,
+} from "~/modules/discover/domain/feed-weights";
 import { collectCardSignals, summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
 import { listDiscoverFeedProviders, presentDiscoverFeed } from "~/modules/discover/domain/live";
 import { DiscoverSeenRepository } from "~/modules/discover/infrastructure/DiscoverSeenRepository";
@@ -21,21 +26,23 @@ export async function readDiscoverFeed(
   query: DiscoverFeedQuery,
 ): Promise<DiscoverFeedPage> {
   const user = context.requireUser();
-  const [content, profile, seen, feedback, settings] = await Promise.all([
+  const [content, profile, exposure, feedback, settings] = await Promise.all([
     readDiscoverLive(context),
     readDiscoverDayProfile(context),
-    context.repositories.get(DiscoverSeenRepository).list(user.id),
+    context.repositories.get(DiscoverSeenRepository).exposure(user.id),
     listDiscoverFeedback(context, user.id),
     readDiscoverSettings(context),
   ]);
+  const preferences = summariseDiscoverFeedPreferences(feedback, exposure);
 
   return presentDiscoverFeed(content, {
     ...query,
-    seen,
+    seen: exposure.seen,
     mutedTopics: [...profile.mutedTopics, ...summariseDiscoverFeedback(feedback).hiddenTopics],
     allowedProviders: listDiscoverFeedProviders(settings.sources),
     feedback: collectCardSignals(feedback, discoverLiveId(user.id)),
     leadWithShelf: true,
+    weighTopic: (topic) => weighDiscoverFeedTopic(topic, preferences),
     now: new Date(),
   });
 }
@@ -51,9 +58,12 @@ export async function markDiscoverSeen(
   );
 
   for (const receipt of accepted) {
+    const card = content.items.find((item) => item.id === receipt.id)?.card;
+    const topic = card ? discoverCardTopic(card) : null;
+
     await context.repositories
       .get(DiscoverSeenRepository)
-      .mark(user.id, receipt.id, receipt.revision);
+      .mark(user.id, receipt.id, receipt.revision, topic ? discoverTopicKey(topic) : null);
   }
 
   if (accepted.length > 0) {

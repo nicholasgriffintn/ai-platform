@@ -13,6 +13,7 @@ import {
   discoverCardHeadline,
   discoverCardLink,
 } from "../discover-card-drafts.js";
+import { DiscoverArticleImage } from "../DiscoverArticleImage.js";
 import { DiscoverCoverageCard } from "../DiscoverCoverage.js";
 import { DiscoverFramingCard } from "../DiscoverFraming.js";
 import { DiscoverHref } from "../DiscoverHref.js";
@@ -104,6 +105,7 @@ function CardLead({ card, following }: { card: DiscoverCard; following: boolean 
   if (isReading(card)) {
     return (
       <div data-stagger className="flex flex-col gap-3">
+        <DiscoverArticleImage card={card} className="rounded-2xl" />
         <span className="flex min-w-0 items-center gap-2.5">
           <DiscoverItemThumb art={{ type: "card", card }} className="size-8 rounded-lg text-sm" />
           <span className="truncate text-sm text-muted-foreground">
@@ -175,8 +177,33 @@ export function DiscoverCardBlock({
             {isHttpUrl(link.href) ? <ArrowUpRight size={14} aria-hidden /> : null}
           </DiscoverHref>
         ) : null}
+        {card.kind === "read" && card.discussionUrl ? (
+          <DiscoverHref
+            href={card.discussionUrl}
+            className={buttonClassName({ variant: "secondary", size: "sm" })}
+          >
+            Read the discussion
+            <ArrowUpRight size={14} aria-hidden />
+          </DiscoverHref>
+        ) : null}
         <DiscoverFollowButton card={card} feedback={feedback} />
       </div>
+      {card.kind === "read" && card.alsoIn?.length ? (
+        <Section title="Also covered by">
+          <ul className="flex flex-col gap-1 text-sm">
+            {card.alsoIn.map((outlet) => (
+              <li key={outlet.url}>
+                <DiscoverHref
+                  href={outlet.url}
+                  className="text-foreground underline underline-offset-2"
+                >
+                  {outlet.source}
+                </DiscoverHref>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
       {sourceId ? (
         <div data-stagger className="flex flex-col gap-3">
           <SourceListenById sourceId={sourceId} />

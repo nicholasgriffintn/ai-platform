@@ -5,24 +5,33 @@ import z from "zod/v4";
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
 
+const DISCOVER_EXPOSURE_DAYS = 7;
 const discoverSeenDataSchema = z.object({
   itemId: z.string(),
   revision: z.number().int().positive(),
+  topicKey: z.string().optional(),
 });
+
+export interface DiscoverExposure {
+  seen: Map<string, number>;
+  topics: Map<string, number>;
+  since: number;
+}
 
 export class DiscoverSeenRepository extends BaseRepository {
   async list(userId: number): Promise<Map<string, number>> {
+    return (await this.exposure(userId)).seen;
+  }
+
+  async exposure(userId: number): Promise<DiscoverExposure> {
+    const since = Date.now() - DISCOVER_EXPOSURE_DAYS * 24 * 60 * 60 * 1000;
     const rows = await this.runQuery<{ data: string }>(
       `SELECT data FROM activity_record WHERE created_by_user_id = ? AND project_id IS NULL
        AND capability_id = ? AND kind = ? AND created_at >= ? ORDER BY created_at DESC LIMIT 1000`,
-      [
-        userId,
-        DISCOVER_CAPABILITY_ID,
-        DISCOVER_SEEN_KIND,
-        new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      ],
+      [userId, DISCOVER_CAPABILITY_ID, DISCOVER_SEEN_KIND, new Date(since).toISOString()],
     );
     const seen = new Map<string, number>();
+    const topics = new Map<string, number>();
 
     for (const row of rows) {
       const parsed = discoverSeenDataSchema.safeParse(safeParseJson(row.data));
@@ -32,13 +41,22 @@ export class DiscoverSeenRepository extends BaseRepository {
           parsed.data.itemId,
           Math.max(seen.get(parsed.data.itemId) ?? 0, parsed.data.revision),
         );
+
+        if (parsed.data.topicKey) {
+          topics.set(parsed.data.topicKey, (topics.get(parsed.data.topicKey) ?? 0) + 1);
+        }
       }
     }
 
-    return seen;
+    return { seen, topics, since };
   }
 
-  async mark(userId: number, itemId: string, revision: number): Promise<void> {
+  async mark(
+    userId: number,
+    itemId: string,
+    revision: number,
+    topicKey: string | null,
+  ): Promise<void> {
     await new ActivityRepository(this.env).recordActivityOnce({
       id: `discover_seen_${userId}_${itemId}_${revision}`,
       createdByUserId: userId,
@@ -48,7 +66,7 @@ export class DiscoverSeenRepository extends BaseRepository {
       kind: DISCOVER_SEEN_KIND,
       status: "succeeded",
       summary: "Seen in Discover",
-      data: { itemId, revision },
+      data: { itemId, revision, ...(topicKey ? { topicKey } : {}) },
       createdAt: new Date().toISOString(),
     });
   }

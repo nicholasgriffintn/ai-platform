@@ -40,6 +40,7 @@ function feedItems(result: unknown, url: string, now: Date): DiscoverResearchRes
             snippet: first(entry, ["summary"]).slice(0, 400),
             source,
             date: publishedAt.slice(0, 10),
+            image: first(entry, ["imageUrl"]) || undefined,
           },
         ]
       : [];

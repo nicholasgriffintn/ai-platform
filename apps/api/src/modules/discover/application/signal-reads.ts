@@ -29,6 +29,7 @@ const logger = getLogger({ prefix: "discover/signal-reads" });
 const SIGNAL_EXPANSION_CONCURRENCY = 4;
 const PUBLIC_RESPONSE_BYTES = 5_000_000;
 const WEEK_AHEAD_SIGNAL_DAYS = 7;
+const PUBLIC_USER_AGENT = "Polychat/1.0 (https://polychat.app)";
 
 type SignalOperationRunner = (
   operation: string,
@@ -90,32 +91,26 @@ async function readConnectorSignal(
       },
     });
 
-  return expandConnectorSignal(
+  const listed = await expandConnectorSignal(
     signal,
     await run(signal.operation, signal.parameters(read)),
     read,
     run,
   );
+  const lookup = signal.lookup?.(listed, read);
+
+  return lookup ? { listed, found: await readPublicJson(signal.title, lookup) } : listed;
 }
 
-async function readPublicSignal(
-  signal: DiscoverPublicSignal,
-  read: DiscoverSignalRead,
-): Promise<unknown> {
-  const url = signal.url(read);
-
-  if (signal.format === "feed") {
-    return fetchSyndicationFeed(url, PUBLIC_RESPONSE_BYTES);
-  }
-
+async function readPublicJson(title: string, url: string): Promise<unknown> {
   const response = await fetchFollowingSafeRedirects(url, {
-    headers: { accept: "application/json" },
+    headers: { accept: "application/json", "user-agent": PUBLIC_USER_AGENT },
   });
 
   if (!response.ok) {
     await response.body?.cancel();
     throw new AssistantError(
-      `${signal.title} answered with ${response.status}`,
+      `${title} answered with ${response.status}`,
       ErrorType.PROVIDER_ERROR,
       502,
     );
@@ -125,14 +120,21 @@ async function readPublicSignal(
   const parsed = safeParseJson<unknown>(body);
 
   if (parsed === null) {
-    throw new AssistantError(
-      `${signal.title} did not answer with JSON`,
-      ErrorType.PROVIDER_ERROR,
-      502,
-    );
+    throw new AssistantError(`${title} did not answer with JSON`, ErrorType.PROVIDER_ERROR, 502);
   }
 
   return parsed;
+}
+
+async function readPublicSignal(
+  signal: DiscoverPublicSignal,
+  read: DiscoverSignalRead,
+): Promise<unknown> {
+  const url = signal.url(read);
+
+  return signal.format === "feed"
+    ? fetchSyndicationFeed(url, PUBLIC_RESPONSE_BYTES)
+    : readPublicJson(signal.title, url);
 }
 
 function readFirstPartySignal(

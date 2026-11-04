@@ -5,6 +5,7 @@ import { readUrlHost } from "@ngriffin_uk/polychat-utility-core";
 import { CalendarDays, ChevronRight, Headphones, History, Mail, Play, Repeat } from "lucide-react";
 
 import { discoverCardBody } from "./discover-card-drafts.js";
+import { DiscoverArticleImage } from "./DiscoverArticleImage.js";
 
 export type DiscoverRowCard = Exclude<DiscoverCard, { kind: "topic" | "wind_down" }>;
 
@@ -82,7 +83,12 @@ function cardText(card: DiscoverRowCard): { kicker: string; title: string; detai
       return { kicker: "Poly asks", title: card.question, detail: null };
     case "read":
       return {
-        kicker: describeReadSource(card.source, card.url),
+        kicker: [
+          describeReadSource(card.source, card.url),
+          card.alsoIn?.length ? `+${card.alsoIn.length} more` : "",
+        ]
+          .filter(Boolean)
+          .join(" · "),
         title: card.title,
         detail: discoverCardBody(card),
       };
@@ -103,24 +109,21 @@ function cardText(card: DiscoverRowCard): { kicker: string; title: string; detai
   }
 }
 
-export type DiscoverFeedCardSize = "regular" | "large";
-
 export function DiscoverFeedCard({
   card,
   selected,
   hidden,
-  size = "regular",
+  compact = false,
   onSelect,
 }: {
   card: DiscoverRowCard;
   selected: boolean;
   hidden: boolean;
-  size?: DiscoverFeedCardSize;
+  compact?: boolean;
   onSelect: (card: DiscoverCard) => void;
 }) {
   const text = cardText(card);
   const isQuestion = card.kind === "check_in";
-  const isLarge = size === "large";
   const chevron = (
     <ChevronRight
       size={16}
@@ -137,11 +140,12 @@ export function DiscoverFeedCard({
       onClick={() => onSelect(card)}
       className={cn(
         "group flex w-full flex-col gap-3 rounded-2xl border border-border bg-surface text-left ring-offset-2 ring-offset-canvas transition hover:border-border-strong hover:bg-surface-elevated focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none active:scale-[.99] motion-reduce:active:scale-100",
-        isLarge ? "gap-4 p-5" : "p-4",
+        "p-4",
         selected && "border-border-strong bg-surface-elevated ring-2 ring-active-work",
         hidden && "opacity-40",
       )}
     >
+      {compact ? null : <DiscoverArticleImage card={card} />}
       {isQuestion ? (
         <>
           <span className="flex items-center gap-3">
@@ -151,35 +155,28 @@ export function DiscoverFeedCard({
             </span>
             {chevron}
           </span>
-          <span
-            className={cn(
-              "font-display leading-snug text-foreground italic",
-              isLarge ? "text-2xl" : "text-xl",
-            )}
-          >
+          <span className="font-display text-xl leading-snug text-foreground italic">
             {text.title}
           </span>
         </>
       ) : (
         <span className="flex items-start gap-3">
-          <CardLead card={card} />
+          {compact ? (
+            <DiscoverArticleImage
+              card={card}
+              className="aspect-square size-12 shrink-0"
+              fallback={<CardLead card={card} />}
+            />
+          ) : (
+            <CardLead card={card} />
+          )}
           <span className="flex min-w-0 flex-1 flex-col gap-1">
             <span className="truncate text-xs text-muted-foreground">{text.kicker}</span>
-            <span
-              className={cn(
-                "line-clamp-2 leading-snug font-medium text-foreground",
-                isLarge ? "text-lg" : "text-[0.95rem]",
-              )}
-            >
+            <span className="line-clamp-2 text-[0.95rem] leading-snug font-medium text-foreground">
               {text.title}
             </span>
             {text.detail ? (
-              <span
-                className={cn(
-                  "leading-relaxed text-muted-foreground",
-                  isLarge ? "line-clamp-3 text-[0.95rem]" : "line-clamp-2 text-sm",
-                )}
-              >
+              <span className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
                 {text.detail}
               </span>
             ) : null}

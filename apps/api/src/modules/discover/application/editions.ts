@@ -20,6 +20,10 @@ import {
   readDiscoverEditionGroupId,
 } from "~/modules/discover/domain/edition";
 import {
+  summariseDiscoverFeedPreferences,
+  weighDiscoverFeedTopic,
+} from "~/modules/discover/domain/feed-weights";
+import {
   collectCardSignals,
   summariseDiscoverFeedback,
   type DiscoverFeedbackEntry,
@@ -176,7 +180,7 @@ export async function readDiscover(context: ServiceContext): Promise<DiscoverRes
     feedback,
     dayProfile,
     live,
-    seen,
+    exposure,
     briefings,
   ] = await Promise.all([
     readDiscoverSettings(context),
@@ -187,9 +191,10 @@ export async function readDiscover(context: ServiceContext): Promise<DiscoverRes
     listDiscoverFeedback(context, user.id),
     readDiscoverDayProfile(context),
     readDiscoverLive(context),
-    context.repositories.get(DiscoverSeenRepository).list(user.id),
+    context.repositories.get(DiscoverSeenRepository).exposure(user.id),
     listDiscoverAudio(context),
   ]);
+  const preferences = summariseDiscoverFeedPreferences(feedback, exposure);
 
   return {
     settings,
@@ -206,9 +211,10 @@ export async function readDiscover(context: ServiceContext): Promise<DiscoverRes
     }),
     feed: presentDiscoverFeed(live, {
       allowedProviders: listDiscoverFeedProviders(settings.sources),
-      seen,
+      seen: exposure.seen,
       limit: DISCOVER_FEED_PAGE_SIZE,
       leadWithShelf: true,
+      weighTopic: (topic) => weighDiscoverFeedTopic(topic, preferences),
       now: new Date(),
       mutedTopics: [...dayProfile.mutedTopics, ...summariseDiscoverFeedback(feedback).hiddenTopics],
       feedback: collectCardSignals(feedback, discoverLiveId(user.id)),

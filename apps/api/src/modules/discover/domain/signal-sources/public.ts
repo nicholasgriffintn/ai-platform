@@ -19,6 +19,12 @@ function hackerNewsUrl(story: Record<string, unknown>): string {
   );
 }
 
+function hackerNewsDiscussion(story: Record<string, unknown>): string | undefined {
+  const discussion = `https://news.ycombinator.com/item?id=${first(story, ["objectID"])}`;
+
+  return hackerNewsUrl(story) === discussion ? undefined : discussion;
+}
+
 function lobstersStories(result: unknown): Record<string, unknown>[] {
   return records(result);
 }
@@ -56,6 +62,7 @@ export const PUBLIC_SIGNALS: readonly DiscoverPublicSignal[] = [
                 snippet: htmlToPlainText(first(story, ["story_text"])).slice(0, 400),
                 source: describeEngagement("Hacker News", points, "points"),
                 date: first(story, ["created_at"]).slice(0, 10),
+                discussion: hackerNewsDiscussion(story),
               },
             ]
           : [];
@@ -88,6 +95,7 @@ export const PUBLIC_SIGNALS: readonly DiscoverPublicSignal[] = [
                 snippet: first(story, ["description_plain"]).slice(0, 400),
                 source: describeEngagement("Lobsters", score, "points"),
                 date: first(story, ["created_at"]).slice(0, 10),
+                discussion: first(story, ["comments_url"]) || undefined,
               },
             ]
           : [];

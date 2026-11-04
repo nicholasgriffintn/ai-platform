@@ -39,6 +39,7 @@ interface DiscoverSignalBase {
   needsLocation?: boolean;
   needsTopics?: boolean;
   notActivity?: boolean;
+  isEmpty?: (result: unknown) => boolean;
 }
 
 export interface DiscoverConnectorSignal extends DiscoverSignalBase {
@@ -46,6 +47,7 @@ export interface DiscoverConnectorSignal extends DiscoverSignalBase {
   operation: string;
   parameters: (read: DiscoverSignalRead) => Record<string, unknown>;
   expand?: DiscoverSignalExpansion;
+  lookup?: (result: unknown, read: DiscoverSignalRead) => string | null;
 }
 
 export interface DiscoverPublicSignal extends DiscoverSignalBase {

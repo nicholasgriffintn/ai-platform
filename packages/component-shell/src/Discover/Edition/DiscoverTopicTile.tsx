@@ -55,7 +55,7 @@ export function DiscoverTopicTile({
       data-discover-item={`card:${card.id}`}
       onClick={() => onSelect(card)}
       className={cn(
-        "group relative aspect-[4/5] w-full overflow-hidden rounded-2xl text-left ring-offset-2 ring-offset-canvas transition focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none active:scale-[.98] motion-reduce:active:scale-100",
+        "group relative aspect-[var(--media-tile-aspect,4/5)] w-full overflow-hidden rounded-2xl text-left ring-offset-2 ring-offset-canvas transition focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none active:scale-[.98] motion-reduce:active:scale-100",
         selected && "ring-2 ring-active-work",
         hidden && "opacity-40 saturate-0",
       )}

@@ -12,6 +12,8 @@ import { normaliseComparableText } from "@ngriffin_uk/polychat-utility-core";
 import { fillDiscoverFeed, type DiscoverFeedGroup } from "./feed";
 import { claimUnseenLink, collectSeenLinks, type DiscoverLink } from "./links";
 
+const DISCOVER_EDITION_FEED_LIMIT = 48;
+
 export interface BuildDiscoverEditionInput {
   draft: ComposeDiscoverEditionInput;
   date: string;
@@ -129,7 +131,7 @@ export function buildDiscoverEdition(input: BuildDiscoverEditionInput): Discover
       groups: input.feed,
       seen,
       skipTopics: new Set([...input.hiddenTopics, ...withheldTopics]),
-      limit: DISCOVER_MAX_EDITION_CARDS - cards.length,
+      limit: Math.min(DISCOVER_EDITION_FEED_LIMIT, DISCOVER_MAX_EDITION_CARDS - cards.length),
       createId: input.createId,
     }),
   );

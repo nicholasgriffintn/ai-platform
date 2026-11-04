@@ -1,4 +1,8 @@
-import { discoverCardSchema, type DiscoverCard } from "@ngriffin_uk/polychat-schemas";
+import {
+  discoverCardSchema,
+  externalHttpUrlSchema,
+  type DiscoverCard,
+} from "@ngriffin_uk/polychat-schemas";
 import {
   comparableHttpUrl,
   interleaveBy,
@@ -132,6 +136,16 @@ function describeItemSource(item: DiscoverResearchResult, topic: string): string
   return [origin, item.date ?? ""].filter(Boolean).join(", ");
 }
 
+function describeCardExtras(item: DiscoverResearchResult) {
+  const image = externalHttpUrlSchema.safeParse(item.image);
+  const discussion = externalHttpUrlSchema.safeParse(item.discussion);
+
+  return {
+    ...(image.success ? { imageUrl: image.data } : {}),
+    ...(discussion.success && !item.media ? { discussionUrl: discussion.data } : {}),
+  };
+}
+
 function newestFirst(items: readonly DiscoverResearchResult[]): DiscoverResearchResult[] {
   return [...items].sort((left, right) => (right.date ?? "").localeCompare(left.date ?? ""));
 }
@@ -166,6 +180,7 @@ function takeCard(
       summary: truncateSingleLine(item.snippet || item.title, 400),
       reason: truncateSingleLine(source ? `${queue.group.lead}. ${source}` : queue.group.lead, 200),
       sensitive: false,
+      ...describeCardExtras(item),
     });
 
     if (card.success) {

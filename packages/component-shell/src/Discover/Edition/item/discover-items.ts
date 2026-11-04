@@ -67,8 +67,8 @@ export function orderDiscoverItems(
       ...groups.topics,
       ...groups.forYou,
       ...groups.comingUp,
-      ...groups.reads,
       ...groups.watching,
+      ...groups.reads,
     ].map((card): DiscoverItem => ({ type: "card", card })),
   ];
 }

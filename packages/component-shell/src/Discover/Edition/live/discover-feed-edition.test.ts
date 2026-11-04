@@ -127,4 +127,25 @@ describe("Discover feed and briefing merge", () => {
       "Yesterday",
     ]);
   });
+
+  it("shows a task once when the brief has already been merged", () => {
+    const task = {
+      id: "task",
+      kind: "task" as const,
+      title: "Google Tasks",
+      text: "Renew the travel insurance",
+      source: "Google Tasks",
+      observedAt: instant,
+      expiresAt: instant,
+      actionable: false,
+      fingerprint: "task",
+      stale: false,
+    };
+    const live = {
+      ...response,
+      now: response.now ? { ...response.now, observations: [task] } : undefined,
+    };
+
+    expect(discoverCurrentBrief(live, discoverCurrentBrief(live))).toHaveLength(1);
+  });
 });

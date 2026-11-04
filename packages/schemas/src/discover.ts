@@ -26,6 +26,7 @@ export const DISCOVER_CONTEXT_TOOL_NAME = "read_discover_context";
 export const DISCOVER_COMPOSE_TOOL_NAME = "compose_discover_edition";
 export const DISCOVER_MAX_CARDS = 12;
 export const DISCOVER_MAX_EDITION_CARDS = 160;
+export const DISCOVER_ALSO_IN_LIMIT = 4;
 export const DISCOVER_MAX_BRIEF_LINES = 5;
 export const DISCOVER_MAX_INTERESTS = 8;
 export const DISCOVER_CURATE_MAX_LENGTH = 500;
@@ -250,9 +251,15 @@ export const discoverCardSchema = z.discriminatedUnion("kind", [
       .min(1)
       .optional()
       .describe("The filed copy of the page in the Discover notebook, when it was read."),
+    imageUrl: externalHttpUrlSchema.optional(),
+    discussionUrl: externalHttpUrlSchema.optional(),
+    alsoIn: z
+      .array(z.object({ source: z.string().min(1).max(80), url: externalHttpUrlSchema }).strict())
+      .max(DISCOVER_ALSO_IN_LIMIT)
+      .optional(),
   }),
-  watchCardDraftSchema.extend(cardIdentity),
-  listenCardDraftSchema.extend(cardIdentity),
+  watchCardDraftSchema.extend({ ...cardIdentity, imageUrl: externalHttpUrlSchema.optional() }),
+  listenCardDraftSchema.extend({ ...cardIdentity, imageUrl: externalHttpUrlSchema.optional() }),
   eventCardDraftSchema.extend(cardIdentity),
   inboxCardDraftSchema.extend(cardIdentity),
   actionCardDraftSchema.extend(cardIdentity),

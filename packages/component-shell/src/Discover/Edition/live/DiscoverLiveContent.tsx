@@ -6,7 +6,9 @@ import { DiscoverFeed } from "../DiscoverFeed.js";
 import { DiscoverMediaShelf } from "../DiscoverMediaShelf.js";
 import type { DiscoverEditionController } from "../useDiscoverEditionController.js";
 import { DiscoverContentLink } from "./DiscoverContentLink.js";
+import { DiscoverSourceNotice } from "./DiscoverSourceNotice.js";
 import { useDiscoverCurrentRefresh } from "./useDiscoverCurrentRefresh.js";
+import { useDiscoverSinceLastVisit } from "./useDiscoverSinceLastVisit.js";
 
 export function DiscoverLiveContent({ controller }: { controller: DiscoverEditionController }) {
   const exposure = useDiscoverExposure(controller.liveFeed.items);
@@ -15,6 +17,8 @@ export function DiscoverLiveContent({ controller }: { controller: DiscoverEditio
     isLoading: controller.liveFeed.isLoadingMore,
     onLoadMore: controller.liveFeed.loadMore,
   });
+
+  const newCardIds = useDiscoverSinceLastVisit(controller.liveFeed.items);
 
   useDiscoverCurrentRefresh(controller.discover.data?.now, controller.settings?.enabled ?? false);
   const edition = controller.edition;
@@ -34,8 +38,10 @@ export function DiscoverLiveContent({ controller }: { controller: DiscoverEditio
         isLoadingMore={controller.liveFeed.isLoadingMore}
         loadMore={controller.liveFeed.loadMore}
       />
+      <DiscoverSourceNotice sources={controller.settings?.sources} />
       <DiscoverFeed
         edition={edition}
+        newCardIds={newCardIds}
         selectedId={controller.selectedCard?.id ?? null}
         isTopicHidden={controller.isTopicHidden}
         isFollowing={(card) => Boolean(controller.followFor(card))}
