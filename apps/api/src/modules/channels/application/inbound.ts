@@ -5,6 +5,7 @@ import {
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   type ChannelInteractionMode,
+  type ChatRun,
   type ChannelMessageContext,
   channelMessageContextSchema,
   INBOUND_CHANNEL_IDS,
@@ -32,6 +33,10 @@ import {
   resolveStoredMessagingProvider,
   selectConfiguredMessagingDelivery,
 } from "~/infrastructure/providers/capabilities/messaging/delivery";
+import {
+  parseMessageApprovalReply,
+  type MessageApprovalReply,
+} from "~/modules/channels/domain/message-approval";
 import type { ChannelRunSignal } from "~/modules/channels/domain/reaction-signals";
 import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
@@ -64,6 +69,14 @@ import { requireChannelSenderMapping } from "./access";
 import { recordChannelAttention } from "./channel-attention";
 import { judgeChannelEvent, type ChannelEventJudgement } from "./channel-event-judgement";
 import { deliverDisclosedChannelReply } from "./disclosed-reply";
+import {
+  answerMessageApproval,
+  bindingApprovalSenderKey,
+  issueMessageApproval,
+  providerApprovalSenderKey,
+  readCompletionRun,
+  type MessageApprovalSender,
+} from "./message-approvals";
 import type { ChannelIncomingMessage } from "./ports/channel-adapter";
 import { runChannelTurn, signalChannelRun } from "./run-signals";
 
@@ -386,6 +399,7 @@ type ChannelDelivery =
       teammateContextId?: string;
       poly?: boolean;
       interactionMode: ChannelInteractionMode;
+      approvalSenderKey: string;
       validate(): Promise<void>;
       send(reply: ChannelReplyPayload): Promise<void>;
       signal?(signal: ChannelRunSignal): Promise<void>;
@@ -422,6 +436,10 @@ async function resolveProviderDelivery(params: {
     status: "ready",
     conversationId,
     interactionMode: "direct",
+    approvalSenderKey: await providerApprovalSenderKey({
+      providerSettingsId,
+      address: message.from,
+    }),
     validate: async () => undefined,
     send: async (reply) => {
       const replyMediaUrls = await resolveProviderReplyMediaUrls({
@@ -584,6 +602,11 @@ async function resolveBindingDelivery(params: {
     poly: isPoly,
     bindingId: binding.id,
     interactionMode: binding.interaction_mode,
+    approvalSenderKey: await bindingApprovalSenderKey({
+      bindingId: binding.id,
+      mappingId: sender.id,
+      revision: sender.revision,
+    }),
     validate,
     ...(binding.scope_type === "project" ? { projectId: binding.scope_id } : {}),
     signal: (signal) =>
@@ -663,6 +686,82 @@ async function signpostUnansweredMessage(params: {
   }
 }
 
+type ReadyChannelDelivery = Extract<ChannelDelivery, { status: "ready" }>;
+
+async function offerNextMessageApproval(params: {
+  context: ServiceContext;
+  user: IUser;
+  run: ChatRun | null | undefined;
+  sender: MessageApprovalSender;
+  delivery: ReadyChannelDelivery;
+}): Promise<void> {
+  if (!params.run) {
+    return;
+  }
+
+  const issued = await issueMessageApproval({
+    context: params.context,
+    user: params.user,
+    run: params.run,
+    sender: params.sender,
+  });
+
+  if (!issued) {
+    return;
+  }
+
+  await deliverOutboundOperation({
+    context: params.context,
+    deliveryId: `message_approval_${issued.id}`,
+    userId: params.user.id,
+    kind: "message_approval",
+    scopeId: params.delivery.conversationId,
+    operationId: issued.id,
+    payload: { approvalId: issued.id },
+    send: () => params.delivery.send({ body: issued.body, mediaUrls: [] }),
+  });
+}
+
+async function answerChannelApproval(params: {
+  context: ServiceContext;
+  user: IUser;
+  channel: InboundChannelId;
+  message: InboundChannelMessage;
+  reply: MessageApprovalReply;
+  delivery: ReadyChannelDelivery;
+}): Promise<InboundChannelResult> {
+  const { context, delivery, message, user } = params;
+  const sender = { channel: params.channel, senderKey: delivery.approvalSenderKey };
+
+  await delivery.validate();
+
+  const answer = await answerMessageApproval({
+    context,
+    user,
+    sender,
+    reply: params.reply,
+    messageId: message.messageId,
+  });
+  const digest = await sha256Hex([params.channel, message.messageId].join(":"));
+
+  await deliverOutboundOperation({
+    context,
+    deliveryId: `message_approval_reply_${digest.slice(0, 40)}`,
+    userId: user.id,
+    kind: "message_approval_reply",
+    scopeId: delivery.conversationId,
+    operationId: message.messageId,
+    payload: { status: answer.status },
+    send: () => delivery.send({ body: answer.body, mediaUrls: [] }),
+  });
+
+  if (answer.status === "resolved") {
+    await offerNextMessageApproval({ context, user, run: answer.run, sender, delivery });
+  }
+
+  return { status: "delivered", conversationId: delivery.conversationId, body: answer.body };
+}
+
 export async function handleInboundChannelMessage(params: {
   env: IEnv;
   context: ServiceContext;
@@ -677,6 +776,19 @@ export async function handleInboundChannelMessage(params: {
 
   if (delivery.status !== "ready") {
     return delivery;
+  }
+
+  const approvalReply = parseMessageApprovalReply(message.body);
+
+  if (approvalReply) {
+    return answerChannelApproval({
+      context: params.context,
+      user: params.user,
+      channel: params.data.channel,
+      message,
+      reply: approvalReply,
+      delivery,
+    });
   }
 
   if (
@@ -874,6 +986,16 @@ export async function handleInboundChannelMessage(params: {
     send: (body) => delivery.send({ body, mediaUrls: notification.mediaUrls }),
   });
   await delivery.signal?.("done");
+
+  if (delivery.teammateId) {
+    await offerNextMessageApproval({
+      context: params.context,
+      user: params.user,
+      run: readCompletionRun(completion),
+      sender: { channel: params.data.channel, senderKey: delivery.approvalSenderKey },
+      delivery,
+    });
+  }
 
   if (judgement?.needsAttention) {
     await params.context.repositories

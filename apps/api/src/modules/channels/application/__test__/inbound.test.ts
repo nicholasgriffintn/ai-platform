@@ -59,6 +59,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
 import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
+import { MessageApprovalRepository } from "~/modules/channels/infrastructure/MessageApprovalRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { OutboundDeliveryRepository } from "~/modules/delivery/infrastructure/OutboundDeliveryRepository";
@@ -108,6 +109,7 @@ function createContext(
           getRunMessages: vi.fn(async () => []),
         },
       ],
+      [MessageApprovalRepository, { getByCode: vi.fn(async () => null) }],
       [
         OutboundDeliveryRepository,
         {
@@ -347,6 +349,23 @@ describe("inbound channel messages", () => {
     ).rejects.toMatchObject({ type: ErrorType.CONFLICT_ERROR });
 
     expect(mocks.providerSend).not.toHaveBeenCalled();
+  });
+
+  it("answers an approval reply without running a turn or storing it", async () => {
+    const base = createTaskData();
+
+    await handleInboundChannelMessage({
+      env,
+      context: createContext(),
+      user,
+      data: { ...base, message: { ...base.message, body: "approve 7K2M9QXA" } },
+    });
+
+    expect(mocks.startResponse).not.toHaveBeenCalled();
+    expect(mocks.conversationGet).not.toHaveBeenCalled();
+    expect(mocks.providerSend).toHaveBeenCalledWith(
+      expect.objectContaining({ body: expect.stringContaining("not valid") }),
+    );
   });
 
   it("does not run a turn when the sender is no longer allowed", async () => {

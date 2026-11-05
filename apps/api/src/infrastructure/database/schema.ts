@@ -1185,6 +1185,49 @@ export const channelSender = sqliteTable(
 
 export type ChannelSenderRow = typeof channelSender.$inferSelect;
 
+export const messageApproval = sqliteTable(
+  "message_approval",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    run_id: text().notNull(),
+    run_attempt: integer().notNull(),
+    conversation_id: text().notNull(),
+    interaction_id: text().notNull(),
+    tool_name: text().notNull(),
+    connector_approval_id: text(),
+    argument_digest: text().notNull(),
+    effect_class: text().notNull(),
+    channel: text().notNull(),
+    sender_key: text().notNull(),
+    code_hash: text().notNull(),
+    state: text({ enum: ["pending", "approved", "rejected"] })
+      .notNull()
+      .default("pending"),
+    expires_at: text().notNull(),
+    resolved_message_id: text(),
+    resolved_at: text(),
+    created_at: text()
+      .notNull()
+      .default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    codeIdx: uniqueIndex("message_approval_code_idx").on(table.user_id, table.code_hash),
+    targetIdx: uniqueIndex("message_approval_target_idx").on(
+      table.run_id,
+      table.run_attempt,
+      table.interaction_id,
+      table.argument_digest,
+      table.channel,
+      table.sender_key,
+    ),
+  }),
+);
+
+export type MessageApprovalRow = typeof messageApproval.$inferSelect;
+
 export type OutboundDeliveryRow = {
   id: string;
   user_id: number;

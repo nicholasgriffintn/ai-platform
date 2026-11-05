@@ -3,6 +3,10 @@ import {
   polyAgendaSchema,
   polyHandoffDisagreementSchema,
   polyLookAroundSchema,
+  polyRoutineParamsSchema,
+  polyRoutineSetupSchema,
+  polyRoutinesSchema,
+  setupPolyRoutineSchema,
   updatePolyLookAroundSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
@@ -12,6 +16,11 @@ import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { disagreeWithPolyHandoff } from "~/modules/poly/application/handoff-disagreement";
 import { setPolyLookAround } from "~/modules/poly/application/look-around";
 import { readPolyAgenda } from "~/modules/poly/application/read-agenda";
+import {
+  readPolyRoutines,
+  removePolyRoutine,
+  setupPolyRoutine,
+} from "~/modules/poly/application/routines";
 
 const app = new Hono();
 
@@ -56,6 +65,45 @@ addRoute(app, "patch", "/look-around", {
     401: { description: "Authentication required", schema: errorResponseSchema },
   },
   handler: async ({ serviceContext, body }) => setPolyLookAround(serviceContext, body),
+});
+
+addRoute(app, "get", "/routines", {
+  tags: ["poly"],
+  summary: "Read Poly's routines and today's briefs",
+  description:
+    "The five bounded routines Poly can run for you, which are on, the briefs from the last day and where approvals can reach you.",
+  auth: true,
+  responses: {
+    200: { description: "Routines and briefs", schema: polyRoutinesSchema },
+    401: { description: "Authentication required", schema: errorResponseSchema },
+  },
+  handler: async ({ serviceContext }) => readPolyRoutines(serviceContext),
+});
+
+addRoute(app, "post", "/routines", {
+  tags: ["poly"],
+  summary: "Turn on one of Poly's routines",
+  description:
+    "Schedules a routine under Poly. Each one has a fixed set of tools and sources and asks before anything changes.",
+  auth: true,
+  bodySchema: setupPolyRoutineSchema,
+  responses: {
+    200: { description: "The routine", schema: polyRoutineSetupSchema },
+    401: { description: "Authentication required", schema: errorResponseSchema },
+  },
+  handler: async ({ serviceContext, body }) => setupPolyRoutine(serviceContext, body),
+});
+
+addRoute(app, "delete", "/routines/:template_id", {
+  tags: ["poly"],
+  summary: "Turn off one of Poly's routines",
+  auth: true,
+  paramSchema: polyRoutineParamsSchema,
+  responses: {
+    401: { description: "Authentication required", schema: errorResponseSchema },
+  },
+  handler: async ({ serviceContext, params }) =>
+    removePolyRoutine(serviceContext, params.template_id),
 });
 
 export default app;

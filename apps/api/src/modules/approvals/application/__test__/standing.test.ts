@@ -14,6 +14,7 @@ const ensureContext = vi.hoisted(() => vi.fn());
 
 vi.mock("~/modules/teammates/application/contexts", () => ({
   ensureActiveTeammateContext: ensureContext,
+  requireOwnedTeammateContext: vi.fn(),
 }));
 
 const polyContext: TeammateContext = {

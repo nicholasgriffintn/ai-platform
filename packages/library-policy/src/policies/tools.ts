@@ -35,6 +35,21 @@ export const toolPolicies = {
   "tool.rule.floor": `forbid(principal, action == Polychat::Action::"tool.unattended", resource)
     when { ["act", "act_if_asked"].contains(context.toolRule) &&
       ["external_send", "spend", "destructive", "credential", "data_export"].contains(context.effectClass) };`,
+  "tool.standing": `permit(principal, action == Polychat::Action::"approval.standing", resource)
+    when { context.hasTeammateContext && context.autonomyLevel == "assistant" &&
+      context.effectClass == "write" && context.hasDestination };`,
+  "tool.standing.floor": `forbid(principal, action == Polychat::Action::"approval.standing", resource)
+    when { ["external_send", "spend", "destructive", "credential", "data_export"].contains(context.effectClass) };`,
+  "tool.message": `permit(principal, action == Polychat::Action::"approval.message", resource)
+    when { context.actorId != "" && context.actorId == context.ownerId &&
+      context.channel == context.approvalChannel && context.senderKey != "" &&
+      context.senderKey == context.approvalSenderKey &&
+      context.interactionId != "" && context.interactionId == context.pendingInteractionId &&
+      context.argumentDigest != "" && context.argumentDigest == context.approvalArgumentDigest &&
+      context.runAttempt == context.approvalRunAttempt && context.runStatus == "awaiting_approval" &&
+      context.state == "pending" && context.expiresAt > context.now };`,
+  "tool.message.credential": `forbid(principal, action == Polychat::Action::"approval.message", resource)
+    when { context.effectClass == "credential" && context.resolution == "approved" };`,
   "tool.approval": `permit(principal, action == Polychat::Action::"tool.unattended", resource)
     when { context.toolName == "request_approval" ||
       (!context.permissions.containsAny(context.requiredApprovalPermissions) &&

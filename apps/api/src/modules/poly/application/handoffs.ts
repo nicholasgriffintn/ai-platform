@@ -33,6 +33,7 @@ export interface RoutineHandoffInput {
   resultConversationId: string;
   failed: boolean;
   paused: boolean;
+  reachOutFirst?: boolean;
 }
 
 export interface PolyHandoff {
@@ -57,7 +58,7 @@ async function resolveUrgency(
     return { urgency: "critical", receipt: null };
   }
 
-  if (input.failed) {
+  if (input.failed || input.reachOutFirst) {
     return { urgency: "high", receipt: null };
   }
 

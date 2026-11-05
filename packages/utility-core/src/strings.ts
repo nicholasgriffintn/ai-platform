@@ -237,6 +237,10 @@ export function truncateSingleLine(value: string, maxCharacters: number): string
     : `${normalised.slice(0, Math.max(0, maxCharacters - 3))}...`;
 }
 
+export function toPlainChannelLine(value: string, maxCharacters: number): string {
+  return truncateSingleLine(value.replace(/[<>`]/g, ""), maxCharacters);
+}
+
 export function truncateToWords(input: string, maxWords: number): string {
   const matches = input.match(/\S+\s*/g);
 

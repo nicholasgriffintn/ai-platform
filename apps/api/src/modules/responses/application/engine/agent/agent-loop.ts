@@ -153,6 +153,32 @@ interface ChatAgentLoopState extends AgentLoopState {
   directedToolCallIssued?: boolean;
 }
 
+function noteWaitingForUser(state: ChatAgentLoopState, toolResults: readonly Message[]): void {
+  const pendingResult = toolResults.find((message) => message.status === "pending");
+
+  if (!pendingResult) {
+    return;
+  }
+
+  const reason = waitingForUserReason(pendingResult);
+  const kind = reason === "takeover" ? "takeover" : reason === "approval" ? "approval" : "question";
+
+  state.waitingForUserAction = kind;
+  state.pendingUserAction = {
+    kind,
+    message:
+      typeof pendingResult.content === "string" && pendingResult.content.trim()
+        ? pendingResult.content
+        : reason === "selection"
+          ? "This work is waiting for your selection."
+          : kind === "question"
+            ? "This work is waiting for your answer."
+            : kind === "takeover"
+              ? "This work is waiting for you to take control."
+              : "This action is waiting for user approval.",
+  };
+}
+
 interface ChatAgentSharedContext {
   completionId: string;
   conversationManager: ConversationManager;
@@ -480,6 +506,8 @@ async function runChatAgentLoop(
     await sink.write(createStreamedToolResultEvent(toolResult));
     await params.onToolResult?.(toolResult);
   }
+
+  noteWaitingForUser(state, params.initialToolResults ?? []);
 
   await executeAgentLoop<ChatAgentSharedContext, ChatAgentLoopState>({
     initialMessages: runtimeMessages,
@@ -1051,28 +1079,7 @@ async function runChatAgentLoop(
         isSuccessfulToolStatus(message.status),
       ).length;
 
-      const pendingResult = toolResults.find((message) => message.status === "pending");
-
-      if (pendingResult) {
-        const reason = waitingForUserReason(pendingResult);
-        const kind =
-          reason === "takeover" ? "takeover" : reason === "approval" ? "approval" : "question";
-
-        context.state.waitingForUserAction = kind;
-        context.state.pendingUserAction = {
-          kind,
-          message:
-            typeof pendingResult.content === "string" && pendingResult.content.trim()
-              ? pendingResult.content
-              : reason === "selection"
-                ? "This work is waiting for your selection."
-                : kind === "question"
-                  ? "This work is waiting for your answer."
-                  : kind === "takeover"
-                    ? "This work is waiting for you to take control."
-                    : "This action is waiting for user approval.",
-        };
-      }
+      noteWaitingForUser(context.state, toolResults);
 
       const currentStep = steps[steps.length - 1];
 

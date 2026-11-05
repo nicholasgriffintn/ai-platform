@@ -9,13 +9,44 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
+import { readRecipeResumeOptions } from "~/modules/recipes/application";
 import { hydrateChatRunUsage } from "~/modules/responses/application/runs/usage";
+import type { ResponseCommand } from "~/modules/responses/domain/command";
 import type { CoreChatOptions } from "~/types";
 
 export interface TeammateRunResumeState {
   configuration: TeammateRunConfiguration;
   maxSteps: number;
   durableExecution?: CoreChatOptions["durable_execution"];
+}
+
+export async function withRoutineBounds(
+  context: ServiceContext,
+  run: ChatRun | null,
+  body: ResponseCommand,
+): Promise<ResponseCommand> {
+  if (!run?.recipeInstallationId) {
+    return body;
+  }
+
+  const recipe = await readRecipeResumeOptions({
+    context,
+    userId: run.initiatorUserId,
+    installationId: run.recipeInstallationId,
+  });
+
+  if (!recipe) {
+    throw new AssistantError(
+      "The routine behind this run no longer exists",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  return {
+    ...body,
+    settings: { ...body.settings, options: { ...body.settings?.options, recipe } },
+  };
 }
 
 export async function prepareTeammateRunResume(params: {

@@ -140,6 +140,38 @@ describe("resolveApprovedToolInteraction", () => {
     expect(update).toHaveBeenCalledTimes(1);
   });
 
+  it("waits again when an approved call hands over to its connector's own approval", async () => {
+    handleToolCalls.mockResolvedValueOnce([
+      {
+        role: "tool",
+        tool_call_id: "call-1",
+        status: "pending",
+        content: "Approval is required before gmail can run GMAIL_CREATE_EMAIL_DRAFT.",
+        data: { approvalRequired: true, approvalId: "coa_1" },
+      },
+    ]);
+
+    const settled = await resolve([decision("call-1", "approved"), decision("call-2", "rejected")])
+      .result;
+
+    expect(settled?.toolResults[0]).toMatchObject({
+      id: "tool-call-1",
+      status: "pending",
+      data: { approvalId: "coa_1" },
+    });
+    expect(settled?.toolResults[0]?.data).not.toHaveProperty("approvalResolution");
+  });
+
+  it("refuses any other approved call that is still pending", async () => {
+    handleToolCalls.mockResolvedValueOnce([
+      { role: "tool", tool_call_id: "call-1", status: "pending", content: "Waiting" },
+    ]);
+
+    await expect(
+      resolve([decision("call-1", "approved"), decision("call-2", "rejected")]).result,
+    ).rejects.toMatchObject({ statusCode: 409 });
+  });
+
   it("refuses a partial set so the model never resumes with approvals still open", async () => {
     await expect(resolve([decision("call-2", "approved")]).result).rejects.toMatchObject({
       statusCode: 409,
