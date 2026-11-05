@@ -307,4 +307,78 @@ describe("Cedar authorisation", () => {
       expect(partitioned(request)).toEqual(full(request));
     }
   });
+
+  it("never lets a floor effect earn a standing approval", () => {
+    const write = {
+      hasTeammateContext: true,
+      autonomyLevel: "assistant",
+      effectClass: "write",
+      hasDestination: true,
+    };
+
+    expect(authorise("approval.standing", write).allowed).toBe(true);
+    expect(authorise("approval.standing", { ...write, hasDestination: false }).allowed).toBe(false);
+    expect(authorise("approval.standing", { ...write, hasTeammateContext: false }).allowed).toBe(
+      false,
+    );
+    expect(authorise("approval.standing", { ...write, autonomyLevel: "partner" }).allowed).toBe(
+      false,
+    );
+
+    for (const effectClass of [
+      "external_send",
+      "spend",
+      "destructive",
+      "credential",
+      "data_export",
+    ]) {
+      expect(authorise("approval.standing", { ...write, effectClass }).allowed).toBe(false);
+    }
+  });
+
+  it("binds a message approval to its owner, sender, pending call, arguments and expiry", () => {
+    const reply = {
+      actorId: "7",
+      ownerId: "7",
+      channel: "telegram",
+      approvalChannel: "telegram",
+      senderKey: "binding_1:sender_1:2",
+      approvalSenderKey: "binding_1:sender_1:2",
+      interactionId: "call_1",
+      pendingInteractionId: "call_1",
+      argumentDigest: "digest",
+      approvalArgumentDigest: "digest",
+      runAttempt: 1,
+      approvalRunAttempt: 1,
+      runStatus: "awaiting_approval",
+      state: "pending",
+      expiresAt: 2_000,
+      now: 1_000,
+      effectClass: "external_send",
+      resolution: "approved",
+    };
+
+    expect(authorise("approval.message", reply).allowed).toBe(true);
+
+    for (const changed of [
+      { ownerId: "8" },
+      { approvalChannel: "slack" },
+      { approvalSenderKey: "binding_1:sender_1:3" },
+      { senderKey: "", approvalSenderKey: "" },
+      { pendingInteractionId: "call_2" },
+      { approvalArgumentDigest: "other" },
+      { approvalRunAttempt: 2 },
+      { runStatus: "running" },
+      { state: "approved" },
+      { expiresAt: 1_000 },
+      { effectClass: "credential" },
+    ]) {
+      expect(authorise("approval.message", { ...reply, ...changed }).allowed).toBe(false);
+    }
+
+    expect(
+      authorise("approval.message", { ...reply, effectClass: "credential", resolution: "rejected" })
+        .allowed,
+    ).toBe(true);
+  });
 });

@@ -137,14 +137,14 @@ describe("admitTeammateContextAuthority", () => {
     ).toMatchObject({ autonomyLevel: "partner", standingApprovals: [standing] });
   });
 
-  it("never brakes a teammate other than Poly", () => {
+  it("keeps another teammate's dial but lets its earned approvals lapse while the owner is away", () => {
     expect(
       admitTeammateContextAuthority({
         context: { ...partner, teammateId: "teammate_research" },
         trigger: "schedule",
         now: eightDaysLater,
       }),
-    ).toMatchObject({ autonomyLevel: "partner", standingApprovals: [standing] });
+    ).toMatchObject({ autonomyLevel: "partner", standingApprovals: [] });
   });
 });
 

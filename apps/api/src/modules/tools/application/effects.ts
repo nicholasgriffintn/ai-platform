@@ -1,15 +1,14 @@
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import {
   resolveToolDestination,
   resolveToolEffectClass,
   resolveToolEffectClassWithHints,
   type ToolEffects,
 } from "@ngriffin_uk/polychat-library-tools";
-import {
-  POLY_CONVERSATION_TYPE,
-  type ConversationType,
-  type TeammateAutonomyLevel,
-  type TeammateStandingApproval,
-  type ToolEffectClass,
+import type {
+  TeammateAutonomyLevel,
+  TeammateStandingApproval,
+  ToolEffectClass,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
@@ -87,14 +86,14 @@ export function hasStandingApproval(params: {
 
 export function isStandingApprovalEligible(params: {
   autonomyLevel: TeammateAutonomyLevel | null | undefined;
-  conversationType: ConversationType | undefined;
+  teammateContextId: string | undefined;
   effectClass: ToolEffectClass;
   destination: string | undefined;
 }): boolean {
-  return (
-    params.autonomyLevel === "assistant" &&
-    params.conversationType === POLY_CONVERSATION_TYPE &&
-    params.effectClass === "write" &&
-    Boolean(params.destination)
-  );
+  return authorise("approval.standing", {
+    hasTeammateContext: Boolean(params.teammateContextId),
+    autonomyLevel: params.autonomyLevel ?? "",
+    effectClass: params.effectClass,
+    hasDestination: Boolean(params.destination),
+  }).allowed;
 }

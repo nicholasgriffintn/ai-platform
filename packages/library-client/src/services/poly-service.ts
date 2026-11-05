@@ -54,9 +54,15 @@ export class PolyService {
     );
   }
 
-  async revokePolyStandingApproval(toolName: string, destination: string): Promise<void> {
+  async revokePolyStandingApproval(
+    toolName: string,
+    destination: string,
+    contextId?: string,
+  ): Promise<void> {
+    const query = contextId ? `?context_id=${encodeURIComponent(contextId)}` : "";
+
     await requestJson<unknown>(
-      `/approvals/standing/${encodeURIComponent(standingApprovalId(toolName, destination))}`,
+      `/approvals/standing/${encodeURIComponent(standingApprovalId(toolName, destination))}${query}`,
       "DELETE",
     );
   }

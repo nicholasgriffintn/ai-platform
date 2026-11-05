@@ -268,8 +268,11 @@ class ApiService {
   grantPolyStandingApproval = (interactionId: string): Promise<StandingApproval> =>
     this.polyService.grantPolyStandingApproval(interactionId);
 
-  revokePolyStandingApproval = (toolName: string, destination: string): Promise<void> =>
-    this.polyService.revokePolyStandingApproval(toolName, destination);
+  revokePolyStandingApproval = (
+    toolName: string,
+    destination: string,
+    contextId?: string,
+  ): Promise<void> => this.polyService.revokePolyStandingApproval(toolName, destination, contextId);
 
   listTeammateGroups = (): Promise<TeammateGroup[]> => this.teammateService.listTeammateGroups();
 

@@ -126,6 +126,11 @@ export const resolveFunctionTool = (functionName: string): RegisteredFunctionToo
   }
 };
 
+export const findFunctionTool = (functionName: string): RegisteredFunctionTool | undefined =>
+  getFunctionToolCatalogue()
+    .list()
+    .find((tool) => tool.name === functionName);
+
 export const validateFunctionArgs = (toolDefinition: RegisteredFunctionTool, args: unknown) => {
   try {
     return validateToolInput(toolDefinition, args);

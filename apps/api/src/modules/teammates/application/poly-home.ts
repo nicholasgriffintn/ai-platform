@@ -8,7 +8,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { applyOwnerAbsenceBrake } from "~/modules/poly/domain/earned-trust";
+import { applyOwnerAbsenceBrake, isOwnerAbsent } from "~/modules/poly/domain/earned-trust";
 
 import type { ResolvedTeammateInvocation } from "./execution";
 
@@ -52,7 +52,10 @@ export function admitTeammateContextAuthority(params: {
       })
     : {
         autonomyLevel: context.autonomyLevel,
-        standingApprovals: context.standingApprovals,
+        standingApprovals:
+          !isOwnerStartedTrigger(params.trigger) && isOwnerAbsent(context.ownerSeenAt, params.now)
+            ? []
+            : context.standingApprovals,
         braked: false,
       };
 

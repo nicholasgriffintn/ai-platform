@@ -5,6 +5,7 @@ import type { TeammateContextScope } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { Archive, ExternalLink, Pause, Play, Workflow } from "lucide-react";
 
+import { TeammateAutonomyPanel } from "./TeammateAutonomyPanel.js";
 import { TeammateComputerPanel } from "./TeammateComputerPanel.js";
 import { TeammateConnectionGrantsPanel } from "./TeammateConnectionGrantsPanel.js";
 import { TeammateMemoryPanel } from "./TeammateMemoryPanel.js";
@@ -143,6 +144,7 @@ export function TeammateContextsPanel({
                   label="Working context sections"
                   sections={[
                     { id: "memory", label: "Memory" },
+                    { id: "autonomy", label: "Autonomy" },
                     { id: "connections", label: "Connections" },
                     { id: "routines", label: "Routines" },
                     { id: "spend", label: "Spend" },
@@ -153,6 +155,9 @@ export function TeammateContextsPanel({
               <div className="flex flex-col gap-4 p-4 sm:p-5">
                 <div id="memory" className="min-w-0 scroll-mt-6">
                   <TeammateMemoryPanel contextId={current.id} />
+                </div>
+                <div id="autonomy" className="min-w-0 scroll-mt-6 rounded-lg border p-4">
+                  <TeammateAutonomyPanel context={current} />
                 </div>
                 <div id="connections" className="min-w-0 scroll-mt-6">
                   <TeammateConnectionGrantsPanel contextId={current.id} />

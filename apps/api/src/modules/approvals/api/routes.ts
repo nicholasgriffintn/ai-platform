@@ -8,6 +8,7 @@ import {
   resolveApprovalSchema,
   standingApprovalListSchema,
   standingApprovalParamsSchema,
+  standingApprovalQuerySchema,
   standingApprovalSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
@@ -17,8 +18,8 @@ import { defineResource } from "~/infrastructure/http/resource";
 import { listApprovals, readApproval, resolveApproval } from "../application/approvals";
 import {
   grantPolyStandingApproval,
-  listPolyStandingApprovals,
-  revokePolyStandingApproval,
+  listStandingApprovals,
+  revokeStandingApproval,
 } from "../application/standing";
 
 const app = new Hono();
@@ -64,9 +65,12 @@ defineResource(app, { idParam: "approval_id", tags: ["approvals"] }, (approvals)
     .list({
       auth: true,
       summary: "List standing approvals",
-      description: "Actions Poly may take without asking, for one tool and destination each.",
+      description:
+        "Actions Poly, or the teammate context you name, may take without asking, for one tool and destination each.",
+      querySchema: standingApprovalQuerySchema,
       responses: { 200: { description: "Standing approvals", schema: standingApprovalListSchema } },
-      handler: ({ serviceContext }) => listPolyStandingApprovals(serviceContext),
+      handler: ({ serviceContext, query }) =>
+        listStandingApprovals(serviceContext, query.context_id),
     })
     .create({
       auth: true,
@@ -89,11 +93,12 @@ defineResource(app, { idParam: "approval_id", tags: ["approvals"] }, (approvals)
       auth: true,
       summary: "Stop allowing an action ahead of time",
       paramSchema: standingApprovalParamsSchema,
+      querySchema: standingApprovalQuerySchema,
       responses: {
         404: { description: "Standing approval not found", schema: errorResponseSchema },
       },
-      handler: ({ serviceContext, params }) =>
-        revokePolyStandingApproval(serviceContext, params.standing_approval_id),
+      handler: ({ serviceContext, params, query }) =>
+        revokeStandingApproval(serviceContext, params.standing_approval_id, query.context_id),
     });
 });
 

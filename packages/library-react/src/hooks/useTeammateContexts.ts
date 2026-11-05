@@ -1,5 +1,9 @@
 import { apiService } from "@ngriffin_uk/polychat-library-client";
-import type { TeammateContext, TeammateContextScope } from "@ngriffin_uk/polychat-schemas";
+import type {
+  TeammateAutonomyLevel,
+  TeammateContext,
+  TeammateContextScope,
+} from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const teammateContextQueryKey = (teammateId: string) =>
@@ -42,4 +46,22 @@ export function useTeammateContexts(teammateId: string | undefined) {
   });
 
   return { ...query, contexts: query.data ?? [], ensure, updateStatus };
+}
+
+export function useTeammateAutonomy(context: TeammateContext) {
+  const queryClient = useQueryClient();
+  const refresh = () =>
+    queryClient.invalidateQueries({ queryKey: teammateContextQueryKey(context.teammateId) });
+  const setLevel = useMutation({
+    mutationFn: (autonomyLevel: TeammateAutonomyLevel) =>
+      apiService.updateTeammateContextAutonomy(context.id, autonomyLevel),
+    onSuccess: refresh,
+  });
+  const revokeStanding = useMutation({
+    mutationFn: (approval: { toolName: string; destination: string }) =>
+      apiService.revokePolyStandingApproval(approval.toolName, approval.destination, context.id),
+    onSuccess: refresh,
+  });
+
+  return { setLevel, revokeStanding };
 }

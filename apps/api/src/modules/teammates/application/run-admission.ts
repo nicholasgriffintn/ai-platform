@@ -2,6 +2,7 @@ import type { ExecutionContext } from "@cloudflare/workers-types";
 import { formatToolCalls } from "@ngriffin_uk/polychat-ai-providers";
 import { operationIsGranted } from "@ngriffin_uk/polychat-library-policy";
 import {
+  isOwnerStartedTrigger,
   isPolyTeammateId,
   PROJECT_TASK_INTERACTION_TOOL_IDS,
   teammateRunConfigurationSchema,
@@ -19,7 +20,6 @@ import { ConversationRunRepository } from "~/modules/conversations/infrastructur
 import { resolveDelegationContinuation } from "~/modules/delegations/application/continuation";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { chooseWorkMachineModel } from "~/modules/machines/application/work-placement";
-import { recordPolyApprovalOutcome } from "~/modules/poly/application/earned-trust";
 import { buildWorkRunTools, grantWorkBoardTools } from "~/modules/project-tasks/domain/work-tools";
 import {
   readToolInteractionId,
@@ -35,6 +35,7 @@ import { requireTeammateAccess } from "./access";
 import { assertTeammateContextWithinBudget } from "./budget";
 import { prepareTeammateCompletionRequest } from "./completion-request";
 import { buildTeammateCompletionTools, buildTeammatePersona } from "./completion-tools";
+import { markTeammateOwnerSeen, recordTeammateApprovalOutcome } from "./earned-trust";
 import { prepareAdmittedTeammateContinuation, prepareTeammateRun } from "./execution";
 import { resolveTeammateMcpServers } from "./mcp-servers";
 import { assertTeammateEmploymentAvailable } from "./organisation";
@@ -320,6 +321,10 @@ export async function enqueueTeammateRun({
     resumeConfiguration?.persona ??
     buildTeammatePersona(teammate, preparedInvocation?.resolution.behaviour ?? "colleague");
 
+  if (preparedInvocation?.resolution.context && isOwnerStartedTrigger(authority.trigger)) {
+    await markTeammateOwnerSeen(serviceContext, preparedInvocation.resolution.context);
+  }
+
   const response = await startResponse({
     env: serviceContext.env,
     command: {
@@ -406,14 +411,12 @@ export async function resumeTeammateRun(input: TeammateRunAdmissionInput) {
     .get(ConversationRunRepository)
     .getForInteraction(input.body.conversationId, interactionId);
 
-  if (isPolyTeammateId(input.teammateId)) {
-    await recordPolyApprovalOutcome({
-      context: serviceContext,
-      conversationId: input.body.conversationId,
-      interactionId,
-      options: input.body.settings?.options,
-    });
-  }
+  await recordTeammateApprovalOutcome({
+    context: serviceContext,
+    run,
+    interactionId,
+    options: input.body.settings?.options,
+  });
 
   const resume = await prepareTeammateRunResume({
     context: serviceContext,
