@@ -45,7 +45,10 @@ import { createModelEnsembleStream } from "~/modules/responses/application/engin
 import { buildToolRequestContext } from "~/modules/responses/application/engine/core/request-context";
 import { resolveRunProvenance } from "~/modules/responses/application/engine/core/run-provenance";
 import { buildChatCompactionMetadata } from "~/modules/responses/application/engine/messages/compaction-metadata";
-import { enforceChatImagePolicy } from "~/modules/responses/application/engine/policy/image-policy";
+import {
+  enforceChatImagePolicy,
+  screenActivatedImageTool,
+} from "~/modules/responses/application/engine/policy/image-policy";
 import { resolveAccountDefaultComputeSite } from "~/modules/responses/application/engine/policy/project-model-tier";
 import { createChatRunBudget } from "~/modules/responses/application/engine/policy/run-budget";
 import { resolveTurnStepBudget } from "~/modules/responses/application/engine/policy/step-budget";
@@ -378,14 +381,16 @@ export class ChatOrchestrator {
     } = prepared;
     const enabled_tools = enabledTools;
 
-    await enforceChatImagePolicy({
+    const imagePolicyRequest = {
       options: chatOptions,
       primaryModelConfig,
       modelConfigs,
       enabledTools: enabled_tools,
       messages: preparedMessages,
       messageWithContext,
-    });
+    };
+
+    await enforceChatImagePolicy(imagePolicyRequest);
 
     const comparison = prepared.requestOptions?.comparison;
     const directedToolCall = comparison
@@ -591,6 +596,8 @@ export class ChatOrchestrator {
       executionCtx: chatOptions.executionCtx,
       contextWindow: primaryModelConfig?.contextWindow,
       ownsContext: primaryModelConfig?.kind === "agent",
+      screenActivatedTools: (toolNames, messages) =>
+        screenActivatedImageTool({ ...imagePolicyRequest, messages }, toolNames),
       modelFallback:
         tierSelection &&
         modelConfigs.length === 1 &&

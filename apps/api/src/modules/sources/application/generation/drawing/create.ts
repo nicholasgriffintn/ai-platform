@@ -8,6 +8,7 @@ import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { enforceImagePolicy } from "~/modules/generate/application/image-policy";
+import { screenGeneratedImage } from "~/modules/generate/application/image-policy-classifier";
 import { describePicture } from "~/modules/generate/application/vision";
 import { storeKnowledgeFile } from "~/modules/knowledge/application/intake/file";
 import { requireSystemModel } from "~/modules/models/application/resolve";
@@ -90,6 +91,15 @@ export async function paintDrawing(
   }
 
   const paintingData = base64ToBuffer(paintingImage.data.image).buffer;
+
+  await screenGeneratedImage({
+    env: context.env,
+    user,
+    surface: "drawing",
+    data: paintingData,
+    mimeType: "image/png",
+  });
+
   const generation: SourceGeneration = {
     type: "drawing",
     modelId: repaint.id,

@@ -9,6 +9,8 @@ import {
   type MediaContainer,
 } from "./containers.js";
 
+export { detectContainer };
+
 export type MediaProvenanceStatus = "marked" | "provider-marked" | "already-marked" | "unsupported";
 
 export interface MediaProvenanceOrigin {

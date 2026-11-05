@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { IEnv, Message } from "~/types";
 
 const mocks = vi.hoisted(() => ({
-  enforceImagePolicy: vi.fn(async () => undefined),
+  enforceImagePolicy: vi.fn<() => Promise<void>>(async () => undefined),
   getModelConfigByMatchingModel: vi.fn(),
 }));
 
@@ -15,7 +15,11 @@ vi.mock("~/modules/models/application/resolve", () => ({
   getModelConfigByMatchingModel: mocks.getModelConfigByMatchingModel,
 }));
 
-import { enforceChatImagePolicy, type ChatImagePolicyRequest } from "../image-policy";
+import {
+  enforceChatImagePolicy,
+  screenActivatedImageTool,
+  type ChatImagePolicyRequest,
+} from "../image-policy";
 
 const TEXT_MODEL = {
   matchingModel: "text",
@@ -101,5 +105,67 @@ describe("enforceChatImagePolicy", () => {
     );
 
     expect(mocks.enforceImagePolicy).toHaveBeenCalledTimes(1);
+  });
+
+  it("carries earlier turns and their attachments into the check", async () => {
+    await enforceChatImagePolicy(
+      request({
+        primaryModelConfig: IMAGE_MODEL,
+        modelConfigs: [{ model: "image", provider: "test", displayName: "Image" }],
+        messages: [
+          { role: "system", content: "system placeholder" },
+          ...MESSAGES,
+          { role: "assistant", content: "assistant placeholder" },
+          { role: "user", content: "latest placeholder" },
+        ],
+        messageWithContext: "latest placeholder",
+      }),
+    );
+
+    expect(mocks.enforceImagePolicy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        text: "latest placeholder",
+        history: [
+          { role: "user", text: "placeholder" },
+          { role: "assistant", text: "assistant placeholder" },
+        ],
+        images: ["https://example.com/reference.png"],
+      }),
+    );
+  });
+});
+
+describe("screenActivatedImageTool", () => {
+  const SUPPORTED = { ...TEXT_MODEL, supportsImageGenerationTool: true };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("leaves other activated tools unscreened", async () => {
+    await expect(
+      screenActivatedImageTool(request({ primaryModelConfig: SUPPORTED }), ["web_search"]),
+    ).resolves.toEqual(["web_search"]);
+
+    expect(mocks.enforceImagePolicy).not.toHaveBeenCalled();
+  });
+
+  it("screens the conversation when the image tool switches on mid-run", async () => {
+    await expect(
+      screenActivatedImageTool(request({ primaryModelConfig: SUPPORTED }), ["image_generation"]),
+    ).resolves.toEqual(["image_generation"]);
+
+    expect(mocks.enforceImagePolicy).toHaveBeenCalledTimes(1);
+  });
+
+  it("withholds only the image tool when the check does not pass", async () => {
+    mocks.enforceImagePolicy.mockRejectedValueOnce(new Error("Refused"));
+
+    await expect(
+      screenActivatedImageTool(request({ primaryModelConfig: SUPPORTED }), [
+        "image_generation",
+        "web_search",
+      ]),
+    ).resolves.toEqual(["web_search"]);
   });
 });

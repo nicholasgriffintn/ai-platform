@@ -19,6 +19,7 @@ import type { GeneratedMediaOrigin } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { createRepositories } from "~/infrastructure/database/repositories";
+import { screenGeneratedImage } from "~/modules/generate/application/image-policy-classifier";
 import { markForDelivery } from "~/modules/generate/application/provenance";
 import { isOutputDeletionPending } from "~/modules/outputs/application/deletion";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
@@ -154,10 +155,21 @@ export class StorageService {
     return key;
   }
 
-  markGeneratedMedia(
+  private screenGeneratedMedia(data: ArrayBuffer | Uint8Array, mimeType?: string): Promise<void> {
+    return screenGeneratedImage({
+      env: this.context?.env ?? this.env,
+      user: this.context?.user ?? undefined,
+      data,
+      mimeType,
+    });
+  }
+
+  async markGeneratedMedia(
     data: ArrayBuffer | Uint8Array,
     origin: GeneratedMediaOrigin,
   ): Promise<Uint8Array<ArrayBuffer>> {
+    await this.screenGeneratedMedia(data, origin.mimeType);
+
     return markForDelivery({
       env: this.context?.env ?? this.env,
       bucket: this.bucket,
@@ -208,6 +220,11 @@ export class StorageService {
     ...input
   }: StoreOutputFileRequest): Promise<StoredOutputFileResult> {
     const outputId = input.outputId ?? generateId();
+
+    if (provenance && typeof input.data === "string") {
+      await this.screenGeneratedMedia(new TextEncoder().encode(input.data), input.mimeType);
+    }
+
     const marked =
       provenance && typeof input.data !== "string"
         ? await this.markGeneratedMedia(input.data, provenance)
