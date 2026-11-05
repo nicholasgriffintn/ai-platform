@@ -1,6 +1,6 @@
 # ADR 0071: Tools declare what they change
 
-Status: Implemented for built-in API tools. MCP and Composio operations are classified at their execution boundary in a later change.
+Status: Implemented for built-in API tools, MCP calls and Composio operations. A read-only claim from an MCP server keeps the `read` class but never skips the intent check.
 
 ## Problem
 

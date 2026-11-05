@@ -163,3 +163,9 @@ describe("mcp_call_tool", () => {
     );
   });
 });
+
+describe("mcp_call_tool effects", () => {
+  it("treats a server's hints as claims, not verified facts", () => {
+    expect(mcp_call_tool.effects?.hintsAreClaims).toBe(true);
+  });
+});

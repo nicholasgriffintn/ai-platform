@@ -10,7 +10,7 @@ describe("tool effect hints", () => {
   it("maps vendor hints onto effect classes", () => {
     expect(effectClassFromToolHints({ readOnly: true })).toBe("read");
     expect(effectClassFromToolHints({ destructive: true })).toBe("destructive");
-    expect(effectClassFromToolHints({ readOnly: true, destructive: true })).toBe("read");
+    expect(effectClassFromToolHints({ readOnly: true, destructive: true })).toBe("destructive");
     expect(effectClassFromToolHints({})).toBe("write");
   });
 

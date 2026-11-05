@@ -18,14 +18,15 @@ export interface ToolEffects<TInput = unknown, THost = unknown> {
     input: TInput,
     host: THost,
   ): ToolEffectHints | undefined | Promise<ToolEffectHints | undefined>;
+  hintsAreClaims?: boolean;
 }
 
 export function effectClassFromToolHints(hints: ToolEffectHints): ToolEffectClass {
-  if (hints.readOnly) {
-    return "read";
+  if (hints.destructive) {
+    return "destructive";
   }
 
-  return hints.destructive ? "destructive" : "write";
+  return hints.readOnly ? "read" : "write";
 }
 
 export function toolHintsFromEffectClass(effectClass: ToolEffectClass): ToolEffectHints {

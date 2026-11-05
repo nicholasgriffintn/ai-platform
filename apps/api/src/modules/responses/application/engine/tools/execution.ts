@@ -358,10 +358,13 @@ export const handleToolCalls = async (
         continue;
       }
 
+      const effectClaimed = functionDefinition?.effects?.hintsAreClaims === true;
+
       if (
         requiresToolIntentVerification({
           alreadyApproved: permissionResult.approved,
           effectClass: callEffectClass,
+          effectClaimed,
         })
       ) {
         const intent = await evaluateToolIntentGate({
@@ -374,6 +377,7 @@ export const handleToolCalls = async (
           toolName: functionName,
           permissions: permissionResult.permissions,
           effectClass: callEffectClass,
+          effectClaimed,
           destination: callDestination,
           hasEvidenceProjector: Boolean(functionDefinition?.intentEvidence),
           evidence: functionDefinition?.intentEvidence?.(validatedFunctionArgs),

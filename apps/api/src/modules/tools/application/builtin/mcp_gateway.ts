@@ -218,6 +218,7 @@ export const mcp_call_tool: ApiToolDefinition = {
   effects: {
     ...requireToolEffects(MCP_CALL_TOOL_NAME, mcp_call_toolDescriptor.effects),
     hints: readMcpToolHints,
+    hintsAreClaims: true,
   },
   execute: async (args, context) => {
     const toolName = isRecord(args) && typeof args.tool === "string" ? args.tool.trim() : "";

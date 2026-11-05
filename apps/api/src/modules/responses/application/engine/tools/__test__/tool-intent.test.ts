@@ -43,6 +43,23 @@ describe("requiresToolIntentVerification", () => {
       requiresToolIntentVerification({ alreadyApproved: true, effectClass: "external_send" }),
     ).toBe(false);
   });
+
+  it("verifies a read the integration only claims, until the person approves it", () => {
+    expect(
+      requiresToolIntentVerification({
+        alreadyApproved: false,
+        effectClass: "read",
+        effectClaimed: true,
+      }),
+    ).toBe(true);
+    expect(
+      requiresToolIntentVerification({
+        alreadyApproved: true,
+        effectClass: "read",
+        effectClaimed: true,
+      }),
+    ).toBe(false);
+  });
 });
 
 describe("TOOL_INTENT_POLICY", () => {

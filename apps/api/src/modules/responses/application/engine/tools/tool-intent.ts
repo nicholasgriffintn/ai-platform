@@ -141,8 +141,19 @@ export const TOOL_INTENT_POLICY = defineDecisionPolicy({
 export function requiresToolIntentVerification(params: {
   alreadyApproved: boolean;
   effectClass: ToolEffectClass;
+  effectClaimed?: boolean;
 }): boolean {
-  return !params.alreadyApproved && !OWN_SPACE_EFFECT_CLASSES.has(params.effectClass);
+  if (params.alreadyApproved) {
+    return false;
+  }
+
+  return params.effectClaimed === true || !OWN_SPACE_EFFECT_CLASSES.has(params.effectClass);
+}
+
+function describeProposedEffect(effectClass: ToolEffectClass, effectClaimed?: boolean): string {
+  return effectClaimed && OWN_SPACE_EFFECT_CLASSES.has(effectClass)
+    ? `${effectClass} (claimed by the integration, not verified)`
+    : effectClass;
 }
 
 export function resolveToolIntentRequest(
@@ -235,6 +246,7 @@ interface ToolIntentCallParams {
   toolName: string;
   permissions: readonly ToolPermission[];
   effectClass: ToolEffectClass;
+  effectClaimed?: boolean;
   destination?: string;
   evidence: unknown;
 }
@@ -251,7 +263,7 @@ export async function verifyToolCallIntent(params: ToolIntentCallParams) {
       proposed_tool_call: {
         name: params.toolName,
         permissions: [...params.permissions],
-        effect: params.effectClass,
+        effect: describeProposedEffect(params.effectClass, params.effectClaimed),
         destination: params.destination
           ? truncateForModel(redactSensitiveTokens(params.destination), 300)
           : "none declared",
