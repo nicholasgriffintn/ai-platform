@@ -122,6 +122,7 @@ export interface RunChargeState {
 export interface RunChargeGroup {
   user_id: number;
   workspace_id: string | null;
+  pool_workspace_id: string | null;
   project_id: string | null;
   conversation_id: string | null;
   run_attempt: number | null;
