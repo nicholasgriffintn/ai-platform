@@ -161,6 +161,7 @@ export async function persistGeneratedAsset({
     kind: "generated_media",
     title: filename,
     content: { model: mediaContext.model, modalities: mediaContext.modalities },
+    provenance: { model: mediaContext.model, mimeType },
     mimeType,
     filename,
     byteSize:

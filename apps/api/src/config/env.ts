@@ -136,6 +136,7 @@ export type IEnv = {
   GITHUB_CLIENT_SECRET?: string;
   APPLE_IOS_CLIENT_ID?: string;
   APPLE_WEB_CLIENT_ID?: string;
+  PROVENANCE_SIGNING_KEY?: string;
   APNS_KEY_ID?: string;
   APNS_TEAM_ID?: string;
   APNS_PRIVATE_KEY?: string;

@@ -4,6 +4,7 @@ import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { AwsClient } from "aws4fetch";
 
+import type { ProviderStorage } from "../../../host.js";
 import { trackProviderMetrics } from "../../../metrics.js";
 import type { ChatCompletionParameters } from "../../../types/index.js";
 import { formatProviderError } from "../../../utils/errors.js";
@@ -21,9 +22,7 @@ interface PollyResponse {
   };
 }
 
-interface PollyStorageService {
-  uploadObject: (key: string, data: Uint8Array) => Promise<unknown>;
-}
+type PollyStorageService = Pick<ProviderStorage, "uploadGeneratedMedia">;
 
 interface PollyProviderOptions {
   returnAudio?: boolean;
@@ -33,7 +32,7 @@ interface PollyProviderOptions {
 }
 
 function isPollyStorageService(value: unknown): value is PollyStorageService {
-  return isRecord(value) && typeof value.uploadObject === "function";
+  return isRecord(value) && typeof value.uploadGeneratedMedia === "function";
 }
 
 function readPollyProviderOptions(options: unknown): PollyProviderOptions {
@@ -194,7 +193,11 @@ export class PollyProvider extends BaseProvider {
               };
             }
 
-            await options.storageService?.uploadObject(audioKey, new Uint8Array(audioBuffer));
+            await options.storageService?.uploadGeneratedMedia(audioKey, audioBuffer, {
+              mimeType: "audio/mpeg",
+              model: options.engine,
+              provider: "polly",
+            });
 
             return audioKey;
           }

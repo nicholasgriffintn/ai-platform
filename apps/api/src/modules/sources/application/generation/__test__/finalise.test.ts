@@ -154,7 +154,7 @@ describe("finaliseSourceGeneration", () => {
       status: "available",
       storage_key: "sources/source-2/generation.png",
     });
-    expect([...objects.keys()].sort()).toEqual([
+    expect([...objects.keys()].filter((key) => !key.startsWith("provenance/")).sort()).toEqual([
       "sources/source-1/generation.png",
       "sources/source-2/generation.png",
     ]);
