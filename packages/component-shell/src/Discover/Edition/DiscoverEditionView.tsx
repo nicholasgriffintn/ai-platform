@@ -10,6 +10,7 @@ import { DiscoverBrief } from "./DiscoverBrief.js";
 import { DiscoverFeed } from "./DiscoverFeed.js";
 import { DiscoverMasthead } from "./DiscoverMasthead.js";
 import { DiscoverMediaShelf } from "./DiscoverMediaShelf.js";
+import { DiscoverPolyBriefs } from "./DiscoverPolyBriefs.js";
 import { DiscoverSettingsDialog } from "./DiscoverSettingsDialog.js";
 import { DiscoverNoEdition, DiscoverPreparing, DiscoverTurnOn } from "./DiscoverStates.js";
 import { slideInPanel } from "./item/discover-motion.js";
@@ -111,6 +112,7 @@ function DiscoverEditionBody({ controller }: { controller: DiscoverEditionContro
           onWriteNow={() => void controller.writeEditionNow()}
         />
       )}
+      {isAuthenticated ? <DiscoverPolyBriefs /> : null}
       {controller.isAwaitingEdition && !live ? <DiscoverPreparing /> : feed}
     </>
   );

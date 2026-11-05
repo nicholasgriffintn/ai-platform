@@ -27,6 +27,10 @@ import type {
   PolyAgenda,
   PolyHandoffDisagreement,
   PolyLookAround,
+  PolyRoutineSetup,
+  PolyRoutines,
+  PolyRoutineTemplateId,
+  SetupPolyRoutine,
   RecordOffPlatformUsageRequest,
   RecordTeammateFeedbackInput,
   SharedTeammateSummary,
@@ -264,6 +268,14 @@ class ApiService {
 
   setPolyLookAround = (input: UpdatePolyLookAround): Promise<PolyLookAround> =>
     this.polyService.setPolyLookAround(input);
+
+  readPolyRoutines = (): Promise<PolyRoutines> => this.polyService.readPolyRoutines();
+
+  setupPolyRoutine = (input: SetupPolyRoutine): Promise<PolyRoutineSetup> =>
+    this.polyService.setupPolyRoutine(input);
+
+  removePolyRoutine = (templateId: PolyRoutineTemplateId): Promise<void> =>
+    this.polyService.removePolyRoutine(templateId);
 
   grantPolyStandingApproval = (interactionId: string): Promise<StandingApproval> =>
     this.polyService.grantPolyStandingApproval(interactionId);

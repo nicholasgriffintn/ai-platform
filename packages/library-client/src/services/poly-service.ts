@@ -2,8 +2,14 @@ import {
   standingApprovalId,
   standingApprovalSchema,
   polyLookAroundSchema,
+  polyRoutineSetupSchema,
+  polyRoutinesSchema,
   type PolyAgenda,
   type PolyLookAround,
+  type PolyRoutineSetup,
+  type PolyRoutines,
+  type PolyRoutineTemplateId,
+  type SetupPolyRoutine,
   type UpdatePolyLookAround,
   type PolyHandoffDisagreement,
   type StandingApproval,
@@ -46,6 +52,20 @@ export class PolyService {
     return polyLookAroundSchema.parse(
       await requestJson<unknown>("/poly/look-around", "PATCH", input),
     );
+  }
+
+  async readPolyRoutines(): Promise<PolyRoutines> {
+    return polyRoutinesSchema.parse(await requestJson<unknown>("/poly/routines", "GET"));
+  }
+
+  async setupPolyRoutine(input: SetupPolyRoutine): Promise<PolyRoutineSetup> {
+    return polyRoutineSetupSchema.parse(
+      await requestJson<unknown>("/poly/routines", "POST", input),
+    );
+  }
+
+  async removePolyRoutine(templateId: PolyRoutineTemplateId): Promise<void> {
+    await requestJson<unknown>(`/poly/routines/${encodeURIComponent(templateId)}`, "DELETE");
   }
 
   async grantPolyStandingApproval(interactionId: string): Promise<StandingApproval> {
