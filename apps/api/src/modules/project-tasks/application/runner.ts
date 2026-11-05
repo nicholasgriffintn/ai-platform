@@ -36,8 +36,10 @@ import { ConversationManager } from "~/modules/conversations/application/manager
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { acquireThread } from "~/modules/conversations/infrastructure/coordinator/client";
+import { verifyRun } from "~/modules/documents/application/run-verification";
 import { createGoalService } from "~/modules/goals/application/createGoalService";
 import { notifyMobileProjectTask } from "~/modules/mobile-push/application";
+import { settleRoutineOutcome } from "~/modules/model-evaluation/application/routine-success";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { renderFixUp } from "~/modules/project-tasks/domain/fix-ups";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
@@ -950,6 +952,7 @@ export async function runProjectTaskDispatch(params: {
       status: "failed",
       summary: detail.slice(0, 200),
     });
+    await settleRoutineOutcome(context, { taskId, runId: null, status: "failed" });
     await notifyMobileProjectTask({
       context,
       task: { ...claimed, conversationId },
@@ -1002,14 +1005,13 @@ export async function runProjectTaskDispatch(params: {
 
   const tokensSpent = claimed.tokensSpent + Math.max(goal?.tokens_spent ?? 0, responseTokens);
   const flow = claimed.flowSnapshot ?? parseProjectFlow(project.flow);
-  const completedOutputIds =
+  const completedOutputs =
     goal?.status === "completed" && completedRun
-      ? (
-          await context.repositories
-            .get(OutputRepository)
-            .listProjectOutputsForRuns(claimed.projectId, [completedRun.id])
-        ).map((output) => output.id)
+      ? await context.repositories
+          .get(OutputRepository)
+          .listProjectOutputsForRuns(claimed.projectId, [completedRun.id])
       : [];
+  const completedOutputIds = completedOutputs.map((output) => output.id);
   const metKillCondition = goal
     ? await findMetKillCondition(context, claimed, responseOutput, conversationId)
     : null;
@@ -1023,16 +1025,26 @@ export async function runProjectTaskDispatch(params: {
           outputIds: completedOutputIds,
           runId: completedRun?.id,
           runAttempt: completedRun?.attempt,
+          evidence: goal.evidence ?? [],
+        })
+      : null;
+  const verification =
+    goal?.status === "completed"
+      ? await verifyRun(context, {
+          run: completedRun,
+          outputs: completedOutputs,
+          ledger: goal.evidence ?? [],
+          councilVerdicts: council?.verdicts,
         })
       : null;
   const nextStageId =
     !metKillCondition &&
     goal?.status === "completed" &&
-    stageAdvancesOnCompletion(runtime.stage, council)
+    stageAdvancesOnCompletion(runtime.stage, council, verification)
       ? nextFlowStageId(flow, claimed.stageId)
       : null;
   const completion =
-    goal?.status === "completed"
+    goal && verification
       ? createProjectTaskCompletion({
           stage: runtime.stage,
           conversationId,
@@ -1042,6 +1054,7 @@ export async function runProjectTaskDispatch(params: {
           outputIds: completedOutputIds,
           output: responseOutput,
           council,
+          verification,
         })
       : null;
   const current = await context.repositories.get(ProjectTaskRepository).getTaskById(taskId);
@@ -1051,7 +1064,7 @@ export async function runProjectTaskDispatch(params: {
     : metKillCondition
       ? "blocked"
       : goal?.status === "completed"
-        ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId, council)
+        ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId, council, verification)
         : projection.status;
 
   await updateOwnedProjectTask({
@@ -1082,6 +1095,20 @@ export async function runProjectTaskDispatch(params: {
     status: nextStatus === "blocked" ? "waiting" : "succeeded",
     summary: goal?.objective.slice(0, 200) ?? claimed.objective.slice(0, 200),
   });
+
+  const routineStatus =
+    verification?.status ??
+    (nextStatus === "blocked" && !projection.blockedReason?.startsWith("awaiting_")
+      ? "failed"
+      : null);
+
+  if (routineStatus) {
+    await settleRoutineOutcome(context, {
+      taskId,
+      runId: completedRun?.id ?? null,
+      status: routineStatus,
+    });
+  }
 
   if (finished) {
     return { status: "completed" };

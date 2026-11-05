@@ -341,6 +341,29 @@ export const outputReview = sqliteTable(
 
 export type OutputReviewRow = typeof outputReview.$inferSelect;
 
+export const routineOutcome = sqliteTable(
+  "routine_outcome",
+  {
+    id: text().primaryKey(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    project_id: text(),
+    routine_kind: text({ enum: ["recipe", "lead"] }).notNull(),
+    routine_id: text().notNull(),
+    run_id: text(),
+    status: text({ enum: ["pending", "verified", "unverified", "failed"] }).notNull(),
+    false_completion: integer({ mode: "boolean" }).default(false).notNull(),
+    occurred_at: text().notNull(),
+  },
+  (table) => ({
+    userOccurredIdx: index("routine_outcome_user_occurred_idx").on(
+      table.user_id,
+      table.occurred_at,
+    ),
+  }),
+);
+
 export const delivery = sqliteTable(
   "delivery",
   {

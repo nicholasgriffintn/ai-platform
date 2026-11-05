@@ -188,6 +188,20 @@ export function TaskDoneWhen({
   );
 }
 
+const VERIFICATION_LABELS = {
+  verified: "Verified",
+  unverified: "Unverified",
+  failed: "Failed checks",
+} as const;
+
+function approvalLabel(completion: ProjectTask["completions"][number]): string {
+  if (completion.approval.status !== "approved") {
+    return "Awaiting approval";
+  }
+
+  return completion.approval.mode === "automated" ? "Approved automatically" : "Approved";
+}
+
 export function TaskLatestResult({
   completion,
   renderProgressSummary,
@@ -195,17 +209,25 @@ export function TaskLatestResult({
   completion: ProjectTask["completions"][number];
   renderProgressSummary?: (summary: string) => React.ReactNode;
 }) {
+  const verification = completion.verification;
+  const concerns = verification?.findings.filter((finding) => finding.status !== "verified") ?? [];
+
   return (
     <TaskSection
       title="Latest result"
       meta={
-        completion.approval.status === "approved"
-          ? completion.approval.mode === "automated"
-            ? "Approved automatically"
-            : "Approved"
-          : "Awaiting approval"
+        verification
+          ? `${VERIFICATION_LABELS[verification.status]} · ${approvalLabel(completion)}`
+          : approvalLabel(completion)
       }
     >
+      {concerns.length > 0 ? (
+        <ul className="mb-2 space-y-1 text-xs text-muted-foreground">
+          {concerns.map((finding) => (
+            <li key={`${finding.check}:${finding.outputId ?? finding.detail}`}>{finding.detail}</li>
+          ))}
+        </ul>
+      ) : null}
       <div className="rounded-lg border border-border bg-surface p-4 text-sm leading-6">
         {completion.output ? (
           renderProgressSummary ? (

@@ -4,6 +4,7 @@ import {
   ProposeHireDialog,
   TeamMemberEditor,
   TeamOrgChart,
+  leadRoutineTitle,
   LeadRoutinesForm,
   SaveTeamTemplateDialog,
   TeammateProfileHeader,
@@ -21,7 +22,11 @@ import {
   useWorkspaceTasks,
   useWorkspaceTeam,
 } from "@ngriffin_uk/polychat-library-react";
-import type { WorkRailBeat } from "@ngriffin_uk/polychat-schemas";
+import {
+  LEAD_ROUTINE_KINDS,
+  leadRoutineId,
+  type WorkRailBeat,
+} from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { Copy, Plus } from "lucide-react";
 import { useState } from "react";
@@ -29,6 +34,7 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { PageShell } from "../Shell/PageShell.js";
+import { RoutineSuccessSummary } from "../Teammates/RoutineSuccessSummary.js";
 import { useWorkDirectory } from "./useWorkDirectory.js";
 
 function beatHref(workspaceId: string) {
@@ -322,6 +328,13 @@ export function WorkTeammatePage({
             {workspace && workspace.leadTeammateId === teammateId ? (
               <section className="space-y-3">
                 <h2 className="text-sm font-semibold">Routines</h2>
+                {LEAD_ROUTINE_KINDS.map((kind) => (
+                  <RoutineSuccessSummary
+                    key={kind}
+                    label={leadRoutineTitle(kind)}
+                    routineId={leadRoutineId(workspace.id, kind)}
+                  />
+                ))}
                 <LeadRoutinesForm
                   key={JSON.stringify(workspace.leadRoutines)}
                   routines={workspace.leadRoutines}

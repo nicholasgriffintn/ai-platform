@@ -1,4 +1,9 @@
-import type { ChatRun, Goal, ProjectFlowStage } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ChatRun,
+  Goal,
+  ProjectFlowStage,
+  RunVerification,
+} from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -27,6 +32,13 @@ const goal: Goal = {
   last_continued_at: null,
 };
 
+const verified: RunVerification = {
+  status: "verified",
+  findings: [],
+  checkedAt: "2026-08-30T10:01:00.000Z",
+};
+const unverified: RunVerification = { ...verified, status: "unverified" };
+
 function stage(advance: ProjectFlowStage["advance"]): ProjectFlowStage {
   return {
     id: "review",
@@ -46,6 +58,7 @@ describe("project task completions", () => {
       stage: stage("on_human_accept"),
       conversationId: "conversation-1",
       goal,
+      verification: verified,
       output: "Release note ready for review.",
       createdAt: "2026-08-30T10:01:00.000Z",
     });
@@ -82,6 +95,7 @@ describe("project task completions", () => {
         stage: stage("on_human_accept"),
         conversationId: "conversation-1",
         goal,
+        verification: verified,
         run,
         dispatchTaskId: "dispatch-1",
         outputIds: ["output-1"],
@@ -100,6 +114,7 @@ describe("project task completions", () => {
       stage: stage("on_goal_complete"),
       conversationId: "conversation-1",
       goal,
+      verification: verified,
       output: "Plan complete.",
       createdAt: "2026-08-30T10:01:00.000Z",
     });
@@ -117,6 +132,7 @@ describe("project task completions", () => {
       stage: stage("on_human_accept"),
       conversationId: "conversation-1",
       goal,
+      verification: verified,
       output: "Ready.",
       createdAt: "2026-08-30T10:01:00.000Z",
     });
@@ -132,36 +148,62 @@ describe("project task completions", () => {
   });
 
   it("completes a final automatically approved stage without human review", () => {
-    expect(projectTaskStatusAfterCompletedGoal(stage("on_goal_complete"), null)).toBe("done");
-    expect(projectTaskStatusAfterCompletedGoal(stage("on_goal_complete"), "build")).toBe("review");
-    expect(projectTaskStatusAfterCompletedGoal(stage("on_human_accept"), null)).toBe("review");
+    expect(
+      projectTaskStatusAfterCompletedGoal(stage("on_goal_complete"), null, null, verified),
+    ).toBe("done");
+    expect(
+      projectTaskStatusAfterCompletedGoal(stage("on_goal_complete"), "build", null, verified),
+    ).toBe("review");
+    expect(
+      projectTaskStatusAfterCompletedGoal(stage("on_human_accept"), null, null, verified),
+    ).toBe("review");
   });
 
   it("advances a council stage only when every reviewed output ships", () => {
     const council = stage("on_council_ship");
-    const shipped = { shipped: true, reviewIds: ["review-1"] };
-    const held = { shipped: false, reviewIds: ["review-1"] };
+    const shipped = { shipped: true, reviewIds: ["review-1"], verdicts: ["ship" as const] };
+    const held = { shipped: false, reviewIds: ["review-1"], verdicts: ["hold" as const] };
 
     expect(
       createProjectTaskCompletion({
         stage: council,
         conversationId: "conversation-1",
         goal,
+        verification: verified,
         output: "Done.",
         council: shipped,
       }),
     ).toMatchObject({ councilReviewIds: ["review-1"], approval: { mode: "automated" } });
-    expect(projectTaskStatusAfterCompletedGoal(council, null, shipped)).toBe("done");
+    expect(projectTaskStatusAfterCompletedGoal(council, null, shipped, verified)).toBe("done");
 
     expect(
       createProjectTaskCompletion({
         stage: council,
         conversationId: "conversation-1",
         goal,
+        verification: verified,
         output: "Done.",
         council: held,
       }),
     ).toMatchObject({ approval: { mode: "human", status: "pending" } });
-    expect(projectTaskStatusAfterCompletedGoal(council, null, held)).toBe("review");
+    expect(projectTaskStatusAfterCompletedGoal(council, null, held, verified)).toBe("review");
+  });
+
+  it("keeps an unverified run in review for a person instead of reporting it done", () => {
+    const completion = createProjectTaskCompletion({
+      stage: stage("on_goal_complete"),
+      conversationId: "conversation-1",
+      goal,
+      verification: unverified,
+      output: "All done.",
+    });
+
+    expect(completion).toMatchObject({
+      verification: { status: "unverified" },
+      approval: { mode: "human", status: "pending" },
+    });
+    expect(
+      projectTaskStatusAfterCompletedGoal(stage("on_goal_complete"), null, null, unverified),
+    ).toBe("review");
   });
 });

@@ -69,6 +69,12 @@ export class CsvRecordParser {
   }
 }
 
+export function parseCsv(text: string): string[][] {
+  const parser = new CsvRecordParser();
+
+  return [...parser.push(text), ...parser.finish()];
+}
+
 export function csvRecordsToObjects(header: readonly string[], records: readonly string[][]) {
   return records
     .filter((record) => record.some((value) => value !== ""))

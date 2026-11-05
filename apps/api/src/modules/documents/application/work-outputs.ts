@@ -98,6 +98,20 @@ export async function readWorkOutput(
 
   requireScope(output, projectId);
 
+  const file = parseWorkOutput(output);
+
+  if (!file) {
+    throw new AssistantError(
+      "That result is not a document, deck or sheet",
+      ErrorType.PARAMS_ERROR,
+      400,
+    );
+  }
+
+  return file;
+}
+
+export function parseWorkOutput(output: Output): ReadableWorkOutput | null {
   if (output.kind === DOCUMENT_OUTPUT_KIND) {
     const document = documentOutputContentSchema.safeParse(output.content);
 
@@ -132,9 +146,5 @@ export async function readWorkOutput(
     }
   }
 
-  throw new AssistantError(
-    "That result is not a document, deck or sheet",
-    ErrorType.PARAMS_ERROR,
-    400,
-  );
+  return null;
 }
