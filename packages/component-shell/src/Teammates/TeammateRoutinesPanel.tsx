@@ -8,6 +8,7 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo } from "react";
 
 import { RoutineSpendControl } from "./RoutineSpendControl.js";
+import { RoutineSuccessSummary } from "./RoutineSuccessSummary.js";
 
 export function TeammateRoutinesPanel({
   contextId,
@@ -83,7 +84,8 @@ export function TeammateRoutinesPanel({
                 </span>
               </label>
               {checked ? (
-                <div className="mt-3 border-t pt-3">
+                <div className="mt-3 space-y-2 border-t pt-3">
+                  <RoutineSuccessSummary routineId={installation.id} />
                   <RoutineSpendControl installationId={installation.id} />
                 </div>
               ) : null}

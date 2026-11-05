@@ -2,6 +2,7 @@ import {
   listPageOf,
   type CouncilReview,
   type CouncilReviewListResponse,
+  type GoalEvidenceEntry,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -22,6 +23,7 @@ export async function reviewOutput(
   context: ServiceContext,
   outputId: string,
   scope: Omit<PanelCompletionScope, "env" | "user">,
+  evidence: readonly GoalEvidenceEntry[] = [],
 ): Promise<CouncilReview> {
   const user = context.requireUser();
   const output = formatOutput(await requireOutputAccess(context, user.id, outputId));
@@ -50,6 +52,7 @@ export async function reviewOutput(
       kind: output.kind,
       text: councilReviewSubject(output.content),
       priorBriefs,
+      evidence,
     },
   );
   const id = generateId();

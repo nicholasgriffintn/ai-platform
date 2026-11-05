@@ -8,10 +8,12 @@ import {
   councilMembers,
   type CouncilMemberDefinition,
   type CouncilReviewSeat,
+  type GoalEvidenceEntry,
 } from "@ngriffin_uk/polychat-schemas";
 import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 
 import {
+  councilEvidenceBlock,
   readCouncilAdjudication,
   readCouncilVote,
   type CouncilAdjudication,
@@ -27,6 +29,7 @@ export interface CouncilReviewSubject {
   kind: string;
   text: string;
   priorBriefs: readonly string[];
+  evidence?: readonly GoalEvidenceEntry[];
 }
 
 export interface CouncilReviewResult extends CouncilAdjudication {
@@ -49,7 +52,7 @@ function seatDefinitions(): CouncilMemberDefinition[] {
 }
 
 function describeSubject(subject: CouncilReviewSubject): string {
-  return `Work under review: ${subject.title} (${subject.kind})\n\n<work>\n${truncateForModel(subject.text, SUBJECT_CHARS)}\n</work>`;
+  return `Work under review: ${subject.title} (${subject.kind})\n\n<work>\n${truncateForModel(subject.text, SUBJECT_CHARS)}\n</work>${councilEvidenceBlock(subject.evidence ?? [])}`;
 }
 
 export async function runCouncilReview(

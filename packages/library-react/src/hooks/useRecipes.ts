@@ -5,6 +5,7 @@ import {
   invokeAssistantRecipe,
   listAssistantRecipes,
   listRecipeInstallations,
+  listRoutineSuccess,
   updateRecipeInstallation,
   useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
@@ -144,6 +145,18 @@ export function useRecipeInstallationSpend(installationId: string | undefined) {
     queryFn: () => getRecipeInstallationSpend(installationId ?? ""),
     enabled: Boolean(installationId),
     staleTime: 60 * 1000,
+  });
+}
+
+export const routineSuccessQueryKey = ["routine-success"] as const;
+
+export function useRoutineSuccess(routineId: string | undefined) {
+  return useQuery({
+    queryKey: routineSuccessQueryKey,
+    queryFn: listRoutineSuccess,
+    enabled: Boolean(routineId),
+    staleTime: 60 * 1000,
+    select: (page) => page.data.find((routine) => routine.routineId === routineId) ?? null,
   });
 }
 

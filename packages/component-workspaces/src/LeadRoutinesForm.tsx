@@ -17,6 +17,10 @@ const ROUTINE_COPY: Record<LeadRoutineKind, { title: string; description: string
   },
 };
 
+export function leadRoutineTitle(kind: LeadRoutineKind): string {
+  return ROUTINE_COPY[kind].title;
+}
+
 function RoutineFields({
   kind,
   routine,
