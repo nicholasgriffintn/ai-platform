@@ -1,8 +1,6 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
-export const MCP_PROTOCOL_VERSION = "2025-06-18";
-
 export const jsonRpcErrorSchema = z.object({
   code: z.number().optional(),
   message: z.string().optional(),
@@ -93,3 +91,9 @@ export const mcpToolCallResultSchema = z.object({
 });
 
 export type McpToolCallResult = z.infer<typeof mcpToolCallResultSchema>;
+
+export interface McpClient {
+  listTools(): Promise<McpTool[]>;
+  readResource(uri: string): Promise<McpResourceContent[]>;
+  callTool(name: string, args: Record<string, unknown>): Promise<McpToolCallResult>;
+}

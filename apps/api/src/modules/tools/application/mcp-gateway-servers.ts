@@ -1,6 +1,7 @@
 import {
   McpHttpClient,
   readMcpAppUiMeta,
+  type McpClient,
   type McpResourceContent,
   type McpTool,
 } from "@ngriffin_uk/polychat-ai-integrations";
@@ -37,7 +38,7 @@ export interface McpGatewayServer {
 
 export interface McpGatewaySession {
   server: McpGatewayServer;
-  client: McpHttpClient;
+  client: McpClient;
   allowedTools: ReadonlySet<string> | null;
 }
 
