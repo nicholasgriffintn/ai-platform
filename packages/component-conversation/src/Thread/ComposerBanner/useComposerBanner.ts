@@ -1,5 +1,6 @@
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
+  useProjectTeamPlan,
   useRecipeConnectors,
   useWorkspaces,
   useUsageStore,
@@ -10,7 +11,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { isDismissed, useComposerBannerDismissals } from "./dismissal.js";
 import { buildModelReadinessBanner } from "./model-readiness-banner.js";
-import { buildUsageBanner } from "./usage-banner.js";
+import { buildPoolUsageBanner, buildUsageBanner } from "./usage-banner.js";
 
 export const STEALTH_MODEL_WARNING =
   "Note: Prompts and completions may be logged by the provider and used to improve the model.";
@@ -30,6 +31,7 @@ interface ComposerBannerOptions {
   requestedModelId?: string | null;
   isModelsLoading?: boolean;
   hideSuggestions?: boolean;
+  projectId?: string;
 }
 
 export function useComposerBanner({
@@ -37,12 +39,14 @@ export function useComposerBanner({
   requestedModelId = null,
   isModelsLoading = false,
   hideSuggestions,
+  projectId,
 }: ComposerBannerOptions) {
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isPro = useChatStore((state) => state.isPro);
   const user = useChatStore((state) => state.user);
   const hasHydratedUserConfiguration = useChatStore((state) => state.hasHydratedUserConfiguration);
   const usageLimits = useUsageStore((state) => state.usageLimits);
+  const { teamPlan, isLoading: isTeamPlanLoading } = useProjectTeamPlan(projectId);
   const { data: connectorsData } = useRecipeConnectors({ status: "connected" });
   const { data: workspacesData } = useWorkspaces();
   const dismissals = useComposerBannerDismissals((state) => state.dismissals);
@@ -63,7 +67,11 @@ export function useComposerBanner({
   const banner = useMemo(() => {
     const candidates: Array<ComposerBannerDescriptor | null> = [
       buildModelReadinessBanner(requestedModelId, model, isModelsLoading),
-      buildUsageBanner(usageLimits),
+      teamPlan
+        ? buildPoolUsageBanner(teamPlan.pool.credits)
+        : isTeamPlanLoading
+          ? null
+          : buildUsageBanner(usageLimits),
       isStealthModel(model)
         ? { id: "stealth-model", tone: "warning", message: STEALTH_MODEL_WARNING }
         : null,
@@ -135,6 +143,8 @@ export function useComposerBanner({
     );
   }, [
     usageLimits,
+    teamPlan,
+    isTeamPlanLoading,
     isPro,
     model,
     requestedModelId,

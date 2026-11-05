@@ -3,6 +3,7 @@ import { sourcePodcastGenerationTaskSchema } from "@ngriffin_uk/polychat-schemas
 import { withExecutionRunContext } from "~/infrastructure/context/serviceContext";
 import { loadUserContext } from "~/modules/queue/application/user-context";
 import { defineTask } from "~/modules/queue/application/workflows";
+import { withSourceFunding } from "~/modules/sources/application/funding";
 import { runPodcastGeneration } from "~/modules/sources/application/podcasts/generate";
 
 export const sourcePodcastGeneration = defineTask({
@@ -16,8 +17,8 @@ export const sourcePodcastGeneration = defineTask({
     }
 
     const context = runId ? withExecutionRunContext(owner, runId) : owner;
-    const outcome = await runPodcastGeneration(context, sourceId, execution.steps, () =>
-      execution.fence.assertOwned(),
+    const outcome = await withSourceFunding(context, sourceId, () =>
+      runPodcastGeneration(context, sourceId, execution.steps, () => execution.fence.assertOwned()),
     );
 
     return {

@@ -27,8 +27,7 @@ export async function holdUsageReservation(
 ): Promise<boolean> {
   const period = usagePeriodFromDate();
   const creditMicros = Math.max(0, Math.round(params.creditMicros));
-
-  const created = await runtime.store.createReservation({
+  const reservation = {
     id: generateId(),
     userId: params.userId,
     period,
@@ -36,17 +35,28 @@ export async function holdUsageReservation(
     refId: params.refId,
     creditMicros,
     expiresAt: params.expiresAt ?? null,
-    workspaceId: params.workspaceId ?? null,
-  });
+  };
 
-  if (created && creditMicros > 0) {
-    if (params.workspaceId) {
-      await runtime.store.adjustWorkspacePoolReserved(params.workspaceId, period, creditMicros);
+  if (params.workspaceId) {
+    const held = await runtime.store.createWorkspaceReservationWithPool({
+      ...reservation,
+      workspaceId: params.workspaceId,
+    });
+
+    if (held) {
       await runtime.publisher?.workspaceUsageChanged?.(params.workspaceId, period);
 
-      return created;
+      return true;
     }
 
+    const existing = await runtime.store.getReservation(params.kind, params.refId);
+
+    return existing?.status === "held";
+  }
+
+  const created = await runtime.store.createReservation(reservation);
+
+  if (created && creditMicros > 0) {
     await runtime.store.applyUserBalanceDeltas({
       userId: params.userId,
       period,

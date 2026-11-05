@@ -8,17 +8,24 @@ import {
   type CreditPosition,
   type TurnAdmission,
 } from "./credits.js";
+import { currentFundingWorkspaceId } from "./funding-scope.js";
 import type { UsageRuntime, UsageStore, WorkspacePoolRecord } from "./store.js";
 
-export async function isWorkspacePoolFunded(
+export async function resolvePoolFunding(
   store: UsageStore,
   workspaceId: string | null | undefined,
-): Promise<boolean> {
-  if (!workspaceId) {
-    return false;
+): Promise<string | null> {
+  const funding = currentFundingWorkspaceId();
+
+  if (funding) {
+    return funding;
   }
 
-  return (await store.getWorkspacePool(workspaceId, usagePeriodFromDate())) !== null;
+  if (!workspaceId) {
+    return null;
+  }
+
+  return (await store.getWorkspacePool(workspaceId, usagePeriodFromDate())) ? workspaceId : null;
 }
 
 export function workspacePoolCredits(pool: WorkspacePoolRecord): UsageCreditsSummary {

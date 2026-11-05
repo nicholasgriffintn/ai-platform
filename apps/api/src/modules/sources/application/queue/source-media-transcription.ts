@@ -2,6 +2,7 @@ import { z } from "zod/v4";
 
 import { loadUserContext } from "~/modules/queue/application/user-context";
 import { defineTask } from "~/modules/queue/application/workflows";
+import { withSourceFunding } from "~/modules/sources/application/funding";
 import { runSourceTranscription } from "~/modules/sources/application/media/transcribe";
 
 export const sourceMediaTranscription = defineTask({
@@ -13,7 +14,9 @@ export const sourceMediaTranscription = defineTask({
       return { status: "error", message: "A transcription requires an owner" };
     }
 
-    const source = await runSourceTranscription(context, sourceId);
+    const source = await withSourceFunding(context, sourceId, () =>
+      runSourceTranscription(context, sourceId),
+    );
 
     return { status: "success", message: source ? "Source transcribed" : "Nothing to transcribe" };
   },

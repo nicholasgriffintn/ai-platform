@@ -7,7 +7,11 @@ import { ConversationRepository } from "~/modules/conversations/infrastructure/C
 import { WorkspacePoolRepository } from "~/modules/usage/infrastructure/WorkspacePoolRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
-import { resolveWorkspaceFunding, withWorkspaceFunding } from "../workspace-funding";
+import {
+  resolveWorkspaceFunding,
+  withProjectFunding,
+  withWorkspaceFunding,
+} from "../workspace-funding";
 
 function createRepositories(params: {
   conversationProjectId?: string | null;
@@ -77,6 +81,28 @@ describe("resolveWorkspaceFunding", () => {
     await expect(
       resolveWorkspaceFunding(repositories, { userId: 7, projectId: "project-1" }),
     ).rejects.toMatchObject({ type: ErrorType.FORBIDDEN, statusCode: 403 });
+  });
+});
+
+describe("withProjectFunding", () => {
+  it("keeps background work on the pool after the member who started it has left", async () => {
+    const repositories = createRepositories({ pool: {}, role: null });
+
+    await expect(
+      withProjectFunding(repositories, { projectId: "project-1" }, async () =>
+        currentFundingWorkspaceId(),
+      ),
+    ).resolves.toBe("workspace-1");
+  });
+
+  it("opens no scope for personal work or a workspace without a team plan", async () => {
+    const repositories = createRepositories({ pool: null, role: "member" });
+    const read = async () => currentFundingWorkspaceId();
+
+    await expect(withProjectFunding(repositories, {}, read)).resolves.toBeUndefined();
+    await expect(
+      withProjectFunding(repositories, { projectId: "project-1" }, read),
+    ).resolves.toBeUndefined();
   });
 });
 

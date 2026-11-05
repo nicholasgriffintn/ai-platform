@@ -125,11 +125,13 @@ const SPEND_RETURNED_FROM_PAST_CEILING = `MIN(?, MAX(0, spent_credit_micros
 const RUN_CHARGE_UNCHANGED = `(SELECT COALESCE(SUM(credit_micros), 0) FROM usage_event
 	WHERE run_id = ? AND billable = 1) = ?`;
 
+const ENDED_PLAN_CEILING = Number.MAX_SAFE_INTEGER;
+
 const POOL_SPEND_PAST_CEILING = `MAX(0, spent_credit_micros + ?
-	- MAX(spent_credit_micros, COALESCE(${POOL_CEILING}, 0)))`;
+	- MAX(spent_credit_micros, COALESCE(${POOL_CEILING}, ${ENDED_PLAN_CEILING})))`;
 
 const POOL_SPEND_RETURNED_FROM_PAST_CEILING = `MIN(?, MAX(0, spent_credit_micros
-	- COALESCE(${POOL_CEILING}, 0)))`;
+	- COALESCE(${POOL_CEILING}, ${ENDED_PLAN_CEILING})))`;
 
 export class UsageEventRepository extends BaseRepository {
   private buildInsert(event: UsageEventRecord): { query: string; values: unknown[] } {

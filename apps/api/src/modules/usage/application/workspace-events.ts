@@ -17,7 +17,7 @@ export async function publishWorkspaceUsageChanged(
 
   try {
     const { results } = await publisher.env.DB.prepare(
-      "SELECT user_id FROM resource_grant WHERE kind = 'membership' AND workspace_id = ? AND role IN ('owner', 'admin')",
+      "SELECT user_id FROM resource_grant WHERE kind = 'membership' AND workspace_id = ?",
     )
       .bind(workspaceId)
       .all<{ user_id: number }>();

@@ -15,6 +15,7 @@ export * from "./WorkSidebarNav";
 export * from "./WorkspaceCards";
 export * from "./WorkspaceList";
 export * from "./WorkspaceMemberList";
+export * from "./WorkspaceTeamPlanCard";
 export * from "./WorkspaceOverviewActions";
 export * from "./ScheduledRecipeList";
 export * from "./InvitationAcceptView";

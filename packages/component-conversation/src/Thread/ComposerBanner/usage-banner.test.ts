@@ -3,7 +3,7 @@
 import type { UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { buildUsageBanner } from "./usage-banner.js";
+import { buildPoolUsageBanner, buildUsageBanner } from "./usage-banner.js";
 
 function credits(overrides: Partial<UsageCreditsSummary> = {}): UsageCreditsSummary {
   return {
@@ -48,5 +48,33 @@ describe("buildUsageBanner", () => {
     expect(banner?.tone).toBe("critical");
     expect(banner?.dismissal).toBeUndefined();
     expect(banner?.action?.to).toBe("/profile?tab=billing");
+  });
+});
+
+describe("buildPoolUsageBanner", () => {
+  const credits: UsageCreditsSummary = {
+    included: 100,
+    used: 100,
+    reserved: 0,
+    grace: 10,
+    overrun: 0,
+    overage: 0,
+    overage_enabled: false,
+    state: "reserve",
+  };
+
+  it("does not point a member at their personal billing when the pool is spent", () => {
+    const banner = buildPoolUsageBanner({ ...credits, state: "exhausted" });
+
+    expect(banner).toMatchObject({ id: "pool-exhausted", tone: "critical" });
+    expect(banner?.action).toBeUndefined();
+  });
+
+  it("gives the shared headroom while the pool is in reserve", () => {
+    expect(buildPoolUsageBanner(credits)?.message).toContain("about 10 shared credits");
+  });
+
+  it("stays quiet while the pool has room", () => {
+    expect(buildPoolUsageBanner({ ...credits, state: "ok" })).toBeNull();
   });
 });

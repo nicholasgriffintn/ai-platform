@@ -14,6 +14,7 @@ export interface RunCostStatusProps {
   historyCharacters: number;
   isRunning: boolean;
   latestResponse?: PlatformResponse | null;
+  projectId?: string;
 }
 
 export function RunCostStatus({
@@ -21,6 +22,7 @@ export function RunCostStatus({
   historyCharacters,
   isRunning,
   latestResponse,
+  projectId,
 }: RunCostStatusProps) {
   const { chatInput, chatMode, isAuthenticated, model, runCapCredits } = useChatStore(
     useShallow((state) => ({
@@ -49,6 +51,7 @@ export function RunCostStatus({
     mode: chatMode,
     draft: chatInput,
     historyCharacters,
+    projectId,
   });
 
   if (showMeter) {

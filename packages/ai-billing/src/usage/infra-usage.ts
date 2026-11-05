@@ -50,6 +50,7 @@ export interface InfraUsageParams {
   runAttempt?: number | null;
   projectId?: string | null;
   workspaceId?: string | null;
+  poolWorkspaceId?: string | null;
   raw?: unknown;
 }
 
@@ -127,6 +128,7 @@ export function buildInfraUsageDrafts(params: InfraUsageParams): UsageEventDraft
       runAttempt: params.runAttempt ?? null,
       projectId: params.projectId ?? null,
       workspaceId: params.workspaceId ?? null,
+      poolWorkspaceId: params.poolWorkspaceId ?? null,
       rates: CLOUDFLARE_RATE_ENTRIES,
       raw: params.raw,
     }));

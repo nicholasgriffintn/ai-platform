@@ -11,6 +11,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { priceUsageDraft, type PricedUsageDraft } from "../usage-pricing.js";
 import { applyActorCreditDeltas, creditActorUserId, type CreditActor } from "./credit-actor.js";
+import { currentFundingWorkspaceId } from "./funding-scope.js";
 import { resolveUsagePlanSeed, type UsagePlanSeed } from "./plan-seed.js";
 import { reconcileRunCharge } from "./run-charge.js";
 import type { UsageEventRecord, UsageRuntime, UsageStore } from "./store.js";
@@ -40,6 +41,7 @@ export interface UsageEventDraft {
   quantity: number;
   occurredAt?: string;
   workspaceId?: string | null;
+  poolWorkspaceId?: string | null;
   projectId?: string | null;
   conversationId?: string | null;
   messageId?: string | null;
@@ -70,12 +72,14 @@ export function buildUsageEventRow(draft: UsageEventDraft): UsageEventRecord {
   }
 
   const priced = priceDraft(draft);
+  const poolWorkspaceId = draft.poolWorkspaceId ?? currentFundingWorkspaceId() ?? null;
 
   return {
     id: generateId(),
     idempotency_key: draft.idempotencyKey,
     user_id: userId,
-    workspace_id: draft.workspaceId ?? null,
+    workspace_id: draft.workspaceId ?? poolWorkspaceId,
+    pool_workspace_id: priced.billable ? poolWorkspaceId : null,
     project_id: draft.projectId ?? null,
     conversation_id: draft.conversationId ?? null,
     message_id: draft.messageId ?? null,
@@ -155,7 +159,15 @@ async function resolvePoolWorkspaceId(
 ): Promise<string | null> {
   const workspaceId = event.workspace_id;
 
-  if (!workspaceId || !event.billable || event.byok || event.credit_micros === 0) {
+  if (!event.billable || event.byok || event.credit_micros === 0) {
+    return null;
+  }
+
+  if (event.pool_workspace_id) {
+    return event.pool_workspace_id;
+  }
+
+  if (!workspaceId) {
     return null;
   }
 

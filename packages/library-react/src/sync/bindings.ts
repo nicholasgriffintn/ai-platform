@@ -199,6 +199,9 @@ export const SYNC_BINDINGS: SyncBinding[] = [
           queryKey: ["usage", "workspace", workspaceId],
           refetchType: "none",
         });
+        void context.queryClient.invalidateQueries({
+          queryKey: ["workspace", workspaceId, "team_plan"],
+        });
       }
     },
   },

@@ -14,6 +14,7 @@ import {
 } from "~/modules/sources/application/generation/finalise";
 import { readSourcePending } from "~/modules/sources/application/media/metadata";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
+import { withProjectFunding } from "~/modules/usage/application/workspace-funding";
 
 export const sourceGenerationPolling = definePoll({
   payload: z.object({
@@ -47,28 +48,37 @@ export const sourceGenerationPolling = definePoll({
       user: undefined,
     });
 
-    if (!provider?.getAsyncInvocationStatus) {
+    const readInvocationStatus = provider?.getAsyncInvocationStatus?.bind(provider);
+
+    if (!readInvocationStatus) {
       await failSourceGeneration(context, source, "The provider cannot report progress");
 
       return { status: "error", message: "Provider does not support async invocation status" };
     }
 
-    const resolvedModel = await resolveExecutableModelForRequest({
-      env,
-      user: context.requireUser(),
-      model: data.modelId || asyncInvocation.context?.version || "",
-      provider: asyncInvocation.provider || "replicate",
-    });
-    const result = await provider.getAsyncInvocationStatus(
-      asyncInvocation,
-      {
-        model: asyncInvocation.context?.version || "",
-        env,
-        messages: [],
-        completion_id: data.sourceId,
-        credentialAuthority: resolvedModel.credentialAuthority,
+    const result = await withProjectFunding(
+      context.repositories,
+      { projectId: source.project_id },
+      async () => {
+        const resolvedModel = await resolveExecutableModelForRequest({
+          env,
+          user: context.requireUser(),
+          model: data.modelId || asyncInvocation.context?.version || "",
+          provider: asyncInvocation.provider || "replicate",
+        });
+
+        return readInvocationStatus(
+          asyncInvocation,
+          {
+            model: asyncInvocation.context?.version || "",
+            env,
+            messages: [],
+            completion_id: data.sourceId,
+            credentialAuthority: resolvedModel.credentialAuthority,
+          },
+          data.userId,
+        );
       },
-      data.userId,
     );
 
     if (result.status === "completed" && isRecord(result.result)) {

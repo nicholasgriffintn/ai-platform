@@ -19,6 +19,7 @@ import {
   SourceRepository,
   type SourceRecord,
 } from "~/modules/sources/infrastructure/SourceRepository";
+import { withProjectFunding } from "~/modules/usage/application/workspace-funding";
 
 import { finaliseSourceGeneration } from "./finalise";
 
@@ -97,16 +98,18 @@ export async function startModelGeneration(
     env: context.env,
     user,
   });
-  const result = await provider.getResponse({
-    completion_id: completionId,
-    model: modelConfig.matchingModel,
-    messages: [{ role: "user", content: typeof input.prompt === "string" ? input.prompt : "" }],
-    body: { input },
-    replicate_wait_seconds: request.providerWaitSeconds,
-    env: context.env,
-    context,
-    store: false,
-  });
+  const result = await withProjectFunding(context.repositories, { projectId }, () =>
+    provider.getResponse({
+      completion_id: completionId,
+      model: modelConfig.matchingModel,
+      messages: [{ role: "user", content: typeof input.prompt === "string" ? input.prompt : "" }],
+      body: { input },
+      replicate_wait_seconds: request.providerWaitSeconds,
+      env: context.env,
+      context,
+      store: false,
+    }),
+  );
   const providerResponse = isRecord(result) ? result : {};
   const status = resolveStatus(providerResponse);
   const asyncInvocation = extractAsyncInvocation(providerResponse);
