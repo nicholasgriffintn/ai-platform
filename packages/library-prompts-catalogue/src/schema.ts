@@ -49,6 +49,7 @@ export const promptTasks = [
   "panel-turn",
   "council",
   "second-opinion",
+  "comparison",
   "teammate-persona",
   "team-role",
   "project-planning",

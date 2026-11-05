@@ -128,8 +128,8 @@ export const ChatMessageView = ({
   isSaved = false,
   onToggleSaved,
   onSaveToNote,
-  onRequestSecondOpinion,
-  isRequestingSecondOpinion = false,
+  onRequestComparison,
+  isRequestingComparison = false,
   isArchivedByCompaction = false,
   responseDurationMs,
   goalStarted = false,
@@ -167,8 +167,8 @@ export const ChatMessageView = ({
   isSaved?: boolean;
   onToggleSaved?: (messageId: string, isSaved: boolean) => void;
   onSaveToNote?: (message: Message) => void;
-  onRequestSecondOpinion?: (messageId: string) => void;
-  isRequestingSecondOpinion?: boolean;
+  onRequestComparison?: (messageId: string) => void;
+  isRequestingComparison?: boolean;
   isArchivedByCompaction?: boolean;
   responseDurationMs?: number;
   goalStarted?: boolean;
@@ -329,8 +329,8 @@ export const ChatMessageView = ({
                 isSaved={isSaved}
                 onToggleSaved={onToggleSaved}
                 onSaveToNote={onSaveToNote}
-                onRequestSecondOpinion={onRequestSecondOpinion}
-                isRequestingSecondOpinion={isRequestingSecondOpinion}
+                onRequestComparison={onRequestComparison}
+                isRequestingComparison={isRequestingComparison}
                 isArchivedByCompaction={isArchivedByCompaction}
                 responseDurationMs={responseDurationMs}
                 modelConfig={modelConfig}
