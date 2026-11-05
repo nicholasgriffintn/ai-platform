@@ -9,6 +9,7 @@ import {
   ownershipLostError,
 } from "@ngriffin_uk/polychat-library-tasks";
 import {
+  creditsFromCreditMicros,
   nextFlowStageId,
   chatRunCommandReceiptResponseSchema,
   PROJECT_TASK_DEFAULT_CONCURRENCY,
@@ -797,6 +798,9 @@ export async function runProjectTaskDispatch(params: {
         ...(runtime.model ? { model: runtime.model } : {}),
         mode: runtime.mode,
         enabled_tools: [...runtime.enabledTools],
+        ...(claimed.runCapCreditMicros
+          ? { budget_constraint: creditsFromCreditMicros(claimed.runCapCreditMicros) }
+          : {}),
         ...(claimed.executionProfile === "diff_review"
           ? { tool_selection_mode: "explicit" as const }
           : {}),

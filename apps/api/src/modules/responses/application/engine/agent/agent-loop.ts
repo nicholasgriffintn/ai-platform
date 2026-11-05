@@ -55,7 +55,11 @@ import {
 } from "~/modules/responses/application/engine/agent/empty-reply";
 import { captureRunMemories } from "~/modules/responses/application/engine/agent/memory-capture";
 import { createAgentProviderIO } from "~/modules/responses/application/engine/agent/provider-io";
-import { buildRunCapPauseMessages } from "~/modules/responses/application/engine/agent/run-cap-pause";
+import {
+  buildRunCapPauseMessages,
+  buildRunCapSkippedToolResult,
+  toRunToolCalls,
+} from "~/modules/responses/application/engine/agent/run-cap-pause";
 import type { ChatTurnTransport } from "~/modules/responses/application/engine/agent/turn-transport";
 import { buildMessageParts } from "~/modules/responses/application/engine/messages/parts";
 import { toProviderMessages } from "~/modules/responses/application/engine/messages/provider-mapping";
@@ -84,9 +88,10 @@ import { withoutSettingsDisabledTools } from "~/modules/tools/application/availa
 import { listFunctionToolDefinitions } from "~/modules/tools/application/catalogue";
 import { shouldStopTurnForUsage, USAGE_LIMIT_NOTICE } from "~/modules/usage/application/limitState";
 import {
-  RUN_CAP_STOPPED_NOTICE,
+  RUN_CAP_TOOL_SKIPPED_NOTICE,
   type RunBudget,
   type RunCapPause,
+  type RunStepDecision,
 } from "~/modules/usage/application/run-budget";
 import type {
   ChatCompletionParameters,
@@ -145,6 +150,7 @@ interface ChatAgentLoopState extends AgentLoopState {
     kind: "approval" | "question" | "takeover";
   };
   waitingForUserAction?: "approval" | "question" | "takeover";
+  runCapDecision?: Exclude<RunStepDecision, { kind: "proceed" }>;
   streamedToolInputStep?: number;
   stoppedForUsageLimit?: boolean;
   finalAnswerForced?: boolean;
@@ -629,16 +635,16 @@ async function runChatAgentLoop(
         return closingTurn(pending.message, "pending");
       }
 
-      const budgetDecision = await params.runBudget?.beforeStep(
-        providerIO.providerMessages(messages),
-      );
+      const budgetDecision =
+        state.runCapDecision ??
+        (await params.runBudget?.beforeStep(providerIO.providerMessages(messages)));
 
       await emitRunMeter(sink, params.runBudget);
 
       if (budgetDecision?.kind === "stopped") {
         state.stoppedForUsageLimit = true;
 
-        return closingTurn(RUN_CAP_STOPPED_NOTICE, "usage_limit_reached");
+        return closingTurn(budgetDecision.notice, "usage_limit_reached");
       }
 
       if (budgetDecision?.kind === "pause") {
@@ -988,6 +994,30 @@ async function runChatAgentLoop(
 
       if (context.state.streamedToolInputStep !== context.step) {
         await emitToolCallEvents(sink, providerToolCalls as unknown as ToolCall[], context.step);
+      }
+
+      const toolCapDecision = await params.runBudget?.beforeTools(
+        toRunToolCalls(providerToolCalls),
+      );
+
+      if (toolCapDecision && toolCapDecision.kind !== "proceed") {
+        const skipped = providerToolCalls.map((toolCall) =>
+          buildRunCapSkippedToolResult(toolCall, RUN_CAP_TOOL_SKIPPED_NOTICE, {
+            model: activeModel.model,
+            platform: params.platform,
+          }),
+        );
+
+        for (const result of skipped) {
+          await context.shared.conversationManager.add(context.shared.completionId, result);
+          await sink.write(createStreamedToolResultEvent(result));
+        }
+
+        context.state.runCapDecision = toolCapDecision;
+        toolResponses.push(...skipped);
+        context.messages.push(...toProviderMessages(skipped));
+
+        return;
       }
 
       const settledToolCallIds = new Set<string>();

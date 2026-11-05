@@ -562,6 +562,7 @@ export const projectTaskSchema = z.object({
   completions: z.array(projectTaskCompletionSchema).default([]),
   position: z.number(),
   tokenBudget: z.number().int().positive().nullable(),
+  runCapCreditMicros: z.number().int().positive().nullable().optional(),
   tokensSpent: z.number().int().nonnegative(),
   createdAt: z.string(),
   updatedAt: z.string().nullable(),
@@ -774,6 +775,7 @@ const taskWorkItemFields = {
   runner: projectTaskRunnerSchema.nullable(),
   stageId: z.string().trim().min(1).max(40).nullable(),
   tokenBudget: z.number().int().positive().max(10_000_000).nullable(),
+  runCapCreditMicros: z.number().int().positive().nullable(),
   originConversationId: z.string().min(1).nullable(),
   description: z.string().trim().max(8000).nullable(),
   priority: projectTaskPrioritySchema,
@@ -835,6 +837,7 @@ export const answerProjectTaskQuestionsSchema = answerUserQuestionsSchema;
 export const resolveProjectTaskToolApprovalSchema = z.object({
   interactionId: z.string().min(1),
   resolution: z.enum(["approved", "rejected"]),
+  option: z.string().min(1).optional(),
 });
 
 export type ResolveProjectTaskToolApprovalInput = z.infer<

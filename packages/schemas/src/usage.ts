@@ -159,6 +159,8 @@ export const USAGE_PERIOD_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 export const usagePeriodSchema = z.string().regex(USAGE_PERIOD_PATTERN);
 
+const NEAR_CAP_RATIO = 0.8;
+
 export const SPEND_STATES = ["uncapped", "ok", "near", "reached"] as const;
 export const spendStateSchema = z.enum(SPEND_STATES);
 export type SpendState = z.infer<typeof spendStateSchema>;
@@ -175,6 +177,21 @@ export const spendLedgerSchema = z.object({
 
 export type SpendLedger = z.infer<typeof spendLedgerSchema>;
 
+export function resolveSpendState(
+  creditMicros: number,
+  capCreditMicros: number | null | undefined,
+): SpendState {
+  if (!capCreditMicros || capCreditMicros <= 0) {
+    return "uncapped";
+  }
+
+  if (creditMicros >= capCreditMicros) {
+    return "reached";
+  }
+
+  return creditMicros >= capCreditMicros * NEAR_CAP_RATIO ? "near" : "ok";
+}
+
 export const runMeterSchema = z.object({
   runId: z.string().min(1),
   chargedCreditMicros: z.number().int().nonnegative(),
@@ -183,6 +200,23 @@ export const runMeterSchema = z.object({
 });
 
 export type RunMeter = z.infer<typeof runMeterSchema>;
+
+export function runMeterFromUsage(usage: ChatRunUsage): RunMeter | null {
+  const capCreditMicros = usage.charge?.capCreditMicros ?? null;
+
+  if (capCreditMicros === null) {
+    return null;
+  }
+
+  const chargedCreditMicros = totalChatRunCredits(usage).recordedCreditMicros ?? 0;
+
+  return {
+    runId: usage.runId,
+    chargedCreditMicros,
+    capCreditMicros,
+    state: resolveSpendState(chargedCreditMicros, capCreditMicros),
+  };
+}
 
 export function usagePeriodFromDate(date: Date = new Date()): string {
   return date.toISOString().slice(0, 7);

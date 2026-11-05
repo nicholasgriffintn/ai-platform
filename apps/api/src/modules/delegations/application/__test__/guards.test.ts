@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
-import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 
 import { checkDelegationSpawn } from "../guards";
@@ -18,7 +17,6 @@ function context(overrides: Record<string, unknown> = {}) {
       context: {
         repositories: fakeRepositories([
           [DelegationRepository, { countLiveForParent: vi.fn().mockResolvedValue(0) }],
-          [ConversationRunRepository, { getById: vi.fn().mockResolvedValue(null) }],
         ]),
       },
     },
@@ -52,19 +50,6 @@ describe("checkDelegationSpawn", () => {
 
     expect(result.allowed).toBe(false);
     expect(result.reason).toContain("maximum number");
-  });
-
-  it("refuses to spend outside a capped parent run", async () => {
-    const toolContext = context();
-
-    toolContext.request.context.repositories
-      .get(ConversationRunRepository)
-      .getById.mockResolvedValue({ spendCapCreditMicros: 5_000_000 });
-
-    const result = await checkDelegationSpawn(toolContext);
-
-    expect(result.allowed).toBe(false);
-    expect(result.reason).toContain("credit cap");
   });
 
   it("refuses when there is no stored run to count live delegations against", async () => {

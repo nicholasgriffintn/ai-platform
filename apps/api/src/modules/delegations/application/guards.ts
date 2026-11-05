@@ -4,7 +4,6 @@ import {
   type DelegationContext,
 } from "@ngriffin_uk/polychat-schemas";
 
-import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import type { IRequest } from "~/types";
 import type { ApiToolExecutionContext } from "~/types/functions";
@@ -18,9 +17,6 @@ const FAN_OUT_REFUSAL =
 const UNRESOLVED_PARENT_REFUSAL =
   "This turn has no stored conversation and run to attribute a delegate to, so the number " +
   "already in flight cannot be counted. Delegation needs a stored conversation.";
-
-const RUN_CAP_REFUSAL =
-  "This run has a credit cap, and a delegate spends outside it. Do the work here instead.";
 
 export interface DelegationSpawnGuardResult {
   allowed: boolean;
@@ -48,14 +44,6 @@ export async function checkDelegationSpawn(
 
   if (!parentConversationId || !parentRunId || !context.request.context) {
     return { allowed: false, reason: UNRESOLVED_PARENT_REFUSAL, depth, liveDelegations: 0 };
-  }
-
-  const parentRun = await context.request.context.repositories
-    .get(ConversationRunRepository)
-    .getById(parentRunId);
-
-  if (parentRun?.spendCapCreditMicros) {
-    return { allowed: false, reason: RUN_CAP_REFUSAL, depth, liveDelegations: 0 };
   }
 
   const liveDelegations = await context.request.context.repositories

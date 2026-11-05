@@ -1180,6 +1180,7 @@ export const recipeInstallationSchema = z.object({
   configuration: recipeConfigurationSchema,
   teammateContextId: z.string().min(1).nullable().optional(),
   monthlyCreditCapMicros: z.number().int().positive().nullable().optional(),
+  runCreditCapMicros: z.number().int().positive().nullable().optional(),
   pausedReason: z.enum(["person", "budget"]).nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -1201,6 +1202,7 @@ export const recipeInstallationUpdateRequestSchema = z.object({
   configuration: recipeConfigurationRecordSchema.optional(),
   teammateContextId: z.string().min(1).nullable().optional(),
   monthlyCreditCapMicros: z.number().int().positive().nullable().optional(),
+  runCreditCapMicros: z.number().int().positive().nullable().optional(),
 });
 
 export const recipeComposioTriggerCreateRequestSchema = z.object({

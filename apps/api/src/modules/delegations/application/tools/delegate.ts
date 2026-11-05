@@ -2,6 +2,7 @@ import {
   currentFundingWorkspaceId,
   readCreditPosition,
   readWorkspacePoolPosition,
+  runCapRemainingCreditMicros,
   userCreditActor,
 } from "@ngriffin_uk/polychat-ai-billing";
 import { pendingApproval } from "@ngriffin_uk/polychat-library-interactions";
@@ -278,12 +279,32 @@ export const delegate: ApiToolDefinition = {
       };
     }
 
-    const maxCreditMicros = position.enforced
+    const accountCreditMicros = position.enforced
       ? Math.min(args.budget?.max_credit_micros ?? ceilingCreditMicros, ceilingCreditMicros)
       : Math.min(
           args.budget?.max_credit_micros ?? DELEGATION_DEFAULT_MAX_CREDIT_MICROS,
           DELEGATION_DEFAULT_MAX_CREDIT_MICROS,
         );
+    const capRemainingCreditMicros = runCapRemainingCreditMicros(
+      await usageRuntime.store.getRunChargeState(parentRunId),
+    );
+    const capCeilingCreditMicros =
+      capRemainingCreditMicros === null
+        ? null
+        : resolveDelegationCreditCeiling(capRemainingCreditMicros);
+
+    if (capCeilingCreditMicros !== null && capCeilingCreditMicros <= 0) {
+      return {
+        status: "error",
+        name: "delegate",
+        content: "This run has too little of its credit cap left to give a delegate a budget.",
+      };
+    }
+
+    const maxCreditMicros =
+      capCeilingCreditMicros === null
+        ? accountCreditMicros
+        : Math.min(accountCreditMicros, capCeilingCreditMicros);
 
     const createsChildConversation = !selectedChild || continuationMode === "fresh";
     const childPermissionMode = permissionModeSchema.parse(

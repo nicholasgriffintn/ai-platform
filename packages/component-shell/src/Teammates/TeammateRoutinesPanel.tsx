@@ -86,7 +86,10 @@ export function TeammateRoutinesPanel({
               {checked ? (
                 <div className="mt-3 space-y-2 border-t pt-3">
                   <RoutineSuccessSummary routineId={installation.id} />
-                  <RoutineSpendControl installationId={installation.id} />
+                  <RoutineSpendControl
+                    installationId={installation.id}
+                    runCreditCapMicros={installation.runCreditCapMicros ?? null}
+                  />
                 </div>
               ) : null}
             </div>

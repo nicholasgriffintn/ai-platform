@@ -20,14 +20,23 @@ interface RunChargeTarget {
 }
 
 export function resolveRunChargeTarget(
-  state: Pick<RunChargeState, "capCreditMicros" | "refunded">,
+  state: Pick<RunChargeState, "capCreditMicros" | "refunded" | "delegatedCreditMicros">,
 ): RunChargeTarget | null {
   if (state.refunded) {
     return { creditMicros: 0, reason: "platform_failure_refund" };
   }
 
   return state.capCreditMicros
-    ? { creditMicros: state.capCreditMicros, reason: "run_cap_absorbed" }
+    ? {
+        creditMicros: Math.max(0, state.capCreditMicros - state.delegatedCreditMicros),
+        reason: "run_cap_absorbed",
+      }
+    : null;
+}
+
+export function runCapRemainingCreditMicros(state: RunChargeState | null): number | null {
+  return state?.capCreditMicros
+    ? Math.max(0, state.capCreditMicros - state.chargedCreditMicros - state.delegatedCreditMicros)
     : null;
 }
 

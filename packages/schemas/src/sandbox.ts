@@ -517,6 +517,8 @@ export const sandboxRunEventSchema = z
 
 export const sandboxRunDataSchema = z.object({
   runId: z.string().trim().min(1),
+  chatRunId: z.string().trim().min(1).optional(),
+  chatRunAttempt: z.number().int().positive().optional(),
   projectId: z.string().trim().min(1).optional(),
   installationId: z.number().int().positive(),
   repo: sandboxRepoSchema,
