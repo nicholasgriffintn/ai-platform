@@ -3,7 +3,16 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "dataRetention": {
+      "maxDays": "unknown",
+      "zeroRetention": "account_setting",
+      "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
+    },
+    "dataLocation": {
+      "kind": "deployment",
+      "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html"
+    }
   },
   "models": {
     "nova-2-lite": {
@@ -12,10 +21,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "December 1, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025,
         "supportsResponseFormat": false,
@@ -38,10 +43,6 @@
         "speed": 4,
         "multimodal": true,
         "lastUpdated": "December 3, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00024,
         "supportsDocuments": true,
@@ -64,10 +65,6 @@
         "speed": 5,
         "multimodal": false,
         "lastUpdated": "December 3, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.000035,
         "costPer1kOutputTokens": 0.00014,
         "supportsAttachments": false,
@@ -94,10 +91,6 @@
         "speed": 4,
         "multimodal": true,
         "lastUpdated": "December 3, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.0032,
         "supportsDocuments": true,
@@ -112,10 +105,6 @@
       "matchingModel": "amazon.nova-canvas-v1:0",
       "overrides": {
         "deprecated": true,
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.002,
         "bedrockApiOperation": "invoke"
       },
@@ -131,10 +120,6 @@
       "matchingModel": "amazon.nova-reel-v1:1",
       "overrides": {
         "deprecated": true,
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "bedrockApiOperation": "async-invoke"
       },
       "unset": [
@@ -147,12 +132,7 @@
     "nova-2-sonic": {
       "model": "nova/amazon-nova-2-sonic",
       "matchingModel": "amazon.nova-2-sonic-v1:0",
-      "overrides": {
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        }
-      },
+      "overrides": {},
       "unset": [
         "supportsToolCalls",
         "supportsAttachments",
@@ -166,10 +146,6 @@
       "overrides": {
         "maxTokens": 16384,
         "lastUpdated": "October 29, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": false
@@ -188,10 +164,6 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "lastUpdated": "October 29, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.0002,
         "supportsAttachments": false
@@ -210,10 +182,6 @@
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "October 22, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
         "supportsSearchGrounding": true,
@@ -232,10 +200,6 @@
         "speed": 3,
         "isFeatured": false,
         "lastUpdated": "May 22, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.075,
         "supportsDocuments": true,
@@ -258,10 +222,6 @@
         "speed": 3,
         "isFeatured": false,
         "lastUpdated": "February 19, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "supportsTokenCounting": true,
@@ -275,10 +235,6 @@
       "model": "bedrock/cohere.embed-english-v3/cohere-embed-english",
       "matchingModel": "cohere.embed-english-v3",
       "overrides": {
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0001
       },
       "unset": [
@@ -292,10 +248,6 @@
       "model": "bedrock/cohere.embed-multilingual-v3/cohere-embed-multilingual",
       "matchingModel": "cohere.embed-multilingual-v3",
       "overrides": {
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0001
       },
       "unset": [
@@ -318,10 +270,6 @@
         "speed": 3,
         "releaseDate": "March 11, 2024",
         "lastUpdated": "March 11, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015,
         "supportsAttachments": false
@@ -345,10 +293,6 @@
         "speed": 2,
         "releaseDate": "April 4, 2024",
         "lastUpdated": "April 4, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "supportsAttachments": false
@@ -363,10 +307,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "August 15, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008,
         "supportsAttachments": false
@@ -381,10 +321,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "August 15, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0004,
         "supportsAttachments": false
@@ -399,10 +335,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "August 15, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0007,
         "supportsAttachments": false
@@ -431,10 +363,6 @@
         "multimodal": true,
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "December 3, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.0125,
         "supportsDocuments": true,
@@ -451,10 +379,6 @@
         "speed": 3,
         "deprecated": true,
         "lastUpdated": "September 25, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00072,
         "costPer1kOutputTokens": 0.00072
       },
@@ -469,10 +393,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0001,
         "supportsTemperature": false,
@@ -489,10 +409,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.006,
         "supportsStreaming": true,
@@ -520,10 +436,6 @@
           ]
         },
         "lastUpdated": "December 1, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00033,
         "costPer1kOutputTokens": 0.00275,
         "supportsResponseFormat": false,
@@ -542,10 +454,6 @@
       "matchingModel": "amazon.titan-text-express-v1",
       "overrides": {
         "lastUpdated": "December 1, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": false
@@ -559,10 +467,6 @@
       "matchingModel": "amazon.titan-text-express-v1:0:8k",
       "overrides": {
         "lastUpdated": "December 1, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": false
@@ -586,10 +490,6 @@
           ]
         },
         "lastUpdated": "October 22, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.004
       },
@@ -613,10 +513,6 @@
         },
         "releaseDate": "June 20, 2024",
         "lastUpdated": "June 20, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
       },
@@ -629,10 +525,6 @@
       "matchingModel": "anthropic.claude-3-5-sonnet-20241022-v2:0",
       "overrides": {
         "lastUpdated": "October 22, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
       },
@@ -657,10 +549,6 @@
         },
         "knowledgeCutoffDate": "April 2024",
         "lastUpdated": "February 19, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
       },
@@ -674,10 +562,6 @@
       "overrides": {
         "deprecated": true,
         "lastUpdated": "March 13, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00125
       },
@@ -690,10 +574,6 @@
       "matchingModel": "anthropic.claude-3-opus-20240229-v1:0",
       "overrides": {
         "lastUpdated": "February 29, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.075
       },
@@ -707,10 +587,6 @@
       "overrides": {
         "deprecated": true,
         "lastUpdated": "March 4, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
       },
@@ -723,10 +599,6 @@
       "matchingModel": "anthropic.claude-haiku-4-5-20251001-v1:0",
       "overrides": {
         "lastUpdated": "October 15, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
         "reasoningConfig": {
@@ -744,10 +616,6 @@
       "matchingModel": "anthropic.claude-instant-v1",
       "overrides": {
         "lastUpdated": "March 1, 2023",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.0024,
         "supportsToolCalls": false,
@@ -763,10 +631,6 @@
       "overrides": {
         "knowledgeCutoffDate": "April 2024",
         "lastUpdated": "May 22, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.075
       },
@@ -785,10 +649,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "November 24, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "reasoningConfig": {
@@ -811,10 +671,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "March 13, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "reasoningConfig": {
@@ -839,10 +695,6 @@
         "deprecated": true,
         "knowledgeCutoffDate": "April 2024",
         "lastUpdated": "May 22, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
       },
@@ -858,10 +710,6 @@
       "matchingModel": "anthropic.claude-v2",
       "overrides": {
         "lastUpdated": "July 11, 2023",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.008,
         "costPer1kOutputTokens": 0.024,
         "supportsToolCalls": false,
@@ -876,10 +724,6 @@
       "matchingModel": "anthropic.claude-v2:1",
       "overrides": {
         "lastUpdated": "November 21, 2023",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.008,
         "costPer1kOutputTokens": 0.024,
         "supportsToolCalls": false,
@@ -894,10 +738,6 @@
       "matchingModel": "cohere.command-light-text-v14",
       "overrides": {
         "lastUpdated": "November 1, 2023",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0006,
         "supportsToolCalls": false,
@@ -912,10 +752,6 @@
       "matchingModel": "cohere.command-text-v14",
       "overrides": {
         "lastUpdated": "November 1, 2023",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.002,
         "supportsToolCalls": false,
@@ -930,10 +766,6 @@
       "matchingModel": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
       "overrides": {
         "lastUpdated": "October 15, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0055
       }
@@ -944,10 +776,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "November 24, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275
       },
@@ -961,10 +789,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "March 13, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "reasoningConfig": {
@@ -987,10 +811,6 @@
       "matchingModel": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
       "overrides": {
         "lastUpdated": "October 15, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005
       }
@@ -1001,10 +821,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "November 24, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025
       },
@@ -1018,10 +834,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "March 13, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025
       },
@@ -1035,10 +847,6 @@
       "overrides": {
         "deprecated": true,
         "lastUpdated": "September 25, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00016,
         "costPer1kOutputTokens": 0.00016
       },
@@ -1055,10 +863,6 @@
         "maxTokens": 4096,
         "deprecated": true,
         "lastUpdated": "September 25, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0001,
         "supportsAttachments": false
@@ -1076,10 +880,6 @@
         "maxTokens": 4096,
         "deprecated": true,
         "lastUpdated": "September 25, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00015,
         "supportsAttachments": false
@@ -1098,10 +898,6 @@
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "July 23, 2024",
         "lastUpdated": "July 23, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00265,
         "costPer1kOutputTokens": 0.0035,
         "supportsToolCalls": false,
@@ -1121,10 +917,6 @@
         "knowledgeCutoffDate": "March 2023",
         "releaseDate": "July 23, 2024",
         "lastUpdated": "July 23, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0006,
         "supportsToolCalls": false,
@@ -1140,10 +932,6 @@
       "matchingModel": "mistral.ministral-3-14b-instruct",
       "overrides": {
         "lastUpdated": "December 2, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0002
       }
@@ -1154,10 +942,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "December 2, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00015
       }
@@ -1167,10 +951,6 @@
       "matchingModel": "mistral.mistral-7b-instruct-v0:2",
       "overrides": {
         "lastUpdated": "April 1, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00011,
         "costPer1kOutputTokens": 0.00011,
         "supportsAttachments": false
@@ -1181,10 +961,6 @@
       "matchingModel": "mistral.mistral-large-2402-v1:0",
       "overrides": {
         "lastUpdated": "December 1, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015,
         "supportsAttachments": false
@@ -1201,10 +977,6 @@
         "maxTokens": 32000,
         "releaseDate": "April 1, 2025",
         "lastUpdated": "April 1, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0007,
         "costPer1kOutputTokens": 0.0007,
         "supportsToolCalls": false,
@@ -1223,10 +995,6 @@
         ],
         "speed": 3,
         "lastUpdated": "February 6, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003
       }
@@ -1239,10 +1007,6 @@
         "maxTokens": 128000,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": false
@@ -1257,10 +1021,6 @@
         "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "August 5, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.0003,
         "supportsAttachments": false
@@ -1276,10 +1036,6 @@
         "speed": 3,
         "knowledgeCutoffDate": "April 2024",
         "lastUpdated": "September 18, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00088,
         "supportsAttachments": false
@@ -1293,10 +1049,6 @@
         "contextWindow": 32768,
         "speed": 3,
         "lastUpdated": "September 18, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": false
@@ -1311,10 +1063,6 @@
         "speed": 5,
         "releaseDate": "September 11, 2025",
         "lastUpdated": "November 25, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0012,
         "supportsAttachments": false
@@ -1328,10 +1076,6 @@
         "maxTokens": 262000,
         "speed": 2,
         "lastUpdated": "November 25, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00053,
         "costPer1kOutputTokens": 0.00266
       }
@@ -1341,10 +1085,6 @@
       "matchingModel": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
       "overrides": {
         "lastUpdated": "October 15, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0055
       }
@@ -1355,10 +1095,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "November 24, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275
       },
@@ -1372,10 +1108,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "March 13, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275
       },
@@ -1389,10 +1121,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "April 16, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false,
@@ -1415,10 +1143,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "March 13, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0033,
         "costPer1kOutputTokens": 0.0165,
         "reasoningConfig": {
@@ -1438,10 +1162,6 @@
       "matchingModel": "au.anthropic.claude-haiku-4-5-20251001-v1:0",
       "overrides": {
         "lastUpdated": "October 15, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0055
       }
@@ -1451,10 +1171,6 @@
       "matchingModel": "au.anthropic.claude-opus-4-6-v1",
       "overrides": {
         "lastUpdated": "March 13, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275
       },
@@ -1469,10 +1185,6 @@
       "matchingModel": "au.anthropic.claude-sonnet-4-6",
       "overrides": {
         "lastUpdated": "March 13, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0033,
         "costPer1kOutputTokens": 0.0165
       },
@@ -1487,10 +1199,6 @@
         "name": "DeepSeek-V3.2",
         "maxTokens": 81920,
         "lastUpdated": "February 6, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00062,
         "costPer1kOutputTokens": 0.00185,
         "supportsAttachments": false
@@ -1502,10 +1210,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "April 16, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false,
@@ -1528,10 +1232,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "March 13, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0033,
         "costPer1kOutputTokens": 0.0165,
         "reasoningConfig": {
@@ -1552,10 +1252,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "April 16, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false
@@ -1567,10 +1263,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "March 13, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
       }
@@ -1581,10 +1273,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "April 16, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
@@ -1596,10 +1284,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "March 13, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0033,
         "costPer1kOutputTokens": 0.0165
       }
@@ -1613,10 +1297,6 @@
         "maxTokens": 98304,
         "speed": 3,
         "lastUpdated": "March 18, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
         "supportsAttachments": false
@@ -1628,10 +1308,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "September 18, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015
       }
@@ -1642,10 +1318,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "December 2, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0001
       }
@@ -1662,10 +1334,6 @@
         ],
         "speed": 4,
         "lastUpdated": "December 2, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015
       }
@@ -1684,10 +1352,6 @@
         "contextComplexity": 3,
         "speed": 3,
         "lastUpdated": "April 8, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
         "supportsResponseFormat": false
@@ -1701,10 +1365,6 @@
       "matchingModel": "nvidia.nemotron-nano-3-30b",
       "overrides": {
         "lastUpdated": "December 23, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00024,
         "supportsAttachments": false
@@ -1721,10 +1381,6 @@
         ],
         "speed": 4,
         "lastUpdated": "March 11, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00065,
         "supportsAttachments": false,
@@ -1744,10 +1400,6 @@
         "maxTokens": 65536,
         "speed": 3,
         "lastUpdated": "February 6, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0012,
         "supportsAttachments": false
@@ -1759,10 +1411,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "April 16, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
@@ -1774,10 +1422,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "March 13, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0033,
         "costPer1kOutputTokens": 0.0165
       }
@@ -1790,10 +1434,6 @@
         "contextWindow": 202752,
         "speed": 3,
         "lastUpdated": "March 18, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.0032,
         "supportsAttachments": false
@@ -1805,10 +1445,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "May 28, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false,
@@ -1831,10 +1467,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "May 28, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
@@ -1846,10 +1478,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "May 28, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false,
@@ -1872,10 +1500,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "May 28, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false
@@ -1887,10 +1511,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "May 28, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
@@ -1902,10 +1522,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "May 28, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
@@ -1927,10 +1543,6 @@
         "speed": 2,
         "isFeatured": true,
         "lastUpdated": "June 9, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.011,
         "costPer1kOutputTokens": 0.055,
         "supportsTemperature": false
@@ -1942,10 +1554,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "June 9, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false
@@ -1957,10 +1565,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "June 9, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.011,
         "costPer1kOutputTokens": 0.055,
         "supportsTemperature": false
@@ -1972,10 +1576,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "June 30, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false,
@@ -1998,10 +1598,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "June 30, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.011,
         "supportsTemperature": false
@@ -2013,10 +1609,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "June 30, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.011,
         "supportsTemperature": false,
@@ -2039,10 +1631,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "June 30, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false
@@ -2054,10 +1642,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "June 30, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.011,
         "supportsTemperature": false
@@ -2069,10 +1653,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "June 30, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.011,
         "supportsTemperature": false
@@ -2084,10 +1664,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "June 9, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false,
@@ -2109,10 +1685,6 @@
       "matchingModel": "jp.anthropic.claude-haiku-4-5-20251001-v1:0",
       "overrides": {
         "lastUpdated": "October 15, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0055
       }
@@ -2123,10 +1695,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "July 24, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false,
@@ -2149,10 +1717,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "July 24, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
@@ -2164,10 +1728,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "July 24, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false,
@@ -2190,10 +1750,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "July 24, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false
@@ -2205,10 +1761,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "July 24, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
@@ -2220,10 +1772,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "July 24, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
@@ -2235,10 +1783,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 9, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0012,
         "supportsTemperature": false
@@ -2250,10 +1794,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 9, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
         "supportsTemperature": false
@@ -2265,10 +1805,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 9, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
         "supportsTemperature": false
@@ -2280,10 +1816,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 1, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false
@@ -2295,10 +1827,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 1, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false
@@ -2310,10 +1838,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 1, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.011,
         "costPer1kOutputTokens": 0.055,
         "supportsTemperature": false
@@ -2325,10 +1849,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "August 18, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
         "supportsResponseFormat": false
@@ -2340,10 +1860,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "August 18, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.0066,
         "supportsResponseFormat": false
@@ -2355,10 +1871,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "December 3, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.000063,
         "costPer1kOutputTokens": 0.000252,
         "supportsResponseFormat": false
@@ -2370,10 +1882,6 @@
       "overrides": {
         "speed": 5,
         "lastUpdated": "December 3, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.000037,
         "costPer1kOutputTokens": 0.000148,
         "supportsResponseFormat": false,
@@ -2386,10 +1894,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "December 3, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00084,
         "costPer1kOutputTokens": 0.00336,
         "supportsResponseFormat": false
@@ -2401,10 +1905,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "April 16, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "supportsTemperature": false
@@ -2416,10 +1916,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "December 3, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.000064,
         "costPer1kOutputTokens": 0.000256,
         "supportsResponseFormat": false
@@ -2430,10 +1926,6 @@
       "matchingModel": "eu.amazon.nova-2-lite-v1:0",
       "overrides": {
         "lastUpdated": "December 1, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.000374,
         "costPer1kOutputTokens": 0.003157,
         "supportsResponseFormat": false
@@ -2445,10 +1937,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "December 3, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.000069,
         "costPer1kOutputTokens": 0.000276,
         "supportsResponseFormat": false
@@ -2460,10 +1948,6 @@
       "overrides": {
         "speed": 5,
         "lastUpdated": "December 3, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00016,
         "supportsResponseFormat": false,
@@ -2476,10 +1960,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "December 3, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00092,
         "costPer1kOutputTokens": 0.00368,
         "supportsResponseFormat": false
@@ -2491,10 +1971,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "April 8, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
         "supportsResponseFormat": false
@@ -2506,10 +1982,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 4, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false
@@ -2520,10 +1992,6 @@
       "matchingModel": "jp.amazon.nova-2-lite-v1:0",
       "overrides": {
         "lastUpdated": "December 1, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.000396,
         "costPer1kOutputTokens": 0.003311,
         "supportsResponseFormat": false
@@ -2534,10 +2002,6 @@
       "matchingModel": "us.amazon.nova-2-lite-v1:0",
       "overrides": {
         "lastUpdated": "December 1, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00033,
         "costPer1kOutputTokens": 0.00275,
         "supportsResponseFormat": false
@@ -2549,10 +2013,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "December 3, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00024,
         "supportsResponseFormat": false
@@ -2564,10 +2024,6 @@
       "overrides": {
         "speed": 5,
         "lastUpdated": "December 3, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.000035,
         "costPer1kOutputTokens": 0.00014,
         "supportsResponseFormat": false,
@@ -2580,10 +2036,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "December 3, 2024",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.0032,
         "supportsResponseFormat": false
@@ -2595,10 +2047,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "April 8, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
         "supportsResponseFormat": false
@@ -2610,10 +2058,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 9, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00132,
         "supportsTemperature": false
@@ -2625,10 +2069,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 9, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0044,
         "costPer1kOutputTokens": 0.022,
         "supportsTemperature": false
@@ -2640,10 +2080,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 9, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.0132,
         "supportsTemperature": false
@@ -2655,10 +2091,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 4, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.011,
         "costPer1kOutputTokens": 0.055,
         "supportsTemperature": false
@@ -2670,10 +2102,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 9, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00132,
         "supportsTemperature": false
@@ -2685,10 +2113,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 9, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.0132,
         "supportsTemperature": false
@@ -2700,10 +2124,6 @@
       "overrides": {
         "speed": 5,
         "lastUpdated": "August 5, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00018,
         "costPer1kOutputTokens": 0.00072,
         "supportsAttachments": false
@@ -2715,10 +2135,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "August 5, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.000084,
         "costPer1kOutputTokens": 0.00036,
         "supportsAttachments": false
@@ -2731,10 +2147,6 @@
         "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
         "supportsTemperature": false
@@ -2746,10 +2158,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 22, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0044,
         "costPer1kOutputTokens": 0.022,
         "supportsTemperature": false
@@ -2761,10 +2169,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 22, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0044,
         "costPer1kOutputTokens": 0.022,
         "supportsTemperature": false,
@@ -2787,10 +2191,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 22, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
         "supportsTemperature": false
@@ -2802,10 +2202,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 22, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0044,
         "costPer1kOutputTokens": 0.022,
         "supportsTemperature": false
@@ -2817,10 +2213,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 22, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0044,
         "costPer1kOutputTokens": 0.022,
         "supportsTemperature": false
@@ -2832,10 +2224,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 16, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "supportsTemperature": false
@@ -2847,10 +2235,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "September 22, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
         "supportsTemperature": false
@@ -2862,10 +2246,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "September 22, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false
@@ -2877,10 +2257,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "July 16, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0033,
         "costPer1kOutputTokens": 0.0165,
         "supportsTemperature": false
@@ -2892,10 +2268,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "September 22, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00011,
         "costPer1kOutputTokens": 0.00055,
         "supportsTemperature": false
@@ -2907,10 +2279,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "September 22, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.011,
         "supportsTemperature": false
@@ -2922,10 +2290,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "September 28, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false
@@ -2937,10 +2301,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "September 28, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false
@@ -2952,10 +2312,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 29, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false
@@ -2967,10 +2323,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 28, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
       }
@@ -2982,10 +2334,6 @@
         "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 29, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.011,
         "supportsTemperature": false
@@ -2997,10 +2345,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 28, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.0066
       }
@@ -3010,10 +2354,6 @@
       "matchingModel": "in.anthropic.claude-haiku-4-5-20251001-v1:0",
       "overrides": {
         "lastUpdated": "October 15, 2025",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0055,
         "supportsResponseFormat": false
@@ -3025,10 +2365,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "July 24, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275,
         "supportsResponseFormat": false,
@@ -3041,10 +2377,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "June 30, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.011,
         "supportsResponseFormat": false,
@@ -3057,10 +2389,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "September 28, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.011,
         "supportsTemperature": false,
@@ -3084,10 +2412,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "September 28, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.011,
         "supportsTemperature": false
@@ -3099,10 +2423,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "August 14, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00168,
         "costPer1kOutputTokens": 0.00528,
         "supportsAttachments": false
@@ -3114,10 +2434,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "August 14, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.001848,
         "costPer1kOutputTokens": 0.005808,
         "supportsAttachments": false
@@ -3130,10 +2446,6 @@
         "speed": 4,
         "isFeatured": true,
         "lastUpdated": "October 7, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
         "supportsTemperature": false,
@@ -3156,10 +2468,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "October 7, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00011,
         "costPer1kOutputTokens": 0.00055,
         "supportsTemperature": false
@@ -3171,10 +2479,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "October 7, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00011,
         "costPer1kOutputTokens": 0.00055,
         "supportsTemperature": false,
@@ -3198,10 +2502,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "October 7, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
         "supportsTemperature": false
@@ -3213,10 +2513,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "October 7, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00011,
         "costPer1kOutputTokens": 0.00055,
         "supportsTemperature": false
@@ -3228,10 +2524,6 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "October 7, 2026",
-        "dataRetention": {
-          "zeroRetention": "account_setting",
-          "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html"
-        },
         "costPer1kInputTokens": 0.00011,
         "costPer1kOutputTokens": 0.00055,
         "supportsTemperature": false

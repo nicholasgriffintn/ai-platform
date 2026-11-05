@@ -45,7 +45,7 @@ const apiKeys = resource<ApiKeySummary>("/api_keys");
 export class UserService {
   constructor(private getHeaders: () => Promise<Record<string, string>>) {}
 
-  async exportChatHistory(): Promise<Blob> {
+  async exportAccountData(): Promise<Blob> {
     let headers: Record<string, string> = {};
 
     try {
@@ -60,7 +60,7 @@ export class UserService {
     });
 
     if (!response.ok) {
-      let message = `Failed to export chat history: ${response.statusText}`;
+      let message = `Failed to export your data: ${response.statusText}`;
 
       try {
         const data = await returnFetchedData<any>(response);

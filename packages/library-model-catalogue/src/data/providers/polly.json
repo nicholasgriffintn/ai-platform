@@ -1,6 +1,14 @@
 {
   "defaults": {
-    "hiddenFromDefaultList": true
+    "hiddenFromDefaultList": true,
+    "dataRetention": {
+      "maxDays": "unknown",
+      "source": "https://aws.amazon.com/polly/faqs/"
+    },
+    "dataLocation": {
+      "kind": "deployment",
+      "source": "https://aws.amazon.com/polly/faqs/"
+    }
   },
   "models": {
     "polly-generative": {

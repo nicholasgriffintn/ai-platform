@@ -2,7 +2,19 @@
   "defaults": {
     "supportsToolCalls": true,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "dataRetention": {
+      "maxDays": 0,
+      "zeroRetention": "default",
+      "source": "https://docs.fireworks.ai/guides/security_compliance/data_handling"
+    },
+    "dataLocation": {
+      "kind": "regions",
+      "regions": [
+        "us"
+      ],
+      "source": "https://fireworks.ai/privacy-policy"
+    }
   },
   "models": {
     "openai/gpt-oss-120b": {

@@ -2,7 +2,15 @@
   "defaults": {
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "dataRetention": {
+      "maxDays": "unknown",
+      "source": "https://www.cerebras.ai/privacy-policy"
+    },
+    "dataLocation": {
+      "kind": "unknown",
+      "source": "https://www.cerebras.ai/privacy-policy"
+    }
   },
   "models": {
     "cerebras/gpt-oss-120b": {

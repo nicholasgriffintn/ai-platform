@@ -158,3 +158,19 @@ export function compactJsonWhitespace(content: string): string {
 
   return characters.join("");
 }
+
+export async function* encodeJsonArray(
+  pages: AsyncIterable<readonly unknown[]> | Iterable<readonly unknown[]>,
+): AsyncGenerator<Uint8Array> {
+  const encoder = new TextEncoder();
+  let separator = "[\n";
+
+  for await (const page of pages) {
+    for (const item of page) {
+      yield encoder.encode(`${separator}${JSON.stringify(item)}`);
+      separator = ",\n";
+    }
+  }
+
+  yield encoder.encode(separator === "[\n" ? "[]\n" : "\n]\n");
+}

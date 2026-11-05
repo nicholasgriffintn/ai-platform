@@ -6,7 +6,7 @@ import {
 import { Hono } from "hono";
 
 import { defineSingleton } from "~/infrastructure/http/resource";
-import { handleExportChatHistory } from "~/modules/account/application/exportChatHistory";
+import { streamAccountExport } from "~/modules/account/application/exportAccountData";
 import { updateUserSettings } from "~/modules/account/application/settings";
 
 const app = new Hono();
@@ -26,21 +26,17 @@ defineSingleton(app, { tags: ["account"] }, (account) => {
 defineSingleton(app, { path: "/export", tags: ["account"] }, (exported) => {
   exported.read({
     auth: true,
-    summary: "Export chat history",
-    description: "Returns a JSON file containing the user's chat history.",
-    responses: { 200: { description: "JSON file with chat history" } },
+    summary: "Export account data",
+    description:
+      "Returns a ZIP archive of what the signed-in person made: conversations, memory, sources, outputs and their files, with a manifest of anything left out.",
+    responses: { 200: { description: "ZIP archive of the person's data" } },
     handler: async ({ serviceContext, user }) => {
-      const json = await handleExportChatHistory({
-        context: serviceContext,
-        env: serviceContext.env,
-        user,
-      });
-      const filename = `chat-history-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+      const filename = `polychat-export-${new Date().toISOString().replace(/[:.]/g, "-")}.zip`;
 
-      return new Response(JSON.stringify(json, null, 2), {
+      return new Response(streamAccountExport(serviceContext, user), {
         status: 200,
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/zip",
           "Content-Disposition": `attachment; filename="${filename}"`,
           "Cache-Control": NO_STORE,
         },

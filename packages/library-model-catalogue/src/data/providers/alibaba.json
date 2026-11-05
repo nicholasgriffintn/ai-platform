@@ -3,7 +3,15 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "dataRetention": {
+      "maxDays": "unknown",
+      "source": "https://www.alibabacloud.com/help/en/model-studio/privacy-notice"
+    },
+    "dataLocation": {
+      "kind": "deployment",
+      "source": "https://www.alibabacloud.com/help/en/model-studio/regions/"
+    }
   },
   "models": {
     "deepseek-v4-flash-0731": {
