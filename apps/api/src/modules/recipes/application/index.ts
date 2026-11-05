@@ -5,6 +5,7 @@ import {
   type InstalledRecipe,
   type RecipeConfiguration,
   type RecipeConnectionStatus,
+  type RecipeChatRequestOptions,
   type RecipeInstallation,
   type RecipeInstallationTrigger,
   type RecipeInstallationUpdateRequest,
@@ -816,6 +817,36 @@ export async function installAssistantRecipe(id: string, options: RecipeInstallO
   };
 }
 
+export async function readRecipeResumeOptions(params: {
+  context: ServiceContext;
+  userId: number;
+  installationId: string;
+}): Promise<RecipeChatRequestOptions | null> {
+  const existing = await getRecipeInstallationRecord(params);
+  const installation = existing ? parseRecipeInstallationRecord(existing.record) : null;
+  const recipe = installation ? getRecipeById(installation.recipeId) : undefined;
+
+  if (!installation || !recipe) {
+    return null;
+  }
+
+  const runtime = buildRecipeInvocationRuntime({
+    recipe,
+    connections: buildRecipeConnections(recipe),
+    installation,
+    configuration: installation.configuration,
+  });
+
+  return {
+    id: recipe.id,
+    installationId: installation.id,
+    channel: "web",
+    allowedConnectorProviders: runtime.allowedConnectorProviders ?? [],
+    allowedConnectorOperations: runtime.allowedConnectorOperations ?? {},
+    configuration: installation.configuration,
+  };
+}
+
 export async function invokeAssistantRecipe(
   id: string,
   options: RecipeListOptions & {
@@ -918,6 +949,8 @@ export async function invokeAssistantRecipe(
       allowedConnectorOperations: runtime.allowedConnectorOperations,
       configuration: invocationConfiguration,
       readOnly: recipe.readOnly,
+      autonomyCeiling: recipe.autonomyCeiling,
+      maxSteps: recipe.maxSteps,
     };
   }
 
@@ -937,6 +970,8 @@ export async function invokeAssistantRecipe(
       allowedConnectorOperations: runtime.allowedConnectorOperations,
       configuration: invocationConfiguration,
       readOnly: recipe.readOnly,
+      autonomyCeiling: recipe.autonomyCeiling,
+      maxSteps: recipe.maxSteps,
     };
   }
 
@@ -956,6 +991,8 @@ export async function invokeAssistantRecipe(
       allowedConnectorOperations: runtime.allowedConnectorOperations,
       configuration: invocationConfiguration,
       readOnly: recipe.readOnly,
+      autonomyCeiling: recipe.autonomyCeiling,
+      maxSteps: recipe.maxSteps,
     };
   }
 
@@ -1001,6 +1038,8 @@ export async function invokeAssistantRecipe(
     allowedConnectorOperations: runtime.allowedConnectorOperations,
     configuration: invocationConfiguration,
     readOnly: recipe.readOnly,
+    autonomyCeiling: recipe.autonomyCeiling,
+    maxSteps: recipe.maxSteps,
     ...(options.dryRun ? { dryRun: true } : {}),
     taskId,
   };

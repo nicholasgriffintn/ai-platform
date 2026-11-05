@@ -983,6 +983,11 @@ export const assistantRecipeSchema = z.object({
     .boolean()
     .optional()
     .describe("Runs as a teammate routine only read and draft, whatever the teammate's dial says"),
+  autonomyCeiling: z
+    .enum(["observer", "assistant", "partner"])
+    .optional()
+    .describe("The most a teammate routine may do alone, whatever the teammate's dial says"),
+  maxSteps: z.number().int().positive().optional().describe("Most steps one routine run may take"),
   modelRole: systemModelRoleSchema.optional(),
   capability: assistantCapabilityDescriptorSchema.optional(),
 });
@@ -1318,6 +1323,8 @@ export const recipeInvocationResponseSchema = z.object({
   allowedConnectorOperations: z.record(z.string(), z.array(z.string())).optional(),
   configuration: recipeConfigurationSchema,
   readOnly: z.boolean().optional(),
+  autonomyCeiling: z.enum(["observer", "assistant", "partner"]).optional(),
+  maxSteps: z.number().int().positive().optional(),
   dryRun: z.boolean().optional(),
   taskId: z.string().optional(),
 });

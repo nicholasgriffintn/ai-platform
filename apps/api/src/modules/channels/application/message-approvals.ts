@@ -255,9 +255,10 @@ export async function issueMessageApproval(params: {
   run: ChatRun;
   sender: MessageApprovalSender;
 }): Promise<IssuedMessageApproval | null> {
-  const { context, user, run, sender } = params;
+  const { context, user, sender } = params;
+  const run = await context.repositories.get(ConversationRunRepository).getById(params.run.id);
 
-  if (!ownsResource(user.id, run.initiatorUserId) || !isTeammateRun(run)) {
+  if (!run || !ownsResource(user.id, run.initiatorUserId) || !isTeammateRun(run)) {
     return null;
   }
 
@@ -425,7 +426,11 @@ export async function answerMessageApproval(params: {
     return invalid;
   }
 
-  const retried = approval.resolved_message_id === messageId && approval.state === reply.resolution;
+  const retried =
+    approval.resolved_message_id === messageId &&
+    approval.state === reply.resolution &&
+    approval.channel === sender.channel &&
+    approval.sender_key === sender.senderKey;
   let claimed = retried ? approval : null;
   const run = await context.repositories.get(ConversationRunRepository).getById(approval.run_id);
 

@@ -41,7 +41,7 @@ import { resolveTeammateMcpServers } from "./mcp-servers";
 import { assertTeammateEmploymentAvailable } from "./organisation";
 import { admitTeammateContextAuthority, requirePolyHomeRun } from "./poly-home";
 import { resolveTeammateRunModel } from "./run-model";
-import { prepareTeammateRunResume } from "./run-resume";
+import { prepareTeammateRunResume, withRoutineBounds } from "./run-resume";
 import { readTeammateSkillIds } from "./teammateResponse";
 
 export interface TeammateRunAdmissionInput {
@@ -411,6 +411,8 @@ export async function resumeTeammateRun(input: TeammateRunAdmissionInput) {
     .get(ConversationRunRepository)
     .getForInteraction(input.body.conversationId, interactionId);
 
+  const body = await withRoutineBounds(serviceContext, run, input.body);
+
   await recordTeammateApprovalOutcome({
     context: serviceContext,
     run,
@@ -428,6 +430,7 @@ export async function resumeTeammateRun(input: TeammateRunAdmissionInput) {
 
   return enqueueTeammateRun({
     ...input,
+    body,
     context: serviceContext,
     ...(run ? { continuationRun: run } : {}),
     invocation: resume.configuration.invocation,

@@ -59,13 +59,13 @@ export function admitTeammateContextAuthority(params: {
         braked: false,
       };
 
-  const capped = Boolean(params.ceiling);
+  const readOnly = params.ceiling === "observer";
 
   return {
     contextId: context.id,
     autonomyLevel: capTeammateAutonomyLevel(authority.autonomyLevel, params.ceiling),
-    standingApprovals: capped ? [] : authority.standingApprovals,
+    standingApprovals: readOnly ? [] : authority.standingApprovals,
     approvalStreaks: context.approvalStreaks,
-    actingRulesSuspended: authority.braked || capped,
+    actingRulesSuspended: authority.braked || readOnly,
   };
 }

@@ -1,6 +1,7 @@
 import { extractChatCompletionText } from "@ngriffin_uk/polychat-ai-providers";
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
+  isPolyRoutineTemplateId,
   isPolyTeammateId,
   type ChatRun,
   type TeammateContext,
@@ -150,6 +151,7 @@ export async function deliverRecipeOccurrenceToTeammateHome(params: {
       resultConversationId: params.conversationId,
       failed: Boolean(params.failure),
       paused: isPolyContextPaused(currentContext, Date.now()),
+      reachOutFirst: isPolyRoutineTemplateId(installation.recipeId),
     });
 
     if (decision === "noted") {

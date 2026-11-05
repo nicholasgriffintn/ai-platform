@@ -179,6 +179,9 @@ export async function executeRecipeInvocationChat(params: {
       options: buildRecipeExecutionOptions(params),
     },
   };
+  const autonomyCeiling = params.invocation.readOnly
+    ? ("observer" as const)
+    : params.invocation.autonomyCeiling;
   const response = params.teammate
     ? await enqueueTeammateRun({
         env: params.env,
@@ -189,9 +192,10 @@ export async function executeRecipeInvocationChat(params: {
         user: params.user,
         anonymousUser: undefined,
         conversationType: "task",
+        ...(params.invocation.maxSteps ? { maxStepsOverride: params.invocation.maxSteps } : {}),
         authority: {
           trigger: "schedule",
-          ...(params.invocation.readOnly ? { autonomyCeiling: "observer" as const } : {}),
+          ...(autonomyCeiling ? { autonomyCeiling } : {}),
           ...(params.invocation.dryRun ? { dryRun: true } : {}),
         },
       })
