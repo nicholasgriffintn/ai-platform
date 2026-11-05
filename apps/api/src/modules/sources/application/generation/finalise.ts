@@ -1,5 +1,5 @@
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { isRecord, readStringField } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
   ErrorType,
@@ -161,16 +161,24 @@ async function storeGeneratedMedia(
   const key = `sources/${source.id}/generation.${media.extension}`;
   const repository = context.repositories.get(SourceRepository);
 
-  await StorageService.forPrivateAssets(context).uploadObject(key, media.data, {
-    httpMetadata: { contentType: media.mimeType },
-  });
+  const generation = parseJsonRecord(source.metadata).generation;
+  const data = await StorageService.forPrivateAssets(context).uploadGeneratedMedia(
+    key,
+    media.data,
+    {
+      mimeType: media.mimeType,
+      model: readStringField(generation, "modelId"),
+      provider: readStringField(generation, "provider"),
+    },
+  );
+
   await repository.attachSourceFile(
     source.id,
     {
       storageKey: key,
       mimeType: media.mimeType,
       filename: `${source.id}.${media.extension}`,
-      byteSize: media.data.byteLength,
+      byteSize: data.byteLength,
     },
     { status: "available" },
   );

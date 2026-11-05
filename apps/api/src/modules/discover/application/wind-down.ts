@@ -266,8 +266,8 @@ export async function renderDiscoverWindDown(
           saved = await saveWindDown(context, saved, current);
         },
         onPassage: async (index, audio) => {
-          await storage.uploadObject(stepAudioKey(windDownId, index), audio, {
-            httpMetadata: { contentType: "audio/mpeg" },
+          await storage.uploadGeneratedMedia(stepAudioKey(windDownId, index), audio, {
+            mimeType: "audio/mpeg",
           });
           current = {
             ...current,

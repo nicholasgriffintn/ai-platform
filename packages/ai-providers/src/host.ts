@@ -4,6 +4,7 @@ import type {
   ModelModality,
   SystemModelRole,
 } from "@ngriffin_uk/polychat-schemas";
+import type { GeneratedMediaOrigin } from "@ngriffin_uk/polychat-utility-server/media-provenance";
 
 import type { ProviderKeyStore } from "./api-keys";
 import type { ProviderEnv, ProviderRequestContext, ProviderUser } from "./env";
@@ -108,6 +109,7 @@ export interface StoreOutputFileRequest {
   kind: string;
   title: string;
   content?: unknown;
+  provenance?: GeneratedMediaOrigin;
 }
 
 export interface StoredOutputFileResult {
@@ -127,6 +129,11 @@ export interface ProviderStorage {
     data: string | ArrayBuffer | Uint8Array,
     options?: R2PutOptions,
   ): Promise<string>;
+  uploadGeneratedMedia(
+    key: string,
+    data: ArrayBuffer | Uint8Array,
+    origin: GeneratedMediaOrigin,
+  ): Promise<Uint8Array>;
   storeOutputFile(input: StoreOutputFileRequest): Promise<StoredOutputFileResult>;
   downloadFile(url: string, ownerUserId?: number, assetsUrl?: string): Promise<Blob>;
   getPrivateAssetImageDataUrl(

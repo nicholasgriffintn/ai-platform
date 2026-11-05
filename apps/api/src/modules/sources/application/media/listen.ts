@@ -139,8 +139,8 @@ export async function runSourceListen(
           );
         },
         onPassage: async (index, audio) => {
-          await storage.uploadObject(passageKey(sourceId, index), audio, {
-            httpMetadata: { contentType: "audio/mpeg" },
+          await storage.uploadGeneratedMedia(passageKey(sourceId, index), audio, {
+            mimeType: "audio/mpeg",
           });
           voiced = true;
           await saveListen(context, sourceId, (current) =>

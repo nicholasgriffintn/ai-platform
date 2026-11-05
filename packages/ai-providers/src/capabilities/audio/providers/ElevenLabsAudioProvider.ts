@@ -50,7 +50,11 @@ export class ElevenLabsAudioProvider extends BaseAudioProvider implements AudioP
 
     const storage = this.requireStorage(request);
 
-    await storage.uploadObject(objectKey, new Uint8Array(audioData));
+    await storage.uploadGeneratedMedia(objectKey, audioData, {
+      mimeType: "audio/mpeg",
+      model: request.model,
+      provider: this.name,
+    });
 
     return {
       key: objectKey,

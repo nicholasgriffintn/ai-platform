@@ -52,14 +52,15 @@ async function narrate(
   );
   const key = `outputs/${outputId}/narration.mp3`;
 
-  await StorageService.forPrivateAssets(context).uploadObject(key, audio, {
-    httpMetadata: { contentType: "audio/mpeg" },
+  const stored = await StorageService.forPrivateAssets(context).uploadGeneratedMedia(key, audio, {
+    mimeType: "audio/mpeg",
   });
+
   await context.repositories.get(OutputRepository).attachOutputFile(outputId, {
     storageKey: key,
     mimeType: "audio/mpeg",
     filename: "narration.mp3",
-    byteSize: audio.byteLength,
+    byteSize: stored.byteLength,
   });
 
   return timings;

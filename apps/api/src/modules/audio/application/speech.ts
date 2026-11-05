@@ -2,8 +2,9 @@ import type { AudioResponseFormat } from "@ngriffin_uk/polychat-ai-providers";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import type { SpeechProvider } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
-import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
+import { base64ToBuffer, bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import type { GeneratedMediaOrigin } from "@ngriffin_uk/polychat-utility-server/media-provenance";
 import { isProviderGuardrailBlockError } from "@ngriffin_uk/polychat-utility-server/provider-errors";
 import { sanitiseInput } from "@ngriffin_uk/polychat-utility-server/sanitise";
 
@@ -109,6 +110,19 @@ export function synthesiseSpeechText(
   );
 }
 
+async function markInlineSpeech(
+  env: IEnv,
+  audioBase64: string,
+  origin: GeneratedMediaOrigin,
+): Promise<string> {
+  return bufferToBase64(
+    await StorageService.forPrivateAssetsEnv(env).markGeneratedMedia(
+      base64ToBuffer(audioBase64),
+      origin,
+    ),
+  );
+}
+
 export const handleTextToSpeech = async (
   req: TextToSpeechRequest,
 ): Promise<IFunctionResponse | IFunctionResponse[]> => {
@@ -123,7 +137,7 @@ export const handleTextToSpeech = async (
   const userSettings = user?.id
     ? await new UserSettingsRepository(env).getUserSettings(user.id)
     : null;
-  const storage = store ? new StorageService(env.PRIVATE_ASSETS_BUCKET) : undefined;
+  const storage = store ? StorageService.forPrivateAssetsEnv(env) : undefined;
   const slug = `tts/${generateId()}`;
 
   const { selection, preparedInput, synthesisResult } = await renderWithSpeechVoices(
@@ -185,6 +199,14 @@ export const handleTextToSpeech = async (
     audioUrl = storedAsset.url;
   }
 
+  const inlineAudio =
+    !store && synthesisResult.audioBase64
+      ? await markInlineSpeech(env, synthesisResult.audioBase64, {
+          mimeType: synthesisResult.audioMimeType,
+          model: selection.id,
+          provider: selection.provider,
+        })
+      : undefined;
   const responseText = synthesisResult.response;
   const metadata =
     preparedInput.metadata || synthesisResult.metadata
@@ -219,8 +241,10 @@ export const handleTextToSpeech = async (
       audioOutputId,
       audioKey,
       audioUrl,
-      audioBase64: synthesisResult.audioBase64,
-      audioDataUrl: synthesisResult.audioDataUrl,
+      audioBase64: inlineAudio ?? synthesisResult.audioBase64,
+      audioDataUrl: inlineAudio
+        ? `data:${synthesisResult.audioMimeType ?? "audio/mpeg"};base64,${inlineAudio}`
+        : synthesisResult.audioDataUrl,
       audioMimeType: synthesisResult.audioMimeType,
       response: responseText,
       metadata,

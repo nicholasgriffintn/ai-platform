@@ -15,9 +15,11 @@ import {
   fetchFollowingSafeRedirects,
   UnsafeUrlError,
 } from "@ngriffin_uk/polychat-utility-server/http";
+import type { GeneratedMediaOrigin } from "@ngriffin_uk/polychat-utility-server/media-provenance";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { createRepositories } from "~/infrastructure/database/repositories";
+import { markForDelivery } from "~/modules/generate/application/provenance";
 import { isOutputDeletionPending } from "~/modules/outputs/application/deletion";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
@@ -49,6 +51,7 @@ export interface StoreOutputFileRequest extends StorePrivateFileRequest {
   kind: string;
   title: string;
   content?: unknown;
+  provenance?: GeneratedMediaOrigin;
 }
 
 export interface RecordOutputFileRequest {
@@ -151,6 +154,34 @@ export class StorageService {
     return key;
   }
 
+  markGeneratedMedia(
+    data: ArrayBuffer | Uint8Array,
+    origin: GeneratedMediaOrigin,
+  ): Promise<Uint8Array<ArrayBuffer>> {
+    return markForDelivery({
+      env: this.context?.env ?? this.env,
+      bucket: this.bucket,
+      data,
+      origin,
+    });
+  }
+
+  async uploadGeneratedMedia(
+    key: string,
+    data: ArrayBuffer | Uint8Array,
+    origin: GeneratedMediaOrigin,
+  ): Promise<Uint8Array<ArrayBuffer>> {
+    const marked = await this.markGeneratedMedia(data, origin);
+
+    await this.uploadObject(
+      key,
+      marked,
+      origin.mimeType ? { httpMetadata: { contentType: origin.mimeType } } : undefined,
+    );
+
+    return marked;
+  }
+
   async deleteObject(key: string): Promise<void> {
     const normalizedKey = key.startsWith("/") ? key.slice(1) : key;
 
@@ -172,15 +203,26 @@ export class StorageService {
     } while (cursor);
   }
 
-  async storeOutputFile(input: StoreOutputFileRequest): Promise<StoredOutputFileResult> {
+  async storeOutputFile({
+    provenance,
+    ...input
+  }: StoreOutputFileRequest): Promise<StoredOutputFileResult> {
     const outputId = input.outputId ?? generateId();
+    const marked =
+      provenance && typeof input.data !== "string"
+        ? await this.markGeneratedMedia(input.data, provenance)
+        : undefined;
 
-    await this.uploadObject(input.key, input.data, {
+    await this.uploadObject(input.key, marked ?? input.data, {
       httpMetadata: { contentType: input.mimeType },
     });
 
     try {
-      return await this.recordOutputFile({ ...input, outputId });
+      return await this.recordOutputFile({
+        ...input,
+        outputId,
+        byteSize: marked?.byteLength ?? input.byteSize,
+      });
     } catch (error) {
       const context = this.requireResourceContext();
       let persistedOutput;
