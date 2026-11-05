@@ -453,6 +453,7 @@ export const responseCostEstimateRequestSchema = responseInputTokensRequestSchem
   mode: chatRequestModeSchema.optional(),
   budget: responseBudgetSchema.optional(),
   history_tokens: z.number().int().nonnegative().optional(),
+  project_id: z.string().min(1).optional(),
 });
 
 export type ResponseCostEstimateRequest = z.infer<typeof responseCostEstimateRequestSchema>;

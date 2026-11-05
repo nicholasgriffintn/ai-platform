@@ -1187,6 +1187,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
           requestedModelId={model}
           isModelsLoading={isModelsLoading}
           hideSuggestions={modeConfig?.hideComposerSuggestions}
+          projectId={modeConfig?.requestOptions?.metadata?.project_id ?? undefined}
         />
         {modeConfig?.pendingUserQuestions ? (
           <UserQuestionView
@@ -1219,6 +1220,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
           historyCharacters={conversationCharacters}
           isRunning={streamStarted}
           awaitingApproval={currentConversation?.latest_response?.status === "awaiting_approval"}
+          projectId={modeConfig?.requestOptions?.metadata?.project_id ?? undefined}
         />
         {modeConfig?.agentApprovals ? <AgentApprovalDock {...modeConfig.agentApprovals} /> : null}
         <ToolApprovalBatchBar batch={approvalBatch} />

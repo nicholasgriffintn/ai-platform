@@ -8,13 +8,16 @@ import { ConversationRepository } from "~/modules/conversations/infrastructure/C
 import { WorkspacePoolRepository } from "~/modules/usage/infrastructure/WorkspacePoolRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
-export interface WorkspaceFundingScope {
-  userId: number;
+export interface FundedWorkScope {
   conversationId?: string | null;
   projectId?: string | null;
 }
 
-async function resolveProjectId(repositories: Repositories, scope: WorkspaceFundingScope) {
+export interface WorkspaceFundingScope extends FundedWorkScope {
+  userId: number;
+}
+
+async function resolveProjectId(repositories: Repositories, scope: FundedWorkScope) {
   if (!scope.conversationId) {
     return scope.projectId ?? null;
   }
@@ -30,9 +33,9 @@ async function resolveProjectId(repositories: Repositories, scope: WorkspaceFund
   return scope.projectId ?? null;
 }
 
-export async function resolveWorkspaceFunding(
+async function resolveFundedWorkspace(
   repositories: Repositories,
-  scope: WorkspaceFundingScope,
+  scope: FundedWorkScope,
 ): Promise<string | null> {
   const projectId = await resolveProjectId(repositories, scope);
 
@@ -40,22 +43,33 @@ export async function resolveWorkspaceFunding(
     return null;
   }
 
-  const workspaces = repositories.get(WorkspaceRepository);
-  const workspaceId = (await workspaces.getProject(projectId))?.workspace_id;
+  const workspaceId = (await repositories.get(WorkspaceRepository).getProject(projectId))
+    ?.workspace_id;
 
   if (!workspaceId) {
     return null;
   }
 
-  const [pool, membership] = await Promise.all([
-    repositories.get(WorkspacePoolRepository).getPool(workspaceId, usagePeriodFromDate()),
-    workspaces.getMembership(workspaceId, scope.userId),
-  ]);
+  const pool = await repositories
+    .get(WorkspacePoolRepository)
+    .getPool(workspaceId, usagePeriodFromDate());
 
-  if (!pool) {
+  return pool ? workspaceId : null;
+}
+
+export async function resolveWorkspaceFunding(
+  repositories: Repositories,
+  scope: WorkspaceFundingScope,
+): Promise<string | null> {
+  const workspaceId = await resolveFundedWorkspace(repositories, scope);
+
+  if (!workspaceId) {
     return null;
   }
 
+  const membership = await repositories
+    .get(WorkspaceRepository)
+    .getMembership(workspaceId, scope.userId);
   const decision = authorise("workspace.pool.draw", {
     pooled: true,
     member: Boolean(membership),
@@ -75,4 +89,12 @@ export async function resolveWorkspaceFunding(
 
 export function withWorkspaceFunding<T>(workspaceId: string | null, fn: () => T): T {
   return workspaceId ? runWithWorkspaceFunding(workspaceId, fn) : fn();
+}
+
+export async function withProjectFunding<T>(
+  repositories: Repositories,
+  scope: FundedWorkScope,
+  fn: () => Promise<T>,
+): Promise<T> {
+  return withWorkspaceFunding(await resolveFundedWorkspace(repositories, scope), fn);
 }

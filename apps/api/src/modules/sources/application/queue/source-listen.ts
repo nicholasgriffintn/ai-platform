@@ -3,6 +3,7 @@ import { z } from "zod/v4";
 import { withExecutionRunContext } from "~/infrastructure/context/serviceContext";
 import { loadUserContext } from "~/modules/queue/application/user-context";
 import { defineTask } from "~/modules/queue/application/workflows";
+import { withSourceFunding } from "~/modules/sources/application/funding";
 import { runSourceListen } from "~/modules/sources/application/media/listen";
 
 export const sourceListen = defineTask({
@@ -19,7 +20,9 @@ export const sourceListen = defineTask({
     }
 
     const context = runId ? withExecutionRunContext(owner, runId) : owner;
-    const listen = await runSourceListen(context, sourceId, contentHash);
+    const listen = await withSourceFunding(context, sourceId, () =>
+      runSourceListen(context, sourceId, contentHash),
+    );
 
     return {
       status: listen?.status === "failed" ? "error" : "success",

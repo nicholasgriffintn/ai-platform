@@ -301,6 +301,7 @@ export type ProjectSummary = z.infer<typeof projectSummarySchema>;
 export type ProjectDetail = z.infer<typeof projectDetailSchema>;
 export type WorkspaceSummary = z.infer<typeof workspaceSummarySchema>;
 export type WorkspaceDetail = z.infer<typeof workspaceDetailSchema>;
+export type WorkspaceTeamPlan = z.infer<typeof workspaceTeamPlanSchema>;
 export type WorkspaceTeamPlanResponse = z.infer<typeof workspaceTeamPlanResponseSchema>;
 export type ProvisionWorkspaceTeamPlanInput = z.infer<typeof provisionWorkspaceTeamPlanSchema>;
 export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>;

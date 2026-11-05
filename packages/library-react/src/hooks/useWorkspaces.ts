@@ -6,6 +6,7 @@ import {
   deleteWorkspace,
   getProject,
   getWorkspace,
+  getWorkspaceTeamPlan,
   inviteWorkspaceMember,
   listWorkspaces,
   removeProjectCapability,
@@ -28,12 +29,16 @@ import type {
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 
 import { requireProjectRouteScope } from "../lib/work/project-route-scope.js";
+import { useLiveOrPoll } from "../sync/live-or-poll.js";
 
 export const WORKSPACES_QUERY_KEY = ["workspaces"] as const;
 export const workspaceQueryKey = (workspaceId: string) => ["workspace", workspaceId] as const;
 export const projectQueryKey = (projectId: string) => ["project", projectId] as const;
+export const workspaceTeamPlanQueryKey = (workspaceId: string) =>
+  [...workspaceQueryKey(workspaceId), "team_plan"] as const;
 
 const WORK_QUERY_STALE_TIME = 2 * 60 * 1000;
+const TEAM_PLAN_STALE_TIME = 60 * 1000;
 const WORK_QUERY_GC_TIME = 30 * 60 * 1000;
 
 type WorkspaceListData = WorkspaceSummary[];
@@ -196,6 +201,31 @@ export function useWorkspace(workspaceId?: string) {
     staleTime: WORK_QUERY_STALE_TIME,
     gcTime: WORK_QUERY_GC_TIME,
   });
+}
+
+export function useWorkspaceTeamPlan(workspaceId?: string) {
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+  const isPro = useChatStore((state) => state.isPro);
+  const liveOrPoll = useLiveOrPoll();
+
+  return useQuery({
+    queryKey: workspaceTeamPlanQueryKey(workspaceId ?? ""),
+    queryFn: async () => (await getWorkspaceTeamPlan(workspaceId!)).teamPlan,
+    refetchInterval: (query) => liveOrPoll(query, TEAM_PLAN_STALE_TIME, "workspace_usage.changed"),
+    enabled: Boolean(workspaceId) && isAuthenticated && isPro,
+    staleTime: TEAM_PLAN_STALE_TIME,
+    gcTime: WORK_QUERY_GC_TIME,
+  });
+}
+
+export function useProjectTeamPlan(projectId?: string) {
+  const project = useProject(projectId);
+  const teamPlan = useWorkspaceTeamPlan(project.data?.workspaceId);
+
+  return {
+    teamPlan: teamPlan.data ?? null,
+    isLoading: project.isLoading || teamPlan.isLoading,
+  };
 }
 
 export function useProject(projectId?: string, workspaceId?: string) {

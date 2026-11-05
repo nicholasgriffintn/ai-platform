@@ -125,6 +125,10 @@ export async function reconcileRunCharge(runtime: UsageRuntime, runId: string): 
       if (applied) {
         for (const { group } of adjustments) {
           await publisher?.usageChanged(group.user_id, group.period);
+
+          if (group.pool_workspace_id) {
+            await publisher?.workspaceUsageChanged?.(group.pool_workspace_id, group.period);
+          }
         }
 
         return;

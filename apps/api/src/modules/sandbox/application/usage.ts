@@ -13,6 +13,7 @@ import {
   SANDBOX_TIMEOUT_MAX_SECONDS,
   type SandboxRunUsageReport,
 } from "@ngriffin_uk/polychat-schemas";
+import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { Repositories } from "~/infrastructure/database/repositories";
@@ -36,6 +37,8 @@ export async function reserveSandboxRun(params: {
   timeoutSeconds?: number;
   workspaceId?: string | null;
 }): Promise<void> {
+  let held = !params.workspaceId;
+
   try {
     const timeoutSeconds = params.timeoutSeconds ?? SANDBOX_TIMEOUT_DEFAULT_SECONDS;
     const instanceType = SANDBOX_WORKSPACE_INSTANCE_TYPE;
@@ -44,7 +47,7 @@ export async function reserveSandboxRun(params: {
       Date.now() + (timeoutSeconds + RESERVATION_EXPIRY_BUFFER_SECONDS) * 1000,
     ).toISOString();
 
-    await holdUsageReservation(
+    held = await holdUsageReservation(
       createUsageRuntime({ env: params.env, repositories: params.repositories }),
       {
         userId: params.userId,
@@ -61,6 +64,13 @@ export async function reserveSandboxRun(params: {
       runId: params.runId,
       userId: params.userId,
     });
+  }
+
+  if (params.workspaceId && !held) {
+    throw new AssistantError(
+      "This workspace's shared credits can't cover this run, so it didn't start.",
+      ErrorType.USAGE_LIMIT_ERROR,
+    );
   }
 }
 
@@ -102,6 +112,8 @@ export async function recordSandboxRunUsage(params: {
     publisher: context,
   });
 
+  const held = await runtime.store.getReservation("sandbox", runId);
+
   await emitInfraUsage(runtime, {
     userId,
     scopeKey: `sandbox:${runId}`,
@@ -112,6 +124,7 @@ export async function recordSandboxRunUsage(params: {
     workspaceId: record.projectId
       ? await runtime.store.getProjectWorkspaceId(record.projectId)
       : null,
+    poolWorkspaceId: held?.workspace_id ?? null,
     raw: { ...report, durationSeconds, instanceType },
   });
 
