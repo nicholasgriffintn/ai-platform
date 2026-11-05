@@ -5,6 +5,7 @@ import {
   useDeleteAllLocalChats,
   useDeleteAllRemoteChats,
 } from "@ngriffin_uk/polychat-library-react";
+import { downloadBlob } from "@ngriffin_uk/polychat-utility-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -26,17 +27,17 @@ export function ProfileHistoryTab() {
         label: "export_account_data",
         value: 1,
       });
-      const blob = await apiService.exportAccountData();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      const ts = new Date().toISOString().replace(/[:.]/g, "-");
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      let after: string | undefined;
+      let part = 1;
 
-      a.href = url;
-      a.download = `polychat-export-${ts}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      do {
+        const { blob, nextAfter } = await apiService.exportAccountData(after);
+
+        downloadBlob(`polychat-export-${timestamp}-part-${part}.zip`, blob);
+        after = nextAfter ?? undefined;
+        part += 1;
+      } while (after);
     } catch (error) {
       console.error("Failed to export account data:", error);
       toast.error("Couldn't export your data", {

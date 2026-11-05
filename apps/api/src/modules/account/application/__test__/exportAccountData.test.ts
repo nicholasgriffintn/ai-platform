@@ -1,3 +1,5 @@
+import { ACCOUNT_EXPORT_NEXT_HEADER } from "@ngriffin_uk/polychat-schemas";
+import { getTableName, isTable } from "drizzle-orm";
 import { strFromU8, unzipSync } from "fflate";
 import { describe, expect, it, vi } from "vitest";
 
@@ -10,77 +12,97 @@ vi.mock("~/infrastructure/storage", () => ({
 }));
 
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import * as schema from "~/infrastructure/database/schema";
+import {
+  ACCOUNT_EXPORT_INCLUDED_TABLES,
+  ACCOUNT_EXPORT_LEFT_OUT,
+} from "~/modules/account/domain/export-coverage";
 import {
   ACCOUNT_EXPORT_PAGE_SIZE,
   AccountExportRepository,
+  type AccountExportFileRow,
+  type AccountExportFileSection,
   type AccountExportRow,
   type AccountExportSection,
 } from "~/modules/account/infrastructure/AccountExportRepository";
 import type { User } from "~/types";
 
-import { streamAccountExport } from "../exportAccountData";
+import { exportAccountData, exportAccountFiles } from "../exportAccountData";
 
 const user = { id: 7, name: "Sam", email: "sam@example.com" } as User;
 
-function bodyOf(text: string) {
-  return new Blob([text]).stream();
+interface Fixture {
+  sections?: Partial<Record<AccountExportSection, AccountExportRow[]>>;
+  files?: Partial<Record<AccountExportFileSection, AccountExportFileRow[]>>;
+  messages?: AccountExportRow[];
 }
 
-async function runExport(sections: Partial<Record<AccountExportSection, AccountExportRow[]>>) {
+function createExportContext({ sections = {}, files = {}, messages }: Fixture) {
+  const page = <Row extends { id?: unknown }>(rows: Row[], after: string) =>
+    rows.filter((row) => String(row.id) > after).slice(0, ACCOUNT_EXPORT_PAGE_SIZE);
   const listSection = vi.fn(async (section: AccountExportSection, _userId: number, after: string) =>
-    (sections[section] ?? [])
-      .filter((row) => String(row.id) > after)
-      .slice(0, ACCOUNT_EXPORT_PAGE_SIZE),
+    page(sections[section] ?? [], after),
   );
-  const listMessages = vi.fn(async (ids: readonly string[], after: string) =>
-    after ? [] : ids.map((id) => ({ id: `m-${id}`, conversation_id: id, citations: "[1]" })),
+  const listFiles = vi.fn(
+    async (section: AccountExportFileSection, _userId: number, after: string) =>
+      page(files[section] ?? [], after),
   );
-  let finished: Promise<unknown> = Promise.resolve();
+  const listMessages = vi.fn(async (ids: readonly string[], after: string) => {
+    if (after) {
+      return [];
+    }
+
+    return messages ?? ids.map((id) => ({ id: `m-${id}`, conversation_id: id }));
+  });
   const context = {
-    repositories: fakeRepositories([[AccountExportRepository, { listSection, listMessages }]]),
-    waitUntil: (work: Promise<unknown>) => {
-      finished = work;
-    },
+    env: {},
+    repositories: fakeRepositories([
+      [AccountExportRepository, { listSection, listFiles, listMessages }],
+    ]),
+    waitUntil: () => undefined,
   } as unknown as ServiceContext;
 
-  const archive = await new Response(streamAccountExport(context, user)).arrayBuffer();
-
-  await finished;
-
-  const entries = unzipSync(new Uint8Array(archive));
-  const read = (path: string) => JSON.parse(strFromU8(entries[path]));
-
-  return { entries, read, listSection, listMessages };
+  return { context, listSection, listFiles, listMessages };
 }
 
-describe("streamAccountExport", () => {
-  it("includes stored files without exposing storage keys or file paths from names", async () => {
+async function readArchive(response: Response) {
+  const entries = unzipSync(new Uint8Array(await response.arrayBuffer()));
+
+  return {
+    entries,
+    read: (path: string) => JSON.parse(strFromU8(entries[path])),
+  };
+}
+
+function fileRow(id: string, byteSize: number | null = 5): AccountExportFileRow {
+  return { id, storage_key: `private/${id}`, name: `${id}.bin`, byte_size: byteSize };
+}
+
+describe("exportAccountData", () => {
+  it("includes stored files without exposing storage keys or path traversal", async () => {
     getObjectBody.mockImplementation(async (key: string) =>
-      key === "private/one" ? { size: 5, body: bodyOf("bytes") } : null,
+      key === "private/one" ? { size: 5, body: new Blob(["bytes"]).stream() } : null,
     );
 
-    const { entries, read } = await runExport({
-      sources: [
-        {
-          id: "s1",
-          title: "Notes",
-          filename: "../../secret.txt",
-          storage_key: "private/one",
-          external_uri: "https://example.com/doc?token=abc123&page=2",
-        },
-      ],
-      outputs: [{ id: "o1", title: "Gone", filename: "gone.png", storage_key: "private/two" }],
+    const { context } = createExportContext({
+      sections: {
+        sources: [{ id: "s1", external_uri: "https://example.com/doc?token=abc123&page=2" }],
+      },
+      files: {
+        sources: [{ id: "s1", storage_key: "private/one", name: "../../secret.txt", byte_size: 5 }],
+        outputs: [fileRow("gone")],
+      },
     });
 
+    const { entries, read } = await readArchive(await exportAccountData(context, user));
+
     expect(strFromU8(entries["files/sources/s1/secret.txt"])).toBe("bytes");
-
-    const [source] = read("data/sources.json");
-
-    expect(source).not.toHaveProperty("storage_key");
-    expect(source.external_uri).not.toContain("abc123");
+    expect(JSON.stringify(read("data/sources.json"))).not.toContain("abc123");
+    expect(JSON.stringify(read("manifest.json"))).not.toContain("private/");
     expect(read("manifest.json").files).toEqual({
       included: 1,
-      omitted: [{ section: "outputs", resource_id: "o1", reason: "missing" }],
+      omitted: [{ section: "outputs", resource_id: "gone", reason: "missing" }],
+      next_after: null,
     });
   });
 
@@ -88,8 +110,11 @@ describe("streamAccountExport", () => {
     const conversations = Array.from({ length: ACCOUNT_EXPORT_PAGE_SIZE + 1 }, (_, index) => ({
       id: `c${String(index).padStart(4, "0")}`,
     }));
+    const { context, listSection, listMessages } = createExportContext({
+      sections: { conversations },
+    });
 
-    const { read, listSection, listMessages } = await runExport({ conversations });
+    const { read } = await readArchive(await exportAccountData(context, user));
 
     expect(read("data/conversations.json")).toHaveLength(conversations.length);
     expect(listSection).toHaveBeenCalledWith(
@@ -97,38 +122,123 @@ describe("streamAccountExport", () => {
       user.id,
       conversations[ACCOUNT_EXPORT_PAGE_SIZE - 1].id,
     );
-
-    const requested = listMessages.mock.calls.flatMap(([ids]) => ids);
-
-    expect(new Set(requested)).toEqual(new Set(conversations.map(({ id }) => id)));
-
-    const messages = read("data/messages.json");
-
-    expect(messages).toHaveLength(conversations.length);
-    expect(messages[0].citations).toEqual([1]);
-    expect(read("manifest.json").counts).toMatchObject({
-      conversations: conversations.length,
-      messages: conversations.length,
+    expect(new Set(listMessages.mock.calls.flatMap(([ids]) => ids))).toEqual(
+      new Set(conversations.map(({ id }) => id)),
+    );
+    expect(read("manifest.json").sections.messages).toEqual({
+      file: "data/messages.json",
+      count: conversations.length,
     });
   });
 
-  it("fails the download instead of delivering a partial archive", async () => {
-    const context = {
-      repositories: fakeRepositories([
-        [
-          AccountExportRepository,
+  it("keeps recipe secrets and connector tokens out of settings and tool traces", async () => {
+    const { context } = createExportContext({
+      sections: {
+        conversations: [{ id: "c1" }],
+        templates: [
           {
-            listSection: async () => {
-              throw new Error("database unavailable");
-            },
+            id: "t1",
+            configuration: JSON.stringify({
+              channel: "#ops",
+              webhookSecret: "whsec-value",
+              nested: { accessToken: "oauth-value", maxTokens: 500 },
+            }),
           },
         ],
-      ]),
-      waitUntil: () => undefined,
-    } as unknown as ServiceContext;
+        recipe_triggers: [
+          { id: "r1", configuration: JSON.stringify({ apiKey: "key-value", label: "Daily" }) },
+        ],
+      },
+      messages: [
+        {
+          id: "m1",
+          conversation_id: "c1",
+          role: "tool",
+          content: 'result {"token": "tool-output-value"}',
+          tool_call_arguments: JSON.stringify({ query: "weather", api_key: "argument-value" }),
+        },
+      ],
+    });
 
-    await expect(new Response(streamAccountExport(context, user)).arrayBuffer()).rejects.toThrow(
-      "database unavailable",
+    const { read } = await readArchive(await exportAccountData(context, user));
+    const exported = JSON.stringify([
+      read("data/templates.json"),
+      read("data/recipe_triggers.json"),
+      read("data/messages.json"),
+    ]);
+
+    for (const secret of [
+      "whsec-value",
+      "oauth-value",
+      "key-value",
+      "tool-output-value",
+      "argument-value",
+    ]) {
+      expect(exported).not.toContain(secret);
+    }
+
+    expect(read("data/templates.json")[0].configuration).toEqual({
+      channel: "#ops",
+      nested: { maxTokens: 500 },
+    });
+    expect(read("data/messages.json")[0].tool_call_arguments).toEqual({ query: "weather" });
+  });
+
+  it("lets a large account retrieve every file across parts without gaps or repeats", async () => {
+    getObjectBody.mockImplementation(async () => ({ size: 1, body: new Blob(["x"]).stream() }));
+
+    const outputs = Array.from({ length: 900 }, (_, index) =>
+      fileRow(`o${String(index).padStart(4, "0")}`, 1),
     );
+    const { context } = createExportContext({ files: { outputs, pets: [fileRow("pet", null)] } });
+    const collected: string[] = [];
+
+    let response = await exportAccountData(context, user);
+
+    while (true) {
+      const after = response.headers.get(ACCOUNT_EXPORT_NEXT_HEADER);
+      const { entries } = await readArchive(response);
+
+      collected.push(...Object.keys(entries).filter((path) => path.startsWith("files/")));
+
+      if (!after) {
+        break;
+      }
+
+      response = await exportAccountFiles(context, user, after);
+    }
+
+    expect(collected).toHaveLength(outputs.length + 1);
+    expect(new Set(collected).size).toBe(collected.length);
+  });
+
+  it("rejects a cursor that names no file section", async () => {
+    const { context } = createExportContext({});
+
+    await expect(exportAccountFiles(context, user, "user_credential:1")).rejects.toThrow(
+      "Invalid export cursor",
+    );
+  });
+
+  it("fails the download instead of delivering a partial archive", async () => {
+    const { context, listSection } = createExportContext({});
+
+    listSection.mockRejectedValue(new Error("database unavailable"));
+
+    const response = await exportAccountData(context, user);
+
+    await expect(response.arrayBuffer()).rejects.toThrow("database unavailable");
+  });
+});
+
+describe("export coverage", () => {
+  it("decides whether every table is exported or left out for a stated reason", () => {
+    const tables = Object.values(schema).filter(isTable).map(getTableName);
+    const decided = new Set<string>([
+      ...ACCOUNT_EXPORT_INCLUDED_TABLES,
+      ...ACCOUNT_EXPORT_LEFT_OUT.flatMap(({ tables: leftOut }) => leftOut),
+    ]);
+
+    expect(tables.filter((table) => !decided.has(table))).toEqual([]);
   });
 });

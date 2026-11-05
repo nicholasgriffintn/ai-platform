@@ -1,4 +1,5 @@
 ---
+"@assistant/mobile": minor
 "@ngriffin_uk/polychat-library-model-catalogue": minor
 "@ngriffin_uk/polychat-component-models": minor
 "@ngriffin_uk/polychat-schemas": minor
