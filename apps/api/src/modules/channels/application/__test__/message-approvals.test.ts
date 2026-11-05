@@ -63,7 +63,11 @@ const run = {
   },
 } as unknown as ChatRun;
 
-function pendingMessage(args: unknown = postArguments, name = "call_api") {
+function pendingMessage(
+  args: unknown = postArguments,
+  name = "call_api",
+  data: Record<string, unknown> = { approvalRequired: true, options: ["Approve", "Reject"] },
+) {
   return {
     message: {
       role: "tool",
@@ -71,7 +75,7 @@ function pendingMessage(args: unknown = postArguments, name = "call_api") {
       name,
       tool_call_id: "call_1",
       tool_call_arguments: JSON.stringify(args),
-      data: { approvalRequired: true, options: ["Approve", "Reject"] },
+      data,
     },
     conversation_id: run.conversationId,
     user_id: 7,
@@ -316,15 +320,12 @@ describe("message approvals", () => {
 
   it("carries a connector's own approval, within its shorter expiry", async () => {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-    const stored = pendingMessage({ provider: "gmail" }, "use_recipe_connector");
     const { context, create } = harness({
-      stored: {
-        ...stored,
-        message: {
-          ...stored.message,
-          data: { approvalRequired: true, approvalId: "coa_1", argumentSummary: { to: "a@b.c" } },
-        },
-      },
+      stored: pendingMessage({ provider: "gmail" }, "use_recipe_connector", {
+        approvalRequired: true,
+        approvalId: "coa_1",
+        argumentSummary: { to: "a@b.c" },
+      }),
       connector: {
         id: "coa_1",
         state: "pending",
