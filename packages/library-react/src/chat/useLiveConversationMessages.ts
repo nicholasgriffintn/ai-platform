@@ -9,6 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef } from "react";
 
 import {
+  buildLiveCrisisNotice,
   buildLiveMessage,
   createLiveTurn,
   createTemporaryLiveTitle,
@@ -35,6 +36,7 @@ interface UseLiveConversationMessagesOptions {
   conversationMode?: ConversationModeMetadata;
   model?: string | null;
   onFinalInputTranscript?: (input: FinalLiveInputTranscript) => void | Promise<void>;
+  signpostsCrisisLocally?: () => boolean;
 }
 
 interface ActiveLiveMessage {
@@ -68,6 +70,7 @@ export function useLiveConversationMessages({
   conversationMode,
   model,
   onFinalInputTranscript,
+  signpostsCrisisLocally,
 }: UseLiveConversationMessagesOptions = {}) {
   const queryClient = useQueryClient();
   const { currentConversationId, startNewConversation } = useConversationScope();
@@ -446,6 +449,14 @@ export function useLiveConversationMessages({
       }
 
       notifiedInputTurnIdsRef.current.add(turn.id);
+      const crisisNotice = signpostsCrisisLocally?.()
+        ? buildLiveCrisisNotice({ conversationMode, model, text, turn })
+        : null;
+
+      if (crisisNotice) {
+        await upsertLiveMessage(conversationId, crisisNotice);
+      }
+
       const assistantMessage = buildMessageForTurn({
         content: "",
         isFinal: false,
@@ -460,7 +471,14 @@ export function useLiveConversationMessages({
         text,
       });
     },
-    [buildMessageForTurn, onFinalInputTranscript],
+    [
+      buildMessageForTurn,
+      conversationMode,
+      model,
+      onFinalInputTranscript,
+      signpostsCrisisLocally,
+      upsertLiveMessage,
+    ],
   );
 
   const enqueue = useCallback((operation: () => Promise<void>) => {

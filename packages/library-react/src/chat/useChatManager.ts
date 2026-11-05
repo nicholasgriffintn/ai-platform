@@ -157,7 +157,7 @@ export function useChatManager(
       overrideRequestOptions?: ChatRequestOptions,
       timelineOptions?: { goalStarted?: string },
     ) => {
-      if ((!input.trim() && !attachments?.length) || !(await ensureAgeConfirmed())) {
+      if ((!input.trim() && !attachments?.length) || !(await ensureAgeConfirmed(input))) {
         return {
           status: "error",
           response: "",

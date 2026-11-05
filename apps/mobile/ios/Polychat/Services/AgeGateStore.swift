@@ -4,6 +4,7 @@ import Foundation
 final class AgeGateStore: ObservableObject {
     @Published private(set) var status: AgeGateStatus?
     @Published var isPrompting = false
+    @Published private(set) var showsCrisisSignpost = false
     @Published private(set) var isConfirming = false
     @Published private(set) var error: String?
 
@@ -14,7 +15,7 @@ final class AgeGateStore: ObservableObject {
         self.apiClient = apiClient
     }
 
-    func ensureConfirmed() async -> Bool {
+    func ensureConfirmed(message: String = "") async -> Bool {
         if status == nil {
             status = try? await apiClient.fetchAgeGate().status
         }
@@ -25,6 +26,7 @@ final class AgeGateStore: ObservableObject {
 
         finish(allowed: false)
         error = nil
+        showsCrisisSignpost = CrisisSignposting.mentionsCrisis(message)
         isPrompting = true
 
         return await withCheckedContinuation { continuation in
@@ -68,6 +70,7 @@ final class AgeGateStore: ObservableObject {
 
     private func finish(allowed: Bool) {
         isPrompting = false
+        showsCrisisSignpost = false
         pendingDecision?.resume(returning: allowed)
         pendingDecision = nil
     }

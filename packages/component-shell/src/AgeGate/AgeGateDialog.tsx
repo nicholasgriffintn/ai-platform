@@ -9,7 +9,7 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import { APP_NAME, useAgeGatePromptStore } from "@ngriffin_uk/polychat-library-client";
 import { useAgeGate } from "@ngriffin_uk/polychat-library-react";
-import { AGE_GATE_MINIMUM_AGE } from "@ngriffin_uk/polychat-schemas";
+import { AGE_GATE_MINIMUM_AGE, CRISIS_SIGNPOST_TEXT } from "@ngriffin_uk/polychat-schemas";
 import { useState } from "react";
 
 import { AgeGateDateForm } from "./AgeGateDateForm.js";
@@ -19,6 +19,7 @@ type AgeGateView = "form" | "skipped";
 export function AgeGateDialog() {
   const isOpen = useAgeGatePromptStore((state) => state.isOpen);
   const finish = useAgeGatePromptStore((state) => state.finish);
+  const showsCrisisSignpost = useAgeGatePromptStore((state) => state.showsCrisisSignpost);
   const { status, confirm, isConfirming, confirmError, resetConfirmError } = useAgeGate();
   const [view, setView] = useState<AgeGateView>("form");
   const isRefused = status === "under_age";
@@ -54,6 +55,9 @@ export function AgeGateDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
+        {showsCrisisSignpost ? (
+          <p className="text-sm text-foreground">{CRISIS_SIGNPOST_TEXT}</p>
+        ) : null}
         {isRefused ? (
           <>
             <DialogHeader>

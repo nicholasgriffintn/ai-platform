@@ -17,6 +17,7 @@ import {
   type RealtimeModality,
   type RealtimeTransport,
 } from "../modalities.js";
+import { withRealtimeSafetyInstructions } from "../safety-instructions.js";
 import { buildGrantedRealtimeProxyUrl } from "./proxyUrl.js";
 
 export const OPENAI_REALTIME_DESCRIPTOR = {
@@ -116,7 +117,7 @@ export function buildOpenAILiveSessionConfig({
 }): Record<string, unknown> {
   return {
     model,
-    ...(instructions ? { instructions } : {}),
+    instructions: withRealtimeSafetyInstructions(instructions),
     audio: { output: { voice: voice ?? DEFAULT_VOICE } },
     ...(delegationModel
       ? { delegation: { type: "responses", responses: { model: delegationModel } } }
@@ -305,7 +306,7 @@ export class OpenAIRealtimeProvider implements RealtimeProvider {
         type: "realtime",
         model,
         output_modalities: outputModalities,
-        ...(request.instructions ? { instructions: request.instructions } : {}),
+        instructions: withRealtimeSafetyInstructions(request.instructions),
         audio: {
           input: {
             format: this.buildAudioFormat(),

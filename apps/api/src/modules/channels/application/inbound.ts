@@ -8,9 +8,11 @@ import {
   type ChatRun,
   type ChannelMessageContext,
   channelMessageContextSchema,
+  CRISIS_SIGNPOST_TEXT,
   INBOUND_CHANNEL_IDS,
   type InboundChannelId,
   isPolyTeammateId,
+  mentionsCrisis,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
@@ -51,10 +53,6 @@ import { recoverChatCompletionResponse } from "~/modules/responses/application/r
 import { startResponse } from "~/modules/responses/application/start";
 import { getInboundChannelProfile } from "~/modules/responses/domain/channels";
 import type { ResponseCommand } from "~/modules/responses/domain/command";
-import {
-  CRISIS_SIGNPOST_TEXT,
-  mentionsCrisis,
-} from "~/modules/responses/domain/crisis-signposting";
 import { requireProjectTeammate } from "~/modules/teammates/application/access";
 import {
   ensureActiveTeammateContext,
@@ -932,37 +930,48 @@ export async function handleInboundChannelMessage(params: {
 
     const teammateId = delivery.teammateId;
 
-    completion = await runChannelTurn(delivery, () =>
-      teammateId
-        ? enqueueTeammateRun({
-            env: params.env,
-            context: params.context,
-            body: request,
-            teammateId,
-            user: params.user,
-            anonymousUser: undefined,
-            authority: { trigger: "channel" },
-            invocation: isInboundBindingTaskData(params.data)
-              ? {
-                  source: "channel",
-                  bindingId: params.data.bindingId,
-                  messageId: message.messageId,
-                  senderMappingId: params.data.senderMappingId,
-                  senderRevision: params.data.senderRevision,
-                  threadId: params.data.messageContext.threadId,
-                  ...(params.data.messageContext.subject
-                    ? { subject: params.data.messageContext.subject }
-                    : {}),
-                }
-              : undefined,
-          })
-        : startResponse({
-            env: params.env,
-            context: params.context,
-            user: params.user,
-            command: request,
-            authority: { trigger: "channel" },
-          }),
+    completion = await runChannelTurn(
+      delivery,
+      () =>
+        teammateId
+          ? enqueueTeammateRun({
+              env: params.env,
+              context: params.context,
+              body: request,
+              teammateId,
+              user: params.user,
+              anonymousUser: undefined,
+              authority: { trigger: "channel" },
+              invocation: isInboundBindingTaskData(params.data)
+                ? {
+                    source: "channel",
+                    bindingId: params.data.bindingId,
+                    messageId: message.messageId,
+                    senderMappingId: params.data.senderMappingId,
+                    senderRevision: params.data.senderRevision,
+                    threadId: params.data.messageContext.threadId,
+                    ...(params.data.messageContext.subject
+                      ? { subject: params.data.messageContext.subject }
+                      : {}),
+                  }
+                : undefined,
+            })
+          : startResponse({
+              env: params.env,
+              context: params.context,
+              user: params.user,
+              command: request,
+              authority: { trigger: "channel" },
+            }),
+      () =>
+        signpostUnansweredMessage({
+          context: params.context,
+          user: params.user,
+          channel: params.data.channel,
+          conversationId,
+          message,
+          send: delivery.send,
+        }),
     );
   }
 

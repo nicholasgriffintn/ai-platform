@@ -1,11 +1,11 @@
 import { extractTextFromMessageContent } from "@ngriffin_uk/polychat-ai-providers";
+import { mentionsCrisis } from "@ngriffin_uk/polychat-schemas";
 
 import type {
   ValidationContext,
   Validator,
   ValidatorResult,
 } from "~/modules/responses/application/engine/validation/ValidationPipeline";
-import { mentionsCrisis } from "~/modules/responses/domain/crisis-signposting";
 import type { CoreChatOptions } from "~/types";
 
 const UNATTENDED_TRIGGERS = new Set(["delegation", "schedule"]);

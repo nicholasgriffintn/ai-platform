@@ -41,11 +41,13 @@ export async function signalChannelRun(params: {
 export async function runChannelTurn<T>(
   delivery: { signal?(signal: ChannelRunSignal): Promise<void> },
   run: () => Promise<T>,
+  onFailure?: () => Promise<void>,
 ): Promise<T> {
   try {
     return await run();
   } catch (error) {
     await delivery.signal?.("failed");
+    await onFailure?.();
 
     throw error;
   }

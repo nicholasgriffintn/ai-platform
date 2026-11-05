@@ -8,11 +8,11 @@ import {
   resolveStoredMessagingProvider,
   selectConfiguredMessagingDelivery,
 } from "~/infrastructure/providers/capabilities/messaging/delivery";
+import { deliverWithChannelDisclosure } from "~/modules/channels/application/disclosed-reply";
 import { CHANNEL_TOP_LEVEL_THREAD } from "~/modules/channels/application/ports/channel-adapter";
 import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
 import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
-import { deliverOutboundOperation } from "~/modules/delivery/application/outbound";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IUser } from "~/types";
 
@@ -76,19 +76,21 @@ async function offerOverBinding(params: {
       continue;
     }
 
-    await deliverOutboundOperation({
+    await deliverWithChannelDisclosure({
       context,
+      contact: { channel: binding.channel, bindingId: binding.id },
       deliveryId: `message_approval_${issued.id}`,
       userId: user.id,
       kind: "message_approval",
       scopeId: run.conversationId,
       operationId: issued.id,
+      body: issued.body,
       payload: { approvalId: issued.id, bindingId: binding.id },
-      send: () =>
+      send: (body) =>
         adapter.sendReply(
           {
             externalId: binding.external_id,
-            body: issued.body,
+            body,
             threadId: CHANNEL_TOP_LEVEL_THREAD,
           },
           context.env,
@@ -149,15 +151,17 @@ async function offerOverSms(params: {
     return;
   }
 
-  await deliverOutboundOperation({
+  await deliverWithChannelDisclosure({
     context,
+    contact: { channel: "sms", address: target },
     deliveryId: `message_approval_${issued.id}`,
     userId: user.id,
     kind: "message_approval",
     scopeId: run.conversationId,
     operationId: issued.id,
+    body: issued.body,
     payload: { approvalId: issued.id, providerSettingsId: delivery.id },
-    send: () => provider.send({ to: target, body: issued.body }),
+    send: (body) => provider.send({ to: target, body }),
   });
 }
 

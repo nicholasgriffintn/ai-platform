@@ -11,6 +11,11 @@ struct AgeGateSheet: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 20) {
+                if ageGateStore.showsCrisisSignpost {
+                    Text(CrisisSignposting.text)
+                        .font(.subheadline)
+                }
+
                 if ageGateStore.status == .underAge {
                     refusal
                 } else {

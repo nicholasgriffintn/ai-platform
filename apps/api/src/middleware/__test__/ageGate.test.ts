@@ -1,4 +1,7 @@
-import { INTERNAL_SERVICE_AUTHORIZATION_HEADER } from "@ngriffin_uk/polychat-schemas";
+import {
+  CRISIS_SIGNPOST_TEXT,
+  INTERNAL_SERVICE_AUTHORIZATION_HEADER,
+} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { Hono } from "hono";
 import { describe, expect, it } from "vitest";
@@ -9,7 +12,12 @@ import { requireAgeCheck } from "../ageGate";
 
 type Principal = { user?: Partial<User>; anonymousUser?: Partial<AnonymousUser> };
 
-function send(principal: Principal, enabled?: string, headers?: Record<string, string>) {
+function send(
+  principal: Principal,
+  enabled?: string,
+  headers?: Record<string, string>,
+  body?: string,
+) {
   const app = new Hono<{ Variables: Principal }>();
 
   app.use("*", async (c, next) => {
@@ -20,10 +28,35 @@ function send(principal: Principal, enabled?: string, headers?: Record<string, s
   app.post("/responses", requireAgeCheck, (c) => c.text("ok"));
   app.onError((error, c) => c.text(error.message, error instanceof AssistantError ? 403 : 500));
 
-  return app.request("/responses", { method: "POST", headers }, { AGE_GATE_ENABLED: enabled });
+  return app.request(
+    "/responses",
+    { method: "POST", headers, body },
+    { AGE_GATE_ENABLED: enabled },
+  );
 }
 
 describe("requireAgeCheck", () => {
+  it.each([undefined, "under_age"] as const)(
+    "keeps the 403 and adds support details to a crisis message when age_check is %s",
+    async (age_check) => {
+      const response = await send(
+        { user: { id: 1, age_check } },
+        undefined,
+        undefined,
+        JSON.stringify({ input: "I want to kill myself" }),
+      );
+
+      expect(response.status).toBe(403);
+      expect(await response.text()).toContain(CRISIS_SIGNPOST_TEXT);
+    },
+  );
+
+  it("leaves other refusals as they were", async () => {
+    const response = await send({ user: { id: 1 } }, undefined, undefined, "{}");
+
+    expect(await response.text()).not.toContain(CRISIS_SIGNPOST_TEXT);
+  });
+
   it("is not skipped by a service header the auth middleware never verified", async () => {
     const response = await send({ user: { id: 1 } }, undefined, {
       [INTERNAL_SERVICE_AUTHORIZATION_HEADER]: "anything",
