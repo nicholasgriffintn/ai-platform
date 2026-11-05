@@ -1,11 +1,12 @@
 import { INTERNAL_SERVICE_AUTHORIZATION_HEADER } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { parseBearerToken } from "@ngriffin_uk/polychat-utility-server/http";
 import type { Context, Next } from "hono";
 
 import { resolveAgeGateStatus } from "~/modules/auth/application/ageGate";
 
 export async function requireAgeCheck(context: Context, next: Next) {
-  if (context.req.header(INTERNAL_SERVICE_AUTHORIZATION_HEADER)) {
+  if (parseBearerToken(context.req.header(INTERNAL_SERVICE_AUTHORIZATION_HEADER))) {
     return next();
   }
 

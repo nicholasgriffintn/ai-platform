@@ -3,6 +3,7 @@ import type { ModelConfigItem, ModelTier, ReasoningEffort } from "@ngriffin_uk/p
 import { AuthValidator } from "~/modules/responses/application/engine/validation/validators/AuthValidator";
 import { BasicInputValidator } from "~/modules/responses/application/engine/validation/validators/BasicInputValidator";
 import { ContextLimitValidator } from "~/modules/responses/application/engine/validation/validators/ContextLimitValidator";
+import { CrisisSignpostValidator } from "~/modules/responses/application/engine/validation/validators/CrisisSignpostValidator";
 import { GuardrailsValidator } from "~/modules/responses/application/engine/validation/validators/GuardrailsValidator";
 import { ModelConfigValidator } from "~/modules/responses/application/engine/validation/validators/ModelConfigValidator";
 import type { Attachment, CoreChatOptions, Message } from "~/types";
@@ -21,6 +22,7 @@ export interface ValidationContext {
   messageWithContext?: string;
   modelConfig?: ModelConfigItem;
   guardrails?: any;
+  crisisSignpost?: boolean;
   selectedModels?: string[];
   modelTier?: ModelTier;
   attachments?: Attachment[];
@@ -43,6 +45,7 @@ export class ValidationPipeline {
     new BasicInputValidator(),
     new ModelConfigValidator(),
     new ContextLimitValidator(),
+    new CrisisSignpostValidator(),
     new GuardrailsValidator(),
   ];
 
