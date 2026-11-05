@@ -1,7 +1,11 @@
 import { RunCostMeter } from "@ngriffin_uk/polychat-component-content";
 import { useChatStore } from "@ngriffin_uk/polychat-library-client";
 import { useRunCostEstimate, useUsageStore } from "@ngriffin_uk/polychat-library-react";
-import { isAgentExecutionMode } from "@ngriffin_uk/polychat-schemas";
+import {
+  isAgentExecutionMode,
+  runMeterFromUsage,
+  type PlatformResponse,
+} from "@ngriffin_uk/polychat-schemas";
 import { formatCredits } from "@ngriffin_uk/polychat-utility-core";
 import { useShallow } from "zustand/react/shallow";
 
@@ -9,14 +13,16 @@ export interface RunCostStatusProps {
   conversationId?: string;
   historyCharacters: number;
   isRunning: boolean;
-  awaitingApproval: boolean;
+  latestResponse?: PlatformResponse | null;
+  projectId?: string;
 }
 
 export function RunCostStatus({
   conversationId,
   historyCharacters,
   isRunning,
-  awaitingApproval,
+  latestResponse,
+  projectId,
 }: RunCostStatusProps) {
   const { chatInput, chatMode, isAuthenticated, model, runCapCredits } = useChatStore(
     useShallow((state) => ({
@@ -28,8 +34,13 @@ export function RunCostStatus({
     })),
   );
   const runMeter = useUsageStore((state) => state.runMeter);
-  const meter = runMeter?.conversationId === conversationId ? runMeter?.meter : undefined;
-  const showMeter = meter && (isRunning || awaitingApproval);
+  const awaitingApproval = latestResponse?.status === "awaiting_approval";
+  const liveMeter = runMeter?.conversationId === conversationId ? runMeter?.meter : undefined;
+  const storedMeter =
+    awaitingApproval && latestResponse?.usage ? runMeterFromUsage(latestResponse.usage) : null;
+  const meter = liveMeter?.runId === latestResponse?.id || isRunning ? liveMeter : undefined;
+  const shownMeter = meter ?? storedMeter;
+  const showMeter = shownMeter && (isRunning || awaitingApproval);
   const wantsEstimate =
     isAuthenticated &&
     !isRunning &&
@@ -40,12 +51,13 @@ export function RunCostStatus({
     mode: chatMode,
     draft: chatInput,
     historyCharacters,
+    projectId,
   });
 
   if (showMeter) {
     return (
       <div className="px-1 pb-2">
-        <RunCostMeter meter={meter} paused={awaitingApproval} />
+        <RunCostMeter meter={shownMeter} paused={awaitingApproval} />
       </div>
     );
   }

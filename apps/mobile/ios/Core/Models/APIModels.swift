@@ -345,7 +345,46 @@ public struct ModelConfigItem: Codable, Identifiable {
     public let reasoningConfig: ReasoningConfig?
     public let supportedServiceTiers: [String]?
     public let serviceTierMultipliers: [String: Double]?
-    
+    public let dataLocation: DataLocation?
+
+    public struct DataLocation: Codable {
+        public let kind: String
+        public let regions: [String]?
+        public let source: String?
+
+        public init(kind: String, regions: [String]? = nil, source: String? = nil) {
+            self.kind = kind
+            self.regions = regions
+            self.source = source
+        }
+    }
+
+    public var dataLocationLabel: String {
+        if runsOn == "device" {
+            return "On this device"
+        }
+
+        if machineId != nil {
+            return "Your machine"
+        }
+
+        switch dataLocation?.kind {
+        case "regions":
+            let names = (dataLocation?.regions ?? []).map { Self.dataRegionLabels[$0] ?? $0.uppercased() }
+            return names.isEmpty ? "Location unknown" : names.joined(separator: " and ")
+        case "multiple":
+            return "Multiple regions"
+        case "deployment":
+            return "Set per deployment"
+        case "routed":
+            return "Depends on route"
+        default:
+            return "Location unknown"
+        }
+    }
+
+    private static let dataRegionLabels = ["us": "US", "eu": "EU", "sg": "Singapore", "cn": "China"]
+
     public struct ReasoningConfig: Codable {
         public let supportedEffortLevels: [String]?
 
@@ -368,7 +407,7 @@ public struct ModelConfigItem: Codable, Identifiable {
         case id, name, provider, description, strengths, contextWindow, pricing, modalities, supportsToolCalls
         case multimodal, isFeatured, isDefault, isExecutable, runsOn, machineId, isPlatformEnabled, isFree, isByokEnabled
         case readiness, status, deprecated
-        case reasoningConfig, supportedServiceTiers, serviceTierMultipliers
+        case reasoningConfig, supportedServiceTiers, serviceTierMultipliers, dataLocation
         case supportsAttachments, supportsDocuments, supportsAudio, supportsImageEdits, supportsResponseFormat
         case supportsRealtimeSession
     }
@@ -381,6 +420,7 @@ public struct ModelConfigItem: Codable, Identifiable {
         "costPer1kInputTokens",
         "costPer1kOutputTokens",
         "costPer1kReasoningTokens",
+        "dataRetention",
         "deprecationMessage",
         "family",
         "hiddenFromDefaultList",
@@ -426,6 +466,7 @@ public struct ModelConfigItem: Codable, Identifiable {
         isExecutable: Bool? = nil,
         runsOn: String? = nil,
         machineId: String? = nil,
+        dataLocation: DataLocation? = nil,
         isPlatformEnabled: Bool? = nil,
         isFree: Bool? = nil,
         isByokEnabled: Bool? = nil,
@@ -457,6 +498,7 @@ public struct ModelConfigItem: Codable, Identifiable {
         self.isExecutable = isExecutable
         self.runsOn = runsOn
         self.machineId = machineId
+        self.dataLocation = dataLocation
         self.isPlatformEnabled = isPlatformEnabled
         self.isFree = isFree
         self.isByokEnabled = isByokEnabled
@@ -492,6 +534,7 @@ public struct ModelConfigItem: Codable, Identifiable {
         isExecutable = try container.decodeIfPresent(Bool.self, forKey: .isExecutable)
         runsOn = try container.decodeIfPresent(String.self, forKey: .runsOn)
         machineId = try container.decodeIfPresent(String.self, forKey: .machineId)
+        dataLocation = try? container.decodeIfPresent(DataLocation.self, forKey: .dataLocation)
         isPlatformEnabled = try container.decodeIfPresent(Bool.self, forKey: .isPlatformEnabled)
         isFree = try container.decodeIfPresent(Bool.self, forKey: .isFree)
         isByokEnabled = try container.decodeIfPresent(Bool.self, forKey: .isByokEnabled)
@@ -529,6 +572,7 @@ public struct ModelConfigItem: Codable, Identifiable {
         try container.encodeIfPresent(isExecutable, forKey: .isExecutable)
         try container.encodeIfPresent(runsOn, forKey: .runsOn)
         try container.encodeIfPresent(machineId, forKey: .machineId)
+        try container.encodeIfPresent(dataLocation, forKey: .dataLocation)
         try container.encodeIfPresent(isPlatformEnabled, forKey: .isPlatformEnabled)
         try container.encodeIfPresent(isFree, forKey: .isFree)
         try container.encodeIfPresent(isByokEnabled, forKey: .isByokEnabled)

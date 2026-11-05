@@ -12,6 +12,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
 import { recordChatRunOperationalMetric } from "~/modules/responses/application/runs/operational-metrics";
+import { RUN_CAP_STOP_OPTION } from "~/modules/usage/application/run-budget";
 
 import {
   readPendingInteractionMessage,
@@ -36,6 +37,29 @@ function getPendingApprovalMessage(
   });
 }
 
+export function resolveApprovalChoice(
+  pendingData: Record<string, unknown>,
+  input: Pick<ResolveProjectTaskToolApprovalInput, "option" | "resolution">,
+): { resolution: "approved" | "rejected"; option: string } {
+  const runCap = isRecord(pendingData.runCap) ? pendingData.runCap : null;
+  const raiseOption = typeof runCap?.raiseOption === "string" ? runCap.raiseOption : null;
+
+  if (!raiseOption) {
+    return {
+      resolution: input.resolution,
+      option: input.option ?? (input.resolution === "approved" ? "Approve" : "Reject"),
+    };
+  }
+
+  const raises =
+    input.option === undefined ? input.resolution === "approved" : input.option === raiseOption;
+
+  return {
+    resolution: raises ? "approved" : "rejected",
+    option: raises ? raiseOption : (input.option ?? RUN_CAP_STOP_OPTION),
+  };
+}
+
 export async function getPendingProjectTaskToolApproval(
   context: ServiceContext,
   task: Pick<ProjectTask, "conversationId">,
@@ -53,7 +77,7 @@ export async function resolveProjectTaskToolApproval(params: {
   context: ServiceContext;
   task: ProjectTask;
   input: ResolveProjectTaskToolApprovalInput;
-}): Promise<{ toolName: string; resolution: "approved" | "rejected" }> {
+}): Promise<{ toolName: string; resolution: "approved" | "rejected"; option: string }> {
   const { context, task } = params;
   const input = resolveProjectTaskToolApprovalSchema.parse(params.input);
 
@@ -144,6 +168,6 @@ export async function resolveProjectTaskToolApproval(params: {
 
   return {
     toolName: pending.interaction.toolName,
-    resolution: input.resolution,
+    ...resolveApprovalChoice(pending.data, input),
   };
 }

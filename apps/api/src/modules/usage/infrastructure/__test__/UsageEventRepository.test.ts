@@ -201,6 +201,52 @@ describe("UsageEventRepository.insertEventAndApplyBalance", () => {
   });
 });
 
+describe("UsageEventRepository pool settlement after a plan ends", () => {
+  it("does not call the last of a funded turn an overrun", async () => {
+    const sqlite = new Database(":memory:");
+    const run = (query: string, params: unknown[]) => ({
+      success: true,
+      meta: { changes: sqlite.prepare(query).run(...params).changes },
+    });
+    const repository = new UsageEventRepository({
+      DB: {
+        prepare: (query: string) => ({ bind: (...params: unknown[]) => ({ query, params }) }),
+        batch: async (statements: Array<{ query: string; params: unknown[] }>) =>
+          statements.map((statement) => run(statement.query, statement.params)),
+      },
+    } as unknown as IEnv);
+
+    sqlite.exec(`
+      CREATE TABLE usage_event (
+        id text PRIMARY KEY, idempotency_key text NOT NULL UNIQUE, user_id integer,
+        workspace_id text, pool_workspace_id text, project_id text, conversation_id text,
+        message_id text, activity_id text, completion_id text, run_id text, run_attempt integer,
+        occurred_at text, period text, source text, vendor text, resource text, unit text,
+        quantity real, rate_version text, unit_cost_micros integer, cost_micros integer,
+        credit_micros integer, billable integer, byok integer, estimated integer,
+        vendor_units real, reason text, site text, raw text
+      );
+      CREATE TABLE workspace_team_plan (
+        workspace_id text PRIMARY KEY, included_credit_micros integer, grace_credit_micros integer
+      );
+      CREATE TABLE workspace_usage_pool (
+        workspace_id text NOT NULL, period text NOT NULL,
+        spent_credit_micros integer DEFAULT 0 NOT NULL,
+        reserved_credit_micros integer DEFAULT 0 NOT NULL,
+        overrun_credit_micros integer DEFAULT 0 NOT NULL,
+        last_event_at text, updated_at text, PRIMARY KEY (workspace_id, period)
+      );
+    `);
+
+    await repository.insertEventAndApplyPool(event(), "workspace-1");
+
+    expect(sqlite.prepare("SELECT * FROM workspace_usage_pool").get()).toMatchObject({
+      spent_credit_micros: 30_000,
+      overrun_credit_micros: 0,
+    });
+  });
+});
+
 describe("listUserEvents filtering", () => {
   function queryHarness() {
     const queries: Array<{ query: string; values: unknown[] }> = [];

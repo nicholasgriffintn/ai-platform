@@ -4,11 +4,12 @@ import type {
   UsageBalanceSeed,
   UsageEventRecord,
 } from "@ngriffin_uk/polychat-ai-billing";
-import type {
-  ComputeSite,
-  UsageEventReason,
-  UsageSource,
-  UsageUnit,
+import {
+  LIVE_DELEGATION_STATES,
+  type ComputeSite,
+  type UsageEventReason,
+  type UsageSource,
+  type UsageUnit,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -109,6 +110,8 @@ const RECORD_COLUMNS = `id, occurred_at, period, source, vendor, resource, unit,
 	cost_micros, credit_micros, billable, byok, estimated, vendor_units, reason, site,
 	conversation_id, project_id, workspace_id`;
 
+const LIVE_DELEGATION_STATE_SQL = LIVE_DELEGATION_STATES.map((state) => `'${state}'`).join(", ");
+
 const CREDITS_ENFORCED = "included_credit_micros > 0";
 
 const EVENT_NOT_RECORDED = "NOT EXISTS (SELECT 1 FROM usage_event WHERE idempotency_key = ?)";
@@ -122,11 +125,13 @@ const SPEND_RETURNED_FROM_PAST_CEILING = `MIN(?, MAX(0, spent_credit_micros
 const RUN_CHARGE_UNCHANGED = `(SELECT COALESCE(SUM(credit_micros), 0) FROM usage_event
 	WHERE run_id = ? AND billable = 1) = ?`;
 
+const ENDED_PLAN_CEILING = Number.MAX_SAFE_INTEGER;
+
 const POOL_SPEND_PAST_CEILING = `MAX(0, spent_credit_micros + ?
-	- MAX(spent_credit_micros, COALESCE(${POOL_CEILING}, 0)))`;
+	- MAX(spent_credit_micros, COALESCE(${POOL_CEILING}, ${ENDED_PLAN_CEILING})))`;
 
 const POOL_SPEND_RETURNED_FROM_PAST_CEILING = `MIN(?, MAX(0, spent_credit_micros
-	- COALESCE(${POOL_CEILING}, 0)))`;
+	- COALESCE(${POOL_CEILING}, ${ENDED_PLAN_CEILING})))`;
 
 export class UsageEventRepository extends BaseRepository {
   private buildInsert(event: UsageEventRecord): { query: string; values: unknown[] } {
@@ -221,13 +226,30 @@ export class UsageEventRepository extends BaseRepository {
       spend_cap_credit_micros: number | null;
       usage_refunded_at: string | null;
       charged_credit_micros: number;
+      delegated_credit_micros: number;
     }>(
       `SELECT spend_cap_credit_micros, usage_refunded_at,
               (SELECT COALESCE(SUM(credit_micros), 0) FROM usage_event
-               WHERE run_id = conversation_run.id AND billable = 1) AS charged_credit_micros
+               WHERE run_id = conversation_run.id AND billable = 1) AS charged_credit_micros,
+              CASE WHEN spend_cap_credit_micros IS NULL THEN 0 ELSE (
+                SELECT COALESCE(SUM(MAX(
+                  delegate.charged_credit_micros,
+                  CASE WHEN delegate.state IN (${LIVE_DELEGATION_STATE_SQL})
+                    THEN delegate.max_credit_micros ELSE 0 END
+                )), 0)
+                FROM (
+                  SELECT d.state, d.max_credit_micros,
+                         (SELECT COALESCE(SUM(ue.credit_micros), 0)
+                          FROM conversation_run child
+                          JOIN usage_event ue ON ue.run_id = child.id AND ue.billable = 1
+                          WHERE child.delegation_id = d.id) AS charged_credit_micros
+                  FROM delegation d
+                  WHERE d.parent_run_id = ?
+                ) delegate
+              ) END AS delegated_credit_micros
        FROM conversation_run
        WHERE id = ?`,
-      [runId],
+      [runId, runId],
       true,
     );
 
@@ -236,6 +258,7 @@ export class UsageEventRepository extends BaseRepository {
           capCreditMicros: row.spend_cap_credit_micros,
           refunded: row.usage_refunded_at !== null,
           chargedCreditMicros: row.charged_credit_micros,
+          delegatedCreditMicros: row.delegated_credit_micros,
         }
       : null;
   }

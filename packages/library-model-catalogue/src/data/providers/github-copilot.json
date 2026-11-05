@@ -5,11 +5,11 @@
     "supportsAttachments": true,
     "dataRetention": {
       "maxDays": "unknown",
-      "source": "https://docs.github.com/en/site-policy/github-terms/github-terms-for-additional-products-and-features"
+      "source": "https://docs.github.com/en/copilot/reference/ai-models/model-hosting"
     },
     "dataLocation": {
-      "kind": "unknown",
-      "source": "https://docs.github.com/en/site-policy/github-terms/github-terms-for-additional-products-and-features"
+      "kind": "routed",
+      "source": "https://docs.github.com/en/copilot/reference/ai-models/model-hosting"
     }
   },
   "models": {

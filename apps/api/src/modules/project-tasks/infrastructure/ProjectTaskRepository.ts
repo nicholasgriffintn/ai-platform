@@ -61,6 +61,7 @@ export interface CreateProjectTaskParams {
   stageId?: string | null;
   flowSnapshot?: ProjectFlow | null;
   tokenBudget?: number | null;
+  runCapCreditMicros?: number | null;
   originConversationId?: string | null;
   position: number;
   number?: number | null;
@@ -100,6 +101,7 @@ export interface UpdateProjectTaskParams {
   completions?: ProjectTaskCompletion[];
   position?: number;
   tokenBudget?: number | null;
+  runCapCreditMicros?: number | null;
   tokensSpent?: number;
   startedAt?: string | null;
   completedAt?: string | null;
@@ -192,6 +194,7 @@ function formatProjectTask(row: ProjectTaskRow): ProjectTask {
     completions: parseJsonColumn<ProjectTaskCompletion[]>(row.completions, []),
     position: row.position,
     tokenBudget: row.token_budget,
+    runCapCreditMicros: row.run_cap_credit_micros,
     tokensSpent: row.tokens_spent,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -228,6 +231,7 @@ export class ProjectTaskRepository extends BaseRepository {
         stage_id: params.stageId ?? null,
         flow_snapshot: params.flowSnapshot ?? null,
         token_budget: params.tokenBudget ?? null,
+        run_cap_credit_micros: params.runCapCreditMicros ?? null,
         origin_conversation_id: params.originConversationId ?? null,
         position: params.position,
         number: params.number ?? null,
@@ -793,6 +797,10 @@ export class ProjectTaskRepository extends BaseRepository {
 
     if (updates.tokenBudget !== undefined) {
       set("token_budget", updates.tokenBudget);
+    }
+
+    if (updates.runCapCreditMicros !== undefined) {
+      set("run_cap_credit_micros", updates.runCapCreditMicros);
     }
 
     if (updates.description !== undefined) {

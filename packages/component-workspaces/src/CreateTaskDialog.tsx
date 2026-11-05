@@ -88,6 +88,7 @@ export function CreateTaskDialog({
     dependsOn,
     requireApprovalFor,
     tokenBudget,
+    runCapCredits,
   } = draft;
   const displayedError = submissionError ?? errorMessage;
 
@@ -289,6 +290,17 @@ export function CreateTaskDialog({
                 value={tokenBudget}
                 onChange={(event) => updateDraft({ tokenBudget: event.target.value })}
                 placeholder="Use the project default"
+              />
+
+              <FormInput
+                label="Run credit cap"
+                description="Each run pauses and asks you before it could go over this."
+                type="number"
+                min={0}
+                step="any"
+                value={runCapCredits}
+                onChange={(event) => updateDraft({ runCapCredits: event.target.value })}
+                placeholder="No cap"
               />
             </div>
           ) : null}

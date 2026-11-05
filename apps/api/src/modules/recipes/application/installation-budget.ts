@@ -63,6 +63,16 @@ async function pauseInstallationForBudget(params: {
   }
 }
 
+export async function readRecipeRunCapCredits(params: {
+  context: ServiceContext;
+  userId: number;
+  installationId: string;
+}): Promise<number | undefined> {
+  const cap = (await getRecipeInstallationRecord(params))?.data.runCreditCapMicros;
+
+  return cap ? cap / MICROS_PER_CREDIT : undefined;
+}
+
 export async function assertRecipeInstallationWithinBudget(params: {
   context: ServiceContext;
   userId: number;

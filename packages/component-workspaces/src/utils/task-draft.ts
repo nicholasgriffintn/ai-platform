@@ -1,7 +1,8 @@
-import type {
-  CreateProjectTaskInput,
-  ProjectFlow,
-  ToolPermission,
+import {
+  creditMicrosFromCredits,
+  type CreateProjectTaskInput,
+  type ProjectFlow,
+  type ToolPermission,
 } from "@ngriffin_uk/polychat-schemas";
 
 export interface TaskDraft {
@@ -17,6 +18,7 @@ export interface TaskDraft {
   dependsOn: string[];
   requireApprovalFor: ToolPermission[];
   tokenBudget: string;
+  runCapCredits: string;
 }
 
 export function createTaskDraft(flow: ProjectFlow | null): TaskDraft {
@@ -33,6 +35,7 @@ export function createTaskDraft(flow: ProjectFlow | null): TaskDraft {
     dependsOn: [],
     requireApprovalFor: [],
     tokenBudget: "",
+    runCapCredits: "",
   };
 }
 
@@ -57,5 +60,8 @@ export function taskDraftInput(draft: TaskDraft): CreateProjectTaskInput {
         : null,
     stageId: draft.stageId || null,
     tokenBudget: draft.tokenBudget ? Number(draft.tokenBudget) : null,
+    runCapCreditMicros: draft.runCapCredits
+      ? creditMicrosFromCredits(Number(draft.runCapCredits))
+      : null,
   };
 }

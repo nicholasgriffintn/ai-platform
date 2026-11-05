@@ -10,6 +10,7 @@ import { handleAsyncInvocation } from "~/modules/conversations/application/async
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { withThreadLockIfFree } from "~/modules/conversations/infrastructure/coordinator/client";
 import { definePoll } from "~/modules/queue/application/workflows";
+import { withProjectFunding } from "~/modules/usage/application/workspace-funding";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
 const logger = getLogger({ prefix: "services/tasks/async-message-polling" });
@@ -71,18 +72,20 @@ export const asyncMessagePolling = definePoll({
     const result = await withThreadLockIfFree(
       { env, conversationId: data.conversationId, kind: "async_result" },
       (lease) =>
-        handleAsyncInvocation(data.asyncInvocation, targetMessage, {
-          conversationManager: ConversationManager.getInstance({
-            repositories,
-            user,
-            store: true,
+        withProjectFunding(repositories, { conversationId: data.conversationId }, () =>
+          handleAsyncInvocation(data.asyncInvocation, targetMessage, {
+            conversationManager: ConversationManager.getInstance({
+              repositories,
+              user,
+              store: true,
+              env,
+              writeFence: lease,
+            }),
+            conversationId: data.conversationId,
             env,
-            writeFence: lease,
+            user,
           }),
-          conversationId: data.conversationId,
-          env,
-          user,
-        }),
+        ),
     );
 
     if (result && (result.status === "completed" || result.status === "failed")) {

@@ -1,12 +1,53 @@
 import { pendingApproval } from "@ngriffin_uk/polychat-library-interactions";
-import { canonicalJson, generateId } from "@ngriffin_uk/polychat-utility-core";
+import { canonicalJson, generateId, isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { buildMessageParts } from "~/modules/responses/application/engine/messages/parts";
-import type { RunCapPause } from "~/modules/usage/application/run-budget";
+import type { RunCapPause, RunToolCall } from "~/modules/usage/application/run-budget";
 import { ToolCallType } from "~/types";
 import type { Message, Platform, ToolCall } from "~/types";
 
 const APPROVAL_TOOL_NAME = "request_approval";
+
+function readToolFunction(toolCall: Record<string, unknown>): Record<string, unknown> {
+  return isRecord(toolCall.function) ? toolCall.function : {};
+}
+
+export function toRunToolCalls(toolCalls: readonly Record<string, unknown>[]): RunToolCall[] {
+  return toolCalls.map((toolCall) => {
+    const { name, arguments: rawArguments } = readToolFunction(toolCall);
+    const parsed =
+      typeof rawArguments === "string" ? safeParseJson<unknown>(rawArguments) : rawArguments;
+
+    return {
+      name: typeof name === "string" ? name : "",
+      arguments: isRecord(parsed) ? parsed : {},
+    };
+  });
+}
+
+export function buildRunCapSkippedToolResult(
+  toolCall: Record<string, unknown>,
+  notice: string,
+  params: { model: string; platform: Platform },
+): Message {
+  const { name, arguments: toolArguments } = readToolFunction(toolCall);
+  const result: Message = {
+    id: generateId(),
+    role: "tool",
+    name: typeof name === "string" ? name : undefined,
+    content: notice,
+    status: "error",
+    log_id: "",
+    tool_call_id: typeof toolCall.id === "string" ? toolCall.id : undefined,
+    tool_call_arguments: toolArguments,
+    timestamp: Date.now(),
+    model: params.model,
+    platform: params.platform,
+  };
+
+  return { ...result, parts: buildMessageParts(result) };
+}
 
 export function buildRunCapPauseMessages(
   pause: RunCapPause,

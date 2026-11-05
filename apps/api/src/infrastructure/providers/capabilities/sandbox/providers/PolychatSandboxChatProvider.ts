@@ -107,6 +107,7 @@ export class PolychatSandboxChatProvider implements AIProvider {
       env: params.env,
       context: params.context,
       user,
+      chatRunId: params.run_id,
       payload: {
         installationId: options.data.installationId,
         repo: options.data.repo,

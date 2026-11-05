@@ -13,6 +13,7 @@ import {
 } from "~/modules/conversations/infrastructure/coordinator/client";
 import { hydrateDelegatedUsage } from "~/modules/responses/application/runs/delegated-usage";
 import { hydrateChatRunUsage } from "~/modules/responses/application/runs/usage";
+import { withProjectFunding } from "~/modules/usage/application/workspace-funding";
 import type { Message } from "~/types";
 
 import { handleAsyncInvocation } from "./async/handler";
@@ -52,12 +53,17 @@ async function refreshPendingMessages(
             return message;
           }
 
-          const result = await handleAsyncInvocation(asyncInvocation, message, {
-            conversationManager,
-            conversationId: completionId,
-            env: context.env,
-            user,
-          });
+          const result = await withProjectFunding(
+            context.repositories,
+            { conversationId: completionId },
+            () =>
+              handleAsyncInvocation(asyncInvocation, message, {
+                conversationManager,
+                conversationId: completionId,
+                env: context.env,
+                user,
+              }),
+          );
 
           return result.message;
         }),

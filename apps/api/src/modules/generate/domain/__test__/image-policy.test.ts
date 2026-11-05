@@ -19,16 +19,21 @@ describe("readGenerationInput", () => {
         "data:image/png;base64,AAAA",
         "https://example.com/two.png",
       ],
+      videos: [],
     });
   });
 
-  it("leaves audio and video references for their own media", () => {
+  it("separates video references and leaves audio out", () => {
     expect(
       readGenerationInput({
         reference_videos: ["https://example.com/clip.mp4"],
         reference_audios: ["https://example.com/sound.mp3"],
         video_prompt: "placeholder",
       }),
-    ).toEqual({ text: "placeholder", images: [] });
+    ).toEqual({
+      text: "placeholder",
+      images: [],
+      videos: ["https://example.com/clip.mp4"],
+    });
   });
 });

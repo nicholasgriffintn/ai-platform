@@ -493,8 +493,9 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       `INSERT INTO conversation_run (
          id, conversation_id, project_id, project_task_id, stage_id, initiator_user_id,
          teammate_context_id, computer_id, recipe_installation_id, resolved_configuration_json,
-         spend_cap_credit_micros, status, attempt, event_sequence, trigger, created_at, updated_at
-       ) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', 1, 1, ?, ?, ?
+         spend_cap_credit_micros, delegation_id, status, attempt, event_sequence, trigger,
+         created_at, updated_at
+       ) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', 1, 1, ?, ?, ?
        WHERE ? IS NULL OR EXISTS (
          SELECT 1 FROM delegation WHERE id = ? AND state = 'running'
        )
@@ -511,6 +512,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       params.recipeInstallationId ?? null,
       params.resolvedConfiguration ? JSON.stringify(params.resolvedConfiguration) : null,
       params.spendCapCreditMicros ?? null,
+      params.delegationId ?? null,
       params.trigger ?? "user",
       now,
       now,

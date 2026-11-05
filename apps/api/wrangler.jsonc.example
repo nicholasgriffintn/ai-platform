@@ -68,6 +68,9 @@
     "binding": "AI",
     "remote": true
   },
+  "images": {
+    "binding": "IMAGES"
+  },
   "vectorize": [
     {
       "binding": "VECTOR_DB",
@@ -212,6 +215,14 @@
       "namespace_id": "1003",
       "simple": {
         "limit": 600,
+        "period": 60
+      }
+    },
+    {
+      "name": "PROVENANCE_RATE_LIMITER",
+      "namespace_id": "1004",
+      "simple": {
+        "limit": 30,
         "period": 60
       }
     }

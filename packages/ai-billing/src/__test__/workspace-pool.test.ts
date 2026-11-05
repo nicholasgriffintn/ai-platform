@@ -2,9 +2,10 @@ import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
 import { createFakeRuntime } from "../testing/fake-usage-store.js";
-import { applyUsageRollup } from "../usage/ledger.js";
+import { runWithWorkspaceFunding } from "../usage/funding-scope.js";
+import { applyUsageRollup, buildUsageEventRow } from "../usage/ledger.js";
 import { recordModelTurnUsage } from "../usage/model-usage.js";
-import { finishUsageReservation } from "../usage/reservations.js";
+import { finishUsageReservation, holdUsageReservation } from "../usage/reservations.js";
 import type { UsageEventRecord, UsageRuntime } from "../usage/store.js";
 import { admitWorkspaceTurn } from "../usage/workspace-pool.js";
 
@@ -146,6 +147,16 @@ describe("applyUsageRollup with a workspace pool", () => {
     expect(runtime.store.insertEventAndApplyBalance).toHaveBeenCalledOnce();
   });
 
+  it("settles a turn on the pool that funded it after the team plan has ended", async () => {
+    const runtime = createFakeRuntime({ pool: null });
+    const event = usageEvent({ pool_workspace_id: "workspace-1" });
+
+    await applyUsageRollup(runtime, [event]);
+
+    expect(runtime.store.insertEventAndApplyPool).toHaveBeenCalledWith(event, "workspace-1");
+    expect(runtime.store.insertEventAndApplyBalance).not.toHaveBeenCalled();
+  });
+
   it("charges the member when the workspace has no team plan", async () => {
     const runtime = createFakeRuntime({ pool: null });
 
@@ -195,6 +206,88 @@ describe("recordModelTurnUsage with a workspace pool", () => {
     const rollup = await recordTurn({ pool: null });
 
     expect(rollup?.events[0]?.byok).toBe(true);
+  });
+});
+
+describe("buildUsageEventRow inside a funding scope", () => {
+  const draft = {
+    idempotencyKey: "system:object-1:input_tokens",
+    actor: { kind: "user" as const, userId: 7 },
+    source: "model" as const,
+    vendor: "anthropic",
+    resource: "claude",
+    unit: "input_tokens" as const,
+    quantity: 1000,
+    rates: [
+      {
+        vendor: "anthropic",
+        resource: "claude",
+        unit: "input_tokens" as const,
+        perUnitMicros: 5,
+        effectiveFrom: "2026-01-01",
+      },
+    ],
+  };
+
+  it("carries the funding pool, even for work with no conversation to attribute", () => {
+    const row = runWithWorkspaceFunding("workspace-1", () => buildUsageEventRow(draft));
+
+    expect(row).toMatchObject({ pool_workspace_id: "workspace-1", workspace_id: "workspace-1" });
+  });
+
+  it("leaves unfunded work on the member's account", () => {
+    expect(buildUsageEventRow(draft)).toMatchObject({
+      pool_workspace_id: null,
+      workspace_id: null,
+    });
+  });
+});
+
+describe("holdUsageReservation with a workspace pool", () => {
+  const hold = {
+    userId: 7,
+    kind: "sandbox" as const,
+    refId: "run-1",
+    creditMicros: 40,
+    workspaceId: "workspace-1",
+  };
+
+  it("holds through the pool's ceiling check, not the member's balance", async () => {
+    const runtime = createFakeRuntime({ pool });
+
+    await expect(holdUsageReservation(runtime, hold)).resolves.toBe(true);
+
+    expect(runtime.store.createWorkspaceReservationWithPool).toHaveBeenCalledWith(
+      expect.objectContaining({ workspaceId: "workspace-1", kind: "sandbox", creditMicros: 40 }),
+    );
+    expect(runtime.store.createReservation).not.toHaveBeenCalled();
+    expect(runtime.store.applyUserBalanceDeltas).not.toHaveBeenCalled();
+  });
+
+  it("refuses a hold the pool can't cover", async () => {
+    const runtime = createFakeRuntime({ pool, poolReserved: false });
+
+    await expect(holdUsageReservation(runtime, hold)).resolves.toBe(false);
+  });
+
+  it("accepts a redelivered run whose hold is already in place", async () => {
+    const runtime = createFakeRuntime({
+      pool,
+      poolReserved: false,
+      reservation: {
+        id: "reservation-1",
+        user_id: 7,
+        period: "2026-11",
+        kind: "sandbox",
+        ref_id: "run-1",
+        credit_micros: 40,
+        status: "held",
+        expires_at: null,
+        workspace_id: "workspace-1",
+      },
+    });
+
+    await expect(holdUsageReservation(runtime, hold)).resolves.toBe(true);
   });
 });
 

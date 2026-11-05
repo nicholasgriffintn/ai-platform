@@ -7,6 +7,7 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
+import { sha256Stream } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import {
   markGeneratedMedia,
@@ -90,7 +91,7 @@ async function loadSigner(
 
 async function recordFingerprint(
   bucket: R2Bucket,
-  marked: MarkedMedia,
+  marked: Pick<MarkedMedia, "fingerprint" | "status" | "container" | "markId">,
   origin: GeneratedMediaOrigin,
 ): Promise<void> {
   const entry: MediaProvenanceEntry = {
@@ -134,8 +135,9 @@ export async function markForDelivery(params: {
       await loadSigner(env),
     );
 
-    if (marked.status === "unsupported") {
-      logger.warn("Generated media has no container a mark can be embedded in", {
+    if (marked.status === "unsupported" || marked.status === "too-large") {
+      logger.warn("Generated media was delivered without an embedded mark", {
+        status: marked.status,
         mime_type: origin.mimeType,
         model: origin.model,
       });
@@ -154,6 +156,35 @@ export async function markForDelivery(params: {
     });
 
     return new Uint8Array(data);
+  }
+}
+
+/**
+ * Media too large to hold in a Worker is streamed to storage unread, so it cannot be inspected or
+ * marked. Hashing the stored object keeps it in the registry with that state on record.
+ */
+export async function recordOversizedMedia(params: {
+  bucket: R2Bucket;
+  body: ReadableStream<Uint8Array>;
+  origin: GeneratedMediaOrigin;
+}): Promise<void> {
+  const { body, bucket, origin } = params;
+
+  logger.warn("Generated media was too large to mark", {
+    mime_type: origin.mimeType,
+    model: origin.model,
+  });
+
+  try {
+    await recordFingerprint(
+      bucket,
+      { fingerprint: await sha256Stream(body), status: "too-large", container: null },
+      origin,
+    );
+  } catch (error) {
+    logger.error("Oversized media could not be fingerprinted", {
+      error_message: getErrorMessage(error),
+    });
   }
 }
 

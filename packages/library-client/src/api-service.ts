@@ -72,7 +72,7 @@ import { ResponsesService, type CreateResponseParams } from "./services/response
 import { SubscriptionService } from "./services/subscription-service.js";
 import { TeammateService } from "./services/teammate-service.js";
 import { UploadService, type UploadFileOptions } from "./services/upload-service.js";
-import { UserService } from "./services/user-service.js";
+import { type AccountExportPart, UserService } from "./services/user-service.js";
 import type { ConversationShare } from "./shared-conversation.js";
 import { useToolsStore } from "./toolsStore.js";
 import { getHeaders } from "./utils/headers.js";
@@ -462,8 +462,8 @@ class ApiService {
     return this.teammateService.deleteTeammate(teammateId);
   };
 
-  exportAccountData = (): Promise<Blob> => {
-    return this.userService.exportAccountData();
+  exportAccountData = (after?: string): Promise<AccountExportPart> => {
+    return this.userService.exportAccountData(after);
   };
 
   fetchModels = (): Promise<ModelConfig> => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  MAX_MARKABLE_BYTES,
   markGeneratedMedia,
   readMediaProvenance,
   verifyMediaProvenance,
@@ -84,6 +85,53 @@ function box(type: string, payload: Uint8Array | string = "", declared?: number)
   return join(u32be(declared ?? body.length + 8), type, body);
 }
 
+function oggPage(flags: number, sequence: number, packets: Uint8Array[]): Uint8Array {
+  const lacing = packets.flatMap((packet) => [
+    ...Array.from({ length: Math.floor(packet.length / 255) }, () => 255),
+    packet.length % 255,
+  ]);
+
+  return join(
+    "OggS",
+    [0, flags],
+    new Uint8Array(8),
+    u32le(1),
+    u32le(sequence),
+    u32le(0),
+    [lacing.length, ...lacing],
+    ...packets,
+  );
+}
+
+function opusTags(...comments: string[]): Uint8Array {
+  return join(
+    "OpusTags",
+    u32le(3),
+    "abc",
+    u32le(comments.length),
+    ...comments.flatMap((comment) => [join(u32le(comment.length)), join(comment)]),
+  );
+}
+
+function ogg(comment: Uint8Array): Uint8Array {
+  return join(
+    oggPage(2, 0, [join("OpusHead", new Uint8Array(11))]),
+    oggPage(0, 1, [comment]),
+    oggPage(4, 2, [join("audio")]),
+  );
+}
+
+function ebml(id: number[], payload: Uint8Array | string = ""): Uint8Array {
+  const body = join(payload);
+
+  return join(id, [0x01, 0, 0, 0, 0, 0, 0, 0], body).map((byte, index) =>
+    index === id.length + 7 ? body.length : byte,
+  );
+}
+
+const EBML_HEADER = ebml([0x1a, 0x45, 0xdf, 0xa3], "webm");
+const SEGMENT_ID = [0x18, 0x53, 0x80, 0x67];
+
 const mp3Frame = [0xff, 0xfb, 0x90, 0x00, 1, 2, 3, 4, 5, 6, 7, 8];
 
 const CONTAINERS: Array<[string, Uint8Array]> = [
@@ -95,6 +143,9 @@ const CONTAINERS: Array<[string, Uint8Array]> = [
   ["mp4", join(box("ftyp", "isom"), box("mdat", "frames"))],
   ["mp3", join(mp3Frame)],
   ["flac", join("fLaC", [0x80, 0, 0, 34], new Uint8Array(34), [0xff, 0xf8])],
+  ["ogg", ogg(opusTags("TITLE=x"))],
+  ["webm", join(EBML_HEADER, ebml(SEGMENT_ID, "clusters"))],
+  ["svg", join('<?xml version="1.0"?><svg viewBox="0 0 1 1"><path/></svg>')],
 ];
 
 describe("markGeneratedMedia", () => {
@@ -162,6 +213,110 @@ describe("markGeneratedMedia", () => {
     expect(marked.status).toBe("unsupported");
     expect(marked.bytes).toEqual(ogg);
     expect(marked.fingerprint).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("records large media without copying or changing it", async () => {
+    const mp4 = new Uint8Array(MAX_MARKABLE_BYTES + 16);
+
+    mp4.set(join(box("ftyp", "isom"), u32be(mp4.length - 12), "mdat"));
+
+    const marked = await markGeneratedMedia(mp4, origin);
+
+    expect(marked.status).toBe("too-large");
+    expect(marked.bytes.buffer).toBe(mp4.buffer);
+    expect(marked.fingerprint).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("still reports a provider mark on media too large to mark", async () => {
+    const provider = box("uuid", "jumb c2pa manifest");
+    const mp4 = new Uint8Array(MAX_MARKABLE_BYTES + 16);
+
+    mp4.set(join(box("ftyp", "isom"), provider, u32be(mp4.length - 12 - provider.length), "mdat"));
+
+    expect((await markGeneratedMedia(mp4, origin)).status).toBe("provider-marked");
+  });
+
+  it("adds a comment without disturbing existing Ogg comments or later pages", async () => {
+    const source = ogg(opusTags("TITLE=x"));
+    const { bytes } = await markGeneratedMedia(source, origin);
+    const text = new TextDecoder("latin1").decode(bytes);
+    const countOffset = text.indexOf("OpusTags") + 8 + 4 + 3;
+
+    expect(new DataView(bytes.buffer).getUint32(countOffset, true)).toBe(2);
+    expect(text).toContain("TITLE=x");
+    expect(text.indexOf("TITLE=x")).toBeLessThan(text.indexOf("POLYCHAT_XMP="));
+    expect(bytes.subarray(bytes.length - 33)).toEqual(source.subarray(source.length - 33));
+  });
+
+  it("declines an Ogg comment that would not fit its page", async () => {
+    const source = ogg(opusTags("x".repeat(64_800)));
+
+    expect((await markGeneratedMedia(source, origin)).status).toBe("unsupported");
+  });
+
+  it("declines an Ogg comment packet that runs onto another page", async () => {
+    const spanning = join(
+      oggPage(2, 0, [join("OpusHead", new Uint8Array(11))]),
+      "OggS",
+      [0, 0],
+      new Uint8Array(8),
+      u32le(1),
+      u32le(1),
+      u32le(0),
+      [1, 255],
+      opusTags("x".repeat(300)).subarray(0, 255),
+    );
+
+    expect((await markGeneratedMedia(spanning, origin)).status).toBe("unsupported");
+  });
+
+  it("grows a sized Matroska segment by exactly the appended tags", async () => {
+    const source = join(EBML_HEADER, ebml(SEGMENT_ID, "clusters"));
+    const { bytes } = await markGeneratedMedia(source, origin);
+    const sizeOffset = EBML_HEADER.length + 4;
+    const size = new DataView(bytes.buffer).getUint32(sizeOffset + 4);
+
+    expect(sizeOffset + 8 + size).toBe(bytes.length);
+  });
+
+  it("leaves an unknown Matroska segment size unknown", async () => {
+    const unknown = [0x01, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff];
+    const source = join(EBML_HEADER, SEGMENT_ID, unknown, "clusters");
+    const { bytes } = await markGeneratedMedia(source, origin);
+
+    expect((await verifyMediaProvenance(bytes))?.contentIntact).toBe(true);
+    expect(bytes.subarray(EBML_HEADER.length + 4, EBML_HEADER.length + 12)).toEqual(
+      Uint8Array.from(unknown),
+    );
+  });
+
+  it("places SVG metadata inside the real root element", async () => {
+    const svg = join('<!-- <svg width="1"> --><svg data-note="a > b" viewBox="0 0 1 1"><g/></svg>');
+    const { bytes } = await markGeneratedMedia(svg, origin);
+    const text = new TextDecoder().decode(bytes);
+
+    expect(text).toContain('<svg data-note="a > b" viewBox="0 0 1 1"><metadata>');
+    expect(text).toContain("</metadata><g/></svg>");
+  });
+
+  it("declines a self-closing SVG, which has nowhere to hold metadata", async () => {
+    const svg = join('<svg viewBox="0 0 1 1"/>');
+    const marked = await markGeneratedMedia(svg, origin);
+
+    expect(marked.status).toBe("unsupported");
+    expect(marked.bytes).toEqual(svg);
+  });
+
+  it("leaves an SVG with a C2PA manifest alone", async () => {
+    const svg = join("<svg><metadata><c2pa:manifest>AAAA</c2pa:manifest></metadata></svg>");
+
+    expect((await markGeneratedMedia(svg, origin)).status).toBe("provider-marked");
+  });
+
+  it("does not treat an HTML page with inline SVG as SVG", async () => {
+    const html = join("<html><body><svg></svg></body></html>");
+
+    expect((await markGeneratedMedia(html, origin)).status).toBe("unsupported");
   });
 
   it("upgrades a simple WebP so its canvas size survives", async () => {

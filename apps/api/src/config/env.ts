@@ -27,6 +27,7 @@ export type {
 export type IEnv = {
   TELEMETRY_STREAM?: TelemetryStream;
   AI: Ai;
+  IMAGES?: ImagesBinding;
   VECTOR_DB: Vectorize;
   DB: D1Database;
   CACHE: KVNamespace;
@@ -193,6 +194,7 @@ export type IEnv = {
   FREE_RATE_LIMITER?: RateLimit;
   PRO_RATE_LIMITER?: RateLimit;
   IP_RATE_LIMITER?: RateLimit;
+  PROVENANCE_RATE_LIMITER?: RateLimit;
   ENV?: string;
   EMBEDDINGS_OUTPUT_BUCKET_OWNER?: string;
   EMBEDDINGS_OUTPUT_BUCKET?: string;

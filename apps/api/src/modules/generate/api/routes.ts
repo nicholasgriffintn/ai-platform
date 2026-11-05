@@ -8,6 +8,7 @@ import { Hono } from "hono";
 import z from "zod/v4";
 
 import { defineResource } from "~/infrastructure/http/resource";
+import { provenanceLookupRateLimit } from "~/middleware/provenanceRateLimit";
 import { findMediaFingerprint, getProvenanceKeys } from "~/modules/generate/application/provenance";
 import type { IEnv } from "~/types";
 
@@ -29,6 +30,7 @@ defineResource(app, { idParam: "fingerprint", tags: ["provenance"] }, (provenanc
       summary: "Look up a generated file",
       description:
         "Confirms whether a file was generated here, from the SHA-256 of the file as downloaded.",
+      middleware: [provenanceLookupRateLimit],
       paramSchema: z.object({ fingerprint: mediaFingerprintSchema }),
       responses: { 200: { description: "Provenance entry", schema: mediaProvenanceEntrySchema } },
       handler: async ({ params, serviceContext }) => {

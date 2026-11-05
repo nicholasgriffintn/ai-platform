@@ -9,6 +9,51 @@ import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/Workspa
 import { StorageService } from ".";
 
 describe("StorageService output persistence", () => {
+  it("streams oversized media to storage with its declared size", async () => {
+    const put = vi.fn().mockResolvedValue(undefined);
+    const get = vi.fn().mockResolvedValue({ body: new Blob(["video"]).stream() });
+    const createOutput = vi.fn(async (record: { id: string }) => ({ id: record.id }));
+    const context = {
+      env: {},
+      repositories: fakeRepositories([
+        [WorkspaceRepository, { getProject: vi.fn() }],
+        [OutputRepository, { createOutput }],
+      ]),
+    } as unknown as ServiceContext;
+    const storage = new StorageService({ put, get } as never, context, context.env);
+    const body = new Blob(["video"]).stream();
+
+    await storage.storeOutputFile({
+      key: "generations/video.mp4",
+      data: body,
+      mimeType: "video/mp4",
+      byteSize: 900_000_000,
+      createdByUserId: 7,
+      capabilityId: "video",
+      kind: "generated_media",
+      title: "video.mp4",
+      provenance: { model: "acme/video" },
+    });
+
+    expect(put.mock.calls[0]?.[1]).toBe(body);
+    expect(JSON.parse(put.mock.calls[1]?.[1])).toMatchObject({ status: "too-large" });
+    expect(createOutput).toHaveBeenCalledWith(expect.objectContaining({ byteSize: 900_000_000 }));
+  });
+
+  it("refuses to stream an image past its safety check", async () => {
+    const put = vi.fn().mockResolvedValue(undefined);
+    const context = { env: {} } as unknown as ServiceContext;
+    const storage = new StorageService({ put } as never, context, context.env);
+
+    await expect(
+      storage.uploadOversizedMedia("generations/image.png", new Blob(["image"]).stream(), {
+        model: "acme/image",
+        mimeType: "image/png",
+      }),
+    ).rejects.toThrow("too large to check");
+    expect(put).not.toHaveBeenCalled();
+  });
+
   it("stores generated media with its mark and records the marked size", async () => {
     const put = vi.fn().mockResolvedValue(undefined);
     const createOutput = vi.fn(async (record: { id: string }) => ({ id: record.id }));

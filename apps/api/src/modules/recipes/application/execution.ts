@@ -22,7 +22,10 @@ import { enqueueTeammateRun } from "~/modules/teammates/application/run-admissio
 import type { CreateChatCompletionsResponse, IEnv, IUser, Message } from "~/types";
 import type { ChatRequestOptions } from "~/types/chat";
 
-import { assertRecipeInstallationWithinBudget } from "./installation-budget";
+import {
+  assertRecipeInstallationWithinBudget,
+  readRecipeRunCapCredits,
+} from "./installation-budget";
 import { resolveRecipeModel } from "./recipe-model";
 
 const logger = getLogger({ prefix: "services/apps/recipes/execution" });
@@ -148,6 +151,13 @@ export async function executeRecipeInvocationChat(params: {
     });
   }
 
+  const runCapCredits = params.invocation.installationId
+    ? await readRecipeRunCapCredits({
+        context: params.context,
+        userId: params.user.id,
+        installationId: params.invocation.installationId,
+      })
+    : undefined;
   const recipeModel = await resolveRecipeModel(
     params.context,
     params.user,
@@ -177,6 +187,7 @@ export async function executeRecipeInvocationChat(params: {
       reasoning: { effort: recipeModel.effort ?? "none" },
       metadata: params.projectId ? { project_id: params.projectId } : undefined,
       options: buildRecipeExecutionOptions(params),
+      ...(runCapCredits ? { budget_constraint: runCapCredits } : {}),
     },
   };
   const autonomyCeiling = params.invocation.readOnly

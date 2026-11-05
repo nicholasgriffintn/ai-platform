@@ -117,6 +117,7 @@ export interface RunChargeState {
   capCreditMicros: number | null;
   refunded: boolean;
   chargedCreditMicros: number;
+  delegatedCreditMicros: number;
 }
 
 export interface RunChargeGroup {

@@ -1,12 +1,15 @@
 import {
-  NO_STORE,
+  accountExportFilesQuerySchema,
   updateUserSettingsResponseSchema,
   updateUserSettingsSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 
 import { defineSingleton } from "~/infrastructure/http/resource";
-import { streamAccountExport } from "~/modules/account/application/exportAccountData";
+import {
+  exportAccountData,
+  exportAccountFiles,
+} from "~/modules/account/application/exportAccountData";
 import { updateUserSettings } from "~/modules/account/application/settings";
 
 const app = new Hono();
@@ -28,20 +31,22 @@ defineSingleton(app, { path: "/export", tags: ["account"] }, (exported) => {
     auth: true,
     summary: "Export account data",
     description:
-      "Returns a ZIP archive of what the signed-in person made: conversations, memory, sources, outputs and their files, with a manifest of anything left out.",
+      "Returns a ZIP archive of what the signed-in person made, with a manifest of every section and anything left out. When more files remain, the X-Export-Next-After header holds the cursor for GET /account/export/files.",
     responses: { 200: { description: "ZIP archive of the person's data" } },
-    handler: async ({ serviceContext, user }) => {
-      const filename = `polychat-export-${new Date().toISOString().replace(/[:.]/g, "-")}.zip`;
+    handler: ({ serviceContext, user }) => exportAccountData(serviceContext, user),
+  });
+});
 
-      return new Response(streamAccountExport(serviceContext, user), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/zip",
-          "Content-Disposition": `attachment; filename="${filename}"`,
-          "Cache-Control": NO_STORE,
-        },
-      });
-    },
+defineSingleton(app, { path: "/export/files", tags: ["account"] }, (files) => {
+  files.read({
+    auth: true,
+    summary: "Export remaining files",
+    description:
+      "Returns the next ZIP of files for a large account. Repeat with the X-Export-Next-After cursor until the header is absent.",
+    querySchema: accountExportFilesQuerySchema,
+    responses: { 200: { description: "ZIP archive of the next batch of files" } },
+    handler: ({ query, serviceContext, user }) =>
+      exportAccountFiles(serviceContext, user, query.after),
   });
 });
 

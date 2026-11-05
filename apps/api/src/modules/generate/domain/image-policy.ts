@@ -17,7 +17,13 @@ export const IMAGE_POLICY_REFUSAL =
   "I can't make that. Sexualised depictions of minors and intimate images of real people without their consent aren't allowed.";
 
 export const IMAGE_POLICY_UNAVAILABLE =
-  "The safety check couldn't run, so nothing was generated. Check that any reference images are PNG, JPEG or WebP files under 4 MiB, then try again.";
+  "The safety check couldn't run, so nothing was generated or kept. Try again, or use a smaller PNG, JPEG or WebP reference image.";
+
+export const REFERENCE_VIDEO_UNREADABLE =
+  "The safety check can't read that reference video, so nothing was generated. Use an MP4 or WebM file under 16 MiB.";
+
+export const GENERATED_IMAGE_REVIEW =
+  "Judge the supplied image, which an AI model has just generated.";
 
 export const IMAGE_POLICY_QUESTIONS = {
   minor_sexualised: {
@@ -61,27 +67,38 @@ export function producesVisualMedia(model: Pick<ModelConfigItem, "modalities">):
   return modelHasOutputModality(model, "image") || modelHasOutputModality(model, "video");
 }
 
-const IMAGE_VALUE_PATTERN = /^(https?:|data:image\/)/i;
-const NON_IMAGE_MEDIA_FIELD_PATTERN = /(^|_)(audio|video)s?$/i;
+const MEDIA_VALUE_PATTERN = /^(https?:|data:(image|video)\/)/i;
+const AUDIO_FIELD_PATTERN = /(^|_)audios?(_url)?$/i;
+const VIDEO_FIELD_PATTERN = /(^|_)videos?(_url)?$/i;
 
 export function readGenerationInput(input: Record<string, unknown>): {
   text: string;
   images: string[];
+  videos: string[];
 } {
   const text: string[] = [];
   const images: string[] = [];
+  const videos: string[] = [];
 
   for (const [name, value] of Object.entries(input)) {
-    if (NON_IMAGE_MEDIA_FIELD_PATTERN.test(name)) {
+    if (AUDIO_FIELD_PATTERN.test(name)) {
       continue;
     }
 
     for (const entry of [value].flat()) {
-      if (typeof entry === "string" && entry.trim()) {
-        (IMAGE_VALUE_PATTERN.test(entry) ? images : text).push(entry);
+      if (typeof entry !== "string" || !entry.trim()) {
+        continue;
+      }
+
+      if (!MEDIA_VALUE_PATTERN.test(entry)) {
+        text.push(entry);
+      } else if (VIDEO_FIELD_PATTERN.test(name) || /^data:video\//i.test(entry)) {
+        videos.push(entry);
+      } else {
+        images.push(entry);
       }
     }
   }
 
-  return { text: text.join("\n"), images };
+  return { text: text.join("\n"), images, videos };
 }

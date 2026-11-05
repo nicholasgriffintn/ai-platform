@@ -46,6 +46,16 @@ function parseStoredSite(record: OutputRecord): StoredSite | null {
   return parsed.success ? parsed.data : null;
 }
 
+export function listSiteCollectionIds(content: unknown): string[] {
+  const parsed = storedSiteSchema.safeParse(
+    typeof content === "string" ? safeParseJson(content) : content,
+  );
+
+  return Object.values(parsed.data?.project.dataBindings ?? {}).flatMap((binding) =>
+    binding.kind === "source" ? [] : [binding.collectionId],
+  );
+}
+
 export function mapSiteRecord(record: OutputRecord): SiteRecord | null {
   const stored = parseStoredSite(record);
 

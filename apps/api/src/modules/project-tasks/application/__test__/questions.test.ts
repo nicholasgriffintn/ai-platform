@@ -215,7 +215,11 @@ describe("project task tool approvals", () => {
         },
         input: { interactionId: "approval-1", resolution: "approved" },
       }),
-    ).resolves.toEqual({ toolName: "use_recipe_connector", resolution: "approved" });
+    ).resolves.toEqual({
+      toolName: "use_recipe_connector",
+      resolution: "approved",
+      option: "Approve",
+    });
     expect(getLatestPendingToolMessage).toHaveBeenCalledWith("conversation-1");
     expect(updateMessage).toHaveBeenCalledWith(
       "conversation-1",

@@ -19,7 +19,8 @@ import type { GeneratedMediaOrigin } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { createRepositories } from "~/infrastructure/database/repositories";
-import { markForDelivery } from "~/modules/generate/application/provenance";
+import { screenGeneratedImage } from "~/modules/generate/application/image-policy-classifier";
+import { markForDelivery, recordOversizedMedia } from "~/modules/generate/application/provenance";
 import { isOutputDeletionPending } from "~/modules/outputs/application/deletion";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
@@ -27,6 +28,7 @@ import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IEnv } from "~/types";
 
+import { isByteStream, type ByteStream } from "./byte-stream";
 import { buildPrivateFileUrl, getPrivateFileResourceFromUrl } from "./resource-urls";
 
 const logger = getLogger({ prefix: "lib/storage" });
@@ -34,7 +36,7 @@ const SUPPORTED_IMAGE_MIME_TYPES = ["image/png", "image/jpeg", "image/jpg", "ima
 
 interface StorePrivateFileRequest {
   key: string;
-  data: string | ArrayBuffer | Uint8Array;
+  data: string | ArrayBuffer | Uint8Array | ReadableStream;
   mimeType: string;
   filename?: string | null;
   byteSize?: number | null;
@@ -82,6 +84,8 @@ export interface GetPrivateAssetBlobOptions {
   allowedMimeTypes?: string[];
   maxBytes?: number;
 }
+
+const STREAMABLE_MEDIA_TYPE = /^(?:audio|video)\//i;
 
 export class StorageService {
   constructor(
@@ -154,10 +158,21 @@ export class StorageService {
     return key;
   }
 
-  markGeneratedMedia(
+  private screenGeneratedMedia(data: ArrayBuffer | Uint8Array, mimeType?: string): Promise<void> {
+    return screenGeneratedImage({
+      env: this.context?.env ?? this.env,
+      user: this.context?.user ?? undefined,
+      data,
+      mimeType,
+    });
+  }
+
+  async markGeneratedMedia(
     data: ArrayBuffer | Uint8Array,
     origin: GeneratedMediaOrigin,
   ): Promise<Uint8Array<ArrayBuffer>> {
+    await this.screenGeneratedMedia(data, origin.mimeType);
+
     return markForDelivery({
       env: this.context?.env ?? this.env,
       bucket: this.bucket,
@@ -180,6 +195,36 @@ export class StorageService {
     );
 
     return marked;
+  }
+
+  async uploadOversizedMedia(
+    key: string,
+    body: ByteStream,
+    origin: GeneratedMediaOrigin,
+  ): Promise<void> {
+    if (!isByteStream(body)) {
+      throw new AssistantError("Expected a media stream", ErrorType.INTERNAL_ERROR);
+    }
+
+    if (!STREAMABLE_MEDIA_TYPE.test(origin.mimeType ?? "")) {
+      throw new AssistantError(
+        "This file is too large to check, so it was not stored",
+        ErrorType.PARAMS_ERROR,
+        413,
+      );
+    }
+
+    await this.requireBucket().put(
+      key,
+      body,
+      origin.mimeType ? { httpMetadata: { contentType: origin.mimeType } } : undefined,
+    );
+
+    const stored = await this.getObjectBody(key);
+
+    if (this.bucket && isByteStream(stored?.body)) {
+      await recordOversizedMedia({ bucket: this.bucket, body: stored.body, origin });
+    }
   }
 
   async deleteObject(key: string): Promise<void> {
@@ -208,20 +253,13 @@ export class StorageService {
     ...input
   }: StoreOutputFileRequest): Promise<StoredOutputFileResult> {
     const outputId = input.outputId ?? generateId();
-    const marked =
-      provenance && typeof input.data !== "string"
-        ? await this.markGeneratedMedia(input.data, provenance)
-        : undefined;
-
-    await this.uploadObject(input.key, marked ?? input.data, {
-      httpMetadata: { contentType: input.mimeType },
-    });
+    const byteSize = await this.uploadOutputData(input, provenance);
 
     try {
       return await this.recordOutputFile({
         ...input,
         outputId,
-        byteSize: marked?.byteLength ?? input.byteSize,
+        byteSize,
       });
     } catch (error) {
       const context = this.requireResourceContext();
@@ -252,6 +290,30 @@ export class StorageService {
 
       throw error;
     }
+  }
+
+  private async uploadOutputData(
+    { key, data, mimeType, byteSize }: StorePrivateFileRequest,
+    provenance: GeneratedMediaOrigin | undefined,
+  ): Promise<number | null | undefined> {
+    if (data instanceof ReadableStream) {
+      await this.uploadOversizedMedia(key, data, { ...provenance, mimeType });
+
+      return byteSize;
+    }
+
+    if (provenance && typeof data === "string") {
+      await this.screenGeneratedMedia(new TextEncoder().encode(data), mimeType);
+    }
+
+    const marked =
+      provenance && typeof data !== "string"
+        ? await this.markGeneratedMedia(data, provenance)
+        : undefined;
+
+    await this.uploadObject(key, marked ?? data, { httpMetadata: { contentType: mimeType } });
+
+    return marked?.byteLength ?? byteSize;
   }
 
   async recordOutputFile({

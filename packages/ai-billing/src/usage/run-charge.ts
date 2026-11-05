@@ -20,14 +20,23 @@ interface RunChargeTarget {
 }
 
 export function resolveRunChargeTarget(
-  state: Pick<RunChargeState, "capCreditMicros" | "refunded">,
+  state: Pick<RunChargeState, "capCreditMicros" | "refunded" | "delegatedCreditMicros">,
 ): RunChargeTarget | null {
   if (state.refunded) {
     return { creditMicros: 0, reason: "platform_failure_refund" };
   }
 
   return state.capCreditMicros
-    ? { creditMicros: state.capCreditMicros, reason: "run_cap_absorbed" }
+    ? {
+        creditMicros: Math.max(0, state.capCreditMicros - state.delegatedCreditMicros),
+        reason: "run_cap_absorbed",
+      }
+    : null;
+}
+
+export function runCapRemainingCreditMicros(state: RunChargeState | null): number | null {
+  return state?.capCreditMicros
+    ? Math.max(0, state.capCreditMicros - state.chargedCreditMicros - state.delegatedCreditMicros)
     : null;
 }
 
@@ -125,6 +134,10 @@ export async function reconcileRunCharge(runtime: UsageRuntime, runId: string): 
       if (applied) {
         for (const { group } of adjustments) {
           await publisher?.usageChanged(group.user_id, group.period);
+
+          if (group.pool_workspace_id) {
+            await publisher?.workspaceUsageChanged?.(group.pool_workspace_id, group.period);
+          }
         }
 
         return;

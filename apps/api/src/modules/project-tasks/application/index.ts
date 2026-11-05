@@ -544,8 +544,8 @@ export async function respondToProjectTaskToolApproval(
         toolName: approval.toolName,
         response: {
           interactionId: input.interactionId,
-          resolution: input.resolution,
-          option: input.resolution === "approved" ? "Approve" : "Reject",
+          resolution: approval.resolution,
+          option: approval.option,
         },
       },
     });
@@ -668,6 +668,7 @@ export async function createProjectTask(
     stageId: input.stageId ?? flow?.stages[0]?.id ?? null,
     flowSnapshot: flow,
     tokenBudget: input.tokenBudget ?? null,
+    runCapCreditMicros: input.runCapCreditMicros ?? null,
     position: maxPosition + POSITION_STEP,
   });
 
