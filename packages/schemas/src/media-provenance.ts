@@ -10,6 +10,7 @@ export const mediaProvenanceStatusSchema = z.enum([
   "provider-marked",
   "already-marked",
   "unsupported",
+  "too-large",
 ]);
 
 export const mediaProvenanceEntrySchema = z.object({

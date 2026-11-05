@@ -95,7 +95,7 @@ export interface RerankingModelSelection {
 
 export interface StoreOutputFileRequest {
   key: string;
-  data: string | ArrayBuffer | Uint8Array;
+  data: string | ArrayBuffer | Uint8Array | ReadableStream;
   mimeType: string;
   filename?: string | null;
   byteSize?: number | null;

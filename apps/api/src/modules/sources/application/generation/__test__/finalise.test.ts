@@ -1,3 +1,4 @@
+import { MAX_MARKABLE_BYTES } from "@ngriffin_uk/polychat-utility-server/media-provenance";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -73,12 +74,17 @@ function setup({ failUpload = false } = {}) {
       });
     }),
     attachSourceFile: vi.fn(
-      async (id: string, file: { storageKey: string; mimeType: string }, updates = {}) => {
+      async (
+        id: string,
+        file: { storageKey: string; mimeType: string; byteSize: number },
+        updates = {},
+      ) => {
         sources.set(id, {
           ...sources.get(id)!,
           ...updates,
           storage_key: file.storageKey,
           mime_type: file.mimeType,
+          byte_size: file.byteSize,
         });
       },
     ),
@@ -138,6 +144,29 @@ describe("finaliseSourceGeneration", () => {
   beforeEach(() => {
     fileKnowledgeSourceMock.mockReset();
     screenGeneratedImageMock.mockReset();
+  });
+
+  it("streams media too large to mark instead of buffering it", async () => {
+    const { context, sources } = setup();
+    const bucket = context.env.PRIVATE_ASSETS_BUCKET;
+    const arrayBuffer = vi.fn();
+
+    bucket.get.mockImplementation(async () => ({
+      size: MAX_MARKABLE_BYTES + 1,
+      body: new Blob(["video"]).stream(),
+      arrayBuffer,
+    }));
+
+    await finaliseSourceGeneration(context, sourceRecord(), {
+      response: [{ type: "video_url", video_url: { url: `${API}/outputs/out-a/content` } }],
+    });
+
+    expect(arrayBuffer).not.toHaveBeenCalled();
+    expect(sources.get("source-1")).toMatchObject({
+      status: "available",
+      byte_size: MAX_MARKABLE_BYTES + 1,
+    });
+    expect(JSON.parse(bucket.put.mock.calls.at(-1)[1])).toMatchObject({ status: "too-large" });
   });
 
   it("moves generated media into sources and only then removes the provider's copies", async () => {
