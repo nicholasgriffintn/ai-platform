@@ -78,8 +78,8 @@ interface MessageListProps {
   isSharedView?: boolean;
   onStartThread?: (messageId: string, modelId?: string) => void;
   isStartingThread?: boolean;
-  onRequestSecondOpinion?: (messageId: string) => void;
-  isRequestingSecondOpinion?: boolean;
+  onRequestComparison?: (messageId: string) => void;
+  isRequestingComparison?: boolean;
   onQuoteSelection?: (selection: ChatMessageSelection) => void;
   onSaveToNote?: (message: Message) => void;
   hideInlineUserQuestions?: boolean;
@@ -106,8 +106,8 @@ export const MessageList = ({
   isSharedView = false,
   onStartThread,
   isStartingThread = false,
-  onRequestSecondOpinion,
-  isRequestingSecondOpinion = false,
+  onRequestComparison,
+  isRequestingComparison = false,
   onQuoteSelection,
   onSaveToNote,
   hideInlineUserQuestions = false,
@@ -412,12 +412,14 @@ export const MessageList = ({
                                   savedMessages.toggle(currentConversationId, messageId, isSaved)
                               : undefined
                           }
-                          onRequestSecondOpinion={
-                            canAccessProFeatures ? onRequestSecondOpinion : undefined
+                          onRequestComparison={
+                            canAccessProFeatures && computeSite === "hosted"
+                              ? onRequestComparison
+                              : undefined
                           }
                           onQuoteSelection={onQuoteSelection}
                           onSaveToNote={isPartialMessage ? undefined : onSaveToNote}
-                          isRequestingSecondOpinion={isRequestingSecondOpinion}
+                          isRequestingComparison={isRequestingComparison}
                           isArchivedByCompaction={
                             latestCompactionMarkerIndex !== -1 &&
                             index < latestCompactionMarkerIndex

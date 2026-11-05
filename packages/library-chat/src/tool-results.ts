@@ -1,4 +1,8 @@
-import { ToolResponseType, type ToolReceipt } from "@ngriffin_uk/polychat-schemas";
+import {
+  COMPARISON_RENDERER,
+  ToolResponseType,
+  type ToolReceipt,
+} from "@ngriffin_uk/polychat-schemas";
 import { isRecord, readOptionalString, titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message } from "./conversation-types.js";
@@ -52,6 +56,7 @@ export function readToolStreamPreview(
 export const COMPUTER_OBSERVATION_RENDERER = "computer_observation";
 
 export const CHROMELESS_TOOL_RENDERERS: ReadonlySet<string> = new Set([
+  COMPARISON_RENDERER,
   COMPUTER_OBSERVATION_RENDERER,
 ]);
 

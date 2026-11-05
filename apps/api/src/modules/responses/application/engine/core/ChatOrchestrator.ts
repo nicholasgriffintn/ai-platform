@@ -2,6 +2,7 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
   activeToolRules,
+  COMPARISON_TOOL_NAME,
   conversationCompactedEvent,
   isAgentExecutionMode,
   type Goal,
@@ -21,6 +22,7 @@ import {
   threadLockError,
   type ThreadLease,
 } from "~/modules/conversations/infrastructure/coordinator/client";
+import { createComparisonToolCall } from "~/modules/decisions/application/comparison-turn";
 import { createGoalService } from "~/modules/goals/application/createGoalService";
 import {
   GOAL_STATUS_MARKER_EVENTS,
@@ -365,10 +367,21 @@ export class ChatOrchestrator {
       messageWithContext,
     });
 
-    const toolExecutionEnabledTools =
-      primaryModelConfig?.agent?.capabilities.reportsApprovals && enabled_tools
-        ? [...new Set([...enabled_tools, "request_approval"])]
-        : enabled_tools;
+    const comparison = prepared.requestOptions?.comparison;
+    const directedToolCall = comparison
+      ? createComparisonToolCall({
+          messages: preparedMessages,
+          options: comparison,
+          modelConfig: primaryModelConfig,
+        })
+      : undefined;
+    const toolExecutionEnabledTools = [
+      ...new Set([
+        ...enabled_tools,
+        ...(primaryModelConfig?.agent?.capabilities.reportsApprovals ? ["request_approval"] : []),
+        ...(comparison ? [COMPARISON_TOOL_NAME] : []),
+      ]),
+    ];
 
     await conversationManager.admitTurn({
       modelConfig: primaryModelConfig,
@@ -492,7 +505,7 @@ export class ChatOrchestrator {
     });
 
     const goalFinishGate =
-      resolveExecutionRoute(primaryModelConfig) === "machine"
+      directedToolCall || resolveExecutionRoute(primaryModelConfig) === "machine"
         ? undefined
         : this.resolveGoalFinishGate(
             chatOptions,
@@ -523,6 +536,7 @@ export class ChatOrchestrator {
             initialToolResults: approvalReplay.toolResults,
           }
         : {}),
+      directedToolCall,
       memoryScope: prepared.memoryScope,
       context: chatOptions.context,
       userSettings,

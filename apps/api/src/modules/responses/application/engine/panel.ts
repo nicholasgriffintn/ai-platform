@@ -1,16 +1,21 @@
-import { userCreditActor, recordModelTurnUsage } from "@ngriffin_uk/polychat-ai-billing";
+import {
+  priceModelTurnUsage,
+  recordModelTurnUsage,
+  userCreditActor,
+} from "@ngriffin_uk/polychat-ai-billing";
 import { renderPrompt } from "@ngriffin_uk/polychat-ai-prompts";
 import {
   extractUsagePayload,
   normaliseTokenUsage,
   getLogger,
 } from "@ngriffin_uk/polychat-ai-telemetry";
+import type { ComparisonSpend } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parseAIResponseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { MAX_PANEL_TURNS } from "~/config/chat";
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
-import { getAuxiliaryModel } from "~/modules/models/application/resolve";
+import { findModelConfig, getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { getAIResponse } from "~/modules/responses/application/engine/streaming/responses";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
 import type { ChatCompletionParameters, IEnv, IUser, Message } from "~/types";
@@ -153,7 +158,37 @@ export async function createPanelCompletion(params: PanelCompletionScope) {
   const model = params.model ?? fallback.model;
   const provider = params.provider ?? fallback?.provider;
   const context = createServiceContext({ env: params.env, user: params.user });
+  const spend: ComparisonSpend = {
+    costUsd: null,
+    pricedCalls: 0,
+    totalCalls: 0,
+    inputTokens: 0,
+    outputTokens: 0,
+  };
   let invocationIndex = 0;
+
+  const recordSpend = async (
+    selected: { model: string; provider?: string },
+    usage: ReturnType<typeof normaliseTokenUsage>,
+    rawUsage: unknown,
+  ) => {
+    const modelConfig = await findModelConfig(
+      selected.model,
+      params.env,
+      selected.provider,
+      params.user?.id,
+    ).catch(() => null);
+    const costUsd = modelConfig ? priceModelTurnUsage(modelConfig, { usage, rawUsage }) : null;
+
+    spend.totalCalls += 1;
+    spend.inputTokens += usage?.input_tokens ?? 0;
+    spend.outputTokens += usage?.output_tokens ?? 0;
+
+    if (costUsd !== null) {
+      spend.costUsd = (spend.costUsd ?? 0) + costUsd;
+      spend.pricedCalls += 1;
+    }
+  };
 
   const complete = async (
     systemPrompt: string,
@@ -179,13 +214,15 @@ export async function createPanelCompletion(params: PanelCompletionScope) {
     };
     const result = await getAIResponse(payload);
     const rawUsage = extractUsagePayload(result);
+    const usage = normaliseTokenUsage(rawUsage);
     const currentInvocation = invocationIndex++;
 
+    await recordSpend({ model: selectedModel, provider: selectedProvider }, usage, rawUsage);
     await recordModelTurnUsage(
       createUsageRuntime({ env: params.env, repositories: context.repositories }),
       {
         actor: params.user?.id ? userCreditActor(params.user.id) : null,
-        usage: normaliseTokenUsage(rawUsage),
+        usage,
         rawUsage,
         model: selectedModel,
         provider: selectedProvider ?? "unknown",
@@ -204,7 +241,7 @@ export async function createPanelCompletion(params: PanelCompletionScope) {
     return result.response.trim();
   };
 
-  return { complete, model, provider };
+  return { complete, model, provider, readSpend: (): ComparisonSpend => ({ ...spend }) };
 }
 
 export async function runPanel(params: RunPanelParams): Promise<PanelResult> {
