@@ -67,12 +67,14 @@ struct DiscoverItemContent: View {
             DiscoverCardBlock(
                 card: card,
                 cover: card.coverId.flatMap { store.covers[$0] },
+                storyImage: store.storyImages[card.id],
                 isFollowing: card.topic.flatMap { store.follows($0) } != nil,
                 related: card.relatedReading(in: edition.cards),
                 onOpenLink: { onOpenLink(card) },
                 onToggleFollow: { topic in Task { await store.toggleFollow(topic) } },
                 onSelect: onSelect
             )
+            .onAppear { store.loadStoryImage(for: card) }
         }
     }
 
@@ -88,7 +90,7 @@ struct DiscoverItemContent: View {
             return DiscoverItemSummary(
                 title: card.headline,
                 kicker: card.eyebrow,
-                art: .card(card, card.coverId.flatMap { store.covers[$0] })
+                art: .card(card, card.coverId.flatMap { store.covers[$0] } ?? store.storyImages[card.id])
             )
         }
     }

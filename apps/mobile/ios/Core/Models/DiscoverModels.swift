@@ -36,6 +36,23 @@ struct DiscoverBriefLine: Decodable, Equatable, Identifiable {
     }
 }
 
+struct DiscoverOutlet: Decodable, Equatable, Identifiable {
+    let source: String
+    let url: String
+
+    var id: String { url }
+    var name: String { Self.name(from: source) }
+    var link: URL? { URLDisplay.webURL(url) }
+
+    static func name(from source: String) -> String {
+        source.replacingOccurrences(
+            of: ", [0-9,.]+ (?:points|upvotes|reactions|votes)$",
+            with: "",
+            options: .regularExpression
+        )
+    }
+}
+
 struct DiscoverCard: Decodable, Equatable, Identifiable {
     let id: String
     let kind: String
@@ -55,6 +72,9 @@ struct DiscoverCard: Decodable, Equatable, Identifiable {
     let reason: String
     let coverId: String?
     let sourceId: String?
+    let imageUrl: String?
+    let discussionUrl: String?
+    let alsoIn: [DiscoverOutlet]?
 
     var headline: String { question ?? title ?? "" }
 
@@ -84,8 +104,14 @@ struct DiscoverCard: Decodable, Equatable, Identifiable {
     }
 
     var externalURL: URL? {
-        (url ?? href).flatMap(URL.init(string:)).flatMap { $0.scheme?.hasPrefix("http") == true ? $0 : nil }
+        URLDisplay.webURL(url ?? href)
     }
+
+    var discussionURL: URL? { URLDisplay.webURL(discussionUrl) }
+
+    var otherOutlets: [DiscoverOutlet] { (alsoIn ?? []).filter { $0.link != nil } }
+
+    var outlet: String? { source.map(DiscoverOutlet.name(from:)) }
 
     var body: String? { angle ?? summary ?? detail ?? premise }
 

@@ -6,6 +6,7 @@ final class DiscoverStore: ObservableObject {
     @Published private(set) var discover: DiscoverResponse?
     @Published private(set) var viewedEdition: DiscoverEdition?
     @Published private(set) var covers: [String: UIImage] = [:]
+    @Published private(set) var storyImages: [String: UIImage] = [:]
     @Published private(set) var isLoading = false
     @Published private(set) var isWriting = false
     @Published private(set) var media: [DiscoverMediaItem: DiscoverMediaState] = [:]
@@ -20,6 +21,7 @@ final class DiscoverStore: ObservableObject {
     private var currentRefreshRequestedAt: Date?
 
     private var artCache: [String: UIImage] = [:]
+    private var requestedStoryImages = Set<String>()
 
     private let apiClient: APIClient
     private let onEdition: (DiscoverEdition?) -> Void
@@ -323,6 +325,8 @@ final class DiscoverStore: ObservableObject {
         media = [:]
         mediaArt = [:]
         covers = [:]
+        storyImages = [:]
+        requestedStoryImages = []
         artCache = [:]
         isWriting = false
         laterFeedItems = []
@@ -400,6 +404,22 @@ final class DiscoverStore: ObservableObject {
         } else if var current = discover?.edition {
             change(&current)
             discover?.edition = current
+        }
+    }
+
+    func loadStoryImage(for card: DiscoverCard) {
+        guard card.imageUrl != nil, requestedStoryImages.insert(card.id).inserted else { return }
+
+        Task {
+            do {
+                let data = try await apiClient.fetchDiscoverItemImage(id: card.id)
+                let image = await ImageDownsampling.image(from: data, maxPixelSize: Self.coverPixelSize)
+                if requestedStoryImages.contains(card.id) {
+                    storyImages[card.id] = image
+                }
+            } catch {
+                requestedStoryImages.remove(card.id)
+            }
         }
     }
 

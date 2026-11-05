@@ -3,6 +3,7 @@ import SwiftUI
 struct DiscoverCardBlock: View {
     let card: DiscoverCard
     let cover: UIImage?
+    let storyImage: UIImage?
     let isFollowing: Bool
     let related: [DiscoverCard]
     let onOpenLink: () -> Void
@@ -11,6 +12,10 @@ struct DiscoverCardBlock: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
+            if let storyImage {
+                storyImageView(storyImage)
+            }
+
             lead
 
             if let body = card.body {
@@ -30,6 +35,10 @@ struct DiscoverCardBlock: View {
 
             actions
 
+            if !card.otherOutlets.isEmpty {
+                otherCoverage
+            }
+
             if let topic = card.topic {
                 topicRow(topic)
             }
@@ -38,6 +47,19 @@ struct DiscoverCardBlock: View {
                 relatedReading
             }
         }
+    }
+
+    private func storyImageView(_ image: UIImage) -> some View {
+        Color.clear
+            .aspectRatio(16 / 9, contentMode: .fit)
+            .overlay {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).stroke(Color.polychat.border, lineWidth: 1))
+            .accessibilityHidden(true)
     }
 
     @ViewBuilder
@@ -133,7 +155,7 @@ struct DiscoverCardBlock: View {
     @ViewBuilder
     private var actions: some View {
         let label = card.linkLabel
-        if label != nil || listenSourceId != nil {
+        if label != nil || card.discussionURL != nil || listenSourceId != nil {
             FlowLayout(spacing: 8) {
                 if let label {
                     Button(action: onOpenLink) {
@@ -146,8 +168,37 @@ struct DiscoverCardBlock: View {
                     .font(.subheadline.weight(.medium))
                     .tint(Color.polychat.primary)
                 }
+                if let discussionURL = card.discussionURL {
+                    Link(destination: discussionURL) {
+                        Label("Read the discussion", systemImage: "arrow.up.right")
+                            .lineLimit(1)
+                    }
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
+                    .controlSize(.regular)
+                    .font(.subheadline.weight(.medium))
+                    .tint(Color.polychat.text)
+                }
                 if let listenSourceId {
                     ReadAloudView(sourceId: listenSourceId)
+                }
+            }
+        }
+    }
+
+    private var otherCoverage: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            EyebrowLabel("Also covered by")
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(card.otherOutlets) { outlet in
+                    if let link = outlet.link {
+                        Link(destination: link) {
+                            Text(outlet.name)
+                                .font(.subheadline)
+                                .underline()
+                                .foregroundStyle(Color.polychat.text)
+                        }
+                    }
                 }
             }
         }

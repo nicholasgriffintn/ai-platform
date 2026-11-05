@@ -135,6 +135,24 @@ struct ViewPresentationTests {
         #expect(DiscoverItem.position(of: items[1], in: items) == "2 of 3")
     }
 
+    @Test func discoverCardLinksNameTheOutletAndOnlyOpenWebAddresses() throws {
+        let cards = try JSONDecoder().decode([DiscoverCard].self, from: Data("""
+        [{"id":"r1","kind":"read","title":"Read","reason":"r","url":"https://example.com/a",
+          "source":"Hacker News, 1,204 points","discussionUrl":"https://news.ycombinator.com/item?id=1",
+          "alsoIn":[{"source":"Lobsters, 12 upvotes","url":"https://lobste.rs/s/1"},
+                    {"source":"Bad","url":"javascript:alert(1)"}]},
+         {"id":"r2","kind":"read","title":"Plain","reason":"r","url":"https://example.com/b",
+          "source":"The 100 points","discussionUrl":"file:///etc/passwd"}]
+        """.utf8))
+
+        #expect(cards[0].linkLabel == "Open on Hacker News")
+        #expect(cards[0].discussionURL?.host == "news.ycombinator.com")
+        #expect(cards[0].otherOutlets.map(\.name) == ["Lobsters"])
+        #expect(cards[1].linkLabel == "Open on The 100 points")
+        #expect(cards[1].discussionURL == nil)
+        #expect(cards[1].otherOutlets.isEmpty)
+    }
+
     @Test func discoverEpisodeTileReportsPartialAndFinishedChaptersLikeTheWeb() throws {
         let edition = try JSONDecoder().decode(DiscoverEdition.self, from: Data("""
         {"id":"e1","date":"2026-10-24","greeting":"Evening","brief":[],"cards":[],"feedback":{},

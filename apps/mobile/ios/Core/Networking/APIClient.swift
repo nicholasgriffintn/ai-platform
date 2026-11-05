@@ -212,6 +212,14 @@ final class APIClient: ObservableObject {
         makeRequest(path: path, method: "GET", bodyData: nil, contentType: nil)
     }
 
+    func fetchDiscoverItemImage(id: String) async throws -> Data? {
+        do {
+            return try await fetchData(path: "/discover/feed/\(id)/image")
+        } catch APIClientError.httpStatus(404, _) {
+            return nil
+        }
+    }
+
     func fetchDiscoverEpisode(id: String) async throws -> DiscoverEpisode {
         try await send(path: "/discover/episodes/\(id)", method: "GET")
     }

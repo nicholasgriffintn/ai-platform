@@ -169,7 +169,7 @@ extension DiscoverCard {
     var linkLabel: String? {
         guard externalURL != nil else { return nil }
         switch kind {
-        case "read", "watch", "listen", "inbox": return "Open on \(source ?? "the web")"
+        case "read", "watch", "listen", "inbox": return "Open on \(outlet ?? "the web")"
         default: return "Open it"
         }
     }
@@ -219,7 +219,7 @@ extension DiscoverCard {
                 DiscoverSuggestion("What should I do with it now?", "Looking again at \"\(title)\": \(detail ?? "") What would be a useful next step?")
             ]
         case "watch", "listen":
-            let from = source ?? "the web"
+            let from = outlet ?? "the web"
             return [
                 DiscoverSuggestion("What is this about?", "Tell me about \"\(title)\" from \(from) (\(url ?? "")) and whether it is worth my time."),
                 DiscoverSuggestion("More like this", "Find me more like \"\(title)\" from \(from), given what you know I like.")
@@ -232,7 +232,7 @@ extension DiscoverCard {
                 DiscoverSuggestion("Remind me beforehand", "Remind me about \"\(title)\" an hour before \(when).")
             ]
         case "inbox":
-            let from = source ?? "my inbox"
+            let from = outlet ?? "my inbox"
             let link = url.map { " (\($0))" } ?? ""
             return [
                 DiscoverSuggestion("Give me the gist", "Give me the gist of \"\(title)\" from \(from)\(link) in five bullet points."),

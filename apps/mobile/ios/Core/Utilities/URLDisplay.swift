@@ -1,6 +1,11 @@
 import Foundation
 
 enum URLDisplay {
+    static func webURL(_ uri: String?) -> URL? {
+        guard let url = uri.flatMap(URL.init(string:)), ["http", "https"].contains(url.scheme?.lowercased()) else { return nil }
+        return url
+    }
+
     static func hostAndPath(_ uri: String) -> String {
         guard let url = URL(string: uri), let host = url.host else { return uri }
         return host + url.path

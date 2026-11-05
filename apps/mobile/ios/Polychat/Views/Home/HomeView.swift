@@ -173,9 +173,10 @@ struct HomeView: View {
                             if index > 0 {
                                 Divider().padding(.leading, 52)
                             }
-                            DiscoverRow(card: card) { panelItem = .card(card) }
+                            DiscoverRow(card: card, image: store.storyImages[card.id]) { panelItem = .card(card) }
                                 .contextMenu { feedbackMenu(card) }
                                 .modifier(DiscoverCardExposure(cardId: card.id))
+                                .onAppear { store.loadStoryImage(for: card) }
                         }
                     }
                     .background(Color.polychat.surface, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -405,12 +406,22 @@ private struct DiscoverStoryTile: View {
 
 private struct DiscoverRow: View {
     let card: DiscoverCard
+    let image: UIImage?
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             HStack(alignment: .top, spacing: 12) {
-                FaviconView(url: card.kind == "read" ? card.url : nil, fallbackSystemImage: card.systemImage)
+                if let image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 56, height: 56)
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .accessibilityHidden(true)
+                } else {
+                    FaviconView(url: card.kind == "read" ? card.url : nil, fallbackSystemImage: card.systemImage)
+                }
                 VStack(alignment: .leading, spacing: 3) {
                     Text(card.headline)
                         .font(.subheadline.weight(.semibold))
