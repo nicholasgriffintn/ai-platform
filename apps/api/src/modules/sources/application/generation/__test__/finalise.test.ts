@@ -52,16 +52,15 @@ function sourceRecord(overrides: Partial<SourceRecord> = {}): SourceRecord {
   };
 }
 
-function setup({ failUpload = false } = {}) {
+function setup({ failUpload = false, outputMimeType = "image/png" } = {}) {
   const sources = new Map([["source-1", sourceRecord()]]);
   const objects = new Map<string, ArrayBuffer>([
     ["generations/a.png", new TextEncoder().encode("first").buffer],
     ["generations/b.png", new TextEncoder().encode("second").buffer],
   ]);
   const outputs = new Map([
-    ["out-a", { id: "out-a", storage_key: "generations/a.png", mime_type: "image/png" }],
+    ["out-a", { id: "out-a", storage_key: "generations/a.png", mime_type: outputMimeType }],
     ["out-b", { id: "out-b", storage_key: "generations/b.png", mime_type: "image/png" }],
-    ["out-video", { id: "out-video", storage_key: "generations/v.mp4", mime_type: "video/mp4" }],
   ]);
   const sourceRepository = {
     getSource: vi.fn(async (id: string) => sources.get(id) ?? null),
@@ -148,7 +147,7 @@ describe("finaliseSourceGeneration", () => {
   });
 
   it("streams media too large to mark instead of buffering it", async () => {
-    const { context, sources } = setup();
+    const { context, sources } = setup({ outputMimeType: "video/mp4" });
     const bucket = context.env.PRIVATE_ASSETS_BUCKET;
     const arrayBuffer = vi.fn();
 
@@ -159,7 +158,7 @@ describe("finaliseSourceGeneration", () => {
     }));
 
     await finaliseSourceGeneration(context, sourceRecord(), {
-      response: [{ type: "video_url", video_url: { url: `${API}/outputs/out-video/content` } }],
+      response: [{ type: "video_url", video_url: { url: `${API}/outputs/out-a/content` } }],
     });
 
     expect(arrayBuffer).not.toHaveBeenCalled();
