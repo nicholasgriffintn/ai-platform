@@ -9,6 +9,8 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { offerRunApprovalByMessage } from "~/modules/channels/application/message-approval-offers";
+import { readCompletionRun } from "~/modules/channels/application/message-approvals";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { notifyMobilePoly } from "~/modules/mobile-push/application";
@@ -115,7 +117,8 @@ export async function deliverRecipeOccurrenceToTeammateHome(params: {
     }
   }
 
-  const runStatus = params.run?.status ?? params.response?.run?.run.status;
+  const run = params.run ?? (params.response ? readCompletionRun(params.response) : null);
+  const runStatus = run?.status;
   const needsAttention =
     runStatus === "awaiting_approval" ||
     runStatus === "awaiting_input" ||
@@ -205,6 +208,17 @@ export async function deliverRecipeOccurrenceToTeammateHome(params: {
       title: "Poly",
       body: `${heading}: ${params.recipeTitle}`,
       path: recipe?.resultPath,
+    });
+  }
+
+  if (run?.status === "awaiting_approval") {
+    await offerRunApprovalByMessage({
+      context: params.context,
+      user: params.user,
+      teammateContext: currentContext,
+      run,
+      smsTarget: installation.triggers.find((trigger) => trigger.notificationChannel === "sms")
+        ?.notificationTarget,
     });
   }
 
