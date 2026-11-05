@@ -70,6 +70,10 @@ import { createPartialCheckpointSink } from "~/modules/responses/application/run
 import { applyTierReasoningEffort } from "~/modules/responses/domain/tier-reasoning";
 import { releaseTeammateComputerAgentLease } from "~/modules/teammates/application/computers";
 import { readRunCapDecision } from "~/modules/usage/application/run-budget";
+import {
+  resolveWorkspaceFunding,
+  withWorkspaceFunding,
+} from "~/modules/usage/application/workspace-funding";
 import type { ChatMode, CoreChatOptions, Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/core/ChatOrchestrator" });
@@ -152,6 +156,20 @@ export class ChatOrchestrator {
   }
 
   async process(requestOptions: CoreChatOptions) {
+    const { context, completion_id: conversationId, metadata } = requestOptions;
+    const fundingWorkspaceId =
+      context?.user?.id && (conversationId || metadata?.project_id)
+        ? await resolveWorkspaceFunding(context.repositories, {
+            userId: context.user.id,
+            conversationId,
+            projectId: metadata?.project_id,
+          })
+        : null;
+
+    return withWorkspaceFunding(fundingWorkspaceId, () => this.processRequest(requestOptions));
+  }
+
+  private async processRequest(requestOptions: CoreChatOptions) {
     let options = requestOptions;
 
     try {

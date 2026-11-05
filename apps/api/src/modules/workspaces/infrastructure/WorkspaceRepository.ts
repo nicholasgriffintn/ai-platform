@@ -532,7 +532,20 @@ export class WorkspaceRepository extends BaseRepository {
           `UPDATE resource_grant
 					 SET status = 'accepted', accepted_by = ?, accepted_at = CURRENT_TIMESTAMP,
 					     token_hash = 'consumed:' || id, updated_at = CURRENT_TIMESTAMP
-					 WHERE kind = 'invitation' AND id = ? AND status = 'pending' AND token_hash = ?`,
+					 WHERE kind = 'invitation' AND id = ? AND status = 'pending' AND token_hash = ?
+					   AND (
+					     NOT EXISTS (
+					       SELECT 1 FROM workspace_team_plan plan
+					       WHERE plan.workspace_id = resource_grant.workspace_id
+					     )
+					     OR (
+					       SELECT COUNT(*) FROM resource_grant seat
+					       WHERE seat.kind = 'membership' AND seat.workspace_id = resource_grant.workspace_id
+					     ) < (
+					       SELECT seat_limit FROM workspace_team_plan plan
+					       WHERE plan.workspace_id = resource_grant.workspace_id
+					     )
+					   )`,
         )
         .bind(userId, invitation.id, invitation.token_hash),
       database

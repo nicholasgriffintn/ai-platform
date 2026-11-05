@@ -14,6 +14,7 @@ import type { UsageQueueMessage } from "~/modules/usage/domain/queue-messages";
 import { UsageBalanceRepository } from "~/modules/usage/infrastructure/UsageBalanceRepository";
 import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 import { UsageReservationRepository } from "~/modules/usage/infrastructure/UsageReservationRepository";
+import { WorkspacePoolRepository } from "~/modules/usage/infrastructure/WorkspacePoolRepository";
 import { AnonymousUserRepository } from "~/modules/user/infrastructure/AnonymousUserRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
@@ -46,6 +47,18 @@ export function createUsageStore(repositories: Repositories): UsageStore {
       repositories.get(UsageReservationRepository).createReservation(params),
     createUserReservationWithBalance: (params) =>
       repositories.get(UsageReservationRepository).createUserReservationWithBalance(params),
+    getWorkspacePool: (workspaceId, period) =>
+      repositories.get(WorkspacePoolRepository).getPool(workspaceId, period),
+    reserveWorkspacePool: (workspaceId, period, creditMicros) =>
+      repositories.get(WorkspacePoolRepository).reserve(workspaceId, period, creditMicros),
+    adjustWorkspacePoolReserved: (workspaceId, period, deltaCreditMicros) =>
+      repositories
+        .get(WorkspacePoolRepository)
+        .adjustReserved(workspaceId, period, deltaCreditMicros),
+    createWorkspaceReservationWithPool: (params) =>
+      repositories.get(WorkspacePoolRepository).createReservation(params),
+    insertEventAndApplyPool: (event, workspaceId) =>
+      repositories.get(UsageEventRepository).insertEventAndApplyPool(event, workspaceId),
     getReservation: (kind, refId) =>
       repositories.get(UsageReservationRepository).getReservation(kind, refId),
     finishUserReservationWithBalance: (kind, refId, outcome, expectedReservationId) =>

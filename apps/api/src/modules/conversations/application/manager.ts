@@ -1,4 +1,5 @@
 import {
+  currentFundingWorkspaceId,
   hasPlanEntitlement,
   type CreditActor,
   type TurnReservation,
@@ -475,7 +476,7 @@ export class ConversationManager {
 
   async getUsageLimits(): Promise<UsageLimits | null> {
     try {
-      return await this.usageManager.getUsageLimits();
+      return await this.usageManager.getUsageLimits(currentFundingWorkspaceId());
     } catch (error) {
       logger.error("Failed to get usage limits:", {
         error_message: error instanceof Error ? error.message : "Unknown error",

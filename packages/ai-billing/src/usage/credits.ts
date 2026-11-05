@@ -130,7 +130,7 @@ function createTurnReservation(
   };
 }
 
-function createDurableTurnReservation(
+export function createDurableTurnReservation(
   runtime: UsageRuntime,
   kind: "chat_run",
   refId: string,

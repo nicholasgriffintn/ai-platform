@@ -1,4 +1,9 @@
-import { userCreditActor, readCreditPosition } from "@ngriffin_uk/polychat-ai-billing";
+import {
+  currentFundingWorkspaceId,
+  readCreditPosition,
+  readWorkspacePoolPosition,
+  userCreditActor,
+} from "@ngriffin_uk/polychat-ai-billing";
 import { pendingApproval } from "@ngriffin_uk/polychat-library-interactions";
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import {
@@ -247,10 +252,17 @@ export const delegate: ApiToolDefinition = {
       typeof parent.brief_document_id === "string" ? parent.brief_document_id : null;
     const deadline =
       args.budget?.deadline ?? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-    const position = await readCreditPosition(
-      createUsageRuntime({ env: context.env, repositories: context.repositories }),
-      { actor: userCreditActor(user.id), planId: user.plan_id },
-    );
+    const usageRuntime = createUsageRuntime({
+      env: context.env,
+      repositories: context.repositories,
+    });
+    const fundingWorkspaceId = currentFundingWorkspaceId();
+    const position = fundingWorkspaceId
+      ? await readWorkspacePoolPosition(usageRuntime, fundingWorkspaceId)
+      : await readCreditPosition(usageRuntime, {
+          actor: userCreditActor(user.id),
+          planId: user.plan_id,
+        });
     const remainingCreditMicros =
       position.includedCreditMicros +
       position.graceCreditMicros -

@@ -60,6 +60,7 @@ describe("buildChatRunUsage", () => {
       period: "2026-09",
       kind: "chat_run",
       ref_id: "run-1",
+      workspace_id: null,
       credit_micros: 50_000,
       status: "held",
       expires_at: "2026-09-06T10:00:00.000Z",
