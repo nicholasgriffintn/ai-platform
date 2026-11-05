@@ -43,6 +43,7 @@ import { createModelEnsembleStream } from "~/modules/responses/application/engin
 import { buildToolRequestContext } from "~/modules/responses/application/engine/core/request-context";
 import { resolveRunProvenance } from "~/modules/responses/application/engine/core/run-provenance";
 import { buildChatCompactionMetadata } from "~/modules/responses/application/engine/messages/compaction-metadata";
+import { enforceChatImagePolicy } from "~/modules/responses/application/engine/policy/image-policy";
 import { resolveAccountDefaultComputeSite } from "~/modules/responses/application/engine/policy/project-model-tier";
 import { resolveTurnStepBudget } from "~/modules/responses/application/engine/policy/step-budget";
 import {
@@ -354,6 +355,16 @@ export class ChatOrchestrator {
       enabledTools = requestedEnabledTools,
     } = prepared;
     const enabled_tools = enabledTools;
+
+    await enforceChatImagePolicy({
+      options: chatOptions,
+      primaryModelConfig,
+      modelConfigs,
+      enabledTools: enabled_tools,
+      messages: preparedMessages,
+      messageWithContext,
+    });
+
     const toolExecutionEnabledTools =
       primaryModelConfig?.agent?.capabilities.reportsApprovals && enabled_tools
         ? [...new Set([...enabled_tools, "request_approval"])]

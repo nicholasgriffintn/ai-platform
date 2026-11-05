@@ -6,6 +6,7 @@ import { formatUnknownValue } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
+import { resolvePinnedSafetyInput } from "./safety-inputs.js";
 import type { Message } from "./types/index.js";
 
 type InputSchemaFieldType =
@@ -208,6 +209,12 @@ function buildFieldValue(
   params: InputSchemaBuildParameters,
   modelConfig: ModelConfigItem,
 ): unknown {
+  const pinnedSafetyInput = resolvePinnedSafetyInput(field);
+
+  if (pinnedSafetyInput !== undefined) {
+    return pinnedSafetyInput;
+  }
+
   const lastMessage = params.messages?.[params.messages.length - 1];
   const messageContent =
     lastMessage && typeof lastMessage.content === "object" && !Array.isArray(lastMessage.content)

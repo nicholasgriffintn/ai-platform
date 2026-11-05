@@ -3,12 +3,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { IEnv, IUser } from "~/types";
 
 const image = vi.hoisted(() => vi.fn(async () => ({ url: "https://example.com/image.png" })));
+const enforceImagePolicy = vi.hoisted(() => vi.fn(async () => undefined));
 
 vi.mock("~/infrastructure/ai", () => ({
   ai: {
     resolveMediaProvider: async () => ({ providerName: "workers-ai" }),
   },
 }));
+vi.mock("~/modules/generate/application/image-policy", () => ({ enforceImagePolicy }));
 vi.mock("~/infrastructure/providers/capabilities/image", () => ({
   getImageProvider: () => ({ generate: image }),
 }));
@@ -57,5 +59,20 @@ describe("generateImage seeds", () => {
 
     expect(Number.isInteger(request.seed)).toBe(true);
     expect(result.data.seed).toBe(request.seed);
+  });
+});
+
+describe("generateImage policy", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns the refusal without reaching the provider", async () => {
+    enforceImagePolicy.mockRejectedValueOnce(new Error("Refused"));
+
+    const result = await generate();
+
+    expect(image).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ status: "error", content: "Refused" });
   });
 });

@@ -149,8 +149,9 @@ class OpenAIResponsesToolBuilder {
       hasAnyEnabledTool(this.params.enabled_tools, "image_generation")
     ) {
       this.tools.push({
-        type: "image_generation",
         ...readRecordOption(this.options, "image_generation"),
+        type: "image_generation",
+        moderation: "auto",
       });
     }
   }
