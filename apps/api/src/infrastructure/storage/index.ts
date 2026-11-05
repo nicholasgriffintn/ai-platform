@@ -19,7 +19,7 @@ import type { GeneratedMediaOrigin } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { createRepositories } from "~/infrastructure/database/repositories";
-import { markForDelivery } from "~/modules/generate/application/provenance";
+import { markForDelivery, recordOversizedMedia } from "~/modules/generate/application/provenance";
 import { isOutputDeletionPending } from "~/modules/outputs/application/deletion";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
@@ -27,6 +27,7 @@ import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import type { IEnv } from "~/types";
 
+import { isByteStream, type ByteStream } from "./byte-stream";
 import { buildPrivateFileUrl, getPrivateFileResourceFromUrl } from "./resource-urls";
 
 const logger = getLogger({ prefix: "lib/storage" });
@@ -34,7 +35,7 @@ const SUPPORTED_IMAGE_MIME_TYPES = ["image/png", "image/jpeg", "image/jpg", "ima
 
 interface StorePrivateFileRequest {
   key: string;
-  data: string | ArrayBuffer | Uint8Array;
+  data: string | ArrayBuffer | Uint8Array | ReadableStream;
   mimeType: string;
   filename?: string | null;
   byteSize?: number | null;
@@ -182,6 +183,28 @@ export class StorageService {
     return marked;
   }
 
+  async uploadOversizedMedia(
+    key: string,
+    body: ByteStream,
+    origin: GeneratedMediaOrigin,
+  ): Promise<void> {
+    if (!isByteStream(body)) {
+      throw new AssistantError("Expected a media stream", ErrorType.INTERNAL_ERROR);
+    }
+
+    await this.requireBucket().put(
+      key,
+      body,
+      origin.mimeType ? { httpMetadata: { contentType: origin.mimeType } } : undefined,
+    );
+
+    const stored = await this.getObjectBody(key);
+
+    if (this.bucket && isByteStream(stored?.body)) {
+      await recordOversizedMedia({ bucket: this.bucket, body: stored.body, origin });
+    }
+  }
+
   async deleteObject(key: string): Promise<void> {
     const normalizedKey = key.startsWith("/") ? key.slice(1) : key;
 
@@ -208,20 +231,13 @@ export class StorageService {
     ...input
   }: StoreOutputFileRequest): Promise<StoredOutputFileResult> {
     const outputId = input.outputId ?? generateId();
-    const marked =
-      provenance && typeof input.data !== "string"
-        ? await this.markGeneratedMedia(input.data, provenance)
-        : undefined;
-
-    await this.uploadObject(input.key, marked ?? input.data, {
-      httpMetadata: { contentType: input.mimeType },
-    });
+    const byteSize = await this.uploadOutputData(input, provenance);
 
     try {
       return await this.recordOutputFile({
         ...input,
         outputId,
-        byteSize: marked?.byteLength ?? input.byteSize,
+        byteSize,
       });
     } catch (error) {
       const context = this.requireResourceContext();
@@ -252,6 +268,26 @@ export class StorageService {
 
       throw error;
     }
+  }
+
+  private async uploadOutputData(
+    { key, data, mimeType, byteSize }: StorePrivateFileRequest,
+    provenance: GeneratedMediaOrigin | undefined,
+  ): Promise<number | null | undefined> {
+    if (data instanceof ReadableStream) {
+      await this.uploadOversizedMedia(key, data, { ...provenance, mimeType });
+
+      return byteSize;
+    }
+
+    const marked =
+      provenance && typeof data !== "string"
+        ? await this.markGeneratedMedia(data, provenance)
+        : undefined;
+
+    await this.uploadObject(key, marked ?? data, { httpMetadata: { contentType: mimeType } });
+
+    return marked?.byteLength ?? byteSize;
   }
 
   async recordOutputFile({

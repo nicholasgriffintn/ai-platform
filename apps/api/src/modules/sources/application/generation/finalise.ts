@@ -6,9 +6,11 @@ import {
   getErrorMessage,
 } from "@ngriffin_uk/polychat-utility-server/errors";
 import { parseJsonRecord } from "@ngriffin_uk/polychat-utility-server/json";
+import { MAX_MARKABLE_BYTES } from "@ngriffin_uk/polychat-utility-server/media-provenance";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
+import type { ByteStream } from "~/infrastructure/storage/byte-stream";
 import { getPrivateFileResourceFromUrl } from "~/infrastructure/storage/resource-urls";
 import { fileKnowledgeSource } from "~/modules/knowledge/application/intake/file";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
@@ -36,7 +38,8 @@ const EXTENSION_MIME_TYPES: Record<string, string> = {
 };
 
 interface GeneratedMedia {
-  data: ArrayBuffer;
+  data: ArrayBuffer | ByteStream;
+  byteSize: number;
   mimeType: string;
   extension: string;
   /** Removes the provider's transient copy once the source holds its own. */
@@ -84,7 +87,12 @@ function extensionFromUrl(url: string): string | undefined {
     ?.toLowerCase();
 }
 
-function mediaFrom(data: ArrayBuffer, mimeType: string | undefined, url: string): GeneratedMedia {
+function mediaFrom(
+  data: ArrayBuffer | ByteStream,
+  byteSize: number,
+  mimeType: string | undefined,
+  url: string,
+): GeneratedMedia {
   const urlExtension = extensionFromUrl(url);
   const resolvedMimeType =
     mimeType?.split(";")[0] ||
@@ -95,7 +103,11 @@ function mediaFrom(data: ArrayBuffer, mimeType: string | undefined, url: string)
     urlExtension ??
     "bin";
 
-  return { data, mimeType: resolvedMimeType, extension };
+  return { data, byteSize, mimeType: resolvedMimeType, extension };
+}
+
+function bufferedMedia(data: ArrayBuffer, mimeType: string | undefined, url: string) {
+  return mediaFrom(data, data.byteLength, mimeType, url);
 }
 
 async function adoptGeneratedMedia(
@@ -125,7 +137,9 @@ async function adoptGeneratedMedia(
     const storageKey = output.storage_key;
 
     return {
-      ...mediaFrom(await object.arrayBuffer(), output.mime_type ?? undefined, url),
+      ...(object.size > MAX_MARKABLE_BYTES
+        ? mediaFrom(object.body, object.size, output.mime_type ?? undefined, url)
+        : bufferedMedia(await object.arrayBuffer(), output.mime_type ?? undefined, url)),
       release: async () => {
         await outputs.deleteOutput(output.id);
         await storage.deleteObject(storageKey);
@@ -146,11 +160,12 @@ async function adoptGeneratedMedia(
     );
   }
 
-  return mediaFrom(
-    await response.arrayBuffer(),
-    response.headers.get("content-type") ?? undefined,
-    url,
-  );
+  const mimeType = response.headers.get("content-type") ?? undefined;
+  const declaredBytes = Number(response.headers.get("content-length"));
+
+  return response.body && declaredBytes > MAX_MARKABLE_BYTES
+    ? mediaFrom(response.body, declaredBytes, mimeType, url)
+    : bufferedMedia(await response.arrayBuffer(), mimeType, url);
 }
 
 async function storeGeneratedMedia(
@@ -162,15 +177,16 @@ async function storeGeneratedMedia(
   const repository = context.repositories.get(SourceRepository);
 
   const generation = parseJsonRecord(source.metadata).generation;
-  const data = await StorageService.forPrivateAssets(context).uploadGeneratedMedia(
-    key,
-    media.data,
-    {
-      mimeType: media.mimeType,
-      model: readStringField(generation, "modelId"),
-      provider: readStringField(generation, "provider"),
-    },
-  );
+  const origin = {
+    mimeType: media.mimeType,
+    model: readStringField(generation, "modelId"),
+    provider: readStringField(generation, "provider"),
+  };
+  const storage = StorageService.forPrivateAssets(context);
+  const byteSize =
+    media.data instanceof ArrayBuffer
+      ? (await storage.uploadGeneratedMedia(key, media.data, origin)).byteLength
+      : await storage.uploadOversizedMedia(key, media.data, origin).then(() => media.byteSize);
 
   await repository.attachSourceFile(
     source.id,
@@ -178,7 +194,7 @@ async function storeGeneratedMedia(
       storageKey: key,
       mimeType: media.mimeType,
       filename: `${source.id}.${media.extension}`,
-      byteSize: data.byteLength,
+      byteSize,
     },
     { status: "available" },
   );

@@ -9,7 +9,18 @@ import {
   type MediaContainer,
 } from "./containers.js";
 
-export type MediaProvenanceStatus = "marked" | "provider-marked" | "already-marked" | "unsupported";
+export type MediaProvenanceStatus =
+  | "marked"
+  | "provider-marked"
+  | "already-marked"
+  | "unsupported"
+  | "too-large";
+
+/**
+ * Embedding needs the source and the marked copy in memory together, which must fit a 128 MB
+ * Worker alongside everything else the request holds.
+ */
+export const MAX_MARKABLE_BYTES = 40 * 1024 * 1024;
 
 export interface MediaProvenanceOrigin {
   generator: string;
@@ -67,6 +78,7 @@ const AI_SOURCE_TYPE_MARKER = encoder.encode("trainedAlgorithmicMedia");
 const JUMBF_BOX = encoder.encode("jumb");
 const C2PA_LABEL = encoder.encode("c2pa");
 const GIF_C2PA_EXTENSION = encoder.encode("C2PA_GIF");
+const SVG_C2PA_ELEMENT = encoder.encode("<c2pa:manifest");
 const RAW_AUDIO_MIME_TYPE = /^audio\/(?:pcm|l16)\b/i;
 
 async function sha256(bytes: Uint8Array<ArrayBuffer>): Promise<Uint8Array<ArrayBuffer>> {
@@ -153,6 +165,7 @@ function hasC2paManifest(regions: Uint8Array[]): boolean {
   return regions.some(
     (region) =>
       indexOfBytes(region, GIF_C2PA_EXTENSION) !== -1 ||
+      indexOfBytes(region, SVG_C2PA_ELEMENT) !== -1 ||
       (indexOfBytes(region, JUMBF_BOX) !== -1 && indexOfBytes(region, C2PA_LABEL) !== -1),
   );
 }
@@ -220,6 +233,18 @@ export function readMediaProvenance(bytes: Uint8Array): MediaProvenanceRecord | 
   return null;
 }
 
+function viewBytes(data: ArrayBuffer | Uint8Array): Uint8Array<ArrayBuffer> {
+  if (data instanceof ArrayBuffer) {
+    return new Uint8Array(data);
+  }
+
+  const { buffer } = data;
+
+  return buffer instanceof ArrayBuffer
+    ? new Uint8Array(buffer, data.byteOffset, data.byteLength)
+    : new Uint8Array(data);
+}
+
 async function fingerprintOf(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
   return toHex(await sha256(bytes));
 }
@@ -233,7 +258,7 @@ export async function markGeneratedMedia(
   origin: MediaProvenanceOrigin,
   signer?: MediaProvenanceSigner,
 ): Promise<MarkedMedia> {
-  const input = new Uint8Array(data);
+  const input = viewBytes(data);
   const container = RAW_AUDIO_MIME_TYPE.test(origin.mimeType ?? "") ? null : detectContainer(input);
 
   if (!container) {
@@ -262,6 +287,10 @@ export async function markGeneratedMedia(
     return unchanged("provider-marked");
   }
 
+  if (input.length > MAX_MARKABLE_BYTES) {
+    return unchanged("too-large");
+  }
+
   const draft: MediaProvenanceRecord = {
     markId: crypto.randomUUID(),
     generator: origin.generator,
@@ -275,6 +304,11 @@ export async function markGeneratedMedia(
   };
   const packetLength = buildPacket(draft).length;
   const slot = embedSlot(container, input, packetLength);
+
+  if (!slot) {
+    return unchanged("unsupported");
+  }
+
   const record: MediaProvenanceRecord = { ...draft, exclusion: slot.exclusion };
 
   record.contentHash = await hashOutside(slot.bytes, slot.exclusion);

@@ -1,4 +1,15 @@
-export type MediaContainer = "png" | "jpeg" | "webp" | "gif" | "wav" | "bmff" | "mp3" | "flac";
+export type MediaContainer =
+  | "png"
+  | "jpeg"
+  | "webp"
+  | "gif"
+  | "wav"
+  | "bmff"
+  | "mp3"
+  | "flac"
+  | "ogg"
+  | "matroska"
+  | "svg";
 
 export interface ByteRange {
   start: number;
@@ -23,6 +34,19 @@ const FLAC_APPLICATION_ID = encoder.encode("pXMP");
 const ID3_XMP_OWNER = encoder.encode("XMP\0");
 const RIFF_AUDIO_VISUAL_CHUNKS = new Set(["data", "VP8 ", "VP8L", "ALPH", "ANMF"]);
 
+const OGG_COMMENT_KEY = encoder.encode("POLYCHAT_XMP=");
+const OGG_HEADER_LENGTH = 27;
+const OGG_CRC_OFFSET = 22;
+const OGG_SEGMENT_COUNT_OFFSET = 26;
+const MATROSKA_MAGIC = [0x1a, 0x45, 0xdf, 0xa3];
+const MATROSKA_SEGMENT_ID = [0x18, 0x53, 0x80, 0x67];
+const MATROSKA_TAG_NAME = encoder.encode("POLYCHAT_XMP");
+const MATROSKA_SCAN_WINDOW = 64 * 1024;
+const SVG_SCAN_WINDOW = 64 * 1024;
+const SVG_PROLOG =
+  /^(?:\xef\xbb\xbf)?(?:\s|<\?[\s\S]*?\?>|<!--[\s\S]*?-->|<!DOCTYPE[^>[]*(?:\[[\s\S]*?\])?[^>]*>)*/;
+const SVG_OPENING_TAG = /^<svg(?=[\s>/])(?:[^>"']|"[^"]*"|'[^']*')*>/;
+
 const crcTable = Uint32Array.from({ length: 256 }, (_, index) => {
   let value = index;
 
@@ -32,6 +56,26 @@ const crcTable = Uint32Array.from({ length: 256 }, (_, index) => {
 
   return value >>> 0;
 });
+
+const oggCrcTable = Uint32Array.from({ length: 256 }, (_, index) => {
+  let value = index << 24;
+
+  for (let bit = 0; bit < 8; bit += 1) {
+    value = value & 0x80000000 ? (value << 1) ^ 0x04c11db7 : value << 1;
+  }
+
+  return value >>> 0;
+});
+
+function oggCrc(bytes: Uint8Array): number {
+  let crc = 0;
+
+  for (const byte of bytes) {
+    crc = ((crc << 8) ^ (oggCrcTable[((crc >>> 24) ^ byte) & 0xff] ?? 0)) >>> 0;
+  }
+
+  return crc;
+}
 
 function crc32(bytes: Uint8Array): number {
   let crc = 0xffffffff;
@@ -151,6 +195,14 @@ export function detectContainer(bytes: Uint8Array): MediaContainer | null {
     return "flac";
   }
 
+  if (head === "OggS") {
+    return "ogg";
+  }
+
+  if (MATROSKA_MAGIC.every((byte, index) => bytes[index] === byte)) {
+    return "matroska";
+  }
+
   if (["ftyp", "moov", "mdat", "wide", "free"].includes(boxType)) {
     return "bmff";
   }
@@ -159,7 +211,89 @@ export function detectContainer(bytes: Uint8Array): MediaContainer | null {
     return "mp3";
   }
 
-  return null;
+  return svgOpeningTag(bytes) ? "svg" : null;
+}
+
+/** Latin-1 keeps one character per byte, so a match index is also a byte offset. */
+function svgOpeningTag(bytes: Uint8Array): ByteRange | null {
+  const head = new TextDecoder("latin1").decode(bytes.subarray(0, SVG_SCAN_WINDOW));
+  const start = SVG_PROLOG.exec(head)?.[0].length ?? 0;
+  const tag = SVG_OPENING_TAG.exec(head.slice(start));
+
+  return tag ? { start, length: tag[0].length } : null;
+}
+
+interface OggPage {
+  start: number;
+  segments: Uint8Array;
+  dataStart: number;
+  end: number;
+}
+
+function oggPage(bytes: Uint8Array, start: number): OggPage | null {
+  if (start + OGG_HEADER_LENGTH > bytes.length || ascii(bytes, start, 4) !== "OggS") {
+    return null;
+  }
+
+  const count = bytes[start + OGG_SEGMENT_COUNT_OFFSET] ?? 0;
+  const dataStart = start + OGG_HEADER_LENGTH + count;
+  const segments = bytes.subarray(start + OGG_HEADER_LENGTH, dataStart);
+  const end = dataStart + segments.reduce((total, length) => total + length, 0);
+
+  return end > bytes.length ? null : { start, segments, dataStart, end };
+}
+
+function oggHeaderPages(bytes: Uint8Array): { first: OggPage; second: OggPage } | null {
+  const first = oggPage(bytes, 0);
+  const second = first ? oggPage(bytes, first.end) : null;
+
+  return first && second ? { first, second } : null;
+}
+
+function readVint(bytes: Uint8Array, offset: number): { width: number; value: number } | null {
+  const first = bytes[offset] ?? 0;
+  const width = Math.clz32(first) - 23;
+
+  if (width < 1 || width > 8) {
+    return null;
+  }
+
+  let value = first & (0xff >>> width);
+
+  for (let index = 1; index < width; index += 1) {
+    value = value * 256 + (bytes[offset + index] ?? 0);
+  }
+
+  return { width, value };
+}
+
+function writeVint(bytes: Uint8Array, offset: number, width: number, value: number): void {
+  let remaining = value;
+
+  for (let index = width - 1; index > 0; index -= 1) {
+    bytes[offset + index] = remaining % 256;
+    remaining = Math.floor(remaining / 256);
+  }
+
+  bytes[offset] = remaining | (0x80 >>> (width - 1));
+}
+
+function matroskaSegment(
+  bytes: Uint8Array,
+): { sizeOffset: number; size: ReturnType<typeof readVint> } | null {
+  const header = readVint(bytes, 4);
+
+  if (!header) {
+    return null;
+  }
+
+  const start = 4 + header.width + header.value;
+
+  if (!MATROSKA_SEGMENT_ID.every((byte, index) => bytes[start + index] === byte)) {
+    return null;
+  }
+
+  return { sizeOffset: start + 4, size: readVint(bytes, start + 4) };
 }
 
 function pngChunks(bytes: Uint8Array): Array<{ type: string; start: number; length: number }> {
@@ -281,7 +415,21 @@ export function metadataRegions(container: MediaContainer, bytes: Uint8Array): U
       return ascii(bytes, 0, 3) === "ID3" ? [bytes.subarray(0, 10 + readSyncsafe(bytes, 6))] : [];
     case "flac":
       return flacBlocks(bytes).map((block) => bytes.subarray(block.start, block.end));
+    case "ogg": {
+      const pages = oggHeaderPages(bytes);
+
+      return pages ? [bytes.subarray(0, pages.second.end)] : [];
+    }
+
+    case "matroska":
+      return bytes.length <= MATROSKA_SCAN_WINDOW * 2
+        ? [bytes]
+        : [
+            bytes.subarray(0, MATROSKA_SCAN_WINDOW),
+            bytes.subarray(bytes.length - MATROSKA_SCAN_WINDOW),
+          ];
     case "gif":
+    case "svg":
       return [bytes];
   }
 }
@@ -509,7 +657,197 @@ function embedGif(bytes: Uint8Array, packetLength: number): EmbeddedSlot {
   return plainSlot(out, insertAt + GIF_XMP_HEADER.length, packetLength);
 }
 
-const EMBEDDERS: Record<MediaContainer, (bytes: Uint8Array, length: number) => EmbeddedSlot> = {
+function oggCommentEnd(packet: Uint8Array): { countOffset: number; listEnd: number } | null {
+  const magicLength = ascii(packet, 1, 6) === "vorbis" && packet[0] === 3 ? 7 : 8;
+
+  if (magicLength === 8 && ascii(packet, 0, 8) !== "OpusTags") {
+    return null;
+  }
+
+  if (packet.length < magicLength + 8) {
+    return null;
+  }
+
+  const data = view(packet);
+  const countOffset = magicLength + 4 + data.getUint32(magicLength, true);
+
+  if (countOffset + 4 > packet.length) {
+    return null;
+  }
+
+  let listEnd = countOffset + 4;
+
+  for (let index = data.getUint32(countOffset, true); index > 0; index -= 1) {
+    if (listEnd + 4 > packet.length) {
+      return null;
+    }
+
+    listEnd += 4 + data.getUint32(listEnd, true);
+  }
+
+  return listEnd <= packet.length ? { countOffset, listEnd } : null;
+}
+
+function oggLacing(length: number): number[] {
+  return [...Array.from({ length: Math.floor(length / 255) }, () => 255), length % 255];
+}
+
+/**
+ * Adds the mark to the comment packet in place. Keeping it on the same page leaves every later
+ * page, its sequence number and its checksum alone, so anything else is declined rather than
+ * rewritten.
+ */
+function embedOgg(bytes: Uint8Array, packetLength: number): EmbeddedSlot | null {
+  const pages = oggHeaderPages(bytes);
+
+  if (!pages) {
+    return null;
+  }
+
+  const { first, second } = pages;
+  const data = view(bytes);
+  const sameStream = data.getUint32(14, true) === data.getUint32(second.start + 14, true);
+  const flags = bytes[second.start + 5] ?? 0;
+  const lastSegment = second.segments.findIndex((length) => length < 255);
+
+  if (first.end !== second.start || !sameStream || flags !== 0 || lastSegment === -1) {
+    return null;
+  }
+
+  const oldLength = second.segments
+    .subarray(0, lastSegment + 1)
+    .reduce((total, length) => total + length, 0);
+  const comment = bytes.subarray(second.dataStart, second.dataStart + oldLength);
+  const layout = oggCommentEnd(comment);
+
+  if (!layout) {
+    return null;
+  }
+
+  const entryLength = OGG_COMMENT_KEY.length + packetLength;
+  const lacing = [
+    ...oggLacing(oldLength + 4 + entryLength),
+    ...second.segments.subarray(lastSegment + 1),
+  ];
+
+  if (lacing.length > 255) {
+    return null;
+  }
+
+  const entry = new Uint8Array(4 + entryLength);
+
+  view(entry).setUint32(0, entryLength, true);
+  entry.set(OGG_COMMENT_KEY, 4);
+
+  const listEnd = second.dataStart + layout.listEnd;
+  const out = assemble(
+    bytes.subarray(0, second.start + OGG_SEGMENT_COUNT_OFFSET),
+    Uint8Array.from([lacing.length, ...lacing]),
+    bytes.subarray(second.dataStart, listEnd),
+    entry,
+    bytes.subarray(listEnd),
+  );
+  const shift = lacing.length - second.segments.length;
+  const packetStart = listEnd + shift + 4 + OGG_COMMENT_KEY.length;
+  const pageEnd = second.end + shift + entry.length;
+  const crcStart = second.start + OGG_CRC_OFFSET;
+  const countOffset = second.dataStart + shift + layout.countOffset;
+  const output = view(out);
+
+  output.setUint32(countOffset, output.getUint32(countOffset, true) + 1, true);
+
+  return {
+    bytes: out,
+    exclusion: { start: crcStart, length: packetStart + packetLength - crcStart },
+    write(packet) {
+      out.set(packet, packetStart);
+      output.setUint32(crcStart, 0);
+      output.setUint32(crcStart, oggCrc(out.subarray(second.start, pageEnd)), true);
+    },
+  };
+}
+
+function ebmlElement(id: number[], ...payload: Uint8Array[]): Uint8Array {
+  const body = assemble(...payload);
+  const size = new Uint8Array(8);
+
+  writeVint(size, 0, 8, body.length);
+
+  return assemble(Uint8Array.from(id), size, body);
+}
+
+function matroskaTags(packetLength: number): Uint8Array {
+  return ebmlElement(
+    [0x12, 0x54, 0xc3, 0x67],
+    ebmlElement(
+      [0x73, 0x73],
+      ebmlElement([0x63, 0xc0]),
+      ebmlElement(
+        [0x67, 0xc8],
+        ebmlElement([0x45, 0xa3], MATROSKA_TAG_NAME),
+        ebmlElement([0x44, 0x87], new Uint8Array(packetLength)),
+      ),
+    ),
+  );
+}
+
+/**
+ * Appends a Tags element, since inserting one earlier would invalidate the byte offsets held in
+ * SeekHead and Cues.
+ */
+function embedMatroska(bytes: Uint8Array, packetLength: number): EmbeddedSlot | null {
+  const segment = matroskaSegment(bytes);
+
+  if (!segment?.size) {
+    return null;
+  }
+
+  const { sizeOffset, size } = segment;
+  const unknownSize = size.value === 2 ** (7 * size.width) - 1;
+  const dataStart = sizeOffset + size.width;
+  const tags = matroskaTags(packetLength);
+  const newSize = size.value + tags.length;
+
+  if (
+    !unknownSize &&
+    (dataStart + size.value !== bytes.length || newSize >= 2 ** (7 * size.width) - 1)
+  ) {
+    return null;
+  }
+
+  const out = assemble(bytes, tags);
+
+  if (!unknownSize) {
+    writeVint(out, sizeOffset, size.width, newSize);
+  }
+
+  return plainSlot(out, out.length - packetLength, packetLength);
+}
+
+function embedSvg(bytes: Uint8Array, packetLength: number): EmbeddedSlot | null {
+  const tag = svgOpeningTag(bytes);
+
+  if (!tag || bytes[tag.start + tag.length - 2] === 0x2f) {
+    return null;
+  }
+
+  const insertAt = tag.start + tag.length;
+  const open = encoder.encode("<metadata>");
+  const out = assemble(
+    bytes.subarray(0, insertAt),
+    open,
+    new Uint8Array(packetLength),
+    encoder.encode("</metadata>"),
+    bytes.subarray(insertAt),
+  );
+
+  return plainSlot(out, insertAt + open.length, packetLength);
+}
+
+const EMBEDDERS: Record<
+  MediaContainer,
+  (bytes: Uint8Array, length: number) => EmbeddedSlot | null
+> = {
   png: embedPng,
   jpeg: embedJpeg,
   webp: embedWebp,
@@ -518,12 +856,15 @@ const EMBEDDERS: Record<MediaContainer, (bytes: Uint8Array, length: number) => E
   bmff: embedBmff,
   mp3: embedMp3,
   flac: embedFlac,
+  ogg: embedOgg,
+  matroska: embedMatroska,
+  svg: embedSvg,
 };
 
 export function embedSlot(
   container: MediaContainer,
   bytes: Uint8Array,
   packetLength: number,
-): EmbeddedSlot {
+): EmbeddedSlot | null {
   return EMBEDDERS[container](bytes, packetLength);
 }

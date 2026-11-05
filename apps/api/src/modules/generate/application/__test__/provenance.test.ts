@@ -3,7 +3,12 @@ import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { readMediaProvenance } from "@ngriffin_uk/polychat-utility-server/media-provenance";
 import { describe, expect, it, vi } from "vitest";
 
-import { findMediaFingerprint, getProvenanceKeys, markForDelivery } from "../provenance";
+import {
+  findMediaFingerprint,
+  getProvenanceKeys,
+  markForDelivery,
+  recordOversizedMedia,
+} from "../provenance";
 
 const MP3 = Uint8Array.from([0xff, 0xfb, 0x90, 0x00, 1, 2, 3, 4, 5, 6, 7, 8]);
 const origin = { mimeType: "audio/mpeg", model: "acme/voice", provider: "acme" };
@@ -43,6 +48,24 @@ async function fingerprintOf(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
 
   return [...digest].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
+
+describe("recordOversizedMedia", () => {
+  it("puts streamed media on record as too large to mark", async () => {
+    const { bucket } = fakeBucket();
+
+    await recordOversizedMedia({
+      bucket,
+      body: new Blob([MP3]).stream(),
+      origin,
+    });
+
+    expect(await findMediaFingerprint(bucket, await fingerprintOf(MP3))).toMatchObject({
+      status: "too-large",
+      container: null,
+      model: "acme/voice",
+    });
+  });
+});
 
 describe("markForDelivery", () => {
   it("records the delivered file so its hash can be looked up", async () => {
