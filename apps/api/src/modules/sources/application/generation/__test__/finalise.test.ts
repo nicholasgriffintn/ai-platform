@@ -61,6 +61,7 @@ function setup({ failUpload = false } = {}) {
   const outputs = new Map([
     ["out-a", { id: "out-a", storage_key: "generations/a.png", mime_type: "image/png" }],
     ["out-b", { id: "out-b", storage_key: "generations/b.png", mime_type: "image/png" }],
+    ["out-video", { id: "out-video", storage_key: "generations/v.mp4", mime_type: "video/mp4" }],
   ]);
   const sourceRepository = {
     getSource: vi.fn(async (id: string) => sources.get(id) ?? null),
@@ -158,7 +159,7 @@ describe("finaliseSourceGeneration", () => {
     }));
 
     await finaliseSourceGeneration(context, sourceRecord(), {
-      response: [{ type: "video_url", video_url: { url: `${API}/outputs/out-a/content` } }],
+      response: [{ type: "video_url", video_url: { url: `${API}/outputs/out-video/content` } }],
     });
 
     expect(arrayBuffer).not.toHaveBeenCalled();
