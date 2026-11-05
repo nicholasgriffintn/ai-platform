@@ -30,6 +30,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { readRecordObjectField } from "@ngriffin_uk/polychat-utility-server/record-fields";
 import { isRetryCancelledError } from "@ngriffin_uk/polychat-utility-server/retries";
 
+import { isAbortError } from "~/infrastructure/abort";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import {
@@ -107,6 +108,7 @@ const AGENT_MAX_TURN_FAILURES = 2;
 const MAX_PROVIDER_RETRIES_PER_RUN = 2;
 const DEFAULT_INITIAL_PLAN = "Use available tools as needed, then return a final answer.";
 const FINAL_ANSWER_NOTICE = getPromptText("apps/agent-loop/final-answer");
+const SIGNPOSTED_FAILURE_NOTICE = "I couldn't finish a reply just now. Please try again.";
 const GOAL_FINALISATION_NOTICE = getPromptText("apps/agent-loop/goal-finalisation");
 const REPEATED_TOOL_CALL_NOTICE = getPromptText("apps/agent-loop/repeated-tool-call");
 const UNKNOWN_TOOL_FINAL_ANSWER_NOTICE = getPromptText("apps/agent-loop/unknown-tool-final-answer");
@@ -347,6 +349,7 @@ async function runChatAgentLoop(
   let finalStatus: string | undefined;
   let guardrailsPassed = true;
   let guardrailViolations: unknown[] = [];
+  let signpostDelivered = false;
   const providerRetryBudget = createProviderRetryBudget(MAX_PROVIDER_RETRIES_PER_RUN);
   let activeModel: AgentModelSelection = { model: params.model, provider: params.provider };
 
@@ -420,6 +423,7 @@ async function runChatAgentLoop(
     guardrailsPassed = finalised.guardrailsPassed;
     guardrailViolations = finalised.guardrailViolations;
     finalMessage = finalised.message;
+    signpostDelivered ||= params.crisisSignpost === true && turn.toolCalls.length === 0;
 
     return finalised.message;
   };
@@ -508,6 +512,15 @@ async function runChatAgentLoop(
   }
 
   noteWaitingForUser(state, params.initialToolResults ?? []);
+
+  const closeSignpostedTurn = async (error: unknown) => {
+    if (!params.crisisSignpost || signpostDelivered || isAbortError(error)) {
+      throw error;
+    }
+
+    logger.error("Closing a signposted turn after the model failed", { error });
+    await closingTurn(SIGNPOSTED_FAILURE_NOTICE);
+  };
 
   await executeAgentLoop<ChatAgentSharedContext, ChatAgentLoopState>({
     initialMessages: runtimeMessages,
@@ -1090,7 +1103,7 @@ async function runChatAgentLoop(
       toolResponses.push(...toolResults);
       context.messages.push(...toProviderMessages(toolResults));
     },
-  });
+  }).catch(closeSignpostedTurn);
 
   if (!finalMessage) {
     throw new AssistantError(

@@ -11,6 +11,7 @@ import {
   type RealtimeModality,
   type RealtimeTransport,
 } from "../modalities.js";
+import { withRealtimeSafetyInstructions } from "../safety-instructions.js";
 
 export const GOOGLE_REALTIME_DESCRIPTOR = {
   id: "google-ai-studio",
@@ -244,13 +245,9 @@ export class GoogleRealtimeProvider implements RealtimeProvider {
           }
         : {}),
       ...(realtimeInputConfig ? { realtimeInputConfig } : {}),
-      ...(request.instructions
-        ? {
-            systemInstruction: {
-              parts: [{ text: request.instructions }],
-            },
-          }
-        : {}),
+      systemInstruction: {
+        parts: [{ text: withRealtimeSafetyInstructions(request.instructions) }],
+      },
       sessionResumption: {},
       contextWindowCompression: { slidingWindow: {} },
       inputAudioTranscription: {},

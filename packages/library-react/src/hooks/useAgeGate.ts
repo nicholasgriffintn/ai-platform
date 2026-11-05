@@ -4,6 +4,7 @@ import {
   useAgeGatePromptStore,
   useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
+import { mentionsCrisis } from "@ngriffin_uk/polychat-schemas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 
@@ -45,15 +46,20 @@ export function useEnsureAgeConfirmed() {
   const queryClient = useQueryClient();
   const queryKey = useAgeGateQueryKey();
 
-  return useCallback(async () => {
-    const response = await queryClient
-      .fetchQuery({ queryKey, queryFn: getAgeGate, staleTime: Number.POSITIVE_INFINITY })
-      .catch(() => null);
+  return useCallback(
+    async (message = "") => {
+      const response = await queryClient
+        .fetchQuery({ queryKey, queryFn: getAgeGate, staleTime: Number.POSITIVE_INFINITY })
+        .catch(() => null);
 
-    if (!response || response.status === "not_required" || response.status === "adult") {
-      return true;
-    }
+      if (!response || response.status === "not_required" || response.status === "adult") {
+        return true;
+      }
 
-    return useAgeGatePromptStore.getState().requestConfirmation();
-  }, [queryClient, queryKey]);
+      return useAgeGatePromptStore
+        .getState()
+        .requestConfirmation({ showsCrisisSignpost: mentionsCrisis(message) });
+    },
+    [queryClient, queryKey],
+  );
 }

@@ -1,3 +1,4 @@
+import { CRISIS_SIGNPOST_TEXT } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -105,12 +106,13 @@ describe("GPT-Live brokered calls", () => {
     expect(JSON.parse(String(init.body))).toEqual({
       session: {
         model: "gpt-live-1",
-        instructions: "Be brief.",
+        instructions: expect.stringContaining("Be brief."),
         audio: { output: { voice: "cedar" } },
         delegation: { type: "responses", responses: { model: "gpt-6-luna" } },
       },
       transport: { type: "webrtc", sdp: "offer-sdp" },
     });
+    expect(JSON.parse(String(init.body)).session.instructions).toContain(CRISIS_SIGNPOST_TEXT);
   });
 
   it("rejects an empty offer before contacting OpenAI", async () => {

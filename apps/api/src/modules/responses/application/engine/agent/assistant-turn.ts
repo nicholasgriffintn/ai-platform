@@ -3,6 +3,7 @@ import { recordModelTurnUsage } from "@ngriffin_uk/polychat-ai-billing";
 import type { NormalisedTokenUsage } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   AGENT_HARNESS_PROVIDER,
+  withCrisisSignpost,
   assistantMessageDoneEvent,
   type InferenceImpact,
   type RunProvenance,
@@ -17,7 +18,6 @@ import { expandTurnArtifactEdits } from "~/modules/responses/application/engine/
 import { formatAssistantMessage } from "~/modules/responses/application/engine/messages/assistant-format";
 import { buildMessageParts } from "~/modules/responses/application/engine/messages/parts";
 import type { ChatEventSink } from "~/modules/responses/application/engine/streaming/emitter";
-import { withCrisisSignpost } from "~/modules/responses/domain/crisis-signposting";
 import { describeGuardrailBlock } from "~/modules/responses/domain/guardrails";
 import { buildAssistantMessageData } from "~/modules/responses/domain/mode-metadata";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";

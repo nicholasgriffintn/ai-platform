@@ -5,6 +5,7 @@ import {
   COMPARISON_TOOL_NAME,
   conversationCompactedEvent,
   isAgentExecutionMode,
+  withCrisisSignpost,
   type Goal,
   type ResponseEventInput,
   type RunProvenance,
@@ -171,6 +172,7 @@ export class ChatOrchestrator {
 
   private async processRequest(requestOptions: CoreChatOptions) {
     let options = requestOptions;
+    let crisisSignpost = false;
 
     try {
       if (!options.compute_site && options.context) {
@@ -183,6 +185,7 @@ export class ChatOrchestrator {
 
       const validationResult = await this.validator.validate(options);
 
+      crisisSignpost = validationResult.context.crisisSignpost === true;
       options = applyTierReasoningEffort(options, validationResult.context.reasoningEffort);
 
       if (!validationResult?.validation?.isValid) {
@@ -333,15 +336,21 @@ export class ChatOrchestrator {
         model: options.model,
       });
 
-      if (error instanceof AssistantError) {
+      if (error instanceof AssistantError && !crisisSignpost) {
         throw error;
       }
 
-      const errorType = this.determineErrorType(error);
-      const errorMessage = this.getErrorMessage(error, errorType);
+      const errorType =
+        error instanceof AssistantError ? error.type : this.determineErrorType(error);
+      const errorMessage =
+        error instanceof AssistantError ? error.message : this.getErrorMessage(error, errorType);
       const statusCode = error.status || error.statusCode || 500;
 
-      throw new AssistantError(errorMessage, errorType, statusCode);
+      throw new AssistantError(
+        crisisSignpost ? withCrisisSignpost(errorMessage) : errorMessage,
+        errorType,
+        statusCode,
+      );
     }
   }
 

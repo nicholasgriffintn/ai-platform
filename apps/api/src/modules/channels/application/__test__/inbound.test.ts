@@ -53,7 +53,7 @@ vi.mock("~/modules/responses/application/start", () => ({
   startResponse: mocks.startResponse,
 }));
 
-import { AI_DISCLOSURE_TEXT } from "@ngriffin_uk/polychat-schemas";
+import { AI_DISCLOSURE_TEXT, CRISIS_SIGNPOST_TEXT } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
@@ -63,7 +63,6 @@ import { MessageApprovalRepository } from "~/modules/channels/infrastructure/Mes
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { OutboundDeliveryRepository } from "~/modules/delivery/infrastructure/OutboundDeliveryRepository";
-import { CRISIS_SIGNPOST_TEXT } from "~/modules/responses/domain/crisis-signposting";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
 import { handleInboundChannelMessage, type InboundChannelTaskData } from "../inbound";
@@ -235,6 +234,31 @@ describe("inbound channel messages", () => {
       body: "chat reply",
     });
     expect(mocks.recordSent).not.toHaveBeenCalled();
+  });
+
+  it("signposts a crisis message when the turn cannot run", async () => {
+    mocks.startResponse.mockRejectedValueOnce(new Error("engine unavailable"));
+
+    await expect(
+      handleInboundChannelMessage({
+        env,
+        context: createContext(),
+        user,
+        data: createTaskData({
+          message: {
+            messageId: "SM124",
+            from: "+15551234567",
+            to: "+15557654321",
+            body: "I want to kill myself",
+          },
+        }),
+      }),
+    ).rejects.toThrow("engine unavailable");
+
+    expect(mocks.providerSend).toHaveBeenCalledWith({
+      to: "+15551234567",
+      body: CRISIS_SIGNPOST_TEXT,
+    });
   });
 
   it("keeps the disclosure owed when the first reply fails", async () => {

@@ -127,6 +127,13 @@ export function useHomeChatModeConfig(): {
     },
     [composedReasoningModel, realtimeProviderOptions, respondToExistingConversation],
   );
+  const isNativeLiveSession = useCallback(() => {
+    const provider = effectiveLiveProviderRef.current;
+
+    return (
+      provider !== undefined && !isComposedRealtimeLiveProvider(provider, realtimeProviderOptions)
+    );
+  }, [realtimeProviderOptions]);
   const {
     flushLiveMessages,
     handleRealtimeEvent: handleLiveRealtimeEvent,
@@ -135,6 +142,7 @@ export function useHomeChatModeConfig(): {
     conversationMode: liveConversationMode,
     model: selectedModel,
     onFinalInputTranscript: handleFinalLiveInputTranscript,
+    signpostsCrisisLocally: isNativeLiveSession,
   });
   const liveSession = useRealtimeLiveSession({
     model: selectedModel,

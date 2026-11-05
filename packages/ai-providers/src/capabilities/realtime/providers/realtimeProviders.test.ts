@@ -4,6 +4,7 @@ import { createTestRuntime } from "../../../__test__/test-runtime.js";
 import type { ProviderEnv, ProviderUser } from "../../../env.js";
 import { createCatalogueModelResolver } from "../../../model-resolver.js";
 import type { RealtimeSessionRequest } from "../index.js";
+import { withRealtimeSafetyInstructions } from "../safety-instructions.js";
 import { CartesiaRealtimeProvider } from "./CartesiaRealtimeProvider.js";
 import { ElevenLabsRealtimeProvider } from "./ElevenLabsRealtimeProvider.js";
 import { GoogleRealtimeProvider } from "./GoogleRealtimeProvider.js";
@@ -171,7 +172,7 @@ describe("realtime provider session contracts", () => {
         type: "realtime",
         model: "gpt-realtime-2.1",
         output_modalities: ["audio"],
-        instructions: "Answer concisely.",
+        instructions: withRealtimeSafetyInstructions("Answer concisely."),
         audio: {
           input: {
             format: { type: "audio/pcm", rate: 24000 },
@@ -245,7 +246,9 @@ describe("realtime provider session contracts", () => {
           turnCoverage: "TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO",
         },
         systemInstruction: {
-          parts: [{ text: "Describe only relevant visual changes." }],
+          parts: [
+            { text: withRealtimeSafetyInstructions("Describe only relevant visual changes.") },
+          ],
         },
         sessionResumption: {},
         contextWindowCompression: { slidingWindow: {} },
@@ -276,7 +279,9 @@ describe("realtime provider session contracts", () => {
             turnCoverage: "TURN_INCLUDES_AUDIO_ACTIVITY_AND_ALL_VIDEO",
           },
           systemInstruction: {
-            parts: [{ text: "Describe only relevant visual changes." }],
+            parts: [
+              { text: withRealtimeSafetyInstructions("Describe only relevant visual changes.") },
+            ],
           },
           sessionResumption: {},
           contextWindowCompression: { slidingWindow: {} },

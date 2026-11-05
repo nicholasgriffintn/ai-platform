@@ -4,7 +4,11 @@ import {
   normalizeMessage,
 } from "@ngriffin_uk/polychat-library-chat/messages";
 import type { RealtimeTranscriptResult } from "@ngriffin_uk/polychat-library-realtime/messages";
-import type { ConversationModeMetadata } from "@ngriffin_uk/polychat-schemas";
+import {
+  CRISIS_SIGNPOST_TEXT,
+  mentionsCrisis,
+  type ConversationModeMetadata,
+} from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 interface ActiveLiveMessage {
@@ -197,5 +201,31 @@ export function buildLiveMessage({
     role,
     status: isFinal ? undefined : "in_progress",
     timestamp: activeMessage?.message.timestamp ?? now,
+  });
+}
+
+export function buildLiveCrisisNotice({
+  conversationMode,
+  model,
+  text,
+  turn,
+}: {
+  conversationMode?: ConversationModeMetadata;
+  model?: string | null;
+  text: string;
+  turn: LiveTurn;
+}): Message | null {
+  if (!mentionsCrisis(text)) {
+    return null;
+  }
+
+  return buildLiveMessage({
+    content: CRISIS_SIGNPOST_TEXT,
+    conversationMode,
+    isFinal: true,
+    model,
+    role: "assistant",
+    source: "output",
+    turn,
   });
 }

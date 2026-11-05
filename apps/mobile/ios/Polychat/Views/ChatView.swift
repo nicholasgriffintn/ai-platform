@@ -238,7 +238,7 @@ struct ChatView: View {
                 return
             }
 
-            guard await ageGateStore.ensureConfirmed() else {
+            guard await ageGateStore.ensureConfirmed(message: text) else {
                 return
             }
 
