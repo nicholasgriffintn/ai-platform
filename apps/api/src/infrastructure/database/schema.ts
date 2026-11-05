@@ -1196,6 +1196,7 @@ export const messageApproval = sqliteTable(
       table.run_id,
       table.run_attempt,
       table.interaction_id,
+      table.argument_digest,
       table.channel,
       table.sender_key,
     ),

@@ -6,6 +6,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import type { MessageApprovalRow } from "~/infrastructure/database/schema";
 import { MessageApprovalRepository } from "~/modules/channels/infrastructure/MessageApprovalRepository";
+import { ConnectorOperationApprovalRepository } from "~/modules/connectors/infrastructure/ConnectorOperationApprovalRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import type { IUser } from "~/types";
@@ -19,11 +20,15 @@ import "~/tools";
 
 const mocks = vi.hoisted(() => ({
   prepare: vi.fn(),
+  resolveConnector: vi.fn(),
   conversationGet: vi.fn(async () => [{ role: "user", content: "start" }]),
 }));
 
 vi.mock("~/modules/responses/application/prepare", () => ({
   prepareConversationCompletion: mocks.prepare,
+}));
+vi.mock("~/modules/connectors/application/operation-approvals", () => ({
+  resolveConnectorOperationApproval: mocks.resolveConnector,
 }));
 vi.mock("~/modules/conversations/application/manager", () => ({
   ConversationManager: { getInstance: () => ({ get: mocks.conversationGet }) },
@@ -80,6 +85,7 @@ function harness(
     run?: ChatRun;
     row?: Partial<MessageApprovalRow> | null;
     claim?: MessageApprovalRow | null;
+    connector?: Record<string, unknown>;
   } = {},
 ) {
   const created: { value: MessageApprovalRow | null } = { value: null };
@@ -123,6 +129,10 @@ function harness(
         },
       ],
       [ConversationRunRepository, { getById: async () => overrides.run ?? run }],
+      [
+        ConnectorOperationApprovalRepository,
+        { getByIdForUser: async () => overrides.connector ?? null },
+      ],
       [
         MessageApprovalRepository,
         {
@@ -302,6 +312,45 @@ describe("message approvals", () => {
       issueMessageApproval({ context: credential.context, user, run, sender }),
     ).resolves.toBeNull();
     expect(credential.create).not.toHaveBeenCalled();
+  });
+
+  it("carries a connector's own approval, within its shorter expiry", async () => {
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    const stored = pendingMessage({ provider: "gmail" }, "use_recipe_connector");
+    const { context, create } = harness({
+      stored: {
+        ...stored,
+        message: {
+          ...stored.message,
+          data: { approvalRequired: true, approvalId: "coa_1", argumentSummary: { to: "a@b.c" } },
+        },
+      },
+      connector: {
+        id: "coa_1",
+        state: "pending",
+        runId: "run_1",
+        provider: "gmail",
+        operation: "GMAIL_CREATE_EMAIL_DRAFT",
+        argumentDigest: "connector-digest",
+        expiresAt,
+      },
+    });
+    const code = await issueCode(context);
+
+    expect(create.mock.calls[0]?.[0]).toMatchObject({
+      connectorApprovalId: "coa_1",
+      argumentDigest: "connector-digest",
+      expiresAt,
+    });
+
+    await answer(context, code);
+
+    expect(mocks.resolveConnector).toHaveBeenCalledWith(
+      expect.objectContaining({ approvalId: "coa_1", resolution: "approved" }),
+    );
+    expect(mocks.prepare.mock.calls[0]?.[0].request.settings).toEqual({
+      connector_approval_id: "coa_1",
+    });
   });
 
   it("leaves several waiting calls to the app, where they can be decided together", async () => {

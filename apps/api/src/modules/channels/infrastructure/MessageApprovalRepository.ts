@@ -25,7 +25,7 @@ export class MessageApprovalRepository extends BaseRepository {
       `INSERT INTO message_approval (id, user_id, run_id, run_attempt, conversation_id, interaction_id,
          tool_name, connector_approval_id, argument_digest, effect_class, channel, sender_key, code_hash, expires_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT(run_id, run_attempt, interaction_id, channel, sender_key) DO NOTHING
+       ON CONFLICT(run_id, run_attempt, interaction_id, argument_digest, channel, sender_key) DO NOTHING
        RETURNING *`,
       [
         generatePrefixedId("mapr_"),

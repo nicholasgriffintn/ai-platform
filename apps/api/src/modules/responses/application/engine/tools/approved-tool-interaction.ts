@@ -271,6 +271,15 @@ function prepareApproval(params: {
   };
 }
 
+function awaitsConnectorApproval(result: Message): boolean {
+  return (
+    result.status === "pending" &&
+    isRecord(result.data) &&
+    result.data.approvalRequired === true &&
+    typeof result.data.approvalId === "string"
+  );
+}
+
 async function executeApprovedTools(
   prepared: readonly PreparedApproval[],
   params: { conversationId: string; conversationManager: ConversationManager; request: IRequest },
@@ -319,7 +328,7 @@ async function executeApprovedTools(
     approved.some((approval) => {
       const result = resultsByCallId.get(approval.toolCall.id);
 
-      return !result || result.status === "pending";
+      return !result || (result.status === "pending" && !awaitsConnectorApproval(result));
     })
   ) {
     return failApproval();
@@ -340,7 +349,9 @@ function settledToolResult(approval: PreparedApproval, executed: Message | undef
       tool_call_arguments: pending.tool_call_arguments,
       data: {
         ...(isRecord(executed.data) ? executed.data : {}),
-        approvalResolution: resolutionData.approvalResolution,
+        ...(awaitsConnectorApproval(executed)
+          ? {}
+          : { approvalResolution: resolutionData.approvalResolution }),
       },
     };
   }

@@ -22,4 +22,4 @@ CREATE TABLE `message_approval` (
 --> statement-breakpoint
 CREATE UNIQUE INDEX `message_approval_code_idx` ON `message_approval` (`user_id`,`code_hash`);
 --> statement-breakpoint
-CREATE UNIQUE INDEX `message_approval_target_idx` ON `message_approval` (`run_id`,`run_attempt`,`interaction_id`,`channel`,`sender_key`);
+CREATE UNIQUE INDEX `message_approval_target_idx` ON `message_approval` (`run_id`,`run_attempt`,`interaction_id`,`argument_digest`,`channel`,`sender_key`);
