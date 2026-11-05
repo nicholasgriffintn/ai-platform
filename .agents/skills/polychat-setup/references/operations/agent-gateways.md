@@ -18,7 +18,7 @@ The desktop application can also work the other way round: add a gateway as an a
 
 A gateway on a network address needs HTTPS or a stored pairing secret before the desktop application will reach it, because a connection to one is authority to execute code on the machine hosting it. Loopback is exempt from that rule and remains the default.
 
-Exposing Polychat to a gateway as an MCP server is still only a design. See [ADR 0029](../architecture/decisions/0029-separate-model-and-agent-runtimes.md).
+A gateway can also reach Polychat as an MCP server at `POST /mcp`, using a personal API key. It lists the tools the key owner can run in Polychat plus one tool per teammate, and anything that needs approval waits in Polychat. See [ADR 0100](../architecture/decisions/0100-app-views-are-content-never-authority.md).
 
 ## Before building against a gateway
 
