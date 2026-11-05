@@ -1,5 +1,5 @@
 import type { ReasoningEffortLevel } from "@ngriffin_uk/polychat-ai-models";
-import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import { modelHasOutputModality, type ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { hasAnyEnabledTool } from "@ngriffin_uk/polychat-utility-server/enabled-tools";
 import {
@@ -20,7 +20,7 @@ type GoogleResponseModality = "TEXT" | "IMAGE" | "AUDIO";
 type GoogleStudioContentParameters = Pick<ChatCompletionParameters, "messages">;
 type GoogleStudioToolParameters = Pick<ChatCompletionParameters, "enabled_tools" | "tools">;
 
-export const GOOGLE_STUDIO_SAFETY_SETTINGS = [
+const GOOGLE_STUDIO_SAFETY_SETTINGS = [
   {
     category: "HARM_CATEGORY_DANGEROUS_CONTENT",
     threshold: "BLOCK_NONE",
@@ -32,6 +32,18 @@ export const GOOGLE_STUDIO_SAFETY_SETTINGS = [
     threshold: "BLOCK_NONE",
   },
 ];
+
+const GOOGLE_IMAGE_OUTPUT_SAFETY_SETTINGS = GOOGLE_STUDIO_SAFETY_SETTINGS.map((setting) =>
+  setting.category === "HARM_CATEGORY_SEXUALLY_EXPLICIT"
+    ? { ...setting, threshold: "BLOCK_LOW_AND_ABOVE" }
+    : setting,
+);
+
+export function getGoogleSafetySettings(modelConfig: Pick<ModelConfigItem, "modalities">) {
+  return modelHasOutputModality(modelConfig, "image")
+    ? GOOGLE_IMAGE_OUTPUT_SAFETY_SETTINGS
+    : GOOGLE_STUDIO_SAFETY_SETTINGS;
+}
 
 export function formatGoogleStudioModelResource(model: string): string {
   if (model.startsWith("models/") || model.startsWith("tunedModels/")) {
