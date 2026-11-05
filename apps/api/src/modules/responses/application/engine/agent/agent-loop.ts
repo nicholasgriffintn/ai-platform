@@ -59,6 +59,7 @@ import { buildRunCapPauseMessages } from "~/modules/responses/application/engine
 import type { ChatTurnTransport } from "~/modules/responses/application/engine/agent/turn-transport";
 import { buildMessageParts } from "~/modules/responses/application/engine/messages/parts";
 import { toProviderMessages } from "~/modules/responses/application/engine/messages/provider-mapping";
+import type { ImagePolicyMessage } from "~/modules/responses/application/engine/policy/image-policy";
 import {
   DISCARDING_EVENT_SINK,
   type ChatEventSink,
@@ -260,6 +261,10 @@ export interface AgentLoopExecutionParams {
   runBudget?: RunBudget;
   provenance?: RunProvenance;
   modelFallback?: ModelFallback<AgentModelSelection>;
+  screenActivatedTools?: (
+    toolNames: string[],
+    messages: readonly ImagePolicyMessage[],
+  ) => Promise<string[]>;
   onContextSnapshot?: (snapshot: ChatContextSnapshot) => Promise<void> | void;
   onRetryState?: (state: ChatRetrySnapshot | null) => Promise<void> | void;
 }
@@ -1060,10 +1065,13 @@ async function runChatAgentLoop(
         context.state.finalAnswerNotice ??= REPEATED_TOOL_CALL_NOTICE;
       }
 
-      const activatedToolNames = withoutSettingsDisabledTools(
+      const requestedToolNames = withoutSettingsDisabledTools(
         getResponseScopedCapabilityToolNames(toolResults),
         context.shared.toolRequestContext.request?.settings_disabled_tools ?? [],
       );
+      const activatedToolNames =
+        (await params.screenActivatedTools?.(requestedToolNames, context.messages)) ??
+        requestedToolNames;
 
       for (const toolName of activatedToolNames) {
         context.state.enabledToolNames.add(toolName);

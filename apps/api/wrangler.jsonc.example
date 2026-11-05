@@ -68,6 +68,9 @@
     "binding": "AI",
     "remote": true
   },
+  "images": {
+    "binding": "IMAGES"
+  },
   "vectorize": [
     {
       "binding": "VECTOR_DB",
