@@ -5,11 +5,17 @@ import type { IEnv, IUser } from "~/types";
 
 const mocks = vi.hoisted(() => ({
   startResponse: vi.fn(),
+  readRecipeRunCapCredits: vi.fn(),
   generateId: vi.fn(),
 }));
 
 vi.mock("~/modules/responses/application/start", () => ({
   startResponse: mocks.startResponse,
+}));
+
+vi.mock("../installation-budget", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../installation-budget")>()),
+  readRecipeRunCapCredits: mocks.readRecipeRunCapCredits,
 }));
 
 vi.mock("../recipe-model", () => ({
@@ -98,6 +104,19 @@ describe("executeRecipeInvocationChat", () => {
       created: 1,
       choices: [],
     });
+  });
+
+  it("runs a routine under the per-run cap saved on its installation", async () => {
+    mocks.readRecipeRunCapCredits.mockResolvedValue(25);
+
+    await executeRecipeInvocationChat({
+      env,
+      context,
+      user,
+      invocation: { ...invocation, installationId: "installation-1" },
+    });
+
+    expect(mocks.startResponse.mock.calls[0]?.[0].command.settings.budget_constraint).toBe(25);
   });
 
   it("titles generated recipe conversations so scheduled runs are visible in history", async () => {

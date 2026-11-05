@@ -1,4 +1,5 @@
 import {
+  creditsFromCreditMicros,
   delegationRunTaskDataSchema,
   permissionModeSchema,
   projectCodingEnvironmentSchema,
@@ -12,6 +13,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
+import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { isThreadLeaseOwnershipLostError } from "~/modules/conversations/infrastructure/coordinator/client";
 import { revalidateDelegationMemoryBindings } from "~/modules/delegations/application/memory-bindings";
 import { buildDelegationResumeInstruction } from "~/modules/delegations/application/resume";
@@ -252,6 +254,10 @@ export async function runDelegationTask(
       };
     }
 
+    const parentRun = await context.repositories
+      .get(ConversationRunRepository)
+      .getById(delegation.parentRunId);
+    const creditBudgetMicros = payload.resume?.maxCreditMicros ?? delegation.budget.maxCreditMicros;
     const commandId = delegationRunCommandId(delegation.id, payload.resume?.attempt);
     const body: ResponseCommand = {
       conversationId: delegation.childConversationId,
@@ -271,6 +277,9 @@ export async function runDelegationTask(
         permission_mode: permissionModeSchema.parse(parentConversation.permission_mode),
         ...(payload.projectId ? { metadata: { project_id: payload.projectId } } : {}),
         ...(sandboxOptions ? { options: { sandbox: sandboxOptions } } : {}),
+        ...(parentRun?.spendCapCreditMicros
+          ? { budget_constraint: creditsFromCreditMicros(creditBudgetMicros) }
+          : {}),
       },
     };
 
@@ -292,7 +301,7 @@ export async function runDelegationTask(
         },
         durableExecution: {
           kind: "delegation",
-          maxCreditMicros: payload.resume?.maxCreditMicros ?? delegation.budget.maxCreditMicros,
+          maxCreditMicros: creditBudgetMicros,
         },
       },
       signal: AbortSignal.timeout(

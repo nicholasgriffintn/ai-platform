@@ -1494,6 +1494,7 @@ export const conversationRun = sqliteTable(
     resolved_configuration_json: text(),
     spend_cap_credit_micros: integer(),
     usage_refunded_at: text(),
+    delegation_id: text(),
     created_at: text().notNull(),
     updated_at: text().notNull(),
     started_at: text(),
@@ -1516,6 +1517,7 @@ export const conversationRun = sqliteTable(
       table.status,
       table.updated_at,
     ),
+    delegationIdx: index("conversation_run_delegation_idx").on(table.delegation_id),
   }),
 );
 
@@ -2991,6 +2993,7 @@ export const projectTask = sqliteTable(
     completions: text({ mode: "json" }).$type<ProjectTaskCompletion[]>(),
     position: real().default(0).notNull(),
     token_budget: integer(),
+    run_cap_credit_micros: integer(),
     tokens_spent: integer().default(0).notNull(),
     created_at: text()
       .default(sql`(CURRENT_TIMESTAMP)`)

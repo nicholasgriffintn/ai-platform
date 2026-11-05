@@ -22,6 +22,7 @@ function budget(state: Partial<RunChargeState>, overrides: Partial<RunBudgetPara
         capCreditMicros: 100 * CREDIT,
         refunded: false,
         chargedCreditMicros: 0,
+        delegatedCreditMicros: 0,
         ...state,
       })),
     },
@@ -65,7 +66,71 @@ describe("RunBudget", () => {
 
     await run.applyDecision({ kind: "stop" });
 
-    expect(await run.beforeStep(messages)).toEqual({ kind: "stopped" });
+    expect(await run.beforeStep(messages)).toMatchObject({ kind: "stopped" });
+  });
+
+  it("counts what delegates have spent or hold against the cap", async () => {
+    const decision = await budget({
+      chargedCreditMicros: 50 * CREDIT,
+      delegatedCreditMicros: 49 * CREDIT,
+    }).beforeStep(messages);
+
+    expect(decision.kind).toBe("pause");
+  });
+
+  it("stops a delegate at its budget instead of offering to raise it", async () => {
+    const decision = await budget(
+      { chargedCreditMicros: 99 * CREDIT },
+      { onCapReached: "stop" },
+    ).beforeStep(messages);
+
+    expect(decision).toMatchObject({ kind: "stopped" });
+  });
+
+  it("adds a run's fixed cost, such as its sandbox, to each step estimate", async () => {
+    const run = budget(
+      { chargedCreditMicros: 50 * CREDIT },
+      { stepFloorCreditMicros: 60 * CREDIT },
+    );
+
+    expect((await run.beforeStep(messages)).kind).toBe("pause");
+  });
+
+  describe("before tools run", () => {
+    const sandbox = { name: "run_sandbox_task", arguments: {} };
+    const search = { name: "web_search", arguments: {} };
+    const estimateToolCost = vi.fn(async (call: { name: string }) =>
+      call.name === "run_sandbox_task" ? 40 * CREDIT : null,
+    );
+
+    it("holds back a tool whose known cost would cross the cap", async () => {
+      const run = budget({ chargedCreditMicros: 70 * CREDIT }, { estimateToolCost });
+
+      expect((await run.beforeTools([sandbox])).kind).toBe("pause");
+    });
+
+    it("adds up known costs across a batch of calls", async () => {
+      const run = budget({ chargedCreditMicros: 30 * CREDIT }, { estimateToolCost });
+
+      expect((await run.beforeTools([sandbox, sandbox])).kind).toBe("pause");
+    });
+
+    it("lets a tool through when its cost fits or is unknown", async () => {
+      const run = budget({ chargedCreditMicros: 99 * CREDIT }, { estimateToolCost });
+
+      expect(await run.beforeTools([search])).toEqual({ kind: "proceed" });
+      expect(
+        await budget({ chargedCreditMicros: 10 * CREDIT }, { estimateToolCost }).beforeTools([
+          sandbox,
+        ]),
+      ).toEqual({ kind: "proceed" });
+    });
+
+    it("never checks tools on an uncapped run", async () => {
+      const run = budget({}, { capCreditMicros: null, estimateToolCost: vi.fn() });
+
+      expect(await run.beforeTools([sandbox])).toEqual({ kind: "proceed" });
+    });
   });
 
   it("refuses to start under a cap too small for one step", async () => {

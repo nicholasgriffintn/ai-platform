@@ -1,6 +1,7 @@
 import type { RunChargeState } from "@ngriffin_uk/polychat-ai-billing";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { handleToolCalls } from "~/modules/responses/application/engine/tools/execution";
 import { RunBudget } from "~/modules/usage/application/run-budget";
 import type { Message, ToolCall } from "~/types";
 
@@ -53,7 +54,7 @@ function toolTurn(step: number) {
   };
 }
 
-function capBudget(capCreditMicros: number) {
+function capBudget(capCreditMicros: number, toolCostCreditMicros: number | null = null) {
   return new RunBudget({
     runId: "run-1",
     capCreditMicros,
@@ -62,6 +63,7 @@ function capBudget(capCreditMicros: number) {
         capCreditMicros,
         refunded: false,
         chargedCreditMicros: ledger.charged,
+        delegatedCreditMicros: 0,
       }),
     },
     raiseCap: async () => true,
@@ -72,6 +74,7 @@ function capBudget(capCreditMicros: number) {
     } as ConstructorParameters<typeof RunBudget>[0]["modelConfig"],
     modelCostIsCharged: true,
     liveMeter: true,
+    estimateToolCost: async () => toolCostCreditMicros,
   });
 }
 
@@ -112,6 +115,7 @@ describe("a capped run", () => {
   beforeEach(() => {
     ledger.charged = 0;
     ledger.stepCost = STEP_COST;
+    vi.mocked(handleToolCalls).mockClear();
   });
 
   it("pauses for approval before any step that could overspend, with no further model call", async () => {
@@ -140,6 +144,25 @@ describe("a capped run", () => {
         .filter((event) => event.type === "response.run_meter")
         .map((event) => event.meter?.chargedCreditMicros),
     ).toEqual([0, 30 * CREDIT, 60 * CREDIT, 90 * CREDIT, 90 * CREDIT]);
+  });
+
+  it("holds back a costly tool, answers its call, and pauses without running it", async () => {
+    const stored: Message[] = [];
+    const cap = 100 * CREDIT;
+    const { params, runTurn } = runParams(capBudget(cap, 80 * CREDIT), stored, []);
+
+    const result = await runAgentLoop(params);
+
+    expect(handleToolCalls).not.toHaveBeenCalled();
+    expect(runTurn).toHaveBeenCalledTimes(1);
+    expect(ledger.charged).toBeLessThanOrEqual(cap);
+    expect(result.pendingInteractionKind).toBe("approval");
+    expect(result.toolResponses[0]).toMatchObject({
+      name: "web_search",
+      status: "error",
+      tool_call_id: "call-1",
+    });
+    expect(result.toolResponses.at(-1)).toMatchObject({ name: "request_approval" });
   });
 
   it("ends without another model call when the person chooses to stop", async () => {

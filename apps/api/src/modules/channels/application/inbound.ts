@@ -44,6 +44,7 @@ import { ChannelSenderRepository } from "~/modules/channels/infrastructure/Chann
 import { ConversationManager } from "~/modules/conversations/application/manager";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { deliverOutboundOperation } from "~/modules/delivery/application/outbound";
 import { receiveCaseFromChannel } from "~/modules/project-tasks/application/case-intake";
 import { toCommandMessages } from "~/modules/responses/application/runs/command-payload";
 import { recoverChatCompletionResponse } from "~/modules/responses/application/runs/completion-recovery";

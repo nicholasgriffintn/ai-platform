@@ -20,9 +20,14 @@ import type { Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/usage/run-budget" });
 
-const STOP_OPTION = "Stop here";
+export const RUN_CAP_STOP_OPTION = "Stop here";
 
-export const RUN_CAP_STOPPED_NOTICE = "This run stopped at its credit cap, as you chose.";
+const RUN_CAP_STOPPED_NOTICE = "This run stopped at its credit cap, as you chose.";
+const DELEGATE_CAP_STOPPED_NOTICE =
+  "This delegate stopped at the credit budget it was given. Its work so far is above.";
+
+export const RUN_CAP_TOOL_SKIPPED_NOTICE =
+  "This tool did not run because it could take the run over its credit cap. Run it again if the cap is raised.";
 
 export interface RunCapPause {
   message: string;
@@ -33,7 +38,7 @@ export interface RunCapPause {
 
 export type RunStepDecision =
   | { kind: "proceed" }
-  | { kind: "stopped" }
+  | { kind: "stopped"; notice: string }
   | { kind: "pause"; pause: RunCapPause };
 
 export type RunCapDecision = { kind: "raise"; capCreditMicros: number } | { kind: "stop" };
@@ -45,8 +50,16 @@ export interface RunBudgetParams {
   raiseCap: (capCreditMicros: number) => Promise<boolean>;
   modelConfig?: ModelConfigItem | null;
   modelCostIsCharged: boolean;
+  stepFloorCreditMicros?: number;
   systemPrompt?: string;
   liveMeter: boolean;
+  onCapReached?: "pause" | "stop";
+  estimateToolCost?: (call: RunToolCall) => Promise<number | null>;
+}
+
+export interface RunToolCall {
+  name: string;
+  arguments: Record<string, unknown>;
 }
 
 function credits(creditMicros: number): string {
@@ -82,24 +95,29 @@ export class RunBudget {
   }
 
   private estimateStep(messages: readonly MessageTokenInput[]): number {
+    const floor = this.params.stepFloorCreditMicros ?? 0;
+
     if (!this.params.modelCostIsCharged) {
-      return 0;
+      return floor;
     }
 
-    return estimateTurnCreditMicros({
-      promptTokens: estimateMessagesTokens([
-        { role: "system", content: this.params.systemPrompt ?? "" },
-        ...messages,
-      ]),
-      modelConfig: this.params.modelConfig,
-    });
+    return (
+      floor +
+      estimateTurnCreditMicros({
+        promptTokens: estimateMessagesTokens([
+          { role: "system", content: this.params.systemPrompt ?? "" },
+          ...messages,
+        ]),
+        modelConfig: this.params.modelConfig,
+      })
+    );
   }
 
   private async readCharge() {
     const state = await this.params.store.getRunChargeState(this.params.runId);
 
     return {
-      chargedCreditMicros: state?.chargedCreditMicros ?? 0,
+      chargedCreditMicros: (state?.chargedCreditMicros ?? 0) + (state?.delegatedCreditMicros ?? 0),
       capCreditMicros: state?.capCreditMicros ?? this.params.capCreditMicros,
     };
   }
@@ -134,20 +152,16 @@ export class RunBudget {
     }
   }
 
-  async beforeStep(messages: readonly MessageTokenInput[]): Promise<RunStepDecision> {
-    if (this.stopped) {
-      return { kind: "stopped" };
-    }
-
-    if (this.params.capCreditMicros === null) {
-      return { kind: "proceed" };
-    }
-
+  private async decide(stepEstimateCreditMicros: number): Promise<RunStepDecision> {
     const charge = await this.readCharge();
-    const step = { ...charge, stepEstimateCreditMicros: this.estimateStep(messages) };
+    const step = { ...charge, stepEstimateCreditMicros };
 
     if (runStepFitsCap(step)) {
       return { kind: "proceed" };
+    }
+
+    if (this.params.onCapReached === "stop") {
+      return { kind: "stopped", notice: DELEGATE_CAP_STOPPED_NOTICE };
     }
 
     const proposedCapCreditMicros = proposeRaisedRunCap(step);
@@ -157,11 +171,36 @@ export class RunBudget {
       kind: "pause",
       pause: {
         message: `This run has used ${credits(step.chargedCreditMicros)} of its ${credits(step.capCreditMicros ?? 0)} credit cap, and the next step could go over it. Raise the cap to keep going, or stop here.`,
-        options: [raiseOption, STOP_OPTION],
+        options: [raiseOption, RUN_CAP_STOP_OPTION],
         raiseOption,
         proposedCapCreditMicros,
       },
     };
+  }
+
+  async beforeStep(messages: readonly MessageTokenInput[]): Promise<RunStepDecision> {
+    if (this.stopped) {
+      return { kind: "stopped", notice: RUN_CAP_STOPPED_NOTICE };
+    }
+
+    if (this.params.capCreditMicros === null) {
+      return { kind: "proceed" };
+    }
+
+    return this.decide(this.estimateStep(messages));
+  }
+
+  async beforeTools(calls: readonly RunToolCall[]): Promise<RunStepDecision> {
+    const estimateToolCost = this.params.estimateToolCost;
+
+    if (this.params.capCreditMicros === null || !estimateToolCost) {
+      return { kind: "proceed" };
+    }
+
+    const costs = await Promise.all(calls.map((call) => estimateToolCost(call)));
+    const known = costs.reduce<number>((total, cost) => total + (cost ?? 0), 0);
+
+    return known > 0 ? this.decide(known) : { kind: "proceed" };
   }
 
   async readMeter(): Promise<RunMeter | null> {
