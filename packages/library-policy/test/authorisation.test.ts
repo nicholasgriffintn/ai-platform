@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  hasProEntitlement,
   actionSchema,
   authorisationBundle,
   authorise,
@@ -11,6 +12,12 @@ import {
 } from "../src/index.js";
 
 describe("Cedar authorisation", () => {
+  it("gives the agent plan the same entitlement as pro, and nothing to free", () => {
+    expect(hasProEntitlement({ plan_id: "agent" })).toBe(true);
+    expect(hasProEntitlement({ plan_id: "pro" })).toBe(true);
+    expect(hasProEntitlement({ plan_id: "free" })).toBe(false);
+  });
+
   it("keeps ownership, workspace membership and role authority separate", () => {
     expect(ownsResource(7, 7)).toBe(true);
     expect(ownsResource(7, "7")).toBe(false);

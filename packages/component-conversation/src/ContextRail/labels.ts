@@ -107,6 +107,19 @@ export function runTotalLabel(usage: ChatRunUsage): string {
   return total.complete ? credits : `At least ${credits}`;
 }
 
+export function runChargeNote(usage: ChatRunUsage): string | null {
+  const refunded = usage.charge?.refundedCreditMicros ?? 0;
+  const absorbed = usage.charge?.absorbedCreditMicros ?? 0;
+
+  if (refunded > 0) {
+    return `${formatCredits(creditsFromCreditMicros(refunded))} credits returned because this run failed on our side.`;
+  }
+
+  return absorbed > 0
+    ? `${formatCredits(creditsFromCreditMicros(absorbed))} credits over the cap were not charged.`
+    : null;
+}
+
 export function delegatedUsageLabel(delegated: ChatRunDelegatedUsage): string {
   if (delegated.creditMicros === null) {
     return delegated.consumptionStatus === "processing" ? "still counting" : "not reported";

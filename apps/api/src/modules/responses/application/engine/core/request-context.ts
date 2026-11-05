@@ -1,3 +1,4 @@
+import type { UsageEmissionDelivery } from "@ngriffin_uk/polychat-ai-billing";
 import { resolveRequestUser } from "@ngriffin_uk/polychat-ai-providers";
 import type { RunProvenance } from "@ngriffin_uk/polychat-schemas";
 import {
@@ -46,6 +47,7 @@ export function buildToolRequestContext(params: {
   provider: string;
   runId?: string;
   runAttempt?: number;
+  runUsageDelivery?: UsageEmissionDelivery;
   memoryScope: MemoryScope;
   notebook?: NotebookRunScope | null;
 }): IRequest {
@@ -53,7 +55,12 @@ export function buildToolRequestContext(params: {
   const user = resolveRequestUser(chatOptions);
   const context =
     chatOptions.context && params.runId
-      ? withExecutionRunContext(chatOptions.context, params.runId, params.runAttempt)
+      ? withExecutionRunContext(
+          chatOptions.context,
+          params.runId,
+          params.runAttempt,
+          params.runUsageDelivery,
+        )
       : chatOptions.context;
 
   return {

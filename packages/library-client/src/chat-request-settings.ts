@@ -4,7 +4,7 @@ type ChatCompactionMode = NonNullable<ChatSettings["compaction"]>;
 
 type RequestGenerationSettings = Omit<
   ChatSettings,
-  "compaction" | "enabled_tools" | "localOnly" | "tool_options"
+  "compaction" | "enabled_tools" | "localOnly" | "run_cap_credits" | "tool_options"
 > & {
   compaction?: ChatCompactionMode;
 };
@@ -13,6 +13,7 @@ export interface ChatRequestSettingsProjection {
   enabledTools?: string[];
   generationSettings: RequestGenerationSettings;
   hostedToolOptions?: ChatSettings["tool_options"];
+  runCapCredits?: number;
 }
 
 function isChatCompactionMode(value: unknown): value is ChatCompactionMode {
@@ -38,6 +39,7 @@ export function projectChatRequestSettings(
     reasoning,
     verbosity,
     service_tier,
+    run_cap_credits: runCapCredits,
   } = chatSettings;
 
   return {
@@ -54,5 +56,6 @@ export function projectChatRequestSettings(
       ...(isChatCompactionMode(compaction) ? { compaction } : {}),
     },
     hostedToolOptions: hasDefinedValue(hostedToolOptions) ? hostedToolOptions : undefined,
+    runCapCredits,
   };
 }

@@ -205,7 +205,10 @@ export const chatCompletionsPortRequestSchema = z
     compaction: chatCompactionModeSchema.optional(),
     mode: z.string().min(1).optional(),
     budget: z
-      .object({ steps: z.number().int().min(1).optional() })
+      .object({
+        steps: z.number().int().min(1).optional(),
+        credits: z.number().positive().optional(),
+      })
       .strict()
       .optional(),
     idempotency_key: responseIdempotencyKeySchema.optional(),

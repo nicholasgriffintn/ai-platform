@@ -46,6 +46,7 @@ export interface ChatSettings {
   verbosity?: VerbosityLevel;
   service_tier?: ModelServiceTier;
   tool_options?: HostedToolSettings;
+  run_cap_credits?: number;
 }
 
 export type ChatRequestOptions = Partial<SchemaChatCompletionRequestBody>;

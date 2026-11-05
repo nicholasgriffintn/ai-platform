@@ -1426,6 +1426,8 @@ export const conversationRun = sqliteTable(
     retry_json: text(),
     provenance_json: text(),
     resolved_configuration_json: text(),
+    spend_cap_credit_micros: integer(),
+    usage_refunded_at: text(),
     created_at: text().notNull(),
     updated_at: text().notNull(),
     started_at: text(),
@@ -3142,7 +3144,7 @@ export const usageEvent = sqliteTable(
     byok: integer({ mode: "boolean" }).notNull().default(false),
     estimated: integer({ mode: "boolean" }).notNull().default(false),
     vendor_units: real(),
-    reason: text({ enum: ["ran_off_platform"] }),
+    reason: text({ enum: ["ran_off_platform", "platform_failure_refund", "run_cap_absorbed"] }),
     site: text({ enum: ["hosted", "browser", "device", "machine"] }),
     raw: text({ mode: "json" }),
     created_at: text()

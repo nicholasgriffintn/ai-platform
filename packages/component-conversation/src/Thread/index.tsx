@@ -11,6 +11,7 @@ import type {
   Message,
 } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { resolveGoalSubmission } from "@ngriffin_uk/polychat-library-chat/goal-command";
+import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
 import { mergeChatRequestOptions } from "@ngriffin_uk/polychat-library-chat/request-options";
 import {
   resolveConnectorOperationApproval,
@@ -94,6 +95,7 @@ import { ChatSuggestions } from "./ChatSuggestions.js";
 import { ComposerBanner } from "./ComposerBanner/index.js";
 import { FooterInfo } from "./FooterInfo.js";
 import { MessageList } from "./MessageList.js";
+import { RunCostStatus } from "./RunCostStatus.js";
 import { resolveThreadModeConfig, type ThreadSurface } from "./surface-profiles.js";
 import { ToolApprovalBatchBar } from "./ToolApprovalBatchBar.js";
 import { useApprovalRules } from "./useApprovalRules.js";
@@ -303,6 +305,10 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
   const messages = useMemo(
     () => currentConversation?.messages || [],
     [currentConversation?.messages],
+  );
+  const conversationCharacters = useMemo(
+    () => messages.reduce((total, message) => total + getMessageTextContent(message).length, 0),
+    [messages],
   );
   const handleConnectorApproval = useCallback(
     async (approvalId: string, resolution: "approved" | "rejected") => {
@@ -1208,6 +1214,12 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
           currentConversation.latest_response.status === "incomplete") ? (
           <ChatRunStatusBanner response={currentConversation.latest_response} />
         ) : null}
+        <RunCostStatus
+          conversationId={currentConversationId}
+          historyCharacters={conversationCharacters}
+          isRunning={streamStarted}
+          awaitingApproval={currentConversation?.latest_response?.status === "awaiting_approval"}
+        />
         {modeConfig?.agentApprovals ? <AgentApprovalDock {...modeConfig.agentApprovals} /> : null}
         <ToolApprovalBatchBar batch={approvalBatch} />
         {modeConfig?.composerBanner}

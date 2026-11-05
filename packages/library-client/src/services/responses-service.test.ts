@@ -104,6 +104,17 @@ describe("buildCreateResponseBody", () => {
     ]);
   });
 
+  it("sends a run cap only for stored runs, which are the runs that can honour it", () => {
+    const chatSettings = { run_cap_credits: 50 };
+
+    expect(buildCreateResponseBody({ ...baseParams, chatSettings }).budget).toEqual({
+      credits: 50,
+    });
+    expect(
+      buildCreateResponseBody({ ...baseParams, chatSettings, store: false }).budget,
+    ).toBeUndefined();
+  });
+
   it("turns an approval reply and a tool interaction into input items", () => {
     const body = buildCreateResponseBody({
       ...baseParams,

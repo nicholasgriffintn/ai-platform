@@ -55,6 +55,7 @@ import {
 } from "~/modules/responses/application/engine/agent/empty-reply";
 import { captureRunMemories } from "~/modules/responses/application/engine/agent/memory-capture";
 import { createAgentProviderIO } from "~/modules/responses/application/engine/agent/provider-io";
+import { buildRunCapPauseMessages } from "~/modules/responses/application/engine/agent/run-cap-pause";
 import type { ChatTurnTransport } from "~/modules/responses/application/engine/agent/turn-transport";
 import { buildMessageParts } from "~/modules/responses/application/engine/messages/parts";
 import { toProviderMessages } from "~/modules/responses/application/engine/messages/provider-mapping";
@@ -81,6 +82,11 @@ import { createProviderRetryBudget } from "~/modules/responses/domain/provider-r
 import { withoutSettingsDisabledTools } from "~/modules/tools/application/availability";
 import { listFunctionToolDefinitions } from "~/modules/tools/application/catalogue";
 import { shouldStopTurnForUsage, USAGE_LIMIT_NOTICE } from "~/modules/usage/application/limitState";
+import {
+  RUN_CAP_STOPPED_NOTICE,
+  type RunBudget,
+  type RunCapPause,
+} from "~/modules/usage/application/run-budget";
 import type {
   ChatCompletionParameters,
   ChatMode,
@@ -222,6 +228,7 @@ export interface AgentLoopExecutionParams {
   contextSystemSections?: readonly ContextBudgetSystemSection[];
   runId?: string;
   runAttempt?: number;
+  runBudget?: RunBudget;
   provenance?: RunProvenance;
   modelFallback?: ModelFallback<AgentModelSelection>;
   onContextSnapshot?: (snapshot: ChatContextSnapshot) => Promise<void> | void;
@@ -372,6 +379,7 @@ async function runChatAgentLoop(
       runId: params.runId,
       runAttempt: params.runAttempt,
       provenance: params.provenance,
+      usageDelivery: params.runBudget?.usageDelivery,
     });
 
     guardrailsPassed = finalised.guardrailsPassed;
@@ -399,6 +407,31 @@ async function runChatAgentLoop(
       text,
       assistantMessage: { role: "assistant" as const, content: text },
     };
+  };
+
+  const pauseAtRunCap = async (pause: RunCapPause, step: number) => {
+    const { assistant, toolCall, tool } = buildRunCapPauseMessages(pause, {
+      completionId: params.completionId,
+      model: activeModel.model,
+      platform: params.platform,
+    });
+
+    await params.conversationManager.add(params.completionId, assistant);
+    await params.conversationManager.add(params.completionId, tool);
+    await emitToolCallEvents(sink, [toolCall], step);
+    await sink.write(createStreamedToolResultEvent(tool));
+    await writeTurnActivity(sink, {
+      kind: "waiting_for_user",
+      step,
+      toolCallId: toolCall.id,
+      toolName: tool.name ?? "request_approval",
+      reason: "approval",
+    });
+
+    toolResponses.push(tool);
+    state.waitingForUserAction = "approval";
+
+    return closingTurn(pause.message, "pending");
   };
 
   for (const toolResult of params.initialToolResults ?? []) {
@@ -513,6 +546,24 @@ async function runChatAgentLoop(
         state.pendingUserAction = undefined;
 
         return closingTurn(pending.message, "pending");
+      }
+
+      const budgetDecision = await params.runBudget?.beforeStep(
+        providerIO.providerMessages(messages),
+      );
+
+      await emitRunMeter(sink, params.runBudget);
+
+      if (budgetDecision?.kind === "stopped") {
+        state.stoppedForUsageLimit = true;
+
+        return closingTurn(RUN_CAP_STOPPED_NOTICE, "usage_limit_reached");
+      }
+
+      if (budgetDecision?.kind === "pause") {
+        state.stoppedForUsageLimit = true;
+
+        return pauseAtRunCap(budgetDecision.pause, step);
       }
 
       const stepMessageId = await openMessage();
@@ -993,6 +1044,8 @@ async function runChatAgentLoop(
     );
   }
 
+  await emitRunMeter(sink, params.runBudget);
+
   const completedMessage = finalMessage;
   const memoryMessages: Message[] = [];
   const usedTools = steps.some((step) => step.stepType === "tool-call");
@@ -1065,6 +1118,14 @@ async function emitToolCallEvents(
     } catch (error) {
       logger.error("Failed to emit tool events", { error, toolCall });
     }
+  }
+}
+
+async function emitRunMeter(sink: ChatEventSink, runBudget: RunBudget | undefined) {
+  const meter = await runBudget?.readMeter();
+
+  if (meter) {
+    await sink.write({ type: "response.run_meter", meter });
   }
 }
 

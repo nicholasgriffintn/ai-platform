@@ -7,7 +7,7 @@ import {
 import type { ChatRunUsage } from "@ngriffin_uk/polychat-schemas";
 import { ArrowDownToLine, ArrowUpFromLine, Coins, MessagesSquare, Receipt } from "lucide-react";
 
-import { delegatedUsageLabel, runTotalLabel } from "./labels.js";
+import { delegatedUsageLabel, runChargeNote, runTotalLabel } from "./labels.js";
 
 export function ConversationUsageCard({
   summary,
@@ -55,6 +55,9 @@ export function ConversationUsageCard({
         {runUsage ? (
           <>
             <WorkbenchFact icon={Coins} label="Latest run" value={runTotalLabel(runUsage)} />
+            {runChargeNote(runUsage) ? (
+              <p className="text-xs text-muted-foreground">{runChargeNote(runUsage)}</p>
+            ) : null}
             {runUsage.delegated?.map((delegated) => (
               <WorkbenchFact
                 key={delegated.delegationId}

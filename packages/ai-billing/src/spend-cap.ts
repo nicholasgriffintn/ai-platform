@@ -1,4 +1,8 @@
-import type { SpendState } from "@ngriffin_uk/polychat-schemas";
+import {
+  creditMicrosFromCredits,
+  creditsFromCreditMicros,
+  type SpendState,
+} from "@ngriffin_uk/polychat-schemas";
 
 const NEAR_CAP_RATIO = 0.8;
 
@@ -22,4 +26,28 @@ export function isSpendCapReached(
   capCreditMicros: number | null | undefined,
 ): boolean {
   return resolveSpendState(creditMicros, capCreditMicros) === "reached";
+}
+
+export interface RunStepCharge {
+  chargedCreditMicros: number;
+  capCreditMicros: number | null | undefined;
+  stepEstimateCreditMicros: number;
+}
+
+export function runStepFitsCap(charge: RunStepCharge): boolean {
+  if (!charge.capCreditMicros || charge.capCreditMicros <= 0) {
+    return true;
+  }
+
+  return charge.chargedCreditMicros + charge.stepEstimateCreditMicros <= charge.capCreditMicros;
+}
+
+export function proposeRaisedRunCap(charge: RunStepCharge): number {
+  const cap = charge.capCreditMicros ?? 0;
+  const proposed = Math.max(
+    cap * 2,
+    charge.chargedCreditMicros + charge.stepEstimateCreditMicros * 2,
+  );
+
+  return creditMicrosFromCredits(Math.ceil(creditsFromCreditMicros(proposed)));
 }

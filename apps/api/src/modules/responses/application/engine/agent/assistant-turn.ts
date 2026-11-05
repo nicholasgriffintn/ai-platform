@@ -1,4 +1,4 @@
-import type { UsageEmissionOutcome } from "@ngriffin_uk/polychat-ai-billing";
+import type { UsageEmissionDelivery, UsageEmissionOutcome } from "@ngriffin_uk/polychat-ai-billing";
 import { recordModelTurnUsage } from "@ngriffin_uk/polychat-ai-billing";
 import type { NormalisedTokenUsage } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
@@ -70,6 +70,7 @@ export interface FinaliseAssistantTurnParams {
   runId?: string;
   runAttempt?: number;
   provenance?: RunProvenance;
+  usageDelivery?: UsageEmissionDelivery;
 }
 
 export interface FinalisedAssistantTurn {
@@ -191,6 +192,7 @@ export async function finaliseAssistantTurn(
             runId: params.runId ?? null,
             runAttempt: params.runAttempt ?? null,
             provenance: params.provenance,
+            delivery: params.usageDelivery,
           },
         );
 

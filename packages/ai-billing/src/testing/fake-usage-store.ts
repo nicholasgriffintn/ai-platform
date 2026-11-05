@@ -3,6 +3,8 @@ import { vi, type Mock } from "vitest";
 import type {
   UsageBalanceRecord,
   UsageEventPublisher,
+  RunChargeGroup,
+  RunChargeState,
   UsageEventRecord,
   UsageReservationRecord,
   UsageRuntime,
@@ -19,6 +21,9 @@ export interface FakeUsageStoreOptions {
   created?: boolean;
   transitioned?: boolean;
   conversationExists?: boolean;
+  runCharge?: RunChargeState | null;
+  runChargeGroups?: RunChargeGroup[];
+  runChargeApplied?: boolean;
 }
 
 export type FakeUsageStore = { [K in keyof UsageStore]: Mock<UsageStore[K]> };
@@ -45,6 +50,9 @@ export function createFakeUsageStore(options: FakeUsageStoreOptions = {}): FakeU
     getAnonymousCreditSpend: vi.fn(async () => null),
     applyAnonymousCreditDeltas: vi.fn(async () => {}),
     insertEventAndApplyBalance: vi.fn(async (event) => options.insert?.(event) ?? true),
+    getRunChargeState: vi.fn(async () => options.runCharge ?? null),
+    listRunChargeGroups: vi.fn(async () => options.runChargeGroups ?? []),
+    applyRunChargeAdjustments: vi.fn(async () => options.runChargeApplied ?? true),
     createReservation: vi.fn(async () => options.created ?? true),
     createUserReservationWithBalance: vi.fn(async () => true),
     getReservation: vi.fn(async () => options.reservation ?? null),
