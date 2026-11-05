@@ -528,6 +528,7 @@ export class ChatOrchestrator {
       userSettings,
       requestOptions: continuedRequestOptions,
       guardrailPrompt: approvalReplay ? prepared.toolIntentRequest : messageWithContext,
+      crisisSignpost: prepared.crisisSignpost,
       assessFinish: goalFinishGate
         ? (finishContext) => goalFinishGate.assessFinish(finishContext)
         : undefined,

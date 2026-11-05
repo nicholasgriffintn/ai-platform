@@ -15,6 +15,10 @@ struct WatchAskView: View {
                     .onSubmit(ask)
                     .disabled(isAsking)
 
+                if answer == nil {
+                    Text(AIDisclosure.text).font(.footnote).foregroundStyle(.secondary)
+                }
+
                 if isAsking {
                     ProgressView()
                 }

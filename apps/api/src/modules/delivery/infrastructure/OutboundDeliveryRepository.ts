@@ -88,6 +88,47 @@ export class OutboundDeliveryRepository extends BaseRepository {
     return parseDelivery(row);
   }
 
+  async isSent(id: string, userId: number): Promise<boolean> {
+    const row = await this.runQuery<Pick<OutboundDeliveryRow, "state">>(
+      "SELECT state FROM delivery WHERE delivery_type = 'outbound' AND id = ? AND user_id = ?",
+      [id, userId],
+      true,
+    );
+
+    return row?.state === "sent";
+  }
+
+  async recordSent(input: {
+    id: string;
+    userId: number;
+    kind: string;
+    scopeId: string;
+    operationId: string;
+    payloadDigest: string;
+    payload: Record<string, unknown>;
+  }): Promise<void> {
+    const now = new Date().toISOString();
+
+    await this.executeRun(
+      `INSERT OR IGNORE INTO delivery (
+         delivery_type, id, user_id, kind, scope_id, operation_id, payload_digest,
+         payload_json, state, sent_at, created_at, updated_at
+       ) VALUES ('outbound', ?, ?, ?, ?, ?, ?, ?, 'sent', ?, ?, ?)`,
+      [
+        input.id,
+        input.userId,
+        input.kind,
+        input.scopeId,
+        input.operationId,
+        input.payloadDigest,
+        JSON.stringify(input.payload),
+        now,
+        now,
+        now,
+      ],
+    );
+  }
+
   async begin(input: {
     id: string;
     userId: number;
