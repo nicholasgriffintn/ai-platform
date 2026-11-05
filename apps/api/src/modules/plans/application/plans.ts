@@ -1,4 +1,8 @@
-import { ANONYMOUS_PLAN_ID, resolvePlanAllowanceCredits } from "@ngriffin_uk/polychat-ai-billing";
+import {
+  ANONYMOUS_PLAN_ID,
+  isPlanOnSale,
+  resolvePlanAllowanceCredits,
+} from "@ngriffin_uk/polychat-ai-billing";
 import type { PlanCreditsUpdate } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -25,13 +29,15 @@ function toPublicPlan(plan: PlanRecord) {
 export async function listPlans(env: IEnv) {
   const plans = await new PlanRepository(env).getAllPlans();
 
-  return plans.filter((plan) => plan.id !== ANONYMOUS_PLAN_ID).map(toPublicPlan);
+  return plans
+    .filter((plan) => plan.id !== ANONYMOUS_PLAN_ID && isPlanOnSale(plan))
+    .map(toPublicPlan);
 }
 
 export async function getPlanDetails(env: IEnv, id: string) {
   const plan = await new PlanRepository(env).getPlanById(id);
 
-  if (!plan) {
+  if (!plan || !isPlanOnSale(plan)) {
     throw new AssistantError("Plan not found", ErrorType.NOT_FOUND);
   }
 

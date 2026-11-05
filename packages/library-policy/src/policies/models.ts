@@ -11,7 +11,7 @@ export const modelPolicies = {
   "model.suite.delete": `permit(principal, action == Polychat::Action::"model.suite.delete", resource)
     when { context.actorId == context.ownerId || context.managesPolicy };`,
   "benchmark.run.start": `permit(principal, action == Polychat::Action::"benchmark.run.start", resource)
-    when { context.signedIn && (context.plan == "pro" || context.byok) };`,
+    when { context.signedIn && (["pro", "agent"].contains(context.plan) || context.byok) };`,
   "spend.execute": `permit(principal, action == Polychat::Action::"spend.execute", resource)
     when { context.valid && !(context.hardStop && context.overMonthly) };`,
   "spend.unattended": `permit(principal, action == Polychat::Action::"spend.unattended", resource)
@@ -24,10 +24,10 @@ export const modelPolicies = {
     when { !context.refs.isEmpty() && context.allowedRefs.containsAll(context.refs) &&
       context.targetRef == context.approvedTargetRef };`,
   "model.execute": `permit(principal, action == Polychat::Action::"model.execute", resource)
-    when { context.active && (context.plan == "pro" || context.free || context.byok || context.onDevice) &&
+    when { context.active && (["pro", "agent"].contains(context.plan) || context.free || context.byok || context.onDevice) &&
       (context.platformEnabled || context.byok) };`,
   "model.platform": `permit(principal, action == Polychat::Action::"model.platform", resource)
-    when { !(context.byok && (!context.platformEnabled || (context.plan != "pro" && !context.free))) };`,
+    when { !(context.byok && (!context.platformEnabled || (!["pro", "agent"].contains(context.plan) && !context.free))) };`,
   "model.grants": `permit(principal, action == Polychat::Action::"model.action", resource)
     when { context.member && ["owner", "admin", "member"].contains(context.role) && context.grants.contains(context.requestedAction) };`,
   "model.approve": `permit(principal, action == Polychat::Action::"model.approve", resource)

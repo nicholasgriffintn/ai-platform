@@ -31,6 +31,7 @@ import {
   isTerminalResponseStatus,
   responseActivityEventSchema,
   responseSchema,
+  runMeterSchema,
   runsOnDevice,
   type MessagePart,
   type PlatformResponse,
@@ -111,6 +112,7 @@ export function useStreamingResponse(
     })),
   );
   const setUsageLimits = useUsageStore((state) => state.setUsageLimits);
+  const setRunMeter = useUsageStore((state) => state.setRunMeter);
   const beginStreamActivity = useStreamActivityStore((state) => state.beginStreamActivity);
   const completeStreamActivityMessage = useStreamActivityStore(
     (state) => state.completeStreamActivityMessage,
@@ -636,6 +638,16 @@ export function useStreamingResponse(
               return;
             }
 
+            if (state === "run_meter") {
+              const meter = runMeterSchema.safeParse(data);
+
+              if (meter.success) {
+                setRunMeter({ conversationId, meter: meter.data });
+              }
+
+              return;
+            }
+
             if (state === "response") {
               const observed = responseSchema.safeParse(data);
 
@@ -866,6 +878,7 @@ export function useStreamingResponse(
       requestOptions,
       markConversationRemoteAvailable,
       setUsageLimits,
+      setRunMeter,
       queryClient,
       completeStreamActivityMessage,
       recordStreamActivityState,

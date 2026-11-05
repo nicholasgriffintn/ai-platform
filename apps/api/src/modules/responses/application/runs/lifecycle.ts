@@ -1,13 +1,14 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { ownsResource } from "@ngriffin_uk/polychat-library-policy";
 import { ownershipLostError } from "@ngriffin_uk/polychat-library-tasks";
-import type {
-  ChatContextSnapshot,
-  ChatRetrySnapshot,
-  ChatRun,
-  ChatRunCommandReceipt,
-  ChatRunStatus,
-  RunProvenance,
+import {
+  creditMicrosFromCredits,
+  type ChatContextSnapshot,
+  type ChatRetrySnapshot,
+  type ChatRun,
+  type ChatRunCommandReceipt,
+  type ChatRunStatus,
+  type RunProvenance,
 } from "@ngriffin_uk/polychat-schemas";
 import { canonicalJson, generateId } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
@@ -43,6 +44,7 @@ import { buildChatRunCommandPayload } from "./command-payload";
 import { releaseQueuedFollowUpAfterRun } from "./follow-up-queue";
 import { readToolInteractionId } from "./interactions";
 import { recordChatRunOperationalMetric } from "./operational-metrics";
+import { isPlatformFailure, refundPlatformFailedRun } from "./platform-failure";
 import { settleTeammateRun } from "./teammate-settlement";
 
 const logger = getLogger({ prefix: "services/chat-runs/lifecycle" });
@@ -191,6 +193,9 @@ async function buildRunCommand(
     ...(options.delegation_id ? { delegationId: options.delegation_id } : {}),
     ...(options.resolved_configuration
       ? { resolvedConfiguration: options.resolved_configuration }
+      : {}),
+    ...(options.budget_constraint !== undefined
+      ? { spendCapCreditMicros: creditMicrosFromCredits(options.budget_constraint) }
       : {}),
     ...(requestedRunId ? { runId: requestedRunId } : {}),
     ...(requestedRunId && interactionId ? { interactionId } : {}),
@@ -420,6 +425,10 @@ export class ChatRunLifecycle {
 
     if (transitioned) {
       this.receipt.run = transitioned;
+
+      if (this.serviceContext && (interrupted || isPlatformFailure(error))) {
+        await refundPlatformFailedRun(this.serviceContext, transitioned);
+      }
 
       await this.announce(transitioned);
       await this.reconcile();

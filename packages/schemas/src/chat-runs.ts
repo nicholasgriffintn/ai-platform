@@ -126,6 +126,7 @@ export const chatRunSchema = z.object({
   context: chatContextSnapshotSchema.nullable().optional(),
   retry: chatRetrySnapshotSchema.nullable().optional(),
   provenance: runProvenanceSchema.nullable().optional(),
+  spendCapCreditMicros: z.number().int().positive().nullable().optional(),
   usage: chatRunUsageSchema.optional(),
 });
 

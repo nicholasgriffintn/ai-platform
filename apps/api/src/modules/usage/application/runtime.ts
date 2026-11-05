@@ -35,6 +35,13 @@ export function createUsageStore(repositories: Repositories): UsageStore {
       repositories.get(AnonymousUserRepository).applyCreditDeltas(anonymousUserId, period, deltas),
     insertEventAndApplyBalance: (event, seed) =>
       repositories.get(UsageEventRepository).insertEventAndApplyBalance(event, seed),
+    getRunChargeState: (runId) => repositories.get(UsageEventRepository).getRunChargeState(runId),
+    listRunChargeGroups: (runId) =>
+      repositories.get(UsageEventRepository).listRunChargeGroups(runId),
+    applyRunChargeAdjustments: (runId, expectedChargedCreditMicros, events) =>
+      repositories
+        .get(UsageEventRepository)
+        .applyRunChargeAdjustments(runId, expectedChargedCreditMicros, events),
     createReservation: (params) =>
       repositories.get(UsageReservationRepository).createReservation(params),
     createUserReservationWithBalance: (params) =>

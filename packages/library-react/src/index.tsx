@@ -16,6 +16,7 @@ export * from "./hooks/useAuth.js";
 export * from "./hooks/useSpeechVoiceLibrary.js";
 export * from "./hooks/useBenchmarks.js";
 export * from "./hooks/useBilling.js";
+export * from "./hooks/useRunCostEstimate.js";
 export * from "./hooks/useDesktopDownloads.js";
 export * from "./hooks/useDeviceAuthorisation.js";
 export * from "./hooks/useCanAccessProFeatures.js";

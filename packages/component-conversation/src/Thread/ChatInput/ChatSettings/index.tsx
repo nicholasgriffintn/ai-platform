@@ -32,7 +32,8 @@ type NumericChatSettingKey =
   | "top_p"
   | "max_tokens"
   | "presence_penalty"
-  | "frequency_penalty";
+  | "frequency_penalty"
+  | "run_cap_credits";
 
 type ChatCompactionMode = NonNullable<ChatSettingsType["compaction"]>;
 type ChatServiceTier = NonNullable<ChatSettingsType["service_tier"]>;
@@ -50,6 +51,7 @@ export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
     chatMode,
     computeSite,
     chatSettings,
+    isAuthenticated,
     isPro,
     model,
     setChatSettings,
@@ -62,6 +64,7 @@ export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
       chatMode: state.chatMode,
       computeSite: state.computeSite,
       chatSettings: state.chatSettings,
+      isAuthenticated: state.isAuthenticated,
       isPro: state.isPro,
       model: state.model,
       setChatSettings: state.setChatSettings,
@@ -105,7 +108,11 @@ export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
 
     const numValue = Number.parseFloat(value);
 
-    if (Number.isNaN(numValue) || (key === "max_tokens" && numValue < 1)) {
+    if (
+      Number.isNaN(numValue) ||
+      (key === "max_tokens" && numValue < 1) ||
+      (key === "run_cap_credits" && numValue <= 0)
+    ) {
       return;
     }
 
@@ -217,6 +224,7 @@ export const ChatSettings = ({ isDisabled = false }: ChatSettingsProps) => {
 
   return (
     <ChatSettingsPanel
+      showRunCap={isAuthenticated}
       showSettings={showSettings}
       onShowSettingsChange={setShowSettings}
       isDisabled={isDisabled}

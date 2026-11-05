@@ -1,7 +1,7 @@
 export const toolPolicies = {
   "tool.use": `permit(principal, action == Polychat::Action::"tool.use", resource);`,
   "tool.premium": `forbid(principal, action == Polychat::Action::"tool.use", resource)
-    when { context.toolType == "premium" && context.plan != "pro" };`,
+    when { context.toolType == "premium" && !["pro", "agent"].contains(context.plan) };`,
   "tool.byok": `forbid(principal, action == Polychat::Action::"tool.use", resource)
     when { context.toolType == "byok" && !context.signedIn };`,
   "tool.teammate": `forbid(principal, action == Polychat::Action::"tool.use", resource)

@@ -6,7 +6,23 @@ Credits are the monthly allowance; vendor units are the underlying cost record. 
 
 Use the current D1 plan rows and `/plans` for included credits. Missing or non-positive allowances refuse admission. Free and anonymous plans have no reserve; eligible paid plans resolve configured or default grace through `planSeed.ts`. There is no runtime allowance fallback or daily message-limit system.
 
-Admission reserves a turn estimate once. Normal depletion refuses new turns, while an admitted turn continues subject to step budgets, cancellation, failures and the runaway guard. BYOK model turns skip model-cost admission; infrastructure and capability charges still apply. Do not present this as an exact hard spending cap.
+Admission reserves a turn estimate once. Normal depletion refuses new turns, while an admitted turn continues subject to step budgets, cancellation, failures and the runaway guard. BYOK model turns skip model-cost admission; infrastructure and capability charges still apply. Do not present admission as an exact hard spending cap: the exact limit is the per-run cap below.
+
+## Cap a run
+
+`budget.credits` on a create request sets a run's cap, stored as `conversation_run.spend_cap_credit_micros`. Capped runs need a stored conversation and a signed-in account. A cap below one step's estimate is refused before work starts.
+
+Before each model step the loop compares ledger spend plus that step's estimate with the cap. If the step might not fit, the run moves to `awaiting_approval` through a platform-issued `request_approval`, offering a raised cap or stopping. Only the stored raise option raises the cap; any other choice ends the run without another model call. Capped runs write usage inline so the check reads a current ledger. Agent-mode runs also write inline to keep the live `response.run_meter` event current; other runs' meters can trail the usage queue.
+
+The cap limits what the person pays. A step or tool that costs more than its estimate is absorbed: `reconcileRunCharge` writes a compensating `run_cap_absorbed` event so charged credits never exceed the cap, while vendor cost stays recorded. Absorbed spend is real platform cost, so investigate if it grows.
+
+Capped runs refuse delegation, because delegates spend under their own runs and budgets. Usage with no run attribution, such as title generation and memory capture, sits outside the cap.
+
+## Refund platform failures
+
+A run that ends `interrupted`, or `failed` for a reason `isPlatformFailure` classifies as ours, is marked with `usage_refunded_at` and refunded through compensating `platform_failure_refund` events. Guardrail failures, cancellation and caller errors keep their charge.
+
+The ledger stays write-once: compensating rows carry negative credits, zero cost and zero quantity, and mirror the original period, source and resource so reports net correctly. Each rollup re-checks charged runs, so events still in the queue when a run fails are refunded on arrival. `usage_balance` reverses spend and any overage or overrun it created. Overage already sent to Stripe stays synced and offsets later overage in that period; a refund with no later overage needs a manual credit.
 
 ## Locate execution bounds
 
@@ -39,6 +55,8 @@ For stored chat runs, use these definitions:
 - **Consumption:** idempotent ledger events carrying the stable run ID and exact attempt. Their vendor units and priced credits are the accounting record.
 - **Settlement:** one compare-and-set transition that releases the reservation from the balance. The assistant-turn finaliser settles after usage is written or durably queued; cancellation, terminal failure and owner recovery release unfinished holds.
 
+Charge adjustment is separate from settlement: settlement releases a reservation, while adjustment corrects consumption after a refund or a cap overrun.
+
 Missing provider usage is `unknown`. Context-window estimates may explain request size but never become zero actual consumption. A settled reservation with no ledger event can mean the queued rollup is still processing; investigate if it persists. Events written before run attribution remain only in account and workspace totals.
 
 Chat-run reservations expire after 24 hours. Every scheduled invocation releases up to 100 expired held reservations through the same idempotent settlement path, so duplicate completion, owner failure and cancellation cannot double-release the balance and abandoned holds are bounded. Sandbox reservations settle from terminal duration reports. Realtime reservations settle through reconciliation.
@@ -49,7 +67,7 @@ Nightly infrastructure reconciliation compares attributed spend with account tot
 
 Open **Work → workspace → Governance → Workspace usage** as an owner or administrator. Choose a UTC month to inspect recorded credits and provider cost by source, vendor and project. The API is `GET /usage/summary?workspace_id=<workspaceId>&period=YYYY-MM`; ordinary members receive 403 and non-members 404.
 
-Historical attribution survives project removal. Missing names appear as **Project no longer listed**, and missing project attribution as **Unassigned workspace usage**. Each runner still pays from their own account; this report exposes neither their personal allowance nor unrelated work. Async and estimated usage make it a reporting view, not realtime budget enforcement.
+Historical attribution survives project removal. Missing names appear as **Project no longer listed**, and missing project attribution as **Unassigned workspace usage**. Each runner still pays from their own account; this report exposes neither their personal allowance nor unrelated work. Async and estimated usage make it a reporting view, not realtime budget enforcement; use per-run caps for enforcement.
 
 ## Baseline run lifecycle signals
 

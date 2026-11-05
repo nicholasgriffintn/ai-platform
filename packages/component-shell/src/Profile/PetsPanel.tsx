@@ -72,7 +72,7 @@ export function PetsPanel() {
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState<GeneratedPetImage | null>(null);
 
-  const canAuthor = user?.plan_id === "pro";
+  const canAuthor = user?.plan_id === "pro" || user?.plan_id === "agent";
   const modelTargets = useMemo(() => getPetModelTargetOptions(models), [models]);
   const modelOverrides = parsePetModelOverrides(
     userSettings?.pet_model_overrides ?? EMPTY_PET_MODEL_OVERRIDES,

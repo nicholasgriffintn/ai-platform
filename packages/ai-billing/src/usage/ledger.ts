@@ -12,6 +12,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import { priceUsageDraft, type PricedUsageDraft } from "../usage-pricing.js";
 import { applyActorCreditDeltas, creditActorUserId, type CreditActor } from "./credit-actor.js";
 import { resolveUsagePlanSeed, type UsagePlanSeed } from "./plan-seed.js";
+import { reconcileRunCharge } from "./run-charge.js";
 import type { UsageEventRecord, UsageRuntime, UsageStore } from "./store.js";
 
 const logger = getLogger({ prefix: "ai-billing/ledger" });
@@ -157,6 +158,7 @@ export async function applyUsageRollup(
   const knownConversations = new Map<string, boolean>();
   const changedPeriods = new Map<string, { userId: number; period: string }>();
   const changedWorkspaces = new Map<string, { workspaceId: string; period: string }>();
+  const chargedRuns = new Set<string>();
   let inserted = 0;
 
   for (const event of events) {
@@ -196,6 +198,10 @@ export async function applyUsageRollup(
 
     inserted += 1;
 
+    if (event.run_id && event.billable && event.credit_micros > 0) {
+      chargedRuns.add(event.run_id);
+    }
+
     changedPeriods.set(`${event.user_id}:${event.period}`, {
       userId: event.user_id,
       period: event.period,
@@ -209,6 +215,10 @@ export async function applyUsageRollup(
         period: event.period,
       });
     }
+  }
+
+  for (const runId of chargedRuns) {
+    await reconcileRunCharge(runtime, runId);
   }
 
   if (publisher) {
