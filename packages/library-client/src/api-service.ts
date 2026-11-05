@@ -440,8 +440,8 @@ class ApiService {
     return this.teammateService.deleteTeammate(teammateId);
   };
 
-  exportChatHistory = (): Promise<Blob> => {
-    return this.userService.exportChatHistory();
+  exportAccountData = (): Promise<Blob> => {
+    return this.userService.exportAccountData();
   };
 
   fetchModels = (): Promise<ModelConfig> => {

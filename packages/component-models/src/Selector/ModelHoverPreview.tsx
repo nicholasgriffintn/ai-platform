@@ -1,12 +1,13 @@
 import {
   describeModelDataRetention,
   formatTokenCount,
+  getModelDataLocationLabel,
   formatTokenPrice,
   hasProviderReasoningOptions,
   type ModelConfigItem,
   modelSupportsVisualModality,
 } from "@ngriffin_uk/polychat-schemas";
-import { Gauge, ShieldCheck, WalletCards } from "lucide-react";
+import { Gauge, MapPin, ShieldCheck, WalletCards } from "lucide-react";
 import { type RefObject, useLayoutEffect, useState } from "react";
 
 import { ModelIcon } from "../ModelIcon/ModelIcon";
@@ -76,6 +77,7 @@ export function ModelHoverPreview({
   }
 
   const model = preview.model;
+  const dataLocation = getModelDataLocationLabel(model);
   const top = measuredTop ?? preview.top;
   const maxHeight =
     preview.frameBottom !== undefined ? preview.frameBottom - top : preview.maxHeight;
@@ -204,6 +206,27 @@ export function ModelHoverPreview({
             </div>
           </div>
         )}
+
+        <div className="rounded-lg border border-border/70 p-2.5">
+          <div className="mb-1 flex items-center gap-1 text-muted-foreground">
+            <MapPin className="h-3.5 w-3.5" />
+            <span className="font-semibold">Data location</span>
+          </div>
+          <p className="font-medium text-foreground">{dataLocation.short}</p>
+          <p className="break-words whitespace-normal text-muted-foreground">
+            {dataLocation.detail}
+          </p>
+          {dataLocation.source ? (
+            <a
+              href={dataLocation.source}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="mt-1 inline-block text-muted-foreground underline underline-offset-2"
+            >
+              Provider policy
+            </a>
+          ) : null}
+        </div>
 
         {model.dataRetention ? (
           <div className="rounded-lg border border-border/70 p-2.5">

@@ -17,29 +17,29 @@ export function ProfileHistoryTab() {
   const deleteAllRemoteChats = useDeleteAllRemoteChats();
   const [isExporting, setIsExporting] = useState(false);
 
-  const handleExportJson = async () => {
+  const handleExport = async () => {
     setIsExporting(true);
     try {
       trackEvent({
-        name: "export_chat_history_json",
+        name: "export_account_data",
         category: "profile",
-        label: "export_chat_history_json",
+        label: "export_account_data",
         value: 1,
       });
-      const blob = await apiService.exportChatHistory();
+      const blob = await apiService.exportAccountData();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       const ts = new Date().toISOString().replace(/[:.]/g, "-");
 
       a.href = url;
-      a.download = `chat-history-${ts}.json`;
+      a.download = `polychat-export-${ts}.zip`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Failed to export chat history:", error);
-      toast.error("Couldn't export chat history", {
+      console.error("Failed to export account data:", error);
+      toast.error("Couldn't export your data", {
         description: error instanceof Error ? error.message : "Please try again.",
       });
     } finally {
@@ -53,7 +53,7 @@ export function ProfileHistoryTab() {
         isExporting={isExporting}
         isDeletingLocal={deleteAllChats.isPending}
         isDeletingRemote={deleteAllRemoteChats.isPending}
-        onExport={() => void handleExportJson()}
+        onExport={() => void handleExport()}
         onDeleteLocal={async () => {
           try {
             trackEvent({

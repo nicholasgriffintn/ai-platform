@@ -4,7 +4,19 @@
     "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": true,
-    "apiBaseUrl": "https://opencode.ai/inference/go/openai/v1"
+    "apiBaseUrl": "https://opencode.ai/inference/go/openai/v1",
+    "dataRetention": {
+      "maxDays": 30,
+      "source": "https://opencode.ai/docs/go/"
+    },
+    "dataLocation": {
+      "kind": "regions",
+      "regions": [
+        "us",
+        "eu"
+      ],
+      "source": "https://opencode.ai/docs/go/"
+    }
   },
   "models": {
     "deepseek-v4-flash": {
