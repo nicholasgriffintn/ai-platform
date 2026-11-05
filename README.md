@@ -35,7 +35,7 @@ Polychat has two primary modes:
 
 The platform includes:
 
-- Multi-provider chat with streaming, multimodal messages, model routing, sharing, feedback, and conversation compaction.
+- Multi-provider chat with streaming, multimodal messages, fixed model tiers, sharing, feedback, and conversation compaction.
 - Custom agents, MCP servers, delegation, approval-aware tools, and reusable workflows.
 - Retrieval, memories, web research, generated media, realtime audio, and interactive artefacts.
 - Sources as a media library: upload and transcribe recordings and video, generate images and video across models, and turn sources into two-host podcast episodes with private RSS feeds, on demand or on a schedule.
@@ -81,7 +81,7 @@ The platform includes:
 - [Live API reference](https://api.polychat.app/openapi)
 - [Polychat setup skill](./.agents/skills/polychat-setup/SKILL.md)
 - [Hosted Polychat](https://polychat.app)
-- [Automated model routing](https://nicholasgriffin.dev/blog/building-a-first-party-prompt-router)
+- [Automated model routing](https://nicholasgriffin.dev/blog/building-a-first-party-prompt-router), since replaced by fixed model tiers
 - [Multi-model image and video generation](https://nicholasgriffin.dev/blog/building-multi-model-image-and-video-generation-in-polychat)
 - [Cloud AI coding environment](https://nicholasgriffin.dev/blog/building-my-own-cloud-ai-environment-with-cloudflare-containers/)
 - [Contributing](./.github/CONTRIBUTING.md)
