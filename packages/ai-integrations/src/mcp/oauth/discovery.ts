@@ -109,6 +109,12 @@ export async function discoverMcpAuthorization(params: {
       ...(metadata.registration_endpoint
         ? { registrationEndpoint: parseMcpServerUrl(metadata.registration_endpoint).toString() }
         : {}),
+      ...(metadata.client_id_metadata_document_supported
+        ? { clientIdMetadataDocumentSupported: true }
+        : {}),
+      ...(metadata.authorization_response_iss_parameter_supported
+        ? { issuerResponseParameterSupported: true }
+        : {}),
     },
     ...(resourceMetadata?.scopes_supported?.length
       ? { scopes: resourceMetadata.scopes_supported }
