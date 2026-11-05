@@ -34,6 +34,7 @@ export async function reserveSandboxRun(params: {
   userId: number;
   runId: string;
   timeoutSeconds?: number;
+  workspaceId?: string | null;
 }): Promise<void> {
   try {
     const timeoutSeconds = params.timeoutSeconds ?? SANDBOX_TIMEOUT_DEFAULT_SECONDS;
@@ -51,6 +52,7 @@ export async function reserveSandboxRun(params: {
         refId: params.runId,
         creditMicros,
         expiresAt,
+        workspaceId: params.workspaceId,
       },
     );
   } catch (error) {
@@ -106,6 +108,10 @@ export async function recordSandboxRunUsage(params: {
     quantities,
     occurredAt: report.endedAt,
     activityId: runId,
+    projectId: record.projectId ?? null,
+    workspaceId: record.projectId
+      ? await runtime.store.getProjectWorkspaceId(record.projectId)
+      : null,
     raw: { ...report, durationSeconds, instanceType },
   });
 

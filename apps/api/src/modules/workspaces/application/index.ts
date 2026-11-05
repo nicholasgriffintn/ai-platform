@@ -46,6 +46,7 @@ import {
 } from "./format";
 import { sendWorkspaceInvitationEmail } from "./invitation-email";
 import { validateProjectToolConfiguration } from "./projectTools";
+import { assertInvitationSeat, assertSeatForAcceptance } from "./team-plan";
 export {
   clearProjectEnvironmentVariable,
   listProjectEnvironmentVariables,
@@ -411,6 +412,8 @@ export async function inviteWorkspaceMember(
     );
   }
 
+  await assertInvitationSeat(context, workspaceId, input.email);
+
   const token = randomHex(64).toLowerCase();
   const invitation = await context.repositories.get(WorkspaceRepository).upsertInvitation({
     id: generateId(),
@@ -485,6 +488,7 @@ export async function acceptWorkspaceInvitation(context: ServiceContext, token: 
     );
   }
 
+  await assertSeatForAcceptance(context, invitation.workspace_id);
   await context.repositories.get(WorkspaceRepository).acceptInvitation(invitation, user.id);
   forgetWorkspaceAudience(invitation.workspace_id);
   await context.repositories.get(AuditRepository).createRecord({

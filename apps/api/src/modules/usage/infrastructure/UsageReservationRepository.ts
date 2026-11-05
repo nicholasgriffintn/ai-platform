@@ -16,6 +16,7 @@ export interface UsageReservationRow {
   credit_micros: number;
   status: UsageReservationStatus;
   expires_at: string | null;
+  workspace_id: string | null;
   created_at: string;
   updated_at: string | null;
 }
@@ -28,6 +29,7 @@ export interface CreateUsageReservationParams {
   refId: string;
   creditMicros: number;
   expiresAt?: string | null;
+  workspaceId?: string | null;
 }
 
 export class UsageReservationRepository extends BaseRepository<Pick<IEnv, "DB">> {
@@ -62,6 +64,7 @@ export class UsageReservationRepository extends BaseRepository<Pick<IEnv, "DB">>
            credit_micros = excluded.credit_micros,
            status = 'held',
            expires_at = excluded.expires_at,
+           workspace_id = NULL,
            updated_at = CURRENT_TIMESTAMP
          WHERE usage_reservation.status IN ('settled', 'released')
            AND usage_reservation.user_id = excluded.user_id`,
@@ -105,8 +108,8 @@ export class UsageReservationRepository extends BaseRepository<Pick<IEnv, "DB">>
   async createReservation(params: CreateUsageReservationParams): Promise<boolean> {
     const result = await this.executeRun(
       `INSERT INTO usage_reservation (
-				id, user_id, period, kind, ref_id, credit_micros, status, expires_at
-			 ) VALUES (?, ?, ?, ?, ?, ?, 'held', ?)
+				id, user_id, period, kind, ref_id, credit_micros, status, expires_at, workspace_id
+			 ) VALUES (?, ?, ?, ?, ?, ?, 'held', ?, ?)
 			 ON CONFLICT (kind, ref_id) DO NOTHING`,
       [
         params.id,
@@ -116,6 +119,7 @@ export class UsageReservationRepository extends BaseRepository<Pick<IEnv, "DB">>
         params.refId,
         params.creditMicros,
         params.expiresAt ?? null,
+        params.workspaceId ?? null,
       ],
     );
 
@@ -152,6 +156,30 @@ export class UsageReservationRepository extends BaseRepository<Pick<IEnv, "DB">>
            AND period = (
                  SELECT period FROM usage_reservation
                  WHERE kind = ? AND ref_id = ? AND status = 'releasing'
+               )
+           AND NOT EXISTS (
+                 SELECT 1 FROM usage_reservation
+                 WHERE kind = ? AND ref_id = ? AND status = 'releasing'
+                   AND workspace_id IS NOT NULL
+               )`,
+      ).bind(kind, refId, kind, refId, kind, refId, kind, refId),
+      this.env.DB.prepare(
+        `UPDATE workspace_usage_pool
+         SET reserved_credit_micros = MAX(
+               0,
+               reserved_credit_micros - COALESCE((
+                 SELECT credit_micros FROM usage_reservation
+                 WHERE kind = ? AND ref_id = ? AND status = 'releasing'
+               ), 0)
+             ),
+             updated_at = CURRENT_TIMESTAMP
+         WHERE workspace_id = (
+                 SELECT workspace_id FROM usage_reservation
+                 WHERE kind = ? AND ref_id = ? AND status = 'releasing'
+               )
+           AND period = (
+                 SELECT period FROM usage_reservation
+                 WHERE kind = ? AND ref_id = ? AND status = 'releasing'
                )`,
       ).bind(kind, refId, kind, refId, kind, refId),
       this.env.DB.prepare(
@@ -174,7 +202,7 @@ export class UsageReservationRepository extends BaseRepository<Pick<IEnv, "DB">>
       }
     }
 
-    return (results[2]?.results[0] as UsageReservationRow | undefined) ?? null;
+    return (results[3]?.results[0] as UsageReservationRow | undefined) ?? null;
   }
 
   async getReservation(

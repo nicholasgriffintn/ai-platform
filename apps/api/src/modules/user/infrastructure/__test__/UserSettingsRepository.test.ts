@@ -1,5 +1,6 @@
 import { webcrypto } from "node:crypto";
 
+import { runWithWorkspaceFunding } from "@ngriffin_uk/polychat-ai-billing";
 import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -243,5 +244,25 @@ describe("UserSettingsRepository", () => {
     await repository.updateUserSettings(42, { user_id: 7, private_key: "unsupported" });
 
     expect(prepare).not.toHaveBeenCalled();
+  });
+});
+
+describe("UserSettingsRepository personal keys in pool-funded work", () => {
+  it("hides a stored key from work funded by a workspace pool", async () => {
+    const first = vi.fn().mockResolvedValue({ api_key: "stored-ciphertext" });
+    const bind = vi.fn().mockReturnValue({ first });
+    const repository = new UserSettingsRepository({
+      DB: { prepare: vi.fn().mockReturnValue({ bind }) },
+    } as unknown as IEnv);
+
+    await expect(repository.hasProviderApiKey(42, "openai")).resolves.toBe(true);
+    first.mockClear();
+
+    await runWithWorkspaceFunding("workspace-1", async () => {
+      await expect(repository.hasProviderApiKey(42, "openai")).resolves.toBe(false);
+      await expect(repository.getProviderApiKey(42, "openai")).resolves.toBeNull();
+    });
+
+    expect(first).not.toHaveBeenCalled();
   });
 });

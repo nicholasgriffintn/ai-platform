@@ -147,6 +147,27 @@ async function removeDeletedConversationAttribution(
   return conversationExists ? event : { ...event, conversation_id: null };
 }
 
+async function resolvePoolWorkspaceId(
+  store: UsageStore,
+  event: UsageEventRecord,
+  knownPools: Map<string, boolean>,
+): Promise<string | null> {
+  const workspaceId = event.workspace_id;
+
+  if (!workspaceId || !event.billable || event.byok || event.credit_micros === 0) {
+    return null;
+  }
+
+  let pooled = knownPools.get(workspaceId);
+
+  if (pooled === undefined) {
+    pooled = (await store.getWorkspacePool(workspaceId, event.period)) !== null;
+    knownPools.set(workspaceId, pooled);
+  }
+
+  return pooled ? workspaceId : null;
+}
+
 export async function applyUsageRollup(
   runtime: UsageRuntime,
   events: readonly UsageEventRecord[],
@@ -155,6 +176,7 @@ export async function applyUsageRollup(
   const seeds = new Map<number, UsagePlanSeed>();
   const knownUsers = new Map<number, boolean>();
   const knownConversations = new Map<string, boolean>();
+  const knownPools = new Map<string, boolean>();
   const changedPeriods = new Map<string, { userId: number; period: string }>();
   const changedWorkspaces = new Map<string, { workspaceId: string; period: string }>();
   let inserted = 0;
@@ -188,7 +210,14 @@ export async function applyUsageRollup(
       event,
       knownConversations,
     );
-    const isNew = await store.insertEventAndApplyBalance(eventWithValidAttribution, seed);
+    const poolWorkspaceId = await resolvePoolWorkspaceId(
+      store,
+      eventWithValidAttribution,
+      knownPools,
+    );
+    const isNew = poolWorkspaceId
+      ? await store.insertEventAndApplyPool(eventWithValidAttribution, poolWorkspaceId)
+      : await store.insertEventAndApplyBalance(eventWithValidAttribution, seed);
 
     if (!isNew) {
       continue;

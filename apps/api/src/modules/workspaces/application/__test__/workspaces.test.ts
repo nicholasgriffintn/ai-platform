@@ -25,6 +25,7 @@ import type {
   WorkspaceRow,
 } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
+import { WorkspaceTeamPlanRepository } from "~/modules/workspaces/infrastructure/WorkspaceTeamPlanRepository";
 
 import {
   acceptWorkspaceInvitation,
@@ -113,11 +114,17 @@ function createHarness(params?: {
   };
   const audit = { createRecord: vi.fn().mockResolvedValue(undefined) };
   const outputs = { listWorkspaceOutputRoots: vi.fn().mockResolvedValue([]) };
+  const teamPlans = {
+    getPlan: vi.fn().mockResolvedValue(null),
+    countMembers: vi.fn().mockResolvedValue(1),
+    countOccupiedSeats: vi.fn().mockResolvedValue(1),
+  };
   const context = {
     env: { APP_BASE_URL: "https://work.polychat.test/" },
     requireUser: vi.fn().mockReturnValue(user),
     repositories: fakeRepositories([
       [WorkspaceRepository, repositories],
+      [WorkspaceTeamPlanRepository, teamPlans],
       [AuditRepository, audit],
       [OutputRepository, outputs],
       [UsageEventRepository, usageEvents],
@@ -130,7 +137,7 @@ function createHarness(params?: {
     ]),
   } as unknown as ServiceContext;
 
-  return { context, repositories, audit, outputs, usageEvents };
+  return { context, repositories, audit, outputs, usageEvents, teamPlans };
 }
 
 describe("Work entitlement", () => {
@@ -319,6 +326,44 @@ describe("workspace invitation lifecycle", () => {
       statusCode: 404,
     });
     expect(repositories.acceptInvitation).toHaveBeenCalledTimes(1);
+  });
+
+  it("refuses an invitation once every seat is taken, without sending it", async () => {
+    const { context, repositories, teamPlans } = createHarness();
+
+    teamPlans.getPlan.mockResolvedValue({ seat_limit: 2 });
+    teamPlans.countOccupiedSeats.mockResolvedValue(2);
+
+    await expect(
+      inviteWorkspaceMember(context, WORKSPACE_ID, {
+        email: "invitee@example.com",
+        role: "member",
+      }),
+    ).rejects.toMatchObject({ type: ErrorType.CONFLICT_ERROR, statusCode: 409 });
+    expect(teamPlans.countOccupiedSeats).toHaveBeenCalledWith(
+      WORKSPACE_ID,
+      expect.objectContaining({ exceptInvitedEmail: "invitee@example.com" }),
+    );
+    expect(repositories.upsertInvitation).not.toHaveBeenCalled();
+  });
+
+  it("refuses to accept an invitation when the seats filled up after it was sent", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW);
+    const { context, repositories, teamPlans } = createHarness({
+      user: { id: 2, email: "invitee@example.com" },
+      role: null,
+    });
+
+    repositories.getInvitationByTokenHash.mockResolvedValue(invitation());
+    teamPlans.getPlan.mockResolvedValue({ seat_limit: 2 });
+    teamPlans.countMembers.mockResolvedValue(2);
+
+    await expect(acceptWorkspaceInvitation(context, "a".repeat(64))).rejects.toMatchObject({
+      type: ErrorType.CONFLICT_ERROR,
+      statusCode: 409,
+    });
+    expect(repositories.acceptInvitation).not.toHaveBeenCalled();
   });
 
   it("prevents administrators from escalating invitations to the admin role", async () => {

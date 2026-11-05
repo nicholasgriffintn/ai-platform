@@ -88,12 +88,23 @@ describe("UsageEventRepository.insertEventAndApplyBalance", () => {
     sqlite.exec(`
       CREATE TABLE usage_event (
         id text PRIMARY KEY, idempotency_key text NOT NULL UNIQUE, user_id integer,
-        workspace_id text, project_id text, conversation_id text, message_id text,
-        activity_id text, completion_id text, run_id text, run_attempt integer,
+        workspace_id text, pool_workspace_id text, project_id text, conversation_id text,
+        message_id text, activity_id text, completion_id text, run_id text, run_attempt integer,
         occurred_at text, period text, source text, vendor text, resource text, unit text,
         quantity real, rate_version text, unit_cost_micros integer, cost_micros integer,
         credit_micros integer, billable integer, byok integer, estimated integer,
         vendor_units real, reason text, site text, raw text
+      );
+      CREATE TABLE workspace_team_plan (
+        workspace_id text PRIMARY KEY, included_credit_micros integer NOT NULL,
+        grace_credit_micros integer NOT NULL
+      );
+      CREATE TABLE workspace_usage_pool (
+        workspace_id text NOT NULL, period text NOT NULL,
+        spent_credit_micros integer DEFAULT 0 NOT NULL,
+        reserved_credit_micros integer DEFAULT 0 NOT NULL,
+        overrun_credit_micros integer DEFAULT 0 NOT NULL,
+        last_event_at text, updated_at text, PRIMARY KEY (workspace_id, period)
       );
       CREATE TABLE usage_balance (
         id text PRIMARY KEY, user_id integer NOT NULL, period text NOT NULL, plan_id text,
@@ -168,6 +179,25 @@ describe("UsageEventRepository.insertEventAndApplyBalance", () => {
       overrun_credit_micros: 10_000,
       overage_credit_micros: 30_000,
     });
+  });
+
+  it("settles a pooled event once, on the pool and never on the member's balance", async () => {
+    const repository = new UsageEventRepository(createEnv());
+    const pooled = event({ workspace_id: "workspace-1" });
+
+    sqlite.exec("INSERT INTO workspace_team_plan VALUES ('workspace-1', 20000, 0)");
+
+    await expect(repository.insertEventAndApplyPool(pooled, "workspace-1")).resolves.toBe(true);
+    await expect(repository.insertEventAndApplyPool(pooled, "workspace-1")).resolves.toBe(false);
+
+    expect(sqlite.prepare("SELECT * FROM workspace_usage_pool").get()).toMatchObject({
+      spent_credit_micros: 30_000,
+      overrun_credit_micros: 10_000,
+    });
+    expect(sqlite.prepare("SELECT pool_workspace_id FROM usage_event").get()).toEqual({
+      pool_workspace_id: "workspace-1",
+    });
+    expect(readBalance()).toBeUndefined();
   });
 });
 

@@ -7,6 +7,7 @@ import type {
   UsageReservationRecord,
   UsageRuntime,
   UsageStore,
+  WorkspacePoolRecord,
 } from "../usage/store.js";
 
 export interface FakeUsageStoreOptions {
@@ -19,6 +20,8 @@ export interface FakeUsageStoreOptions {
   created?: boolean;
   transitioned?: boolean;
   conversationExists?: boolean;
+  pool?: Partial<WorkspacePoolRecord> | null;
+  poolReserved?: boolean;
 }
 
 export type FakeUsageStore = { [K in keyof UsageStore]: Mock<UsageStore[K]> };
@@ -47,6 +50,23 @@ export function createFakeUsageStore(options: FakeUsageStoreOptions = {}): FakeU
     insertEventAndApplyBalance: vi.fn(async (event) => options.insert?.(event) ?? true),
     createReservation: vi.fn(async () => options.created ?? true),
     createUserReservationWithBalance: vi.fn(async () => true),
+    getWorkspacePool: vi.fn(async () =>
+      options.pool
+        ? {
+            included_credit_micros: 0,
+            grace_credit_micros: 0,
+            spent_credit_micros: 0,
+            reserved_credit_micros: 0,
+            overrun_credit_micros: 0,
+            last_event_at: null,
+            ...options.pool,
+          }
+        : null,
+    ),
+    reserveWorkspacePool: vi.fn(async () => options.poolReserved ?? true),
+    adjustWorkspacePoolReserved: vi.fn(async () => {}),
+    createWorkspaceReservationWithPool: vi.fn(async () => options.poolReserved ?? true),
+    insertEventAndApplyPool: vi.fn(async (event) => options.insert?.(event) ?? true),
     getReservation: vi.fn(async () => options.reservation ?? null),
     finishUserReservationWithBalance: vi.fn(async () => ({
       id: "res-1",

@@ -14,6 +14,7 @@ import { userCreditActor } from "./credit-actor.js";
 import { emitUsageEvents, resolveUsageAttribution, type UsageEventDraft } from "./ledger.js";
 import { isByokTurn } from "./model-usage.js";
 import type { UsageRuntime } from "./store.js";
+import { isWorkspacePoolFunded } from "./workspace-pool.js";
 
 const logger = getLogger({ prefix: "ai-billing/capability-usage" });
 
@@ -215,6 +216,7 @@ export async function recordCapabilityCall(
       isByokTurn(runtime.store, params.userId, params.providerName),
       resolveUsageAttribution(runtime.store, conversationId),
     ]);
+    const poolFunded = await isWorkspacePoolFunded(runtime.store, attribution.workspaceId);
 
     const draft: UsageEventDraft = {
       idempotencyKey: `capability:${params.category}:${generateId()}`,
@@ -224,7 +226,7 @@ export async function recordCapabilityCall(
       resource,
       unit: measurement.unit,
       quantity: measurement.quantity,
-      byok,
+      byok: byok && !poolFunded,
       conversationId,
       completionId,
       projectId: attribution.projectId ?? requestStringField(params.args, "projectId"),

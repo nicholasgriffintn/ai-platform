@@ -105,6 +105,38 @@ describe("Cedar authorisation", () => {
     expect(authorise("connector.unattended", { ...read, access: "write" }).allowed).toBe(false);
   });
 
+  it("keeps seats, pool draws and provisioning inside their authority", () => {
+    const seat = { seatLimited: true, seatLimit: 3, occupied: 2 };
+
+    expect(authorise("workspace.seat.claim", seat).allowed).toBe(true);
+    expect(authorise("workspace.seat.claim", { ...seat, occupied: 3 }).allowed).toBe(false);
+    expect(
+      authorise("workspace.seat.claim", { ...seat, seatLimited: false, occupied: 99 }).allowed,
+    ).toBe(true);
+
+    const draw = { pooled: true, member: true, role: "member" };
+
+    expect(authorise("workspace.pool.draw", draw).allowed).toBe(true);
+    expect(authorise("workspace.pool.draw", { ...draw, member: false }).allowed).toBe(false);
+    expect(authorise("workspace.pool.draw", { ...draw, pooled: false }).allowed).toBe(false);
+
+    const provision = { role: "admin", seatLimit: 3, occupied: 3 };
+
+    expect(authorise("workspace.plan.provision", provision).allowed).toBe(true);
+    expect(authorise("workspace.plan.provision", { ...provision, role: "moderator" }).allowed).toBe(
+      false,
+    );
+    expect(authorise("workspace.plan.provision", { ...provision, occupied: 4 }).allowed).toBe(
+      false,
+    );
+    expect(authorise("workspace.plan.end", { role: "member" }).allowed).toBe(false);
+  });
+
+  it("withholds personal credentials from pool-funded work", () => {
+    expect(authorise("credential.personal", { pooled: false }).allowed).toBe(true);
+    expect(authorise("credential.personal", { pooled: true }).allowed).toBe(false);
+  });
+
   it("lets a manager move a report's budget only within the workspace's remaining cap", () => {
     const raise = { manager: true, raising: true, capped: true, withinHeadroom: true };
 
