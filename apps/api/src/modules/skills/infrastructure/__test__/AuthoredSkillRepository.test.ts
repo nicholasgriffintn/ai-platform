@@ -202,6 +202,7 @@ CREATE TABLE scoped_configuration (
   created_by INTEGER REFERENCES user(id),
   configuration_id TEXT,
   configuration_created_at TEXT,
+  configuration_revision INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (kind, id),
