@@ -3,7 +3,15 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "dataRetention": {
+      "maxDays": "unknown",
+      "source": "https://huggingface.co/docs/inference-providers/security"
+    },
+    "dataLocation": {
+      "kind": "routed",
+      "source": "https://huggingface.co/docs/inference-providers/security"
+    }
   },
   "models": {
     "deepseek-ai/Deepseek-V3-0324": {

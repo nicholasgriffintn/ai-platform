@@ -2,7 +2,15 @@
   "defaults": {
     "supportsToolCalls": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "dataRetention": {
+      "maxDays": 55,
+      "source": "https://aistudio.google.com/docs/usage-policies"
+    },
+    "dataLocation": {
+      "kind": "multiple",
+      "source": "https://aistudio.google.com/docs/terms"
+    }
   },
   "models": {
     "gemini-3-flash-preview": {
@@ -27,10 +35,6 @@
         "multimodal": true,
         "isFeatured": false,
         "lastUpdated": "December 17, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
         "supportsSearchGrounding": true,
@@ -76,10 +80,6 @@
         "speed": 2,
         "multimodal": true,
         "lastUpdated": "July 21, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025,
         "supportsSearchGrounding": true,
@@ -94,10 +94,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "May 14, 2024",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.0003
       }
@@ -108,10 +104,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "October 3, 2024",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0000375,
         "costPer1kOutputTokens": 0.00015
       }
@@ -122,10 +114,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "February 15, 2024",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.005
       }
@@ -150,10 +138,6 @@
         "reliability": 1,
         "speed": 5,
         "lastUpdated": "June 17, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025,
         "hostedToolCosts": {
@@ -177,10 +161,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "August 26, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.03,
         "supportsToolCalls": false
@@ -203,10 +183,6 @@
           "coding"
         ],
         "lastUpdated": "June 17, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004,
         "hostedToolCosts": {
@@ -231,10 +207,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "June 17, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004
       }
@@ -245,10 +217,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "September 25, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004,
         "supportsResponseFormat": true
@@ -260,10 +228,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "April 17, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006
       }
@@ -274,10 +238,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "May 20, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006
       }
@@ -288,10 +248,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "September 25, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025,
         "supportsResponseFormat": true
@@ -303,10 +259,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "May 1, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.01,
         "supportsToolCalls": false,
@@ -323,10 +275,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "April 15, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.02,
         "supportsToolCalls": false,
@@ -356,10 +304,6 @@
         ],
         "speed": 3,
         "lastUpdated": "June 17, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "hostedToolCosts": {
@@ -383,10 +327,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "May 6, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01
       }
@@ -410,10 +350,6 @@
         "isFree": true,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "June 5, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01
       }
@@ -424,10 +360,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "May 1, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.02,
         "supportsToolCalls": false,
@@ -444,10 +376,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "May 20, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
@@ -474,10 +402,6 @@
         },
         "isFree": true,
         "lastUpdated": "August 13, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
         "supportsSearchGrounding": true,
@@ -500,10 +424,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "March 26, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.0045,
         "supportsSearchGrounding": true,
@@ -516,10 +436,6 @@
       "matchingModel": "gemini-3.8-live",
       "overrides": {
         "lastUpdated": "September 15, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.0045,
         "supportsSearchGrounding": true,
@@ -532,10 +448,6 @@
       "matchingModel": "gemini-3.8-live-extended-thinking",
       "overrides": {
         "lastUpdated": "September 15, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.0045,
         "supportsSearchGrounding": true,
@@ -572,10 +484,6 @@
         "contextComplexity": 4,
         "releaseDate": "February 26, 2026",
         "lastUpdated": "February 26, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.06,
         "supportsToolCalls": false,
@@ -611,10 +519,6 @@
         "multimodal": true,
         "isFeatured": true,
         "lastUpdated": "May 7, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.0015,
         "supportsUrlContext": true,
@@ -652,10 +556,6 @@
         "speed": 3,
         "multimodal": true,
         "lastUpdated": "February 19, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
         "supportsUrlContext": true,
@@ -676,10 +576,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "February 19, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
         "supportsUrlContext": true,
@@ -700,10 +596,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "March 13, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
@@ -715,10 +607,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "March 12, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       }
@@ -729,10 +617,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "March 13, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
@@ -744,10 +628,6 @@
       "overrides": {
         "isFree": true,
         "lastUpdated": "July 9, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
@@ -762,10 +642,6 @@
         "isFree": true,
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "May 20, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
@@ -777,11 +653,7 @@
       "overrides": {
         "name": "Gemma 4 26B",
         "isFree": true,
-        "lastUpdated": "April 2, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        }
+        "lastUpdated": "April 2, 2026"
       }
     },
     "gemma-4-31b-it": {
@@ -800,10 +672,6 @@
         "reliability": 2,
         "speed": 2,
         "lastUpdated": "April 2, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.0004,
         "artificialAnalysis": {
@@ -842,10 +710,6 @@
         "multimodal": true,
         "isFeatured": true,
         "lastUpdated": "May 19, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.009,
         "supportsSearchGrounding": true,
@@ -877,10 +741,6 @@
         ],
         "releaseDate": "November 20, 2025",
         "lastUpdated": "November 20, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.12,
         "supportsToolCalls": false,
@@ -913,10 +773,6 @@
         },
         "isFree": true,
         "lastUpdated": "April 2, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -931,11 +787,7 @@
       "matchingModel": "gemma-4-E4B-it",
       "overrides": {
         "isFree": true,
-        "lastUpdated": "April 2, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        }
+        "lastUpdated": "April 2, 2026"
       }
     },
     "gemini-omni-flash-preview": {
@@ -955,10 +807,6 @@
           ]
         },
         "lastUpdated": "June 30, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.0175,
         "supportsToolCalls": false,
@@ -989,10 +837,6 @@
         "speed": 4,
         "isFeatured": false,
         "lastUpdated": "July 21, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025,
         "supportsSearchGrounding": true,
@@ -1017,10 +861,6 @@
         ],
         "speed": 4,
         "lastUpdated": "July 21, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
         "supportsSearchGrounding": true,
@@ -1034,10 +874,6 @@
       "matchingModel": "deep-research-max-preview-04-2026",
       "overrides": {
         "lastUpdated": "April 21, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012
       },
@@ -1050,10 +886,6 @@
       "matchingModel": "deep-research-preview-04-2026",
       "overrides": {
         "lastUpdated": "April 21, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012
       },
@@ -1066,10 +898,6 @@
       "matchingModel": "gemini-2.5-computer-use-preview-10-2025",
       "overrides": {
         "lastUpdated": "October 7, 2025",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01
       },
@@ -1088,10 +916,6 @@
           "creative"
         ],
         "lastUpdated": "May 28, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.12,
         "supportsToolCalls": false,
@@ -1132,10 +956,6 @@
         ],
         "isFeatured": false,
         "lastUpdated": "May 28, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.06,
         "supportsToolCalls": false,
@@ -1174,10 +994,6 @@
           "image"
         ],
         "lastUpdated": "June 30, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.03,
         "reasoningConfig": {
@@ -1194,10 +1010,6 @@
       "matchingModel": "gemini-3.5-live-translate-preview",
       "overrides": {
         "lastUpdated": "June 9, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0035,
         "costPer1kOutputTokens": 0.021,
         "supportsToolCalls": false,
@@ -1214,10 +1026,6 @@
       "overrides": {
         "hiddenFromDefaultList": true,
         "lastUpdated": "August 26, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0035,
         "costPer1kOutputTokens": 0.021,
         "supportsToolCalls": false,
@@ -1244,10 +1052,6 @@
           ]
         },
         "lastUpdated": "April 22, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
@@ -1259,10 +1063,6 @@
       "matchingModel": "gemini-robotics-er-1.6-preview",
       "overrides": {
         "lastUpdated": "April 14, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005
       }
@@ -1273,10 +1073,6 @@
       "overrides": {
         "description": "Music generation model for short 30-second clips, loops, and previews from text or image prompts",
         "lastUpdated": "March 25, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
@@ -1288,10 +1084,6 @@
       "overrides": {
         "description": "Music generation model for full-length songs from text or images with vocals and structure",
         "lastUpdated": "March 25, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
@@ -1302,10 +1094,6 @@
       "matchingModel": "veo-3.1-fast-generate-preview",
       "overrides": {
         "lastUpdated": "January 1, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "supportsToolCalls": false,
         "supportsTemperature": false
       }
@@ -1336,10 +1124,6 @@
         "contextComplexity": 2,
         "reliability": 4,
         "lastUpdated": "January 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "supportsToolCalls": false,
         "supportsTemperature": false,
         "artificialAnalysis": {
@@ -1366,10 +1150,6 @@
       "overrides": {
         "isFeatured": true,
         "lastUpdated": "March 31, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "supportsToolCalls": false,
         "supportsTemperature": false
       }
@@ -1392,10 +1172,6 @@
         "speed": 4,
         "isFeatured": false,
         "lastUpdated": "August 13, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
         "supportsSearchGrounding": true,
@@ -1413,10 +1189,6 @@
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 2, 2026",
-        "dataRetention": {
-          "maxDays": 55,
-          "source": "https://ai.google.dev/gemini-api/docs/abuse-monitoring"
-        },
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375
       },

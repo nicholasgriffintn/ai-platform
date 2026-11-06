@@ -149,6 +149,8 @@ export function convertCatalogue(providers, remoteProviders, previous) {
               "bedrockStreamingApiOperation",
               "inputFormat",
               "hiddenFromDefaultList",
+              "dataRetention",
+              "dataLocation",
             ].includes(field),
         ),
     );
