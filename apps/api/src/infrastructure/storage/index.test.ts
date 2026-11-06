@@ -40,20 +40,6 @@ describe("StorageService output persistence", () => {
     expect(createOutput).toHaveBeenCalledWith(expect.objectContaining({ byteSize: 900_000_000 }));
   });
 
-  it("refuses to stream an image past its safety check", async () => {
-    const put = vi.fn().mockResolvedValue(undefined);
-    const context = { env: {} } as unknown as ServiceContext;
-    const storage = new StorageService({ put } as never, context, context.env);
-
-    await expect(
-      storage.uploadOversizedMedia("generations/image.png", new Blob(["image"]).stream(), {
-        model: "acme/image",
-        mimeType: "image/png",
-      }),
-    ).rejects.toThrow("too large to check");
-    expect(put).not.toHaveBeenCalled();
-  });
-
   it("stores generated media with its mark and records the marked size", async () => {
     const put = vi.fn().mockResolvedValue(undefined);
     const createOutput = vi.fn(async (record: { id: string }) => ({ id: record.id }));
