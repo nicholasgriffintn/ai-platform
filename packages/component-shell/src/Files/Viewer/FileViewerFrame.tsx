@@ -6,7 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-component-ui";
 import type { AttachmentData } from "@ngriffin_uk/polychat-library-chat/attachments";
 import {
-  type FileTarget,
+  type StoredFileTarget,
   useSourceCollections,
   useSubjectConversations,
 } from "@ngriffin_uk/polychat-library-react";
@@ -36,7 +36,7 @@ export interface FileViewerDrawerEntry {
 export interface FileViewerChrome {
   fullPageHref?: string;
   onClose: () => void;
-  onOpenFile: (target: FileTarget) => void;
+  onOpenFile: (target: StoredFileTarget) => void;
 }
 
 function buildSidePanel({

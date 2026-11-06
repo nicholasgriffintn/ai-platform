@@ -1,4 +1,4 @@
-import type { FileTarget } from "@ngriffin_uk/polychat-library-react";
+import type { StoredFileTarget } from "@ngriffin_uk/polychat-library-react";
 
 import type { FileViewerChrome } from "./FileViewerFrame.js";
 import { MemoryViewer } from "./MemoryViewer.js";
@@ -11,7 +11,7 @@ export function FileViewer({
   chrome,
   onDeleted,
 }: {
-  target: FileTarget;
+  target: StoredFileTarget;
   basePath: string;
   chrome: FileViewerChrome;
   onDeleted: () => void;

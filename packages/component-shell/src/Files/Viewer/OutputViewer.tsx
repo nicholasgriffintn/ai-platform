@@ -12,6 +12,7 @@ import {
 } from "@ngriffin_uk/polychat-component-workspaces";
 import { isAuthenticationError } from "@ngriffin_uk/polychat-library-client";
 import {
+  isCheckableMedia,
   useDescribeDocument,
   useOutput,
   useOutputHistory,
@@ -63,6 +64,7 @@ import { FileViewerCloseButton } from "./FileViewerCloseButton.js";
 import { type FileViewerChrome, FileViewerFrame } from "./FileViewerFrame.js";
 import { GenerationStage, hasGenerationMedia } from "./GenerationStage.js";
 import { MarkdownStage } from "./MarkdownStage.js";
+import { MediaCheckPanel } from "./MediaCheckPanel.js";
 import { useFileViewerPanels } from "./useFileViewerPanels.js";
 
 function OutputStage({
@@ -143,7 +145,7 @@ function OutputStage({
   );
 }
 
-function OutputInfo({ output }: { output: Output }) {
+function OutputInfo({ output, downloadUrl }: { output: Output; downloadUrl?: string }) {
   const describeDocument = useDescribeDocument();
   const documentBody =
     output.kind === DOCUMENT_OUTPUT_KIND ? readDocumentBody(output.content) : null;
@@ -157,6 +159,9 @@ function OutputInfo({ output }: { output: Output }) {
         <dd className="text-foreground tabular-nums">{output.revision}</dd>
       </dl>
       {output.provenance ? <OutputProvenanceSummary provenance={output.provenance} /> : null}
+      {downloadUrl && isCheckableMedia(output.file?.mimeType) ? (
+        <MediaCheckPanel url={downloadUrl} />
+      ) : null}
       {documentBody !== null ? (
         <DocumentMetadataPanel
           metadata={{
@@ -378,7 +383,7 @@ export function OutputViewer({
           quick: true,
           label: "File info",
           icon: <Info size={14} aria-hidden="true" />,
-          content: <OutputInfo output={output} />,
+          content: <OutputInfo output={output} downloadUrl={item.downloadUrl} />,
         },
         ...(linkedSources.length > 0
           ? [

@@ -16,6 +16,7 @@ import { apiService } from "./api-service.js";
 import { readBoundedTextResponse, type BoundedTextResponse } from "./bounded-response.js";
 import { fetchApiOrThrow } from "./fetch-wrapper.js";
 import { returnFetchedData } from "./http.js";
+import { apiMediaUrl } from "./media-url.js";
 import { resource } from "./resource.js";
 
 async function getHeaders(): Promise<Record<string, string>> {
@@ -36,6 +37,10 @@ export async function listOutputs(
   });
 
   return page.data;
+}
+
+export function getOutputContentUrl(outputId: string): string {
+  return apiMediaUrl(`/outputs/${encodeURIComponent(outputId)}/content`);
 }
 
 export async function getOutput(outputId: string): Promise<Output> {

@@ -33,6 +33,7 @@ const PAGE_TITLES: Record<string, string> = {
   teammate: "Teammate",
   teammates: "Teammates",
   terms: "Terms of Service",
+  verify: "Check a file",
   tools: "Tool",
   work: "Work",
   "work-attention": "Attention",

@@ -47,6 +47,7 @@ export * from "./Home/HomePage.js";
 export * from "./Host/ShellDialogs.js";
 export * from "./Host/ShellHostContext.js";
 export * from "./Legal/AgeCheckPage.js";
+export * from "./Legal/MediaCheckPage.js";
 export * from "./Legal/PrivacyPage.js";
 export * from "./Legal/TermsPage.js";
 export * from "./Poly/PolyOverlay.js";

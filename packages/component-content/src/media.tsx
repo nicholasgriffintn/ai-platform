@@ -5,8 +5,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@ngriffin_uk/polychat-component-ui";
-import type { ImgHTMLAttributes } from "react";
-import { useState } from "react";
+import type { ImgHTMLAttributes, ReactNode } from "react";
+import { createContext, useContext, useState } from "react";
 
 export interface ImageProps extends ImgHTMLAttributes<HTMLImageElement> {
   crossOrigin?: "anonymous" | "use-credentials";
@@ -34,6 +34,27 @@ export interface ImageModalProps {
   downloadHref?: string;
 }
 
+export interface MediaOpenRequest {
+  src: string;
+  alt: string;
+  downloadHref?: string;
+  crossOrigin?: "anonymous" | "use-credentials";
+}
+
+type MediaOpener = (request: MediaOpenRequest) => void;
+
+const MediaOpenerContext = createContext<MediaOpener | null>(null);
+
+export function MediaOpenerProvider({
+  children,
+  onOpen,
+}: {
+  children: ReactNode;
+  onOpen: MediaOpener;
+}) {
+  return <MediaOpenerContext.Provider value={onOpen}>{children}</MediaOpenerContext.Provider>;
+}
+
 export function ImageModal({
   src,
   alt = "Image",
@@ -45,35 +66,56 @@ export function ImageModal({
   downloadHref = src,
 }: ImageModalProps) {
   const [open, setOpen] = useState(false);
+  const openMedia = useContext(MediaOpenerContext);
+  const previewClassName = ["polychat-content-image-preview", thumbnailClassName]
+    .filter(Boolean)
+    .join(" ");
+  const thumbnail = (
+    <img
+      src={src}
+      alt={alt}
+      className={imageClassName}
+      crossOrigin={crossOrigin}
+      decoding="async"
+    />
+  );
+  const download = downloadHref ? (
+    <a
+      href={downloadHref}
+      download={alt}
+      target="_blank"
+      rel="noreferrer"
+      className="polychat-content-image-download"
+      aria-label={`Download ${alt}`}
+    >
+      <span aria-hidden="true">↓</span>
+    </a>
+  ) : null;
+
+  if (openMedia) {
+    return (
+      <div className={previewClassName}>
+        <button
+          type="button"
+          aria-label={`View ${alt} larger`}
+          onClick={() => openMedia({ src, alt, downloadHref, crossOrigin })}
+        >
+          {thumbnail}
+        </button>
+        {download}
+      </div>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <div
-        className={["polychat-content-image-preview", thumbnailClassName].filter(Boolean).join(" ")}
-      >
+      <div className={previewClassName}>
         <DialogTrigger asChild>
           <button type="button" aria-label={`View ${alt} larger`}>
-            <img
-              src={src}
-              alt={alt}
-              className={imageClassName}
-              crossOrigin={crossOrigin}
-              decoding="async"
-            />
+            {thumbnail}
           </button>
         </DialogTrigger>
-        {downloadHref && (
-          <a
-            href={downloadHref}
-            download={alt}
-            target="_blank"
-            rel="noreferrer"
-            className="polychat-content-image-download"
-            aria-label={`Download ${alt}`}
-          >
-            <span aria-hidden="true">↓</span>
-          </a>
-        )}
+        {download}
       </div>
       <DialogContent
         aria-describedby={undefined}

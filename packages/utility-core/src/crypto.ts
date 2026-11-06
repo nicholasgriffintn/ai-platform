@@ -1,7 +1,13 @@
-async function digestHex(algorithm: "SHA-1" | "SHA-256", input: string): Promise<string> {
-  const hash = await crypto.subtle.digest(algorithm, new TextEncoder().encode(input));
-
+function toHex(hash: ArrayBuffer): string {
   return Array.from(new Uint8Array(hash), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function digestHex(algorithm: "SHA-1" | "SHA-256", input: string): Promise<string> {
+  return toHex(await crypto.subtle.digest(algorithm, new TextEncoder().encode(input)));
+}
+
+export async function sha256HexBytes(data: ArrayBuffer): Promise<string> {
+  return toHex(await crypto.subtle.digest("SHA-256", data));
 }
 
 export function sha256Hex(input: string): Promise<string> {

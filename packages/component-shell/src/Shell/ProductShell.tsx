@@ -8,6 +8,7 @@ import {
 import { createContext, lazy, type ReactNode, Suspense, useContext } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { FileMediaOpener } from "../Files/Viewer/FileMediaOpener.js";
 import { useShellHost } from "../Host/ShellHostContext.js";
 import { PolyDock } from "../Poly/PolyDock.js";
 import { usePolyPresentation } from "../Poly/usePolyPresentation.js";
@@ -38,6 +39,10 @@ export interface ProductShellProps {
   bgClassName?: string;
 }
 
+function MediaOpenerBoundary({ enabled, children }: { enabled: boolean; children: ReactNode }) {
+  return enabled ? <FileMediaOpener>{children}</FileMediaOpener> : children;
+}
+
 export function ProductShell({
   children,
   sidebarContent,
@@ -62,52 +67,54 @@ export function ProductShell({
 
   return (
     <ProductShellPresence.Provider value>
-      <SidebarPeekProvider>
-        <div
-          className={cn(
-            "flex h-dvh w-full max-w-full overflow-hidden",
-            bgClassName ?? "bg-background",
-          )}
-        >
-          <a
-            href={`#${MAIN_CONTENT_ID}`}
-            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[90] focus:rounded-md focus:bg-popover focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-popover-foreground focus:shadow-lg focus:ring-2 focus:ring-ring focus:outline-none"
-          >
-            Skip to main content
-          </a>
-
-          <div className="relative flex min-h-0 w-full flex-1 flex-row overflow-hidden">
-            {sidebarContent && (
-              <div className="pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]">
-                {sidebarContent}
-              </div>
+      <MediaOpenerBoundary enabled={Boolean(HostDialogs)}>
+        <SidebarPeekProvider>
+          <div
+            className={cn(
+              "flex h-dvh w-full max-w-full overflow-hidden",
+              bgClassName ?? "bg-background",
             )}
+          >
+            <a
+              href={`#${MAIN_CONTENT_ID}`}
+              className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[90] focus:rounded-md focus:bg-popover focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-popover-foreground focus:shadow-lg focus:ring-2 focus:ring-ring focus:outline-none"
+            >
+              Skip to main content
+            </a>
 
-            <div className="flex h-full min-w-0 flex-1 flex-col pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)]">
-              {displayNavBar && (
-                <ChatNavbar showSidebarToggle={showSidebarToggleInNavbar && !sidebarVisible} />
+            <div className="relative flex min-h-0 w-full flex-1 flex-row overflow-hidden">
+              {sidebarContent && (
+                <div className="pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)]">
+                  {sidebarContent}
+                </div>
               )}
-              <main id={MAIN_CONTENT_ID} tabIndex={-1} className="w-full flex-1 overflow-auto">
-                {children}
-              </main>
+
+              <div className="flex h-full min-w-0 flex-1 flex-col pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)]">
+                {displayNavBar && (
+                  <ChatNavbar showSidebarToggle={showSidebarToggleInNavbar && !sidebarVisible} />
+                )}
+                <main id={MAIN_CONTENT_ID} tabIndex={-1} className="w-full flex-1 overflow-auto">
+                  {children}
+                </main>
+              </div>
+
+              {polyPresentation === "dock" ? <PolyDock /> : null}
             </div>
-
-            {polyPresentation === "dock" ? <PolyDock /> : null}
           </div>
-        </div>
 
-        {showKeyboardShortcuts && (
-          <Suspense fallback={null}>
-            <KeyboardShortcutsHelp
-              isOpen={showKeyboardShortcuts}
-              onClose={() => setShowKeyboardShortcuts(false)}
-              sections={APP_KEYBOARD_SHORTCUT_SECTIONS}
-            />
-          </Suspense>
-        )}
-        {showSearch && <SearchDialog isOpen onClose={() => setShowSearch(false)} />}
-        {HostDialogs ? <HostDialogs /> : null}
-      </SidebarPeekProvider>
+          {showKeyboardShortcuts && (
+            <Suspense fallback={null}>
+              <KeyboardShortcutsHelp
+                isOpen={showKeyboardShortcuts}
+                onClose={() => setShowKeyboardShortcuts(false)}
+                sections={APP_KEYBOARD_SHORTCUT_SECTIONS}
+              />
+            </Suspense>
+          )}
+          {showSearch && <SearchDialog isOpen onClose={() => setShowSearch(false)} />}
+          {HostDialogs ? <HostDialogs /> : null}
+        </SidebarPeekProvider>
+      </MediaOpenerBoundary>
     </ProductShellPresence.Provider>
   );
 }
