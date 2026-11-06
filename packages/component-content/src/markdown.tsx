@@ -8,8 +8,11 @@ import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
 
+import { MarkdownImage } from "./media";
+
 type PreProps = ComponentPropsWithoutRef<"pre">;
 type TableProps = ComponentPropsWithoutRef<"table">;
+type ImageProps = ComponentPropsWithoutRef<"img">;
 
 const readFencedCode = (children: ReactNode): { language?: string; text: string } => {
   const child = Children.toArray(children).find(isValidElement) as
@@ -87,6 +90,7 @@ const CodeBlock = ({ children, ...props }: PreProps) => {
 
 const components = {
   pre: CodeBlock,
+  img: ({ src, alt, title }: ImageProps) => <MarkdownImage src={src} alt={alt} title={title} />,
   table: ({ children, ...props }: TableProps) => (
     <div className="my-4 overflow-x-auto">
       <table {...props} className="text-sm">

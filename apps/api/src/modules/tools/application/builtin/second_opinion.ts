@@ -1,13 +1,16 @@
+import { resolveTierModel } from "@ngriffin_uk/polychat-ai-models";
 import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
 import { stringifyMessageContent } from "@ngriffin_uk/polychat-ai-providers";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 
 import { MAX_REVIEWERS, MAX_SOURCE_LENGTH } from "~/config/limits";
-import { findModelConfig } from "~/modules/models/application/resolve";
+import { getLineupModelsForUser } from "~/modules/models/application/resolve";
 import {
   runPanel,
   type PanelMember,
   type PanelTurn,
 } from "~/modules/responses/application/engine/panel";
+import type { IEnv, IUser } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { second_opinion as second_opinionDescriptor } from "./definitions/second_opinion";
@@ -16,33 +19,40 @@ const REVIEW_BRIEF = getPromptText("apps/functions/second-opinion-brief");
 
 const CONCLUSION_BRIEF = getPromptText("apps/functions/second-opinion-conclusion");
 
-async function resolveReviewers(
+function toReviewer(config: ModelConfigItem, index: number): PanelMember {
+  return {
+    id: `reviewer_${index + 1}`,
+    name: config.name || config.matchingModel,
+    role: "Reviewer",
+    instruction: getPromptText("apps/functions/second-opinion-reviewer"),
+    model: config.matchingModel,
+    provider: config.provider,
+  };
+}
+
+export async function resolveReviewers(
   modelIds: readonly string[],
-  env: unknown,
-  userId?: number,
+  env: IEnv,
+  user: IUser | undefined,
+  answeringModel: string | undefined,
 ): Promise<PanelMember[]> {
-  const configs = await Promise.all(
-    modelIds
-      .slice(0, MAX_REVIEWERS)
-      .map((modelId) => findModelConfig(modelId, env as never, undefined, userId)),
-  );
+  const lineup = await getLineupModelsForUser(env, user);
+  const available = Object.values(lineup);
+  const requested = modelIds
+    .slice(0, MAX_REVIEWERS)
+    .flatMap(
+      (modelId) => lineup[modelId] ?? available.find((m) => m.matchingModel === modelId) ?? [],
+    );
 
-  return configs.flatMap((config, index) => {
-    if (!config) {
-      return [];
-    }
+  if (requested.length > 0) {
+    return requested.map(toReviewer);
+  }
 
-    return [
-      {
-        id: `reviewer_${index + 1}`,
-        name: config.name || config.matchingModel,
-        role: "Reviewer",
-        instruction: getPromptText("apps/functions/second-opinion-reviewer"),
-        model: config.matchingModel,
-        provider: config.provider,
-      },
-    ];
+  const fallback = resolveTierModel(lineup, user, "medium", "agent", {
+    isEligible: (model) => model.matchingModel !== answeringModel,
   });
+
+  return fallback ? [toReviewer(fallback.config, 0)] : [];
 }
 
 function buildTurnResponse(turn: PanelTurn) {
@@ -85,7 +95,12 @@ export const second_opinion: ApiToolDefinition = {
   ...second_opinionDescriptor,
   execute: async (args, context) => {
     const request = context.request;
-    const members = await resolveReviewers(args.models as string[], request.env, request.user?.id);
+    const members = await resolveReviewers(
+      args.models as string[],
+      request.env,
+      request.user,
+      request.request?.model,
+    );
 
     if (members.length === 0) {
       return {
