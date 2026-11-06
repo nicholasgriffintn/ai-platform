@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
+import { NotificationRepository } from "~/modules/notifications/infrastructure/NotificationRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
@@ -71,6 +72,7 @@ function context(overrides: Record<string, unknown> = {}): ServiceContext {
     env: {},
     requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
     repositories: fakeRepositories([
+      [NotificationRepository, { updateReceipts: vi.fn().mockResolvedValue(0) }],
       [
         TaskNotificationRepository,
         {
