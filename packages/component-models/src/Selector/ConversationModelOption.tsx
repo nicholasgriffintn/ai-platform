@@ -1,5 +1,5 @@
 import { Checkbox, cn } from "@ngriffin_uk/polychat-component-ui";
-import { getModelDisplayName } from "@ngriffin_uk/polychat-schemas";
+import { getModelDataLocationLabel, getModelDisplayName } from "@ngriffin_uk/polychat-schemas";
 import type { ModelCatalogItem } from "@ngriffin_uk/polychat-schemas";
 
 import { ModelIcon } from "../ModelIcon/ModelIcon";
@@ -20,6 +20,7 @@ export function ConversationModelOption({
   showCheckbox = false,
 }: ConversationModelOptionProps) {
   const displayName = getModelDisplayName(model);
+  const dataLocation = getModelDataLocationLabel(model);
 
   const handleSelect = () => {
     if (!isDisabled) {
@@ -69,6 +70,13 @@ export function ConversationModelOption({
           </span>
           <span className="block text-xs leading-4 break-words whitespace-normal text-muted-foreground">
             {model.provider}
+          </span>
+          <span
+            className="block text-xs leading-4 text-muted-foreground"
+            title={dataLocation.detail}
+          >
+            <span className="sr-only">Data location: </span>
+            {dataLocation.short}
           </span>
         </span>
       </button>

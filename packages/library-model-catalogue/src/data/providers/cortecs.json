@@ -3,7 +3,19 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "dataRetention": {
+      "maxDays": "unknown",
+      "zeroRetention": "account_setting",
+      "source": "https://docs.cortecs.ai/security-and-compliance/zero-data-retention-zdr.md"
+    },
+    "dataLocation": {
+      "kind": "regions",
+      "regions": [
+        "eu"
+      ],
+      "source": "https://docs.cortecs.ai/security-and-compliance/data-governance-and-controls.md"
+    }
   },
   "models": {
     "claude-4-5-sonnet": {

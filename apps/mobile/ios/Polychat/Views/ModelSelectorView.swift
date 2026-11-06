@@ -232,6 +232,11 @@ struct ModelRow: View {
                             .lineLimit(2)
                     }
 
+                    Label(model.dataLocationLabel, systemImage: "mappin.and.ellipse")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .accessibilityLabel("Data location: \(model.dataLocationLabel)")
+
                     if let readiness = model.readiness, !readiness.isReady {
                         Text(readiness.reason)
                             .font(.caption)

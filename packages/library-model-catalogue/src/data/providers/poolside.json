@@ -3,7 +3,15 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": false,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "dataRetention": {
+      "maxDays": "unknown",
+      "source": "https://poolside.ai/legal/dpa"
+    },
+    "dataLocation": {
+      "kind": "multiple",
+      "source": "https://poolside.ai/privacy"
+    }
   },
   "models": {
     "poolside/laguna-m.1": {

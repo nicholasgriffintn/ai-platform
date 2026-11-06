@@ -1,6 +1,7 @@
 import {
   siteCollectionRecordSchema,
   siteRuntimeStatusSchema,
+  type SiteCollectionRecord,
   type SiteDataRequest,
   type SiteDataResponse,
   type SiteIntegrationScope,
@@ -12,6 +13,7 @@ import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
+import type { IEnv } from "~/types";
 
 import { requestSiteRuntime } from "../infrastructure/runtime-client";
 import { requireSiteIntegrationAccess } from "./integration-access";
@@ -25,6 +27,41 @@ export async function readSiteData(
   const site = await requireSiteIntegrationAccess(context, siteId, scope);
 
   return readAuthorisedSiteData(context, site, await readSiteSourceBindings(context, site));
+}
+
+export async function readSiteRecordsCreatedBy(
+  env: IEnv,
+  site: { id: string; revision: number; collectionIds: readonly string[] },
+  userId: number,
+): Promise<{ collectionId: string; records: SiteCollectionRecord[] }[]> {
+  if (!env.SITES_RUNTIME || site.collectionIds.length === 0) {
+    return [];
+  }
+
+  const status = await requestSiteRuntime(
+    env,
+    site.id,
+    { operation: "status" },
+    siteRuntimeStatusSchema,
+  );
+
+  if (!status.enabled || status.revision !== site.revision) {
+    return [];
+  }
+
+  return Promise.all(
+    [...new Set(site.collectionIds)].map(async (collectionId) => ({
+      collectionId,
+      records: (
+        await requestSiteRuntime(
+          env,
+          site.id,
+          { operation: "read", revision: site.revision, collectionId },
+          z.array(siteCollectionRecordSchema),
+        )
+      ).filter((record) => record.createdByUserId === userId),
+    })),
+  );
 }
 
 async function readAuthorisedSiteData(
