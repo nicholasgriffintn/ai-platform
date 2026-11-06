@@ -499,9 +499,6 @@ importers:
       drizzle-kit:
         specifier: 0.31.11
         version: 0.31.11
-      fflate:
-        specifier: ^0.8.3
-        version: 0.8.3
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
