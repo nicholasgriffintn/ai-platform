@@ -125,7 +125,7 @@ export function ChatSettingsPanel({
                 <CompactSettingNumber
                   id="run_cap_credits"
                   label="Run credit cap"
-                  description="Each run pauses and asks you before it could go over this. Leave empty for no cap."
+                  description="The run stops before it could go over this. Leave empty for no cap."
                   min={0}
                   value={chatSettings.run_cap_credits ?? ""}
                   placeholder="No cap"

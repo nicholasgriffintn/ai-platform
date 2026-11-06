@@ -1,5 +1,6 @@
 import { Button } from "@ngriffin_uk/polychat-component-ui";
 import {
+  canCheckMediaUrl,
   describeMediaCheck,
   type MediaCheckResult,
   useMediaCheck,
@@ -50,15 +51,17 @@ export function MediaCheckPanel({ url }: { url: string }) {
 
   return (
     <div className="flex flex-col gap-2">
-      <Button
-        variant="secondary"
-        size="sm"
-        icon={<ShieldCheck size={14} />}
-        disabled={check.isPending}
-        onClick={() => check.mutate(url)}
-      >
-        {check.isPending ? "Checking" : "Check this file"}
-      </Button>
+      {canCheckMediaUrl(url) ? (
+        <Button
+          variant="secondary"
+          size="sm"
+          icon={<ShieldCheck size={14} />}
+          disabled={check.isPending}
+          onClick={() => check.mutate(url)}
+        >
+          {check.isPending ? "Checking" : "Check this file"}
+        </Button>
+      ) : null}
       {check.data ? <MediaCheckResultCard result={check.data} /> : null}
       <Link to="/verify" className="text-xs text-muted-foreground underline">
         Check a file you were sent

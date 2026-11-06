@@ -55,6 +55,25 @@ export function MediaOpenerProvider({
   return <MediaOpenerContext.Provider value={onOpen}>{children}</MediaOpenerContext.Provider>;
 }
 
+export function MarkdownImage({
+  src,
+  alt = "Image",
+  ...props
+}: ImgHTMLAttributes<HTMLImageElement>) {
+  const openMedia = useContext(MediaOpenerContext);
+  const image = <img src={src} alt={alt} {...props} />;
+
+  if (!openMedia || !src) {
+    return image;
+  }
+
+  return (
+    <button type="button" aria-label={`View ${alt} larger`} onClick={() => openMedia({ src, alt })}>
+      {image}
+    </button>
+  );
+}
+
 export function ImageModal({
   src,
   alt = "Image",

@@ -1,7 +1,9 @@
 import type { RunChargeState } from "@ngriffin_uk/polychat-ai-billing";
 import { describe, expect, it, vi } from "vitest";
 
-import { RunBudget, type RunBudgetParams } from "../run-budget";
+import type { Message } from "~/types";
+
+import { RunBudget, runCapStoppedNotice, type RunBudgetParams } from "../run-budget";
 
 const CREDIT = 1_000_000;
 
@@ -30,6 +32,19 @@ function budget(state: Partial<RunChargeState>, overrides: Partial<RunBudgetPara
 }
 
 const messages = [{ role: "user" as const, content: "Do the work" }];
+
+describe("runCapStoppedNotice", () => {
+  it("keeps the images a run made before it stopped", () => {
+    const notice = runCapStoppedNotice([
+      { role: "tool", name: "create_image", content: "done", data: { url: "/outputs/a/content" } },
+      { role: "tool", name: "web_search", content: "done", data: { url: "https://example.com" } },
+    ] as Message[]);
+
+    expect(notice).toBe(
+      "This run stopped at its credit cap.\n\n![Generated image](/outputs/a/content)",
+    );
+  });
+});
 
 describe("RunBudget", () => {
   it("lets a step through while the estimate fits under the cap", async () => {

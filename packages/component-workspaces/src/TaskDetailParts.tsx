@@ -194,8 +194,11 @@ const VERIFICATION_LABELS = {
   failed: "Failed checks",
 } as const;
 
-function approvalLabel(completion: ProjectTask["completions"][number]): string {
-  if (completion.approval.status !== "approved") {
+function approvalLabel(
+  completion: ProjectTask["completions"][number],
+  awaitingReview: boolean,
+): string {
+  if (awaitingReview || completion.approval.status !== "approved") {
     return "Awaiting approval";
   }
 
@@ -204,9 +207,11 @@ function approvalLabel(completion: ProjectTask["completions"][number]): string {
 
 export function TaskLatestResult({
   completion,
+  awaitingReview,
   renderProgressSummary,
 }: {
   completion: ProjectTask["completions"][number];
+  awaitingReview: boolean;
   renderProgressSummary?: (summary: string) => React.ReactNode;
 }) {
   const verification = completion.verification;
@@ -217,8 +222,8 @@ export function TaskLatestResult({
       title="Latest result"
       meta={
         verification
-          ? `${VERIFICATION_LABELS[verification.status]} · ${approvalLabel(completion)}`
-          : approvalLabel(completion)
+          ? `${VERIFICATION_LABELS[verification.status]} · ${approvalLabel(completion, awaitingReview)}`
+          : approvalLabel(completion, awaitingReview)
       }
     >
       {concerns.length > 0 ? (

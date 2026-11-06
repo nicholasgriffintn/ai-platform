@@ -29,6 +29,10 @@ export function isCheckableMedia(mimeType: string | null | undefined): boolean {
   return CHECKABLE_MEDIA_TYPE.test(mimeType ?? "");
 }
 
+export function canCheckMediaUrl(url: string): boolean {
+  return url.startsWith(`${API_BASE_URL}/`);
+}
+
 export function describeMediaCheck(result: MediaCheckResult): { title: string; detail: string } {
   switch (result.kind) {
     case "found":

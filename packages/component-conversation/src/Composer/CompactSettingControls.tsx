@@ -64,23 +64,21 @@ export function CompactSettingNumber({
 
   return (
     <div className="space-y-1.5">
-      <div className="flex items-center justify-between gap-3">
-        <label htmlFor={id} className="text-xs font-medium text-foreground">
-          {label}
-        </label>
-        <Input
-          id={id}
-          type="number"
-          min={min}
-          max={max}
-          value={value}
-          placeholder={placeholder?.toString()}
-          disabled={disabled}
-          onChange={(event) => onChange(event.target.value)}
-          aria-describedby={descriptionId}
-          className="h-8 w-28 bg-surface px-2 text-right text-sm"
-        />
-      </div>
+      <label htmlFor={id} className="block text-xs font-medium text-foreground">
+        {label}
+      </label>
+      <Input
+        id={id}
+        type="number"
+        min={min}
+        max={max}
+        value={value}
+        placeholder={placeholder?.toString()}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+        aria-describedby={descriptionId}
+        className="h-8 w-full bg-surface px-2 text-sm"
+      />
       {description && (
         <p id={descriptionId} className="text-xs text-muted-foreground">
           {description}

@@ -195,6 +195,17 @@ export async function resolveUserMcpGatewayServers(
 const HOSTED_MCP_TOOL_ID = "mcp";
 const NATIVE_MCP_TOOL_NAMES = ["mcp_list_tools", "mcp_call_tool"] as const;
 
+export function withConfiguredMcpTool(
+  enabledTools: string[] | undefined,
+  servers: readonly McpGatewayServer[],
+): string[] | undefined {
+  if (servers.length === 0 || !enabledTools) {
+    return enabledTools;
+  }
+
+  return [...new Set([...enabledTools, HOSTED_MCP_TOOL_ID])];
+}
+
 export function mergeNativeMcpToolNames(params: {
   enabledTools: string[] | undefined;
   useNativeGateway: boolean;

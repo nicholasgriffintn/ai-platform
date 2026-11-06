@@ -81,7 +81,7 @@ import { createProviderRetryBudget } from "~/modules/responses/domain/provider-r
 import { withoutSettingsDisabledTools } from "~/modules/tools/application/availability";
 import { listFunctionToolDefinitions } from "~/modules/tools/application/catalogue";
 import { shouldStopTurnForUsage, USAGE_LIMIT_NOTICE } from "~/modules/usage/application/limitState";
-import { RUN_CAP_STOPPED_NOTICE, type RunBudget } from "~/modules/usage/application/run-budget";
+import { runCapStoppedNotice, type RunBudget } from "~/modules/usage/application/run-budget";
 import type {
   ChatCompletionParameters,
   ChatMode,
@@ -527,7 +527,7 @@ async function runChatAgentLoop(
       if (budgetDecision?.kind === "stopped") {
         state.stoppedForUsageLimit = true;
 
-        return closingTurn(RUN_CAP_STOPPED_NOTICE, "usage_limit_reached");
+        return closingTurn(runCapStoppedNotice(toolResponses), "usage_limit_reached");
       }
 
       const stepMessageId = await openMessage();

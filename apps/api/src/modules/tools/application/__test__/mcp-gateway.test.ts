@@ -28,7 +28,12 @@ vi.mock("~/modules/models/application/resolve", async (importOriginal) => ({
 
 import { mcp_call_tool } from "~/modules/tools/application/builtin/mcp_gateway";
 
-import { mergeNativeMcpToolNames, shouldUseNativeMcpGateway } from "../mcp-gateway-servers";
+import {
+  mergeNativeMcpToolNames,
+  shouldUseNativeMcpGateway,
+  withConfiguredMcpTool,
+} from "../mcp-gateway-servers";
+import { mergePersonalModelToolOptions } from "../modelToolConfiguration";
 
 const servers = [
   { label: "linear", url: "https://mcp.linear.app/mcp", credentialConnectionId: "connection-1" },
@@ -167,5 +172,29 @@ describe("mcp_call_tool", () => {
 describe("mcp_call_tool effects", () => {
   it("treats a server's hints as claims, not verified facts", () => {
     expect(mcp_call_tool.effects?.hintsAreClaims).toBe(true);
+  });
+});
+
+describe("configured MCP servers", () => {
+  const server = { label: "deepwiki", url: "https://mcp.deepwiki.com/mcp" };
+
+  it("reach a chat that did not ask for the mcp tool", () => {
+    const options = mergePersonalModelToolOptions({
+      configured: {
+        configuredToolIds: ["mcp"],
+        toolOptions: {
+          mcp_servers: [
+            { server_label: server.label, server_url: server.url, require_approval: "always" },
+          ],
+        },
+      },
+    });
+
+    expect(options?.mcp_servers).toHaveLength(1);
+    expect(withConfiguredMcpTool(["web_search"], [server])).toEqual(["web_search", "mcp"]);
+  });
+
+  it("leave a chat alone when nothing is configured", () => {
+    expect(withConfiguredMcpTool(["web_search"], [])).toEqual(["web_search"]);
   });
 });

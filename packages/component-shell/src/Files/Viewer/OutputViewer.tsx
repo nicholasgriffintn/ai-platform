@@ -128,6 +128,18 @@ function OutputStage({
     return <GenerationStage title={output.title} content={output.content} />;
   }
 
+  if (downloadUrl && output.file?.mimeType.startsWith("image/")) {
+    return (
+      <figure className="flex h-full items-center justify-center p-6">
+        <img
+          src={downloadUrl}
+          alt={output.title}
+          className="max-h-full max-w-full rounded-lg object-contain"
+        />
+      </figure>
+    );
+  }
+
   if (output.content && Object.keys(output.content).length > 0) {
     return (
       <div className="mx-auto max-w-3xl px-6 py-8">
