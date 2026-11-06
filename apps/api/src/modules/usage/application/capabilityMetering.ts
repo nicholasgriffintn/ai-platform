@@ -41,6 +41,7 @@ export function withCapabilityMetering<T>(
   const runId = context?.serviceContext?.executionRunId;
   const activityId = context?.serviceContext?.executionActivityId;
   const runAttempt = context?.serviceContext?.executionRunAttempt;
+  const delivery = context?.serviceContext?.executionRunUsageDelivery;
 
   return new Proxy(target, {
     get(currentTarget, prop) {
@@ -66,6 +67,7 @@ export function withCapabilityMetering<T>(
           runId,
           activityId,
           runAttempt,
+          delivery,
           args,
           result,
           extractor,

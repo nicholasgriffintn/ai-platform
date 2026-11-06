@@ -81,6 +81,7 @@ import { createProviderRetryBudget } from "~/modules/responses/domain/provider-r
 import { withoutSettingsDisabledTools } from "~/modules/tools/application/availability";
 import { listFunctionToolDefinitions } from "~/modules/tools/application/catalogue";
 import { shouldStopTurnForUsage, USAGE_LIMIT_NOTICE } from "~/modules/usage/application/limitState";
+import { RUN_CAP_STOPPED_NOTICE, type RunBudget } from "~/modules/usage/application/run-budget";
 import type {
   ChatCompletionParameters,
   ChatMode,
@@ -223,6 +224,7 @@ export interface AgentLoopExecutionParams {
   contextSystemSections?: readonly ContextBudgetSystemSection[];
   runId?: string;
   runAttempt?: number;
+  runBudget?: RunBudget;
   provenance?: RunProvenance;
   modelFallback?: ModelFallback<AgentModelSelection>;
   onContextSnapshot?: (snapshot: ChatContextSnapshot) => Promise<void> | void;
@@ -374,6 +376,7 @@ async function runChatAgentLoop(
       runId: params.runId,
       runAttempt: params.runAttempt,
       provenance: params.provenance,
+      usageDelivery: params.runBudget?.usageDelivery,
     });
 
     guardrailsPassed = finalised.guardrailsPassed;
@@ -515,6 +518,16 @@ async function runChatAgentLoop(
         state.pendingUserAction = undefined;
 
         return closingTurn(pending.message, "pending");
+      }
+
+      const budgetDecision = await params.runBudget?.beforeStep(
+        providerIO.providerMessages(messages),
+      );
+
+      if (budgetDecision?.kind === "stopped") {
+        state.stoppedForUsageLimit = true;
+
+        return closingTurn(RUN_CAP_STOPPED_NOTICE, "usage_limit_reached");
       }
 
       const stepMessageId = await openMessage();

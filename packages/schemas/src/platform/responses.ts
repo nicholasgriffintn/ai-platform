@@ -266,7 +266,7 @@ export const responseTextSettingsSchema = z
 export const responseBudgetSchema = z
   .object({
     steps: z.number().int().min(1).optional(),
-    credits: z.number().optional(),
+    credits: z.number().positive().optional(),
   })
   .strict();
 

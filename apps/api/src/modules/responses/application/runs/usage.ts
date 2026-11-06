@@ -6,7 +6,10 @@ import type { ChatRunUsageEventSummaryRow } from "~/modules/usage/infrastructure
 import { UsageReservationRepository } from "~/modules/usage/infrastructure/UsageReservationRepository";
 import type { UsageReservationRow } from "~/modules/usage/infrastructure/UsageReservationRepository";
 
-function sum(rows: readonly ChatRunUsageEventSummaryRow[], key: "cost_micros" | "credit_micros") {
+function sum(
+  rows: readonly ChatRunUsageEventSummaryRow[],
+  key: "cost_micros" | "credit_micros" | "refunded_credit_micros" | "absorbed_credit_micros",
+) {
   return rows.reduce((total, row) => total + row[key], 0);
 }
 
@@ -131,6 +134,11 @@ export function buildChatRunUsage(
       bySource: [...bySource.values()],
     },
     attempts: attemptSummaries,
+    charge: {
+      capCreditMicros: run.spendCapCreditMicros ?? null,
+      refundedCreditMicros: sum(runRows, "refunded_credit_micros"),
+      absorbedCreditMicros: sum(runRows, "absorbed_credit_micros"),
+    },
     settlement: {
       status: settlementStatus,
       at:

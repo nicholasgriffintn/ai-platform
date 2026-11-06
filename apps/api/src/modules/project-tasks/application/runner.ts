@@ -46,6 +46,7 @@ import type { TaskExecutionFence } from "~/modules/queue/application/types";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { toProviderMessages } from "~/modules/responses/application/engine/messages/provider-mapping";
 import { recordChatRunOperationalMetric } from "~/modules/responses/application/runs/operational-metrics";
+import { refundPlatformFailedRun } from "~/modules/responses/application/runs/platform-failure";
 import { startResponse } from "~/modules/responses/application/start";
 import type { ResponseAuthority, ResponseCommand } from "~/modules/responses/domain/command";
 import { assertTeammateEmploymentAvailable } from "~/modules/teammates/application/organisation";
@@ -463,6 +464,7 @@ export async function recoverRedeliveredProjectTaskRun(params: {
         throw ownershipLostError(params.run.id);
       }
 
+      await refundPlatformFailedRun(params.context, interrupted);
       recovered = interrupted;
     }
 
@@ -486,6 +488,7 @@ export async function recoverRedeliveredProjectTaskRun(params: {
           throw ownershipLostError(params.run.id);
         }
 
+        await refundPlatformFailedRun(params.context, failed);
         recovered = failed;
       }
     }
