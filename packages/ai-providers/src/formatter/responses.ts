@@ -4,8 +4,6 @@ import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import {
-  assertGeneratedAssetStorageConfigured,
-  hasPrivateAssetStorage,
   persistBase64GeneratedImages,
   persistGeneratedAsset,
   persistInlineGeneratedAsset,
@@ -295,13 +293,6 @@ export class ResponseFormatter {
 
     const format = typeof audio.format === "string" ? audio.format : "mp3";
     const contentType = ResponseFormatter.getAudioContentType(format);
-
-    if (!hasPrivateAssetStorage(ResponseFormatter.getGeneratedMediaContext(options))) {
-      return {
-        format,
-        url: audioData.startsWith("data:") ? audioData : `data:${contentType};base64,${audioData}`,
-      };
-    }
 
     const storedAudio = await persistGeneratedAsset({
       mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
@@ -961,75 +952,65 @@ export class ResponseFormatter {
     if (isImageType && (data.image || typeof data === "string")) {
       const imageContent = data.image || data;
 
-      if (hasPrivateAssetStorage(ResponseFormatter.getGeneratedMediaContext(options))) {
-        const imageBytes = base64ToBuffer(
-          typeof imageContent === "string"
-            ? imageContent.replace(/^data:image\/\w+;base64,/, "")
-            : imageContent,
-        );
-        const storedImage = await persistGeneratedAsset({
-          mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
-          extension: "png",
-          data: imageBytes,
-          mimeType: "image/png",
-          filename: "image.png",
-        });
+      const imageBytes = base64ToBuffer(
+        typeof imageContent === "string"
+          ? imageContent.replace(/^data:image\/\w+;base64,/, "")
+          : imageContent,
+      );
+      const storedImage = await persistGeneratedAsset({
+        mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
+        extension: "png",
+        data: imageBytes,
+        mimeType: "image/png",
+        filename: "image.png",
+      });
 
-        return {
-          ...data,
-          response: [
-            {
-              type: "image_url",
-              image_url: { url: storedImage.url },
-            },
-          ],
-          data: {
-            url: storedImage.url,
-            key: storedImage.key,
-            outputId: storedImage.outputId,
+      return {
+        ...data,
+        response: [
+          {
+            type: "image_url",
+            image_url: { url: storedImage.url },
           },
-        };
-      }
-
-      assertGeneratedAssetStorageConfigured(ResponseFormatter.getGeneratedMediaContext(options));
-
-      return { ...data, response: imageContent };
+        ],
+        data: {
+          url: storedImage.url,
+          key: storedImage.key,
+          outputId: storedImage.outputId,
+        },
+      };
     }
 
     if (isAudioType && (data.audio || typeof data === "string")) {
       const audioContent = data.audio || data;
 
-      if (hasPrivateAssetStorage(ResponseFormatter.getGeneratedMediaContext(options))) {
-        const audioBytes = base64ToBuffer(
-          typeof audioContent === "string"
-            ? audioContent.replace(/^data:audio\/\w+;base64,/, "")
-            : audioContent,
-        );
-        const storedAudio = await persistGeneratedAsset({
-          mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
-          extension: "mp3",
-          data: audioBytes,
-          mimeType: "audio/mpeg",
-          filename: "audio.mp3",
-        });
+      const audioBytes = base64ToBuffer(
+        typeof audioContent === "string"
+          ? audioContent.replace(/^data:audio\/\w+;base64,/, "")
+          : audioContent,
+      );
+      const storedAudio = await persistGeneratedAsset({
+        mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
+        extension: "mp3",
+        data: audioBytes,
+        mimeType: "audio/mpeg",
+        filename: "audio.mp3",
+      });
 
-        return {
-          ...data,
-          response: [
-            {
-              type: "audio_url",
-              audio_url: { url: storedAudio.url },
-            },
-          ],
-          data: {
-            url: storedAudio.url,
-            key: storedAudio.key,
-            outputId: storedAudio.outputId,
+      return {
+        ...data,
+        response: [
+          {
+            type: "audio_url",
+            audio_url: { url: storedAudio.url },
           },
-        };
-      }
-
-      return { ...data, response: audioContent };
+        ],
+        data: {
+          url: storedAudio.url,
+          key: storedAudio.key,
+          outputId: storedAudio.outputId,
+        },
+      };
     }
 
     if (Array.isArray(data.choices)) {
@@ -1072,37 +1053,31 @@ export class ResponseFormatter {
 
       const image = images[0];
 
-      if (hasPrivateAssetStorage(ResponseFormatter.getGeneratedMediaContext(options))) {
-        const imageBytes = base64ToBuffer(
-          typeof image === "string" ? image.replace(/^data:image\/\w+;base64,/, "") : image,
-        );
-        const storedImage = await persistGeneratedAsset({
-          mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
-          extension: "png",
-          data: imageBytes,
-          mimeType: "image/png",
-          filename: "image.png",
-        });
+      const imageBytes = base64ToBuffer(
+        typeof image === "string" ? image.replace(/^data:image\/\w+;base64,/, "") : image,
+      );
+      const storedImage = await persistGeneratedAsset({
+        mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
+        extension: "png",
+        data: imageBytes,
+        mimeType: "image/png",
+        filename: "image.png",
+      });
 
-        return {
-          ...data,
-          response: [
-            {
-              type: "image_url",
-              image_url: { url: storedImage.url },
-            },
-          ],
-          data: {
-            outputId: storedImage.outputId,
-            url: storedImage.url,
-            key: storedImage.key,
+      return {
+        ...data,
+        response: [
+          {
+            type: "image_url",
+            image_url: { url: storedImage.url },
           },
-        };
-      }
-
-      assertGeneratedAssetStorageConfigured(ResponseFormatter.getGeneratedMediaContext(options));
-
-      return { ...data, response: image };
+        ],
+        data: {
+          outputId: storedImage.outputId,
+          url: storedImage.url,
+          key: storedImage.key,
+        },
+      };
     }
 
     if (data.output?.message?.content?.[0]?.text) {
@@ -1196,22 +1171,14 @@ export class ResponseFormatter {
         return { ...data, response: fallbackText };
       }
 
-      let persistedUrls = candidateUrls;
-      let metadata: Array<{ key: string; url: string; originalUrl: string }> = [];
-
-      if (hasPrivateAssetStorage(ResponseFormatter.getGeneratedMediaContext(options))) {
-        const uploads = await persistRemoteGeneratedAssets({
-          mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
-          urls: candidateUrls,
-          fallback: {
-            extension: "mp4",
-            contentType: "video/mp4",
-          },
-        });
-
-        persistedUrls = uploads.urls;
-        metadata = uploads.metadata;
-      }
+      const { urls: persistedUrls, metadata } = await persistRemoteGeneratedAssets({
+        mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
+        urls: candidateUrls,
+        fallback: {
+          extension: "mp4",
+          contentType: "video/mp4",
+        },
+      });
 
       const responseContent = persistedUrls.map((url) => ({
         type: "video_url" as const,
@@ -1243,22 +1210,14 @@ export class ResponseFormatter {
         return { ...data, response: fallbackText };
       }
 
-      let persistedUrls = candidateUrls;
-      let metadata: Array<{ key: string; url: string; originalUrl: string }> = [];
-
-      if (hasPrivateAssetStorage(ResponseFormatter.getGeneratedMediaContext(options))) {
-        const uploads = await persistRemoteGeneratedAssets({
-          mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
-          urls: candidateUrls,
-          fallback: {
-            extension: "mp3",
-            contentType: "audio/mpeg",
-          },
-        });
-
-        persistedUrls = uploads.urls;
-        metadata = uploads.metadata;
-      }
+      const { urls: persistedUrls, metadata } = await persistRemoteGeneratedAssets({
+        mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
+        urls: candidateUrls,
+        fallback: {
+          extension: "mp3",
+          contentType: "audio/mpeg",
+        },
+      });
 
       const responseContent = persistedUrls.map((url) => ({
         type: "audio_url" as const,

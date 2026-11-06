@@ -92,7 +92,11 @@ export class WorkersAiAudioProvider extends BaseAudioProvider implements AudioPr
 
     const key = this.buildObjectKey(this.resolveSlugBase(request));
 
-    await this.requireStorage(request).uploadObject(key, audio);
+    await this.requireStorage(request).uploadGeneratedMedia(key, audio, {
+      mimeType: "audio/mpeg",
+      model,
+      provider: this.name,
+    });
 
     return { key, audioMimeType: "audio/mpeg", metadata };
   }

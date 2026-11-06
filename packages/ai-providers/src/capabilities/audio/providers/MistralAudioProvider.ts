@@ -75,7 +75,11 @@ export class MistralAudioProvider extends BaseAudioProvider implements AudioProv
       throw new AssistantError("No audio data returned by Mistral", ErrorType.PROVIDER_ERROR);
     }
 
-    await storage.uploadObject(objectKey, audioData);
+    await storage.uploadGeneratedMedia(objectKey, audioData, {
+      mimeType,
+      model: request.model,
+      provider: this.name,
+    });
 
     return {
       key: objectKey,

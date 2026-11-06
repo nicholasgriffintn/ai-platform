@@ -51,10 +51,10 @@ export async function ensureWindDownBed(
     return false;
   }
 
-  await StorageService.forPrivateAssets(context).uploadObject(
+  await StorageService.forPrivateAssets(context).uploadGeneratedMedia(
     bedKey(bed),
-    new Uint8Array(await response.arrayBuffer()),
-    { httpMetadata: { contentType: response.headers.get("content-type") ?? "audio/mpeg" } },
+    await response.arrayBuffer(),
+    { mimeType: response.headers.get("content-type") ?? "audio/mpeg" },
   );
 
   return true;

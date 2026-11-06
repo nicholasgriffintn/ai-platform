@@ -198,6 +198,7 @@ export * from "./shared-teammates.js";
 export * from "./teammate-roles.js";
 export * from "./shared.js";
 export * from "./sources.js";
+export * from "./media-provenance.js";
 export * from "./source-media.js";
 export * from "./video-embeds.js";
 export * from "./source-content-summary.js";

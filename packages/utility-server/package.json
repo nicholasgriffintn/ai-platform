@@ -127,6 +127,11 @@
       "types": "./dist/markdown.d.ts",
       "import": "./dist/markdown.js"
     },
+    "./media-provenance": {
+      "polychat-source": "./src/media-provenance/index.ts",
+      "types": "./dist/media-provenance/index.d.ts",
+      "import": "./dist/media-provenance/index.js"
+    },
     "./mime": {
       "polychat-source": "./src/mime.ts",
       "types": "./dist/mime.d.ts",

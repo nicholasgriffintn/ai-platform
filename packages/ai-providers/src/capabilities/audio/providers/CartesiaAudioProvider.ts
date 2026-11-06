@@ -55,7 +55,11 @@ export class CartesiaAudioProvider extends BaseAudioProvider implements AudioPro
 
     const storage = this.requireStorage(request);
 
-    await storage.uploadObject(objectKey, new Uint8Array(audioBuffer));
+    await storage.uploadGeneratedMedia(objectKey, audioBuffer, {
+      mimeType: "audio/mpeg",
+      model: request.model,
+      provider: this.name,
+    });
 
     return {
       key: objectKey,
