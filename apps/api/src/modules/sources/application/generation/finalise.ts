@@ -269,7 +269,13 @@ async function adoptGeneration(
     const siblingRecord = await context.repositories.get(SourceRepository).getSource(sibling.id);
 
     if (siblingRecord) {
-      await storeGeneratedMedia(context, siblingRecord, extra);
+      await storeGeneratedMedia(context, siblingRecord, extra).catch((error: unknown) =>
+        failSourceGeneration(
+          context,
+          siblingRecord,
+          getErrorMessage(error, "The generated media could not be saved"),
+        ),
+      );
     }
   }
 

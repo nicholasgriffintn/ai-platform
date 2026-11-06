@@ -1,12 +1,14 @@
 import { resolveAiGatewayId } from "@ngriffin_uk/polychat-ai-providers";
 import type { SourceGeneration } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
-import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
+import { base64ToBuffer, bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { buildMultipartInput } from "@ngriffin_uk/polychat-utility-server/multipart-input";
 import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { enforceImagePolicy } from "~/modules/generate/application/image-policy";
+import { screenGeneratedImage } from "~/modules/generate/application/image-policy-classifier";
 import { describePicture } from "~/modules/generate/application/vision";
 import { storeKnowledgeFile } from "~/modules/knowledge/application/intake/file";
 import { requireSystemModel } from "~/modules/models/application/resolve";
@@ -36,6 +38,25 @@ export async function paintDrawing(
   }
 
   const sketch = await drawing.arrayBuffer();
+  const mimeType = drawing.type || "image/png";
+  const [description, repaint] = await Promise.all([
+    describePicture(context, {
+      prompt: drawingDescriptionPrompt(),
+      image: sketch,
+      mimeType,
+    }),
+    requireSystemModel(context.env, user, "repaint", {}, { inputs: ["image"] }),
+  ]);
+  const prompt = description || "Convert this drawing into a painting.";
+
+  await enforceImagePolicy({
+    env: context.env,
+    user,
+    surface: "drawing",
+    text: prompt,
+    images: [`data:${mimeType};base64,${bufferToBase64(sketch)}`],
+  });
+
   const storageId = generateId();
   const { source: storedSketch } = await storeKnowledgeFile(context, {
     origin: "upload",
@@ -50,21 +71,12 @@ export async function paintDrawing(
     filename: "sketch.png",
     byteSize: sketch.byteLength,
   });
-  const [description, repaint] = await Promise.all([
-    describePicture(context, {
-      prompt: drawingDescriptionPrompt(),
-      image: sketch,
-      mimeType: drawing.type || "image/png",
-    }),
-    requireSystemModel(context.env, user, "repaint", {}, { inputs: ["image"] }),
-  ]);
-  const prompt = description || "Convert this drawing into a painting.";
   const { multipart } = await buildMultipartInput({ prompt }, [
     {
       field: "input_image_0",
       data: sketch,
       filename: "sketch.png",
-      contentType: drawing.type || "image/png",
+      contentType: mimeType,
     },
   ]);
   const painting = await context.env.AI.run(
@@ -79,6 +91,15 @@ export async function paintDrawing(
   }
 
   const paintingData = base64ToBuffer(paintingImage.data.image).buffer;
+
+  await screenGeneratedImage({
+    env: context.env,
+    user,
+    surface: "drawing",
+    data: paintingData,
+    mimeType: "image/png",
+  });
+
   const generation: SourceGeneration = {
     type: "drawing",
     modelId: repaint.id,
