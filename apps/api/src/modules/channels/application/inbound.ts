@@ -67,7 +67,6 @@ import type { IEnv, IUser, Message } from "~/types";
 import { requireChannelSenderMapping } from "./access";
 import { recordChannelAttention } from "./channel-attention";
 import { judgeChannelEvent, type ChannelEventJudgement } from "./channel-event-judgement";
-import { deliverDisclosedChannelReply } from "./disclosed-reply";
 import {
   answerMessageApproval,
   bindingApprovalSenderKey,
@@ -665,17 +664,15 @@ async function signpostUnansweredMessage(params: {
   );
 
   try {
-    await deliverDisclosedChannelReply({
+    await deliverOutboundOperation({
       context: params.context,
-      userId: params.user.id,
-      channel: params.channel,
-      conversationId: params.conversationId,
-      from: params.message.from,
-      messageId: params.message.messageId,
       deliveryId: `channel_signpost_${digest.slice(0, 40)}`,
-      body: CRISIS_SIGNPOST_TEXT,
+      userId: params.user.id,
+      kind: "channel_reply",
+      scopeId: params.conversationId,
+      operationId: params.message.messageId,
       payload: { destination: params.message.from, body: CRISIS_SIGNPOST_TEXT },
-      send: (body) => params.send({ body, mediaUrls: [] }),
+      send: () => params.send({ body: CRISIS_SIGNPOST_TEXT, mediaUrls: [] }),
     });
   } catch (error) {
     logger.warn("Could not send crisis signposting to a channel", {
@@ -979,21 +976,19 @@ export async function handleInboundChannelMessage(params: {
     streamingMessage: `${profile.label} assistant responses cannot be streamed`,
   });
 
-  await deliverDisclosedChannelReply({
+  await deliverOutboundOperation({
     context: params.context,
-    userId: params.user.id,
-    channel: params.data.channel,
-    conversationId,
-    from: message.from,
-    messageId: message.messageId,
     deliveryId: `channel_reply_${commandDigest.slice(0, 40)}`,
-    body: notification.body,
+    userId: params.user.id,
+    kind: "channel_reply",
+    scopeId: conversationId,
+    operationId: message.messageId,
     payload: {
       destination: message.from,
       body: notification.body,
       mediaUrls: notification.mediaUrls,
     },
-    send: (body) => delivery.send({ body, mediaUrls: notification.mediaUrls }),
+    send: () => delivery.send({ body: notification.body, mediaUrls: notification.mediaUrls }),
   });
   await delivery.signal?.("done");
 

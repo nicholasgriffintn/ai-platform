@@ -8,7 +8,6 @@ import {
 } from "./apps.js";
 import { conversationChannelRequestOptionsSchema } from "./chat-mode.js";
 import { chatRunCommandIdSchema, chatRunIdSchema } from "./chat-runs.js";
-import { comparisonRequestOptionsSchema } from "./comparison.js";
 import { computeSiteSchema } from "./compute-sites.js";
 import { conversationSubjectSchema } from "./conversation-subject.js";
 import { conversationTypeSchema } from "./conversation-type.js";
@@ -333,9 +332,6 @@ export const chatRequestOptionsSchema = z
     sandbox: sandboxRequestOptionsSchema
       .optional()
       .describe("Settings for sandbox execution in a project coding conversation."),
-    comparison: comparisonRequestOptionsSchema
-      .optional()
-      .describe("Compare other models on an assistant reply instead of asking the model."),
     toolInteraction: toolInteractionResolutionSchema
       .optional()
       .describe("Structured resolution for a pending human-in-the-loop tool result."),

@@ -3,10 +3,10 @@ import { isPolyTeammateId } from "@ngriffin_uk/polychat-schemas";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { deliverWithChannelDisclosure } from "~/modules/channels/application/disclosed-reply";
 import { CHANNEL_TOP_LEVEL_THREAD } from "~/modules/channels/application/ports/channel-adapter";
 import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
+import { deliverOutboundOperation } from "~/modules/delivery/application/outbound";
 import type { IUser } from "~/types";
 
 const logger = getLogger({ prefix: "services/poly/channel-delivery" });
@@ -43,23 +43,17 @@ export async function sendPolyNotificationToChannels(params: {
     const digest = await sha256Hex(`${params.notificationId}:${binding.id}`);
 
     try {
-      await deliverWithChannelDisclosure({
+      await deliverOutboundOperation({
         context: params.context,
-        contact: { channel: binding.channel, bindingId: binding.id },
         deliveryId: `poly_notification_${digest.slice(0, 40)}`,
         userId: params.user.id,
         kind: "poly_notification",
         scopeId: params.polyContextId,
         operationId: params.notificationId,
-        body,
         payload: { bindingId: binding.id, body },
-        send: (disclosedBody) =>
+        send: () =>
           adapter.sendReply(
-            {
-              externalId: binding.external_id,
-              body: disclosedBody,
-              threadId: CHANNEL_TOP_LEVEL_THREAD,
-            },
+            { externalId: binding.external_id, body, threadId: CHANNEL_TOP_LEVEL_THREAD },
             params.context.env,
           ),
       });

@@ -9,7 +9,6 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
 import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
-import { OutboundDeliveryRepository } from "~/modules/delivery/infrastructure/OutboundDeliveryRepository";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IUser } from "~/types";
 
@@ -20,7 +19,6 @@ const mocks = vi.hoisted(() => ({
   sendReply: vi.fn(),
   smsSend: vi.fn(),
   resolveProvider: vi.fn(),
-  disclosed: vi.fn(),
 }));
 
 vi.mock("../message-approvals", async (importOriginal) => ({
@@ -61,13 +59,6 @@ function context(bindings: unknown[], senders: unknown[] = []) {
       [ChannelBindingRepository, { listForUser: async () => bindings }],
       [ChannelSenderRepository, { list: async () => senders }],
       [
-        OutboundDeliveryRepository,
-        {
-          isSent: mocks.disclosed,
-          recordSent: async () => undefined,
-        },
-      ],
-      [
         UserSettingsRepository,
         {
           getUserProviderSettings: async () => [],
@@ -82,7 +73,6 @@ describe("offerRunApprovalByMessage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.issue.mockResolvedValue({ id: "mapr_1", body: "Reply APPROVE CODE1234" });
-    mocks.disclosed.mockResolvedValue(true);
     mocks.resolveProvider.mockReturnValue({
       provider: { send: mocks.smsSend },
       allowedSenders: ["+447700900001"],

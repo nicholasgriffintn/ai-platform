@@ -1,11 +1,10 @@
-import { AI_DISCLOSURE_TEXT, POLY_TEAMMATE_ID } from "@ngriffin_uk/polychat-schemas";
+import { POLY_TEAMMATE_ID } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import type { ChannelBindingRow } from "~/infrastructure/database/schema";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
-import { OutboundDeliveryRepository } from "~/modules/delivery/infrastructure/OutboundDeliveryRepository";
 import type { IUser } from "~/types";
 
 import { sendPolyNotificationToChannels } from "../channel-delivery";
@@ -13,8 +12,6 @@ import { sendPolyNotificationToChannels } from "../channel-delivery";
 const mocks = vi.hoisted(() => ({
   sendReply: vi.fn(),
   deliver: vi.fn(),
-  disclosed: vi.fn(),
-  recordSent: vi.fn(),
 }));
 
 vi.mock("~/modules/channels/infrastructure/adapters", () => ({
@@ -47,7 +44,6 @@ function context(bindings: ChannelBindingRow[]) {
     env: { TELEGRAM_BOT_TOKEN: "telegram-secret", SLACK_BOT_TOKEN: "slack-secret" },
     repositories: fakeRepositories([
       [ChannelBindingRepository, { listForUser: async () => bindings }],
-      [OutboundDeliveryRepository, { isSent: mocks.disclosed, recordSent: mocks.recordSent }],
     ]),
   } as unknown as ServiceContext;
 }
@@ -56,29 +52,7 @@ describe("sendPolyNotificationToChannels", () => {
   beforeEach(() => {
     mocks.sendReply.mockReset();
     mocks.deliver.mockReset();
-    mocks.recordSent.mockReset();
-    mocks.disclosed.mockReset();
-    mocks.disclosed.mockResolvedValue(true);
     mocks.deliver.mockImplementation(async ({ send }: { send: () => Promise<void> }) => send());
-  });
-
-  it("opens the first post on a channel with the AI disclosure", async () => {
-    mocks.disclosed.mockResolvedValue(false);
-
-    await sendPolyNotificationToChannels({
-      context: context([binding({})]),
-      user: { id: 7 } as IUser,
-      polyContextId: "teammate_context_poly",
-      notificationId: "routine_result_1",
-      body: "Routine finished",
-    });
-
-    expect(mocks.sendReply.mock.calls[0]?.[0]).toMatchObject({
-      body: `${AI_DISCLOSURE_TEXT}\n\nRoutine finished`,
-    });
-    expect(mocks.recordSent).toHaveBeenCalledWith(
-      expect.objectContaining({ kind: "channel_disclosure" }),
-    );
   });
 
   it("reaches only the person's own enabled Poly bindings, at the top of the chat", async () => {
