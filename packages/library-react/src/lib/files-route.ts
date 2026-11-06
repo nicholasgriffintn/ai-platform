@@ -62,12 +62,32 @@ export function getProjectFilesPath(
   return getFilesPath(`${getProjectBasePath(workspaceId, projectId)}/files`, section, itemPath);
 }
 
-export type FileTarget =
+export type StoredFileTarget =
   | { origin: "output"; id: string; projectId?: string }
   | { origin: "source"; id: string; projectId?: string }
   | { origin: "memory"; name: string; projectId?: string };
 
-export function getFileTargetPath(basePath: string, target: FileTarget): string {
+export interface MediaFileTarget {
+  origin: "media";
+  url: string;
+  title: string;
+  downloadHref?: string;
+  crossOrigin?: "anonymous" | "use-credentials";
+}
+
+export type FileTarget = StoredFileTarget | MediaFileTarget;
+
+const OUTPUT_CONTENT_PATH = /\/outputs\/([^/?#]+)\/content(?:[?#]|$)/;
+
+export function fileTargetForMedia(media: Omit<MediaFileTarget, "origin">): FileTarget {
+  const outputId = OUTPUT_CONTENT_PATH.exec(media.url)?.[1];
+
+  return outputId
+    ? { origin: "output", id: decodeURIComponent(outputId) }
+    : { origin: "media", ...media };
+}
+
+export function getFileTargetPath(basePath: string, target: StoredFileTarget): string {
   switch (target.origin) {
     case "output":
       return getFilesPath(basePath, "made", encodeURIComponent(target.id));
@@ -93,7 +113,7 @@ export const FILE_LOCATION_SECTIONS = {
 export function fileTargetFromLocation(
   location: FilesFileLocation,
   projectId: string | undefined,
-): FileTarget {
+): StoredFileTarget {
   switch (location.view) {
     case "output":
       return { origin: "output", id: location.outputId, projectId };

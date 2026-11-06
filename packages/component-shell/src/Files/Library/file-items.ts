@@ -1,4 +1,8 @@
-import { getSourceContentUrl, getSourceCoverUrl } from "@ngriffin_uk/polychat-library-client";
+import {
+  getOutputContentUrl,
+  getSourceContentUrl,
+  getSourceCoverUrl,
+} from "@ngriffin_uk/polychat-library-client";
 import { getFilesPath, type FilesSort } from "@ngriffin_uk/polychat-library-react";
 import {
   DISCOVER_EPISODE_KIND,
@@ -179,6 +183,7 @@ export function outputToFileItem(output: OutputSummary, basePath: string): FileI
     detail: humaniseIdentifier(output.capabilityId),
     updatedAt: output.updatedAt ?? output.createdAt,
     href: getFilesPath(basePath, "made", encodeURIComponent(output.id)),
+    downloadUrl: output.file ? getOutputContentUrl(output.id) : undefined,
     status:
       output.status === "pending"
         ? "processing"

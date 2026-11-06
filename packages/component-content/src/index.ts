@@ -1,7 +1,14 @@
 import "./styles.css";
 
 export { Markdown, MemoizedMarkdown, type MarkdownProps } from "./markdown";
-export { Image, ImageModal, type ImageModalProps, type ImageProps } from "./media";
+export {
+  Image,
+  ImageModal,
+  MediaOpenerProvider,
+  type ImageModalProps,
+  type MediaOpenRequest,
+  type ImageProps,
+} from "./media";
 export { Favicon, Prose, type FaviconProps, type ProseProps } from "./prose";
 export {
   CopyButton,

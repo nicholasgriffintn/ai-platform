@@ -76,6 +76,7 @@ export default [
   route("/device", "pages/device.tsx"),
   route("/downloads", "pages/downloads.tsx"),
   route("/terms", "pages/terms.tsx"),
+  route("/verify", "pages/verify.tsx"),
   route("/privacy", "pages/privacy.tsx"),
   route("/age-check", "pages/age-check.tsx"),
   route("/auth/callback", "pages/auth/callback.tsx"),

@@ -14,6 +14,7 @@ import { getSourceContentUrl, getSourceCoverUrl } from "@ngriffin_uk/polychat-li
 import {
   createSourceAttachment,
   getFilesPath,
+  isCheckableMedia,
   useSource,
   useSourceMediaActions,
 } from "@ngriffin_uk/polychat-library-react";
@@ -60,6 +61,7 @@ import { FileSourcesList } from "./FileSourcesList.js";
 import { FileViewerCloseButton } from "./FileViewerCloseButton.js";
 import { type FileViewerChrome, FileViewerFrame } from "./FileViewerFrame.js";
 import { MarkdownStage } from "./MarkdownStage.js";
+import { MediaCheckPanel } from "./MediaCheckPanel.js";
 import { SourceComments } from "./SourceComments.js";
 import { SourceFraming } from "./SourceFraming.js";
 import { SourceHistory } from "./SourceHistory.js";
@@ -290,7 +292,26 @@ function SourceStage({ source, downloadUrl }: { source: Source; downloadUrl?: st
   );
 }
 
-function SourceInfo({ source, detail }: { source: Source; detail: string }) {
+function SourceInfo({
+  source,
+  detail,
+  downloadUrl,
+}: {
+  source: Source;
+  detail: string;
+  downloadUrl?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      <SourceFacts source={source} detail={detail} />
+      {downloadUrl && isCheckableMedia(source.file?.mimeType) ? (
+        <MediaCheckPanel url={downloadUrl} />
+      ) : null}
+    </div>
+  );
+}
+
+function SourceFacts({ source, detail }: { source: Source; detail: string }) {
   return (
     <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
       <dt className="text-muted-foreground">Type</dt>
@@ -425,7 +446,9 @@ export function SourceViewer({
           quick: true,
           label: "File info",
           icon: <Info size={14} aria-hidden="true" />,
-          content: <SourceInfo source={source} detail={item.detail} />,
+          content: (
+            <SourceInfo source={source} detail={item.detail} downloadUrl={item.downloadUrl} />
+          ),
         },
         ...(source.kind === "memory"
           ? []
