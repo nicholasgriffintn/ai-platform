@@ -1,6 +1,5 @@
 import {
   readInferenceImpact,
-  type ComparisonSpend,
   type InferenceImpact,
   type InferenceImpactMeasurement,
 } from "@ngriffin_uk/polychat-schemas";
@@ -276,20 +275,6 @@ export function formatStatsTokens(tokens: number): string {
 
 export function formatStatsCost(costUsd: number): string {
   return `$${costUsd.toFixed(costUsd >= 1 ? 2 : costUsd >= 0.01 ? 3 : 4)}`;
-}
-
-export function formatComparisonCost(
-  spend: Pick<ComparisonSpend, "costUsd" | "pricedCalls" | "totalCalls">,
-): string {
-  if (spend.costUsd === null) {
-    return "Cost not available";
-  }
-
-  const cost = `~${formatStatsCost(spend.costUsd)}`;
-
-  return spend.pricedCalls < spend.totalCalls
-    ? `${cost} for ${spend.pricedCalls} of ${spend.totalCalls} model calls`
-    : cost;
 }
 
 function formatToolCount(count: number): string {
