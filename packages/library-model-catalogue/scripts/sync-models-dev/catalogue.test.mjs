@@ -78,6 +78,17 @@ const providers = {
 };
 
 describe("layered model catalogue", () => {
+  it("gives every catalogued model a sourced location and retention label", async () => {
+    const catalogue = await readCatalogue(
+      fileURLToPath(new URL("../../src/data", import.meta.url)),
+    );
+    const unlabelled = Object.entries(resolveModelCatalogue(catalogue))
+      .filter(([, model]) => !model.dataLocation?.source || !model.dataRetention?.source)
+      .map(([id]) => id);
+
+    expect(unlabelled).toEqual([]);
+  });
+
   it("writes namespaced family imports that coverage can resolve and sync can read without collisions", async () => {
     const directory = await fs.mkdtemp(path.join(os.tmpdir(), "polychat-catalogue-paths-"));
 

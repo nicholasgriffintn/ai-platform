@@ -24,10 +24,13 @@ export function ChatHistoryControls({
 
   return (
     <div className="space-y-6">
-      <SettingsSection title="Message History" description="Export your history as JSON.">
+      <SettingsSection
+        title="Your data"
+        description="Download a ZIP of everything you made: chats, memory, sources, outputs and their files. Credentials and other people's work are left out."
+      >
         <div className="space-y-2">
           <Button variant="primary" onClick={onExport} disabled={isExporting}>
-            {isExporting ? "Exporting..." : "Export JSON"}
+            {isExporting ? "Exporting..." : "Export everything"}
           </Button>
           {isExporting && (
             <p className="text-sm text-muted-foreground">

@@ -3,7 +3,18 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": false
+    "supportsTemperature": false,
+    "dataRetention": {
+      "maxDays": "unknown",
+      "source": "https://platform.kimi.ai/docs/agreement/modeluse"
+    },
+    "dataLocation": {
+      "kind": "regions",
+      "regions": [
+        "sg"
+      ],
+      "source": "https://platform.kimi.ai/docs/agreement/userprivacy"
+    }
   },
   "models": {
     "kimi-k2-thinking": {

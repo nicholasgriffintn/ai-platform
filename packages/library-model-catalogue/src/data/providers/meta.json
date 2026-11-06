@@ -3,7 +3,15 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "dataRetention": {
+      "maxDays": "unknown",
+      "source": "https://dev.meta.ai/legal/terms-of-service"
+    },
+    "dataLocation": {
+      "kind": "unknown",
+      "source": "https://dev.meta.ai/legal/terms-of-service"
+    }
   },
   "models": {
     "muse-spark-1.2": {

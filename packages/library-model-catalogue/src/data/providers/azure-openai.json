@@ -2,7 +2,16 @@
   "defaults": {
     "supportsToolCalls": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "dataRetention": {
+      "maxDays": "unknown",
+      "zeroRetention": "on_request",
+      "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
+    },
+    "dataLocation": {
+      "kind": "deployment",
+      "source": "https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-models/concepts/deployment-types"
+    }
   },
   "models": {
     "openai/gpt-4": {
@@ -13,11 +22,6 @@
         "maxTokens": 8192,
         "releaseDate": "March 14, 2023",
         "lastUpdated": "March 14, 2023",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.06,
         "costPer1kOutputTokens": 0.12,
         "supportsAttachments": false
@@ -31,11 +35,6 @@
       "matchingModel": "o1-mini",
       "overrides": {
         "lastUpdated": "September 12, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0044,
         "supportsAttachments": false,
@@ -50,11 +49,6 @@
       "matchingModel": "o1-preview",
       "overrides": {
         "lastUpdated": "September 12, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0165,
         "costPer1kOutputTokens": 0.066,
         "supportsAttachments": false,
@@ -66,11 +60,6 @@
       "matchingModel": "gpt-4-32k",
       "overrides": {
         "lastUpdated": "March 14, 2023",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.06,
         "costPer1kOutputTokens": 0.12,
         "supportsAttachments": false
@@ -94,11 +83,6 @@
         },
         "speed": 3,
         "lastUpdated": "April 16, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008,
         "supportsParallelToolCalls": false,
@@ -114,11 +98,6 @@
       "overrides": {
         "releaseDate": "November 18, 2025",
         "lastUpdated": "November 18, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
@@ -130,11 +109,6 @@
       "overrides": {
         "releaseDate": "November 18, 2025",
         "lastUpdated": "November 18, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.075,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
@@ -152,11 +126,6 @@
         "speed": 2,
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "August 1, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1",
@@ -180,11 +149,6 @@
         "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
         "speed": 2,
         "lastUpdated": "July 17, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1",
@@ -209,11 +173,6 @@
         "contextWindow": 200000,
         "releaseDate": "November 18, 2025",
         "lastUpdated": "November 18, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1"
@@ -227,11 +186,6 @@
       "matchingModel": "codestral-2501",
       "overrides": {
         "lastUpdated": "January 1, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0009,
         "supportsAttachments": false,
@@ -250,11 +204,6 @@
         "speed": 2,
         "knowledgeCutoffDate": "June 1, 2024",
         "lastUpdated": "March 13, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,
         "supportsAttachments": false,
@@ -277,11 +226,6 @@
       "overrides": {
         "name": "Command R",
         "lastUpdated": "August 30, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": false
@@ -296,11 +240,6 @@
       "overrides": {
         "name": "Command R+",
         "lastUpdated": "August 30, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,
         "supportsAttachments": false
@@ -314,11 +253,6 @@
       "matchingModel": "cohere-embed-v-4-0",
       "overrides": {
         "lastUpdated": "April 15, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
@@ -331,11 +265,6 @@
       "matchingModel": "cohere-embed-v3-english",
       "overrides": {
         "lastUpdated": "November 7, 2023",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
@@ -349,11 +278,6 @@
       "matchingModel": "cohere-embed-v3-multilingual",
       "overrides": {
         "lastUpdated": "November 7, 2023",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
@@ -372,11 +296,6 @@
         "speed": 4,
         "knowledgeCutoffDate": "July 2024",
         "lastUpdated": "March 24, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00114,
         "costPer1kOutputTokens": 0.00456,
         "supportsAttachments": false
@@ -392,11 +311,6 @@
         "speed": 3,
         "knowledgeCutoffDate": "July 2024",
         "lastUpdated": "August 21, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00056,
         "costPer1kOutputTokens": 0.00168,
         "supportsAttachments": false
@@ -414,11 +328,6 @@
         "contextWindow": 128000,
         "maxTokens": 128000,
         "lastUpdated": "December 1, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00058,
         "costPer1kOutputTokens": 0.00168,
         "supportsAttachments": false,
@@ -437,11 +346,6 @@
         "contextWindow": 128000,
         "maxTokens": 128000,
         "lastUpdated": "December 1, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00058,
         "costPer1kOutputTokens": 0.00168,
         "supportsToolCalls": false,
@@ -456,11 +360,6 @@
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
         "speed": 2,
         "lastUpdated": "August 7, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false
@@ -477,11 +376,6 @@
         "maxTokens": 16384,
         "knowledgeCutoffDate": "October 24, 2024",
         "lastUpdated": "August 7, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "supportsToolCalls": false,
@@ -513,11 +407,6 @@
         ],
         "speed": 3,
         "lastUpdated": "September 15, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false,
@@ -541,11 +430,6 @@
         "description": "Compact GPT model for low-latency assistance and high-volume workloads",
         "speed": 2,
         "lastUpdated": "August 7, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
         "supportsTemperature": false
@@ -561,11 +445,6 @@
         "description": "Compact GPT model for low-latency assistance and high-volume workloads",
         "speed": 3,
         "lastUpdated": "August 7, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0004,
         "supportsTemperature": false
@@ -588,11 +467,6 @@
           ]
         },
         "lastUpdated": "October 6, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.12,
         "supportsTemperature": false
@@ -627,11 +501,6 @@
         "speed": 3,
         "releaseDate": "November 14, 2025",
         "lastUpdated": "November 14, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false
@@ -655,11 +524,6 @@
         },
         "releaseDate": "November 14, 2025",
         "lastUpdated": "November 14, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false,
@@ -703,11 +567,6 @@
         "speed": 3,
         "releaseDate": "November 14, 2025",
         "lastUpdated": "November 14, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false
@@ -718,11 +577,6 @@
       "matchingModel": "gpt-5.1-codex-max",
       "overrides": {
         "lastUpdated": "November 13, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false
@@ -747,11 +601,6 @@
         "speed": 3,
         "releaseDate": "November 14, 2025",
         "lastUpdated": "November 14, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
         "supportsTemperature": false
@@ -764,11 +613,6 @@
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
         "speed": 2,
         "lastUpdated": "December 11, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
         "supportsTemperature": false
@@ -779,11 +623,6 @@
       "matchingModel": "gpt-5.2-chat",
       "overrides": {
         "lastUpdated": "December 11, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
         "supportsTemperature": false
@@ -807,11 +646,6 @@
         "speed": 2,
         "releaseDate": "January 14, 2026",
         "lastUpdated": "January 14, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
         "supportsTemperature": false,
@@ -835,11 +669,6 @@
         ],
         "speed": 3,
         "lastUpdated": "February 17, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "supportsAttachments": false
@@ -853,11 +682,6 @@
       "matchingModel": "grok-3-mini",
       "overrides": {
         "lastUpdated": "February 17, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0005,
         "costPer1kReasoningTokens": 0.0005,
@@ -873,11 +697,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "July 9, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "costPer1kReasoningTokens": 0.015,
@@ -892,11 +711,6 @@
       "matchingModel": "grok-4-fast-non-reasoning",
       "overrides": {
         "lastUpdated": "September 19, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005
       },
@@ -928,11 +742,6 @@
         "knowledgeCutoffDate": "July 2025",
         "releaseDate": "September 19, 2025",
         "lastUpdated": "September 19, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005
       }
@@ -942,11 +751,6 @@
       "matchingModel": "grok-code-fast-1",
       "overrides": {
         "lastUpdated": "August 28, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0015,
         "supportsAttachments": false
@@ -962,11 +766,6 @@
         "maxTokens": 262144,
         "speed": 4,
         "lastUpdated": "December 2, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0025,
         "supportsAttachments": false
@@ -984,11 +783,6 @@
         ],
         "speed": 2,
         "lastUpdated": "January 27, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models",
@@ -1002,11 +796,6 @@
         "name": "Llama-3.2-11B-Vision-Instruct",
         "maxTokens": 8192,
         "lastUpdated": "September 25, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00037,
         "costPer1kOutputTokens": 0.00037
       }
@@ -1016,11 +805,6 @@
       "matchingModel": "llama-3.2-90b-vision-instruct",
       "overrides": {
         "lastUpdated": "September 25, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00204,
         "costPer1kOutputTokens": 0.00204
       }
@@ -1032,11 +816,6 @@
         "contextWindow": 128000,
         "maxTokens": 32768,
         "lastUpdated": "December 6, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00071,
         "costPer1kOutputTokens": 0.00071,
         "supportsAttachments": false,
@@ -1054,11 +833,6 @@
         "contextWindow": 1000000,
         "maxTokens": 16384,
         "lastUpdated": "April 5, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.001,
         "apiShape": "completions"
@@ -1071,11 +845,6 @@
         "contextWindow": 128000,
         "maxTokens": 8192,
         "lastUpdated": "April 5, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00078,
         "apiShape": "completions"
@@ -1086,11 +855,6 @@
       "matchingModel": "mai-ds-r1",
       "overrides": {
         "lastUpdated": "January 20, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00135,
         "costPer1kOutputTokens": 0.0054,
         "supportsToolCalls": false,
@@ -1102,11 +866,6 @@
       "matchingModel": "meta-llama-3-70b-instruct",
       "overrides": {
         "lastUpdated": "April 18, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00268,
         "costPer1kOutputTokens": 0.00354,
         "supportsToolCalls": false,
@@ -1118,11 +877,6 @@
       "matchingModel": "meta-llama-3-8b-instruct",
       "overrides": {
         "lastUpdated": "April 18, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.00061,
         "supportsToolCalls": false,
@@ -1134,11 +888,6 @@
       "matchingModel": "meta-llama-3.1-405b-instruct",
       "overrides": {
         "lastUpdated": "July 23, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00533,
         "costPer1kOutputTokens": 0.016,
         "supportsAttachments": false
@@ -1149,11 +898,6 @@
       "matchingModel": "meta-llama-3.1-70b-instruct",
       "overrides": {
         "lastUpdated": "July 23, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00268,
         "costPer1kOutputTokens": 0.00354,
         "supportsAttachments": false
@@ -1164,11 +908,6 @@
       "matchingModel": "meta-llama-3.1-8b-instruct",
       "overrides": {
         "lastUpdated": "July 23, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.00061,
         "supportsAttachments": false
@@ -1179,11 +918,6 @@
       "matchingModel": "ministral-3b",
       "overrides": {
         "lastUpdated": "October 22, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00004,
         "supportsAttachments": false,
@@ -1198,11 +932,6 @@
       "matchingModel": "mistral-large-2411",
       "overrides": {
         "lastUpdated": "November 1, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
         "supportsAttachments": false
@@ -1231,11 +960,6 @@
         "speed": 2,
         "knowledgeCutoffDate": "May 2025",
         "lastUpdated": "May 7, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.002,
         "apiShape": "completions"
@@ -1251,11 +975,6 @@
         "contextWindow": 128000,
         "maxTokens": 128000,
         "lastUpdated": "July 18, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00015,
         "supportsAttachments": false
@@ -1267,11 +986,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "March 1, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0003,
         "apiShape": "completions"
@@ -1282,11 +996,6 @@
       "matchingModel": "model-router",
       "overrides": {
         "lastUpdated": "November 18, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0,
         "apiShape": "completions"
@@ -1300,11 +1009,6 @@
       "matchingModel": "phi-3-medium-128k-instruct",
       "overrides": {
         "lastUpdated": "April 23, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00017,
         "costPer1kOutputTokens": 0.00068,
         "supportsToolCalls": false,
@@ -1316,11 +1020,6 @@
       "matchingModel": "phi-3-medium-4k-instruct",
       "overrides": {
         "lastUpdated": "April 23, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00017,
         "costPer1kOutputTokens": 0.00068,
         "supportsToolCalls": false,
@@ -1332,11 +1031,6 @@
       "matchingModel": "phi-3-mini-128k-instruct",
       "overrides": {
         "lastUpdated": "April 23, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00013,
         "costPer1kOutputTokens": 0.00052,
         "supportsToolCalls": false,
@@ -1348,11 +1042,6 @@
       "matchingModel": "phi-3-mini-4k-instruct",
       "overrides": {
         "lastUpdated": "April 23, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00013,
         "costPer1kOutputTokens": 0.00052,
         "supportsToolCalls": false,
@@ -1364,11 +1053,6 @@
       "matchingModel": "phi-3-small-128k-instruct",
       "overrides": {
         "lastUpdated": "April 23, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
         "supportsToolCalls": false,
@@ -1380,11 +1064,6 @@
       "matchingModel": "phi-3-small-8k-instruct",
       "overrides": {
         "lastUpdated": "April 23, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
         "supportsToolCalls": false,
@@ -1396,11 +1075,6 @@
       "matchingModel": "phi-3.5-mini-instruct",
       "overrides": {
         "lastUpdated": "August 20, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00013,
         "costPer1kOutputTokens": 0.00052,
         "supportsToolCalls": false,
@@ -1412,11 +1086,6 @@
       "matchingModel": "phi-3.5-moe-instruct",
       "overrides": {
         "lastUpdated": "August 20, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00016,
         "costPer1kOutputTokens": 0.00064,
         "supportsToolCalls": false,
@@ -1431,11 +1100,6 @@
         "speed": 2,
         "releaseDate": "December 11, 2024",
         "lastUpdated": "December 11, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.000125,
         "costPer1kOutputTokens": 0.0005,
         "supportsToolCalls": false,
@@ -1449,11 +1113,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "December 11, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.0003,
         "supportsAttachments": false,
@@ -1465,11 +1124,6 @@
       "matchingModel": "phi-4-mini-reasoning",
       "overrides": {
         "lastUpdated": "December 11, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.0003,
         "supportsAttachments": false,
@@ -1482,11 +1136,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "December 11, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00008,
         "costPer1kOutputTokens": 0.00032,
         "supportsToolCalls": false,
@@ -1498,11 +1147,6 @@
       "matchingModel": "phi-4-reasoning",
       "overrides": {
         "lastUpdated": "December 11, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.000125,
         "costPer1kOutputTokens": 0.0005,
         "supportsToolCalls": false,
@@ -1515,11 +1159,6 @@
       "matchingModel": "phi-4-reasoning-plus",
       "overrides": {
         "lastUpdated": "December 11, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.000125,
         "costPer1kOutputTokens": 0.0005,
         "supportsToolCalls": false,
@@ -1532,11 +1171,6 @@
       "matchingModel": "text-embedding-3-large",
       "overrides": {
         "lastUpdated": "January 25, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00013,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
@@ -1551,11 +1185,6 @@
       "matchingModel": "text-embedding-3-small",
       "overrides": {
         "lastUpdated": "January 25, 2024",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00002,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
@@ -1570,11 +1199,6 @@
       "matchingModel": "text-embedding-ada-002",
       "overrides": {
         "lastUpdated": "December 15, 2022",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
@@ -1592,11 +1216,6 @@
         "contextComplexity": 4,
         "speed": 3,
         "lastUpdated": "March 13, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/anthropic/v1",
@@ -1616,11 +1235,6 @@
       "matchingModel": "gpt-5.3-chat",
       "overrides": {
         "lastUpdated": "March 3, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
         "supportsTemperature": false
@@ -1652,11 +1266,6 @@
         "speed": 2,
         "releaseDate": "February 24, 2026",
         "lastUpdated": "February 24, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
         "supportsTemperature": false,
@@ -1678,11 +1287,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "March 5, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.015
       }
@@ -1704,11 +1308,6 @@
         },
         "speed": 4,
         "lastUpdated": "March 17, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.0045
       }
@@ -1730,11 +1329,6 @@
         },
         "speed": 3,
         "lastUpdated": "March 17, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00125
       }
@@ -1753,11 +1347,6 @@
           ]
         },
         "lastUpdated": "March 5, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.03,
         "costPer1kOutputTokens": 0.18,
         "supportsTemperature": false
@@ -1770,11 +1359,6 @@
         "speed": 2,
         "releaseDate": "April 24, 2026",
         "lastUpdated": "April 24, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
         "supportsTemperature": false
@@ -1806,11 +1390,6 @@
         "reliability": 1,
         "releaseDate": "June 27, 2025",
         "lastUpdated": "June 27, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005,
         "apiShape": "completions",
@@ -1842,11 +1421,6 @@
         "contextComplexity": 3,
         "releaseDate": "June 27, 2025",
         "lastUpdated": "June 27, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005,
         "apiShape": "completions"
@@ -1876,11 +1450,6 @@
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "April 8, 2026",
         "lastUpdated": "April 8, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
         "supportsAttachments": false,
@@ -1911,11 +1480,6 @@
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "April 8, 2026",
         "lastUpdated": "April 8, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
         "supportsAttachments": false,
@@ -1936,11 +1500,6 @@
         ],
         "speed": 2,
         "lastUpdated": "April 20, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
         "apiBaseUrl": "https://${AZURE_RESOURCE_NAME}.services.ai.azure.com/models",
@@ -1960,11 +1519,6 @@
         ],
         "speed": 4,
         "lastUpdated": "April 24, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00019,
         "costPer1kOutputTokens": 0.00051,
         "supportsAttachments": false,
@@ -1994,11 +1548,6 @@
         ],
         "speed": 3,
         "lastUpdated": "April 24, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00174,
         "costPer1kOutputTokens": 0.00348,
         "supportsAttachments": false,
@@ -2022,11 +1571,6 @@
         "status": "beta",
         "speed": 2,
         "lastUpdated": "June 9, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false,
@@ -2054,11 +1598,6 @@
         ],
         "isFeatured": true,
         "lastUpdated": "April 24, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.04,
         "supportsToolCalls": false,
@@ -2087,11 +1626,6 @@
           "creative"
         ],
         "lastUpdated": "November 25, 2025",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.032,
         "supportsToolCalls": false,
@@ -2111,11 +1645,6 @@
         ],
         "isFeatured": true,
         "lastUpdated": "April 21, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
         "supportsToolCalls": false,
@@ -2136,11 +1665,6 @@
         "isFeatured": true,
         "knowledgeCutoffDate": "December 31, 2025",
         "lastUpdated": "May 28, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false,
@@ -2164,11 +1688,6 @@
         "status": "beta",
         "speed": 2,
         "lastUpdated": "June 30, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false,
@@ -2192,11 +1711,6 @@
         "status": "beta",
         "speed": 3,
         "lastUpdated": "July 9, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0012,
         "supportsTemperature": false
@@ -2209,11 +1723,6 @@
         "status": "beta",
         "speed": 3,
         "lastUpdated": "July 9, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
         "supportsTemperature": false
@@ -2226,11 +1735,6 @@
         "status": "beta",
         "speed": 3,
         "lastUpdated": "July 9, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
         "supportsTemperature": false
@@ -2243,11 +1747,6 @@
         "status": "beta",
         "knowledgeCutoffDate": "December 1, 2025",
         "lastUpdated": "May 28, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
         "supportsTemperature": false,
@@ -2265,11 +1764,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "July 24, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false,
@@ -2307,11 +1801,6 @@
         ],
         "speed": 2,
         "lastUpdated": "June 12, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
         "supportsTemperature": false,
@@ -2325,11 +1814,6 @@
       "overrides": {
         "status": "beta",
         "lastUpdated": "June 9, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false,
@@ -2342,11 +1826,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "April 16, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "supportsTemperature": false,
@@ -2369,11 +1848,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 1, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false,
@@ -2389,11 +1863,6 @@
         "maxTokens": 128000,
         "speed": 2,
         "lastUpdated": "August 12, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
         "apiShape": "completions"
@@ -2405,11 +1874,6 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 4, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsTemperature": false,
@@ -2437,11 +1901,6 @@
           "creative"
         ],
         "lastUpdated": "September 8, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
         "supportsToolCalls": false,
@@ -2468,11 +1927,6 @@
           "creative"
         ],
         "lastUpdated": "September 8, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
         "supportsToolCalls": false,
@@ -2486,11 +1940,6 @@
         "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
         "supportsTemperature": false,
@@ -2503,11 +1952,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "September 22, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
         "supportsTemperature": false
@@ -2519,11 +1963,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "September 22, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false
@@ -2535,11 +1974,6 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "September 28, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false,
@@ -2553,11 +1987,6 @@
         "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 29, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false
@@ -2570,11 +1999,6 @@
         "speed": 4,
         "isFeatured": true,
         "lastUpdated": "October 7, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
         "supportsTemperature": false,
@@ -2599,11 +2023,6 @@
         "status": "beta",
         "speed": 2,
         "lastUpdated": "September 21, 2026",
-        "dataRetention": {
-          "maxDays": 30,
-          "zeroRetention": "on_request",
-          "source": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy"
-        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
         "apiShape": "completions"

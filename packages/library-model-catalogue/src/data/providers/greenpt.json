@@ -3,7 +3,19 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "dataRetention": {
+      "maxDays": 0,
+      "zeroRetention": "default",
+      "source": "https://docs.greenpt.ai/privacy/privacy-policy"
+    },
+    "dataLocation": {
+      "kind": "regions",
+      "regions": [
+        "eu"
+      ],
+      "source": "https://docs.greenpt.ai/privacy/locations"
+    }
   },
   "models": {
     "green-l-raw": {

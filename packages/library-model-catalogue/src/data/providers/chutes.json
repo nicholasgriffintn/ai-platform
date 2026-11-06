@@ -3,7 +3,15 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "dataRetention": {
+      "maxDays": 30,
+      "source": "https://chutes.ai/privacy"
+    },
+    "dataLocation": {
+      "kind": "multiple",
+      "source": "https://chutes.ai/privacy"
+    }
   },
   "models": {
     "chutesai/Devstral-Small-2505": {
