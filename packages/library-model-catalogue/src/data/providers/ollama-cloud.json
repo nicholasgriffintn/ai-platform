@@ -146,6 +146,7 @@
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -182,7 +183,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003
@@ -243,7 +244,7 @@
       "matchingModel": "kimi-k3",
       "overrides": {
         "name": "kimi-k3",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -265,7 +266,7 @@
         "name": "minimax-m2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "maxTokens": 131072,
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -284,7 +285,7 @@
         "name": "minimax-m2.7",
         "contextWindow": 196608,
         "maxTokens": 196608,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -369,7 +370,13 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
     },
     "qwen3.5:397b": {
       "model": "qwen/qwen3-5-397b",
@@ -470,7 +477,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425,

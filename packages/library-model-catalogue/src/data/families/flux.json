@@ -33,10 +33,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 740,
+              "value": 741,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 20
+              "confidenceInterval95": 19
             }
           ]
         }
@@ -98,7 +98,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 838,
+              "value": 839,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -135,7 +135,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 930,
+              "value": 931,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10
@@ -177,10 +177,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 826,
+              "value": 833,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 43
+              "confidenceInterval95": 41
             }
           ]
         }
@@ -229,10 +229,10 @@
             {
               "key": "image_editingElo",
               "label": "Image-editing arena",
-              "value": 885,
+              "value": 886,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 21
+              "confidenceInterval95": 20
             }
           ]
         }
@@ -291,10 +291,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 918,
+              "value": 919,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 18
+              "confidenceInterval95": 17
             }
           ]
         }
@@ -323,10 +323,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 740,
+              "value": 741,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 20
+              "confidenceInterval95": 19
             }
           ]
         }
@@ -402,7 +402,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 838,
+              "value": 839,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -433,7 +433,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 930,
+              "value": 931,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10
@@ -483,7 +483,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1003,
+              "value": 1004,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10
@@ -523,10 +523,10 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 1092,
+              "value": 1091,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 17
+              "confidenceInterval95": 16
             }
           ]
         }
@@ -587,7 +587,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1043,
+              "value": 1044,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -657,10 +657,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 854,
+              "value": 852,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 19
+              "confidenceInterval95": 18
             }
           ]
         }

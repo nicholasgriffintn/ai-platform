@@ -201,7 +201,7 @@
         "name": "Nemotron 3.5 Super VL",
         "description": "Nemotron multimodal model for visual reasoning and agentic AI workflows",
         "contextWindow": 1048576,
-        "maxTokens": 235929,
+        "maxTokens": 943718,
         "modalities": {
           "input": [
             "text",
@@ -509,8 +509,19 @@
     "nemotron-3-ultra": {
       "defaults": {
         "description": "Largest Nemotron 3 model for maximum open-weight reasoning and agent accuracy",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
         "knowledgeCutoffDate": "September 2025",
-        "releaseDate": "June 4, 2026"
+        "releaseDate": "June 4, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 11.8,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "nemotron-3-ultra-550b-a55b": {
@@ -708,34 +719,6 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        }
-      }
-    },
-    "nemotron-ultra": {
-      "defaults": {
-        "name": "Nemotron Ultra",
-        "description": "Largest Nemotron 3 model for maximum open-weight reasoning and agent accuracy",
-        "contextWindow": 202800,
-        "maxTokens": 202800,
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
-        "knowledgeCutoffDate": "September 2025",
-        "releaseDate": "June 4, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "high"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 11.8,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
         }
       }
     },

@@ -76,7 +76,6 @@
         "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
         "contextWindow": 262144,
         "maxTokens": 209715,
-        "reliability": 2,
         "releaseDate": "April 30, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -84,6 +83,12 @@
             "high"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 4.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -93,7 +98,6 @@
         "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
         "contextWindow": 262144,
         "maxTokens": 209715,
-        "reliability": 2,
         "releaseDate": "April 30, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -104,6 +108,12 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 4.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },

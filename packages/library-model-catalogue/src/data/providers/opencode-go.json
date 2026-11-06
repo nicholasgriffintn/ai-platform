@@ -197,7 +197,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -361,6 +361,7 @@
       "overrides": {
         "name": "GLM-5.3-Flash (2x usage)",
         "contextWindow": 1000000,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -608,7 +609,15 @@
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "minimax-m3.1-flash": {
@@ -655,6 +664,32 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsAttachments": false
+      }
+    },
+    "crouton-alpha-free": {
+      "model": "opencode-go/crouton-alpha-free/crouton-alpha-free",
+      "matchingModel": "crouton-alpha-free",
+      "overrides": {
+        "lastUpdated": "November 3, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "hy4": {
+      "model": "Hy/hy4",
+      "matchingModel": "hy4",
+      "overrides": {
+        "description": "A next-generation multimodal productivity model with significantly enhanced Agent and complex task execution capabilities.",
+        "lastUpdated": "November 4, 2026",
+        "costPer1kInputTokens": 0.000834,
+        "costPer1kOutputTokens": 0.002501,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

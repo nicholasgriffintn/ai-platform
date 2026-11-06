@@ -1,6 +1,14 @@
 {
   "defaults": {
     "openWeights": false,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
     "supportsToolCalls": true,
     "supportsAttachments": false,
     "supportsTemperature": true
@@ -14,14 +22,6 @@
         "description": "*Ling-3.0-flash* is a *124B-parameter Mixture-of-Experts (MoE) model*, with approximately *5.1B parameters activated per token*. The model is designed with *token efficiency and production-scale agentic inference* as key priorities, enabling developers...",
         "contextWindow": 262144,
         "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -50,14 +50,6 @@
         "description": "Ling 3.0 Flash Fin is a finance-focused mixture-of-experts model from InclusionAI, built on Ling 3.0 Flash with 5.1B active parameters out of 124B total. It is designed for real-world investment...",
         "contextWindow": 262144,
         "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -86,14 +78,6 @@
         "description": "Ling 3.0 Flash Sante is a health and medicine-focused mixture-of-experts model from InclusionAI, built on Ling 3.0 Flash with 5.1B active parameters out of 124B total. It is designed for...",
         "contextWindow": 262144,
         "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "September 4, 2026",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -148,6 +132,33 @@
         }
       }
     },
+    "inclusionai-ling-3-0-tiny": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.0 Tiny",
+        "description": "Ling 3.0 Tiny is a mixture-of-experts model from InclusionAI, with 1.3B active parameters out of 7.9B total. It is designed for responsive agents, instruction following, and multi-turn conversations, with switchable...",
+        "contextWindow": 262144,
+        "maxTokens": 250000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "releaseDate": "August 6, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
     "inclusionai-ling-3-1-flash": {
       "defaults": {
         "name": "inclusionAI: Ling 3.1 Flash (new)",
@@ -155,14 +166,6 @@
         "description": "Ling 3.1 Flash is a hybrid reasoning mixture-of-experts model from inclusionAI, with 25B active parameters out of 560B total.",
         "contextWindow": 1000000,
         "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -191,14 +194,6 @@
         "description": "An updated checkpoint of inclusionAI's Ling 3.1 Flash, provided free of charge by Novita AI until November 3, 2026. Ling 3.1 Flash is a hybrid reasoning mixture-of-experts model with 25B active parameters out of 560B total and a 1M-token context window.",
         "contextWindow": 1000000,
         "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "August 26, 2025",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -537,14 +532,6 @@
       "defaults": {
         "description": "Inclusion AI ling-2.6-1t",
         "contextWindow": 262144,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -563,14 +550,6 @@
       "defaults": {
         "description": "Inclusion AI ling-2.6-flash",
         "contextWindow": 262144,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -591,14 +570,6 @@
         "openWeights": true,
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
         "contextWindow": 256000,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -624,14 +595,6 @@
       "defaults": {
         "name": "Ling 3.0 Flash Fin",
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -656,14 +619,6 @@
     "ling-3-0-flash-fin-free": {
       "defaults": {
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -692,14 +647,6 @@
         "description": "Ling-3.0-flash (free) accepts text and produces text.",
         "contextWindow": 262144,
         "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -726,28 +673,12 @@
       "defaults": {
         "name": "Ling 3.0 Flash Sante",
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "September 4, 2026"
       }
     },
     "ling-3-0-flash-sante-free": {
       "defaults": {
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "September 4, 2026"
       }
     },
@@ -800,35 +731,13 @@
     },
     "ling-3-0-tiny": {
       "defaults": {
-        "name": "ling-3.0-tiny",
-        "description": "Ling-3.0-tiny is an efficient 7.9B parameter MoE model from inclusionAI with only 1.3B active parameters per token. Built for responsive agents, reliable instruction following and multi turn conversation, with a 256K context window, native function calling, prompt caching and switchable Thinking and Instant modes.",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 262144,
-        "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "releaseDate": "August 5, 2026",
-        "supportsResponseFormat": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -840,14 +749,6 @@
     "ling-3-0-tiny-free": {
       "defaults": {
         "description": "Ling 3.0 Tiny (free) accepts text and produces text.",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -874,14 +775,6 @@
         "name": "Ling 3.1 Flash",
         "openWeights": true,
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -901,14 +794,6 @@
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
         "contextWindow": 262144,
         "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],

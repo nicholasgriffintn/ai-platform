@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1048576,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 4, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The openrouter/ricursiveai/ripple 65b preview family includes models that produce text.",
+  "models": {
+    "ricursiveai-ripple-65b-preview": {
+      "defaults": {
+        "name": "ricursiveAI/Ripple-65B-Preview",
+        "description": "Preview model for early access evaluation, prototyping, and compatibility testing"
+      }
+    }
+  }
+}

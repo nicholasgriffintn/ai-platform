@@ -61,7 +61,6 @@
         "name": "Kimi K3.1 Pro",
         "openWeights": false,
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
-        "maxTokens": 1048576,
         "modalities": {
           "input": [
             "text",
@@ -81,16 +80,8 @@
         "contextComplexity": 5,
         "reliability": 2,
         "releaseDate": "October 23, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        },
         "artificialAnalysis": {
-          "intelligenceIndex": 46,
+          "intelligenceIndex": 46.5,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -322,7 +313,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 46,
+          "intelligenceIndex": 46.5,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5

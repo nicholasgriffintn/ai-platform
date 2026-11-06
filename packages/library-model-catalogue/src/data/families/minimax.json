@@ -435,7 +435,6 @@
     "minimax-m2-7": {
       "defaults": {
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
-        "contextWindow": 204800,
         "strengths": [
           "tool_use"
         ],
@@ -571,7 +570,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 18.7,
+          "intelligenceIndex": 18.9,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -615,7 +614,7 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 28.9,
+          "intelligenceIndex": 29.1,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -660,7 +659,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 28.9,
+          "intelligenceIndex": 29.1,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -705,7 +704,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 18.7,
+          "intelligenceIndex": 18.9,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -728,7 +727,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 18.7,
+          "intelligenceIndex": 18.9,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -820,7 +819,7 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 28.9,
+          "intelligenceIndex": 29.1,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5

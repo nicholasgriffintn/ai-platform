@@ -488,7 +488,6 @@
         "openWeights": true,
         "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
         "contextWindow": 262144,
-        "maxTokens": 32768,
         "releaseDate": "April 2, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {

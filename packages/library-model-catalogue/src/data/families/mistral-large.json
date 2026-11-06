@@ -126,7 +126,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 26,
+          "intelligenceIndex": 26.1,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -155,7 +155,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 26,
+          "intelligenceIndex": 26.1,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5

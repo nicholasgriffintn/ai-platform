@@ -23,7 +23,7 @@
           "search",
           "research"
         ],
-        "speed": 5,
+        "speed": 4,
         "multimodal": true,
         "isFeatured": false,
         "lastUpdated": "December 17, 2025",
@@ -776,6 +776,7 @@
       "matchingModel": "gemma-4-26b-a4b-it",
       "overrides": {
         "name": "Gemma 4 26B",
+        "maxTokens": 32768,
         "isFree": true,
         "lastUpdated": "April 2, 2026",
         "dataRetention": {
@@ -838,7 +839,7 @@
           "search",
           "research"
         ],
-        "speed": 4,
+        "speed": 3,
         "multimodal": true,
         "isFeatured": true,
         "lastUpdated": "May 19, 2026",
@@ -1015,7 +1016,7 @@
           "research",
           "coding"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "July 21, 2026",
         "dataRetention": {
           "maxDays": 55,

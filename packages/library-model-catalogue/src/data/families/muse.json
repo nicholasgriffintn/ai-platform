@@ -107,7 +107,7 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 43.3,
+          "intelligenceIndex": 43.6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -167,7 +167,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1127,
+              "value": 1126,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11
@@ -294,7 +294,7 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 36.4,
+          "intelligenceIndex": 36.6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -339,7 +339,7 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 24.7,
+          "intelligenceIndex": 24.9,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -384,7 +384,7 @@
           "defaultEffort": "minimal"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 43.3,
+          "intelligenceIndex": 43.6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
