@@ -55,9 +55,9 @@ export function useConversationActions(
 
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [isStartingThread, setIsStartingThread] = useState(false);
-  const [isRequestingSecondOpinion, setIsRequestingSecondOpinion] = useState(false);
+  const [isRequestingComparison, setIsRequestingComparison] = useState(false);
   const threadInFlightRef = useRef(false);
-  const secondOpinionInFlightRef = useRef(false);
+  const comparisonInFlightRef = useRef(false);
 
   const generateResponseWithLoading = useCallback(
     async (
@@ -314,14 +314,14 @@ export function useConversationActions(
     ],
   );
 
-  const requestSecondOpinion = useCallback(
+  const requestComparison = useCallback(
     async (messageId: string) => {
-      if (secondOpinionInFlightRef.current) {
+      if (comparisonInFlightRef.current) {
         return;
       }
 
       if (!isAuthenticated || !isPro) {
-        toast.error("Second opinions are only available to Pro users");
+        toast.error("Comparing models is only available to Pro users");
 
         return;
       }
@@ -332,7 +332,7 @@ export function useConversationActions(
       ]);
 
       if (!conversation?.messages || !currentConversationId) {
-        toast.error("Unable to request a second opinion: conversation not found");
+        toast.error("Unable to compare models: conversation not found");
 
         return;
       }
@@ -340,20 +340,20 @@ export function useConversationActions(
       const source = conversation.messages.find((message) => message.id === messageId);
 
       if (!source) {
-        toast.error("Unable to request a second opinion: message not found");
+        toast.error("Unable to compare models: message not found");
 
         return;
       }
 
       try {
-        secondOpinionInFlightRef.current = true;
-        setIsRequestingSecondOpinion(true);
+        comparisonInFlightRef.current = true;
+        setIsRequestingComparison(true);
 
         const messages = [
           ...conversation.messages,
           normalizeMessage({
             role: "user",
-            content: "Get a second opinion on that answer from other models.",
+            content: "Compare that answer with other models and conclude.",
             id: generateId(),
             created: Date.now(),
             model: model || "",
@@ -368,16 +368,19 @@ export function useConversationActions(
         await generateResponseWithLoading(
           messages,
           currentConversationId,
-          "Asking for a second opinion...",
-          undefined,
+          "Comparing models...",
+          {
+            ...requestOptions,
+            options: { ...requestOptions?.options, comparison: { sourceMessageId: messageId } },
+          },
           { generateTitle: false },
         );
       } catch (error) {
-        console.error("Error requesting a second opinion:", error);
-        toast.error("Failed to request a second opinion");
+        console.error("Error comparing models:", error);
+        toast.error("Failed to compare models");
       } finally {
-        secondOpinionInFlightRef.current = false;
-        setIsRequestingSecondOpinion(false);
+        comparisonInFlightRef.current = false;
+        setIsRequestingComparison(false);
       }
     },
     [
@@ -386,6 +389,7 @@ export function useConversationActions(
       model,
       isAuthenticated,
       isPro,
+      requestOptions,
       updateConversation,
       generateResponseWithLoading,
     ],
@@ -394,12 +398,12 @@ export function useConversationActions(
   return {
     editingMessageId,
     isStartingThread,
-    isRequestingSecondOpinion,
+    isRequestingComparison,
     retryMessage,
     updateUserMessage,
     startEditingMessage,
     stopEditingMessage,
     startConversationThread,
-    requestSecondOpinion,
+    requestComparison,
   };
 }

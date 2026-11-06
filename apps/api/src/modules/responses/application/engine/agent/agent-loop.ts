@@ -145,6 +145,7 @@ interface ChatAgentLoopState extends AgentLoopState {
   finalAnswerNotice?: string;
   goalFinalisationRequested?: boolean;
   goalFinalisationNotice?: string;
+  directedToolCallIssued?: boolean;
 }
 
 interface ChatAgentSharedContext {
@@ -203,6 +204,7 @@ export interface AgentLoopExecutionParams {
   requestOptions?: ChatRequestOptions;
   initialToolCalls?: ToolCall[];
   initialToolResults?: Message[];
+  directedToolCall?: DirectedToolCall;
   guardrailPrompt?: string;
   crisisSignpost?: boolean;
   emit?: (event: AgentEvent) => Promise<void>;
@@ -232,6 +234,11 @@ export interface AgentLoopExecutionParams {
   ) => Promise<string[]>;
   onContextSnapshot?: (snapshot: ChatContextSnapshot) => Promise<void> | void;
   onRetryState?: (state: ChatRetrySnapshot | null) => Promise<void> | void;
+}
+
+export interface DirectedToolCall {
+  toolCall: ToolCall;
+  readClosingReply: (result: Message | undefined) => string;
 }
 
 export interface AgentLoopPostTurnResult {
@@ -408,6 +415,39 @@ async function runChatAgentLoop(
     };
   };
 
+  const issueDirectedToolCall = async ({ toolCall }: DirectedToolCall) => {
+    state.directedToolCallIssued = true;
+
+    const message = await finalise({ content: "", toolCalls: [toolCall] });
+
+    allToolCalls.push(toolCall);
+    steps.push({
+      stepNumber: steps.length + 1,
+      stepType: "tool-call",
+      toolCallCount: 1,
+      toolResultCount: 0,
+    });
+
+    return {
+      toolCalls: providerIO.agentToolCalls([toolCall]),
+      text: "",
+      assistantMessage: {
+        role: "assistant" as const,
+        content: message.content,
+        tool_calls: [toolCall],
+      },
+    };
+  };
+
+  const closeDirectedTurn = ({ toolCall, readClosingReply }: DirectedToolCall) => {
+    const result = toolResponses.find((message) => message.tool_call_id === toolCall.id);
+
+    return closingTurn(
+      readClosingReply(result),
+      isSuccessfulToolStatus(result?.status) ? undefined : "incomplete",
+    );
+  };
+
   for (const toolResult of params.initialToolResults ?? []) {
     await sink.write(createStreamedToolResultEvent(toolResult));
     await params.onToolResult?.(toolResult);
@@ -506,6 +546,12 @@ async function runChatAgentLoop(
     resolveTurn: async ({ messages, step }) => {
       if (await shouldStop()) {
         return closingTurn("", "stopped");
+      }
+
+      if (params.directedToolCall && !state.pendingUserAction) {
+        return state.directedToolCallIssued
+          ? closeDirectedTurn(params.directedToolCall)
+          : issueDirectedToolCall(params.directedToolCall);
       }
 
       if (step > 1 && (await shouldStopTurnForUsage(params.conversationManager))) {

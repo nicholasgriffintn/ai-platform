@@ -141,6 +141,7 @@ export function toResponseCommand(
     recipe: request.options?.recipe,
     connector: request.options?.connector,
     agent: request.options?.agent,
+    comparison: request.options?.comparison,
     sandbox: environment.sandbox,
     toolInteraction: input.toolInteraction,
     toolInteractions: input.toolInteractions,
