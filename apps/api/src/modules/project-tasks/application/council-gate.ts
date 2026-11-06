@@ -1,5 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
-import type { CouncilReviewVerdict } from "@ngriffin_uk/polychat-schemas";
+import type { CouncilReviewVerdict, GoalEvidenceEntry } from "@ngriffin_uk/polychat-schemas";
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -19,6 +19,7 @@ export async function reviewStageOutputs(
     outputIds: readonly string[];
     runId?: string;
     runAttempt?: number;
+    evidence?: readonly GoalEvidenceEntry[];
   },
 ): Promise<StageCouncilOutcome> {
   const verdicts: CouncilReviewVerdict[] = [];
@@ -26,12 +27,17 @@ export async function reviewStageOutputs(
 
   for (const outputId of params.outputIds.slice(0, MAX_REVIEWED_OUTPUTS)) {
     try {
-      const review = await reviewOutput(context, outputId, {
-        completionId: params.conversationId,
-        usageScopeId: `project-task:${params.taskId}:review:${outputId}`,
-        runId: params.runId,
-        runAttempt: params.runAttempt,
-      });
+      const review = await reviewOutput(
+        context,
+        outputId,
+        {
+          completionId: params.conversationId,
+          usageScopeId: `project-task:${params.taskId}:review:${outputId}`,
+          runId: params.runId,
+          runAttempt: params.runAttempt,
+        },
+        params.evidence,
+      );
 
       verdicts.push(review.verdict);
       reviewIds.push(review.id);
@@ -45,7 +51,9 @@ export async function reviewStageOutputs(
     }
   }
 
-  const shipped = params.outputIds.length <= MAX_REVIEWED_OUTPUTS && councilShipsStage(verdicts);
+  if (params.outputIds.length > MAX_REVIEWED_OUTPUTS) {
+    verdicts.push("hold");
+  }
 
-  return { shipped, reviewIds };
+  return { shipped: councilShipsStage(verdicts), reviewIds, verdicts };
 }

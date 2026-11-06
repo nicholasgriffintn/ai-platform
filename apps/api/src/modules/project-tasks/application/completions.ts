@@ -5,8 +5,11 @@ import type {
   ProjectFlowStage,
   ProjectTaskCompletion,
   ProjectTaskStatus,
+  RunVerification,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
+
+import { isRunVerified } from "~/modules/outputs/domain/run-verification";
 
 export function createProjectTaskCompletion(params: {
   stage: ProjectFlowStage | null;
@@ -18,11 +21,13 @@ export function createProjectTaskCompletion(params: {
   output: string;
   createdAt?: string;
   council?: StageCouncilOutcome | null;
+  verification: RunVerification;
 }): ProjectTaskCompletion {
   const automated =
-    params.stage?.advance === "on_council_ship"
+    isRunVerified(params.verification) &&
+    (params.stage?.advance === "on_council_ship"
       ? params.council?.shipped === true
-      : params.stage?.advance !== "on_human_accept";
+      : params.stage?.advance !== "on_human_accept");
 
   return {
     id: generateId(),
@@ -36,6 +41,7 @@ export function createProjectTaskCompletion(params: {
     output: params.output,
     evidence: params.goal.evidence ?? [],
     ...(params.council ? { councilReviewIds: params.council.reviewIds } : {}),
+    verification: params.verification,
     approval: {
       mode: automated ? "automated" : "human",
       status: automated ? "approved" : "pending",
@@ -84,6 +90,7 @@ export function approveLatestProjectTaskCompletion(
 export interface StageCouncilOutcome {
   shipped: boolean;
   reviewIds: string[];
+  verdicts: CouncilReviewVerdict[];
 }
 
 export function councilShipsStage(verdicts: readonly CouncilReviewVerdict[]): boolean {
@@ -93,17 +100,22 @@ export function councilShipsStage(verdicts: readonly CouncilReviewVerdict[]): bo
 export function stageAdvancesOnCompletion(
   stage: ProjectFlowStage | null,
   council: StageCouncilOutcome | null,
+  verification: RunVerification | null,
 ): boolean {
   return (
-    stage?.advance === "on_goal_complete" ||
-    (stage?.advance === "on_council_ship" && council?.shipped === true)
+    isRunVerified(verification) &&
+    (stage?.advance === "on_goal_complete" ||
+      (stage?.advance === "on_council_ship" && council?.shipped === true))
   );
 }
 
 export function projectTaskStatusAfterCompletedGoal(
   stage: ProjectFlowStage | null,
   nextStageId: string | null,
-  council: StageCouncilOutcome | null = null,
+  council: StageCouncilOutcome | null,
+  verification: RunVerification | null,
 ): ProjectTaskStatus {
-  return stageAdvancesOnCompletion(stage, council) && !nextStageId ? "done" : "review";
+  return stageAdvancesOnCompletion(stage, council, verification) && !nextStageId
+    ? "done"
+    : "review";
 }

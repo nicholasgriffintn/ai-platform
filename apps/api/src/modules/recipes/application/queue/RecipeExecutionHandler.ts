@@ -10,6 +10,7 @@ import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { isRunWaitingForDelegations } from "~/modules/delegations/application/wait-policy";
 import { executeDiscoverRoutineOccurrence } from "~/modules/discover/application/routine-execution";
+import { recordRecipeRoutineOutcome } from "~/modules/model-evaluation/application/routine-success";
 import { isPolyContextPaused } from "~/modules/poly/domain/pause";
 import type {
   TaskExecutionContext,
@@ -30,6 +31,7 @@ import {
   ensureRecipeOccurrenceConversation,
 } from "~/modules/recipes/application/occurrences";
 import { deliverRecipeSmsNotification } from "~/modules/recipes/application/sms-notification";
+import { recordRecipeRunOutcome } from "~/modules/recipes/application/task-reconciliation";
 import { prepareTeammateRun } from "~/modules/teammates/application/execution";
 import { reconcileTeammateRun } from "~/modules/teammates/application/run-reconciliation";
 import { TemplateRepository } from "~/modules/templates/infrastructure/TemplateRepository";
@@ -215,6 +217,18 @@ export class RecipeExecutionHandler implements TaskHandler {
             .getCommandReceipt(message.user_id, occurrenceCommandId)
         : null;
 
+      if (data.installationId && !acceptedRun) {
+        await recordRecipeRoutineOutcome(context, {
+          taskId: message.taskId,
+          userId: message.user_id,
+          projectId: data.projectId ?? null,
+          installationId: data.installationId,
+          runId: null,
+          status: "failed",
+          occurredAt: new Date().toISOString(),
+        });
+      }
+
       if (teammateContext && data.occurrenceId && !acceptedRun) {
         await deliverRecipeOccurrenceToTeammateHome({
           context,
@@ -283,6 +297,10 @@ export class RecipeExecutionHandler implements TaskHandler {
       runStatus === "cancelling";
 
     if (runStatus === "failed" || runStatus === "cancelled" || runStatus === "interrupted") {
+      if (executionRun && data.installationId) {
+        await recordRecipeRunOutcome(context, executionRun, data.installationId);
+      }
+
       return {
         status: "error",
         message: `Recipe occurrence ended with ${runStatus}`,
