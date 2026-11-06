@@ -8,7 +8,6 @@ import {
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
 import { hasUserProviderApiKey } from "~/infrastructure/providers/credentials";
-import { enforceImagePolicy } from "~/modules/generate/application/image-policy";
 import { requireSystemModel } from "~/modules/models/application/resolve";
 import type { IEnv, IUser } from "~/types";
 
@@ -94,14 +93,6 @@ export async function generateVideo({
         403,
       );
     }
-
-    await enforceImagePolicy({
-      env: runtimeEnv,
-      user: runtimeUser,
-      completionId: completion_id,
-      surface: "create_video",
-      text: [sanitisedPrompt, args.negative_prompt].filter(Boolean).join("\n"),
-    });
 
     const request = {
       prompt: sanitisedPrompt,
