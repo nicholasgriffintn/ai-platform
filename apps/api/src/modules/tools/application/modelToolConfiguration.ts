@@ -125,7 +125,7 @@ export function mergePersonalModelToolOptions(params: {
     toolOptions.file_search = configuredOptions.file_search;
   }
 
-  if (enabledToolIds.has("mcp") && configuredOptions?.mcp_servers) {
+  if (configuredOptions?.mcp_servers) {
     toolOptions.mcp_servers = configuredOptions.mcp_servers;
   }
 

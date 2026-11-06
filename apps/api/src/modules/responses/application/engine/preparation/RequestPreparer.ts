@@ -86,6 +86,7 @@ import {
 import {
   mergeNativeMcpToolNames,
   readMcpGatewayServers,
+  withConfiguredMcpTool,
   shouldUseNativeMcpGateway,
 } from "~/modules/tools/application/mcp-gateway-servers";
 import {
@@ -637,6 +638,13 @@ export class RequestPreparer {
     }
 
     const toolOptions = this.resolveToolOptions(scope, savedToolConfigurations, enabledTools);
+
+    if (!hasFixedToolScope) {
+      preparedTools = withConfiguredMcpTool(
+        preparedTools,
+        readMcpGatewayServers(toolOptions?.mcp_servers),
+      );
+    }
 
     preparedTools = mergeNativeMcpToolNames({
       enabledTools: preparedTools,
