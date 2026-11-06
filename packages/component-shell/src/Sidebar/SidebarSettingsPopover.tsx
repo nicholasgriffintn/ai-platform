@@ -37,7 +37,7 @@ export function SidebarSettingsPopover() {
   const themePreference = useThemePreference();
   const setThemePreference = useSetThemePreference();
   const planId: string | null | undefined = user?.plan_id;
-  const hasPaidPlan = planId === "pro" || planId === "enterprise";
+  const hasPaidPlan = planId === "pro" || planId === "agent" || planId === "enterprise";
   const usageBalance = useUsageBalance();
 
   return (

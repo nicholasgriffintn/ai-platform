@@ -44,6 +44,8 @@ import type {
   TeammateRosterEntry,
   Tool,
   ConversationSubject,
+  ResponseCostEstimate,
+  ResponseCostEstimateRequest,
   UpdateMemoryDocumentInput,
   UpdatePolyLookAround,
   UpdateTeammateInput,
@@ -204,6 +206,11 @@ class ApiService {
   ): Promise<SpeechGenerationResponse> => {
     return this.audioService.generateSpeech(input, options);
   };
+
+  estimateResponseCost = (
+    request: ResponseCostEstimateRequest,
+    signal?: AbortSignal,
+  ): Promise<ResponseCostEstimate> => this.responsesService.estimate(request, signal);
 
   createResponse = async ({
     onProgress,

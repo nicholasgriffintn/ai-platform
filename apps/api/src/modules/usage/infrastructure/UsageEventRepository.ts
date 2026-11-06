@@ -1,4 +1,9 @@
-import type { UsageBalanceSeed, UsageEventRecord } from "@ngriffin_uk/polychat-ai-billing";
+import type {
+  RunChargeGroup,
+  RunChargeState,
+  UsageBalanceSeed,
+  UsageEventRecord,
+} from "@ngriffin_uk/polychat-ai-billing";
 import type {
   ComputeSite,
   UsageEventReason,
@@ -47,6 +52,8 @@ export interface ChatRunUsageEventSummaryRow {
   credit_micros: number;
   estimated_price_event_count: number;
   input_tokens: number;
+  refunded_credit_micros: number;
+  absorbed_credit_micros: number;
 }
 
 export interface RunSpendSummaryRow {
@@ -105,6 +112,12 @@ const EVENT_NOT_RECORDED = "NOT EXISTS (SELECT 1 FROM usage_event WHERE idempote
 
 const SPEND_PAST_CEILING = `MAX(0, spent_credit_micros + ?
 	- MAX(spent_credit_micros, included_credit_micros + grace_credit_micros))`;
+
+const SPEND_RETURNED_FROM_PAST_CEILING = `MIN(?, MAX(0, spent_credit_micros
+	- included_credit_micros - grace_credit_micros))`;
+
+const RUN_CHARGE_UNCHANGED = `(SELECT COALESCE(SUM(credit_micros), 0) FROM usage_event
+	WHERE run_id = ? AND billable = 1) = ?`;
 
 export class UsageEventRepository extends BaseRepository {
   private buildInsert(event: UsageEventRecord): { query: string; values: unknown[] } {
@@ -192,6 +205,98 @@ export class UsageEventRepository extends BaseRepository {
     ]);
 
     return (results[2]?.meta?.changes ?? 0) > 0;
+  }
+
+  async getRunChargeState(runId: string): Promise<RunChargeState | null> {
+    const row = await this.runQuery<{
+      spend_cap_credit_micros: number | null;
+      usage_refunded_at: string | null;
+      charged_credit_micros: number;
+    }>(
+      `SELECT spend_cap_credit_micros, usage_refunded_at,
+              (SELECT COALESCE(SUM(credit_micros), 0) FROM usage_event
+               WHERE run_id = conversation_run.id AND billable = 1) AS charged_credit_micros
+       FROM conversation_run
+       WHERE id = ?`,
+      [runId],
+      true,
+    );
+
+    return row
+      ? {
+          capCreditMicros: row.spend_cap_credit_micros,
+          refunded: row.usage_refunded_at !== null,
+          chargedCreditMicros: row.charged_credit_micros,
+        }
+      : null;
+  }
+
+  async listRunChargeGroups(runId: string): Promise<RunChargeGroup[]> {
+    return this.runQuery<RunChargeGroup>(
+      `SELECT user_id, workspace_id, project_id, conversation_id, run_attempt,
+              period, source, vendor, resource, unit,
+              SUM(credit_micros) AS credit_micros
+       FROM usage_event
+       WHERE run_id = ? AND billable = 1
+       GROUP BY user_id, workspace_id, project_id, conversation_id, run_attempt,
+                period, source, vendor, resource, unit
+       HAVING SUM(credit_micros) > 0`,
+      [runId],
+    );
+  }
+
+  async applyRunChargeAdjustments(
+    runId: string,
+    expectedChargedCreditMicros: number,
+    events: readonly UsageEventRecord[],
+  ): Promise<boolean> {
+    if (events.length === 0) {
+      return true;
+    }
+
+    const database = this.env.DB;
+
+    if (!database) {
+      throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
+    }
+
+    const placeholders = INSERT_COLUMNS.map(() => "?").join(", ");
+    let expected = expectedChargedCreditMicros;
+    const statements = events.flatMap((event) => {
+      const returned = -event.credit_micros;
+      const insert = this.buildInsert(event);
+      const guard = [runId, expected];
+
+      expected -= returned;
+
+      return [
+        database
+          .prepare(
+            `UPDATE usage_balance
+             SET overrun_credit_micros = MAX(0, overrun_credit_micros
+                   - CASE WHEN ${CREDITS_ENFORCED} AND overage_enabled = 0
+                     THEN ${SPEND_RETURNED_FROM_PAST_CEILING} ELSE 0 END),
+                 overage_credit_micros = MAX(0, overage_credit_micros
+                   - CASE WHEN ${CREDITS_ENFORCED} AND overage_enabled = 1
+                     THEN ${SPEND_RETURNED_FROM_PAST_CEILING} ELSE 0 END),
+                 spent_credit_micros = MAX(0, spent_credit_micros - ?),
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE user_id = ? AND period = ? AND ${RUN_CHARGE_UNCHANGED}`,
+          )
+          .bind(returned, returned, returned, event.user_id, event.period, ...guard),
+        database
+          .prepare(
+            `INSERT INTO usage_event (${INSERT_COLUMNS.join(", ")})
+             SELECT ${placeholders}
+             WHERE ${RUN_CHARGE_UNCHANGED}
+             ON CONFLICT (idempotency_key) DO NOTHING`,
+          )
+          .bind(...insert.values, ...guard),
+      ];
+    });
+    const results = await this.executeBatch(statements);
+
+    return (results.at(-1)?.meta?.changes ?? 0) > 0;
   }
 
   async listUserEvents(params: ListUsageEventsParams): Promise<UsageEventRecordRow[]> {
@@ -286,7 +391,7 @@ export class UsageEventRepository extends BaseRepository {
               COALESCE(SUM(cost_micros), 0) AS cost_micros
        FROM usage_event
        WHERE workspace_id = ? AND source = 'model' AND vendor = ?
-         AND resource IN (${placeholders}) AND occurred_at >= ?`,
+         AND resource IN (${placeholders}) AND occurred_at >= ? AND credit_micros >= 0`,
       [input.workspaceId, input.vendor, ...input.resources, input.since],
       true,
     );
@@ -403,13 +508,17 @@ export class UsageEventRepository extends BaseRepository {
 
     return this.runQuery<ChatRunUsageEventSummaryRow>(
       `SELECT run_id, run_attempt, source,
-              COUNT(*) AS event_count,
+              COALESCE(SUM(CASE WHEN credit_micros < 0 THEN 0 ELSE 1 END), 0) AS event_count,
               COALESCE(SUM(cost_micros), 0) AS cost_micros,
               COALESCE(SUM(credit_micros), 0) AS credit_micros,
               COALESCE(SUM(CASE WHEN estimated = 1 THEN 1 ELSE 0 END), 0)
                 AS estimated_price_event_count,
               COALESCE(SUM(CASE WHEN unit LIKE '%input_tokens'
-                THEN quantity ELSE 0 END), 0) AS input_tokens
+                THEN quantity ELSE 0 END), 0) AS input_tokens,
+              COALESCE(SUM(CASE WHEN reason = 'platform_failure_refund'
+                THEN -credit_micros ELSE 0 END), 0) AS refunded_credit_micros,
+              COALESCE(SUM(CASE WHEN reason = 'run_cap_absorbed'
+                THEN -credit_micros ELSE 0 END), 0) AS absorbed_credit_micros
        FROM usage_event
        WHERE run_id IN (${placeholders})
        GROUP BY run_id, run_attempt, source

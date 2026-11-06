@@ -17,6 +17,7 @@ import {
   messagesToItems,
   parseResponseStreamSseBuffer,
   responseEnvironmentSchema,
+  responseCostEstimateResponseSchema,
   responseReplayResponseSchema,
   responseListSchema,
   responseSchema,
@@ -27,6 +28,8 @@ import {
   type ModelTier,
   type PlatformResponse,
   type ResponseAgent,
+  type ResponseCostEstimate,
+  type ResponseCostEstimateRequest,
   type ResponseEnvironment,
   type ResponseInputRequest,
   type ResponseStreamUpdate,
@@ -113,6 +116,12 @@ function definedEntries<T extends Record<string, unknown>>(record: T): Partial<T
   ) as Partial<T>;
 }
 
+function buildResponseBudget(steps: number | undefined, credits: number | undefined) {
+  const budget = definedEntries({ steps, credits });
+
+  return Object.keys(budget).length > 0 ? budget : undefined;
+}
+
 export function buildCreateResponseBody(params: CreateResponseParams): CreateResponseRequest {
   const {
     agent,
@@ -158,6 +167,7 @@ export function buildCreateResponseBody(params: CreateResponseParams): CreateRes
     enabledTools: settingsEnabledTools,
     generationSettings,
     hostedToolOptions,
+    runCapCredits,
   } = projectChatRequestSettings(chatSettings);
   const enabledTools = allowTools
     ? normaliseToolIds([
@@ -243,7 +253,10 @@ export function buildCreateResponseBody(params: CreateResponseParams): CreateRes
     reasoning,
     sampling: Object.keys(sampling).length > 0 ? sampling : undefined,
     text: Object.keys(text).length > 0 ? text : undefined,
-    budget: maxSteps !== undefined ? { steps: maxSteps } : undefined,
+    budget: buildResponseBudget(
+      maxSteps,
+      (requestOptionFields.store ?? store) ? runCapCredits : undefined,
+    ),
     service_tier: generationSettings.service_tier,
     stream: streamingEnabled,
     store: requestOptionFields.store ?? store,
@@ -347,6 +360,20 @@ export class ResponsesService {
     }
 
     return found;
+  }
+
+  async estimate(
+    request: ResponseCostEstimateRequest,
+    signal?: AbortSignal,
+  ): Promise<ResponseCostEstimate> {
+    const response = await fetchApiOrThrow("/responses/estimate", {
+      method: "POST",
+      headers: await this.getHeaders(),
+      body: request,
+      signal,
+    });
+
+    return responseCostEstimateResponseSchema.parse(await returnFetchedData<unknown>(response));
   }
 
   async cancel(
@@ -472,6 +499,10 @@ export class ResponsesService {
           return;
         case "usage_limits":
           onStateChange("usage_limits", update.usageLimits);
+
+          return;
+        case "run_meter":
+          onStateChange("run_meter", update.meter);
 
           return;
         case "usage":

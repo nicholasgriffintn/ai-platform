@@ -1,4 +1,5 @@
 import type { D1Database, ExecutionContext } from "@cloudflare/workers-types";
+import type { UsageEmissionDelivery } from "@ngriffin_uk/polychat-ai-billing";
 import type { OutboundGatewayFactory } from "@ngriffin_uk/polychat-ai-sandbox";
 import type { LoggerOptions } from "@ngriffin_uk/polychat-ai-telemetry";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
@@ -46,6 +47,7 @@ export interface ServiceContext {
   executionRunId?: string;
   executionActivityId?: string;
   executionRunAttempt?: number;
+  executionRunUsageDelivery?: UsageEmissionDelivery;
   repositories: Repositories;
   requestCache: RequestCache;
   requireUser(): IUser;
@@ -63,6 +65,7 @@ export function withExecutionRunContext(
   context: ServiceContext,
   runId: string,
   runAttempt?: number,
+  usageDelivery?: UsageEmissionDelivery,
 ): ServiceContext {
   return new Proxy(context, {
     get(target, property, receiver) {
@@ -72,6 +75,10 @@ export function withExecutionRunContext(
 
       if (property === "executionRunAttempt") {
         return runAttempt;
+      }
+
+      if (property === "executionRunUsageDelivery") {
+        return usageDelivery;
       }
 
       return Reflect.get(target, property, receiver);

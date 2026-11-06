@@ -267,7 +267,7 @@ export const responseTextSettingsSchema = z
 export const responseBudgetSchema = z
   .object({
     steps: z.number().int().min(1).optional(),
-    credits: z.number().optional(),
+    credits: z.number().positive().optional(),
   })
   .strict();
 
@@ -448,5 +448,25 @@ export const responseInputTokensResponseSchema = z.object({
 });
 
 export type ResponseInputTokensResponse = z.infer<typeof responseInputTokensResponseSchema>;
+
+export const responseCostEstimateRequestSchema = responseInputTokensRequestSchema.extend({
+  mode: chatRequestModeSchema.optional(),
+  budget: responseBudgetSchema.optional(),
+  history_tokens: z.number().int().nonnegative().optional(),
+});
+
+export type ResponseCostEstimateRequest = z.infer<typeof responseCostEstimateRequestSchema>;
+
+export const responseCostEstimateResponseSchema = z.object({
+  model: z.string(),
+  basis: z.enum(["rates", "byok", "unpriced"]),
+  step_credits: z.number().nonnegative(),
+  likely_credits: z.number().nonnegative(),
+  ceiling_credits: z.number().nonnegative(),
+  likely_steps: z.number().int().positive(),
+  max_steps: z.number().int().positive(),
+});
+
+export type ResponseCostEstimate = z.infer<typeof responseCostEstimateResponseSchema>;
 
 export const responseInputItemSchema = itemSchema;

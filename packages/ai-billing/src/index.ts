@@ -15,6 +15,7 @@ export * from "./usage/plan-seed.js";
 export * from "./usage/ledger.js";
 export * from "./usage/credits.js";
 export * from "./usage/reservations.js";
+export * from "./usage/run-charge.js";
 export * from "./usage/balance-snapshot.js";
 export * from "./usage/credit-summary.js";
 export * from "./usage/summary.js";

@@ -6,6 +6,8 @@ import {
   errorResponseSchema,
   isStoredItem,
   queuedChatMessageSchema,
+  responseCostEstimateRequestSchema,
+  responseCostEstimateResponseSchema,
   responseInputRequestSchema,
   responseInputTokensRequestSchema,
   responseInputTokensResponseSchema,
@@ -33,6 +35,7 @@ import { toApiMessages } from "~/modules/conversations/application/present";
 import type { Message } from "~/types";
 
 import { handleCompactChatCompletion } from "../application/compactChatCompletion";
+import { estimateResponseCost } from "../application/cost-estimate";
 import { handleCountTokens } from "../application/countTokens";
 import { createResponse } from "../application/create";
 import { submitResponseInput } from "../application/input";
@@ -113,6 +116,20 @@ defineResource(app, { idParam: "response_id", tags: ["responses"] }, (responses)
     },
     handler: ({ serviceContext, body }) =>
       handleCompactChatCompletion(serviceContext, body.conversation),
+  });
+
+  responses.collectionAction("estimate", {
+    auth: "user-or-anonymous",
+    summary: "Estimate a response's credit cost",
+    description:
+      "Estimates the credits one step, a likely run and the step budget's ceiling would use. It is a guide built from model rates, not a quote.",
+    bodySchema: responseCostEstimateRequestSchema,
+    responses: {
+      200: { description: "Credit estimate", schema: responseCostEstimateResponseSchema },
+      400: { description: "Bad request or validation error", schema: errorResponseSchema },
+    },
+    middleware: [validateCaptcha],
+    handler: ({ serviceContext, body }) => estimateResponseCost(serviceContext, body),
   });
 
   responses.collectionAction("input_tokens", {

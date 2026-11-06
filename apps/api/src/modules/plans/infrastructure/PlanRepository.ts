@@ -27,6 +27,12 @@ export class PlanRepository extends BaseRepository {
     return this.runQuery<PlanRecord>(query, values, true);
   }
 
+  public async getPlanByStripePriceId(stripePriceId: string): Promise<PlanRecord | null> {
+    const { query, values } = this.buildSelectQuery("plans", { stripe_price_id: stripePriceId });
+
+    return this.runQuery<PlanRecord>(query, values, true);
+  }
+
   public async updatePlanCredits(planId: string, fields: PlanCreditFields): Promise<boolean> {
     const assignments: string[] = [];
     const values: unknown[] = [];

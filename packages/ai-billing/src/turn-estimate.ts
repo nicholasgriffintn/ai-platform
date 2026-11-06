@@ -61,3 +61,55 @@ export function estimateTurnCreditMicros(params: EstimateTurnCreditMicrosParams)
 
   return creditMicrosFromCostMicros(costMicros, DEFAULT_MARGIN);
 }
+
+const LIKELY_AGENT_STEPS = 4;
+const LIKELY_STEP_OUTPUT_TOKENS = 1024;
+const STEP_TOOL_RESULT_TOKENS = 1500;
+
+export interface EstimateRunCreditMicrosParams {
+  promptTokens: number;
+  modelConfig?: TurnCostModelConfig | null;
+  maxSteps: number;
+  multiStep: boolean;
+}
+
+export interface RunCreditEstimate {
+  stepCreditMicros: number;
+  likelySteps: number;
+  likelyCreditMicros: number;
+  ceilingCreditMicros: number;
+}
+
+function sumStepEstimates(
+  params: EstimateRunCreditMicrosParams,
+  steps: number,
+  outputTokens: number,
+): number {
+  let total = 0;
+
+  for (let step = 0; step < steps; step += 1) {
+    total += estimateTurnCreditMicros({
+      promptTokens: params.promptTokens + step * (outputTokens + STEP_TOOL_RESULT_TOKENS),
+      modelConfig: params.modelConfig,
+      outputAllowanceTokens: outputTokens,
+    });
+  }
+
+  return total;
+}
+
+export function estimateRunCreditMicros(params: EstimateRunCreditMicrosParams): RunCreditEstimate {
+  const maxSteps = Math.max(1, params.maxSteps);
+  const likelySteps = params.multiStep ? Math.min(maxSteps, LIKELY_AGENT_STEPS) : 1;
+  const stepOutputCeiling = Math.min(
+    params.modelConfig?.maxTokens ?? TURN_OUTPUT_ALLOWANCE_MAX_TOKENS,
+    TURN_OUTPUT_ALLOWANCE_MAX_TOKENS,
+  );
+
+  return {
+    stepCreditMicros: estimateTurnCreditMicros(params),
+    likelySteps,
+    likelyCreditMicros: sumStepEstimates(params, likelySteps, LIKELY_STEP_OUTPUT_TOKENS),
+    ceilingCreditMicros: sumStepEstimates(params, maxSteps, stepOutputCeiling),
+  };
+}

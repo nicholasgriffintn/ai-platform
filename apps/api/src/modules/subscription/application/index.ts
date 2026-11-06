@@ -1,4 +1,5 @@
 import {
+  DEFAULT_PAID_PLAN_ID,
   ENTITLED_SUBSCRIPTION_STATUSES,
   hasPlanEntitlement,
   isExistingSubscriptionItemError,
@@ -58,6 +59,38 @@ function getStripeClient(env: IEnv): Stripe {
   }
 
   return new Stripe(secret);
+}
+
+async function resolveSubscribedPlanId(
+  repositories: Repositories,
+  subscription: Pick<Stripe.Subscription, "items">,
+): Promise<PlanId> {
+  for (const item of subscription.items?.data ?? []) {
+    const plan = item.price?.id
+      ? await repositories.get(PlanRepository).getPlanByStripePriceId(item.price.id)
+      : null;
+
+    if (plan) {
+      return resolvePlanId(plan.id);
+    }
+  }
+
+  return DEFAULT_PAID_PLAN_ID;
+}
+
+async function resolvePlanForSubscription(
+  repositories: Repositories,
+  subscription: Pick<Stripe.Subscription, "items" | "status">,
+): Promise<PlanId | null> {
+  const planId = resolvePlanForSubscriptionStatus(subscription.status);
+
+  return planId === DEFAULT_PAID_PLAN_ID
+    ? resolveSubscribedPlanId(repositories, subscription)
+    : planId;
+}
+
+function subscriptionPlanLabel(planId: PlanId): string {
+  return planId === "agent" ? "Agent" : "Pro";
 }
 
 function inactiveSubscriptionStatus() {
@@ -168,7 +201,8 @@ export async function getSubscriptionStatus(
         status: "all",
       });
       const entitledSubscription = subscriptions.data.find(
-        (subscription) => resolvePlanForSubscriptionStatus(subscription.status) === "pro",
+        (subscription) =>
+          resolvePlanForSubscriptionStatus(subscription.status) === DEFAULT_PAID_PLAN_ID,
       );
 
       if (!entitledSubscription) {
@@ -178,7 +212,7 @@ export async function getSubscriptionStatus(
       const repositories = createRepositories(env);
 
       await applySubscriptionState(repositories, user, {
-        planId: "pro",
+        planId: await resolveSubscribedPlanId(repositories, entitledSubscription),
         subscriptionId: entitledSubscription.id,
       });
 
@@ -547,14 +581,18 @@ export async function handleStripeWebhook(
           const user = await repositories.get(UserRepository).getUserByStripeCustomerId(customerId);
 
           if (user?.id) {
+            const planId = await resolveSubscribedPlanId(
+              repositories,
+              await stripe.subscriptions.retrieve(subscriptionId),
+            );
             const { planChanged } = await applySubscriptionState(repositories, user, {
-              planId: "pro",
+              planId,
               subscriptionId,
             });
 
             if (planChanged && user.email) {
               try {
-                await sendSubscriptionEmail(env, user.email, "Pro");
+                await sendSubscriptionEmail(env, user.email, subscriptionPlanLabel(planId));
               } catch (e: any) {
                 logger.error(`Failed to send subscription email: ${e.message}`);
               }
@@ -571,7 +609,7 @@ export async function handleStripeWebhook(
         const user = await repositories.get(UserRepository).getUserByStripeCustomerId(customerId);
 
         if (user?.id) {
-          const planId = resolvePlanForSubscriptionStatus(subscription.status);
+          const planId = await resolvePlanForSubscription(repositories, subscription);
           const { planChanged } = await applySubscriptionState(repositories, user, {
             planId,
             subscriptionId: subscription.id,
@@ -645,12 +683,14 @@ export async function handleStripeWebhook(
         const user = await repositories.get(UserRepository).getUserByStripeCustomerId(customerId);
 
         if (user?.id && user.stripe_subscription_id) {
-          const { planChanged } = await applySubscriptionState(repositories, user, {
-            planId: "pro",
-          });
+          const planId = await resolveSubscribedPlanId(
+            repositories,
+            await stripe.subscriptions.retrieve(user.stripe_subscription_id),
+          );
+          const { planChanged } = await applySubscriptionState(repositories, user, { planId });
 
           if (planChanged) {
-            logger.info(`Recovered payment restored the pro plan for user ${user.id}`);
+            logger.info(`Recovered payment restored the ${planId} plan for user ${user.id}`);
           }
         }
 

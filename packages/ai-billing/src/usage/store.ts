@@ -1,6 +1,7 @@
 import type {
   ComputeSite,
   ModelConfigItem,
+  UsageChargeAdjustmentReason,
   UsageEventReason,
   UsageReservationKind,
   UsageReservationStatus,
@@ -100,6 +101,32 @@ export interface CreateUsageReservationParams {
 
 export type UsageReservationOutcome = Extract<UsageReservationStatus, "settled" | "released">;
 
+export interface RunChargeState {
+  capCreditMicros: number | null;
+  refunded: boolean;
+  chargedCreditMicros: number;
+}
+
+export interface RunChargeGroup {
+  user_id: number;
+  workspace_id: string | null;
+  project_id: string | null;
+  conversation_id: string | null;
+  run_attempt: number | null;
+  period: string;
+  source: UsageSource;
+  vendor: string;
+  resource: string;
+  unit: UsageUnit;
+  credit_micros: number;
+}
+
+export interface RunChargeAdjustment {
+  group: RunChargeGroup;
+  creditMicros: number;
+  reason: UsageChargeAdjustmentReason;
+}
+
 export interface PlanAllowanceRecord {
   included_credits?: unknown;
   grace_credits?: unknown;
@@ -118,6 +145,13 @@ export interface UsageStore {
     deltas: CreditDeltas,
   ): Promise<void>;
   insertEventAndApplyBalance(event: UsageEventRecord, seed: UsageBalanceSeed): Promise<boolean>;
+  getRunChargeState(runId: string): Promise<RunChargeState | null>;
+  listRunChargeGroups(runId: string): Promise<RunChargeGroup[]>;
+  applyRunChargeAdjustments(
+    runId: string,
+    expectedChargedCreditMicros: number,
+    events: readonly UsageEventRecord[],
+  ): Promise<boolean>;
   createReservation(params: CreateUsageReservationParams): Promise<boolean>;
   createUserReservationWithBalance(
     params: CreateUsageReservationParams & UsageBalanceSeed,

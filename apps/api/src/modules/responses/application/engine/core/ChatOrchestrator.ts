@@ -50,6 +50,7 @@ import {
   screenActivatedImageTool,
 } from "~/modules/responses/application/engine/policy/image-policy";
 import { resolveAccountDefaultComputeSite } from "~/modules/responses/application/engine/policy/project-model-tier";
+import { createChatRunBudget } from "~/modules/responses/application/engine/policy/run-budget";
 import { resolveTurnStepBudget } from "~/modules/responses/application/engine/policy/step-budget";
 import {
   createTierModelFallback,
@@ -71,6 +72,7 @@ import {
 import { createPartialCheckpointSink } from "~/modules/responses/application/runs/partial-checkpoint";
 import { applyTierReasoningEffort } from "~/modules/responses/domain/tier-reasoning";
 import { releaseTeammateComputerAgentLease } from "~/modules/teammates/application/computers";
+import { readRunCapDecision } from "~/modules/usage/application/run-budget";
 import type { ChatMode, CoreChatOptions, Message } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/core/ChatOrchestrator" });
@@ -388,6 +390,20 @@ export class ChatOrchestrator {
       ]),
     ];
 
+    const runBudget = await createChatRunBudget({
+      chatOptions,
+      runLifecycle,
+      runProvenance,
+      modelConfig: primaryModelConfig,
+      provider: primaryProvider,
+      mode: currentMode,
+      systemPrompt,
+    });
+
+    if (runLifecycle?.run.attempt === 1) {
+      await runBudget?.assertStartable(preparedMessages);
+    }
+
     await conversationManager.admitTurn({
       modelConfig: primaryModelConfig,
       messages: preparedMessages,
@@ -438,6 +454,7 @@ export class ChatOrchestrator {
       provider: primaryProvider,
       runId: runLifecycle?.run.id,
       runAttempt: runLifecycle?.run.attempt,
+      runUsageDelivery: runBudget?.usageDelivery,
       memoryScope: prepared.memoryScope,
       notebook: prepared.notebook,
     });
@@ -459,6 +476,8 @@ export class ChatOrchestrator {
         : undefined;
 
     if (approvalReplay) {
+      await runBudget?.applyDecision(readRunCapDecision(approvalReplay.toolResults));
+
       const updatesById = new Map(approvalReplay.updates.map((message) => [message.id, message]));
       const suppressedMessageIds = new Set(approvalReplay.suppressedMessageIds);
 
@@ -578,6 +597,7 @@ export class ChatOrchestrator {
       contextSystemSections: prepared.systemPromptSections,
       runId: runLifecycle?.run.id,
       runAttempt: runLifecycle?.run.attempt,
+      runBudget,
       onContextSnapshot: runLifecycle
         ? (snapshot) => runLifecycle.recordContext(snapshot).then(() => undefined)
         : undefined,

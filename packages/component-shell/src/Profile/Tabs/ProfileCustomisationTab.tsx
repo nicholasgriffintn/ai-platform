@@ -28,7 +28,7 @@ export function ProfileCustomisationTab() {
         userSettings={userSettings ?? null}
         afterPersonalisedResponses={<ThemeSettings />}
         isAuthenticated={isAuthenticated}
-        isPro={user?.plan_id === "pro"}
+        isPro={user?.plan_id === "pro" || user?.plan_id === "agent"}
         showSubmit={false}
       />
     </ProfileTab>

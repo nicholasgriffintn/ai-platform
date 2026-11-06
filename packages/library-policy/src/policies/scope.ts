@@ -1,8 +1,8 @@
 export const scopePolicies = {
   "scope.work": `permit(principal, action == Polychat::Action::"work.access", resource)
-    when { context.plan == "pro" };`,
+    when { ["pro", "agent"].contains(context.plan) };`,
   "scope.workspace": `permit(principal, action == Polychat::Action::"workspace.access", resource)
-    when { context.plan == "pro" && context.member && context.allowedRoles.contains(context.role) };`,
+    when { ["pro", "agent"].contains(context.plan) && context.member && context.allowedRoles.contains(context.role) };`,
   "scope.personal": `permit(principal, action == Polychat::Action::"resource.read", resource)
     when { context.scope == "personal" && context.actorId == context.ownerId };
     permit(principal, action == Polychat::Action::"resource.write", resource)
@@ -19,7 +19,7 @@ export const scopePolicies = {
   "scope.public": `permit(principal, action == Polychat::Action::"conversation.public", resource)
     when { !context.project && context.isPublic };`,
   "scope.conversation": `permit(principal, action == Polychat::Action::"conversation.access", resource)
-    when { (context.project && context.plan == "pro" && context.member) ||
+    when { (context.project && ["pro", "agent"].contains(context.plan) && context.member) ||
       (!context.project && context.actorId == context.ownerId) };
     forbid(principal, action == Polychat::Action::"conversation.access", resource)
     when { context.teammateActorId != "" && context.actorId != context.teammateActorId };`,

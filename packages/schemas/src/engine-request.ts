@@ -482,8 +482,9 @@ export const engineRequestFieldsSchema = z.object({
     .describe("Maximum sequential model/tool steps for agent-like modes."),
   budget_constraint: z
     .number()
+    .positive()
     .optional()
-    .describe("Optional budget constraint for model routing."),
+    .describe("Credit cap for this run. The run pauses for approval before it would exceed it."),
   enabled_tools: toolIdsSchema.optional().describe("Tool IDs enabled for this request."),
   tool_selection_mode: toolSelectionModeSchema
     .optional()

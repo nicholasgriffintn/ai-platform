@@ -44,6 +44,7 @@ const mockStripe = {
 const mockRepositories = {
   plans: {
     getPlanById: vi.fn(),
+    getPlanByStripePriceId: vi.fn(),
   },
   users: {
     updateUser: vi.fn(),
@@ -129,6 +130,8 @@ describe("Subscription Service", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockStripe.subscriptions.retrieve.mockResolvedValue({ items: { data: [] } });
+    mockRepositories.plans.getPlanByStripePriceId.mockResolvedValue(null);
   });
 
   describe("createCheckoutSession", () => {
@@ -779,6 +782,28 @@ describe("Subscription Service", () => {
         graceCreditMicros: 100_000_000,
       });
       expect(mockRepositories.usageBalances.setOverageEnabled).not.toHaveBeenCalled();
+    });
+
+    it("grants the plan that owns the purchased Stripe price", async () => {
+      mockStripe.webhooks.constructEventAsync.mockResolvedValue({
+        type: "checkout.session.completed",
+        data: { object: { customer: "cus_123", subscription: "sub_123" } },
+      });
+      mockStripe.subscriptions.retrieve.mockResolvedValue({
+        items: { data: [{ price: { id: "price_agent" } }] },
+      });
+      mockRepositories.plans.getPlanByStripePriceId.mockResolvedValue({ id: "agent" });
+      mockRepositories.users.getUserByStripeCustomerId.mockResolvedValue({
+        id: 1,
+        plan_id: "free",
+      });
+
+      await handleStripeWebhook(mockEnv, "test-signature", "test-payload");
+
+      expect(mockRepositories.users.updateUser).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({ plan_id: "agent" }),
+      );
     });
 
     it("should throw error for invalid webhook signature", async () => {

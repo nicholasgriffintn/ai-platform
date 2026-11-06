@@ -48,6 +48,8 @@ const row: ChatRunUsageEventSummaryRow = {
   credit_micros: 25_000,
   estimated_price_event_count: 1,
   input_tokens: 1_200,
+  refunded_credit_micros: 0,
+  absorbed_credit_micros: 0,
 };
 
 describe("buildChatRunUsage", () => {

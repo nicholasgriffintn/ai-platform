@@ -5,6 +5,7 @@ import { chatRetrySnapshotSchema } from "../chat-retries.js";
 import type { ChatRunCommandReceipt } from "../chat-runs.js";
 import { normaliseMessageParts, type MessagePart } from "../message-part-utils.js";
 import { runProvenanceSchema, type RunProvenance } from "../run-provenance.js";
+import { runMeterSchema, type RunMeter } from "../usage.js";
 import {
   itemToMessage,
   messageToItem,
@@ -78,6 +79,7 @@ export const RESPONSE_STREAM_EVENT_TYPES = [
   "response.state",
   "response.usage",
   "response.usage_limits",
+  "response.run_meter",
   "response.output_item.added",
   "response.output_item.done",
   "response.content_part.done",
@@ -147,6 +149,7 @@ export const responseStreamEventSchema = z.union([
     usage_limits: z.unknown(),
     ...envelopeFields,
   }),
+  z.object({ type: z.literal("response.run_meter"), meter: runMeterSchema, ...envelopeFields }),
   z.object({
     type: z.literal("response.output_item.added"),
     output_index: z.number().int().nonnegative(),
@@ -382,6 +385,7 @@ export type ResponseStreamUpdate =
   | { type: "activity"; activity: ResponseActivityEvent }
   | { type: "usage"; usage: unknown }
   | { type: "usage_limits"; usageLimits: unknown }
+  | { type: "run_meter"; meter: RunMeter }
   | { type: "error"; error: unknown; code?: string }
   | { type: "state"; state: string; event: Record<string, unknown> }
   | { type: "done"; message?: ResponseStreamMessage };
@@ -568,6 +572,8 @@ class ResponseStreamAssemblerState implements ResponseStreamAssembler {
         return [{ type: "usage", usage: event.usage }];
       case "response.usage_limits":
         return [{ type: "usage_limits", usageLimits: event.usage_limits }];
+      case "response.run_meter":
+        return [{ type: "run_meter", meter: event.meter }];
       case "response.output_item.added":
         return this.ingestItemAdded(event.item);
       case "response.output_item.done":
