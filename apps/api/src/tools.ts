@@ -8,7 +8,6 @@ import { list_saved_messages } from "~/modules/conversations/application/tools/l
 import { react } from "~/modules/conversations/application/tools/react";
 import { search_conversations } from "~/modules/conversations/application/tools/search_conversations";
 import { propose_correction } from "~/modules/corrections/application/tools/propose_correction";
-import { compare_and_conclude } from "~/modules/decisions/application/tools/comparison";
 import {
   review_output,
   run_council,
@@ -165,7 +164,6 @@ registerTools([
   run_council,
   select_council_members,
   second_opinion,
-  compare_and_conclude,
   get_hacker_news_stories,
   get_on_this_day,
   request_approval,

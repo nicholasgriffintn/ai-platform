@@ -15,7 +15,6 @@ import {
   type ChatRunCommandReceipt,
   type ChatRunStatus,
 } from "../chat-runs.js";
-import { comparisonRequestOptionsSchema } from "../comparison.js";
 import { conversationSubjectSchema } from "../conversation-subject.js";
 import { conversationTypeSchema } from "../conversation-type.js";
 import {
@@ -284,7 +283,6 @@ export const responseOptionsSchema = z
     recipe: recipeChatRequestOptionsSchema.optional(),
     connector: connectorChatRequestOptionsSchema.optional(),
     agent: z.object({ minToolCalls: z.number().int().min(0).optional() }).optional(),
-    comparison: comparisonRequestOptionsSchema.optional(),
   })
   .strict();
 
