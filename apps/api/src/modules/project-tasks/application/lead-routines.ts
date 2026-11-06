@@ -1,4 +1,8 @@
-import { LEAD_ROUTINE_KINDS, type LeadRoutineKind } from "@ngriffin_uk/polychat-schemas";
+import {
+  LEAD_ROUTINE_KINDS,
+  leadRoutineId,
+  type LeadRoutineKind,
+} from "@ngriffin_uk/polychat-schemas";
 import {
   formatZonedDayLabel,
   isDailyScheduleDue,
@@ -7,6 +11,10 @@ import {
 import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
+import {
+  openLeadRoutineOutcome,
+  settleRoutineOutcome,
+} from "~/modules/model-evaluation/application/routine-success";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { readLeadRoutines } from "~/modules/workspaces/domain/lead-routines";
 import { InitiativeRepository } from "~/modules/workspaces/infrastructure/InitiativeRepository";
@@ -52,9 +60,18 @@ async function openLeadRoutine(
     owner: { type: "teammate", id: leadId },
   });
 
+  await openLeadRoutineOutcome(context, {
+    taskId: task.id,
+    userId: user.id,
+    projectId,
+    routineId: leadRoutineId(workspace.id, kind),
+    occurredAt: now.toISOString(),
+  });
+
   try {
     await startProjectTask(context, projectId, task.id);
   } catch (error) {
+    await settleRoutineOutcome(context, { taskId: task.id, runId: null, status: "failed" });
     await postToTaskThread(context, task, {
       kind: "event",
       author: { kind: "system", name: "Routine", userId: null, teammateId: null },

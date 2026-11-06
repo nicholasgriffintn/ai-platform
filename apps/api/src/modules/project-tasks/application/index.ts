@@ -36,6 +36,7 @@ import { ConversationRunRepository } from "~/modules/conversations/infrastructur
 import { createGoalService } from "~/modules/goals/application/createGoalService";
 import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
 import { stopMachineAgentTurn } from "~/modules/machines/application/agent-turn";
+import { recordRoutineFalseCompletion } from "~/modules/model-evaluation/application/routine-success";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import type { ListProjectTaskFilters } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
@@ -799,6 +800,17 @@ export async function updateProjectTask(
 
   if (!updated) {
     throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
+  }
+
+  if (
+    actor === "user" &&
+    (task.status === "done" || task.status === "review") &&
+    input.status !== undefined &&
+    input.status !== task.status &&
+    input.status !== "done" &&
+    input.status !== "cancelled"
+  ) {
+    await recordRoutineFalseCompletion(context, taskId);
   }
 
   if (input.status !== undefined && input.status !== task.status) {

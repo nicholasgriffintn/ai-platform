@@ -8,6 +8,7 @@ import {
   type ProjectTaskActivityStatus,
   type ProjectTaskActivityTimeline,
   type ProjectTaskInteraction,
+  type RunVerificationStatus,
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
@@ -17,10 +18,17 @@ import { ConversationRunRepository } from "~/modules/conversations/infrastructur
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import type { Message } from "~/types";
 
+const PENDING_RESULT_TITLES: Record<RunVerificationStatus, string> = {
+  verified: "Result ready for review",
+  unverified: "Unverified result ready for review",
+  failed: "Result failed its checks",
+};
+
 interface ActivityCompletion {
   id: string;
   output: string;
   approval: { status: "pending" | "approved" | "rejected" };
+  verification?: { status: RunVerificationStatus };
   conversationId?: string;
   createdAt: string;
 }
@@ -543,7 +551,7 @@ export function projectProjectTaskActivity(
         status,
         title:
           completion.approval.status === "pending"
-            ? "Result ready for review"
+            ? PENDING_RESULT_TITLES[completion.verification?.status ?? "verified"]
             : completion.approval.status === "approved"
               ? "Result approved"
               : "Result rejected",

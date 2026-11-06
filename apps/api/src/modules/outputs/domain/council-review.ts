@@ -2,12 +2,15 @@ import {
   councilReviewVerdictSchema,
   type CouncilReviewSeat,
   type CouncilReviewVerdict,
+  type GoalEvidenceEntry,
 } from "@ngriffin_uk/polychat-schemas";
+import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 import { parseAIResponseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import z from "zod/v4";
 
 const VOTE_LINE = /^\s*VOTE:\s*(ship|revise|hold)\s*$/im;
 const PREFERRED_TEXT_FIELDS = ["markdown", "text", "body", "summary", "content"] as const;
+const EVIDENCE_CHARS = 6_000;
 
 const adjudicationSchema = z.object({
   verdict: councilReviewVerdictSchema,
@@ -73,4 +76,23 @@ export function councilReviewSubject(content: Record<string, unknown>): string {
   }
 
   return JSON.stringify(content, null, 2);
+}
+
+export function councilEvidenceBlock(evidence: readonly GoalEvidenceEntry[]): string {
+  if (evidence.length === 0) {
+    return "";
+  }
+
+  const ledger = evidence
+    .map((entry) =>
+      [
+        `- ${entry.claim} (${entry.status})`,
+        `  How: ${entry.route}`,
+        `  Where: ${entry.evidence_surface}`,
+        ...(entry.remaining_uncertainty ? [`  Unproven: ${entry.remaining_uncertainty}`] : []),
+      ].join("\n"),
+    )
+    .join("\n");
+
+  return `\n\nEvidence the run recorded for this work:\n\n<evidence>\n${truncateForModel(ledger, EVIDENCE_CHARS)}\n</evidence>`;
 }

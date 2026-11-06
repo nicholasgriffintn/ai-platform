@@ -14,6 +14,7 @@ import {
   registryRunParamsSchema,
   registrySuiteParamsSchema,
   registryWorkspaceParamsSchema,
+  routineSuccessListResponseSchema,
   startEvalRunsRequestSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
@@ -27,6 +28,7 @@ import {
   previewGrader,
   updateGrader,
 } from "~/modules/model-evaluation/application/graders";
+import { listRoutineSuccess } from "~/modules/model-evaluation/application/routine-success";
 import {
   createEvalSuite,
   deleteEvalSuite,
@@ -40,6 +42,14 @@ const app = new Hono();
 const tags = ["model-evaluation"];
 const base = "/workspaces/:workspace_id";
 const deleted = { 200: { description: "Deleted", schema: z.object({ deleted: z.literal(true) }) } };
+
+addRoute(app, "get", "/routines/success", {
+  auth: true,
+  tags,
+  summary: "List how often your routines finished with evidence over the last four weeks",
+  responses: { 200: { description: "Routine success", schema: routineSuccessListResponseSchema } },
+  handler: ({ serviceContext }) => listRoutineSuccess(serviceContext),
+});
 
 addRoute(app, "get", `${base}/graders`, {
   auth: true,

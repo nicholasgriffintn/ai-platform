@@ -36,15 +36,17 @@ function exportCell(cell: SheetCell | undefined): string {
   return typeof cell === "string" ? guardSpreadsheetFormula(cell) : String(cell);
 }
 
-export function exportSheet(title: string, content: SheetOutputContent): WorkOutputExport {
-  const rows = content.tables.flatMap((table, index) => [
+export function sheetExportRows(content: SheetOutputContent): string[][] {
+  return content.tables.flatMap((table, index) => [
     ...(content.tables.length > 1 ? [...(index > 0 ? [[]] : []), [table.name]] : []),
     table.columns.map((column) => guardSpreadsheetFormula(column.label)),
     ...table.rows.map((row) => table.columns.map((column) => exportCell(row[column.key]))),
   ]);
+}
 
+export function exportSheet(title: string, content: SheetOutputContent): WorkOutputExport {
   return {
-    body: `${formatCsv(rows)}\r\n`,
+    body: `${formatCsv(sheetExportRows(content))}\r\n`,
     contentType: "text/csv; charset=utf-8",
     filename: `${slugify(title, 80) || "sheet"}.csv`,
   };
