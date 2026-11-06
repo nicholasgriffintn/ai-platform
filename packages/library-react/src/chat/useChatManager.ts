@@ -146,8 +146,8 @@ export function useChatManager(
     startEditingMessage,
     stopEditingMessage,
     startConversationThread,
-    isRequestingComparison,
-    requestComparison,
+    isRequestingSecondOpinion,
+    requestSecondOpinion,
   } = useConversationActions(streamResponse, generateConversationTitle, requestOptions);
 
   const sendMessage = useCallback(
@@ -359,7 +359,7 @@ export function useChatManager(
     startEditingMessage,
     stopEditingMessage,
     startConversationThread,
-    isRequestingComparison,
-    requestComparison,
+    isRequestingSecondOpinion,
+    requestSecondOpinion,
   };
 }

@@ -1584,7 +1584,7 @@ D1 is comfortable for single-region, moderate write workloads. The constraints t
       title: scenario(
         "Second opinion",
         "Two models on one question",
-        "Use Compare and conclude on a reply to see where other models agree and disagree.",
+        "Use the response controls to request a second opinion, then a consensus.",
         "The second reply is marked as a second opinion from a different model.",
       ),
       createdAt: at({ days: 3, hours: 16 }),

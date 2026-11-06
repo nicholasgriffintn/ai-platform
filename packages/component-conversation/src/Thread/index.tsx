@@ -257,8 +257,8 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
     abortStream,
     startConversationThread,
     isStartingThread,
-    requestComparison,
-    isRequestingComparison,
+    requestSecondOpinion,
+    isRequestingSecondOpinion,
   } = useChatManager(modeConfig?.requestOptions, modeConfig?.conversationMode);
   const {
     data: apiModels = EMPTY_MODEL_CONFIG,
@@ -1086,8 +1086,8 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
         onArtifactOpen={handleArtifactOpen}
         onStartThread={handleStartThread}
         isStartingThread={isStartingThread}
-        onRequestComparison={(messageId) => void requestComparison(messageId)}
-        isRequestingComparison={isRequestingComparison}
+        onRequestSecondOpinion={(messageId) => void requestSecondOpinion(messageId)}
+        isRequestingSecondOpinion={isRequestingSecondOpinion}
         onQuoteSelection={handleQuoteSelection}
         onSaveToNote={modeConfig?.onSaveToNote}
       />
