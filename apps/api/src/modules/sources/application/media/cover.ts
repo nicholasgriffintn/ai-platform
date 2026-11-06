@@ -10,6 +10,7 @@ import { storeDrawnImage, TEXTLESS_PICTURE } from "~/modules/generate/applicatio
 import { generateSystemObject } from "~/modules/models/application/system-object";
 import { formatSource, requireSourceAccess } from "~/modules/sources/application/sources";
 import type { SourceRecord } from "~/modules/sources/infrastructure/SourceRepository";
+import { withProjectFunding } from "~/modules/usage/application/workspace-funding";
 
 import { readSourceRecordMedia, updateSourceRecord } from "./metadata";
 
@@ -43,13 +44,18 @@ export async function storeSourceCover(
 ): Promise<SourceRecord> {
   const coverId = generateId();
   const key = `sources/${source.id}/cover-${coverId}.png`;
-  const stored = await storeDrawnImage(context, key, {
-    completionId: `source-cover-${coverId}`,
-    prompt: await describeCover(context, source, prompt),
-    aspectRatio: "1:1",
-    width: COVER_SIZE,
-    height: COVER_SIZE,
-  });
+  const stored = await withProjectFunding(
+    context.repositories,
+    { projectId: source.project_id },
+    async () =>
+      storeDrawnImage(context, key, {
+        completionId: `source-cover-${coverId}`,
+        prompt: await describeCover(context, source, prompt),
+        aspectRatio: "1:1",
+        width: COVER_SIZE,
+        height: COVER_SIZE,
+      }),
+  );
 
   if (!stored) {
     throw new AssistantError("Cover image was not generated", ErrorType.PROVIDER_ERROR);

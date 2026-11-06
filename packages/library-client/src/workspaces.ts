@@ -11,6 +11,7 @@ import type {
   WorkspaceDetail,
   WorkspaceInvitationDelivery,
   WorkspaceSummary,
+  WorkspaceTeamPlanResponse,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { requestJson, resource } from "./resource.js";
@@ -27,6 +28,10 @@ export function getWorkspace(workspaceId: string): Promise<WorkspaceDetail> {
     `${workspaces.path}/${encodeURIComponent(workspaceId)}`,
     "GET",
   );
+}
+
+export function getWorkspaceTeamPlan(workspaceId: string): Promise<WorkspaceTeamPlanResponse> {
+  return workspaces.singleton<WorkspaceTeamPlanResponse>(workspaceId, "team_plan").get();
 }
 
 export function createWorkspace(input: CreateWorkspaceInput): Promise<WorkspaceDetail> {

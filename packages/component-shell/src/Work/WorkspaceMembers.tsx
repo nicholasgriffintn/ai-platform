@@ -3,12 +3,14 @@ import {
   WorkspaceInvitationList,
   WorkspaceMemberList,
   WorkspaceMembersSkeleton,
+  WorkspaceTeamPlanCard,
 } from "@ngriffin_uk/polychat-component-workspaces";
 import {
   canManageWorkspace,
   useAuthStatus,
   useRevokeWorkspaceInvitation,
   useWorkspaceMemberMutations,
+  useWorkspaceTeamPlan,
 } from "@ngriffin_uk/polychat-library-react";
 import { LogOut, UserPlus } from "lucide-react";
 import { useState } from "react";
@@ -22,6 +24,7 @@ import { WorkPageFailure } from "./WorkPageFailure.js";
 export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
   const { workspaceQuery } = useWorkData();
   const { data: workspace, isLoading, error } = workspaceQuery;
+  const { data: teamPlan } = useWorkspaceTeamPlan(workspaceId);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isLeaveOpen, setIsLeaveOpen] = useState(false);
   const [removeUserId, setRemoveUserId] = useState<number | null>(null);
@@ -56,6 +59,7 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
           {
             label: "Invite person",
             icon: <UserPlus size={16} />,
+            disabled: teamPlan?.seats.available === 0,
             onClick: () => setIsInviteOpen(true),
           },
         ]
@@ -77,6 +81,7 @@ export function WorkspaceMembers({ workspaceId }: { workspaceId: string }) {
       <PageShell.Content className="max-w-5xl">
         <PageShell.Header title="People & access" actions={headerActions} />
         <p className="mb-6 text-sm text-muted-foreground">Manage access to {workspace.name}.</p>
+        {teamPlan && <WorkspaceTeamPlanCard teamPlan={teamPlan} canManage={canManage} />}
         <WorkspaceMemberList
           members={workspace.members}
           viewerRole={workspace.role}

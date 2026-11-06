@@ -12,6 +12,7 @@ import { readKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { generateModelObject } from "~/modules/models/application/model-object";
 import { getAuxiliaryModel } from "~/modules/models/application/resolve";
 import { formatSource, requireSourceAccess } from "~/modules/sources/application/sources";
+import { withProjectFunding } from "~/modules/usage/application/workspace-funding";
 
 import { readSourceRecordMedia, updateSourceRecord } from "./metadata";
 
@@ -38,17 +39,22 @@ export async function summariseSource(
   }
 
   const { model, provider } = await getAuxiliaryModel(context.env, user);
-  const { object: notes } = await generateModelObject({
-    env: context.env,
-    user,
-    model,
-    provider,
-    reasoningEffort: "none",
-    name: "source_notes",
-    schema: sourceNotesSchema,
-    system: getPromptText("sources/media/notes"),
-    material: text,
-  });
+  const { object: notes } = await withProjectFunding(
+    context.repositories,
+    { projectId: source.project_id },
+    () =>
+      generateModelObject({
+        env: context.env,
+        user,
+        model,
+        provider,
+        reasoningEffort: "none",
+        name: "source_notes",
+        schema: sourceNotesSchema,
+        system: getPromptText("sources/media/notes"),
+        material: text,
+      }),
+  );
 
   return formatSource(
     await updateSourceRecord(context, source, {

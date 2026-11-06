@@ -13,6 +13,10 @@ import { toApiMessages } from "~/modules/conversations/application/present";
 import { resolveExecutableModelForRequest } from "~/modules/models/application/access";
 import { resolveModeMaxSteps } from "~/modules/tools/application/permissions";
 import { createUsageStore } from "~/modules/usage/application/runtime";
+import {
+  resolveWorkspaceFunding,
+  withWorkspaceFunding,
+} from "~/modules/usage/application/workspace-funding";
 import type { Message } from "~/types";
 
 function requestMessages(request: ResponseCostEstimateRequest): Message[] {
@@ -27,6 +31,21 @@ function requestMessages(request: ResponseCostEstimateRequest): Message[] {
 }
 
 export async function estimateResponseCost(
+  context: ServiceContext,
+  request: ResponseCostEstimateRequest,
+): Promise<ResponseCostEstimate> {
+  const fundingWorkspaceId =
+    context.user?.id && request.project_id
+      ? await resolveWorkspaceFunding(context.repositories, {
+          userId: context.user.id,
+          projectId: request.project_id,
+        })
+      : null;
+
+  return withWorkspaceFunding(fundingWorkspaceId, () => estimateScopedCost(context, request));
+}
+
+async function estimateScopedCost(
   context: ServiceContext,
   request: ResponseCostEstimateRequest,
 ): Promise<ResponseCostEstimate> {

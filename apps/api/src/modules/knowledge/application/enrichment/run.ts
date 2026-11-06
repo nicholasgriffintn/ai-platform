@@ -18,6 +18,7 @@ import {
   SourceRepository,
   type SourceRecord,
 } from "~/modules/sources/infrastructure/SourceRepository";
+import { withProjectFunding } from "~/modules/usage/application/workspace-funding";
 
 import { findKnowledgeEnricher, KNOWLEDGE_ENRICHERS } from "./registry";
 import { readKnowledgeEnricherSettings } from "./settings";
@@ -62,13 +63,18 @@ async function applyEnricher(
 ): Promise<void> {
   const documents = context.repositories.get(KnowledgeDocumentRepository);
   const at = new Date().toISOString();
-  const result = await enricher.run(context, {
-    source,
-    metadata: parseJsonRecord(source.metadata),
-    text,
-    contentHash,
-    scope: linkScope(source),
-  });
+  const result = await withProjectFunding(
+    context.repositories,
+    { projectId: source.project_id },
+    () =>
+      enricher.run(context, {
+        source,
+        metadata: parseJsonRecord(source.metadata),
+        text,
+        contentHash,
+        scope: linkScope(source),
+      }),
+  );
 
   await documents.setEnrichment(
     source.id,

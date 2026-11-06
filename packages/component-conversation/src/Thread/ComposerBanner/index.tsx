@@ -8,6 +8,7 @@ interface ComposerBannerProps {
   requestedModelId?: string | null;
   isModelsLoading?: boolean;
   hideSuggestions?: boolean;
+  projectId?: string;
 }
 
 export function ComposerBanner({
@@ -15,12 +16,14 @@ export function ComposerBanner({
   requestedModelId,
   isModelsLoading,
   hideSuggestions,
+  projectId,
 }: ComposerBannerProps) {
   const { banner, dismiss } = useComposerBanner({
     model,
     requestedModelId,
     isModelsLoading,
     hideSuggestions,
+    projectId,
   });
 
   if (!banner) {
