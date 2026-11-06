@@ -9,8 +9,6 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { getChatProvider } from "~/infrastructure/providers/capabilities/chat";
-import { enforceImagePolicy } from "~/modules/generate/application/image-policy";
-import { producesVisualMedia, readGenerationInput } from "~/modules/generate/domain/image-policy";
 import { fileKnowledgeSource } from "~/modules/knowledge/application/intake/file";
 import { getModelConfigByModel } from "~/modules/models/application/resolve";
 import { TaskService } from "~/modules/queue/application/TaskService";
@@ -81,24 +79,12 @@ export async function startModelGeneration(
     modelName: modelConfig.name || modelId,
   });
 
-  const completionId = generateId();
-
-  if (!modelConfig.modalities?.output?.length || producesVisualMedia(modelConfig)) {
-    await enforceImagePolicy({
-      env: context.env,
-      user,
-      completionId,
-      surface: "sources",
-      ...readGenerationInput(input),
-    });
-  }
-
   const provider = getChatProvider(modelConfig.provider || "replicate", {
     env: context.env,
     user,
   });
   const result = await provider.getResponse({
-    completion_id: completionId,
+    completion_id: generateId(),
     model: modelConfig.matchingModel,
     messages: [{ role: "user", content: typeof input.prompt === "string" ? input.prompt : "" }],
     body: { input },

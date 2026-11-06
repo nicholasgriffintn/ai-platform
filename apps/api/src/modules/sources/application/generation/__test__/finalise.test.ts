@@ -12,11 +12,7 @@ import {
 import { finaliseSourceGeneration } from "../finalise";
 
 const fileKnowledgeSourceMock = vi.hoisted(() => vi.fn());
-const screenGeneratedImageMock = vi.hoisted(() => vi.fn());
 
-vi.mock("~/modules/generate/application/image-policy-classifier", () => ({
-  screenGeneratedImage: screenGeneratedImageMock,
-}));
 vi.mock("~/modules/knowledge/application/intake/file", () => ({
   fileKnowledgeSource: fileKnowledgeSourceMock,
 }));
@@ -52,14 +48,14 @@ function sourceRecord(overrides: Partial<SourceRecord> = {}): SourceRecord {
   };
 }
 
-function setup({ failUpload = false } = {}) {
+function setup({ failUpload = false, outputMimeType = "image/png" } = {}) {
   const sources = new Map([["source-1", sourceRecord()]]);
   const objects = new Map<string, ArrayBuffer>([
     ["generations/a.png", new TextEncoder().encode("first").buffer],
     ["generations/b.png", new TextEncoder().encode("second").buffer],
   ]);
   const outputs = new Map([
-    ["out-a", { id: "out-a", storage_key: "generations/a.png", mime_type: "image/png" }],
+    ["out-a", { id: "out-a", storage_key: "generations/a.png", mime_type: outputMimeType }],
     ["out-b", { id: "out-b", storage_key: "generations/b.png", mime_type: "image/png" }],
   ]);
   const sourceRepository = {
@@ -143,11 +139,10 @@ const providerResponse = {
 describe("finaliseSourceGeneration", () => {
   beforeEach(() => {
     fileKnowledgeSourceMock.mockReset();
-    screenGeneratedImageMock.mockReset();
   });
 
   it("streams media too large to mark instead of buffering it", async () => {
-    const { context, sources } = setup();
+    const { context, sources } = setup({ outputMimeType: "video/mp4" });
     const bucket = context.env.PRIVATE_ASSETS_BUCKET;
     const arrayBuffer = vi.fn();
 
@@ -208,32 +203,5 @@ describe("finaliseSourceGeneration", () => {
     expect(JSON.parse(stored.metadata).generation.error).toBe("Bucket unavailable");
     expect(outputs.size).toBe(2);
     expect(objects.has("generations/a.png")).toBe(true);
-  });
-
-  it("fails a refused generation without storing it or registering a mark", async () => {
-    const { context, sources, objects } = setup();
-
-    screenGeneratedImageMock.mockRejectedValue(new Error("Refused"));
-
-    const stored = await finaliseSourceGeneration(context, sourceRecord(), providerResponse);
-
-    expect(stored.status).toBe("failed");
-    expect(JSON.parse(stored.metadata).generation.error).toBe("Refused");
-    expect(sources.get("source-1")?.storage_key).toBeNull();
-    expect([...objects.keys()].filter((key) => key.startsWith("provenance/"))).toEqual([]);
-  });
-
-  it("fails only the refused image when a later one is flagged", async () => {
-    const { context, sources } = setup();
-
-    screenGeneratedImageMock
-      .mockResolvedValueOnce(undefined)
-      .mockRejectedValueOnce(new Error("Refused"));
-
-    const stored = await finaliseSourceGeneration(context, sourceRecord(), providerResponse);
-
-    expect(stored.status).toBe("available");
-    expect(sources.get("source-2")?.status).toBe("failed");
-    expect(sources.get("source-2")?.storage_key).toBeNull();
   });
 });

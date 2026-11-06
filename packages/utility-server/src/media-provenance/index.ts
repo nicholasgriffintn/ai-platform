@@ -83,7 +83,6 @@ async function sha256(bytes: Uint8Array<ArrayBuffer>): Promise<Uint8Array<ArrayB
   return new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
 }
 
-/** Hashes each side of the mark separately so large video never needs a third full copy. */
 async function hashOutside(bytes: Uint8Array<ArrayBuffer>, exclusion: ByteRange): Promise<string> {
   const sides = new Uint8Array(64);
 
@@ -247,10 +246,6 @@ async function fingerprintOf(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
   return toHex(await sha256(bytes));
 }
 
-/**
- * Embeds a signed XMP mark without touching encoded samples. A C2PA manifest binds a hash of the
- * file, so any file that already declares its origin is returned byte for byte.
- */
 export async function markGeneratedMedia(
   data: ArrayBuffer | Uint8Array,
   origin: MediaProvenanceOrigin,
