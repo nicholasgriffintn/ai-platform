@@ -116,10 +116,6 @@ async function recordFingerprint(
   }
 }
 
-/**
- * Marks generated media on its way to storage or a caller. Provenance must never cost someone
- * their generation, so a file that cannot be marked is logged and delivered as it arrived.
- */
 export async function markForDelivery(params: {
   env: ProvenanceEnv | undefined;
   bucket: R2Bucket | undefined;
@@ -159,10 +155,6 @@ export async function markForDelivery(params: {
   }
 }
 
-/**
- * Media too large to hold in a Worker is streamed to storage unread, so it cannot be inspected or
- * marked. Hashing the stored object keeps it in the registry with that state on record.
- */
 export async function recordOversizedMedia(params: {
   bucket: R2Bucket;
   body: ReadableStream<Uint8Array>;
