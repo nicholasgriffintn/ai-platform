@@ -299,6 +299,23 @@ describe("markGeneratedMedia", () => {
     expect(text).toContain("</metadata><g/></svg>");
   });
 
+  it("finds the root element after a DOCTYPE with an internal subset", async () => {
+    const svg = join(
+      '<?xml version="1.0"?><!DOCTYPE svg [<!ENTITY a "b">]><svg viewBox="0 0 1 1"><g/></svg>',
+    );
+    const { bytes } = await markGeneratedMedia(svg, origin);
+    const text = new TextDecoder().decode(bytes);
+
+    expect(text).toContain('<svg viewBox="0 0 1 1"><metadata>');
+  });
+
+  it("leaves an SVG alone when its prolog never closes", async () => {
+    const svg = join(`<!DOCTYPE[${"<!DOCTYPE[>".repeat(5000)}`);
+    const marked = await markGeneratedMedia(svg, origin);
+
+    expect(marked.bytes).toEqual(svg);
+  });
+
   it("declines a self-closing SVG, which has nowhere to hold metadata", async () => {
     const svg = join('<svg viewBox="0 0 1 1"/>');
     const marked = await markGeneratedMedia(svg, origin);

@@ -19,7 +19,6 @@ import type { GeneratedMediaOrigin } from "@ngriffin_uk/polychat-utility-server/
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { createRepositories } from "~/infrastructure/database/repositories";
-import { screenGeneratedImage } from "~/modules/generate/application/image-policy-classifier";
 import { markForDelivery, recordOversizedMedia } from "~/modules/generate/application/provenance";
 import { isOutputDeletionPending } from "~/modules/outputs/application/deletion";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
@@ -84,8 +83,6 @@ export interface GetPrivateAssetBlobOptions {
   allowedMimeTypes?: string[];
   maxBytes?: number;
 }
-
-const STREAMABLE_MEDIA_TYPE = /^(?:audio|video)\//i;
 
 export class StorageService {
   constructor(
@@ -158,21 +155,10 @@ export class StorageService {
     return key;
   }
 
-  private screenGeneratedMedia(data: ArrayBuffer | Uint8Array, mimeType?: string): Promise<void> {
-    return screenGeneratedImage({
-      env: this.context?.env ?? this.env,
-      user: this.context?.user ?? undefined,
-      data,
-      mimeType,
-    });
-  }
-
-  async markGeneratedMedia(
+  markGeneratedMedia(
     data: ArrayBuffer | Uint8Array,
     origin: GeneratedMediaOrigin,
   ): Promise<Uint8Array<ArrayBuffer>> {
-    await this.screenGeneratedMedia(data, origin.mimeType);
-
     return markForDelivery({
       env: this.context?.env ?? this.env,
       bucket: this.bucket,
@@ -204,14 +190,6 @@ export class StorageService {
   ): Promise<void> {
     if (!isByteStream(body)) {
       throw new AssistantError("Expected a media stream", ErrorType.INTERNAL_ERROR);
-    }
-
-    if (!STREAMABLE_MEDIA_TYPE.test(origin.mimeType ?? "")) {
-      throw new AssistantError(
-        "This file is too large to check, so it was not stored",
-        ErrorType.PARAMS_ERROR,
-        413,
-      );
     }
 
     await this.requireBucket().put(
@@ -300,10 +278,6 @@ export class StorageService {
       await this.uploadOversizedMedia(key, data, { ...provenance, mimeType });
 
       return byteSize;
-    }
-
-    if (provenance && typeof data === "string") {
-      await this.screenGeneratedMedia(new TextEncoder().encode(data), mimeType);
     }
 
     const marked =
