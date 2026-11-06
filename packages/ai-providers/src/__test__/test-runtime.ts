@@ -9,6 +9,7 @@ export function createTestStorage(overrides: Partial<ProviderStorage> = {}): Pro
 
   return {
     uploadObject: unsupported("uploadObject"),
+    uploadGeneratedMedia: unsupported("uploadGeneratedMedia"),
     storeOutputFile: unsupported("storeOutputFile"),
     downloadFile: unsupported("downloadFile"),
     getPrivateAssetImageDataUrl: unsupported("getPrivateAssetImageDataUrl"),

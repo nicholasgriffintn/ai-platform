@@ -68,14 +68,15 @@ export async function produceSeasonListen(context: ServiceContext, seasonId: str
   });
   const key = `sources/${source.id}/episode.mp3`;
 
-  await storage.uploadObject(key, audio, { httpMetadata: { contentType: "audio/mpeg" } });
+  const stored = await storage.uploadGeneratedMedia(key, audio, { mimeType: "audio/mpeg" });
+
   await context.repositories.get(SourceRepository).attachSourceFile(
     source.id,
     {
       storageKey: key,
       mimeType: "audio/mpeg",
       filename: "season.mp3",
-      byteSize: audio.byteLength,
+      byteSize: stored.byteLength,
     },
     { status: "available" },
   );

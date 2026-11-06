@@ -2,6 +2,7 @@ import type { ModelModalities } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { MAX_MARKABLE_BYTES } from "@ngriffin_uk/polychat-utility-server/media-provenance";
 import { getExtensionFromMimeType } from "@ngriffin_uk/polychat-utility-server/mime";
 
 import type { ProviderStorage } from "./host.js";
@@ -35,7 +36,8 @@ export interface PersistedBase64GeneratedAsset {
 interface PersistGeneratedAssetRequest {
   mediaContext: GeneratedMediaContext;
   extension: string;
-  data: string | ArrayBuffer | Uint8Array;
+  data: string | ArrayBuffer | Uint8Array | ReadableStream;
+  byteSize?: number;
   mimeType: string;
   filename: string;
 }
@@ -61,7 +63,7 @@ interface PersistGeneratedOutputRequest {
 function requireStorage(mediaContext: GeneratedMediaContext): ProviderStorage {
   if (!mediaContext.storage) {
     throw new AssistantError(
-      "Private assets storage is not configured",
+      "Generated media can only be returned from private storage, where it is marked",
       ErrorType.CONFIGURATION_ERROR,
     );
   }
@@ -128,23 +130,11 @@ function getContentTypeFromExtension(extension: string, fallback: string): strin
   return mapping[extension] || fallback;
 }
 
-export function hasPrivateAssetStorage(mediaContext: GeneratedMediaContext): boolean {
-  return Boolean(mediaContext.storage);
-}
-
-export function assertGeneratedAssetStorageConfigured(mediaContext: GeneratedMediaContext): void {
-  if (mediaContext.storage === null) {
-    throw new AssistantError(
-      "Private assets bucket is not configured",
-      ErrorType.CONFIGURATION_ERROR,
-    );
-  }
-}
-
 export async function persistGeneratedAsset({
   mediaContext,
   extension,
   data,
+  byteSize,
   mimeType,
   filename,
 }: PersistGeneratedAssetRequest): Promise<PersistedGeneratedAsset> {
@@ -161,11 +151,19 @@ export async function persistGeneratedAsset({
     kind: "generated_media",
     title: filename,
     content: { model: mediaContext.model, modalities: mediaContext.modalities },
+    provenance: { model: mediaContext.model, mimeType },
     mimeType,
     filename,
-    byteSize:
-      typeof data === "string" ? new TextEncoder().encode(data).byteLength : data.byteLength,
+    byteSize: byteSize ?? byteLengthOf(data),
   });
+}
+
+function byteLengthOf(data: PersistGeneratedAssetRequest["data"]): number | null {
+  if (data instanceof ReadableStream) {
+    return null;
+  }
+
+  return typeof data === "string" ? new TextEncoder().encode(data).byteLength : data.byteLength;
 }
 
 async function readGeneratedOutput(
@@ -225,12 +223,6 @@ export async function persistInlineGeneratedAsset(
   const mimeType = asset.mimeType || (kind === "image" ? "image/png" : "audio/pcm;rate=24000");
   const extension = getExtensionFromMimeType(mimeType, kind === "image" ? "png" : "pcm");
 
-  if (!hasPrivateAssetStorage(mediaContext)) {
-    assertGeneratedAssetStorageConfigured(mediaContext);
-
-    return { url: `data:${mimeType};base64,${asset.data}`, mimeType };
-  }
-
   const persisted = await persistGeneratedAsset({
     mediaContext,
     extension,
@@ -258,11 +250,7 @@ export async function persistRemoteGeneratedAssets({
     return { urls: [], metadata: [] };
   }
 
-  if (!hasPrivateAssetStorage(mediaContext)) {
-    assertGeneratedAssetStorageConfigured(mediaContext);
-
-    return { urls, metadata: [] };
-  }
+  requireStorage(mediaContext);
 
   const uploads = await Promise.all(
     urls.map(async (assetUrl) => {
@@ -277,10 +265,13 @@ export async function persistRemoteGeneratedAssets({
       }
 
       const extension = getExtensionFromUrl(assetUrl, fallback.extension);
+      const declaredBytes = Number(response.headers.get("content-length"));
+      const oversized = response.body && declaredBytes > MAX_MARKABLE_BYTES;
       const persisted = await persistGeneratedAsset({
         mediaContext,
         extension,
-        data: await response.arrayBuffer(),
+        data: oversized ? response.body : await response.arrayBuffer(),
+        byteSize: oversized ? declaredBytes : undefined,
         mimeType: getContentTypeFromExtension(extension, fallback.contentType),
         filename: `asset.${extension}`,
       });
@@ -308,12 +299,6 @@ export async function persistBase64GeneratedImages(
 }> {
   if (!images.length) {
     return { urls: [], metadata: [] };
-  }
-
-  if (!hasPrivateAssetStorage(mediaContext)) {
-    assertGeneratedAssetStorageConfigured(mediaContext);
-
-    return { urls: images, metadata: [] };
   }
 
   const uploads = await Promise.all(

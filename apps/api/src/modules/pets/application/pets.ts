@@ -260,9 +260,13 @@ async function storePetSheet(
   const extension = mimeType === "image/png" ? "png" : "webp";
   const sheetKey = `pets/${user.id}/${generateId()}.${extension}`;
 
-  await storage.uploadObject(sheetKey, input.bytes, {
-    httpMetadata: { contentType: mimeType },
-  });
+  if (input.origin === "generated") {
+    await storage.uploadGeneratedMedia(sheetKey, input.bytes, { mimeType });
+  } else {
+    await storage.uploadObject(sheetKey, input.bytes, {
+      httpMetadata: { contentType: mimeType },
+    });
+  }
 
   const record = await context.repositories.get(UserPetRepository).createUserPet({
     userId: user.id,

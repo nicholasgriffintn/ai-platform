@@ -217,6 +217,14 @@
         "limit": 600,
         "period": 60
       }
+    },
+    {
+      "name": "PROVENANCE_RATE_LIMITER",
+      "namespace_id": "1004",
+      "simple": {
+        "limit": 30,
+        "period": 60
+      }
     }
   ],
   "triggers": {
