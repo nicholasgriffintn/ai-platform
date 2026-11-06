@@ -13,6 +13,8 @@ export const authorizationServerMetadataSchema = z.object({
   registration_endpoint: z.string().optional(),
   code_challenge_methods_supported: z.array(z.string()).optional(),
   scopes_supported: z.array(z.string()).optional(),
+  client_id_metadata_document_supported: z.boolean().optional(),
+  authorization_response_iss_parameter_supported: z.boolean().optional(),
 });
 
 export const clientRegistrationResponseSchema = z.object({
@@ -33,6 +35,8 @@ export interface McpAuthorizationServer {
   authorizationEndpoint: string;
   tokenEndpoint: string;
   registrationEndpoint?: string;
+  clientIdMetadataDocumentSupported?: boolean;
+  issuerResponseParameterSupported?: boolean;
 }
 
 export interface McpAuthorizationDiscovery {
@@ -44,6 +48,16 @@ export interface McpAuthorizationDiscovery {
 export interface McpOAuthClient {
   clientId: string;
   clientSecret?: string;
+}
+
+export interface McpClientMetadataDocument {
+  client_id: string;
+  client_name: string;
+  client_uri?: string;
+  redirect_uris: string[];
+  grant_types: string[];
+  response_types: string[];
+  token_endpoint_auth_method: "none";
 }
 
 export interface McpOAuthTokens {

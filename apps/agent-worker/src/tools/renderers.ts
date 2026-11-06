@@ -1,4 +1,3 @@
-import { Type } from "@earendil-works/pi-ai";
 import type { Extension, ToolRegistration } from "@earendil-works/pi-durable";
 import type { Plugin } from "@opencode/plugin";
 import z from "zod/v4";
@@ -21,11 +20,11 @@ export function toPiExtension(tools: readonly HarnessTool[], run: RunHarnessTool
   const registrations: ToolRegistration[] = tools.map((definition) => ({
     name: definition.name,
     description: definition.description,
-    parameters: Type.Unsafe(z.toJSONSchema(definition.inputSchema)),
+    parameters: z.toJSONSchema(definition.inputSchema),
     replay: definition.effect === "read" ? "safe" : "unsafe",
     executionMode: "sequential",
     async execute(args) {
-      return { content: [{ type: "text", text: await run(definition, args) }] };
+      return { output: [{ type: "text", text: await run(definition, args) }] };
     },
   }));
 

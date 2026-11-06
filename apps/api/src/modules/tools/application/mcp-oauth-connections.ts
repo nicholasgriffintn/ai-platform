@@ -1,12 +1,15 @@
 import {
   buildMcpAuthorizationUrl,
+  buildMcpClientMetadataDocument,
   createPkcePair,
   discoverMcpAuthorization,
   exchangeMcpAuthorizationCode,
+  isMcpAuthorizationResponseIssuerValid,
   McpRequestError,
   refreshMcpAccessToken,
-  registerMcpOAuthClient,
+  resolveMcpOAuthClient,
   type McpAuthorizationServer,
+  type McpClientMetadataDocument,
   type McpOAuthClient,
   type McpOAuthTokens,
 } from "@ngriffin_uk/polychat-ai-integrations";
@@ -42,6 +45,8 @@ const STATE_PROVIDER = "mcp";
 const STATE_TTL_MS = 10 * 60 * 1000;
 const REFRESH_MARGIN_MS = 60 * 1000;
 const CALLBACK_PATH = "/tools/mcp_connections/callback";
+const CLIENT_METADATA_PATH = "/tools/mcp_connections/client-metadata.json";
+const CLIENT_NAME = "Polychat";
 const RETURN_PATH = "/chat/plugins";
 
 const storedServerSchema = z.object({
@@ -49,6 +54,8 @@ const storedServerSchema = z.object({
   authorizationEndpoint: z.string(),
   tokenEndpoint: z.string(),
   registrationEndpoint: z.string().optional(),
+  clientIdMetadataDocumentSupported: z.boolean().optional(),
+  issuerResponseParameterSupported: z.boolean().optional(),
 });
 
 const storedClientSchema = z.object({
@@ -80,7 +87,7 @@ const pendingFlowSchema = z.object({
   client: z.string(),
 });
 
-function callbackUri(context: Pick<ServiceContext, "env">): string {
+function apiUrl(context: Pick<ServiceContext, "env">, path: string): string {
   const apiBaseUrl = context.env.API_BASE_URL;
 
   if (!apiBaseUrl) {
@@ -91,7 +98,22 @@ function callbackUri(context: Pick<ServiceContext, "env">): string {
     );
   }
 
-  return appendUrlPath(apiBaseUrl, CALLBACK_PATH);
+  return appendUrlPath(apiBaseUrl, path);
+}
+
+function callbackUri(context: Pick<ServiceContext, "env">): string {
+  return apiUrl(context, CALLBACK_PATH);
+}
+
+export function mcpClientMetadataDocument(
+  context: Pick<ServiceContext, "env">,
+): McpClientMetadataDocument {
+  return buildMcpClientMetadataDocument({
+    clientId: apiUrl(context, CLIENT_METADATA_PATH),
+    clientName: CLIENT_NAME,
+    clientUri: context.env.APP_BASE_URL,
+    redirectUri: callbackUri(context),
+  });
 }
 
 export function mcpOAuthReturnUrl(
@@ -126,10 +148,11 @@ export async function startMcpOAuthConnection(
 
   try {
     const discovery = await discoverMcpAuthorization({ serverUrl: url });
-    const client = await registerMcpOAuthClient({
+    const client = await resolveMcpOAuthClient({
       server: discovery.authorizationServer,
+      clientMetadataUrl: apiUrl(context, CLIENT_METADATA_PATH),
       redirectUri,
-      clientName: "Polychat",
+      clientName: CLIENT_NAME,
     });
     const pkce = await createPkcePair();
     const state = `${generateId()}${generateId()}`;
@@ -185,7 +208,7 @@ async function encryptCredential(
 
 export async function completeMcpOAuthConnection(
   context: Pick<ServiceContext, "env" | "repositories">,
-  input: { state: string; code?: string; error?: string },
+  input: { state: string; code?: string; error?: string; iss?: string },
 ): Promise<{ connected: boolean }> {
   const record = await context.repositories
     .get(OAuthStateRepository)
@@ -202,6 +225,11 @@ export async function completeMcpOAuthConnection(
   }
 
   const server = storedServerSchema.parse(safeParseJson(flow.data.server));
+
+  if (!isMcpAuthorizationResponseIssuerValid(server, input.iss)) {
+    return { connected: false };
+  }
+
   const client = storedClientSchema.parse(safeParseJson(flow.data.client));
   const allowedTools = z.array(z.string()).parse(safeParseJson(flow.data.allowedTools));
   const tokens = await exchangeMcpAuthorizationCode({

@@ -14,6 +14,7 @@ import {
   mcpConnectionListSchema,
   mcpAppCallToolResultSchema,
   mcpAppToolCallRequestSchema,
+  mcpClientMetadataDocumentSchema,
   mcpOAuthCallbackQuerySchema,
   mcpOAuthStartInputSchema,
   mcpOAuthStartResponseSchema,
@@ -33,6 +34,7 @@ import {
 } from "~/modules/tools/application/mcp-connections";
 import {
   completeMcpOAuthConnection,
+  mcpClientMetadataDocument,
   mcpOAuthReturnUrl,
   startMcpOAuthConnection,
 } from "~/modules/tools/application/mcp-oauth-connections";
@@ -172,6 +174,17 @@ defineResource(app, { idParam: "tool_id", tags: ["tools"] }, (tools) => {
         200: { description: "Where to send the browser", schema: mcpOAuthStartResponseSchema },
       },
       handler: ({ serviceContext, body }) => startMcpOAuthConnection(serviceContext, body),
+    })
+    .view("client-metadata.json", {
+      auth: false,
+      summary: "Polychat's OAuth client metadata",
+      description:
+        "The Client ID Metadata Document MCP authorisation servers fetch to identify Polychat. Its URL is the client_id.",
+      responses: {
+        200: { description: "Client metadata", schema: mcpClientMetadataDocumentSchema },
+      },
+      handler: async ({ raw, serviceContext }) =>
+        raw.json(mcpClientMetadataDocument(serviceContext)),
     })
     .view("callback", {
       auth: false,

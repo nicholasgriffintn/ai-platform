@@ -6,12 +6,15 @@ import {
   clientRegistrationResponseSchema,
   tokenResponseSchema,
   type McpAuthorizationServer,
+  type McpClientMetadataDocument,
   type McpOAuthClient,
   type McpOAuthTokens,
 } from "./metadata.js";
 
 const OAUTH_TIMEOUT_MS = 15_000;
 const MAX_OAUTH_RESPONSE_BYTES = 100_000;
+const CLIENT_GRANT_TYPES = ["authorization_code", "refresh_token"];
+const CLIENT_RESPONSE_TYPES = ["code"];
 
 async function postOAuth(params: {
   url: string;
@@ -108,8 +111,9 @@ export async function registerMcpOAuthClient(params: {
       body: JSON.stringify({
         client_name: params.clientName,
         redirect_uris: [params.redirectUri],
-        grant_types: ["authorization_code", "refresh_token"],
-        response_types: ["code"],
+        application_type: "web",
+        grant_types: CLIENT_GRANT_TYPES,
+        response_types: CLIENT_RESPONSE_TYPES,
         token_endpoint_auth_method: "none",
       }),
     }),
@@ -128,6 +132,53 @@ export async function registerMcpOAuthClient(params: {
     clientId: parsed.data.client_id,
     ...(parsed.data.client_secret ? { clientSecret: parsed.data.client_secret } : {}),
   };
+}
+
+export function buildMcpClientMetadataDocument(params: {
+  clientId: string;
+  clientName: string;
+  clientUri?: string;
+  redirectUri: string;
+}): McpClientMetadataDocument {
+  return {
+    client_id: params.clientId,
+    client_name: params.clientName,
+    ...(params.clientUri ? { client_uri: params.clientUri } : {}),
+    redirect_uris: [params.redirectUri],
+    grant_types: CLIENT_GRANT_TYPES,
+    response_types: CLIENT_RESPONSE_TYPES,
+    token_endpoint_auth_method: "none",
+  };
+}
+
+function isClientMetadataUrl(value: string): boolean {
+  const url = new URL(value);
+
+  return url.protocol === "https:" && url.pathname !== "/";
+}
+
+export async function resolveMcpOAuthClient(params: {
+  server: McpAuthorizationServer;
+  clientMetadataUrl: string;
+  redirectUri: string;
+  clientName: string;
+  fetch?: typeof globalThis.fetch;
+}): Promise<McpOAuthClient> {
+  if (
+    params.server.clientIdMetadataDocumentSupported &&
+    isClientMetadataUrl(params.clientMetadataUrl)
+  ) {
+    return { clientId: params.clientMetadataUrl };
+  }
+
+  return registerMcpOAuthClient(params);
+}
+
+export function isMcpAuthorizationResponseIssuerValid(
+  server: McpAuthorizationServer,
+  issuer: string | undefined,
+): boolean {
+  return issuer === undefined ? !server.issuerResponseParameterSupported : issuer === server.issuer;
 }
 
 export function buildMcpAuthorizationUrl(params: {
