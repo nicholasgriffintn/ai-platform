@@ -150,7 +150,7 @@
           "document"
         ],
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -447,7 +447,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425,

@@ -97,7 +97,7 @@
       "matchingModel": "command-a-plus-05-2026",
       "overrides": {
         "isFree": true,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,

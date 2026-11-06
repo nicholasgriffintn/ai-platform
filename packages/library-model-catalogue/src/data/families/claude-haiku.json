@@ -287,7 +287,7 @@
         "supportsTemperature": false,
         "supportsTopP": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 36.2,
+          "intelligenceIndex": 36.5,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -323,7 +323,7 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 36.2,
+          "intelligenceIndex": 36.5,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -347,7 +347,7 @@
         "releaseDate": "October 7, 2026",
         "supportsTemperature": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 36.2,
+          "intelligenceIndex": 36.5,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -383,7 +383,7 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 36.2,
+          "intelligenceIndex": 36.5,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -419,7 +419,7 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 36.2,
+          "intelligenceIndex": 36.5,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -455,7 +455,7 @@
           "thinkingApi": "adaptive"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 36.2,
+          "intelligenceIndex": 36.5,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5

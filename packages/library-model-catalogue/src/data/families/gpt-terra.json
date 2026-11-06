@@ -20,7 +20,6 @@
       "coding"
     ],
     "contextComplexity": 5,
-    "reliability": 3,
     "knowledgeCutoffDate": "February 16, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -44,9 +43,10 @@
       "defaults": {
         "name": "GPT-5.6 Terra",
         "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
+        "reliability": 1,
         "releaseDate": "July 9, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 32.3,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -57,6 +57,7 @@
       "defaults": {
         "name": "GPT-5.6 Terra (EU)",
         "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
+        "reliability": 1,
         "releaseDate": "July 9, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -69,7 +70,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 32.3,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -80,6 +81,7 @@
       "defaults": {
         "name": "GPT 5.6 Terra (Fast)",
         "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
+        "reliability": 1,
         "releaseDate": "July 9, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -94,7 +96,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 32.3,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -105,9 +107,10 @@
       "defaults": {
         "name": "GPT-5.6 Terra (Global)",
         "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
+        "reliability": 1,
         "releaseDate": "July 9, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 32.3,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -118,9 +121,10 @@
       "defaults": {
         "name": "GPT-5.6 Terra (India)",
         "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
+        "reliability": 1,
         "releaseDate": "July 9, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 32.3,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -138,9 +142,10 @@
       "defaults": {
         "name": "GPT-5.6 Terra (US)",
         "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
+        "reliability": 1,
         "releaseDate": "July 9, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 32.3,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -151,10 +156,11 @@
       "defaults": {
         "name": "GPT-6.1 Terra",
         "description": "Fast, efficient model for visual reasoning, precise computer use, and clear, natural writing.",
+        "reliability": 3,
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "October 26, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 51,
+          "intelligenceIndex": 51.3,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -165,6 +171,7 @@
       "defaults": {
         "name": "GPT-6.1 Terra (EU)",
         "description": "Fast, efficient model for visual reasoning, precise computer use, and clear, natural writing.",
+        "reliability": 3,
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "October 26, 2026",
         "reasoningConfig": {
@@ -178,7 +185,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 51,
+          "intelligenceIndex": 51.3,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -189,10 +196,11 @@
       "defaults": {
         "name": "GPT-6.1 Terra (Fast)",
         "description": "Compact GPT model for low-latency assistance and high-volume workloads",
+        "reliability": 3,
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "October 26, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 51,
+          "intelligenceIndex": 51.3,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -212,10 +220,11 @@
             "text"
           ]
         },
+        "reliability": 3,
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "October 26, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 51,
+          "intelligenceIndex": 51.3,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -235,10 +244,11 @@
             "text"
           ]
         },
+        "reliability": 3,
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "October 26, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 51,
+          "intelligenceIndex": 51.3,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -266,10 +276,11 @@
       "defaults": {
         "name": "OpenAI: GPT-6.1 Terra",
         "description": "GPT-6.1 Terra is the mid-tier model in OpenAI's GPT-6.1 series, built for fast, capable computer use at a lower price than GPT-6.1 Sol. It reads what is on screen, takes...",
+        "reliability": 3,
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "October 26, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 51,
+          "intelligenceIndex": 51.3,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5

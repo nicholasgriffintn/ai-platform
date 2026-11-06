@@ -452,7 +452,7 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 33.6,
+          "intelligenceIndex": 33.7,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -614,7 +614,7 @@
               "value": 904,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 18
+              "confidenceInterval95": 17
             }
           ]
         }
@@ -657,7 +657,7 @@
             {
               "key": "image_editingElo",
               "label": "Image-editing arena",
-              "value": 890,
+              "value": 891,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 20
@@ -918,8 +918,8 @@
       "defaults": {
         "name": "Qwen: Qwen3 235B A22B Instruct 2507",
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
-        "contextWindow": 262144,
-        "maxTokens": 16384,
+        "contextWindow": 131072,
+        "maxTokens": 117964,
         "modalities": {
           "input": [
             "text"
@@ -931,7 +931,7 @@
         "strengths": [
           "tool_use"
         ],
-        "contextComplexity": 3,
+        "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "July 21, 2025",
         "artificialAnalysis": {
@@ -2961,7 +2961,7 @@
         "releaseDate": "August 3, 2026",
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 33.6,
+          "intelligenceIndex": 33.7,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5

@@ -11,7 +11,7 @@
     "crouton-alpha": {
       "defaults": {
         "name": "Crouton Alpha",
-        "description": "Crouton Alpha is a lightweight model built for scalable coding, agentic, and multimodal workflows. It's ideal for executing agentic sub-tasks, tool use, and document analysis in high-volume, repeated work. Developers...",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "contextWindow": 1048576,
         "maxTokens": 943718,
         "modalities": {

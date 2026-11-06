@@ -114,7 +114,7 @@
         "name": "DeepSeek V3.1",
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "maxTokens": 163840,
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "July 2025",
         "lastUpdated": "August 21, 2025",
         "costPer1kInputTokens": 0.00056,
@@ -251,7 +251,7 @@
       "model": "kimi/kimi-k2-5",
       "matchingModel": "accounts/fireworks/models/kimi-k2p5",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
@@ -281,7 +281,7 @@
       "overrides": {
         "contextWindow": 200000,
         "maxTokens": 200000,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -352,7 +352,7 @@
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196608,
         "maxTokens": 196608,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -538,7 +538,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "accounts/fireworks/models/kimi-k3",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -636,6 +636,7 @@
       "overrides": {
         "name": "GLM 5.3 Flash",
         "contextWindow": 1048573,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -901,7 +902,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425,

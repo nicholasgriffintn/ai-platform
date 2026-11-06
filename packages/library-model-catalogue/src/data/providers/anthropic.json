@@ -77,7 +77,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 3,
+        "speed": 2,
         "multimodal": true,
         "deprecated": true,
         "lastUpdated": "September 29, 2025",
@@ -256,7 +256,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "deprecated": true,
         "lastUpdated": "November 24, 2025",
         "dataRetention": {

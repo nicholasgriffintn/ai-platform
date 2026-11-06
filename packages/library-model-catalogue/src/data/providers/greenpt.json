@@ -326,7 +326,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003762,
@@ -366,7 +366,7 @@
       "overrides": {
         "name": "MiniMax-M2.5",
         "maxTokens": 131072,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.00049346,
         "costPer1kOutputTokens": 0.0024673,
@@ -538,6 +538,7 @@
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text"

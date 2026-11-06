@@ -105,7 +105,6 @@
       "defaults": {
         "name": "Recraft V4.1 Flash",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "reliability": 1,
         "releaseDate": "September 23, 2026",
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -116,7 +115,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 949,
+              "value": 950,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -170,7 +169,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1026,
+              "value": 1028,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11
@@ -197,7 +196,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1018,
+              "value": 1019,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 9

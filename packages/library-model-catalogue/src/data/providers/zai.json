@@ -165,7 +165,7 @@
       "overrides": {
         "description": "Budget GLM lane for fast coding help, routing, and everyday automation",
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -256,6 +256,7 @@
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

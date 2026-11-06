@@ -517,7 +517,7 @@
       "matchingModel": "Qwen/Qwen3-14B",
       "overrides": {
         "maxTokens": 40960,
-        "speed": 3,
+        "speed": 2,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00005,
@@ -622,7 +622,7 @@
       "overrides": {
         "name": "Qwen3 Next 80B A3B Instruct",
         "maxTokens": 262144,
-        "speed": 5,
+        "speed": 4,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.0001,
@@ -841,7 +841,7 @@
       "model": "glm/glm-4-7-flash",
       "matchingModel": "zai-org/GLM-4.7-Flash",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00035
@@ -1173,6 +1173,14 @@
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044,
+        "supportsToolCalls": false
+      }
+    },
+    "tencent/Hy4": {
+      "model": "chutes/tencent/Hy4/hy4",
+      "matchingModel": "tencent/Hy4",
+      "overrides": {
+        "lastUpdated": "November 4, 2026",
         "supportsToolCalls": false
       }
     }

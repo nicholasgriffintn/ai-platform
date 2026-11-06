@@ -80,7 +80,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "December 2025",
         "releaseDate": "January 30, 2026",
         "lastUpdated": "February 12, 2026",
@@ -140,7 +140,7 @@
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "maxTokens": 262144,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -166,14 +166,24 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B": {
-      "model": "nemotron/nemotron-ultra",
+      "model": "nemotron/nemotron-3-ultra",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B",
       "overrides": {
+        "name": "Nemotron Ultra",
+        "contextWindow": 202800,
+        "maxTokens": 202800,
         "speed": 4,
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0024,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "openai/gpt-oss-120b": {
@@ -418,6 +428,7 @@
         "name": "GLM 5.3 Flash",
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
         "contextWindow": 1048576,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -475,6 +486,35 @@
             "medium",
             "high",
             "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "moonshotai/Kimi-K3.1-Pro": {
+      "model": "kimi-k3/kimi-k3-1-pro",
+      "matchingModel": "moonshotai/Kimi-K3.1-Pro",
+      "overrides": {
+        "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
+        "contextWindow": 1000000,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 2,
+        "lastUpdated": "October 23, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
           ],
           "defaultEffort": "none"
         }

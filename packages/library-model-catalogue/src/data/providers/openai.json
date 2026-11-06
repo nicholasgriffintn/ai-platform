@@ -51,7 +51,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 5,
+        "speed": 4,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -105,7 +105,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "July 18, 2024",
@@ -189,7 +189,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 5,
+        "speed": 4,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -281,7 +281,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 3,
+        "speed": 2,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -395,7 +395,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 4,
+        "speed": 3,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -732,7 +732,7 @@
           "vision",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "deprecated": true,
         "lastUpdated": "September 15, 2025",
         "dataRetention": {
@@ -962,7 +962,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "deprecated": true,
         "lastUpdated": "December 11, 2025",
         "dataRetention": {
@@ -1052,7 +1052,7 @@
           "search",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 5, 2026",
         "dataRetention": {
           "maxDays": 30,
@@ -1327,7 +1327,7 @@
           "document",
           "search"
         ],
-        "speed": 3,
+        "speed": 2,
         "multimodal": true,
         "lastUpdated": "March 5, 2026",
         "dataRetention": {
@@ -2477,7 +2477,7 @@
       "model": "gpt-terra/gpt-6-1-terra",
       "matchingModel": "gpt-6.1-terra",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005

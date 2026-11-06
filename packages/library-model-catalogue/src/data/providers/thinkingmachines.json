@@ -13,14 +13,6 @@
         "description": "Multimodal MoE reasoning model (975B total, 41B active) for text, image, and audio",
         "contextWindow": 65536,
         "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "document",
           "tool_use"
@@ -91,7 +83,7 @@
         "contextWindow": 32768,
         "maxTokens": 32768,
         "contextComplexity": 3,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "August 21, 2025",
         "costPer1kInputTokens": 0.001695,
         "costPer1kOutputTokens": 0.004215,

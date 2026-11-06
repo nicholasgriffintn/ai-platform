@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 1,
+    "reliability": 1,
+    "releaseDate": "November 4, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": 34.6,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
+  },
+  "description": "The chutes/tencent/Hy4 family includes models that produce text.",
+  "models": {
+    "hy4": {
+      "defaults": {
+        "name": "Hy4",
+        "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks"
+      }
+    }
+  }
+}

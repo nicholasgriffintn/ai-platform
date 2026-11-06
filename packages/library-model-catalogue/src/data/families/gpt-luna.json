@@ -14,6 +14,7 @@
       ]
     },
     "contextComplexity": 5,
+    "reliability": 1,
     "knowledgeCutoffDate": "February 16, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -43,10 +44,9 @@
           "tool_use",
           "coding"
         ],
-        "reliability": 3,
         "releaseDate": "July 9, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 23.8,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -63,7 +63,6 @@
           "tool_use",
           "coding"
         ],
-        "reliability": 3,
         "releaseDate": "July 9, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -76,7 +75,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 23.8,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -93,10 +92,9 @@
           "tool_use",
           "coding"
         ],
-        "reliability": 3,
         "releaseDate": "July 9, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 23.8,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -113,10 +111,9 @@
           "tool_use",
           "coding"
         ],
-        "reliability": 3,
         "releaseDate": "July 9, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 23.8,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -133,10 +130,9 @@
           "tool_use",
           "coding"
         ],
-        "reliability": 3,
         "releaseDate": "July 9, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 23.8,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -160,10 +156,9 @@
           "tool_use",
           "coding"
         ],
-        "reliability": 3,
         "releaseDate": "July 9, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 23.8,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -179,11 +174,10 @@
           "document",
           "tool_use"
         ],
-        "reliability": 1,
         "knowledgeCutoffDate": "May 18, 2026",
         "releaseDate": "September 22, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 27.8,
+          "intelligenceIndex": 27.9,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -199,7 +193,6 @@
           "document",
           "tool_use"
         ],
-        "reliability": 1,
         "knowledgeCutoffDate": "May 18, 2026",
         "releaseDate": "September 22, 2026",
         "reasoningConfig": {
@@ -213,7 +206,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 27.8,
+          "intelligenceIndex": 27.9,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -229,11 +222,10 @@
           "document",
           "tool_use"
         ],
-        "reliability": 1,
         "knowledgeCutoffDate": "May 18, 2026",
         "releaseDate": "September 22, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 27.8,
+          "intelligenceIndex": 27.9,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -258,11 +250,10 @@
           "document",
           "tool_use"
         ],
-        "reliability": 1,
         "knowledgeCutoffDate": "May 18, 2026",
         "releaseDate": "September 22, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 27.8,
+          "intelligenceIndex": 27.9,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -287,11 +278,10 @@
           "document",
           "tool_use"
         ],
-        "reliability": 1,
         "knowledgeCutoffDate": "May 18, 2026",
         "releaseDate": "September 22, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 27.8,
+          "intelligenceIndex": 27.9,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5

@@ -16,9 +16,26 @@
       "vision"
     ],
     "contextComplexity": 4,
+    "reliability": 1,
     "supportsToolCalls": false,
     "supportsAttachments": false,
-    "supportsTemperature": false
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "image_to_videoElo",
+          "label": "Image-to-video arena",
+          "value": 823,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 20
+        }
+      ]
+    }
   },
   "description": "The Replicate Luma Ray family includes cinematic video generation models.",
   "models": {

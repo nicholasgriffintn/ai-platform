@@ -469,7 +469,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "March 3, 2026",
         "supportsResponseFormat": true,
@@ -481,7 +481,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 6.2,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -871,6 +871,46 @@
         "supportsTemperature": false
       }
     },
+    "gemini-omni-1-1-flash": {
+      "defaults": {
+        "name": "Gemini Omni 1.1 Flash",
+        "openWeights": false,
+        "description": "Omni-modal model for text, vision, audio, and multimodal agent tasks",
+        "contextWindow": 131072,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text",
+            "video"
+          ]
+        },
+        "releaseDate": "August 27, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gemini-omni-1-2-flash": {
+      "defaults": {
+        "name": "Gemini Omni 1.2 Flash",
+        "openWeights": false,
+        "description": "Omni-modal model for text, vision, audio, and multimodal agent tasks",
+        "contextWindow": 131072,
+        "releaseDate": "November 5, 2026",
+        "supportsToolCalls": false
+      }
+    },
     "gemini-omni-flash-preview": {
       "defaults": {
         "name": "Gemini Omni Flash Preview",
@@ -936,6 +976,68 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        }
+      }
+    },
+    "google-gemini-omni-1-1-flash": {
+      "defaults": {
+        "name": "Google: Gemini Omni 1.1 Flash",
+        "openWeights": false,
+        "description": "Gemini Omni 1.1 Flash is Google's native multimodal video generation and editing model, the generally available successor to Gemini Omni Flash Preview. It is suited for text-to-video, image-to-video, first and...",
+        "contextWindow": 131072,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "video"
+          ]
+        },
+        "releaseDate": "August 27, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "google-gemini-omni-1-2-flash": {
+      "defaults": {
+        "name": "Google: Gemini Omni 1.2 Flash",
+        "openWeights": false,
+        "description": "Gemini Omni 1.2 Flash is Google's native multimodal video generation and editing model, the successor to Gemini Omni 1.1 Flash. It generates clips up to 15 seconds long with native...",
+        "contextWindow": 131072,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "video"
+          ]
+        },
+        "releaseDate": "November 5, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high"
+          ],
+          "defaultEffort": "low"
         }
       }
     },
