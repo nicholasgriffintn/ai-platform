@@ -225,7 +225,6 @@ export function buildCreateResponseBody(params: CreateResponseParams): CreateRes
     recipe: featureOptions?.recipe,
     connector: featureOptions?.connector,
     agent: featureOptions?.agent,
-    comparison: featureOptions?.comparison,
   });
   const projectId = requestOptionFields.metadata?.project_id;
   const uiContext = requestOptionFields.poly?.ui_context;

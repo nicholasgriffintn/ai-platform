@@ -868,17 +868,17 @@ export class HomePage extends BasePage {
     return (await requestPromise).postDataJSON() as Record<string, unknown>;
   }
 
-  async requestComparison() {
+  async requestSecondOpinion() {
     const responsePromise = this.waitForCompletionRequest();
 
     await this.clickElement(
-      this.getLatestAssistantMessage().getByRole("button", { name: "Compare and conclude" }),
+      this.getLatestAssistantMessage().getByRole("button", { name: "Second opinion" }),
     );
     const response = await responsePromise;
 
     if (!response.ok()) {
       throw new Error(
-        `Comparison completion failed with ${response.status()}: ${await response.text()}`,
+        `Second-opinion completion failed with ${response.status()}: ${await response.text()}`,
       );
     }
 

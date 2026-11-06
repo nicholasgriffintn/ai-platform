@@ -193,7 +193,6 @@ export * from "./sandbox-preview.js";
 export * from "./search.js";
 export * from "./cloudflare-search.js";
 export * from "./decisions.js";
-export * from "./comparison.js";
 export * from "./decision-experiences.js";
 export * from "./extractions.js";
 export * from "./evidence.js";
