@@ -17,6 +17,7 @@ import { expandTurnArtifactEdits } from "~/modules/responses/application/engine/
 import { formatAssistantMessage } from "~/modules/responses/application/engine/messages/assistant-format";
 import { buildMessageParts } from "~/modules/responses/application/engine/messages/parts";
 import type { ChatEventSink } from "~/modules/responses/application/engine/streaming/emitter";
+import { withCrisisSignpost } from "~/modules/responses/domain/crisis-signposting";
 import { describeGuardrailBlock } from "~/modules/responses/domain/guardrails";
 import { buildAssistantMessageData } from "~/modules/responses/domain/mode-metadata";
 import { createUsageRuntime } from "~/modules/usage/application/runtime";
@@ -67,6 +68,7 @@ export interface FinaliseAssistantTurnParams {
   userSettings?: IUserSettings;
   requestOptions?: ChatRequestOptions;
   guardrailPrompt?: string;
+  crisisSignpost?: boolean;
   runId?: string;
   runAttempt?: number;
   provenance?: RunProvenance;
@@ -94,8 +96,12 @@ export async function finaliseAssistantTurn(
         loadHistory: () => params.conversationManager.get(completionId),
       })
     : { turn, changed: false };
+  const signposted =
+    guardrailResult.passed && params.crisisSignpost === true && turn.toolCalls.length === 0;
   const visibleTurn = guardrailResult.passed
-    ? editedTurn.turn
+    ? signposted
+      ? signpostTurn(editedTurn.turn)
+      : editedTurn.turn
     : {
         ...turn,
         content: guardrailResult.error,
@@ -206,7 +212,9 @@ export async function finaliseAssistantTurn(
         platform: message.platform,
         provenance: params.provenance,
         nonce: generateId(),
-        ...(!guardrailResult.passed || editedTurn.changed ? { content: visibleTurn.content } : {}),
+        ...(!guardrailResult.passed || editedTurn.changed || signposted
+          ? { content: visibleTurn.content }
+          : {}),
         post_processing: {
           guardrails: assistantMessage.guardrails,
         },
@@ -227,6 +235,24 @@ export async function finaliseAssistantTurn(
     message,
     guardrailsPassed: guardrailResult.passed,
     guardrailViolations: guardrailResult.violations,
+  };
+}
+
+function signpostTurn(turn: TurnOutput): TurnOutput {
+  const firstTextPart = turn.parts?.findIndex((part) => part.type === "text") ?? -1;
+
+  return {
+    ...turn,
+    content: withCrisisSignpost(turn.content),
+    ...(turn.parts
+      ? {
+          parts: turn.parts.map((part, index) =>
+            index === firstTextPart && part.type === "text"
+              ? { ...part, text: withCrisisSignpost(part.text) }
+              : part,
+          ),
+        }
+      : {}),
   };
 }
 
@@ -272,7 +298,9 @@ async function validateOutput(params: FinaliseAssistantTurnParams): Promise<{
 
   return {
     passed: false,
-    error: describeGuardrailBlock("output", validation?.reasons ?? []),
+    error: describeGuardrailBlock("output", validation?.reasons ?? [], {
+      crisisSignpost: params.crisisSignpost,
+    }),
     violations: validation?.violations || [],
   };
 }

@@ -79,6 +79,7 @@ export * from "./audio.js";
 export * from "./speech-voices.js";
 export * from "./auth.js";
 export * from "./age-gate.js";
+export * from "./ai-disclosure.js";
 export * from "./conversation-type.js";
 export * from "./conversation-subject.js";
 export * from "./engine-request.js";

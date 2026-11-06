@@ -1,4 +1,5 @@
 import { Link } from "@ngriffin_uk/polychat-component-ui";
+import { AI_DISCLOSURE_TEXT } from "@ngriffin_uk/polychat-schemas";
 import { Loader2 } from "lucide-react";
 
 export interface ConversationFooterInfoProps {
@@ -23,12 +24,12 @@ export const ConversationFooterInfo = ({
         <p className="mb-1">
           {hasConversationContext ? (
             <>
-              AI can make mistakes.
+              {AI_DISCLOSURE_TEXT} It can make mistakes.
               {!isMobile && " Check relevant sources before making important decisions."}
             </>
           ) : (
             <>
-              By using Polychat, you agree to our{" "}
+              {AI_DISCLOSURE_TEXT} By using Polychat, you agree to our{" "}
               <Link
                 href="/terms"
                 className="rounded-sm underline hover:text-foreground focus:ring-2 focus:ring-active-work focus:ring-offset-2 focus:outline-none"

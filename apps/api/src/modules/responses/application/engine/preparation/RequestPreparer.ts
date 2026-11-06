@@ -138,6 +138,7 @@ export interface PreparedRequest {
   systemPromptSections: ContextBudgetSystemSection[];
   messageWithContext: string;
   toolIntentRequest: string;
+  crisisSignpost?: boolean;
   userSettings: IUserSettings | null;
   currentMode: ChatMode;
   conversationType?: ConversationType;
@@ -680,6 +681,7 @@ export class RequestPreparer {
 
     return {
       analyticsProperties: validationContext.analyticsProperties,
+      crisisSignpost: validationContext.crisisSignpost,
       modelConfigs,
       primaryModel,
       primaryModelConfig,
