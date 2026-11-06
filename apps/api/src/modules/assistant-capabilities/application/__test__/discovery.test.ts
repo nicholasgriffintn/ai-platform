@@ -1,3 +1,4 @@
+import type { RecipeConnectorManifest } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -165,6 +166,64 @@ describe("discoverAssistantCapabilities", () => {
     );
 
     expect(result.items[0]?.invocation.autoActivate).toBeUndefined();
+  });
+});
+
+describe("discoverAssistantCapabilities match quality", () => {
+  const connectorDefaults = {
+    categories: [],
+    authType: "composio",
+    status: "disconnected",
+    scopes: [],
+    toolCount: 1,
+    readToolCount: 1,
+    writeToolCount: 0,
+  } as const;
+  const connectors: RecipeConnectorManifest[] = [
+    {
+      ...connectorDefaults,
+      id: "notion",
+      name: "Notion",
+      description: "Notes, docs and wikis in a unified workspace.",
+    },
+    {
+      ...connectorDefaults,
+      id: "gitlab",
+      name: "GitLab",
+      description: "A Git repository manager with issue tracking.",
+    },
+  ];
+
+  it("does not match a connector on filler words alone", () => {
+    const result = discoverAssistantCapabilities(sources({ connectors }), {
+      query: "set a reminder for the morning",
+      limit: 8,
+    });
+
+    expect(result.items).toEqual([]);
+  });
+
+  it("does not match a connector on one shared description word", () => {
+    const result = discoverAssistantCapabilities(sources({ connectors }), {
+      query: "rename this repository folder",
+      limit: 8,
+    });
+
+    expect(result.items).toEqual([]);
+  });
+
+  it("drops a capability the decision model barely rates", () => {
+    const result = discoverAssistantCapabilities(
+      sources({ connectors }),
+      { query: "plan my week", limit: 8 },
+      new Date(),
+      new Map([
+        ["connector:notion", 0.7],
+        ["connector:gitlab", 0.02],
+      ]),
+    );
+
+    expect(result.items.map((item) => item.id)).toEqual(["connector:notion"]);
   });
 });
 

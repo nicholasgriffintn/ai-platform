@@ -58,6 +58,7 @@ export const COMPUTER_OBSERVATION_RENDERER = "computer_observation";
 
 export const CHROMELESS_TOOL_RENDERERS: ReadonlySet<string> = new Set([
   COMPUTER_OBSERVATION_RENDERER,
+  "capability_discovery",
 ]);
 
 export function shouldHideToolChrome(renderer: string | undefined): boolean {

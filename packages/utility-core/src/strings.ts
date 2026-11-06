@@ -193,6 +193,38 @@ export function escapeHtml(value: string): string {
   );
 }
 
+const SEARCH_STOP_WORDS = new Set([
+  "a",
+  "an",
+  "and",
+  "at",
+  "by",
+  "for",
+  "from",
+  "in",
+  "into",
+  "is",
+  "it",
+  "me",
+  "of",
+  "on",
+  "or",
+  "that",
+  "the",
+  "this",
+  "to",
+  "with",
+]);
+
+export function searchTerms(value: string): string[] {
+  const terms = value
+    .toLowerCase()
+    .split(/[^a-z0-9]+/u)
+    .filter((term) => term.length > 1 && !SEARCH_STOP_WORDS.has(term));
+
+  return Array.from(new Set(terms));
+}
+
 export function slugify(value: string, maxLength?: number): string {
   const collapsed = value
     .trim()

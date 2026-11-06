@@ -1,5 +1,5 @@
 import type { AssistantRecipe, RecipeInstallation } from "@ngriffin_uk/polychat-schemas";
-import { slugify } from "@ngriffin_uk/polychat-utility-core";
+import { searchTerms, slugify } from "@ngriffin_uk/polychat-utility-core";
 
 const GENERIC_TRIGGER_WORDS = new Set([
   "automation",
@@ -12,8 +12,6 @@ const GENERIC_TRIGGER_WORDS = new Set([
   "start",
   "trigger",
 ]);
-
-const STOP_WORDS = new Set(["a", "an", "and", "for", "in", "me", "of", "on", "the", "to", "with"]);
 
 export interface InstalledRecipeMatchCandidate {
   recipeId: string;
@@ -33,16 +31,6 @@ export interface InstalledRecipeMatchInput {
   query: string;
   recipes: AssistantRecipe[];
   installations: RecipeInstallation[];
-}
-
-function tokenise(value: string): string[] {
-  const tokens = value
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .map((token) => token.trim())
-    .filter((token) => token.length > 1 && !STOP_WORDS.has(token));
-
-  return Array.from(new Set(tokens));
 }
 
 function buildRecipeSearchText(recipe: AssistantRecipe): string {
@@ -135,7 +123,7 @@ export function matchInstalledRecipe({
     );
 
   const trimmedQuery = query.trim();
-  const queryTokens = tokenise(trimmedQuery);
+  const queryTokens = searchTerms(trimmedQuery);
 
   if (!trimmedQuery || queryTokens.length === 0) {
     return { status: "not_found", candidates: [] };

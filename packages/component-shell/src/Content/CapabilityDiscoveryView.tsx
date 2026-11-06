@@ -1,3 +1,4 @@
+import { ConnectorLogo } from "@ngriffin_uk/polychat-component-account";
 import {
   CapabilityDiscoveryList,
   RecipeConfigurationDialog,
@@ -41,19 +42,30 @@ function getMissingConnectors(
   });
 }
 
-function stateLabel(item: CapabilityDiscoveryItem) {
-  switch (item.state) {
-    case "ready":
-      return "Ready";
-    case "setup_required":
-      return "Setup required";
-    case "unavailable":
-      return "Unavailable";
-    case "unknown":
-      return "Unknown";
-    default:
-      return "Unknown";
-  }
+function ConnectButton({
+  connector,
+  label,
+  connecting,
+  onConnect,
+}: {
+  connector: RecipeConnectorManifest;
+  label: string;
+  connecting: boolean;
+  onConnect: (connector: RecipeConnectorManifest) => void;
+}) {
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="secondary"
+      aria-label={`Connect ${connector.name}`}
+      disabled={connecting}
+      onClick={() => onConnect(connector)}
+    >
+      <Plug className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+      {label}
+    </Button>
+  );
 }
 
 export function CapabilityDiscoveryView({ data }: { data: unknown }) {
@@ -81,21 +93,21 @@ export function CapabilityDiscoveryView({ data }: { data: unknown }) {
     if (item.setup?.kind === "connector") {
       const connector = connectorById.get(item.setup.provider);
 
-      if (!connector || connector.status === "connected") {
+      if (!connector) {
         return null;
       }
 
+      if (connector.status === "connected") {
+        return <span className="text-xs text-muted-foreground">Connected</span>;
+      }
+
       return (
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          disabled={connectorSetup.connectingProviderId === connector.id}
-          onClick={() => void connectorSetup.connect(connector)}
-        >
-          <Plug className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-          Connect {connector.name}
-        </Button>
+        <ConnectButton
+          connector={connector}
+          label="Connect"
+          connecting={connectorSetup.connectingProviderId === connector.id}
+          onConnect={(target) => void connectorSetup.connect(target)}
+        />
       );
     }
 
@@ -118,17 +130,13 @@ export function CapabilityDiscoveryView({ data }: { data: unknown }) {
 
     if (missingConnectors.length > 0) {
       return missingConnectors.map((connector) => (
-        <Button
+        <ConnectButton
           key={connector.id}
-          type="button"
-          size="sm"
-          variant="secondary"
-          disabled={connectorSetup.connectingProviderId === connector.id}
-          onClick={() => void connectorSetup.connect(connector)}
-        >
-          <Plug className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-          Connect {connector.name}
-        </Button>
+          connector={connector}
+          label={`Connect ${connector.name}`}
+          connecting={connectorSetup.connectingProviderId === connector.id}
+          onConnect={(target) => void connectorSetup.connect(target)}
+        />
       ));
     }
 
@@ -156,27 +164,34 @@ export function CapabilityDiscoveryView({ data }: { data: unknown }) {
     );
   };
 
-  const itemById = new Map(parsed.data.items.map((item) => [item.id, item] as const));
+  const setupItems = parsed.data.items.filter((item) => item.state === "setup_required");
+  const itemById = new Map(setupItems.map((item) => [item.id, item] as const));
+  const renderIcon = (item: CapabilityDiscoveryItem) => {
+    const connector =
+      item.setup?.kind === "connector" ? connectorById.get(item.setup.provider) : undefined;
+
+    return connector ? (
+      <ConnectorLogo connector={connector} className="size-8 rounded-lg [&_img]:size-5" />
+    ) : undefined;
+  };
 
   if (parsed.data.readiness?.state === "unknown") {
     return (
       <div className="space-y-1 rounded-md border border-border-strong bg-surface-elevated p-3 text-sm text-foreground">
-        <p className="font-medium">Capability readiness is unknown</p>
-        <p>{parsed.data.readiness.reason}</p>
+        <p className="font-medium">Couldn't check what's available</p>
+        <p>Send your message again to retry.</p>
       </div>
     );
   }
 
   return (
-    <section className="space-y-3" aria-label="Capability discovery results">
+    <section aria-label="Setup needed">
       <CapabilityDiscoveryList
-        items={parsed.data.items.map((item) => ({
+        items={setupItems.map((item) => ({
           id: item.id,
           name: item.name,
           description: item.description,
-          reason: item.reason,
-          state: item.state,
-          stateLabel: stateLabel(item),
+          icon: renderIcon(item),
         }))}
         renderSetupActions={(item) => {
           const original = itemById.get(item.id);

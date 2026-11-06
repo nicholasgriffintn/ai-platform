@@ -8,6 +8,7 @@ import type {
   RecipeConnectorManifest,
   RecipeInstallation,
 } from "@ngriffin_uk/polychat-schemas";
+import { searchTerms } from "@ngriffin_uk/polychat-utility-core";
 
 export interface DiscoverableFunctionTool {
   id: string;
@@ -60,6 +61,7 @@ export interface CapabilityDiscoveryFilters {
 export type CapabilityRelevance = ReadonlyMap<string, number>;
 
 const SEMANTIC_RELEVANCE_WEIGHT = 60;
+const MIN_MATCH_SCORE = 10;
 
 const CAPABILITY_READINESS_TTL_MS = 60_000;
 
@@ -338,17 +340,22 @@ function createRecipeItem(params: {
   };
 }
 
+function hasTerm(words: readonly string[], term: string): boolean {
+  return words.some((word) => (term.length > 2 ? word.startsWith(term) : word === term));
+}
+
 function scoreItem(
   item: CapabilityDiscoveryItem,
   query: string,
   relevance?: CapabilityRelevance,
 ): number {
   const normalisedQuery = query.trim().toLowerCase();
-  const terms = normalisedQuery.split(/\s+/).filter(Boolean);
   const name = item.name.toLowerCase();
   const id = item.id.toLowerCase();
   const description = item.description?.toLowerCase() ?? "";
-  const tags = item.tags.join(" ").toLowerCase();
+  const nameWords = searchTerms(`${name} ${id}`);
+  const descriptionWords = searchTerms(description);
+  const tagWords = searchTerms(item.tags.join(" "));
   let score = 0;
 
   if (name === normalisedQuery || id === normalisedQuery) {
@@ -363,16 +370,16 @@ function scoreItem(
     score += 15;
   }
 
-  for (const term of terms) {
-    if (name.includes(term) || id.includes(term)) {
+  for (const term of searchTerms(normalisedQuery)) {
+    if (hasTerm(nameWords, term)) {
       score += 10;
     }
 
-    if (description.includes(term)) {
+    if (hasTerm(descriptionWords, term)) {
       score += 5;
     }
 
-    if (tags.includes(term)) {
+    if (hasTerm(tagWords, term)) {
       score += 3;
     }
   }
@@ -429,7 +436,7 @@ export function discoverAssistantCapabilities(
 ): CapabilityDiscoveryResult {
   const matches = filterCapabilityItems(collectCapabilityItems(sources), filters)
     .map((item) => ({ item, score: scoreItem(item, filters.query, relevance) }))
-    .filter(({ score }) => score > 0)
+    .filter(({ score }) => score >= MIN_MATCH_SCORE)
     .sort(
       (left, right) => right.score - left.score || left.item.name.localeCompare(right.item.name),
     );
