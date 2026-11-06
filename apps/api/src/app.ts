@@ -21,6 +21,7 @@ import environments from "~/modules/environments/api/routes";
 import experiences from "~/modules/experiences/api/routes";
 import flags from "~/modules/experiments/api/routes";
 import extractions from "~/modules/extractions/api/routes";
+import provenance from "~/modules/generate/api/routes";
 import githubConnections from "~/modules/github/api/connections";
 import jobs from "~/modules/jobs/api/routes";
 import machines from "~/modules/machines/api/routes";
@@ -100,6 +101,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/models", models);
   app.route("/notifications", notifications);
   app.route("/outputs", outputs);
+  app.route("/provenance", provenance);
   app.route("/tasks", tasks);
   app.route("/templates", templates);
   app.route("/tools", tools);

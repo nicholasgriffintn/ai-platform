@@ -230,11 +230,11 @@ async function produceEpisode(
       language,
     );
 
-    await StorageService.forPrivateAssets(context).uploadObject(key, audio, {
-      httpMetadata: { contentType: "audio/mpeg" },
+    const stored = await StorageService.forPrivateAssets(context).uploadGeneratedMedia(key, audio, {
+      mimeType: "audio/mpeg",
     });
 
-    return { turnStarts, durationSeconds, byteSize: audio.byteLength };
+    return { turnStarts, durationSeconds, byteSize: stored.byteLength };
   });
 
   await steps.run("store", async () => {

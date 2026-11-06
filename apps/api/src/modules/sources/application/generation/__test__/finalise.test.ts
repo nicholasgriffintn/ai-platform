@@ -1,3 +1,4 @@
+import { MAX_MARKABLE_BYTES } from "@ngriffin_uk/polychat-utility-server/media-provenance";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -47,14 +48,14 @@ function sourceRecord(overrides: Partial<SourceRecord> = {}): SourceRecord {
   };
 }
 
-function setup({ failUpload = false } = {}) {
+function setup({ failUpload = false, outputMimeType = "image/png" } = {}) {
   const sources = new Map([["source-1", sourceRecord()]]);
   const objects = new Map<string, ArrayBuffer>([
     ["generations/a.png", new TextEncoder().encode("first").buffer],
     ["generations/b.png", new TextEncoder().encode("second").buffer],
   ]);
   const outputs = new Map([
-    ["out-a", { id: "out-a", storage_key: "generations/a.png", mime_type: "image/png" }],
+    ["out-a", { id: "out-a", storage_key: "generations/a.png", mime_type: outputMimeType }],
     ["out-b", { id: "out-b", storage_key: "generations/b.png", mime_type: "image/png" }],
   ]);
   const sourceRepository = {
@@ -69,12 +70,17 @@ function setup({ failUpload = false } = {}) {
       });
     }),
     attachSourceFile: vi.fn(
-      async (id: string, file: { storageKey: string; mimeType: string }, updates = {}) => {
+      async (
+        id: string,
+        file: { storageKey: string; mimeType: string; byteSize: number },
+        updates = {},
+      ) => {
         sources.set(id, {
           ...sources.get(id)!,
           ...updates,
           storage_key: file.storageKey,
           mime_type: file.mimeType,
+          byte_size: file.byteSize,
         });
       },
     ),
@@ -135,6 +141,29 @@ describe("finaliseSourceGeneration", () => {
     fileKnowledgeSourceMock.mockReset();
   });
 
+  it("streams media too large to mark instead of buffering it", async () => {
+    const { context, sources } = setup({ outputMimeType: "video/mp4" });
+    const bucket = context.env.PRIVATE_ASSETS_BUCKET;
+    const arrayBuffer = vi.fn();
+
+    bucket.get.mockImplementation(async () => ({
+      size: MAX_MARKABLE_BYTES + 1,
+      body: new Blob(["video"]).stream(),
+      arrayBuffer,
+    }));
+
+    await finaliseSourceGeneration(context, sourceRecord(), {
+      response: [{ type: "video_url", video_url: { url: `${API}/outputs/out-a/content` } }],
+    });
+
+    expect(arrayBuffer).not.toHaveBeenCalled();
+    expect(sources.get("source-1")).toMatchObject({
+      status: "available",
+      byte_size: MAX_MARKABLE_BYTES + 1,
+    });
+    expect(JSON.parse(bucket.put.mock.calls.at(-1)[1])).toMatchObject({ status: "too-large" });
+  });
+
   it("moves generated media into sources and only then removes the provider's copies", async () => {
     const { context, sources, objects, outputs } = setup();
 
@@ -154,7 +183,7 @@ describe("finaliseSourceGeneration", () => {
       status: "available",
       storage_key: "sources/source-2/generation.png",
     });
-    expect([...objects.keys()].sort()).toEqual([
+    expect([...objects.keys()].filter((key) => !key.startsWith("provenance/")).sort()).toEqual([
       "sources/source-1/generation.png",
       "sources/source-2/generation.png",
     ]);

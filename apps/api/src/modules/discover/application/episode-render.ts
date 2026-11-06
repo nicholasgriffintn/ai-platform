@@ -80,10 +80,10 @@ async function narrateChapter(
     },
   );
 
-  await StorageService.forPrivateAssets(context).uploadObject(
+  await StorageService.forPrivateAssets(context).uploadGeneratedMedia(
     chapterAudioKey(episodeId, chapterIndex),
     audio,
-    { httpMetadata: { contentType: "audio/mpeg" } },
+    { mimeType: "audio/mpeg" },
   );
 
   return timings;
