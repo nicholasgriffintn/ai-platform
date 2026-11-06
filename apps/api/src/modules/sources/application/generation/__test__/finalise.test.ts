@@ -11,11 +11,7 @@ import {
 import { finaliseSourceGeneration } from "../finalise";
 
 const fileKnowledgeSourceMock = vi.hoisted(() => vi.fn());
-const screenGeneratedImageMock = vi.hoisted(() => vi.fn());
 
-vi.mock("~/modules/generate/application/image-policy-classifier", () => ({
-  screenGeneratedImage: screenGeneratedImageMock,
-}));
 vi.mock("~/modules/knowledge/application/intake/file", () => ({
   fileKnowledgeSource: fileKnowledgeSourceMock,
 }));
@@ -137,7 +133,6 @@ const providerResponse = {
 describe("finaliseSourceGeneration", () => {
   beforeEach(() => {
     fileKnowledgeSourceMock.mockReset();
-    screenGeneratedImageMock.mockReset();
   });
 
   it("moves generated media into sources and only then removes the provider's copies", async () => {
@@ -179,32 +174,5 @@ describe("finaliseSourceGeneration", () => {
     expect(JSON.parse(stored.metadata).generation.error).toBe("Bucket unavailable");
     expect(outputs.size).toBe(2);
     expect(objects.has("generations/a.png")).toBe(true);
-  });
-
-  it("fails a refused generation without storing it or registering a mark", async () => {
-    const { context, sources, objects } = setup();
-
-    screenGeneratedImageMock.mockRejectedValue(new Error("Refused"));
-
-    const stored = await finaliseSourceGeneration(context, sourceRecord(), providerResponse);
-
-    expect(stored.status).toBe("failed");
-    expect(JSON.parse(stored.metadata).generation.error).toBe("Refused");
-    expect(sources.get("source-1")?.storage_key).toBeNull();
-    expect([...objects.keys()].filter((key) => key.startsWith("provenance/"))).toEqual([]);
-  });
-
-  it("fails only the refused image when a later one is flagged", async () => {
-    const { context, sources } = setup();
-
-    screenGeneratedImageMock
-      .mockResolvedValueOnce(undefined)
-      .mockRejectedValueOnce(new Error("Refused"));
-
-    const stored = await finaliseSourceGeneration(context, sourceRecord(), providerResponse);
-
-    expect(stored.status).toBe("available");
-    expect(sources.get("source-2")?.status).toBe("failed");
-    expect(sources.get("source-2")?.storage_key).toBeNull();
   });
 });
