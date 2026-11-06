@@ -27,7 +27,6 @@ export type {
 export type IEnv = {
   TELEMETRY_STREAM?: TelemetryStream;
   AI: Ai;
-  IMAGES?: ImagesBinding;
   VECTOR_DB: Vectorize;
   DB: D1Database;
   CACHE: KVNamespace;
