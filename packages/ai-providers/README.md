@@ -47,21 +47,7 @@ The `decision` category wraps typed decision models: a `DecisionProvider` takes 
 
 ## Image safety
 
-Image and video generation must hold the same floor on every provider, so we check requests ourselves instead of relying on each provider's defaults. `enforceImagePolicy` in the API's `generate` module refuses sexualised depictions of minors and non-consensual intimate imagery of real people. It uses a fixed Workers AI classifier (`@cf/cloudflare/clef-omni`) that account settings cannot change, and it fails closed: if the prompt or a reference image cannot be checked, nothing is generated.
-
-Every path runs the check before a provider sees the request:
-
-- `generateImage`: the `create_image` tool, site images, pets, and `drawImage` for notebook infographics and stored pictures
-- `generateVideo`: the `create_video` tool
-- `startModelGeneration`: Studio, `type=model` generations and the `run_prediction` tool, on every string input and reference image
-- `paintDrawing`: the sketch and its description, before either is stored
-- `executeRequest` in `ChatOrchestrator`: chat turns on image or video models, or with the hosted `image_generation` tool
-
-`StorageService.markGeneratedMedia` also screens every generated image with the same classifier, before it is marked or stored and whichever provider made it. Refused and uncheckable images are never stored, returned or added to the provenance registry. Images above the classifier's 4 MiB limit are shrunk through the optional `IMAGES` binding, and are refused if it is missing. `paintDrawing` screens its painting directly because it stores outside that step.
-
-Chat checks include the last 12 turns and their attachments, and the check runs again if `image_generation` switches on mid-run; if that check does not pass, the run continues without the tool. Video references are classified too, and any that is not an MP4 or WebM file under 16 MiB is refused. Generated video is not screened.
-
-Add new image paths behind `enforceImagePolicy`. `buildInputSchemaInput` also pins provider safety inputs such as `disable_safety_checker` and `safety_tolerance`, so a caller or catalogue default cannot lower them. List any new safety field in `safety-inputs.ts`; a test fails if the catalogue holds one that is not pinned. Google models that output images keep the sexual content filter on, and the hosted OpenAI image tool always runs with `moderation: "auto"`.
+`buildInputSchemaInput` pins provider safety inputs such as `disable_safety_checker`, so model options cannot turn provider filters down.
 
 ## Reranking
 
