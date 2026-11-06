@@ -214,7 +214,6 @@ export function detectContainer(bytes: Uint8Array): MediaContainer | null {
   return svgOpeningTag(bytes) ? "svg" : null;
 }
 
-/** Latin-1 keeps one character per byte, so a match index is also a byte offset. */
 function svgOpeningTag(bytes: Uint8Array): ByteRange | null {
   const head = new TextDecoder("latin1").decode(bytes.subarray(0, SVG_SCAN_WINDOW));
   const start = SVG_PROLOG.exec(head)?.[0].length ?? 0;
@@ -390,10 +389,6 @@ function flacBlocks(bytes: Uint8Array): Array<{ start: number; end: number; last
   return blocks;
 }
 
-/**
- * The parts of a file that hold metadata rather than encoded media. Searching only these keeps
- * detection fast on large video and stops compressed samples matching a marker by chance.
- */
 export function metadataRegions(container: MediaContainer, bytes: Uint8Array): Uint8Array[] {
   switch (container) {
     case "png":
@@ -692,11 +687,6 @@ function oggLacing(length: number): number[] {
   return [...Array.from({ length: Math.floor(length / 255) }, () => 255), length % 255];
 }
 
-/**
- * Adds the mark to the comment packet in place. Keeping it on the same page leaves every later
- * page, its sequence number and its checksum alone, so anything else is declined rather than
- * rewritten.
- */
 function embedOgg(bytes: Uint8Array, packetLength: number): EmbeddedSlot | null {
   const pages = oggHeaderPages(bytes);
 
@@ -791,10 +781,6 @@ function matroskaTags(packetLength: number): Uint8Array {
   );
 }
 
-/**
- * Appends a Tags element, since inserting one earlier would invalidate the byte offsets held in
- * SeekHead and Cues.
- */
 function embedMatroska(bytes: Uint8Array, packetLength: number): EmbeddedSlot | null {
   const segment = matroskaSegment(bytes);
 
