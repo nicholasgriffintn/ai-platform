@@ -10,7 +10,6 @@ import {
 } from "~/infrastructure/context/serviceContext";
 import { getImageProvider } from "~/infrastructure/providers/capabilities/image";
 import { hasUserProviderApiKey } from "~/infrastructure/providers/credentials";
-import { enforceImagePolicy } from "~/modules/generate/application/image-policy";
 import { requireSystemModel } from "~/modules/models/application/resolve";
 import type { IEnv, IUser } from "~/types";
 
@@ -102,14 +101,6 @@ export async function generateImage({
         403,
       );
     }
-
-    await enforceImagePolicy({
-      env: runtimeEnv,
-      user: runtimeUser,
-      completionId: completion_id,
-      surface: "create_image",
-      text: sanitisedPrompt,
-    });
 
     const request = {
       prompt: sanitisedPrompt,
