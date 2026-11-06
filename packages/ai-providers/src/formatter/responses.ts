@@ -4,6 +4,7 @@ import { base64ToBuffer } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import {
+  assertGeneratedAssetStorageConfigured,
   hasPrivateAssetStorage,
   persistBase64GeneratedImages,
   persistGeneratedAsset,
@@ -990,6 +991,8 @@ export class ResponseFormatter {
         };
       }
 
+      assertGeneratedAssetStorageConfigured(ResponseFormatter.getGeneratedMediaContext(options));
+
       return { ...data, response: imageContent };
     }
 
@@ -1097,6 +1100,8 @@ export class ResponseFormatter {
         };
       }
 
+      assertGeneratedAssetStorageConfigured(ResponseFormatter.getGeneratedMediaContext(options));
+
       return { ...data, response: image };
     }
 
@@ -1154,22 +1159,14 @@ export class ResponseFormatter {
         return { ...data, response: fallbackText };
       }
 
-      let persistedUrls = candidateUrls;
-      let metadata: Array<{ key: string; url: string; originalUrl: string }> = [];
-
-      if (hasPrivateAssetStorage(ResponseFormatter.getGeneratedMediaContext(options))) {
-        const uploads = await persistRemoteGeneratedAssets({
-          mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
-          urls: candidateUrls,
-          fallback: {
-            extension: "png",
-            contentType: "image/png",
-          },
-        });
-
-        persistedUrls = uploads.urls;
-        metadata = uploads.metadata;
-      }
+      const { urls: persistedUrls, metadata } = await persistRemoteGeneratedAssets({
+        mediaContext: ResponseFormatter.getGeneratedMediaContext(options),
+        urls: candidateUrls,
+        fallback: {
+          extension: "png",
+          contentType: "image/png",
+        },
+      });
 
       const responseContent = persistedUrls.map((url) => ({
         type: "image_url" as const,

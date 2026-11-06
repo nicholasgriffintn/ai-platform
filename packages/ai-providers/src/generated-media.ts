@@ -132,7 +132,7 @@ export function hasPrivateAssetStorage(mediaContext: GeneratedMediaContext): boo
   return Boolean(mediaContext.storage);
 }
 
-function assertGeneratedAssetStorageConfigured(mediaContext: GeneratedMediaContext): void {
+export function assertGeneratedAssetStorageConfigured(mediaContext: GeneratedMediaContext): void {
   if (mediaContext.storage === null) {
     throw new AssistantError(
       "Private assets bucket is not configured",
