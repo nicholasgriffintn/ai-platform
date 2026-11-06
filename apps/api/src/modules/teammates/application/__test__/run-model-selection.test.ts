@@ -10,6 +10,7 @@ import { fakeRepositories } from "~/infrastructure/database/__test__/fake-reposi
 import type { Teammate } from "~/infrastructure/database/schema";
 import type { ResponseCommand } from "~/modules/responses/domain/command";
 import { TeammateComputerRepository } from "~/modules/teammates/infrastructure/TeammateComputerRepository";
+import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 import type { IEnv, IUser, IUserSettings } from "~/types";
 
 import { enqueueTeammateRun } from "../run-admission";
@@ -149,6 +150,7 @@ describe("teammate run model selection", () => {
 
     vi.spyOn(context, "ensureDatabase").mockReturnValue(env.DB);
     context.repositories = fakeRepositories([
+      [TeammateContextRepository, { markOwnerSeen: vi.fn() }],
       [TeammateComputerRepository, { getByContextId: async () => null }],
     ]);
 

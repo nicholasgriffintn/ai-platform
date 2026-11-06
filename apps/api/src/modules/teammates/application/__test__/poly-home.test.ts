@@ -137,14 +137,14 @@ describe("admitTeammateContextAuthority", () => {
     ).toMatchObject({ autonomyLevel: "partner", standingApprovals: [standing] });
   });
 
-  it("never brakes a teammate other than Poly", () => {
+  it("keeps another teammate's dial but lets its earned approvals lapse while the owner is away", () => {
     expect(
       admitTeammateContextAuthority({
         context: { ...partner, teammateId: "teammate_research" },
         trigger: "schedule",
         now: eightDaysLater,
       }),
-    ).toMatchObject({ autonomyLevel: "partner", standingApprovals: [standing] });
+    ).toMatchObject({ autonomyLevel: "partner", standingApprovals: [] });
   });
 });
 
@@ -174,6 +174,28 @@ describe("admitTeammateContextAuthority with a ceiling", () => {
     expect(authority.autonomyLevel).toBe("observer");
     expect(authority.standingApprovals).toEqual([]);
     expect(authority.actingRulesSuspended).toBe(true);
+  });
+
+  it("keeps earned approvals on a routine capped at asking before writes", () => {
+    const standing = {
+      toolName: "call_api",
+      destination: "https://api.example.com",
+      grantedAt: "2026-10-05T09:00:00.000Z",
+      expiresAt: "2026-11-04T09:00:00.000Z",
+    };
+
+    expect(
+      admitTeammateContextAuthority({
+        context: { ...polyContext, autonomyLevel: "partner", standingApprovals: [standing] },
+        trigger: "schedule",
+        ceiling: "assistant",
+        now: Date.parse("2026-10-07T09:00:00.000Z"),
+      }),
+    ).toMatchObject({
+      autonomyLevel: "assistant",
+      standingApprovals: [standing],
+      actingRulesSuspended: false,
+    });
   });
 
   it("keeps acting rules on the owner's own turns without a ceiling", () => {

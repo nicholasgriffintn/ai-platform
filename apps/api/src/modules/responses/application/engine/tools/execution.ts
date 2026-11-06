@@ -339,7 +339,7 @@ export const handleToolCalls = async (
             }).requiresApproval,
             standingEligible: isStandingApprovalEligible({
               autonomyLevel: req.request?.autonomy_level,
-              conversationType: req.request?.conversation_type,
+              teammateContextId: req.request?.teammate_context_id,
               effectClass: callEffectClass,
               destination: callDestination,
             }),

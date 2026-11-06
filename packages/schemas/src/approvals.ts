@@ -54,6 +54,8 @@ export const standingApprovalParamsSchema = z.object({
   standing_approval_id: z.string().min(3),
 });
 
+export const standingApprovalQuerySchema = z.object({ context_id: z.string().min(1).optional() });
+
 export function standingApprovalId(toolName: string, destination: string): string {
   return `${toolName}:${destination}`;
 }

@@ -14,6 +14,7 @@ import { mailCalendarRecipes } from "./catalog/mail-calendar";
 import { personalUtilityRecipes } from "./catalog/personal-utilities";
 import { getPlatformKnowledgeRecipes } from "./catalog/platform-knowledge";
 import { podcastRecipes } from "./catalog/podcasts";
+import { polyRoutineRecipes } from "./catalog/poly-routines";
 import type { CatalogRecipe } from "./catalog/shared";
 import { wellbeingRecipes } from "./catalog/wellbeing";
 import { workspaceRecipes } from "./catalog/workspace";
@@ -40,6 +41,7 @@ export function getAssistantRecipes(): AssistantRecipe[] {
   const catalogRecipes: CatalogRecipe[] = [
     ...getPlatformKnowledgeRecipes(),
     ...mailCalendarRecipes,
+    ...polyRoutineRecipes,
     ...coreIntegrationRecipes,
     ...configuredComposioRecipes,
     ...composioWorkflowRecipes,

@@ -1,32 +1,37 @@
-import type { TeammateContext } from "@ngriffin_uk/polychat-schemas";
-
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
-import { resolveFunctionTool } from "~/modules/tools/application/catalogue";
+import { findFunctionTool } from "~/modules/tools/application/catalogue";
 import {
   resolveToolCallDestination,
   resolveToolCallEffectClass,
 } from "~/modules/tools/application/effects";
 
-export async function readPendingPolyCall(
+export async function readPendingTeammateCall(
   context: ServiceContext,
-  polyContext: TeammateContext,
+  conversationId: string,
   interactionId: string,
 ) {
   const pending = await context.repositories
     .get(MessageRepository)
-    .getLatestPendingToolMessage(polyContext.homeConversationId);
+    .getLatestPendingToolMessage(conversationId);
 
   if (!pending || pending.tool_call_id !== interactionId || typeof pending.name !== "string") {
     return null;
   }
 
   const toolName = pending.name;
-  const effects = resolveFunctionTool(toolName).effects;
+  const tool = findFunctionTool(toolName);
+
+  if (!tool) {
+    return null;
+  }
+
+  const { effects } = tool;
   const rawArguments = pending.tool_call_arguments;
 
   return {
     toolName,
+    rawArguments,
     destination: resolveToolCallDestination({ effects, rawArguments }),
     effectClass: resolveToolCallEffectClass({ toolName, effects, rawArguments }),
   };

@@ -2,8 +2,14 @@ import {
   standingApprovalId,
   standingApprovalSchema,
   polyLookAroundSchema,
+  polyRoutineSetupSchema,
+  polyRoutinesSchema,
   type PolyAgenda,
   type PolyLookAround,
+  type PolyRoutineSetup,
+  type PolyRoutines,
+  type PolyRoutineTemplateId,
+  type SetupPolyRoutine,
   type UpdatePolyLookAround,
   type PolyHandoffDisagreement,
   type StandingApproval,
@@ -48,15 +54,35 @@ export class PolyService {
     );
   }
 
+  async readPolyRoutines(): Promise<PolyRoutines> {
+    return polyRoutinesSchema.parse(await requestJson<unknown>("/poly/routines", "GET"));
+  }
+
+  async setupPolyRoutine(input: SetupPolyRoutine): Promise<PolyRoutineSetup> {
+    return polyRoutineSetupSchema.parse(
+      await requestJson<unknown>("/poly/routines", "POST", input),
+    );
+  }
+
+  async removePolyRoutine(templateId: PolyRoutineTemplateId): Promise<void> {
+    await requestJson<unknown>(`/poly/routines/${encodeURIComponent(templateId)}`, "DELETE");
+  }
+
   async grantPolyStandingApproval(interactionId: string): Promise<StandingApproval> {
     return standingApprovalSchema.parse(
       await requestJson<unknown>("/approvals/standing", "POST", { interaction_id: interactionId }),
     );
   }
 
-  async revokePolyStandingApproval(toolName: string, destination: string): Promise<void> {
+  async revokePolyStandingApproval(
+    toolName: string,
+    destination: string,
+    contextId?: string,
+  ): Promise<void> {
+    const query = contextId ? `?context_id=${encodeURIComponent(contextId)}` : "";
+
     await requestJson<unknown>(
-      `/approvals/standing/${encodeURIComponent(standingApprovalId(toolName, destination))}`,
+      `/approvals/standing/${encodeURIComponent(standingApprovalId(toolName, destination))}${query}`,
       "DELETE",
     );
   }

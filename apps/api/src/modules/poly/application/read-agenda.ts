@@ -14,12 +14,13 @@ import { CorrectionRepository } from "~/modules/corrections/infrastructure/Corre
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
 import { handoffOverrideRef, readHandoffJudgement } from "~/modules/poly/domain/handoff-overrides";
+import { markTeammateOwnerSeen } from "~/modules/teammates/application/earned-trust";
 import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 
 import { buildPolyAgenda } from "./agenda";
 import { readPolyHandoff } from "./handoffs";
 import { readPolyLookAround } from "./look-around";
-import { describePolyContext, markPolyOwnerSeen, requirePolyContext } from "./poly-context";
+import { describePolyContext, requirePolyContext } from "./poly-context";
 
 const EMPTY_AGENDA: PolyAgendaLists = { needs_you: [], working_on: [], done: [], noted: [] };
 const NOTED_HORIZON_MS = 7 * 24 * 60 * 60 * 1000;
@@ -106,7 +107,7 @@ async function loadPolyAgendaForContext(
 export async function readPolyAgenda(context: ServiceContext): Promise<PolyAgenda> {
   const polyContext = await requirePolyContext(context);
 
-  await markPolyOwnerSeen(context, polyContext);
+  await markTeammateOwnerSeen(context, polyContext);
 
   return {
     ...describePolyContext(polyContext),
