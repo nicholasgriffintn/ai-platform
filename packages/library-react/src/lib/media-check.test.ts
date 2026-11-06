@@ -1,6 +1,8 @@
+import { API_BASE_URL } from "@ngriffin_uk/polychat-library-client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  canCheckMediaUrl,
   checkMediaFile,
   checkMediaUrl,
   describeMediaCheck,
@@ -70,6 +72,14 @@ describe("checkMediaUrl", () => {
     await expect(checkMediaUrl("https://example.com/a.png")).resolves.toEqual({
       kind: "unavailable",
     });
+  });
+});
+
+describe("canCheckMediaUrl", () => {
+  it("only offers a check for files the browser is allowed to read from the API", () => {
+    expect(canCheckMediaUrl(`${API_BASE_URL}/outputs/out-1/content`)).toBe(true);
+    expect(canCheckMediaUrl("data:image/png;base64,AAAA")).toBe(false);
+    expect(canCheckMediaUrl("https://example.com/a.png")).toBe(false);
   });
 });
 
