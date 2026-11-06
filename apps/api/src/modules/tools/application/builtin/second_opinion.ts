@@ -2,6 +2,7 @@ import { resolveTierModel } from "@ngriffin_uk/polychat-ai-models";
 import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
 import { stringifyMessageContent } from "@ngriffin_uk/polychat-ai-providers";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { MAX_REVIEWERS, MAX_SOURCE_LENGTH } from "~/config/limits";
 import { getLineupModelsForUser } from "~/modules/models/application/resolve";
@@ -131,24 +132,34 @@ export const second_opinion: ApiToolDefinition = {
       .filter(Boolean)
       .join("\n\n");
 
-    const result = await runPanel({
-      env: request.env,
-      completionId: context.completionId,
-      usageScopeId: context.toolCallId ?? context.completionId,
-      runId: request.request?.run_id,
-      runAttempt: request.request?.run_attempt,
-      user: request.user,
-      model: request.request?.model,
-      provider: request.request?.provider,
-      question: brief,
-      members,
-      turnBrief: REVIEW_BRIEF,
-      conclusionBrief: CONCLUSION_BRIEF,
-      maxTurns: Math.max(members.length, 2),
-      onTurn: async (turn) => {
-        await context.emitToolResult?.(buildTurnResponse(turn));
-      },
-    });
+    let result: Awaited<ReturnType<typeof runPanel>>;
+
+    try {
+      result = await runPanel({
+        env: request.env,
+        completionId: context.completionId,
+        usageScopeId: context.toolCallId ?? context.completionId,
+        runId: request.request?.run_id,
+        runAttempt: request.request?.run_attempt,
+        user: request.user,
+        model: request.request?.model,
+        provider: request.request?.provider,
+        question: brief,
+        members,
+        turnBrief: REVIEW_BRIEF,
+        conclusionBrief: CONCLUSION_BRIEF,
+        maxTurns: Math.max(members.length, 2),
+        onTurn: async (turn) => {
+          await context.emitToolResult?.(buildTurnResponse(turn));
+        },
+      });
+    } catch (error) {
+      return {
+        status: "error",
+        name: "second_opinion",
+        content: `No review took place, so nothing was checked. Tell the user the second opinion failed: ${getErrorMessage(error, "the reviewers did not respond")}`,
+      };
+    }
 
     return {
       status: "success",

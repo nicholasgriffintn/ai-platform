@@ -258,6 +258,7 @@ export function TaskDetail({
             {latestCompletion ? (
               <TaskLatestResult
                 completion={latestCompletion}
+                awaitingReview={task.status === "review"}
                 renderProgressSummary={renderProgressSummary}
               />
             ) : null}

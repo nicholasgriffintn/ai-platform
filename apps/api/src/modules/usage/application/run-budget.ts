@@ -6,10 +6,22 @@ import {
 } from "@ngriffin_uk/polychat-ai-billing";
 import { estimateMessagesTokens, type MessageTokenInput } from "@ngriffin_uk/polychat-ai-providers";
 import { creditsFromCreditMicros, type ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
-import { formatCredits } from "@ngriffin_uk/polychat-utility-core";
+import { formatCredits, isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-export const RUN_CAP_STOPPED_NOTICE = "This run stopped at its credit cap.";
+import type { Message } from "~/types";
+
+const RUN_CAP_STOPPED_NOTICE = "This run stopped at its credit cap.";
+
+export function runCapStoppedNotice(toolResults: readonly Message[]): string {
+  const images = toolResults.flatMap((result) =>
+    result.name === "create_image" && isRecord(result.data) && typeof result.data.url === "string"
+      ? [`![Generated image](${result.data.url})`]
+      : [],
+  );
+
+  return [RUN_CAP_STOPPED_NOTICE, ...images].join("\n\n");
+}
 
 export type RunStepDecision = { kind: "proceed" } | { kind: "stopped" };
 

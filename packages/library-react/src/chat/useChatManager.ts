@@ -216,6 +216,9 @@ export function useChatManager(
         return response;
       } catch (error) {
         console.error("Failed to send message:", error);
+        void queryClient.invalidateQueries({
+          queryKey: [CHATS_QUERY_KEY, getCurrentConversationId()],
+        });
 
         return {
           status: "error",

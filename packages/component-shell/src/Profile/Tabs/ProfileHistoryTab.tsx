@@ -38,6 +38,8 @@ export function ProfileHistoryTab() {
         after = nextAfter ?? undefined;
         part += 1;
       } while (after);
+
+      toast.success("Your export has downloaded");
     } catch (error) {
       console.error("Failed to export account data:", error);
       toast.error("Couldn't export your data", {
