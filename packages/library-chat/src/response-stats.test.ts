@@ -7,7 +7,6 @@ import {
   completeStreamActivityTool,
   createStreamActivity,
   estimateStreamActivityTokens,
-  formatComparisonCost,
   formatImpactMeasurement,
   getMessageStatsSegments,
   getRunningStreamActivityTools,
@@ -231,25 +230,5 @@ describe("message stats", () => {
     expect(readMessageImpact(assistantMessage({ usage: { impact: {} } }))).toBeUndefined();
     expect(readMessageImpact(assistantMessage({ usage: {} }))).toBeUndefined();
     expect(readMessageImpact(assistantMessage())).toBeUndefined();
-  });
-});
-
-describe("formatComparisonCost", () => {
-  it("shows the whole cost when every model call was priced", () => {
-    expect(formatComparisonCost({ costUsd: 0.0123, pricedCalls: 3, totalCalls: 3 })).toBe(
-      "~$0.012",
-    );
-  });
-
-  it("says when the cost only covers some of the model calls", () => {
-    expect(formatComparisonCost({ costUsd: 0.0123, pricedCalls: 2, totalCalls: 3 })).toBe(
-      "~$0.012 for 2 of 3 model calls",
-    );
-  });
-
-  it("never shows a zero cost for calls it could not price", () => {
-    expect(formatComparisonCost({ costUsd: null, pricedCalls: 0, totalCalls: 3 })).toBe(
-      "Cost not available",
-    );
   });
 });

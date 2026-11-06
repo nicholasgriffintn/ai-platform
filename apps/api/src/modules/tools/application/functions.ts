@@ -33,7 +33,6 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   run_council: { renderer: "council_conclusion", icon: "bot" },
   second_opinion_turn: { renderer: "second_opinion_turn", icon: "bot" },
   second_opinion: { renderer: "second_opinion", icon: "bot" },
-  compare_and_conclude: { renderer: "comparison", icon: "bot" },
   delegate: { renderer: "delegation_card", icon: "bot" },
   run_sandbox_task: { renderer: "sandbox_result", icon: "terminal" },
   run_code: { icon: "terminal", responseType: ToolResponseType.JSON },
