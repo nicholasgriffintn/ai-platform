@@ -101,6 +101,17 @@ export const mcpOAuthCallbackQuerySchema = z.object({
   state: z.string().min(1).max(200),
   code: z.string().min(1).max(4096).optional(),
   error: z.string().max(200).optional(),
+  iss: z.string().max(2048).optional(),
+});
+
+export const mcpClientMetadataDocumentSchema = z.object({
+  client_id: z.string(),
+  client_name: z.string(),
+  client_uri: z.string().optional(),
+  redirect_uris: z.array(z.string()),
+  grant_types: z.array(z.string()),
+  response_types: z.array(z.string()),
+  token_endpoint_auth_method: z.literal("none"),
 });
 
 export const mcpToolServerConfigurationSchema = z

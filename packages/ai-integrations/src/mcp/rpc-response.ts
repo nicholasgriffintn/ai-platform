@@ -17,7 +17,7 @@ function readEventStreamMessages(body: string): unknown[] {
 export function readJsonRpcResponse(
   body: string,
   contentType: string | null,
-  id: number,
+  id: number | string,
 ): JsonRpcResponse | null {
   const candidates = contentType?.includes("text/event-stream")
     ? readEventStreamMessages(body)

@@ -172,9 +172,9 @@ export {
   KNOWLEDGE_CONNECTOR_DESCRIPTORS,
 } from "./knowledge-descriptors.js";
 export {
-  MCP_PROTOCOL_VERSION,
   readMcpAppUiMeta,
   readMcpToolUiResourceUri,
+  type McpClient,
   type McpResourceContent,
   type McpTool,
   type McpToolCallResult,
@@ -191,14 +191,18 @@ export {
 export { parseMcpServerUrl } from "./mcp/server-url.js";
 export {
   buildMcpAuthorizationUrl,
+  buildMcpClientMetadataDocument,
   exchangeMcpAuthorizationCode,
+  isMcpAuthorizationResponseIssuerValid,
   refreshMcpAccessToken,
   registerMcpOAuthClient,
+  resolveMcpOAuthClient,
 } from "./mcp/oauth/client.js";
 export { discoverMcpAuthorization } from "./mcp/oauth/discovery.js";
 export {
   type McpAuthorizationDiscovery,
   type McpAuthorizationServer,
+  type McpClientMetadataDocument,
   type McpOAuthClient,
   type McpOAuthTokens,
 } from "./mcp/oauth/metadata.js";
