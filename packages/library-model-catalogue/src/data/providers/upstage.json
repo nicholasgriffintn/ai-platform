@@ -2,7 +2,15 @@
   "defaults": {
     "supportsToolCalls": true,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "dataRetention": {
+      "maxDays": "unknown",
+      "source": "https://www.upstage.ai/privacy-policy"
+    },
+    "dataLocation": {
+      "kind": "unknown",
+      "source": "https://www.upstage.ai/privacy-policy"
+    }
   },
   "models": {
     "solar-mini": {

@@ -2,7 +2,16 @@
   "defaults": {
     "supportsToolCalls": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "dataRetention": {
+      "maxDays": "unknown",
+      "zeroRetention": "account_setting",
+      "source": "https://vercel.com/docs/ai-gateway/capabilities/zdr"
+    },
+    "dataLocation": {
+      "kind": "routed",
+      "source": "https://vercel.com/docs/ai-gateway/security-and-compliance/regional-inference"
+    }
   },
   "models": {
     "openai/o3": {

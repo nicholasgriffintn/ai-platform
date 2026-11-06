@@ -3,7 +3,19 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "dataRetention": {
+      "maxDays": 0,
+      "zeroRetention": "default",
+      "source": "https://docs.deepinfra.com/account/data-privacy"
+    },
+    "dataLocation": {
+      "kind": "regions",
+      "regions": [
+        "us"
+      ],
+      "source": "https://deepinfra.com/privacy"
+    }
   },
   "models": {
     "moonshotai/Kimi-K2-Instruct": {
