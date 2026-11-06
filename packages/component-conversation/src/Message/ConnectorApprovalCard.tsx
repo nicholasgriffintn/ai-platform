@@ -1,5 +1,6 @@
 import { Badge, Button } from "@ngriffin_uk/polychat-component-ui";
 import { formatConnectorLabel, readConnectorApprovalRequest } from "@ngriffin_uk/polychat-schemas";
+import { describeValue } from "@ngriffin_uk/polychat-utility-core";
 import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -36,7 +37,7 @@ export function ConnectorApprovalCard({ data, onResolve }: ConnectorApprovalCard
   const isResolved = displayState !== "pending";
   const argumentSummary =
     data.argumentSummary && typeof data.argumentSummary === "object"
-      ? JSON.stringify(data.argumentSummary, null, 2)
+      ? describeValue(data.argumentSummary)
       : undefined;
   const resolve = async (nextResolution: "approved" | "rejected") => {
     if (!onResolve || isExpired) {
@@ -86,9 +87,9 @@ export function ConnectorApprovalCard({ data, onResolve }: ConnectorApprovalCard
       {argumentSummary ? (
         <div className="space-y-1">
           <div className="text-xs font-medium text-muted-foreground">Action details</div>
-          <pre className="max-h-48 overflow-auto rounded border border-attention/35 bg-surface p-2 text-xs text-foreground">
-            <code>{argumentSummary}</code>
-          </pre>
+          <p className="max-h-48 overflow-auto rounded border border-attention/35 bg-surface p-2 text-xs whitespace-pre-wrap text-foreground">
+            {argumentSummary}
+          </p>
         </div>
       ) : null}
 

@@ -4,6 +4,7 @@ import {
   comparableHttpUrl,
   hasUrlExtension,
   isCookieSameSite,
+  isRasterDataImageUrl,
   normaliseSameOriginRoute,
   readUrlExtension,
   readUrlPath,
@@ -123,5 +124,14 @@ describe("extractHttpUrls", () => {
         "See https://example.com/a. Also (https://example.com/b), and https://example.com/a again; ftp://no.",
       ),
     ).toEqual(["https://example.com/a", "https://example.com/b"]);
+  });
+});
+
+describe("isRasterDataImageUrl", () => {
+  it("accepts base64 raster images only", () => {
+    expect(isRasterDataImageUrl("data:image/gif;base64,R0lGODlhAQABAAAAACw=")).toBe(true);
+    expect(isRasterDataImageUrl("data:image/svg+xml;base64,PHN2Zz4=")).toBe(false);
+    expect(isRasterDataImageUrl("data:text/html;base64,PHNjcmlwdD4=")).toBe(false);
+    expect(isRasterDataImageUrl('data:image/png;base64,AAAA"onerror=')).toBe(false);
   });
 });

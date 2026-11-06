@@ -1,7 +1,7 @@
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { IEnv, IUser } from "~/types";
+import type { IEnv, IUser, Message } from "~/types";
 
 const mocks = vi.hoisted(() => ({
   getLineupModelsForUser: vi.fn(),
@@ -16,42 +16,67 @@ vi.mock("~/modules/models/application/resolve", () => ({
   getLineupModelsForUser: mocks.getLineupModelsForUser,
 }));
 
-import { resolveReviewers } from "../second_opinion";
+import { readReviewMaterial, resolveReviewers } from "../second_opinion";
 
 const env = {} as IEnv;
 const user = { id: 1 } as IUser;
-const usable = { matchingModel: "gpt-oss-120b", provider: "workers-ai", name: "GPT OSS" };
+const models = [
+  { matchingModel: "a", provider: "one", name: "A" },
+  { matchingModel: "b", provider: "two", name: "B" },
+  { matchingModel: "c", provider: "two", name: "C" },
+] as ModelConfigItem[];
 
 describe("resolveReviewers", () => {
   beforeEach(() => {
+    mocks.getLineupModelsForUser.mockResolvedValue({});
     mocks.resolveTierModel.mockReset();
-    mocks.getLineupModelsForUser.mockResolvedValue({
-      "gpt-oss": usable as ModelConfigItem,
+    mocks.resolveTierModel.mockImplementation((_lineup, _user, _tier, _mode, { isEligible }) => {
+      const config = models.find(isEligible);
+
+      return config ? { config } : null;
     });
   });
 
-  it("uses a requested model the person can run", async () => {
-    const reviewers = await resolveReviewers(["gpt-oss-120b"], env, user, "other");
+  it("picks two reviewers from different vendors", async () => {
+    const reviewers = await resolveReviewers(env, user, "other");
 
-    expect(reviewers.map((reviewer) => reviewer.provider)).toEqual(["workers-ai"]);
-    expect(mocks.resolveTierModel).not.toHaveBeenCalled();
+    expect(reviewers.map((reviewer) => reviewer.provider)).toEqual(["one", "two"]);
   });
 
-  it("never reaches for a model outside the person's lineup", async () => {
-    mocks.resolveTierModel.mockReturnValue({ config: usable });
+  it("never asks the model that answered", async () => {
+    const reviewers = await resolveReviewers(env, user, "a");
 
-    const reviewers = await resolveReviewers(["gpt-5-copilot-only"], env, user, "other");
+    expect(reviewers.map((reviewer) => reviewer.model)).toEqual(["b"]);
+  });
+});
 
-    expect(reviewers.map((reviewer) => reviewer.model)).toEqual(["gpt-oss-120b"]);
+describe("readReviewMaterial", () => {
+  const history: Message[] = [
+    { role: "user", content: "Earlier question" },
+    { role: "tool", name: "web_search", content: "Earlier result" },
+    { role: "assistant", content: "Earlier answer" },
+    { role: "user", content: "List the tools" },
+    { role: "assistant", content: "", tool_calls: [{ id: "call_1" }] },
+    { role: "tool", name: "mcp_list_tools", content: "ask_wiki_question" },
+    { role: "tool", name: "private", content: "hidden", data: { modelContext: false } },
+    { role: "assistant", content: "It offers ask_wiki_question" },
+    { role: "user", content: "Get a second opinion" },
+    { role: "assistant", content: "", tool_calls: [{ id: "call_2" }] },
+  ];
+
+  it("gives reviewers the question and only the tool results behind the answer", () => {
+    expect(readReviewMaterial(history)).toEqual({
+      answer: "It offers ask_wiki_question",
+      question: "List the tools",
+      toolResults: "mcp_list_tools:\nask_wiki_question",
+    });
   });
 
-  it("leaves the answering model out of the fallback", async () => {
-    mocks.resolveTierModel.mockReturnValue(null);
-
-    await expect(resolveReviewers(["unknown"], env, user, "gpt-oss-120b")).resolves.toEqual([]);
-
-    const options = mocks.resolveTierModel.mock.calls[0]?.[4];
-
-    expect(options?.isEligible(usable)).toBe(false);
+  it("keeps that evidence when the model passes the answer itself", () => {
+    expect(readReviewMaterial(history, "Rewritten answer")).toEqual({
+      answer: "Rewritten answer",
+      question: "List the tools",
+      toolResults: "mcp_list_tools:\nask_wiki_question",
+    });
   });
 });

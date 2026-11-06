@@ -6,6 +6,7 @@ import {
   classifyProviderRetryError,
   getProviderResponseErrorMessage,
   isProviderQuotaExhaustedError,
+  readProviderRejection,
   isProviderRateLimitError,
   parseProviderRetryAfterMs,
 } from "../provider-errors.js";
@@ -126,5 +127,18 @@ describe("provider quota exhaustion", () => {
     new AssistantError("limit", ErrorType.USAGE_LIMIT_ERROR, 429),
   ])("leaves rate limits and auth failures alone", (error) => {
     expect(isProviderQuotaExhaustedError(error)).toBe(false);
+  });
+});
+
+describe("readProviderRejection", () => {
+  it("explains a request the provider refused as invalid", () => {
+    expect(
+      readProviderRejection(422, { detail: "- input.level: level must be one of the following" }),
+    ).toBe("input.level: level must be one of the following");
+  });
+
+  it("keeps auth and server failures generic", () => {
+    expect(readProviderRejection(401, { message: "bad key sk-123" })).toBeNull();
+    expect(readProviderRejection(500, { message: "stack trace" })).toBeNull();
   });
 });

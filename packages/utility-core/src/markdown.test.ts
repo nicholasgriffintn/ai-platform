@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { fixMarkdown, removeMarkdownBlock, splitMarkdownBlocks } from "./markdown";
+import {
+  fixMarkdown,
+  removeMarkdownBlock,
+  splitMarkdownBlocks,
+  stripModelControlTokens,
+} from "./markdown";
 
 describe("fixMarkdown", () => {
   it("preserves complete markdown while downgrading top-level headings", () => {
@@ -55,6 +60,35 @@ describe("markdown blocks", () => {
         "## People",
         "1. Sam runs design",
       ].join("\n"),
+    );
+  });
+});
+
+describe("stripModelControlTokens", () => {
+  it("keeps only the final answer when a model leaks its channels", () => {
+    expect(
+      stripModelControlTokens(
+        "analysis The user asks.<|end|><|start|>assistantfinal Canberra.<|return|>",
+      ),
+    ).toBe("Canberra.");
+  });
+
+  it("hides a leaked tool plan", () => {
+    expect(
+      stripModelControlTokens("analysis> need images.assistant to=functions.create_image json={}"),
+    ).toBe("");
+  });
+
+  it("hides a leaked tool plan wrapped in control tokens", () => {
+    expect(
+      stripModelControlTokens("analysis> need images.assistant<|channel|> to=functions.x json={}"),
+    ).toBe("");
+  });
+
+  it("leaves ordinary text alone", () => {
+    expect(stripModelControlTokens("Use a | b in a table")).toBe("Use a | b in a table");
+    expect(stripModelControlTokens("analysis of the assistant role")).toBe(
+      "analysis of the assistant role",
     );
   });
 });

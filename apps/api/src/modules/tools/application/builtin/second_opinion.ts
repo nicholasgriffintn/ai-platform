@@ -1,20 +1,32 @@
 import { resolveTierModel } from "@ngriffin_uk/polychat-ai-models";
 import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
-import { stringifyMessageContent } from "@ngriffin_uk/polychat-ai-providers";
+import {
+  extractTextFromMessageContent,
+  stringifyMessageContent,
+} from "@ngriffin_uk/polychat-ai-providers";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
-import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
+import { describeValue, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
-import { MAX_REVIEWERS, MAX_SOURCE_LENGTH } from "~/config/limits";
+import { MAX_SOURCE_LENGTH } from "~/config/limits";
 import { getLineupModelsForUser } from "~/modules/models/application/resolve";
 import {
   runPanel,
   type PanelMember,
   type PanelTurn,
 } from "~/modules/responses/application/engine/panel";
-import type { IEnv, IUser } from "~/types";
+import type { IEnv, IUser, Message } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { second_opinion as second_opinionDescriptor } from "./definitions/second_opinion";
+
+const MAX_SECOND_OPINION_REVIEWERS = 2;
+const REVIEWER_TIERS = ["high", "medium", "low"] as const;
+
+interface ReviewMaterial {
+  answer: string;
+  question: string;
+  toolResults: string;
+}
 
 const REVIEW_BRIEF = getPromptText("apps/functions/second-opinion-brief");
 
@@ -32,28 +44,26 @@ function toReviewer(config: ModelConfigItem, index: number): PanelMember {
 }
 
 export async function resolveReviewers(
-  modelIds: readonly string[],
   env: IEnv,
   user: IUser | undefined,
   answeringModel: string | undefined,
 ): Promise<PanelMember[]> {
   const lineup = await getLineupModelsForUser(env, user);
-  const available = Object.values(lineup);
-  const requested = modelIds
-    .slice(0, MAX_REVIEWERS)
-    .flatMap(
-      (modelId) => lineup[modelId] ?? available.find((m) => m.matchingModel === modelId) ?? [],
-    );
+  const reviewers: ModelConfigItem[] = [];
 
-  if (requested.length > 0) {
-    return requested.map(toReviewer);
+  for (const tier of REVIEWER_TIERS) {
+    const next = resolveTierModel(lineup, user, tier, "agent", {
+      isEligible: (model) =>
+        model.matchingModel !== answeringModel &&
+        !reviewers.some((reviewer) => reviewer.provider === model.provider),
+    });
+
+    if (next && reviewers.length < MAX_SECOND_OPINION_REVIEWERS) {
+      reviewers.push(next.config);
+    }
   }
 
-  const fallback = resolveTierModel(lineup, user, "medium", "agent", {
-    isEligible: (model) => model.matchingModel !== answeringModel,
-  });
-
-  return fallback ? [toReviewer(fallback.config, 0)] : [];
+  return reviewers.map(toReviewer);
 }
 
 function buildTurnResponse(turn: PanelTurn) {
@@ -73,22 +83,44 @@ function buildTurnResponse(turn: PanelTurn) {
   };
 }
 
-async function resolveAnswerUnderReview(
-  context: Parameters<NonNullable<ApiToolDefinition["execute"]>>[1],
-  provided?: string,
-): Promise<{ answer: string; question: string }> {
-  if (provided) {
-    return { answer: provided.slice(0, MAX_SOURCE_LENGTH), question: "" };
-  }
+function isReviewableToolResult(message: Message): boolean {
+  return (
+    message.role === "tool" &&
+    !message.name?.startsWith("second_opinion") &&
+    !(isRecord(message.data) && message.data.modelContext === false)
+  );
+}
 
-  const history =
-    (await context.conversationManager?.get(context.completionId).catch(() => [])) ?? [];
-  const lastAssistant = [...history].reverse().find((message) => message.role === "assistant");
-  const lastUser = [...history].reverse().find((message) => message.role === "user");
+function describeToolResult(message: Message): string {
+  const output = [extractTextFromMessageContent(message.content), describeValue(message.data)]
+    .filter(Boolean)
+    .join("\n");
+
+  return `${message.name ?? "Tool"}:\n${output}`;
+}
+
+export function readReviewMaterial(history: Message[], provided?: string): ReviewMaterial {
+  const newestFirst = [...history].reverse();
+  const answerPosition = newestFirst.findIndex(
+    (message) => message.role === "assistant" && !message.tool_calls?.length,
+  );
+  const beforeAnswer = newestFirst.slice(answerPosition + 1);
+  const questionPosition = beforeAnswer.findIndex((message) => message.role === "user");
+  const answer = provided ?? stringifyMessageContent(newestFirst[answerPosition]?.content);
 
   return {
-    answer: stringifyMessageContent(lastAssistant?.content).slice(0, MAX_SOURCE_LENGTH),
-    question: stringifyMessageContent(lastUser?.content).slice(0, MAX_SOURCE_LENGTH),
+    answer: answer.slice(0, MAX_SOURCE_LENGTH),
+    question: stringifyMessageContent(beforeAnswer[questionPosition]?.content).slice(
+      0,
+      MAX_SOURCE_LENGTH,
+    ),
+    toolResults: beforeAnswer
+      .slice(0, Math.max(questionPosition, 0))
+      .filter(isReviewableToolResult)
+      .reverse()
+      .map(describeToolResult)
+      .join("\n\n")
+      .slice(0, MAX_SOURCE_LENGTH),
   };
 }
 
@@ -96,23 +128,20 @@ export const second_opinion: ApiToolDefinition = {
   ...second_opinionDescriptor,
   execute: async (args, context) => {
     const request = context.request;
-    const members = await resolveReviewers(
-      args.models as string[],
-      request.env,
-      request.user,
-      request.request?.model,
-    );
+    const members = await resolveReviewers(request.env, request.user, request.request?.model);
 
     if (members.length === 0) {
       return {
         status: "error",
         name: "second_opinion",
-        content: "None of the requested models are available to review the answer.",
+        content: "No other models are available to review this answer.",
       };
     }
 
-    const { answer, question } = await resolveAnswerUnderReview(
-      context,
+    const history =
+      (await context.conversationManager?.get(context.completionId).catch(() => [])) ?? [];
+    const { answer, question, toolResults } = readReviewMaterial(
+      history,
       args.answer as string | undefined,
     );
 
@@ -127,6 +156,7 @@ export const second_opinion: ApiToolDefinition = {
     const brief = [
       question ? `The user asked:\n${question}` : null,
       `The answer under review:\n${answer}`,
+      toolResults ? `What the tools returned for this answer:\n${toolResults}` : null,
       args.focus ? `The user wants this checked in particular: ${args.focus}` : null,
     ]
       .filter(Boolean)
@@ -153,11 +183,11 @@ export const second_opinion: ApiToolDefinition = {
           await context.emitToolResult?.(buildTurnResponse(turn));
         },
       });
-    } catch (error) {
+    } catch {
       return {
         status: "error",
         name: "second_opinion",
-        content: `No review took place, so nothing was checked. Tell the user the second opinion failed: ${getErrorMessage(error, "the reviewers did not respond")}`,
+        content: "The second opinion did not run, so nothing was checked.",
       };
     }
 
@@ -167,7 +197,7 @@ export const second_opinion: ApiToolDefinition = {
       content: `<second_opinion>\n${result.conclusion}\n</second_opinion>`,
       data: {
         renderer: "second_opinion",
-        models: members.map((member) => member.model),
+        models: members.map((member) => member.name),
         turns: result.turns,
         conclusion: result.conclusion,
         stoppedReason: result.stoppedReason,

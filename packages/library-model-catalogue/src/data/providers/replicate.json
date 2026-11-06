@@ -2176,8 +2176,8 @@
               "default": "block_only_high",
               "enum": [
                 "block_only_high",
-                "block_only_medium_and_above",
-                "block_only_low_and_above"
+                "block_medium_and_above",
+                "block_low_and_above"
               ]
             }
           ],

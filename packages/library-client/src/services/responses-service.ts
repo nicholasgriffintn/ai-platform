@@ -243,6 +243,7 @@ export function buildCreateResponseBody(params: CreateResponseParams): CreateRes
     agent,
     environment: toEnvironment(computeSite ?? requestOptionFields.compute_site, sandboxOptions),
     tools,
+    tool_choice: requestOptionFields.tool_choice,
     permission_mode: permissionMode ?? requestOptionFields.permission_mode,
     mode: mode ?? requestOptionFields.mode,
     compaction: generationSettings.compaction ?? requestOptionFields.compaction,

@@ -1,5 +1,10 @@
 import { ToolResponseType, type ToolReceipt } from "@ngriffin_uk/polychat-schemas";
-import { isRecord, readOptionalString, titleCaseSlug } from "@ngriffin_uk/polychat-utility-core";
+import {
+  describeValue,
+  isRecord,
+  readOptionalString,
+  titleCaseSlug,
+} from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message } from "./conversation-types.js";
 import { readToolReceipt } from "./tool-receipts.js";
@@ -416,7 +421,7 @@ function resolveToolResultContent(content: ToolResultPart["content"]) {
   }
 
   if (content) {
-    return JSON.stringify(content, null, 2);
+    return describeValue(content);
   }
 
   return "";

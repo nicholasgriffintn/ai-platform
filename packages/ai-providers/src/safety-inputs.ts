@@ -8,6 +8,10 @@ const PINNED_SAFETY_INPUTS: Readonly<Record<string, unknown>> = {
   safety_tolerance: 2,
 };
 
+export function isPinnedSafetyInput(field: InputSchemaInputFieldDescriptor): boolean {
+  return resolvePinnedSafetyInput(field) !== undefined;
+}
+
 export function resolvePinnedSafetyInput(field: InputSchemaInputFieldDescriptor): unknown {
   if (field.name === "safety_filter_level") {
     return field.enum?.find((level) => typeof level === "string" && level.includes("medium"));

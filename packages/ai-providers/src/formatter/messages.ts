@@ -51,10 +51,17 @@ export class MessageFormatter {
     }
 
     if (Array.isArray(content)) {
-      return content.map((item) => MessageFormatter.stringifyMessageContent(item)).join("\n");
+      return content
+        .map((item) => MessageFormatter.stringifyMessageContent(item))
+        .filter(Boolean)
+        .join("\n");
     }
 
     if (isRecord(content)) {
+      if (content.type === "thinking") {
+        return "";
+      }
+
       if (typeof content.text === "string") {
         return content.text;
       }

@@ -1,4 +1,5 @@
 import { isRecord } from "./objects.js";
+import { humaniseIdentifier } from "./strings.js";
 
 export function safeParseJson<T = any>(jsonString: string): T | null {
   try {
@@ -6,6 +7,58 @@ export function safeParseJson<T = any>(jsonString: string): T | null {
   } catch {
     return null;
   }
+}
+
+function isJsonValue(text: string): boolean {
+  const trimmed = text.trim();
+
+  return /^[[{]/.test(trimmed) && safeParseJson(trimmed) !== null;
+}
+
+export function withoutJsonText(text: string): string {
+  if (isJsonValue(text)) {
+    return "";
+  }
+
+  return text
+    .split("\n")
+    .filter((line) => !isJsonValue(line))
+    .join("\n")
+    .trim();
+}
+
+function describeField(label: string, text: string): string {
+  return text.includes("\n") ? `${label}:\n${text.replace(/^/gm, "  ")}` : `${label}: ${text}`;
+}
+
+export function describeValue(value: unknown): string {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  if (typeof value === "boolean") {
+    return value ? "Yes" : "No";
+  }
+
+  if (typeof value === "string") {
+    return isJsonValue(value) ? describeValue(safeParseJson(value)) : value;
+  }
+
+  if (Array.isArray(value)) {
+    const items = value.map(describeValue).filter(Boolean);
+
+    return items.join(items.some((item) => item.includes("\n")) ? "\n" : ", ");
+  }
+
+  if (isRecord(value)) {
+    return Object.entries(value)
+      .map(([key, item]) => ({ label: humaniseIdentifier(key), text: describeValue(item) }))
+      .filter(({ text }) => text)
+      .map(({ label, text }) => describeField(label, text))
+      .join("\n");
+  }
+
+  return String(value);
 }
 
 export function canonicalJson(value: unknown): string {

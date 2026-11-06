@@ -1,4 +1,5 @@
 import { getProviderModels } from "@ngriffin_uk/polychat-ai-models";
+import { isPinnedSafetyInput } from "@ngriffin_uk/polychat-ai-providers";
 import type { AppTheme, ModelModalities, ReplicateModel } from "@ngriffin_uk/polychat-schemas";
 
 const signatureMetadata: Record<
@@ -105,7 +106,10 @@ export function listReplicateModels(): ReplicateModel[] {
       modalitySignature: signature,
       modalityLabel: label,
       costPerRun: model.costPerRun,
-      inputSchema: model.inputSchema,
+      inputSchema: model.inputSchema && {
+        ...model.inputSchema,
+        fields: model.inputSchema.fields.filter((field) => !isPinnedSafetyInput(field)),
+      },
       reference: model.inputSchema?.reference,
       category,
       icon,

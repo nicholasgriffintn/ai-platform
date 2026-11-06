@@ -1,4 +1,4 @@
-import { generateId, isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { describeValue, generateId, isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message, MessageContent } from "./conversation-types.js";
 import { normaliseMessageParts } from "./message-parts.js";
@@ -165,7 +165,7 @@ export function normalizeMessage(message: NormalizableMessage): Message {
       newReasoning = thinkingPart.thinking ?? null;
     }
   } else if (content && !Array.isArray(content) && typeof content === "object") {
-    content = JSON.stringify(content);
+    content = describeValue(content);
   }
 
   if (!newReasoning && parts?.length) {
@@ -437,7 +437,7 @@ export function getMessageTextContent(message: Pick<Message, "content" | "parts"
   }
 
   if (isRecord(message.content)) {
-    return JSON.stringify(message.content);
+    return describeValue(message.content);
   }
 
   if (Array.isArray(message.parts)) {

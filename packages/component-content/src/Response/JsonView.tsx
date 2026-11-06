@@ -1,4 +1,5 @@
 import { Button } from "@ngriffin_uk/polychat-component-ui";
+import { humaniseIdentifier } from "@ngriffin_uk/polychat-utility-core";
 import { useCopyToClipboard } from "@ngriffin_uk/polychat-utility-react";
 import { Check, Copy } from "lucide-react";
 import { type JSX, useState } from "react";
@@ -22,15 +23,15 @@ export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
 
   const renderValue = (value: unknown, path: string, depth: number): JSX.Element => {
     if (value === null) {
-      return <span className="text-muted-foreground">null</span>;
+      return <span className="text-muted-foreground">None</span>;
     }
 
     if (value === undefined) {
-      return <span className="text-muted-foreground">undefined</span>;
+      return <span className="text-muted-foreground">None</span>;
     }
 
     if (typeof value === "boolean") {
-      return <span className="text-active-work">{value.toString()}</span>;
+      return <span className="text-active-work">{value ? "Yes" : "No"}</span>;
     }
 
     if (typeof value === "number") {
@@ -42,22 +43,28 @@ export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
         value.length > MAX_INLINE_STRING ? `${value.slice(0, MAX_INLINE_STRING)}…` : value;
 
       return (
-        <span className="break-words text-failure" title={value}>
-          "{truncated}"
+        <span className="break-words text-foreground" title={value}>
+          {truncated}
         </span>
       );
     }
 
     if (Array.isArray(value)) {
       if (value.length === 0) {
-        return <span className="text-muted-foreground">[]</span>;
+        return <span className="text-muted-foreground">Empty</span>;
       }
 
-      return renderBranch(path, depth, `Array[${value.length}]`, value.length, (index) => ({
-        key: `${path}-${index}`,
-        label: String(index),
-        value: value[index],
-      }));
+      return renderBranch(
+        path,
+        depth,
+        `${value.length} ${value.length === 1 ? "item" : "items"}`,
+        value.length,
+        (index) => ({
+          key: `${path}-${index}`,
+          label: String(index),
+          value: value[index],
+        }),
+      );
     }
 
     if (typeof value === "object") {
@@ -65,18 +72,24 @@ export const JsonView = ({ data, defaultExpandedDepth = 1 }: JsonViewProps) => {
       const keys = Object.keys(record);
 
       if (keys.length === 0) {
-        return <span className="text-muted-foreground">{"{}"}</span>;
+        return <span className="text-muted-foreground">Empty</span>;
       }
 
-      return renderBranch(path, depth, `Object{${keys.length}}`, keys.length, (index) => {
-        const key = keys[index];
+      return renderBranch(
+        path,
+        depth,
+        `${keys.length} ${keys.length === 1 ? "field" : "fields"}`,
+        keys.length,
+        (index) => {
+          const key = keys[index];
 
-        return {
-          key: `${path}-${key}`,
-          label: key,
-          value: record[key],
-        };
-      });
+          return {
+            key: `${path}-${key}`,
+            label: humaniseIdentifier(key),
+            value: record[key],
+          };
+        },
+      );
     }
 
     return <span>{JSON.stringify(value)}</span>;

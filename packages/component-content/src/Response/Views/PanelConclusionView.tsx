@@ -6,6 +6,11 @@ import {
 
 import { MemoizedMarkdown } from "../../markdown";
 
+const STOP_LABELS: Record<string, string> = {
+  consensus: "Consensus reached",
+  turn_budget: "Turn limit reached",
+};
+
 interface PanelConclusionData {
   conclusion?: string;
   models?: string[];
@@ -49,15 +54,21 @@ export function PanelConclusionView({
       ? decisionOptions.find((option) => option.id === evaluatedDecision.optionId)
       : undefined;
 
+  const stopLabel = conclusion.stoppedReason ? STOP_LABELS[conclusion.stoppedReason] : undefined;
+
   return (
     <div className={cn("space-y-1.5", embedded ? "" : "my-2")}>
       <div className="flex flex-wrap items-baseline gap-2 text-xs text-muted-foreground">
         <span className="font-medium text-foreground">{heading}</span>
-        {turnCount !== undefined && <span>{turnCount} turns</span>}
-        {conclusion.models && conclusion.models.length > 0 && (
-          <span className="font-mono">{conclusion.models.join(", ")}</span>
+        {turnCount !== undefined && (
+          <span>
+            {turnCount} {turnCount === 1 ? "turn" : "turns"}
+          </span>
         )}
-        {conclusion.stoppedReason && <span>{conclusion.stoppedReason}</span>}
+        {conclusion.models && conclusion.models.length > 0 && (
+          <span>{conclusion.models.join(", ")}</span>
+        )}
+        {stopLabel && <span>{stopLabel}</span>}
       </div>
       {selectedOption?.label && (
         <div className="flex flex-wrap items-center gap-2 rounded-md border border-border p-2.5 text-sm">

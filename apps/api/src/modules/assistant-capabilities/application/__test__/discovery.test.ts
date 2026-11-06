@@ -51,6 +51,22 @@ describe("discoverAssistantCapabilities", () => {
     expect(result.readiness).toMatchObject({ state: "ready", reasonCode: "ready" });
   });
 
+  it("reports a connected MCP integration as ready", () => {
+    const result = discoverAssistantCapabilities(sources({ mcpServerLabels: ["deepwiki"] }), {
+      query: "DeepWiki connector",
+      configured: false,
+      limit: 8,
+    });
+
+    expect(result.items).toEqual([
+      expect.objectContaining({
+        id: "mcp:deepwiki",
+        state: "ready",
+        invocation: expect.objectContaining({ toolName: "mcp_list_tools", availableNow: true }),
+      }),
+    ]);
+  });
+
   it("returns a fresh unknown result when discovery sources cannot be checked", async () => {
     const { createUnknownCapabilityDiscoveryResult } =
       await import("~/modules/assistant-capabilities/application/discovery");

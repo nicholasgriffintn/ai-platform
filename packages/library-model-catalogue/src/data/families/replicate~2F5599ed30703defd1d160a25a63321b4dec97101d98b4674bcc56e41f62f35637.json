@@ -5,7 +5,7 @@
         "text"
       ],
       "output": [
-        "text"
+        "image"
       ]
     },
     "strengths": [
@@ -13,7 +13,7 @@
     ],
     "supportsAttachments": false
   },
-  "description": "The replicate/5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637 family includes models that produce text.",
+  "description": "The replicate/5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637 family includes models that produce image.",
   "models": {
     "sdxl-lightning-4-step": {
       "defaults": {

@@ -49,6 +49,7 @@ import {
   isReadinessFresh,
   getModelInteractionCapabilities,
   isTerminalResponseStatus,
+  isWaitingResponseStatus,
 } from "@ngriffin_uk/polychat-schemas";
 import type {
   ConversationModeMetadata,
@@ -281,7 +282,9 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
   const latestResponseStatus = currentConversation?.latest_response?.status;
   const isReplyLive =
     isStreamLoading ||
-    (latestResponseStatus !== undefined && !isTerminalResponseStatus(latestResponseStatus));
+    (latestResponseStatus !== undefined &&
+      !isTerminalResponseStatus(latestResponseStatus) &&
+      !isWaitingResponseStatus(latestResponseStatus));
   const runSteering = useMemo<ConversationRunSteering | undefined>(() => {
     if (modeConfig?.runSteering) {
       return modeConfig.runSteering;

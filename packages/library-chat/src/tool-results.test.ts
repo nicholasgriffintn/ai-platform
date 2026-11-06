@@ -110,14 +110,14 @@ describe("resolveToolResultPartDisplay", () => {
     expect(display.result).toBeUndefined();
   });
 
-  it("serialises structured content so a non-string payload still reaches the renderer", () => {
+  it("shows structured content as readable text", () => {
     const part = {
       type: "tool_result",
       name: "call_api",
       content: { ok: true },
     } as unknown as ToolResultPart;
 
-    expect(resolveToolResultPartDisplay(part).result?.content).toBe('{\n  "ok": true\n}');
+    expect(resolveToolResultPartDisplay(part).result?.content).toBe("Ok: Yes");
   });
 
   it("renders historical tool search results as readable text", () => {

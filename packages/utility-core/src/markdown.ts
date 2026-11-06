@@ -101,8 +101,36 @@ function isLikelyIncomplete(markdown: string): boolean {
   );
 }
 
+const MODEL_CONTROL_TOKEN = /<\|[a-z_]+\|>/g;
+const MODEL_FINAL_CHANNEL = /<\|start\|>assistant(?:<\|channel\|>)?final(?:<\|message\|>)?/;
+
+const LEAKED_MODEL_PLAN = /^\s*analysis\b[\s\S]*\bassistant\s*(?:to=|commentary)/;
+const LEAKED_MODEL_ANSWER = /^\s*analysis\b[\s\S]*\bassistantfinal/;
+
+function removeControlTokens(text: string): string {
+  if (!text.includes("<|")) {
+    return text;
+  }
+
+  const finalChannel = MODEL_FINAL_CHANNEL.exec(text);
+  const answer = finalChannel ? text.slice(finalChannel.index + finalChannel[0].length) : text;
+
+  return answer.replace(MODEL_CONTROL_TOKEN, "").trim();
+}
+
+export function stripModelControlTokens(text: string): string {
+  const cleaned = removeControlTokens(text);
+  const leakedAnswer = LEAKED_MODEL_ANSWER.exec(cleaned);
+
+  if (leakedAnswer) {
+    return cleaned.slice(leakedAnswer[0].length).trim();
+  }
+
+  return LEAKED_MODEL_PLAN.test(cleaned) ? "" : cleaned;
+}
+
 export function fixMarkdown(markdown: string, isStreaming?: boolean): string {
-  const content = downgradeH1Headings(markdown);
+  const content = downgradeH1Headings(stripModelControlTokens(markdown));
 
   return isStreaming || isLikelyIncomplete(content) ? safeParseMarkdown(content) : content;
 }

@@ -10,6 +10,7 @@ export interface ProviderErrorBody {
   type?: unknown;
   message?: unknown;
   error?: unknown;
+  detail?: unknown;
 }
 
 interface ProviderErrorLike extends ProviderErrorBody {
@@ -83,7 +84,7 @@ export function getProviderErrorMessage(
     return typeof message === "string" ? message : undefined;
   }
 
-  return undefined;
+  return typeof responseJson?.detail === "string" ? responseJson.detail : undefined;
 }
 
 const MAX_LOGGED_RESPONSE_TEXT_LENGTH = 1000;
@@ -324,4 +325,22 @@ export function getProviderRetryAfterMs(error: unknown): number | undefined {
   return typeof retryAfterMs === "number" && Number.isFinite(retryAfterMs) && retryAfterMs >= 0
     ? retryAfterMs
     : undefined;
+}
+
+const MAX_REJECTION_LENGTH = 300;
+const REJECTED_REQUEST_STATUSES: ReadonlySet<number> = new Set([400, 413, 422]);
+
+export function readProviderRejection(
+  statusCode: number | undefined,
+  responseJson: ProviderErrorBody | null | undefined,
+): string | null {
+  if (statusCode === undefined || !REJECTED_REQUEST_STATUSES.has(statusCode) || !responseJson) {
+    return null;
+  }
+
+  const reason = getProviderErrorMessage(responseJson)
+    ?.replace(/^[-\s]+/, "")
+    .trim();
+
+  return reason ? reason.slice(0, MAX_REJECTION_LENGTH) : null;
 }

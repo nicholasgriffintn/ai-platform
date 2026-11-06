@@ -90,7 +90,6 @@ import {
   shouldUseNativeMcpGateway,
 } from "~/modules/tools/application/mcp-gateway-servers";
 import {
-  getModelToolDefinition,
   mergePersonalModelToolOptions,
   resolveModelToolConfigurations,
   type StoredModelToolConfiguration,
@@ -302,12 +301,9 @@ export class RequestPreparer {
   }
 
   private resolveSavedToolConfigurations(scope: RequestScope) {
-    const { options, user, projectContext, repositories } = scope;
-    const needsSavedToolConfiguration = options.enabled_tools?.some(
-      (toolId) => getModelToolDefinition(toolId)?.requiresConfiguration,
-    );
+    const { user, projectContext, repositories } = scope;
 
-    if (!user?.id || projectContext || !needsSavedToolConfiguration) {
+    if (!user?.id || projectContext) {
       return Promise.resolve([]);
     }
 

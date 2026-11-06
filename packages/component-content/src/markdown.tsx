@@ -1,10 +1,10 @@
 import { Button, cn } from "@ngriffin_uk/polychat-component-ui";
-import { fixMarkdown } from "@ngriffin_uk/polychat-utility-core";
+import { fixMarkdown, isRasterDataImageUrl } from "@ngriffin_uk/polychat-utility-core";
 import { useCopyToClipboard } from "@ngriffin_uk/polychat-utility-react";
 import { Check, Copy } from "lucide-react";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { Children, isValidElement, memo, useMemo } from "react";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { defaultUrlTransform, type UrlTransform } from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
 
@@ -100,6 +100,9 @@ const components = {
   ),
 };
 
+const allowInlineImages: UrlTransform = (url, key) =>
+  key === "src" && isRasterDataImageUrl(url) ? url : defaultUrlTransform(url);
+
 const rehypePlugins = [() => rehypeHighlight({ detect: false })];
 const remarkPlugins = [remarkGfm];
 
@@ -111,7 +114,8 @@ export interface MarkdownProps {
 
 export function Markdown({ children, className, isStreaming = false }: MarkdownProps) {
   const markdownClassName = useMemo(
-    () => `max-w-full w-full markdown prose dark:prose-invert prose-zinc ${className || ""}`,
+    () =>
+      `max-w-full w-full markdown prose dark:prose-invert prose-zinc prose-code:before:content-none prose-code:after:content-none ${className || ""}`,
     [className],
   );
   const processedMarkdown = useMemo(
@@ -125,6 +129,7 @@ export function Markdown({ children, className, isStreaming = false }: MarkdownP
         components={components}
         rehypePlugins={rehypePlugins}
         remarkPlugins={remarkPlugins}
+        urlTransform={allowInlineImages}
       >
         {processedMarkdown}
       </ReactMarkdown>

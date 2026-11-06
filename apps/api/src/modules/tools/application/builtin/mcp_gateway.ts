@@ -77,6 +77,14 @@ function resultContent(result: FormattedMcpToolResult): string | MessageContent[
   ];
 }
 
+function describeToolsForPeople(label: string, tools: readonly McpTool[]): string {
+  const lines = tools.map((tool) =>
+    tool.description ? `- **${tool.name}**: ${tool.description}` : `- **${tool.name}**`,
+  );
+
+  return [`**${label}** offers these tools:`, ...lines].join("\n");
+}
+
 function describeTool(tool: McpTool): string {
   const description = tool.description?.replace(/\s+/g, " ").trim().slice(0, MAX_DESCRIPTION_CHARS);
   const hints = [
@@ -178,7 +186,7 @@ export const mcp_list_tools: ApiToolDefinition = {
         status: "success",
         name: MCP_LIST_TOOLS_NAME,
         content: [header, ...shown.map(describeTool)].join("\n").slice(0, MAX_RESULT_CHARS),
-        data: { integration: server.label, tools: shown.map((tool) => tool.name) },
+        data: { markdown: describeToolsForPeople(server.label, shown) },
       };
     } catch (error) {
       return failure(MCP_LIST_TOOLS_NAME, error);

@@ -64,7 +64,7 @@ export function resolveTextResponseData(result: Record<string, unknown>, respons
     const content = responseData.content;
 
     return {
-      content: typeof content === "string" ? content : JSON.stringify(content, null, 2),
+      content: typeof content === "string" ? content : "",
     };
   }
 
@@ -91,6 +91,8 @@ export function resolveTableResponseData(responseData: unknown): TableResponseDa
 
   return { headers, rows };
 }
+
+const STORED_FILE_URL = /\/(?:outputs|sources)\/[^/]+\/content(?:[?#]|$)/;
 
 export function resolveGeneratedImageResponseData(
   responseData: unknown,
@@ -145,8 +147,15 @@ function resolveGeneratedImageUrl(
     readOptionalString(payload.imageUrl) ??
     readOptionalString(payload.image_url) ??
     resolveGeneratedAttachmentUrl(payload.attachments) ??
-    (isScreenshot ? undefined : resolveDirectImageUrl(payload.url))
+    (isScreenshot ? undefined : resolveDirectImageUrl(payload.url)) ??
+    resolveStoredGeneratedImageUrl(payload)
   );
+}
+
+function resolveStoredGeneratedImageUrl(payload: Record<string, unknown>): string | undefined {
+  const url = readOptionalString(payload.url);
+
+  return url && payload.seed !== undefined && STORED_FILE_URL.test(url) ? url : undefined;
 }
 
 function resolveGeneratedAudioUrl(payload: Record<string, unknown>): string | undefined {

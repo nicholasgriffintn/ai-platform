@@ -5,7 +5,9 @@ import { isGoalError, type GoalError } from "@ngriffin_uk/polychat-library-goals
 import { isSandboxError, type SandboxError } from "@ngriffin_uk/polychat-library-sandbox";
 import { isTaskError, type TaskError } from "@ngriffin_uk/polychat-library-tasks";
 import { isToolError, type ToolError } from "@ngriffin_uk/polychat-library-tools";
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import { readProviderRejection } from "@ngriffin_uk/polychat-utility-server/provider-errors";
 
 const logger = getLogger({ prefix: "utils/errors" });
 
@@ -245,8 +247,24 @@ export function handleAIServiceError(error: AssistantError): Response {
       );
     case ErrorType.PROVIDER_ERROR:
     case ErrorType.EXTERNAL_API_ERROR:
-    case ErrorType.TOOL_CALL_ERROR:
+    case ErrorType.TOOL_CALL_ERROR: {
       logger.error("External service error", logContext);
+
+      const { responseJson } = error.context;
+      const rejection = readProviderRejection(
+        error.statusCode,
+        isRecord(responseJson) ? responseJson : null,
+      );
+
+      if (rejection) {
+        return Response.json(
+          {
+            error: `The provider rejected this request: ${rejection}`,
+            requestId: error.context.requestId,
+          },
+          { status: 422 },
+        );
+      }
 
       return Response.json(
         {
@@ -255,6 +273,8 @@ export function handleAIServiceError(error: AssistantError): Response {
         },
         { status: 502 },
       );
+    }
+
     case ErrorType.EMAIL_SEND_FAILED:
       logger.error("Email service error", logContext);
 

@@ -15,6 +15,7 @@ import { listAssistantRecipes, listRecipeInstallations } from "~/modules/recipes
 import { resolveEnabledFunctionToolNames } from "~/modules/tools/application/availability";
 import { listFunctionToolDefinitions } from "~/modules/tools/application/catalogue";
 import { formatFunctionName } from "~/modules/tools/application/functions";
+import { readMcpGatewayServers } from "~/modules/tools/application/mcp-gateway-servers";
 import { PermissionChecker } from "~/modules/tools/application/permissions";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 import { resolveProjectRecipeConnectorScope } from "~/modules/workspaces/application/projectRecipeConnectorScope";
@@ -158,6 +159,9 @@ export async function loadCapabilityDiscoverySources(
     installations,
     isPro: hasProEntitlement(user),
     isSignedIn: Boolean(user?.id),
+    mcpServerLabels: readMcpGatewayServers(request.request?.tool_options?.mcp_servers).map(
+      (server) => server.label,
+    ),
     ...(request.memoryScope?.type === "project"
       ? { projectId: request.memoryScope.projectId }
       : {}),

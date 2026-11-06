@@ -214,7 +214,7 @@ function OutputRenderer({ output }: OutputRendererProps) {
               const url = getStringProperty(item.image_url, "url");
 
               if (url) {
-                return <OutputItem key={itemKey} item={url} />;
+                return <OutputItem key={itemKey} item={url} kind="image" />;
               }
             }
 
@@ -222,7 +222,7 @@ function OutputRenderer({ output }: OutputRendererProps) {
               const url = getStringProperty(item.audio_url, "url");
 
               if (url) {
-                return <OutputItem key={itemKey} item={url} />;
+                return <OutputItem key={itemKey} item={url} kind="audio" />;
               }
             }
 
@@ -230,7 +230,7 @@ function OutputRenderer({ output }: OutputRendererProps) {
               const url = getStringProperty(item.video_url, "url");
 
               if (url) {
-                return <OutputItem key={itemKey} item={url} />;
+                return <OutputItem key={itemKey} item={url} kind="video" />;
               }
             }
           }
@@ -254,9 +254,10 @@ function OutputRenderer({ output }: OutputRendererProps) {
 
 interface OutputItemProps {
   item: unknown;
+  kind?: "image" | "audio" | "video";
 }
 
-function OutputItem({ item }: OutputItemProps) {
+function OutputItem({ item, kind }: OutputItemProps) {
   const url =
     typeof item === "string"
       ? item
@@ -270,9 +271,9 @@ function OutputItem({ item }: OutputItemProps) {
     );
   }
 
-  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-  const isVideo = /\.(mp4|webm|mov)$/i.test(url);
-  const isAudio = /\.(mp3|wav|ogg)$/i.test(url);
+  const isImage = kind === "image" || (!kind && /\.(jpg|jpeg|png|gif|webp)$/i.test(url));
+  const isVideo = kind === "video" || (!kind && /\.(mp4|webm|mov)$/i.test(url));
+  const isAudio = kind === "audio" || (!kind && /\.(mp3|wav|ogg)$/i.test(url));
 
   if (isImage) {
     return (

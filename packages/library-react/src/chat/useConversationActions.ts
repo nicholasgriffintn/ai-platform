@@ -21,6 +21,8 @@ import { useConversationScope } from "../state/conversation-scope.js";
 import { useLoadingActions } from "../state/LoadingContext.js";
 import { useConversationStorage } from "./useConversationStorage.js";
 
+const SECOND_OPINION_TOOL = "second_opinion";
+
 export function useConversationActions(
   generateResponse: (
     messages: Message[],
@@ -369,7 +371,11 @@ export function useConversationActions(
           messages,
           currentConversationId,
           "Asking for a second opinion...",
-          undefined,
+          {
+            ...requestOptions,
+            enabled_tools: [...(requestOptions?.enabled_tools ?? []), SECOND_OPINION_TOOL],
+            tool_choice: { type: "function", function: { name: SECOND_OPINION_TOOL } },
+          },
           { generateTitle: false },
         );
       } catch (error) {
@@ -388,6 +394,7 @@ export function useConversationActions(
       isPro,
       updateConversation,
       generateResponseWithLoading,
+      requestOptions,
     ],
   );
 

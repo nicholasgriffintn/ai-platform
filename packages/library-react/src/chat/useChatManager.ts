@@ -7,6 +7,7 @@ import type {
 import { createGoalMarkerMessage } from "@ngriffin_uk/polychat-library-chat/message-goal-status";
 import { normalizeSelectedModel } from "@ngriffin_uk/polychat-library-chat/model-selection";
 import {
+  ApiError,
   CHATS_QUERY_KEY,
   apiService,
   useChatStore,
@@ -216,9 +217,15 @@ export function useChatManager(
         return response;
       } catch (error) {
         console.error("Failed to send message:", error);
-        void queryClient.invalidateQueries({
-          queryKey: [CHATS_QUERY_KEY, getCurrentConversationId()],
-        });
+
+        const failedConversationId = getCurrentConversationId();
+
+        if (failedConversationId && error instanceof ApiError) {
+          useChatStore.getState().markConversationRemoteAvailable(failedConversationId);
+          void queryClient.invalidateQueries({
+            queryKey: [CHATS_QUERY_KEY, failedConversationId],
+          });
+        }
 
         return {
           status: "error",

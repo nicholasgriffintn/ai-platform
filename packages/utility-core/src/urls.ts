@@ -229,3 +229,9 @@ export function extractHttpUrls(text: string): string[] {
 
   return [...urls];
 }
+
+const RASTER_DATA_IMAGE_URL = /^data:image\/(?:png|jpe?g|gif|webp);base64,[a-z0-9+/]+={0,2}$/i;
+
+export function isRasterDataImageUrl(url: string): boolean {
+  return RASTER_DATA_IMAGE_URL.test(url);
+}

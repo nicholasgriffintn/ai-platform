@@ -1,3 +1,5 @@
+import { withoutJsonText } from "@ngriffin_uk/polychat-utility-core";
+
 import { BoundedMarkdown } from "./BoundedMarkdown";
 import { DefinitionListView } from "./DefinitionListView";
 import { GeneratedAudioView } from "./GeneratedAudioView";
@@ -102,9 +104,7 @@ export function CustomView({
 }
 
 function ToolNarrative({ content }: { content?: string }) {
-  if (typeof content !== "string" || !content.trim()) {
-    return null;
-  }
+  const narrative = typeof content === "string" ? withoutJsonText(content) : "";
 
-  return <BoundedMarkdown content={content} />;
+  return narrative ? <BoundedMarkdown content={narrative} /> : null;
 }

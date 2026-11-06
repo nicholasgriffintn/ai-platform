@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { MAX_REVIEWERS, MAX_SOURCE_LENGTH } from "~/config/limits";
+import { MAX_SOURCE_LENGTH } from "~/config/limits";
 import type { FunctionToolDescriptor } from "~/types/functions";
 
 export const second_opinion: FunctionToolDescriptor = {
@@ -12,18 +12,10 @@ export const second_opinion: FunctionToolDescriptor = {
   effects: { effectClass: "read" },
   intentEvidence: (input) => ({
     operation: "second_opinion",
-    models: input.models,
     answer: input.answer,
     focus: input.focus,
   }),
   inputSchema: z.object({
-    models: z
-      .array(z.string().min(1))
-      .min(1)
-      .max(MAX_REVIEWERS)
-      .describe(
-        "Model ids to review the answer. Pick models that differ from the one that answered, and from each other.",
-      ),
     answer: z
       .string()
       .max(MAX_SOURCE_LENGTH)

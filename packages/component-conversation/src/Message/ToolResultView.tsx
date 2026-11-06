@@ -5,6 +5,7 @@ import {
   shouldHideToolChrome,
   type ToolResultDisplay,
 } from "@ngriffin_uk/polychat-library-chat/tool-results";
+import { describeValue } from "@ngriffin_uk/polychat-utility-core";
 import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { useState } from "react";
 
@@ -24,22 +25,6 @@ const STATUS_TONE: Record<string, string> = {
   cancelled: "text-failure",
   pending: "text-attention",
   in_progress: "text-attention",
-};
-
-const formatInput = (input: unknown): string | null => {
-  if (input === undefined || input === null || input === "") {
-    return null;
-  }
-
-  if (typeof input === "string") {
-    try {
-      return JSON.stringify(JSON.parse(input), null, 2);
-    } catch {
-      return input;
-    }
-  }
-
-  return JSON.stringify(input, null, 2);
 };
 
 export const ToolResultView = ({
@@ -77,7 +62,7 @@ export const ToolResultView = ({
     );
   }
 
-  const formattedInput = formatInput(input);
+  const formattedInput = describeValue(input);
   const isRunning = display.status === "in_progress" || display.status === "pending";
   const tone = display.status ? STATUS_TONE[display.status] : undefined;
 
@@ -108,9 +93,9 @@ export const ToolResultView = ({
       </div>
 
       {showInput && formattedInput && (
-        <pre className="mt-1.5 overflow-x-auto rounded border border-border bg-surface-elevated p-2 text-xs text-foreground">
+        <p className="mt-1.5 rounded border border-border bg-surface-elevated p-2 text-xs break-words whitespace-pre-wrap text-foreground">
           {formattedInput}
-        </pre>
+        </p>
       )}
 
       {display.result && (

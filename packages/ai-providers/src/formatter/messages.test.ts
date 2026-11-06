@@ -361,3 +361,14 @@ describe("tool result images", () => {
     expect(JSON.stringify(output)).toContain("https://example.com/d1");
   });
 });
+
+describe("stringifyMessageContent", () => {
+  it("leaves hidden reasoning out of message text", () => {
+    expect(
+      MessageFormatter.stringifyMessageContent([
+        { type: "thinking", thinking: "Private reasoning", signature: "sig" },
+        { type: "text", text: "The answer." },
+      ]),
+    ).toBe("The answer.");
+  });
+});

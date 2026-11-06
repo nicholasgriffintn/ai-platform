@@ -250,6 +250,10 @@ function resolveModelResponseText(value: unknown): string | undefined {
   return extractTextFromMessageContent(value) || undefined;
 }
 
+export function toolChoiceForStep<Choice>(toolChoice: Choice, step: number): Choice | "auto" {
+  return step > 1 && toolChoice !== undefined && toolChoice !== "none" ? "auto" : toolChoice;
+}
+
 export function createAgentProviderIO(options?: AgentProviderIOOptions): AgentProviderIO {
   return new AgentProviderIO(options);
 }

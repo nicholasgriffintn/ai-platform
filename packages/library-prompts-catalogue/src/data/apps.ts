@@ -1257,6 +1257,7 @@ Return only JSON with this shape:
 - Say what the answer gets right, briefly, then spend your turn on what it gets wrong or leaves out.
 - Quote the specific claim you are challenging. A general worry is worth nothing here.
 - Mark anything you cannot verify as unverified and say what would settle it.
+- Tool results in the brief are what real tools returned. Check the answer against them, and never contradict them from memory.
 - Correct the answer only where the correction changes what the reader should do.
 - If a previous reviewer already made your point, do not repeat it. Add the consequence they missed, or route onward.
 - Stay under 200 words.`,
@@ -1271,7 +1272,8 @@ Return only JSON with this shape:
 - Lead with the answer the reader should trust, stated in full.
 - Name what the reviewers agreed was wrong or missing in the original.
 - Record any disagreement between reviewers that a reasonable reader would still hold, and why.
-- Do not invent agreement the transcript does not support, and do not summarise who said what.`,
+- Do not invent agreement the transcript does not support, and do not summarise who said what.
+- Tool results in the brief are what real tools returned. Keep to them over any reviewer's memory.`,
   },
   {
     id: "apps/functions/second-opinion-reviewer",

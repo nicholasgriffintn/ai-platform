@@ -5,7 +5,7 @@
         "text"
       ],
       "output": [
-        "text"
+        "audio"
       ]
     },
     "strengths": [
@@ -14,7 +14,7 @@
     ],
     "supportsAttachments": true
   },
-  "description": "The replicate/671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb family includes models that produce text.",
+  "description": "The replicate/671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb family includes models that produce audio.",
   "models": {
     "musicgen": {
       "defaults": {

@@ -32,7 +32,7 @@ describe("pinned safety inputs", () => {
         {
           name: "safety_filter_level",
           type: "string",
-          enum: ["block_only_high", "block_only_medium_and_above"],
+          enum: ["block_only_high", "block_medium_and_above"],
         },
       ]),
     );
@@ -41,7 +41,7 @@ describe("pinned safety inputs", () => {
       disable_safety_checker: false,
       moderation: "auto",
       safety_tolerance: 2,
-      safety_filter_level: "block_only_medium_and_above",
+      safety_filter_level: "block_medium_and_above",
     });
   });
 
@@ -75,5 +75,15 @@ describe("getGoogleSafetySettings", () => {
   it("keeps the sexual content filter on for models that output images", () => {
     expect(sexualContentThreshold(["text", "image"])).toBe("BLOCK_LOW_AND_ABOVE");
     expect(sexualContentThreshold(["text"])).toBe("BLOCK_NONE");
+  });
+});
+
+describe("Replicate safety levels in the catalogue", () => {
+  it("pins Nano Banana Pro to a level Replicate accepts", () => {
+    const field = Object.values(getModels())
+      .flatMap((model) => model.inputSchema?.fields ?? [])
+      .find((candidate) => candidate.enum?.includes("block_only_high"));
+
+    expect(field && resolvePinnedSafetyInput(field)).toBe("block_medium_and_above");
   });
 });

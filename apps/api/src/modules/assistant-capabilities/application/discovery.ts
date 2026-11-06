@@ -1,3 +1,4 @@
+import { MCP_LIST_TOOLS_NAME } from "@ngriffin_uk/polychat-schemas";
 import type {
   AssistantRecipe,
   CapabilityDiscoveryItem,
@@ -26,6 +27,7 @@ export interface CapabilityDiscoverySources {
   installations: readonly RecipeInstallation[];
   isPro: boolean;
   isSignedIn: boolean;
+  mcpServerLabels?: readonly string[];
   projectId?: string;
   recipes: readonly AssistantRecipe[];
   tools: readonly DiscoverableFunctionTool[];
@@ -223,6 +225,24 @@ function createConnectorItem(
   };
 }
 
+function createMcpServerItem(label: string): CapabilityDiscoveryItem {
+  return {
+    id: `mcp:${label}`,
+    kind: "connector",
+    name: label,
+    description: `${label} MCP integration connected to this conversation.`,
+    configured: true,
+    state: "ready",
+    reason: `${label} is connected and ready to use.`,
+    tags: ["connector", "mcp"],
+    invocation: {
+      toolName: MCP_LIST_TOOLS_NAME,
+      availableNow: true,
+      instruction: `Call ${MCP_LIST_TOOLS_NAME} with integration "${label}".`,
+    },
+  };
+}
+
 function createRecipeItem(params: {
   access: CapabilityActivationAccess;
   recipe: AssistantRecipe;
@@ -382,6 +402,7 @@ export function collectCapabilityItems(
     ...sources.connectors.map((connector) =>
       createConnectorItem(connector, sources.isPro, sources),
     ),
+    ...(sources.mcpServerLabels ?? []).map(createMcpServerItem),
   ];
 }
 
@@ -394,7 +415,7 @@ export function filterCapabilityItems(
   return items
     .filter((item) => !allowedKinds || allowedKinds.has(item.kind))
     .filter((item) =>
-      filters.configured === undefined || item.kind === "tool"
+      filters.configured === undefined || item.kind === "tool" || item.state === "ready"
         ? true
         : item.configured === filters.configured,
     );

@@ -3,7 +3,7 @@ import {
   authoredSkillProvenanceSchema,
   type AuthoredSkillProvenance,
 } from "@ngriffin_uk/polychat-schemas";
-import { isRecord, truncateText } from "@ngriffin_uk/polychat-utility-core";
+import { describeValue, isRecord, truncateText } from "@ngriffin_uk/polychat-utility-core";
 
 import type { Message, MessageUsage } from "./conversation-types.js";
 
@@ -256,10 +256,7 @@ export function buildAgentTraceEntries(messages: readonly Message[]): AgentTrace
         id: `tool-call:${message.id}:${toolCallId}`,
         type: "tool_call",
         label: toolCall.function.name,
-        detail:
-          typeof toolCall.function.arguments === "string"
-            ? toolCall.function.arguments
-            : JSON.stringify(toolCall.function.arguments),
+        detail: describeValue(toolCall.function.arguments),
       });
     }
 
@@ -276,7 +273,7 @@ export function buildAgentTraceEntries(messages: readonly Message[]): AgentTrace
           id: `tool-call:${message.id}:${toolCallId}`,
           type: "tool_call",
           label: part.name,
-          detail: typeof part.input === "string" ? part.input : JSON.stringify(part.input),
+          detail: describeValue(part.input),
         });
       }
 
@@ -286,7 +283,7 @@ export function buildAgentTraceEntries(messages: readonly Message[]): AgentTrace
           type: "tool_result",
           label: part.name ?? "Tool result",
           status: part.status,
-          detail: typeof part.content === "string" ? part.content : JSON.stringify(part.content),
+          detail: describeValue(part.content),
           provenance: readAuthoredSkillProvenance(part.name, part.status, part.data),
         });
       }

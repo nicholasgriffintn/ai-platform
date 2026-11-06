@@ -1,3 +1,4 @@
+import { describeValue } from "@ngriffin_uk/polychat-utility-core";
 import { useState } from "react";
 
 interface TableViewProps {
@@ -21,7 +22,7 @@ const formatCell = (value: unknown, format?: string): string => {
   }
 
   if (typeof value === "object") {
-    return JSON.stringify(value);
+    return describeValue(value).replace(/\n\s*/g, ", ") || "—";
   }
 
   const scalar = value as string | number;
