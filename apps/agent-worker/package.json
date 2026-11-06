@@ -11,15 +11,15 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
-    "@earendil-works/pi-ai": "1.4.0",
-    "@earendil-works/pi-durable": "1.1.0",
+    "@earendil-works/pi-ai": "1.5.0",
+    "@earendil-works/pi-durable": "1.5.0",
     "@ngriffin_uk/polychat-library-sandbox": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@ngriffin_uk/polychat-utility-server": "workspace:^",
     "@opencode/plugin": "2.0.27",
     "@opencode/sdk": "2.0.27",
-    "agents": "0.30.1",
+    "agents": "0.33.0",
     "zod": "catalog:"
   },
   "devDependencies": {

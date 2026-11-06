@@ -26,6 +26,7 @@
     "typecheck": "tsc -b tsconfig.typecheck.json"
   },
   "dependencies": {
+    "@modelcontextprotocol/client": "2.4.0",
     "@ngriffin_uk/polychat-library-composio": "workspace:^",
     "@ngriffin_uk/polychat-library-policy": "workspace:^",
     "@ngriffin_uk/polychat-schemas": "workspace:^",

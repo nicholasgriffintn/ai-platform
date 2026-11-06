@@ -1,27 +1,31 @@
-import {
-  ResponseBodyTooLargeError,
-  readResponseTextWithinLimit,
-} from "@ngriffin_uk/polychat-utility-server/http";
+import { Client, ProtocolError, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
+import type z from "zod/v4";
 
 import {
-  MCP_PROTOCOL_VERSION,
   mcpResourceContentSchema,
   mcpResourceReadResultSchema,
   mcpToolCallResultSchema,
   mcpToolListResultSchema,
   mcpToolSchema,
+  type McpClient,
   type McpResourceContent,
   type McpTool,
   type McpToolCallResult,
 } from "./contracts.js";
-import { McpRequestError } from "./errors.js";
-import { readJsonRpcResponse } from "./rpc-response.js";
+import { toMcpRequestError } from "./errors.js";
+import { createMcpFetch } from "./mcp-fetch.js";
+import {
+  buildMcpParamHeaders,
+  readMcpParamHeaders,
+  type McpParamHeader,
+} from "./mcp-param-headers.js";
 import { parseMcpServerUrl } from "./server-url.js";
 
 const DEFAULT_TIMEOUT_MS = 15_000;
-const MAX_RESPONSE_BYTES = 2_000_000;
 const MAX_TOOL_PAGES = 5;
 const MAX_TOOLS = 200;
+const SDK_TIMEOUT_DISABLED_MS = 2_147_483_647;
+const HEADER_MISMATCH_CODE = -32020;
 
 export interface McpHttpClientOptions {
   url: string;
@@ -31,15 +35,18 @@ export interface McpHttpClientOptions {
   clientName?: string;
 }
 
-export class McpHttpClient {
+function isHeaderMismatch(error: unknown): boolean {
+  return ProtocolError.isInstance(error) && error.code === HEADER_MISMATCH_CODE;
+}
+
+export class McpHttpClient implements McpClient {
   private readonly url: URL;
   private readonly headers: Readonly<Record<string, string>>;
   private readonly fetchImpl: typeof globalThis.fetch;
   private readonly timeoutMs: number;
   private readonly clientName: string;
-  private sessionId: string | undefined;
-  private initialised: Promise<void> | undefined;
-  private nextId = 1;
+  private readonly paramHeaders = new Map<string, readonly McpParamHeader[]>();
+  private connection: Promise<Client> | undefined;
 
   constructor(options: McpHttpClientOptions) {
     this.url = parseMcpServerUrl(options.url);
@@ -50,202 +57,142 @@ export class McpHttpClient {
   }
 
   async listTools(): Promise<McpTool[]> {
-    await this.initialise();
-
     const tools: McpTool[] = [];
     let cursor: string | undefined;
 
-    for (let page = 0; page < MAX_TOOL_PAGES && tools.length < MAX_TOOLS; page += 1) {
-      const result = mcpToolListResultSchema.safeParse(
-        await this.request("tools/list", cursor ? { cursor } : {}, "tools/list"),
-      );
+    try {
+      const client = await this.connect();
 
-      if (!result.success) {
-        throw this.invalidResponse("tools/list");
-      }
+      for (let page = 0; page < MAX_TOOL_PAGES && tools.length < MAX_TOOLS; page += 1) {
+        const result = await this.send(
+          client,
+          "tools/list",
+          cursor ? { cursor } : {},
+          mcpToolListResultSchema,
+        );
 
-      for (const raw of result.data.tools) {
-        const tool = mcpToolSchema.safeParse(raw);
+        for (const raw of result.tools) {
+          const tool = mcpToolSchema.safeParse(raw);
 
-        if (tool.success) {
-          tools.push(tool.data);
+          if (tool.success && this.acceptTool(client, tool.data)) {
+            tools.push(tool.data);
+          }
+        }
+
+        cursor = result.nextCursor;
+
+        if (!cursor) {
+          break;
         }
       }
-
-      cursor = result.data.nextCursor;
-
-      if (!cursor) {
-        break;
-      }
+    } catch (error) {
+      throw toMcpRequestError(error, "tools/list");
     }
 
     return tools.slice(0, MAX_TOOLS);
   }
 
   async readResource(uri: string): Promise<McpResourceContent[]> {
-    await this.initialise();
+    try {
+      const result = await this.send(
+        await this.connect(),
+        "resources/read",
+        { uri },
+        mcpResourceReadResultSchema,
+      );
 
-    const result = mcpResourceReadResultSchema.safeParse(
-      await this.request("resources/read", { uri }, "resources/read"),
-    );
+      return result.contents.flatMap((raw) => {
+        const content = mcpResourceContentSchema.safeParse(raw);
 
-    if (!result.success) {
-      throw this.invalidResponse("resources/read");
+        return content.success ? [content.data] : [];
+      });
+    } catch (error) {
+      throw toMcpRequestError(error, "resources/read");
     }
-
-    return result.data.contents.flatMap((raw) => {
-      const content = mcpResourceContentSchema.safeParse(raw);
-
-      return content.success ? [content.data] : [];
-    });
   }
 
   async callTool(name: string, args: Record<string, unknown>): Promise<McpToolCallResult> {
-    await this.initialise();
-
-    const result = mcpToolCallResultSchema.safeParse(
-      await this.request("tools/call", { name, arguments: args }, name),
-    );
-
-    if (!result.success) {
-      throw this.invalidResponse(name);
-    }
-
-    return result.data;
-  }
-
-  private initialise(): Promise<void> {
-    this.initialised ??= (async () => {
-      await this.request(
-        "initialize",
-        {
-          protocolVersion: MCP_PROTOCOL_VERSION,
-          capabilities: {},
-          clientInfo: { name: this.clientName, version: "1.0.0" },
-        },
-        "initialize",
-      );
+    try {
+      const client = await this.connect();
 
       try {
-        await this.send({ jsonrpc: "2.0", method: "notifications/initialized" }, "initialize");
-      } catch {
-        return;
+        return await this.sendToolCall(client, name, args);
+      } catch (error) {
+        if (!isHeaderMismatch(error)) {
+          throw error;
+        }
+
+        await this.listTools();
+
+        return await this.sendToolCall(client, name, args);
       }
-    })().catch((error: unknown) => {
-      this.initialised = undefined;
-      throw error;
-    });
-
-    return this.initialised;
+    } catch (error) {
+      throw toMcpRequestError(error, name);
+    }
   }
 
-  private async request(method: string, params: unknown, operation: string): Promise<unknown> {
-    const id = this.nextId++;
-    const response = await this.send(
-      { jsonrpc: "2.0", id, method, params },
-      operation,
-      method !== "tools/call",
+  private connect(): Promise<Client> {
+    this.connection ??= this.openConnection().catch((error: unknown) => {
+      this.connection = undefined;
+      throw toMcpRequestError(error, "initialize");
+    });
+
+    return this.connection;
+  }
+
+  private async openConnection(): Promise<Client> {
+    const client = new Client(
+      { name: this.clientName, version: "1.0.0" },
+      { versionNegotiation: { mode: "auto" }, inputRequired: { autoFulfill: false } },
     );
-    let body: string;
-
-    try {
-      body = await readResponseTextWithinLimit(response, MAX_RESPONSE_BYTES);
-    } catch (error) {
-      throw new McpRequestError({
-        code: "invalid_response",
-        operation,
-        message:
-          error instanceof ResponseBodyTooLargeError
-            ? "The MCP server returned more data than one call can carry."
-            : "The MCP server response could not be read.",
-        requestSent: true,
-      });
-    }
-
-    const message = readJsonRpcResponse(body, response.headers.get("content-type"), id);
-
-    if (!message) {
-      throw this.invalidResponse(operation);
-    }
-
-    if (message.error) {
-      throw new McpRequestError({
-        code: "rpc_error",
-        operation,
-        message: message.error.message ?? "The MCP server rejected the request.",
-        requestSent: true,
-      });
-    }
-
-    return message.result;
-  }
-
-  private async send(
-    payload: Record<string, unknown>,
-    operation: string,
-    bounded = true,
-  ): Promise<Response> {
-    let response: Response;
-
-    try {
-      response = await this.fetchImpl(this.url.toString(), {
-        method: "POST",
-        redirect: "manual",
-        ...(bounded ? { signal: AbortSignal.timeout(this.timeoutMs) } : {}),
-        headers: {
-          ...this.headers,
-          "Content-Type": "application/json",
-          Accept: "application/json, text/event-stream",
-          "MCP-Protocol-Version": MCP_PROTOCOL_VERSION,
-          ...(this.sessionId ? { "Mcp-Session-Id": this.sessionId } : {}),
-        },
-        body: JSON.stringify(payload),
-      });
-    } catch (error) {
-      const timedOut = error instanceof Error && error.name === "TimeoutError";
-      const cause = error instanceof Error ? error.message.slice(0, 160) : "";
-
-      throw new McpRequestError({
-        code: timedOut ? "timeout" : "network_error",
-        operation,
-        message: timedOut
-          ? "The MCP server did not answer in time."
-          : `The MCP server could not be reached${cause ? ` (${cause})` : ""}.`,
-        requestSent: timedOut,
-      });
-    }
-
-    this.sessionId = response.headers.get("mcp-session-id") ?? this.sessionId;
-
-    if (response.status === 401 || response.status === 403) {
-      throw new McpRequestError({
-        code: "unauthorised",
-        operation,
-        status: response.status,
-        message: "The MCP server rejected the credentials. Reconnect it and try again.",
-        requestSent: true,
-      });
-    }
-
-    if (!response.ok && response.status !== 202) {
-      throw new McpRequestError({
-        code: "http_error",
-        operation,
-        status: response.status,
-        message: `The MCP server answered with HTTP ${response.status}.`,
-        requestSent: true,
-      });
-    }
-
-    return response;
-  }
-
-  private invalidResponse(operation: string): McpRequestError {
-    return new McpRequestError({
-      code: "invalid_response",
-      operation,
-      message: "The MCP server returned a response that is not valid MCP.",
-      requestSent: true,
+    const transport = new StreamableHTTPClientTransport(this.url, {
+      fetch: createMcpFetch({ fetch: this.fetchImpl, timeoutMs: this.timeoutMs }),
+      requestInit: { headers: { ...this.headers }, redirect: "manual" },
     });
+
+    await client.connect(transport, { timeout: SDK_TIMEOUT_DISABLED_MS });
+
+    return client;
+  }
+
+  private send<T extends z.ZodType>(
+    client: Client,
+    method: string,
+    params: Record<string, unknown>,
+    schema: T,
+    headers?: Readonly<Record<string, string>>,
+  ) {
+    return client.request({ method, params }, schema, {
+      timeout: SDK_TIMEOUT_DISABLED_MS,
+      ...(headers ? { headers } : {}),
+    });
+  }
+
+  private sendToolCall(
+    client: Client,
+    name: string,
+    args: Record<string, unknown>,
+  ): Promise<McpToolCallResult> {
+    return this.send(
+      client,
+      "tools/call",
+      { name, arguments: args },
+      mcpToolCallResultSchema,
+      buildMcpParamHeaders(this.paramHeaders.get(name) ?? [], args),
+    );
+  }
+
+  private acceptTool(client: Client, tool: McpTool): boolean {
+    if (client.getProtocolEra() !== "modern") {
+      return true;
+    }
+
+    const headers = readMcpParamHeaders(tool.inputSchema);
+
+    if (headers) {
+      this.paramHeaders.set(tool.name, headers);
+    }
+
+    return headers !== null;
   }
 }
