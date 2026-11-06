@@ -43,8 +43,8 @@ const MATROSKA_SEGMENT_ID = [0x18, 0x53, 0x80, 0x67];
 const MATROSKA_TAG_NAME = encoder.encode("POLYCHAT_XMP");
 const MATROSKA_SCAN_WINDOW = 64 * 1024;
 const SVG_SCAN_WINDOW = 64 * 1024;
-const SVG_PROLOG =
-  /^(?:\xef\xbb\xbf)?(?:\s|<\?[\s\S]*?\?>|<!--[\s\S]*?-->|<!DOCTYPE[^>[]*(?:\[[\s\S]*?\])?[^>]*>)*/;
+const SVG_BYTE_ORDER_MARK = "\xef\xbb\xbf";
+const WHITESPACE = /\s/;
 const SVG_OPENING_TAG = /^<svg(?=[\s>/])(?:[^>"']|"[^"]*"|'[^']*')*>/;
 
 const crcTable = Uint32Array.from({ length: 256 }, (_, index) => {
@@ -214,10 +214,65 @@ export function detectContainer(bytes: Uint8Array): MediaContainer | null {
   return svgOpeningTag(bytes) ? "svg" : null;
 }
 
-/** Latin-1 keeps one character per byte, so a match index is also a byte offset. */
+function endOfDelimited(text: string, from: number, closer: string): number | null {
+  const end = text.indexOf(closer, from);
+
+  return end === -1 ? null : end + closer.length;
+}
+
+function endOfDoctype(text: string, from: number): number | null {
+  const close = text.indexOf(">", from);
+
+  if (close === -1) {
+    return null;
+  }
+
+  const subset = text.slice(from, close).indexOf("[");
+
+  if (subset === -1) {
+    return close + 1;
+  }
+
+  const subsetEnd = endOfDelimited(text, from + subset, "]");
+
+  return subsetEnd === null ? null : endOfDelimited(text, subsetEnd, ">");
+}
+
+function endOfPrologItem(text: string, from: number): number | null {
+  if (WHITESPACE.test(text.charAt(from))) {
+    return from + 1;
+  }
+
+  if (text.startsWith("<?", from)) {
+    return endOfDelimited(text, from + 2, "?>");
+  }
+
+  if (text.startsWith("<!--", from)) {
+    return endOfDelimited(text, from + 4, "-->");
+  }
+
+  return text.startsWith("<!DOCTYPE", from) ? endOfDoctype(text, from) : null;
+}
+
+function svgPrologEnd(text: string): number {
+  let index = text.startsWith(SVG_BYTE_ORDER_MARK) ? SVG_BYTE_ORDER_MARK.length : 0;
+
+  while (index < text.length) {
+    const next = endOfPrologItem(text, index);
+
+    if (next === null) {
+      break;
+    }
+
+    index = next;
+  }
+
+  return index;
+}
+
 function svgOpeningTag(bytes: Uint8Array): ByteRange | null {
   const head = new TextDecoder("latin1").decode(bytes.subarray(0, SVG_SCAN_WINDOW));
-  const start = SVG_PROLOG.exec(head)?.[0].length ?? 0;
+  const start = svgPrologEnd(head);
   const tag = SVG_OPENING_TAG.exec(head.slice(start));
 
   return tag ? { start, length: tag[0].length } : null;
@@ -390,10 +445,6 @@ function flacBlocks(bytes: Uint8Array): Array<{ start: number; end: number; last
   return blocks;
 }
 
-/**
- * The parts of a file that hold metadata rather than encoded media. Searching only these keeps
- * detection fast on large video and stops compressed samples matching a marker by chance.
- */
 export function metadataRegions(container: MediaContainer, bytes: Uint8Array): Uint8Array[] {
   switch (container) {
     case "png":
@@ -692,11 +743,6 @@ function oggLacing(length: number): number[] {
   return [...Array.from({ length: Math.floor(length / 255) }, () => 255), length % 255];
 }
 
-/**
- * Adds the mark to the comment packet in place. Keeping it on the same page leaves every later
- * page, its sequence number and its checksum alone, so anything else is declined rather than
- * rewritten.
- */
 function embedOgg(bytes: Uint8Array, packetLength: number): EmbeddedSlot | null {
   const pages = oggHeaderPages(bytes);
 
@@ -791,10 +837,6 @@ function matroskaTags(packetLength: number): Uint8Array {
   );
 }
 
-/**
- * Appends a Tags element, since inserting one earlier would invalidate the byte offsets held in
- * SeekHead and Cues.
- */
 function embedMatroska(bytes: Uint8Array, packetLength: number): EmbeddedSlot | null {
   const segment = matroskaSegment(bytes);
 
