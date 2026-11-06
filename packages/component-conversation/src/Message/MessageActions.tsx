@@ -17,11 +17,11 @@ import {
   Edit,
   Bookmark,
   GitBranch,
+  MessageSquareQuote,
   NotebookPen,
   Volume2,
   VolumeX,
   RefreshCw,
-  Scale,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useCallback, useRef, useState } from "react";
@@ -48,8 +48,8 @@ export interface MessageActionsProps {
   isSaved?: boolean;
   onToggleSaved?: (messageId: string, isSaved: boolean) => void;
   onSaveToNote?: (message: Message) => void;
-  onRequestComparison?: (messageId: string) => void;
-  isRequestingComparison?: boolean;
+  onRequestSecondOpinion?: (messageId: string) => void;
+  isRequestingSecondOpinion?: boolean;
   isArchivedByCompaction?: boolean;
   responseDurationMs?: number;
   modelConfig?: ModelConfigItem;
@@ -78,8 +78,8 @@ export const MessageActions = ({
   onToggleSaved,
   onSaveToNote,
   isStartingThread = false,
-  onRequestComparison,
-  isRequestingComparison = false,
+  onRequestSecondOpinion,
+  isRequestingSecondOpinion = false,
   isArchivedByCompaction = false,
   responseDurationMs,
   modelConfig,
@@ -95,8 +95,8 @@ export const MessageActions = ({
   const canStartThread = Boolean(
     onStartThread && !isSharedView && canMutateConversation && canStartThreadFromMessage(message),
   );
-  const canRequestComparison = Boolean(
-    onRequestComparison &&
+  const canRequestSecondOpinion = Boolean(
+    onRequestSecondOpinion &&
     !isSharedView &&
     canMutateConversation &&
     !isCompactionMarker &&
@@ -130,9 +130,9 @@ export const MessageActions = ({
     setShowThreadModelSelector(false);
   }, []);
 
-  const handleComparisonClick = useCallback(() => {
-    onRequestComparison?.(message.id);
-  }, [message.id, onRequestComparison]);
+  const handleSecondOpinionClick = useCallback(() => {
+    onRequestSecondOpinion?.(message.id);
+  }, [message.id, onRequestSecondOpinion]);
 
   const stopSpeechPlayback = useCallback(() => {
     const currentAudio = speechAudioRef.current;
@@ -253,20 +253,22 @@ export const MessageActions = ({
             <RefreshCw size={14} className={isRetrying ? "animate-spin" : ""} />
           </Button>
         )}
-        {canRequestComparison && (
+        {canRequestSecondOpinion && (
           <Button
             type="button"
             variant="icon"
-            onClick={handleComparisonClick}
-            disabled={isRequestingComparison}
+            onClick={handleSecondOpinionClick}
+            disabled={isRequestingSecondOpinion}
             className={cn(
               messageActionButtonClassName,
-              isRequestingComparison && "cursor-not-allowed opacity-50",
+              isRequestingSecondOpinion && "cursor-not-allowed opacity-50",
             )}
-            title={isRequestingComparison ? "Comparing models..." : "Compare and conclude"}
-            aria-label={isRequestingComparison ? "Comparing models..." : "Compare and conclude"}
+            title={isRequestingSecondOpinion ? "Asking for a second opinion..." : "Second opinion"}
+            aria-label={
+              isRequestingSecondOpinion ? "Asking for a second opinion..." : "Second opinion"
+            }
           >
-            <Scale size={14} />
+            <MessageSquareQuote size={14} />
           </Button>
         )}
         {canStartThread && (
