@@ -109,29 +109,6 @@ export function redactSensitiveTokens<T>(value: T, sensitiveValue?: string): T {
   return redactValue(value, new WeakSet(), sensitiveValue) as T;
 }
 
-const CREDENTIAL_FIELD_PATTERN =
-  /secret|password|passphrase|credential|authori[sz]ation|cookie|api[-_]?key|private[-_]?key|connected[-_]?account|(?:^|[-_a-z])token$/i;
-
-function dropCredentialFields(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map(dropCredentialFields);
-  }
-
-  if (!isPlainObject(value)) {
-    return value;
-  }
-
-  return Object.fromEntries(
-    Object.entries(value)
-      .filter(([key]) => !CREDENTIAL_FIELD_PATTERN.test(key))
-      .map(([key, item]) => [key, dropCredentialFields(item)]),
-  );
-}
-
-export function removeCredentials<T>(value: T): T {
-  return redactSensitiveTokens(dropCredentialFields(value)) as T;
-}
-
 export function hasSensitiveFieldNames(value: unknown): boolean {
   if (Array.isArray(value)) {
     return value.some(hasSensitiveFieldNames);

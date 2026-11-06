@@ -1,14 +1,6 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "dataRetention": {
-      "maxDays": "unknown",
-      "source": "https://lucidquery.com/terms"
-    },
-    "dataLocation": {
-      "kind": "unknown",
-      "source": "https://lucidquery.com/privacy"
-    }
+    "supportsToolCalls": true
   },
   "models": {
     "lucidquery-agi-01-frontier": {

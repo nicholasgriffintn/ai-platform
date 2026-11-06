@@ -1,14 +1,5 @@
 {
-  "defaults": {
-    "dataRetention": {
-      "maxDays": "unknown",
-      "source": "https://parallel.ai/privacy-policy"
-    },
-    "dataLocation": {
-      "kind": "unknown",
-      "source": "https://parallel.ai/privacy-policy"
-    }
-  },
+  "defaults": {},
   "models": {
     "parallel-speed": {
       "model": "parallel/speed/parallel-speed",

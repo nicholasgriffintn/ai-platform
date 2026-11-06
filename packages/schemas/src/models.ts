@@ -136,35 +136,13 @@ export type ModelZeroRetention = z.infer<typeof modelZeroRetentionSchema>;
 
 export const modelDataRetentionSchema = z
   .object({
-    maxDays: z.union([z.number().int().nonnegative(), z.literal("unknown")]),
+    maxDays: z.number().int().nonnegative().optional(),
     zeroRetention: modelZeroRetentionSchema.optional(),
     source: z.url(),
   })
   .strict();
 
 export type ModelDataRetention = z.infer<typeof modelDataRetentionSchema>;
-
-export const modelDataRegionSchema = z.enum(["us", "eu", "sg", "cn"]);
-
-export type ModelDataRegion = z.infer<typeof modelDataRegionSchema>;
-
-export const modelDataLocationSchema = z.discriminatedUnion("kind", [
-  z
-    .object({
-      kind: z.literal("regions"),
-      regions: z.array(modelDataRegionSchema).min(1),
-      source: z.url(),
-    })
-    .strict(),
-  z
-    .object({
-      kind: z.enum(["multiple", "deployment", "routed", "unknown"]),
-      source: z.url(),
-    })
-    .strict(),
-]);
-
-export type ModelDataLocation = z.infer<typeof modelDataLocationSchema>;
 
 export const modelConfigItemSchema = z.object({
   kind: z.enum(["model", "agent"]).optional(),
@@ -223,7 +201,6 @@ export const modelConfigItemSchema = z.object({
   releaseDate: z.string().optional(),
   lastUpdated: z.string().optional(),
   dataRetention: modelDataRetentionSchema.optional(),
-  dataLocation: modelDataLocationSchema.optional(),
   costPer1kInputTokens: z.number().optional(),
   costPer1kOutputTokens: z.number().optional(),
   costPer1kReasoningTokens: z.number().optional(),

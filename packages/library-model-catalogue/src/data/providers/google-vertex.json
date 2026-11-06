@@ -3,16 +3,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": "unknown",
-      "zeroRetention": "account_setting",
-      "source": "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/data-governance"
-    },
-    "dataLocation": {
-      "kind": "deployment",
-      "source": "https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/data-residency"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "gemini-2.5-flash-image": {

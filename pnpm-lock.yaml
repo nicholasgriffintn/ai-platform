@@ -496,9 +496,6 @@ importers:
       drizzle-kit:
         specifier: 0.31.11
         version: 0.31.11
-      fflate:
-        specifier: ^0.8.3
-        version: 0.8.3
       typescript:
         specifier: 'catalog:'
         version: 6.0.3
@@ -3016,9 +3013,6 @@ importers:
       '@ngriffin_uk/polychat-utility-core':
         specifier: workspace:^
         version: link:../utility-core
-      fflate:
-        specifier: ^0.8.3
-        version: 0.8.3
       zod:
         specifier: 'catalog:'
         version: 4.6.7

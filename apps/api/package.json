@@ -88,7 +88,6 @@
     "@types/node": "catalog:",
     "better-sqlite3": "13.0.3",
     "drizzle-kit": "0.31.11",
-    "fflate": "^0.8.3",
     "typescript": "catalog:",
     "vitest": "catalog:",
     "wrangler": "catalog:"

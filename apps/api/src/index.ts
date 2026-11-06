@@ -1,10 +1,6 @@
 import { OutboundGateway as OutboundGatewayEntrypoint } from "@ngriffin_uk/polychat-ai-sandbox/worker";
 import { LogLevel, getLogger, onLogRecord } from "@ngriffin_uk/polychat-ai-telemetry";
-import {
-  ACCOUNT_EXPORT_NEXT_HEADER,
-  DEVICE_SYNC_DEVICE_ID_HEADER,
-  statusResponseSchema,
-} from "@ngriffin_uk/polychat-schemas";
+import { DEVICE_SYNC_DEVICE_ID_HEADER, statusResponseSchema } from "@ngriffin_uk/polychat-schemas";
 import { Scalar } from "@scalar/hono-api-reference";
 import {
   instrumentAgentWithSentry,
@@ -84,7 +80,6 @@ app.use(
       "sentry-trace",
       "baggage",
     ],
-    exposeHeaders: [ACCOUNT_EXPORT_NEXT_HEADER],
     credentials: true,
     maxAge: 86400,
   }),

@@ -4,15 +4,7 @@
     "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": false,
-    "apiShape": "responses",
-    "dataRetention": {
-      "maxDays": "unknown",
-      "source": "https://sakana.ai/"
-    },
-    "dataLocation": {
-      "kind": "unknown",
-      "source": "https://sakana.ai/"
-    }
+    "apiShape": "responses"
   },
   "models": {
     "fugu": {

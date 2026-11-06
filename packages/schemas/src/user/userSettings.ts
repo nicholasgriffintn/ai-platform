@@ -218,11 +218,3 @@ export const providerSettingsSchema = z.object({
   baseUrl: z.string().optional(),
   customHeaders: z.record(z.string(), z.string()).optional(),
 });
-
-export const ACCOUNT_EXPORT_NEXT_HEADER = "X-Export-Next-After";
-
-export const accountExportFilesQuerySchema = z
-  .object({
-    after: z.string().regex(/^[a-z]+:.{1,200}$/),
-  })
-  .strict();

@@ -3,16 +3,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": false,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": 0,
-      "zeroRetention": "default",
-      "source": "https://ollama.com/privacy"
-    },
-    "dataLocation": {
-      "kind": "unknown",
-      "source": "https://ollama.com/privacy"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "gpt-oss:120b": {

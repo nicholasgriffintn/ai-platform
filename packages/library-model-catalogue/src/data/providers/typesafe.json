@@ -3,18 +3,7 @@
     "hiddenFromDefaultList": true,
     "supportsToolCalls": false,
     "supportsAttachments": false,
-    "supportsTemperature": false,
-    "dataRetention": {
-      "maxDays": "unknown",
-      "source": "https://typesafe.ai/privacy"
-    },
-    "dataLocation": {
-      "kind": "regions",
-      "regions": [
-        "us"
-      ],
-      "source": "https://typesafe.ai/privacy"
-    }
+    "supportsTemperature": false
   },
   "models": {
     "jev-latest": {

@@ -3,16 +3,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": 30,
-      "zeroRetention": "on_request",
-      "source": "https://www.morphllm.com/privacy"
-    },
-    "dataLocation": {
-      "kind": "unknown",
-      "source": "https://www.morphllm.com/privacy"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "morph-auto": {

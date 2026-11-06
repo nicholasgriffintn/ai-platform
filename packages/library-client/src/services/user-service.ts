@@ -1,5 +1,4 @@
 import {
-  ACCOUNT_EXPORT_NEXT_HEADER,
   decodeModelList,
   type ModelConfig,
   type ListPage,
@@ -43,15 +42,10 @@ const PROVIDER_TIMEOUT_MS = 10000;
 const providers = resource<ProviderSetting>("/providers");
 const apiKeys = resource<ApiKeySummary>("/api_keys");
 
-export interface AccountExportPart {
-  blob: Blob;
-  nextAfter: string | null;
-}
-
 export class UserService {
   constructor(private getHeaders: () => Promise<Record<string, string>>) {}
 
-  async exportAccountData(after?: string): Promise<AccountExportPart> {
+  async exportChatHistory(): Promise<Blob> {
     let headers: Record<string, string> = {};
 
     try {
@@ -60,16 +54,13 @@ export class UserService {
       console.error("Error preparing headers for export:", error);
     }
 
-    const path = after
-      ? `/account/export/files?after=${encodeURIComponent(after)}`
-      : "/account/export";
-    const response = await fetchApi(path, {
+    const response = await fetchApi("/account/export", {
       method: "GET",
       headers,
     });
 
     if (!response.ok) {
-      let message = `Failed to export your data: ${response.statusText}`;
+      let message = `Failed to export chat history: ${response.statusText}`;
 
       try {
         const data = await returnFetchedData<any>(response);
@@ -82,10 +73,9 @@ export class UserService {
       throw new Error(message);
     }
 
-    return {
-      blob: await response.blob(),
-      nextAfter: response.headers.get(ACCOUNT_EXPORT_NEXT_HEADER),
-    };
+    const blob = await response.blob();
+
+    return blob;
   }
 
   async fetchModels(): Promise<ModelConfig> {

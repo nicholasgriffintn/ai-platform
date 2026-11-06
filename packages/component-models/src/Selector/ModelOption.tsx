@@ -1,6 +1,5 @@
 import { Button, FormSelect, cn } from "@ngriffin_uk/polychat-component-ui";
 import {
-  getModelDataLocationLabel,
   getModelDisplayName,
   requiresPaidPlan,
   hasProviderReasoningOptions,
@@ -19,7 +18,6 @@ import {
   Globe2,
   Hammer,
   Info,
-  MapPin,
   Search,
   Terminal,
   FilePenLine,
@@ -68,7 +66,6 @@ export const ModelOption = ({
   );
   const canShowHoverPreview = showDetailsTrigger && Boolean(onInfoHoverStart);
   const hasRegionOptions = regionOptions.length > 1;
-  const dataLocation = getModelDataLocationLabel(model);
   const selectModel = () => {
     if (disabled) {
       return;
@@ -164,16 +161,6 @@ export const ModelOption = ({
               ) : null}
             </div>
             {locationLabel && <p className="mt-1 text-xs text-muted-foreground">{locationLabel}</p>}
-            <p
-              className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground"
-              title={dataLocation.detail}
-            >
-              <MapPin size={11} aria-hidden className="flex-shrink-0" />
-              <span>
-                <span className="sr-only">Data location: </span>
-                {dataLocation.short}
-              </span>
-            </p>
             {model.description ? (
               <p className="mt-0.5 text-xs leading-5 break-words whitespace-normal text-muted-foreground">
                 {model.description}

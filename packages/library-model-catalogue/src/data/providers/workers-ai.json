@@ -1,16 +1,7 @@
 {
   "defaults": {
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": 0,
-      "zeroRetention": "default",
-      "source": "https://developers.cloudflare.com/workers-ai/platform/data-usage/"
-    },
-    "dataLocation": {
-      "kind": "unknown",
-      "source": "https://developers.cloudflare.com/workers-ai/platform/data-usage/"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "whisper-tiny": {

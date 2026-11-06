@@ -3,15 +3,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": "unknown",
-      "source": "https://thinkingmachines.ai/legal/privacy/"
-    },
-    "dataLocation": {
-      "kind": "unknown",
-      "source": "https://thinkingmachines.ai/tinker/"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "thinkingmachines/Inkling": {

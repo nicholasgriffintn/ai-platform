@@ -1,16 +1,7 @@
 {
   "defaults": {
     "supportsStreaming": false,
-    "supportsAttachments": false,
-    "dataRetention": {
-      "maxDays": 90,
-      "zeroRetention": "on_request",
-      "source": "https://fal.ai/docs/documentation/model-apis/media-expiration"
-    },
-    "dataLocation": {
-      "kind": "unknown",
-      "source": "https://fal.ai/privacy"
-    }
+    "supportsAttachments": false
   },
   "models": {
     "fal-ai/qwen-image": {

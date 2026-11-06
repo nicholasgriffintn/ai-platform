@@ -3,16 +3,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": "unknown",
-      "zeroRetention": "account_setting",
-      "source": "https://openrouter.ai/docs/guides/features/zdr"
-    },
-    "dataLocation": {
-      "kind": "routed",
-      "source": "https://openrouter.ai/docs/guides/privacy/logging"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "openai/gpt-oss-120b": {

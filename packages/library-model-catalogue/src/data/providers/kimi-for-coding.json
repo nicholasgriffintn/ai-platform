@@ -3,15 +3,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": false,
-    "dataRetention": {
-      "maxDays": "unknown",
-      "source": "https://www.kimi.com/code/docs/"
-    },
-    "dataLocation": {
-      "kind": "unknown",
-      "source": "https://www.kimi.com/code/docs/"
-    }
+    "supportsTemperature": false
   },
   "models": {
     "kimi-for-coding": {

@@ -2,19 +2,7 @@
   "defaults": {
     "supportsToolCalls": true,
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": 0,
-      "zeroRetention": "default",
-      "source": "https://docs.z.ai/legal-agreement/privacy-policy"
-    },
-    "dataLocation": {
-      "kind": "regions",
-      "regions": [
-        "sg"
-      ],
-      "source": "https://docs.z.ai/legal-agreement/privacy-policy"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "glm-4.7": {

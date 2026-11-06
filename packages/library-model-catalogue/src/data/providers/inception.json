@@ -2,15 +2,7 @@
   "defaults": {
     "supportsToolCalls": true,
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": "unknown",
-      "source": "https://docs.inceptionlabs.ai/"
-    },
-    "dataLocation": {
-      "kind": "unknown",
-      "source": "https://docs.inceptionlabs.ai/"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "mercury-coder": {

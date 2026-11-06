@@ -4,19 +4,7 @@
     "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": true,
-    "apiBaseUrl": "https://opencode.ai/inference/openai/v1",
-    "dataRetention": {
-      "maxDays": 30,
-      "source": "https://opencode.ai/docs/zen/"
-    },
-    "dataLocation": {
-      "kind": "regions",
-      "regions": [
-        "us",
-        "eu"
-      ],
-      "source": "https://opencode.ai/docs/zen/"
-    }
+    "apiBaseUrl": "https://opencode.ai/inference/openai/v1"
   },
   "models": {
     "big-pickle": {

@@ -2,15 +2,7 @@
   "defaults": {
     "supportsToolCalls": false,
     "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "dataRetention": {
-      "maxDays": "unknown",
-      "source": "https://developer.nvidia.com/legal/terms"
-    },
-    "dataLocation": {
-      "kind": "unknown",
-      "source": "https://developer.nvidia.com/legal/terms"
-    }
+    "supportsAttachments": true
   },
   "models": {
     "baai/bge-m3": {

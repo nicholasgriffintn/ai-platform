@@ -2,15 +2,7 @@
   "defaults": {
     "hiddenFromDefaultList": true,
     "supportsStreaming": true,
-    "supportsRealtimeSession": false,
-    "dataRetention": {
-      "maxDays": "unknown",
-      "source": "https://cartesia.ai/privacy"
-    },
-    "dataLocation": {
-      "kind": "unknown",
-      "source": "https://cartesia.ai/privacy"
-    }
+    "supportsRealtimeSession": false
   },
   "models": {
     "ink-2": {

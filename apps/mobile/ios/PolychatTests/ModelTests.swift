@@ -492,21 +492,6 @@ struct ModelTests {
         #expect(!decoded.isEmpty)
     }
 
-    @Test func modelDataLocationLabelNamesDocumentedRegions() throws {
-        let json = """
-        {"provider":"mistral","dataLocation":{"kind":"regions","regions":["us","eu"],"source":"https://example.com"}}
-        """
-        let model = try JSONDecoder().decode(ModelConfigItem.self, from: Data(json.utf8))
-
-        #expect(model.dataLocationLabel == "US and EU")
-    }
-
-    @Test func modelDataLocationLabelFallsBackToUnknown() throws {
-        let model = try JSONDecoder().decode(ModelConfigItem.self, from: Data(#"{"provider":"local"}"#.utf8))
-
-        #expect(model.dataLocationLabel == "Location unknown")
-    }
-
     @Test func createResponseRequestSerializesMessagesForAPI() throws {
         let message = ChatMessage(
             id: "user-1",

@@ -3,15 +3,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": 0,
-      "source": "https://standardcompute.com/data-privacy"
-    },
-    "dataLocation": {
-      "kind": "routed",
-      "source": "https://standardcompute.com/data-privacy"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "standardcompute": {

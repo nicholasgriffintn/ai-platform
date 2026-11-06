@@ -2,19 +2,7 @@
   "defaults": {
     "supportsToolCalls": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": 0,
-      "zeroRetention": "default",
-      "source": "https://regolo.ai/zero-data-retention/"
-    },
-    "dataLocation": {
-      "kind": "regions",
-      "regions": [
-        "eu"
-      ],
-      "source": "https://regolo.ai/zero-data-retention/"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "gpt-oss-120b": {

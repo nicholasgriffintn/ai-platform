@@ -2,16 +2,7 @@
   "defaults": {
     "supportsToolCalls": true,
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": 30,
-      "zeroRetention": "on_request",
-      "source": "https://cohere.com/data-usage-policy"
-    },
-    "dataLocation": {
-      "kind": "unknown",
-      "source": "https://cohere.com/data-usage-policy"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "rerank-v3.5": {

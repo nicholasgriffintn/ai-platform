@@ -3,15 +3,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": "unknown",
-      "source": "https://docs.tokenfactory.nebius.com/"
-    },
-    "dataLocation": {
-      "kind": "unknown",
-      "source": "https://docs.tokenfactory.nebius.com/"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "deepseek-ai/DeepSeek-V4-Flash-0731": {

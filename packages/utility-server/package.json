@@ -221,11 +221,6 @@
       "polychat-source": "./src/urls.ts",
       "types": "./dist/urls.d.ts",
       "import": "./dist/urls.js"
-    },
-    "./zip": {
-      "polychat-source": "./src/zip.ts",
-      "types": "./dist/zip.d.ts",
-      "import": "./dist/zip.js"
     }
   },
   "publishConfig": {
@@ -239,7 +234,6 @@
     "@ngriffin_uk/auth-jwt": "^2.0.0",
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
-    "fflate": "^0.8.3",
     "zod": "catalog:"
   },
   "devDependencies": {

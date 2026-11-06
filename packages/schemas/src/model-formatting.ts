@@ -1,10 +1,4 @@
-import type {
-  ModelConfigItem,
-  ModelDataLocation,
-  ModelDataRegion,
-  ModelDataRetention,
-  ModelZeroRetention,
-} from "./models.js";
+import type { ModelDataRetention, ModelZeroRetention } from "./models.js";
 
 export function formatTokenCount(value?: number) {
   if (!value) {
@@ -45,79 +39,13 @@ const ZERO_RETENTION_NOTES: Record<ModelZeroRetention, string> = {
 };
 
 export function describeModelDataRetention(retention: ModelDataRetention): string {
-  const days = retention.maxDays;
   const kept =
-    days === "unknown"
-      ? "The provider does not document how long it keeps prompts and replies."
-      : days === 0
+    retention.maxDays === undefined
+      ? "The provider sets how long prompts and replies are kept."
+      : retention.maxDays === 0
         ? "The provider does not keep prompts or replies."
-        : `The provider may keep prompts and replies for up to ${days} ${days === 1 ? "day" : "days"}.`;
+        : `The provider may keep prompts and replies for up to ${retention.maxDays} days for abuse monitoring.`;
   const zero = retention.zeroRetention ? ZERO_RETENTION_NOTES[retention.zeroRetention] : null;
 
   return zero ? `${kept} ${zero}` : kept;
-}
-
-const DATA_REGION_LABELS: Record<ModelDataRegion, string> = {
-  us: "US",
-  eu: "EU",
-  sg: "Singapore",
-  cn: "China",
-};
-
-const DATA_LOCATION_LABELS: Record<
-  Exclude<ModelDataLocation["kind"], "regions">,
-  Pick<ModelDataLocationLabel, "short" | "detail">
-> = {
-  multiple: {
-    short: "Multiple regions",
-    detail: "The provider may process this data in more than one country.",
-  },
-  deployment: {
-    short: "Set per deployment",
-    detail: "Location depends on the region set for this provider's deployment.",
-  },
-  routed: {
-    short: "Depends on route",
-    detail: "This service forwards requests, so location depends on the host that serves them.",
-  },
-  unknown: {
-    short: "Location unknown",
-    detail: "The provider does not document where it processes this data.",
-  },
-};
-
-export interface ModelDataLocationLabel {
-  short: string;
-  detail: string;
-  source?: string;
-}
-
-export function getModelDataLocationLabel(
-  model: Pick<ModelConfigItem, "dataLocation" | "machineId" | "runsOn">,
-): ModelDataLocationLabel {
-  if (model.runsOn === "device") {
-    return { short: "On this device", detail: "This model runs on your device." };
-  }
-
-  if (model.machineId) {
-    return { short: "Your machine", detail: "This model runs on a machine you connected." };
-  }
-
-  const location = model.dataLocation;
-
-  if (!location) {
-    return DATA_LOCATION_LABELS.unknown;
-  }
-
-  if (location.kind !== "regions") {
-    return { ...DATA_LOCATION_LABELS[location.kind], source: location.source };
-  }
-
-  const regions = location.regions.map((region) => DATA_REGION_LABELS[region]).join(" and ");
-
-  return {
-    short: regions,
-    detail: `The provider documents this data as hosted in: ${regions}.`,
-    source: location.source,
-  };
 }

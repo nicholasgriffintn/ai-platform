@@ -3,15 +3,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": false,
-    "dataRetention": {
-      "maxDays": "unknown",
-      "source": "https://thegrid.ai/docs"
-    },
-    "dataLocation": {
-      "kind": "routed",
-      "source": "https://thegrid.ai/"
-    }
+    "supportsTemperature": false
   },
   "models": {
     "agent-prime": {

@@ -1,15 +1,5 @@
 {
-  "defaults": {
-    "dataRetention": {
-      "maxDays": "unknown",
-      "zeroRetention": "on_request",
-      "source": "https://docs.perplexity.ai/docs/resources/privacy-security"
-    },
-    "dataLocation": {
-      "kind": "unknown",
-      "source": "https://docs.perplexity.ai/docs/resources/privacy-security"
-    }
-  },
+  "defaults": {},
   "models": {
     "sonar-reasoning": {
       "model": "perplexity-ai/sonar-reasoning/perplexity-sonar-reasoning",

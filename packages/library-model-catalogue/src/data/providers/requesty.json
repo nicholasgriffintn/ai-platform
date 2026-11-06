@@ -3,16 +3,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": "unknown",
-      "zeroRetention": "account_setting",
-      "source": "https://www.requesty.ai/security"
-    },
-    "dataLocation": {
-      "kind": "routed",
-      "source": "https://docs.requesty.ai/features/eu-routing"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "openai/gpt-4.1-mini": {

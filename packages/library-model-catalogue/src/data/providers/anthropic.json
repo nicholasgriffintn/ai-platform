@@ -5,16 +5,7 @@
     "supportsAttachments": true,
     "supportsCodeExecution": true,
     "supportsTemperature": false,
-    "supportsTopP": false,
-    "dataRetention": {
-      "maxDays": 30,
-      "zeroRetention": "on_request",
-      "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
-    },
-    "dataLocation": {
-      "kind": "multiple",
-      "source": "https://platform.claude.com/docs/en/build-with-claude/data-residency"
-    }
+    "supportsTopP": false
   },
   "models": {
     "claude-4.6-opus": {
@@ -38,6 +29,11 @@
         "multimodal": true,
         "releaseDate": "February 4, 2026",
         "lastUpdated": "March 13, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "costPerCodeExecutionHour": 0.05,
@@ -85,6 +81,11 @@
         "multimodal": true,
         "deprecated": true,
         "lastUpdated": "September 29, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "costPerCodeExecutionHour": 0.05,
@@ -132,6 +133,11 @@
         "multimodal": true,
         "deprecated": true,
         "lastUpdated": "May 22, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "supportsDocuments": true,
@@ -158,6 +164,11 @@
         "isFeatured": false,
         "deprecated": true,
         "lastUpdated": "October 22, 2024",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.004,
         "supportsTemperature": true,
@@ -187,6 +198,11 @@
         "multimodal": true,
         "isFeatured": false,
         "lastUpdated": "October 15, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
         "supportsDocuments": true,
@@ -213,6 +229,11 @@
         "deprecated": true,
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "May 22, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.075,
         "supportsTemperature": true
@@ -238,6 +259,11 @@
         "speed": 3,
         "deprecated": true,
         "lastUpdated": "November 24, 2025",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "costPerCodeExecutionHour": 0.05,
@@ -271,6 +297,11 @@
         "isFeatured": false,
         "releaseDate": "April 14, 2026",
         "lastUpdated": "April 16, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "costPerCodeExecutionHour": 0.05,
@@ -306,6 +337,11 @@
         ],
         "speed": 3,
         "lastUpdated": "March 13, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
         "costPerCodeExecutionHour": 0.05,
@@ -352,6 +388,11 @@
         "speed": 2,
         "multimodal": true,
         "lastUpdated": "May 28, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "costPerCodeExecutionHour": 0.05,
@@ -395,6 +436,11 @@
         "isFeatured": true,
         "releaseDate": "June 7, 2026",
         "lastUpdated": "June 9, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
         "supportsDocuments": true,
@@ -432,6 +478,11 @@
         "isFeatured": false,
         "releaseDate": "June 29, 2026",
         "lastUpdated": "June 30, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "costPerCodeExecutionHour": 0.05,
@@ -468,6 +519,11 @@
         "speed": 2,
         "isFeatured": false,
         "lastUpdated": "July 24, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
         "costPerCodeExecutionHour": 0.05,
@@ -495,6 +551,11 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 1, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05
       },
@@ -515,6 +576,11 @@
         "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02
       }
@@ -532,6 +598,11 @@
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 28, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01
       }
@@ -549,6 +620,11 @@
         "speed": 4,
         "isFeatured": true,
         "lastUpdated": "October 7, 2026",
+        "dataRetention": {
+          "maxDays": 30,
+          "zeroRetention": "on_request",
+          "source": "https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data"
+        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005,
         "reasoningConfig": {

@@ -1,26 +1,18 @@
 {
   "defaults": {
     "supportsToolCalls": true,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": "unknown",
-      "zeroRetention": "on_request",
-      "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
-    },
-    "dataLocation": {
-      "kind": "regions",
-      "regions": [
-        "eu"
-      ],
-      "source": "https://help.mistral.ai/en/articles/347629-where-do-you-store-my-data-and-the-data-of-my-end-users"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "mistral-small-creative": {
       "model": "mistral/mistral-small-creative-labs",
       "matchingModel": "labs-mistral-small-creative",
       "overrides": {
-        "deprecated": true
+        "deprecated": true,
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        }
       },
       "unset": [
         "supportsToolCalls",
@@ -33,6 +25,10 @@
       "matchingModel": "mistral-ocr-latest",
       "overrides": {
         "hiddenFromDefaultList": true,
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "supportsDocuments": true
       },
       "unset": [
@@ -46,6 +42,10 @@
       "matchingModel": "mistral-ocr-4-1",
       "overrides": {
         "hiddenFromDefaultList": true,
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "supportsDocuments": true
       },
       "unset": [
@@ -76,6 +76,10 @@
         "isFeatured": true,
         "releaseDate": "June 30, 2026",
         "lastUpdated": "June 30, 2026",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       }
@@ -95,6 +99,10 @@
         "speed": 3,
         "isFeatured": false,
         "lastUpdated": "March 17, 2025",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015
       }
@@ -106,6 +114,10 @@
         "speed": 3,
         "isFeatured": false,
         "lastUpdated": "December 2, 2025",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015,
         "supportsFim": true
@@ -132,6 +144,10 @@
         "isFeatured": false,
         "knowledgeCutoffDate": "May 2025",
         "lastUpdated": "April 29, 2026",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.0075
       }
@@ -151,6 +167,10 @@
         "reliability": 4,
         "speed": 3,
         "lastUpdated": "January 4, 2025",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0009,
         "supportsResponseFormat": true,
@@ -180,6 +200,10 @@
         "multimodal": true,
         "isFeatured": false,
         "lastUpdated": "March 16, 2026",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
         "supportsResponseFormat": true,
@@ -197,6 +221,10 @@
       "matchingModel": "ministral-14b-latest",
       "overrides": {
         "speed": 3,
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0002
       }
@@ -220,6 +248,10 @@
         "multimodal": true,
         "releaseDate": "October 1, 2024",
         "lastUpdated": "October 4, 2024",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00015
       }
@@ -247,6 +279,10 @@
         "deprecated": true,
         "releaseDate": "October 1, 2024",
         "lastUpdated": "October 4, 2024",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0001,
         "artificialAnalysis": {
@@ -264,6 +300,10 @@
         "speed": 4,
         "isFeatured": false,
         "lastUpdated": "July 1, 2024",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00015
       }
@@ -273,6 +313,10 @@
       "matchingModel": "voxtral-small-latest",
       "overrides": {
         "lastUpdated": "July 15, 2025",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004,
         "supportsAudio": true
@@ -283,6 +327,10 @@
       "matchingModel": "voxtral-mini-latest",
       "overrides": {
         "lastUpdated": "February 4, 2026",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "supportsToolCalls": false,
         "supportsAudio": true,
         "supportsTemperature": false
@@ -293,6 +341,10 @@
       "matchingModel": "voxtral-mini-transcribe-realtime-2602",
       "overrides": {
         "lastUpdated": "February 4, 2026",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "costPerAudioSecond": 0.000133,
         "supportsToolCalls": false,
         "supportsStreaming": true,
@@ -306,6 +358,10 @@
       "matchingModel": "voxtral-voice-agent",
       "overrides": {
         "lastUpdated": "October 20, 2026",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "costPerAudioSecond": 0.000667,
         "supportsStreaming": true,
         "supportsAudio": true,
@@ -317,6 +373,10 @@
       "matchingModel": "mistral-embed",
       "overrides": {
         "lastUpdated": "December 11, 2023",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false,
@@ -328,6 +388,10 @@
       "model": "mistral/codestral-embed/codestral-embed",
       "matchingModel": "codestral-embed",
       "overrides": {
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "apiOperation": "codestralEmbeddings"
       },
       "unset": [
@@ -339,6 +403,10 @@
       "model": "mistral/mistral-moderation",
       "matchingModel": "mistral-moderation-latest",
       "overrides": {
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "apiOperation": "moderations"
       },
       "unset": [
@@ -352,6 +420,10 @@
       "matchingModel": "voxtral-mini-tts-latest",
       "overrides": {
         "lastUpdated": "March 23, 2026",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "supportsToolCalls": false,
         "supportsTemperature": false
       }
@@ -365,6 +437,10 @@
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "August 14, 2026",
+        "dataRetention": {
+          "zeroRetention": "on_request",
+          "source": "https://docs.mistral.ai/admin/monitor-comply/zero-data-retention"
+        },
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044
       }

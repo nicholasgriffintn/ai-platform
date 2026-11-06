@@ -3,19 +3,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": 0,
-      "zeroRetention": "default",
-      "source": "https://docs.ovhcloud.com/en/guides/public-cloud/ai-machine-learning/ai-endpoints-getting-started"
-    },
-    "dataLocation": {
-      "kind": "regions",
-      "regions": [
-        "eu"
-      ],
-      "source": "https://www.ovhcloud.com/en/public-cloud/ai-endpoints/"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "gpt-oss-120b": {

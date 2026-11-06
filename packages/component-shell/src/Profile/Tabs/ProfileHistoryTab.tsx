@@ -5,7 +5,6 @@ import {
   useDeleteAllLocalChats,
   useDeleteAllRemoteChats,
 } from "@ngriffin_uk/polychat-library-react";
-import { downloadBlob } from "@ngriffin_uk/polychat-utility-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -18,29 +17,29 @@ export function ProfileHistoryTab() {
   const deleteAllRemoteChats = useDeleteAllRemoteChats();
   const [isExporting, setIsExporting] = useState(false);
 
-  const handleExport = async () => {
+  const handleExportJson = async () => {
     setIsExporting(true);
     try {
       trackEvent({
-        name: "export_account_data",
+        name: "export_chat_history_json",
         category: "profile",
-        label: "export_account_data",
+        label: "export_chat_history_json",
         value: 1,
       });
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      let after: string | undefined;
-      let part = 1;
+      const blob = await apiService.exportChatHistory();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const ts = new Date().toISOString().replace(/[:.]/g, "-");
 
-      do {
-        const { blob, nextAfter } = await apiService.exportAccountData(after);
-
-        downloadBlob(`polychat-export-${timestamp}-part-${part}.zip`, blob);
-        after = nextAfter ?? undefined;
-        part += 1;
-      } while (after);
+      a.href = url;
+      a.download = `chat-history-${ts}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Failed to export account data:", error);
-      toast.error("Couldn't export your data", {
+      console.error("Failed to export chat history:", error);
+      toast.error("Couldn't export chat history", {
         description: error instanceof Error ? error.message : "Please try again.",
       });
     } finally {
@@ -54,7 +53,7 @@ export function ProfileHistoryTab() {
         isExporting={isExporting}
         isDeletingLocal={deleteAllChats.isPending}
         isDeletingRemote={deleteAllRemoteChats.isPending}
-        onExport={() => void handleExport()}
+        onExport={() => void handleExportJson()}
         onDeleteLocal={async () => {
           try {
             trackEvent({

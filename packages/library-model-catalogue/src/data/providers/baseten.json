@@ -3,16 +3,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": 0,
-      "zeroRetention": "default",
-      "source": "https://docs.baseten.co/observability/security"
-    },
-    "dataLocation": {
-      "kind": "multiple",
-      "source": "https://docs.baseten.co/development/model-apis/overview"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "deepseek-ai/DeepSeek-V4-Flash-0731": {

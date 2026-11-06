@@ -2,15 +2,7 @@
   "defaults": {
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "dataRetention": {
-      "maxDays": "unknown",
-      "source": "https://docs.github.com/en/copilot/reference/ai-models/model-hosting"
-    },
-    "dataLocation": {
-      "kind": "routed",
-      "source": "https://docs.github.com/en/copilot/reference/ai-models/model-hosting"
-    }
+    "supportsAttachments": true
   },
   "models": {
     "ghcopilot/openai/o4-mini": {

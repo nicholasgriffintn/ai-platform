@@ -3,15 +3,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "dataRetention": {
-      "maxDays": "unknown",
-      "source": "https://kilo.ai/privacy"
-    },
-    "dataLocation": {
-      "kind": "routed",
-      "source": "https://kilo.ai/privacy"
-    }
+    "supportsTemperature": true
   },
   "models": {
     "claude-sonnet-4-5": {
