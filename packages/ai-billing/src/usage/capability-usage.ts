@@ -11,7 +11,12 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/record-fields";
 
 import { userCreditActor } from "./credit-actor.js";
-import { emitUsageEvents, resolveUsageAttribution, type UsageEventDraft } from "./ledger.js";
+import {
+  emitUsageEvents,
+  resolveUsageAttribution,
+  type UsageEmissionDelivery,
+  type UsageEventDraft,
+} from "./ledger.js";
 import { isByokTurn } from "./model-usage.js";
 import type { UsageRuntime } from "./store.js";
 
@@ -190,6 +195,7 @@ export interface RecordCapabilityCallParams {
   args: readonly unknown[];
   result: unknown;
   extractor: CapabilityQuantityExtractor;
+  delivery?: UsageEmissionDelivery;
 }
 
 export async function recordCapabilityCall(
@@ -235,7 +241,7 @@ export async function recordCapabilityCall(
       runAttempt: params.runAttempt ?? null,
     };
 
-    await emitUsageEvents(runtime, { drafts: [draft] });
+    await emitUsageEvents(runtime, { drafts: [draft], delivery: params.delivery });
   } catch (error) {
     logger.warn("Failed to record capability usage", {
       error,

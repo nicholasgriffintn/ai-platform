@@ -12,9 +12,17 @@ export const usageSourceSchema = z.enum(USAGE_SOURCES);
 
 export type UsageSource = z.infer<typeof usageSourceSchema>;
 
-export const USAGE_EVENT_REASONS = ["ran_off_platform"] as const;
+export const USAGE_CHARGE_ADJUSTMENT_REASONS = [
+  "platform_failure_refund",
+  "run_cap_absorbed",
+] as const;
+export const USAGE_EVENT_REASONS = [
+  "ran_off_platform",
+  ...USAGE_CHARGE_ADJUSTMENT_REASONS,
+] as const;
 export const usageEventReasonSchema = z.enum(USAGE_EVENT_REASONS);
 export type UsageEventReason = z.infer<typeof usageEventReasonSchema>;
+export type UsageChargeAdjustmentReason = (typeof USAGE_CHARGE_ADJUSTMENT_REASONS)[number];
 
 export const CREDIT_STATES = ["ok", "reserve", "overage", "exhausted"] as const;
 
@@ -102,6 +110,13 @@ export const chatRunUsageSchema = z.object({
     status: z.enum(["pending", "settled", "released", "missing"]),
     at: z.string().nullable(),
   }),
+  charge: z
+    .object({
+      capCreditMicros: z.number().int().positive().nullable(),
+      refundedCreditMicros: z.number().int().nonnegative(),
+      absorbedCreditMicros: z.number().int().nonnegative(),
+    })
+    .optional(),
   delegated: z.array(chatRunDelegatedUsageSchema).optional(),
 });
 

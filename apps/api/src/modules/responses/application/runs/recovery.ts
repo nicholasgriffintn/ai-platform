@@ -12,6 +12,7 @@ import { withoutOrigin } from "~/modules/sync/application/publish";
 
 import { releaseQueuedFollowUpAfterRun } from "./follow-up-queue";
 import { salvageInterruptedReply } from "./interrupted-reply";
+import { refundPlatformFailedRun } from "./platform-failure";
 import { settleTeammateRun } from "./teammate-settlement";
 
 const logger = getLogger({ prefix: "services/chat-runs/recovery" });
@@ -66,6 +67,10 @@ export async function reconcileInactiveChatRun(
   });
 
   if (transitioned) {
+    if (!cancelled) {
+      await refundPlatformFailedRun(context, transitioned);
+    }
+
     await salvageInterruptedReply(context, transitioned, partial);
     await announceRecoveredRun(context, transitioned);
     await releaseQueuedFollowUpAfterRun(context, transitioned);

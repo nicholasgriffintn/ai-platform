@@ -39,6 +39,7 @@ export interface ChatSettingsPanelProps {
   defaultReasoningEffort: ReasoningEffort;
   defaultVerbosity: VerbosityLevel;
   maxOutputTokens?: number;
+  showRunCap?: boolean;
   showMultiModelToggle?: boolean;
   useMultiModel?: boolean;
   onUseMultiModelChange: (value: boolean) => void;
@@ -66,6 +67,7 @@ export function ChatSettingsPanel({
   defaultReasoningEffort,
   defaultVerbosity,
   maxOutputTokens,
+  showRunCap = false,
   showMultiModelToggle = false,
   useMultiModel = false,
   onUseMultiModelChange,
@@ -119,6 +121,18 @@ export function ChatSettingsPanel({
               <TabsTrigger value="advanced">Advanced</TabsTrigger>
             </TabsList>
             <TabsContent value="basic" className="space-y-3 px-1 pt-3">
+              {showRunCap && (
+                <CompactSettingNumber
+                  id="run_cap_credits"
+                  label="Run credit cap"
+                  description="Each run pauses and asks you before it could go over this. Leave empty for no cap."
+                  min={0}
+                  value={chatSettings.run_cap_credits ?? ""}
+                  placeholder="No cap"
+                  disabled={isDisabled}
+                  onChange={(value) => onNumericSettingChange("run_cap_credits", value)}
+                />
+              )}
               {reasoningOptions.length > 0 && (
                 <CompactSettingSelect
                   id="reasoning_effort"

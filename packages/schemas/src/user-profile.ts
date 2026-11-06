@@ -11,7 +11,7 @@ export interface User {
   name: string;
   github_username: string;
   email?: string;
-  plan_id: "free" | "pro";
+  plan_id: "free" | "pro" | "agent";
   avatar_url: string;
   created_at: string;
   updated_at: string;

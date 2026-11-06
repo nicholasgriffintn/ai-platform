@@ -64,6 +64,7 @@ export interface AcceptRunCommandParams {
   recipeInstallationId?: string | null;
   delegationId?: string;
   resolvedConfiguration?: Record<string, unknown> | null;
+  spendCapCreditMicros?: number | null;
 }
 
 export interface AcceptRunCancellationParams {
@@ -137,6 +138,7 @@ function formatRun(row: ConversationRunRow): ChatRun {
     trigger: row.trigger ?? "user",
     context,
     retry,
+    spendCapCreditMicros: row.spend_cap_credit_micros,
     ...(provenance ? { provenance } : {}),
   };
 }
@@ -225,6 +227,15 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
     );
 
     return row ? formatRun(row) : null;
+  }
+
+  async markUsageRefunded(runId: string): Promise<void> {
+    await this.executeRun(
+      `UPDATE conversation_run
+       SET usage_refunded_at = ?
+       WHERE id = ? AND usage_refunded_at IS NULL AND status IN ('failed', 'interrupted')`,
+      [new Date().toISOString(), runId],
+    );
   }
 
   async updateContext(
@@ -470,8 +481,8 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       `INSERT INTO conversation_run (
          id, conversation_id, project_id, project_task_id, stage_id, initiator_user_id,
          teammate_context_id, computer_id, recipe_installation_id, resolved_configuration_json,
-         status, attempt, event_sequence, trigger, created_at, updated_at
-       ) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', 1, 1, ?, ?, ?
+         spend_cap_credit_micros, status, attempt, event_sequence, trigger, created_at, updated_at
+       ) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'accepted', 1, 1, ?, ?, ?
        WHERE ? IS NULL OR EXISTS (
          SELECT 1 FROM delegation WHERE id = ? AND state = 'running'
        )
@@ -487,6 +498,7 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
       params.computerId ?? null,
       params.recipeInstallationId ?? null,
       params.resolvedConfiguration ? JSON.stringify(params.resolvedConfiguration) : null,
+      params.spendCapCreditMicros ?? null,
       params.trigger ?? "user",
       now,
       now,

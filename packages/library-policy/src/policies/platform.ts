@@ -1,6 +1,6 @@
 export const platformPolicies = {
   "platform.pro": `permit(principal, action == Polychat::Action::"entitlement.pro", resource)
-    when { context.plan == "pro" };`,
+    when { ["pro", "agent"].contains(context.plan) };`,
   "platform.admin": `permit(principal, action == Polychat::Action::"platform.admin", resource)
     when { context.role == "admin" || (!context.strict && context.role == "moderator") };`,
   "platform.service": `permit(principal, action == Polychat::Action::"service.call", resource)
@@ -12,7 +12,7 @@ export const platformPolicies = {
     when { (["tool", "connector"].contains(context.kind) && ["owner", "admin"].contains(context.role)) ||
       (!["tool", "connector"].contains(context.kind) && (!context.existing || context.actorId == context.creatorId)) };`,
   "platform.memory.retrieve": `permit(principal, action == Polychat::Action::"memory.retrieve", resource)
-    when { context.plan == "pro" && context.signedIn && context.store && (context.saveEnabled || context.historyEnabled) };`,
+    when { ["pro", "agent"].contains(context.plan) && context.signedIn && context.store && (context.saveEnabled || context.historyEnabled) };`,
   "platform.memory.store": `permit(principal, action == Polychat::Action::"memory.store", resource)
-    when { context.plan == "pro" && context.signedIn && context.store && context.saveEnabled };`,
+    when { ["pro", "agent"].contains(context.plan) && context.signedIn && context.store && context.saveEnabled };`,
 };

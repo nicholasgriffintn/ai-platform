@@ -23,3 +23,17 @@ export function isSpendCapReached(
 ): boolean {
   return resolveSpendState(creditMicros, capCreditMicros) === "reached";
 }
+
+export interface RunStepCharge {
+  chargedCreditMicros: number;
+  capCreditMicros: number | null | undefined;
+  stepEstimateCreditMicros: number;
+}
+
+export function runStepFitsCap(charge: RunStepCharge): boolean {
+  if (!charge.capCreditMicros || charge.capCreditMicros <= 0) {
+    return true;
+  }
+
+  return charge.chargedCreditMicros + charge.stepEstimateCreditMicros <= charge.capCreditMicros;
+}

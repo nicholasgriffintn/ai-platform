@@ -14,6 +14,7 @@ import { creditActorUserId, type CreditActor } from "./credit-actor.js";
 import {
   emitUsageEvents,
   resolveUsageAttribution,
+  type UsageEmissionDelivery,
   type UsageEmissionOutcome,
   type UsageEventDraft,
 } from "./ledger.js";
@@ -52,6 +53,7 @@ export interface RecordModelTurnUsageParams {
   occurredAt?: string;
   tier?: string;
   provenance?: RunProvenance | null;
+  delivery?: UsageEmissionDelivery;
 }
 
 export interface RecordOffPlatformRunUsageParams {
@@ -222,7 +224,7 @@ export async function recordModelTurnUsage(
       };
     });
 
-    return await emitUsageEvents(runtime, { drafts });
+    return await emitUsageEvents(runtime, { drafts, delivery: params.delivery });
   } catch (error) {
     logger.error("Failed to record model turn usage", {
       error,

@@ -2,15 +2,18 @@ import { creditMicrosFromCredits } from "@ngriffin_uk/polychat-schemas";
 
 import { defaultGraceCreditMicros } from "./usage/plan-seed.js";
 
-export type PlanId = "free" | "pro" | "enterprise";
+export type PlanId = "free" | "pro" | "agent" | "enterprise";
 
 export const PLAN_RANKS: Record<PlanId, number> = {
   free: 0,
   pro: 10,
+  agent: 15,
   enterprise: 20,
 };
 
-export const PLAN_IDS: readonly PlanId[] = ["free", "pro", "enterprise"];
+export const PLAN_IDS: readonly PlanId[] = ["free", "pro", "agent", "enterprise"];
+
+export const AGENT_PLAN_ID: PlanId = "agent";
 
 export const DEFAULT_PLAN_ID: PlanId = "free";
 
@@ -23,6 +26,26 @@ export function hasPlanEntitlement(
   requiredPlan: PlanId,
 ): boolean {
   return PLAN_RANKS[resolvePlanId(planId)] >= PLAN_RANKS[requiredPlan];
+}
+
+export interface PlanSaleFields {
+  id: string;
+  price?: number | null;
+  stripe_price_id?: string | null;
+  included_credits?: number | null;
+}
+
+export function isPlanOnSale(plan: PlanSaleFields): boolean {
+  if (plan.id !== AGENT_PLAN_ID) {
+    return true;
+  }
+
+  return (
+    typeof plan.price === "number" &&
+    Boolean(plan.stripe_price_id) &&
+    typeof plan.included_credits === "number" &&
+    plan.included_credits > 0
+  );
 }
 
 export interface PlanEntitlementMicros {
