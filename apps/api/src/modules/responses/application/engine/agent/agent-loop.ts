@@ -203,6 +203,7 @@ export interface AgentLoopExecutionParams {
   initialToolCalls?: ToolCall[];
   initialToolResults?: Message[];
   guardrailPrompt?: string;
+  crisisSignpost?: boolean;
   emit?: (event: AgentEvent) => Promise<void>;
   shouldStop?: () => boolean;
   signal?: AbortSignal;
@@ -369,6 +370,7 @@ async function runChatAgentLoop(
       userSettings: params.userSettings,
       requestOptions: params.requestOptions,
       guardrailPrompt: params.guardrailPrompt,
+      crisisSignpost: params.crisisSignpost,
       runId: params.runId,
       runAttempt: params.runAttempt,
       provenance: params.provenance,

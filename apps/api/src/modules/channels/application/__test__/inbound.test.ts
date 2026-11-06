@@ -7,6 +7,26 @@ const mocks = vi.hoisted(() => ({
   conversationGet: vi.fn(),
   conversationArchiveMessages: vi.fn(),
   providerSend: vi.fn(),
+  judgeChannelEvent: vi.fn(),
+  adapterSendReply: vi.fn(),
+  eligibleSender: vi.fn(),
+  requireChannelSenderMapping: vi.fn(),
+}));
+
+vi.mock("../channel-event-judgement", () => ({
+  judgeChannelEvent: mocks.judgeChannelEvent,
+}));
+
+vi.mock("../access", () => ({
+  requireChannelSenderMapping: mocks.requireChannelSenderMapping,
+}));
+
+vi.mock("~/modules/channels/infrastructure/adapters", () => ({
+  getChannelAdapter: () => ({
+    label: "Slack",
+    isReplyConfigured: () => true,
+    sendReply: mocks.adapterSendReply,
+  }),
 }));
 
 vi.mock("~/modules/conversations/application/manager", () => ({
@@ -35,9 +55,11 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
+import { ChannelSenderRepository } from "~/modules/channels/infrastructure/ChannelSenderRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
 import { MessageRepository } from "~/modules/conversations/infrastructure/MessageRepository";
 import { OutboundDeliveryRepository } from "~/modules/delivery/infrastructure/OutboundDeliveryRepository";
+import { CRISIS_SIGNPOST_TEXT } from "~/modules/responses/domain/crisis-signposting";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
 import { handleInboundChannelMessage, type InboundChannelTaskData } from "../inbound";
@@ -63,6 +85,12 @@ function createContext(
         ChannelBindingRepository,
         {
           getById: vi.fn(async () => binding),
+        },
+      ],
+      [
+        ChannelSenderRepository,
+        {
+          eligibleSender: mocks.eligibleSender,
         },
       ],
       [
@@ -159,6 +187,84 @@ describe("inbound channel messages", () => {
     expect(mocks.providerSend).toHaveBeenCalledWith({
       to: "+15551234567",
       body: "chat reply",
+    });
+  });
+
+  describe("messages the assistant would not answer", () => {
+    const binding = {
+      id: "binding-1",
+      enabled: true,
+      channel: "slack",
+      external_id: "T1:C1",
+      created_by: user.id,
+      scope_type: "personal",
+      scope_id: String(user.id),
+      teammate_id: null,
+      interaction_mode: "automated",
+      reaction_level: "off",
+    };
+    const bindingData = (body: string): InboundChannelTaskData => ({
+      channel: "slack",
+      bindingId: binding.id,
+      senderMappingId: "sender-1",
+      senderRevision: 1,
+      messageContext: {
+        externalId: binding.external_id,
+        threadId: "thread-1",
+        isDirect: false,
+      },
+      message: { messageId: "M1", from: "U1", body },
+    });
+
+    beforeEach(() => {
+      mocks.judgeChannelEvent.mockResolvedValue({ shouldReply: false, needsAttention: false });
+      mocks.eligibleSender.mockResolvedValue({
+        id: "sender-1",
+        user_id: user.id,
+        sender_id: "U1",
+        revision: 1,
+      });
+      mocks.requireChannelSenderMapping.mockResolvedValue({ binding });
+    });
+
+    it("still signposts a crisis message", async () => {
+      const result = await handleInboundChannelMessage({
+        env,
+        context: createContext([], binding),
+        user,
+        data: bindingData("I want to kill myself"),
+      });
+
+      expect(result.status).toBe("ignored");
+      expect(mocks.startResponse).not.toHaveBeenCalled();
+      expect(mocks.adapterSendReply).toHaveBeenCalledWith(
+        expect.objectContaining({ body: CRISIS_SIGNPOST_TEXT }),
+        env,
+      );
+    });
+
+    it("stays silent otherwise", async () => {
+      await handleInboundChannelMessage({
+        env,
+        context: createContext([], binding),
+        user,
+        data: bindingData("lunch at noon?"),
+      });
+
+      expect(mocks.adapterSendReply).not.toHaveBeenCalled();
+    });
+
+    it("does not lose the outcome when signposting cannot be sent", async () => {
+      mocks.adapterSendReply.mockRejectedValueOnce(new Error("slack down"));
+
+      await expect(
+        handleInboundChannelMessage({
+          env,
+          context: createContext([], binding),
+          user,
+          data: bindingData("I want to kill myself"),
+        }),
+      ).resolves.toMatchObject({ status: "ignored" });
     });
   });
 

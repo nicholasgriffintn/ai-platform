@@ -1,10 +1,13 @@
 import { formatConjunctionList } from "@ngriffin_uk/polychat-utility-core";
 
+import { isCrisisGuardrailReason, withCrisisSignpost } from "./crisis-signposting";
+
 const SETTINGS_HINT = "change the safety check in Account settings › Guardrails";
 
 export function describeGuardrailBlock(
   source: "input" | "output",
   reasons: readonly string[],
+  options: { crisisSignpost?: boolean } = {},
 ): string {
   const unique = [...new Set(reasons)];
   const flagged =
@@ -12,7 +15,12 @@ export function describeGuardrailBlock(
       ? `The safety check flagged it for ${formatConjunctionList(unique)}.`
       : "The safety check flagged it without giving a reason.";
 
-  return source === "input"
-    ? `I didn't send that message to the model. ${flagged} If that looks wrong, try rewording it, or ${SETTINGS_HINT}.`
-    : `I held that reply back. ${flagged} Try asking a different way, or ${SETTINGS_HINT}.`;
+  const block =
+    source === "input"
+      ? `I didn't send that message to the model. ${flagged} If that looks wrong, try rewording it, or ${SETTINGS_HINT}.`
+      : `I held that reply back. ${flagged} Try asking a different way, or ${SETTINGS_HINT}.`;
+
+  return options.crisisSignpost || unique.some(isCrisisGuardrailReason)
+    ? withCrisisSignpost(block)
+    : block;
 }
