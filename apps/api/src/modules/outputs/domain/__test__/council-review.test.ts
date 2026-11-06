@@ -1,7 +1,7 @@
 import type { CouncilReviewSeat } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import { readCouncilAdjudication, readCouncilVote } from "../council-review";
+import { councilEvidenceBlock, readCouncilAdjudication, readCouncilVote } from "../council-review";
 
 function seat(vote: CouncilReviewSeat["vote"]): CouncilReviewSeat {
   return { memberId: "sceptic", critique: "", rebuttal: "", vote };
@@ -29,5 +29,27 @@ describe("council review verdicts", () => {
       verdict: "revise",
       dissent: [],
     });
+  });
+});
+
+describe("councilEvidenceBlock", () => {
+  it("adds nothing when the run recorded no evidence", () => {
+    expect(councilEvidenceBlock([])).toBe("");
+  });
+
+  it("gives the seats each claim, how it was established and what is unproven", () => {
+    const block = councilEvidenceBlock([
+      {
+        claim: "Tests pass",
+        route: "Ran the suite",
+        evidence_surface: "run-1",
+        status: "approximate",
+        remaining_uncertainty: "One flaky test",
+      },
+    ]);
+
+    expect(block).toContain("<evidence>");
+    expect(block).toContain("Tests pass (approximate)");
+    expect(block).toContain("Unproven: One flaky test");
   });
 });

@@ -5,6 +5,7 @@ import { chatRunStatusSchema } from "./chat-runs.js";
 import { goalEvidenceEntrySchema, goalSchema } from "./goals.js";
 import { listSchema } from "./platform/list.js";
 import { outputProvenanceSchema } from "./provenance.js";
+import { runVerificationSchema } from "./run-verification.js";
 import { chatRunUsageSchema } from "./usage.js";
 import {
   answerUserQuestionsSchema,
@@ -502,6 +503,7 @@ export const projectTaskCompletionSchema = z.object({
   output: z.string(),
   evidence: z.array(goalEvidenceEntrySchema).default([]),
   councilReviewIds: z.array(z.string().min(1)).optional(),
+  verification: runVerificationSchema.optional(),
   approval: z.object({
     mode: z.enum(["human", "automated"]),
     status: z.enum(["pending", "approved", "rejected"]),
