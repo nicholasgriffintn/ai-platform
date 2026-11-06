@@ -52,9 +52,11 @@ export function useProjectTaskInteractions(projectId: string, currentConversatio
             queryKey: [CHATS_QUERY_KEY, currentConversationId],
           });
           toast.success(
-            parsedApproval.data.resolution === "approved"
-              ? "Approved. The task is continuing."
-              : "Rejected. The task is continuing without that tool.",
+            parsedApproval.data.option && toolName === "request_approval"
+              ? "Choice saved. The task is continuing."
+              : parsedApproval.data.resolution === "approved"
+                ? "Approved. The task is continuing."
+                : "Rejected. The task is continuing without that tool.",
           );
         } catch (mutationError) {
           toast.error(getErrorMessage(mutationError, "Unable to continue this task"));

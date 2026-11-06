@@ -237,6 +237,7 @@ beforeEach(() => {
   vi.mocked(resolveProjectTaskToolApproval).mockResolvedValue({
     toolName: "use_recipe_connector",
     resolution: "approved",
+    option: "Approve",
   });
 });
 

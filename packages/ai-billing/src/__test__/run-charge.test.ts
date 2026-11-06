@@ -7,6 +7,7 @@ import {
   planRunChargeAdjustments,
   reconcileRunCharge,
   resolveRunChargeTarget,
+  runCapRemainingCreditMicros,
 } from "../usage/run-charge.js";
 import type { RunChargeGroup } from "../usage/store.js";
 
@@ -30,14 +31,50 @@ function group(overrides: Partial<RunChargeGroup> = {}): RunChargeGroup {
 
 describe("resolveRunChargeTarget", () => {
   it("charges nothing for a refunded run, whatever its cap", () => {
-    expect(resolveRunChargeTarget({ refunded: true, capCreditMicros: 5_000_000 })).toEqual({
+    expect(
+      resolveRunChargeTarget({
+        refunded: true,
+        capCreditMicros: 5_000_000,
+        delegatedCreditMicros: 0,
+      }),
+    ).toEqual({
       creditMicros: 0,
       reason: "platform_failure_refund",
     });
   });
 
+  it("leaves room for what delegates have spent or hold, so the family stays under the cap", () => {
+    expect(
+      resolveRunChargeTarget({
+        refunded: false,
+        capCreditMicros: 5_000_000,
+        delegatedCreditMicros: 2_000_000,
+      }),
+    ).toEqual({ creditMicros: 3_000_000, reason: "run_cap_absorbed" });
+  });
+
   it("leaves an uncapped, unrefunded run alone", () => {
-    expect(resolveRunChargeTarget({ refunded: false, capCreditMicros: null })).toBeNull();
+    expect(
+      resolveRunChargeTarget({ refunded: false, capCreditMicros: null, delegatedCreditMicros: 0 }),
+    ).toBeNull();
+  });
+});
+
+describe("runCapRemainingCreditMicros", () => {
+  it("subtracts own and delegated spend, and never goes below zero", () => {
+    const state = {
+      capCreditMicros: 10_000_000,
+      refunded: false,
+      chargedCreditMicros: 4_000_000,
+      delegatedCreditMicros: 3_000_000,
+    };
+
+    expect(runCapRemainingCreditMicros(state)).toBe(3_000_000);
+    expect(runCapRemainingCreditMicros({ ...state, chargedCreditMicros: 9_000_000 })).toBe(0);
+  });
+
+  it("has nothing to report for an uncapped run", () => {
+    expect(runCapRemainingCreditMicros(null)).toBeNull();
   });
 });
 
@@ -73,7 +110,12 @@ describe("planRunChargeAdjustments", () => {
 describe("reconcileRunCharge", () => {
   it("writes negative credits and keeps the vendor cost record intact", async () => {
     const { store, runtime } = createFakeRuntime({
-      runCharge: { capCreditMicros: null, refunded: true, chargedCreditMicros: 6_000_000 },
+      runCharge: {
+        capCreditMicros: null,
+        refunded: true,
+        chargedCreditMicros: 6_000_000,
+        delegatedCreditMicros: 0,
+      },
       runChargeGroups: [group()],
     });
 
@@ -94,7 +136,12 @@ describe("reconcileRunCharge", () => {
 
   it("returns a pool-funded charge to the pool that paid it", async () => {
     const { store, runtime } = createFakeRuntime({
-      runCharge: { capCreditMicros: null, refunded: true, chargedCreditMicros: 6_000_000 },
+      runCharge: {
+        capCreditMicros: null,
+        refunded: true,
+        chargedCreditMicros: 6_000_000,
+        delegatedCreditMicros: 0,
+      },
       runChargeGroups: [group({ workspace_id: "workspace-1", pool_workspace_id: "workspace-1" })],
     });
 
@@ -110,7 +157,12 @@ describe("reconcileRunCharge", () => {
 
   it("does nothing once the charge is already at the target", async () => {
     const { store, runtime } = createFakeRuntime({
-      runCharge: { capCreditMicros: 5_000_000, refunded: false, chargedCreditMicros: 5_000_000 },
+      runCharge: {
+        capCreditMicros: 5_000_000,
+        refunded: false,
+        chargedCreditMicros: 5_000_000,
+        delegatedCreditMicros: 0,
+      },
     });
 
     await reconcileRunCharge(runtime, "run-1");
@@ -122,8 +174,18 @@ describe("reconcileRunCharge", () => {
     const { store, runtime } = createFakeRuntime({ runChargeGroups: [group()] });
 
     store.getRunChargeState
-      .mockResolvedValueOnce({ capCreditMicros: null, refunded: true, chargedCreditMicros: 6 })
-      .mockResolvedValueOnce({ capCreditMicros: null, refunded: true, chargedCreditMicros: 8 });
+      .mockResolvedValueOnce({
+        capCreditMicros: null,
+        refunded: true,
+        chargedCreditMicros: 6,
+        delegatedCreditMicros: 0,
+      })
+      .mockResolvedValueOnce({
+        capCreditMicros: null,
+        refunded: true,
+        chargedCreditMicros: 8,
+        delegatedCreditMicros: 0,
+      });
     store.applyRunChargeAdjustments.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
 
     await reconcileRunCharge(runtime, "run-1");
@@ -168,7 +230,12 @@ describe("applyUsageRollup", () => {
 
   it("refunds usage that lands after the run was already refunded", async () => {
     const { store, runtime } = createFakeRuntime({
-      runCharge: { capCreditMicros: null, refunded: true, chargedCreditMicros: 2_500_000 },
+      runCharge: {
+        capCreditMicros: null,
+        refunded: true,
+        chargedCreditMicros: 2_500_000,
+        delegatedCreditMicros: 0,
+      },
       runChargeGroups: [group({ credit_micros: 2_500_000 })],
     });
 
@@ -198,6 +265,7 @@ describe("a capped run whose last step cost more than its estimate", () => {
         capCreditMicros: 100_000_000,
         refunded: false,
         chargedCreditMicros: 130_000_000,
+        delegatedCreditMicros: 0,
       },
       runChargeGroups: [group({ credit_micros: 130_000_000 })],
     });

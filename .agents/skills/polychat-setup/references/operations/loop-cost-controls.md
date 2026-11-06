@@ -10,13 +10,17 @@ Admission reserves a turn estimate once. Normal depletion refuses new turns, whi
 
 ## Cap a run
 
-`budget.credits` on a create request sets a run's cap, stored as `conversation_run.spend_cap_credit_micros`. Capped runs need a stored conversation and a signed-in account. A cap below one step's estimate is refused before work starts.
+`budget.credits` on a create request sets a run's cap, stored as `conversation_run.spend_cap_credit_micros`. Work tasks carry `runCapCreditMicros` and routines carry `runCreditCapMicros`, applied to each run they start. Capped runs need a stored conversation and a signed-in account. A cap below one step's estimate is refused before work starts.
 
 Before each model step the loop compares ledger spend plus that step's estimate with the cap. If the step might not fit, the run moves to `awaiting_approval` through a platform-issued `request_approval`, offering a raised cap or stopping. Only the stored raise option raises the cap; any other choice ends the run without another model call. Capped runs write usage inline so the check reads a current ledger. Agent-mode runs also write inline to keep the live `response.run_meter` event current; other runs' meters can trail the usage queue.
 
 The cap limits what the person pays. A step or tool that costs more than its estimate is absorbed: `reconcileRunCharge` writes a compensating `run_cap_absorbed` event so charged credits never exceed the cap, while vendor cost stays recorded. Absorbed spend is real platform cost, so investigate if it grows.
 
-Capped runs refuse delegation, because delegates spend under their own runs and budgets. Usage with no run attribution, such as title generation and memory capture, sits outside the cap.
+Tools with a known cost are checked before they run, in `tool-cost.ts`: `run_sandbox_task` at its timeout, and `create_image` and `create_music` when the call names a model with a rate. If a batch might not fit, none of it runs, each call is answered as skipped, and the run pauses. Every other tool has no cost until it finishes, so it is counted afterwards and any overrun is absorbed: `create_video`, `create_speech`, web search, research, connectors and tools that call a model. Sandbox duration reaches the ledger from the runner's report, which can land after the next step's check.
+
+A capped run gives a delegate a budget from what is left of its cap, and that budget is the child run's own cap. A delegate stops at its budget instead of pausing, because raising it would spend outside the parent's cap. While a delegate is live the parent counts its full budget; once settled it counts actual spend. `conversation_run.delegation_id` links the two.
+
+Usage with no run attribution, such as title generation and memory capture, sits outside the cap.
 
 ## Refund platform failures
 

@@ -108,6 +108,9 @@ export async function recordSandboxRunUsage(params: {
     quantities,
     occurredAt: report.endedAt,
     activityId: runId,
+    runId: record.run.chatRunId ?? null,
+    runAttempt: record.run.chatRunAttempt ?? null,
+    delivery: record.run.chatRunId ? "inline" : undefined,
     projectId: record.projectId ?? null,
     workspaceId: record.projectId
       ? await runtime.store.getProjectWorkspaceId(record.projectId)

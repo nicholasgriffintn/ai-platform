@@ -37,6 +37,7 @@ interface ExecuteSandboxRunStreamParams {
   payload: ExecuteSandboxRunStreamPayload;
   projectId?: string;
   conversationId?: string;
+  chatRunId?: string;
 }
 
 export async function executeSandboxRunStream(
@@ -78,6 +79,7 @@ export async function executeSandboxRunStream(
 
   const runId = generateId();
   const now = new Date().toISOString();
+  const chatRunId = params.chatRunId ?? serviceContext.executionRunId;
   const runData: SandboxRunData = {
     runId,
     projectId,
@@ -102,6 +104,10 @@ export async function executeSandboxRunStream(
     inspectionWindowSeconds: projectEnvironment.inspectionWindowSeconds ?? 0,
     timeoutAt: timeoutConfig.timeoutAt,
     workflowPhase: "queued",
+    ...(chatRunId ? { chatRunId } : {}),
+    ...(serviceContext.executionRunAttempt
+      ? { chatRunAttempt: serviceContext.executionRunAttempt }
+      : {}),
   };
 
   const createdRecord = await serviceContext.repositories.get(ActivityRepository).createActivity({

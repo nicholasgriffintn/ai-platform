@@ -346,6 +346,7 @@ export function parseRecipeInstallationRecord(
     ),
     teammateContextId: parsed.teammateContextId ?? null,
     monthlyCreditCapMicros: parsed.monthlyCreditCapMicros ?? null,
+    runCreditCapMicros: parsed.runCreditCapMicros ?? null,
     pausedReason: parsed.status === "paused" ? (parsed.pausedReason ?? "person") : null,
     createdAt: record.created_at,
     updatedAt: record.updated_at,
@@ -490,6 +491,7 @@ async function upsertRecipeInstallation(params: {
     }),
     teammateContextId: params.teammateContextId ?? existingData?.teammateContextId,
     monthlyCreditCapMicros: existingData?.monthlyCreditCapMicros,
+    runCreditCapMicros: existingData?.runCreditCapMicros,
   };
 
   if (existing) {
@@ -664,6 +666,10 @@ export async function updateRecipeInstallation(params: {
       params.update.monthlyCreditCapMicros === null
         ? undefined
         : (params.update.monthlyCreditCapMicros ?? existing.data.monthlyCreditCapMicros),
+    runCreditCapMicros:
+      params.update.runCreditCapMicros === null
+        ? undefined
+        : (params.update.runCreditCapMicros ?? existing.data.runCreditCapMicros),
     pausedReason:
       params.update.status === "paused"
         ? "person"
