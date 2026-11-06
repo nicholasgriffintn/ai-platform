@@ -3,6 +3,7 @@ import {
   resolveUsageBalanceSnapshot,
   usageCreditsFromBalance,
   userCreditActor,
+  workspacePoolCredits,
   type CreditActor,
 } from "@ngriffin_uk/polychat-ai-billing";
 import { usagePeriodFromDate, type UsageCreditsSummary } from "@ngriffin_uk/polychat-schemas";
@@ -59,12 +60,18 @@ export class UsageManager {
     this.recordedAssistantResponse = true;
   }
 
-  async getUsageLimits(): Promise<UsageLimits> {
-    const balance = await resolveUsageBalanceSnapshot(
-      createUsageStore(this.repositories),
-      this.creditActor(),
-      usagePeriodFromDate(),
-    );
+  async getUsageLimits(fundingWorkspaceId?: string): Promise<UsageLimits> {
+    const store = createUsageStore(this.repositories);
+    const period = usagePeriodFromDate();
+    const pool = fundingWorkspaceId
+      ? await store.getWorkspacePool(fundingWorkspaceId, period)
+      : null;
+
+    if (pool) {
+      return { credits: workspacePoolCredits(pool) };
+    }
+
+    const balance = await resolveUsageBalanceSnapshot(store, this.creditActor(), period);
 
     return { credits: usageCreditsFromBalance(balance) };
   }

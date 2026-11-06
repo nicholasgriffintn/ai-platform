@@ -14,6 +14,7 @@ function group(overrides: Partial<RunChargeGroup> = {}): RunChargeGroup {
   return {
     user_id: 7,
     workspace_id: null,
+    pool_workspace_id: null,
     project_id: null,
     conversation_id: "conversation-1",
     run_attempt: 1,
@@ -88,6 +89,22 @@ describe("reconcileRunCharge", () => {
       quantity: 0,
       reason: "platform_failure_refund",
       run_attempt: 1,
+    });
+  });
+
+  it("returns a pool-funded charge to the pool that paid it", async () => {
+    const { store, runtime } = createFakeRuntime({
+      runCharge: { capCreditMicros: null, refunded: true, chargedCreditMicros: 6_000_000 },
+      runChargeGroups: [group({ workspace_id: "workspace-1", pool_workspace_id: "workspace-1" })],
+    });
+
+    await reconcileRunCharge(runtime, "run-1");
+
+    const [, , events] = store.applyRunChargeAdjustments.mock.calls[0] ?? [];
+
+    expect(events?.[0]).toMatchObject({
+      credit_micros: -6_000_000,
+      pool_workspace_id: "workspace-1",
     });
   });
 

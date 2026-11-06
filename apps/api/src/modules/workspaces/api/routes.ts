@@ -9,6 +9,7 @@ import {
   initiativeSchema,
   onboardingStateSchema,
   proposeHireSchema,
+  provisionWorkspaceTeamPlanSchema,
   saveTeamTemplateSchema,
   setupPlanStateSchema,
   startOnboardingSchema,
@@ -29,6 +30,7 @@ import {
   workspaceListResponseSchema,
   workspaceTeamDirectoryResponseSchema,
   workspaceTeammateSchema,
+  workspaceTeamPlanResponseSchema,
   workspaceTeamResponseSchema,
   workTaskListResponseSchema,
   workTaskQuerySchema,
@@ -37,6 +39,7 @@ import { Hono } from "hono";
 import z from "zod/v4";
 
 import { defineResource } from "~/infrastructure/http/resource";
+import { requireStrictAdmin } from "~/middleware/adminMiddleware";
 import { listWorkspaceWorkTasks } from "~/modules/project-tasks/application/listing";
 import { getWorkspaceTeamDirectory } from "~/modules/teammates/application/directory";
 import {
@@ -74,6 +77,11 @@ import {
   startOnboarding,
   startWorkspaceSetup,
 } from "~/modules/workspaces/application/onboarding";
+import {
+  endWorkspaceTeamPlan,
+  getWorkspaceTeamPlan,
+  provisionWorkspaceTeamPlan,
+} from "~/modules/workspaces/application/team-plan";
 import { saveTeamTemplate } from "~/modules/workspaces/application/team-template";
 import { getWorkCosts, getWorkRails } from "~/modules/workspaces/application/work-insights";
 
@@ -146,6 +154,42 @@ defineResource(app, { idParam: "workspace_id", tags: ["workspaces"] }, (workspac
       responses: { 200: { description: "The workspace", schema: workspaceDetailSchema } },
       handler: ({ serviceContext, params, body }) =>
         transferWorkspaceOwnership(serviceContext, params.workspace_id, body.newOwnerUserId),
+    });
+
+  workspaces
+    .singleton("team_plan")
+    .read({
+      auth: true,
+      summary: "Get the workspace's seats and shared credit pool",
+      paramSchema: workspaceParamsSchema,
+      responses: {
+        200: { description: "The team plan", schema: workspaceTeamPlanResponseSchema },
+      },
+      handler: ({ serviceContext, params }) =>
+        getWorkspaceTeamPlan(serviceContext, params.workspace_id),
+    })
+    .update({
+      auth: true,
+      summary: "Set the workspace's seats and shared credit pool",
+      description: "Platform administrators only.",
+      middleware: [requireStrictAdmin],
+      paramSchema: workspaceParamsSchema,
+      bodySchema: provisionWorkspaceTeamPlanSchema,
+      responses: {
+        200: { description: "The team plan", schema: workspaceTeamPlanResponseSchema },
+      },
+      handler: ({ serviceContext, params, body }) =>
+        provisionWorkspaceTeamPlan(serviceContext, params.workspace_id, body),
+    })
+    .delete({
+      auth: true,
+      summary: "End the workspace's team plan",
+      description:
+        "Platform administrators only. Members go back to paying from their own accounts.",
+      middleware: [requireStrictAdmin],
+      paramSchema: workspaceParamsSchema,
+      handler: ({ serviceContext, params }) =>
+        endWorkspaceTeamPlan(serviceContext, params.workspace_id),
     });
 
   workspaces.singleton("team").read({

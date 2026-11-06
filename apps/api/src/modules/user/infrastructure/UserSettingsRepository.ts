@@ -1,4 +1,6 @@
+import { currentFundingWorkspaceId } from "@ngriffin_uk/polychat-ai-billing";
 import { isProviderPlatformEnabled } from "@ngriffin_uk/polychat-ai-providers";
+import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import {
   DEFAULT_GUARDRAILS_ENABLED,
   DEFAULT_GUARDRAILS_PROVIDER,
@@ -45,6 +47,11 @@ import {
   type ProviderQuotaState,
 } from "~/modules/user/domain/provider-quota";
 import type { IUserSettings } from "~/types";
+
+function personalCredentialsWithheld(): boolean {
+  return !authorise("credential.personal", { pooled: Boolean(currentFundingWorkspaceId()) })
+    .allowed;
+}
 
 export class UserSettingsRepository extends BaseRepository {
   private static readonly CREDENTIALS_DELIMITER = "::@@::";
@@ -546,6 +553,10 @@ export class UserSettingsRepository extends BaseRepository {
     userId: number,
     where: Record<string, unknown>,
   ): Promise<string | null> {
+    if (personalCredentialsWithheld()) {
+      return null;
+    }
+
     const privateKey = await this.getProviderDecryptionKey(userId);
 
     const { query: providerQuery, values: providerValues } = this.buildSelectQuery(
@@ -842,7 +853,7 @@ export class UserSettingsRepository extends BaseRepository {
   }
 
   public async hasProviderApiKey(userId: number, providerId: string): Promise<boolean> {
-    if (!userId || !providerId.trim()) {
+    if (!userId || !providerId.trim() || personalCredentialsWithheld()) {
       return false;
     }
 

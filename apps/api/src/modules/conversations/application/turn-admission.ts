@@ -1,6 +1,8 @@
 import {
   admitTurn,
+  admitWorkspaceTurn,
   anonymousCreditActor,
+  currentFundingWorkspaceId,
   estimateTurnCreditMicros,
   isByokTurn,
   userCreditActor,
@@ -71,14 +73,8 @@ export async function resolveTurnAdmission(
     const userId = scope.user?.id;
     const provider = params.modelConfig?.provider ?? scope.provider;
     const runtime = createUsageRuntime({ env, repositories });
-
-    if (userId && provider && (await isByokTurn(runtime.store, userId, provider))) {
-      return null;
-    }
-
-    return await admitTurn(runtime, {
-      actor,
-      planId: scope.user?.plan_id ?? null,
+    const fundingWorkspaceId = currentFundingWorkspaceId();
+    const admissionCost = {
       estimatedCreditMicros:
         scope.durableTurnReservation?.creditMicros ??
         estimateTurnCreditMicros({
@@ -88,6 +84,23 @@ export async function resolveTurnAdmission(
       ...(scope.durableTurnReservation && userId
         ? { durableReservation: { ...scope.durableTurnReservation, userId } }
         : {}),
+    };
+
+    if (fundingWorkspaceId) {
+      return await admitWorkspaceTurn(runtime, {
+        workspaceId: fundingWorkspaceId,
+        ...admissionCost,
+      });
+    }
+
+    if (userId && provider && (await isByokTurn(runtime.store, userId, provider))) {
+      return null;
+    }
+
+    return await admitTurn(runtime, {
+      actor,
+      planId: scope.user?.plan_id ?? null,
+      ...admissionCost,
     });
   } catch (error) {
     logger.error("Failed to admit the turn against the credit balance", { error, actor });
@@ -102,6 +115,13 @@ export async function resolveTurnAdmission(
 export function assertTurnAdmitted(
   admission: TurnAdmission,
 ): asserts admission is Extract<TurnAdmission, { admitted: true }> {
+  if (!admission.admitted && currentFundingWorkspaceId()) {
+    throw new AssistantError(
+      "This workspace's shared credits are fully spent, so new replies are paused until the pool resets.",
+      ErrorType.USAGE_LIMIT_ERROR,
+    );
+  }
+
   if (!admission.admitted) {
     throw new AssistantError(
       "This month's credits are fully spent, so new replies are paused until the balance resets. Enabling overage lifts the pause.",

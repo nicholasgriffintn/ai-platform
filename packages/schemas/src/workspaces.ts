@@ -15,6 +15,7 @@ import {
   DEFAULT_SANDBOX_EXECUTION_PROVIDER,
   sandboxExecutionProviderSchema,
 } from "./sandbox-provider.js";
+import { usageCreditsSummarySchema } from "./usage.js";
 import { leadRoutinesSchema } from "./work-organisation.js";
 
 export const workspaceRoleSchema = z.enum(["owner", "admin", "member"]);
@@ -132,6 +133,29 @@ export const workspaceDetailSchema = workspaceSummarySchema.extend({
 });
 
 export const workspaceListResponseSchema = listSchema(workspaceSummarySchema);
+
+export const workspaceTeamPlanSchema = z.object({
+  seats: z.object({
+    limit: z.number().int().positive(),
+    occupied: z.number().int().nonnegative(),
+    available: z.number().int().nonnegative(),
+  }),
+  pool: z.object({
+    period: z.string(),
+    resetsAt: z.string(),
+    credits: usageCreditsSummarySchema,
+  }),
+});
+
+export const workspaceTeamPlanResponseSchema = z.object({
+  teamPlan: workspaceTeamPlanSchema.nullable(),
+});
+
+export const provisionWorkspaceTeamPlanSchema = z.object({
+  seatLimit: z.number().int().positive().max(1000),
+  includedCredits: z.number().positive(),
+  graceCredits: z.number().nonnegative().default(0),
+});
 
 const workspaceFields = {
   name: z.string().trim().min(2).max(80),
@@ -277,6 +301,8 @@ export type ProjectSummary = z.infer<typeof projectSummarySchema>;
 export type ProjectDetail = z.infer<typeof projectDetailSchema>;
 export type WorkspaceSummary = z.infer<typeof workspaceSummarySchema>;
 export type WorkspaceDetail = z.infer<typeof workspaceDetailSchema>;
+export type WorkspaceTeamPlanResponse = z.infer<typeof workspaceTeamPlanResponseSchema>;
+export type ProvisionWorkspaceTeamPlanInput = z.infer<typeof provisionWorkspaceTeamPlanSchema>;
 export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>;
 export type UpdateWorkspaceInput = z.infer<typeof updateWorkspaceSchema>;
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;

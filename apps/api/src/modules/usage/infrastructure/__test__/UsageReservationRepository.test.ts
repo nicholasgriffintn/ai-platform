@@ -57,6 +57,7 @@ describe("UsageReservationRepository durable chat reservations", () => {
     const { database, statements, batch } = createDatabase([
       { success: true, meta: { changes: 1 }, results: [] },
       { success: true, meta: { changes: 1 }, results: [] },
+      { success: true, meta: { changes: 0 }, results: [] },
       { success: true, meta: { changes: 1 }, results: [released] },
     ]);
     const repository = new UsageReservationRepository({ DB: database } as any);
@@ -66,9 +67,10 @@ describe("UsageReservationRepository durable chat reservations", () => {
     ).resolves.toEqual(released);
 
     expect(batch).toHaveBeenCalledOnce();
-    expect(statements).toHaveLength(3);
+    expect(statements).toHaveLength(4);
     expect(statements[0]?.query).toContain("status = 'releasing'");
     expect(statements[1]?.query).toContain("reserved_credit_micros - COALESCE");
-    expect(statements[2]?.query).toContain("status = 'releasing'");
+    expect(statements[2]?.query).toContain("UPDATE workspace_usage_pool");
+    expect(statements[3]?.query).toContain("status = 'releasing'");
   });
 });

@@ -72,6 +72,7 @@ function buildAdjustmentEvent(
     idempotency_key: `run_charge:${runId}:${id}`,
     user_id: group.user_id,
     workspace_id: group.workspace_id,
+    pool_workspace_id: group.pool_workspace_id,
     project_id: group.project_id,
     conversation_id: group.conversation_id,
     message_id: null,

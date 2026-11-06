@@ -27,6 +27,10 @@ import { createGoalService } from "~/modules/goals/application/createGoalService
 import { notifyMobileProjectRun } from "~/modules/mobile-push/application";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
+import {
+  resolveWorkspaceFunding,
+  withWorkspaceFunding,
+} from "~/modules/usage/application/workspace-funding";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 import { persistProjectEnvironmentCacheCandidate } from "~/modules/workspaces/application/environment-cache";
 import { ProjectEnvironmentVariableRepository } from "~/modules/workspaces/infrastructure/ProjectEnvironmentVariableRepository";
@@ -258,14 +262,6 @@ export async function processSandboxRunDispatch(params: {
     timeoutAt: runData.timeoutAt,
   });
 
-  await reserveSandboxRun({
-    env,
-    repositories: context.repositories,
-    userId: user.id,
-    runId: message.runId,
-    timeoutSeconds: runData.timeoutSeconds,
-  });
-
   let workerResponse: Response;
   const executionProvider = resolveSandboxExecutionProvider(message.payload.executionProvider);
   const taskProfile = resolveSandboxTaskProfile(message.payload);
@@ -283,6 +279,19 @@ export async function processSandboxRunDispatch(params: {
       : undefined;
 
   try {
+    const fundingWorkspaceId = await resolveWorkspaceFunding(context.repositories, {
+      userId: user.id,
+      projectId: message.payload.projectId,
+    });
+
+    await reserveSandboxRun({
+      env,
+      repositories: context.repositories,
+      userId: user.id,
+      runId: message.runId,
+      timeoutSeconds: runData.timeoutSeconds,
+      workspaceId: fundingWorkspaceId,
+    });
     await resolveSandboxGitHubToken({
       context,
       userId: user.id,
@@ -305,7 +314,7 @@ export async function processSandboxRunDispatch(params: {
       user,
     });
 
-    workerResponse = await executeSandboxProvider(sandboxProvider, {
+    const sandboxExecution = {
       repo: message.payload.repo,
       task: taskProfile.task,
       taskType: taskProfile.taskType,
@@ -327,7 +336,11 @@ export async function processSandboxRunDispatch(params: {
       installationId: message.payload.installationId,
       stream: true,
       runId: message.runId,
-    });
+    };
+
+    workerResponse = await withWorkspaceFunding(fundingWorkspaceId, () =>
+      executeSandboxProvider(sandboxProvider, sandboxExecution),
+    );
   } catch (error) {
     await releaseSandboxRunReservation({
       repositories: context.repositories,

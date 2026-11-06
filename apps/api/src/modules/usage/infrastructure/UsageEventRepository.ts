@@ -14,6 +14,8 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 
+import { POOL_CEILING } from "./WorkspacePoolRepository";
+
 export interface UsageEventRecordRow {
   id: string;
   occurred_at: string;
@@ -75,6 +77,7 @@ const INSERT_COLUMNS = [
   "idempotency_key",
   "user_id",
   "workspace_id",
+  "pool_workspace_id",
   "project_id",
   "conversation_id",
   "message_id",
@@ -119,13 +122,19 @@ const SPEND_RETURNED_FROM_PAST_CEILING = `MIN(?, MAX(0, spent_credit_micros
 const RUN_CHARGE_UNCHANGED = `(SELECT COALESCE(SUM(credit_micros), 0) FROM usage_event
 	WHERE run_id = ? AND billable = 1) = ?`;
 
+const POOL_SPEND_PAST_CEILING = `MAX(0, spent_credit_micros + ?
+	- MAX(spent_credit_micros, COALESCE(${POOL_CEILING}, 0)))`;
+
+const POOL_SPEND_RETURNED_FROM_PAST_CEILING = `MIN(?, MAX(0, spent_credit_micros
+	- COALESCE(${POOL_CEILING}, 0)))`;
+
 export class UsageEventRepository extends BaseRepository {
   private buildInsert(event: UsageEventRecord): { query: string; values: unknown[] } {
     const placeholders = INSERT_COLUMNS.map(() => "?").join(", ");
     const values = INSERT_COLUMNS.map((column) => {
       const value = event[column];
 
-      return typeof value === "boolean" ? (value ? 1 : 0) : value;
+      return typeof value === "boolean" ? (value ? 1 : 0) : (value ?? null);
     });
 
     return {
@@ -233,12 +242,12 @@ export class UsageEventRepository extends BaseRepository {
 
   async listRunChargeGroups(runId: string): Promise<RunChargeGroup[]> {
     return this.runQuery<RunChargeGroup>(
-      `SELECT user_id, workspace_id, project_id, conversation_id, run_attempt,
+      `SELECT user_id, workspace_id, pool_workspace_id, project_id, conversation_id, run_attempt,
               period, source, vendor, resource, unit,
               SUM(credit_micros) AS credit_micros
        FROM usage_event
        WHERE run_id = ? AND billable = 1
-       GROUP BY user_id, workspace_id, project_id, conversation_id, run_attempt,
+       GROUP BY user_id, workspace_id, pool_workspace_id, project_id, conversation_id, run_attempt,
                 period, source, vendor, resource, unit
        HAVING SUM(credit_micros) > 0`,
       [runId],
@@ -269,21 +278,34 @@ export class UsageEventRepository extends BaseRepository {
 
       expected -= returned;
 
+      const returnSpend = event.pool_workspace_id
+        ? database
+            .prepare(
+              `UPDATE workspace_usage_pool
+               SET overrun_credit_micros = MAX(0, overrun_credit_micros
+                     - ${POOL_SPEND_RETURNED_FROM_PAST_CEILING}),
+                   spent_credit_micros = MAX(0, spent_credit_micros - ?),
+                   updated_at = CURRENT_TIMESTAMP
+               WHERE workspace_id = ? AND period = ? AND ${RUN_CHARGE_UNCHANGED}`,
+            )
+            .bind(returned, returned, event.pool_workspace_id, event.period, ...guard)
+        : database
+            .prepare(
+              `UPDATE usage_balance
+               SET overrun_credit_micros = MAX(0, overrun_credit_micros
+                     - CASE WHEN ${CREDITS_ENFORCED} AND overage_enabled = 0
+                       THEN ${SPEND_RETURNED_FROM_PAST_CEILING} ELSE 0 END),
+                   overage_credit_micros = MAX(0, overage_credit_micros
+                     - CASE WHEN ${CREDITS_ENFORCED} AND overage_enabled = 1
+                       THEN ${SPEND_RETURNED_FROM_PAST_CEILING} ELSE 0 END),
+                   spent_credit_micros = MAX(0, spent_credit_micros - ?),
+                   updated_at = CURRENT_TIMESTAMP
+               WHERE user_id = ? AND period = ? AND ${RUN_CHARGE_UNCHANGED}`,
+            )
+            .bind(returned, returned, returned, event.user_id, event.period, ...guard);
+
       return [
-        database
-          .prepare(
-            `UPDATE usage_balance
-             SET overrun_credit_micros = MAX(0, overrun_credit_micros
-                   - CASE WHEN ${CREDITS_ENFORCED} AND overage_enabled = 0
-                     THEN ${SPEND_RETURNED_FROM_PAST_CEILING} ELSE 0 END),
-                 overage_credit_micros = MAX(0, overage_credit_micros
-                   - CASE WHEN ${CREDITS_ENFORCED} AND overage_enabled = 1
-                     THEN ${SPEND_RETURNED_FROM_PAST_CEILING} ELSE 0 END),
-                 spent_credit_micros = MAX(0, spent_credit_micros - ?),
-                 updated_at = CURRENT_TIMESTAMP
-             WHERE user_id = ? AND period = ? AND ${RUN_CHARGE_UNCHANGED}`,
-          )
-          .bind(returned, returned, returned, event.user_id, event.period, ...guard),
+        returnSpend,
         database
           .prepare(
             `INSERT INTO usage_event (${INSERT_COLUMNS.join(", ")})
@@ -297,6 +319,46 @@ export class UsageEventRepository extends BaseRepository {
     const results = await this.executeBatch(statements);
 
     return (results.at(-1)?.meta?.changes ?? 0) > 0;
+  }
+
+  async insertEventAndApplyPool(event: UsageEventRecord, workspaceId: string): Promise<boolean> {
+    const database = this.env.DB;
+
+    if (!database) {
+      throw new AssistantError("Database not configured", ErrorType.CONFIGURATION_ERROR);
+    }
+
+    const insert = this.buildInsert({ ...event, pool_workspace_id: workspaceId });
+    const results = await this.executeBatch([
+      database
+        .prepare(
+          `INSERT INTO workspace_usage_pool (workspace_id, period)
+			 SELECT ?, ?
+			 WHERE ${EVENT_NOT_RECORDED}
+			 ON CONFLICT (workspace_id, period) DO NOTHING`,
+        )
+        .bind(workspaceId, event.period, event.idempotency_key),
+      database
+        .prepare(
+          `UPDATE workspace_usage_pool
+			 SET spent_credit_micros = spent_credit_micros + ?,
+			     overrun_credit_micros = overrun_credit_micros + ${POOL_SPEND_PAST_CEILING},
+			     last_event_at = MAX(COALESCE(last_event_at, ''), ?),
+			     updated_at = CURRENT_TIMESTAMP
+			 WHERE workspace_id = ? AND period = ? AND ${EVENT_NOT_RECORDED}`,
+        )
+        .bind(
+          event.credit_micros,
+          event.credit_micros,
+          event.occurred_at,
+          workspaceId,
+          event.period,
+          event.idempotency_key,
+        ),
+      database.prepare(insert.query).bind(...insert.values),
+    ]);
+
+    return (results[2]?.meta?.changes ?? 0) > 0;
   }
 
   async listUserEvents(params: ListUsageEventsParams): Promise<UsageEventRecordRow[]> {

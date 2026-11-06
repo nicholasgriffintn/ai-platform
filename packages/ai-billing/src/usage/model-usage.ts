@@ -19,6 +19,7 @@ import {
   type UsageEventDraft,
 } from "./ledger.js";
 import type { UsageRuntime, UsageStore } from "./store.js";
+import { isWorkspacePoolFunded } from "./workspace-pool.js";
 
 const logger = getLogger({ prefix: "ai-billing/model-usage" });
 
@@ -190,6 +191,7 @@ export async function recordModelTurnUsage(
       resolveUsageAttribution(runtime.store, params.conversationId),
     ]);
 
+    const poolFunded = await isWorkspacePoolFunded(runtime.store, attribution.workspaceId);
     const occurredAt = params.occurredAt ?? new Date().toISOString();
     const eventScope = params.messageId ?? params.completionId;
 
@@ -197,7 +199,7 @@ export async function recordModelTurnUsage(
       actor,
       vendor,
       occurredAt,
-      byok,
+      byok: byok && !poolFunded,
       conversationId: params.conversationId ?? null,
       messageId: params.messageId ?? null,
       completionId: params.completionId,

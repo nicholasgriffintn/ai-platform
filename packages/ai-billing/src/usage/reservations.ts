@@ -18,6 +18,7 @@ export interface HoldUsageReservationParams {
   refId: string;
   creditMicros: number;
   expiresAt?: string | null;
+  workspaceId?: string | null;
 }
 
 export async function holdUsageReservation(
@@ -35,9 +36,17 @@ export async function holdUsageReservation(
     refId: params.refId,
     creditMicros,
     expiresAt: params.expiresAt ?? null,
+    workspaceId: params.workspaceId ?? null,
   });
 
   if (created && creditMicros > 0) {
+    if (params.workspaceId) {
+      await runtime.store.adjustWorkspacePoolReserved(params.workspaceId, period, creditMicros);
+      await runtime.publisher?.workspaceUsageChanged?.(params.workspaceId, period);
+
+      return created;
+    }
+
     await runtime.store.applyUserBalanceDeltas({
       userId: params.userId,
       period,
@@ -97,6 +106,17 @@ export async function finishUsageReservation(
     });
 
     return null;
+  }
+
+  if (reservation.credit_micros > 0 && reservation.workspace_id) {
+    await store.adjustWorkspacePoolReserved(
+      reservation.workspace_id,
+      reservation.period,
+      -reservation.credit_micros,
+    );
+    await publisher?.workspaceUsageChanged?.(reservation.workspace_id, reservation.period);
+
+    return reservation;
   }
 
   if (reservation.credit_micros > 0) {

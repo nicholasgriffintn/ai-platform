@@ -46,11 +46,21 @@ export interface AnonymousCreditSpend {
   reservedCreditMicros: number;
 }
 
+export interface WorkspacePoolRecord {
+  included_credit_micros: number;
+  grace_credit_micros: number;
+  spent_credit_micros: number;
+  reserved_credit_micros: number;
+  overrun_credit_micros: number;
+  last_event_at: string | null;
+}
+
 export interface UsageEventRecord {
   id: string;
   idempotency_key: string;
   user_id: number;
   workspace_id: string | null;
+  pool_workspace_id?: string | null;
   project_id: string | null;
   conversation_id: string | null;
   message_id: string | null;
@@ -87,6 +97,7 @@ export interface UsageReservationRecord {
   credit_micros: number;
   status: UsageReservationStatus;
   expires_at: string | null;
+  workspace_id?: string | null;
 }
 
 export interface CreateUsageReservationParams {
@@ -97,6 +108,7 @@ export interface CreateUsageReservationParams {
   refId: string;
   creditMicros: number;
   expiresAt?: string | null;
+  workspaceId?: string | null;
 }
 
 export type UsageReservationOutcome = Extract<UsageReservationStatus, "settled" | "released">;
@@ -110,6 +122,7 @@ export interface RunChargeState {
 export interface RunChargeGroup {
   user_id: number;
   workspace_id: string | null;
+  pool_workspace_id: string | null;
   project_id: string | null;
   conversation_id: string | null;
   run_attempt: number | null;
@@ -156,6 +169,17 @@ export interface UsageStore {
   createUserReservationWithBalance(
     params: CreateUsageReservationParams & UsageBalanceSeed,
   ): Promise<boolean>;
+  getWorkspacePool(workspaceId: string, period: string): Promise<WorkspacePoolRecord | null>;
+  reserveWorkspacePool(workspaceId: string, period: string, creditMicros: number): Promise<boolean>;
+  adjustWorkspacePoolReserved(
+    workspaceId: string,
+    period: string,
+    deltaCreditMicros: number,
+  ): Promise<void>;
+  createWorkspaceReservationWithPool(
+    params: CreateUsageReservationParams & { workspaceId: string },
+  ): Promise<boolean>;
+  insertEventAndApplyPool(event: UsageEventRecord, workspaceId: string): Promise<boolean>;
   getReservation(kind: UsageReservationKind, refId: string): Promise<UsageReservationRecord | null>;
   finishUserReservationWithBalance(
     kind: UsageReservationKind,

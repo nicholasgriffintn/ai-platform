@@ -3141,6 +3141,7 @@ export const usageEvent = sqliteTable(
       .notNull()
       .references(() => user.id),
     workspace_id: text().references(() => workspace.id),
+    pool_workspace_id: text(),
     project_id: text().references(() => project.id),
     conversation_id: text().references(() => conversation.id, {
       onDelete: "set null",
@@ -3220,6 +3221,49 @@ export const usageBalance = sqliteTable(
 
 export type UsageBalanceRow = typeof usageBalance.$inferSelect;
 
+export const workspaceTeamPlan = sqliteTable("workspace_team_plan", {
+  workspace_id: text()
+    .primaryKey()
+    .references(() => workspace.id, { onDelete: "cascade" }),
+  seat_limit: integer().notNull(),
+  included_credit_micros: integer().notNull(),
+  grace_credit_micros: integer().notNull().default(0),
+  provisioned_by: integer().references(() => user.id, { onDelete: "set null" }),
+  created_at: text()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updated_at: text()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+});
+
+export type WorkspaceTeamPlanRow = typeof workspaceTeamPlan.$inferSelect;
+
+export const workspaceUsagePool = sqliteTable(
+  "workspace_usage_pool",
+  {
+    workspace_id: text()
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    period: text().notNull(),
+    spent_credit_micros: integer().notNull().default(0),
+    reserved_credit_micros: integer().notNull().default(0),
+    overrun_credit_micros: integer().notNull().default(0),
+    last_event_at: text(),
+    created_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updated_at: text()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.workspace_id, table.period] }),
+  }),
+);
+
+export type WorkspaceUsagePoolRow = typeof workspaceUsagePool.$inferSelect;
+
 export const usageReservation = sqliteTable(
   "usage_reservation",
   {
@@ -3231,6 +3275,7 @@ export const usageReservation = sqliteTable(
     kind: text({ enum: ["realtime", "sandbox", "chat_run"] }).notNull(),
     ref_id: text().notNull(),
     credit_micros: integer().notNull(),
+    workspace_id: text(),
     status: text({
       enum: ["held", "releasing", "settled", "released"],
     }).notNull(),

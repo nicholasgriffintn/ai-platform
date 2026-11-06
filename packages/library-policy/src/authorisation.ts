@@ -56,6 +56,11 @@ const actionShapes = {
   "platform.admin": { role: string, strict: boolean },
   "service.call": { authenticated: boolean, scopes: strings, requiredScope: string },
   "workspace.membership": { actorRole: string, targetRole: string, newRole: string },
+  "workspace.seat.claim": { seatLimited: boolean, seatLimit: long, occupied: long },
+  "workspace.plan.provision": { role: string, seatLimit: long, occupied: long },
+  "workspace.plan.end": { role: string },
+  "workspace.pool.draw": { pooled: boolean, member: boolean, role: string },
+  "credential.personal": { pooled: boolean },
   "capability.manage": {
     kind: string,
     role: string,
