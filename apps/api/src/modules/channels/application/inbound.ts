@@ -2,6 +2,7 @@ import {
   buildInboundMessageContent,
   extractChatCompletionNotification,
 } from "@ngriffin_uk/polychat-ai-providers";
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   type ChannelInteractionMode,
   type ChannelMessageContext,
@@ -12,7 +13,11 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
-import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import {
+  AssistantError,
+  ErrorType,
+  getErrorMessage,
+} from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
@@ -41,6 +46,10 @@ import { recoverChatCompletionResponse } from "~/modules/responses/application/r
 import { startResponse } from "~/modules/responses/application/start";
 import { getInboundChannelProfile } from "~/modules/responses/domain/channels";
 import type { ResponseCommand } from "~/modules/responses/domain/command";
+import {
+  CRISIS_SIGNPOST_TEXT,
+  mentionsCrisis,
+} from "~/modules/responses/domain/crisis-signposting";
 import { requireProjectTeammate } from "~/modules/teammates/application/access";
 import {
   ensureActiveTeammateContext,
@@ -57,6 +66,8 @@ import { recordChannelAttention } from "./channel-attention";
 import { judgeChannelEvent, type ChannelEventJudgement } from "./channel-event-judgement";
 import type { ChannelIncomingMessage } from "./ports/channel-adapter";
 import { runChannelTurn, signalChannelRun } from "./run-signals";
+
+const logger = getLogger({ prefix: "services/channels/inbound" });
 
 export interface InboundChannelMessage {
   messageId: string;
@@ -615,6 +626,41 @@ export type InboundChannelResult =
   | { status: "unauthorised_sender" }
   | { status: "channel_unavailable" };
 
+async function signpostUnansweredMessage(params: {
+  context: ServiceContext;
+  user: IUser;
+  channel: InboundChannelId;
+  conversationId: string;
+  message: InboundChannelMessage;
+  send(reply: ChannelReplyPayload): Promise<void>;
+}): Promise<void> {
+  if (!mentionsCrisis(params.message.body)) {
+    return;
+  }
+
+  const digest = await sha256Hex(
+    [params.channel, params.conversationId, params.message.messageId].join(":"),
+  );
+
+  try {
+    await deliverOutboundOperation({
+      context: params.context,
+      deliveryId: `channel_signpost_${digest.slice(0, 40)}`,
+      userId: params.user.id,
+      kind: "channel_reply",
+      scopeId: params.conversationId,
+      operationId: params.message.messageId,
+      payload: { destination: params.message.from, body: CRISIS_SIGNPOST_TEXT },
+      send: () => params.send({ body: CRISIS_SIGNPOST_TEXT, mediaUrls: [] }),
+    });
+  } catch (error) {
+    logger.warn("Could not send crisis signposting to a channel", {
+      channel: params.channel,
+      error: getErrorMessage(error),
+    });
+  }
+}
+
 export async function handleInboundChannelMessage(params: {
   env: IEnv;
   context: ServiceContext;
@@ -648,6 +694,15 @@ export async function handleInboundChannelMessage(params: {
       subject: params.data.messageContext.subject ?? null,
       body: message.body,
       senderAddress: message.from,
+    });
+
+    await signpostUnansweredMessage({
+      context: params.context,
+      user: params.user,
+      channel: params.data.channel,
+      conversationId: delivery.conversationId,
+      message,
+      send: delivery.send,
     });
 
     return {
@@ -702,6 +757,15 @@ export async function handleInboundChannelMessage(params: {
             messageId: `channel_attention_${commandDigest.slice(0, 40)}`,
           });
         }
+
+        await signpostUnansweredMessage({
+          context: params.context,
+          user: params.user,
+          channel: params.data.channel,
+          conversationId,
+          message,
+          send: delivery.send,
+        });
 
         return {
           status: "ignored",

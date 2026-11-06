@@ -1265,7 +1265,7 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
             onToggle: handleAutoPlayToggle,
           }}
         />
-        {lead !== undefined ? <FooterInfo /> : null}
+        {welcomeInComposer || lead !== undefined ? <FooterInfo /> : null}
       </ConversationComposerDock>
 
       {welcomeInComposer || lead !== undefined ? null : <FooterInfo />}

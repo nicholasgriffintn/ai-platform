@@ -75,7 +75,9 @@ export class GuardrailsValidator implements Validator {
         return {
           validation: {
             isValid: false,
-            error: describeGuardrailBlock("input", inputValidation?.reasons ?? []),
+            error: describeGuardrailBlock("input", inputValidation?.reasons ?? [], {
+              crisisSignpost: context.crisisSignpost,
+            }),
             violations: inputValidation?.violations,
             rawViolations: inputValidation?.rawResponse,
             validationType: "input",

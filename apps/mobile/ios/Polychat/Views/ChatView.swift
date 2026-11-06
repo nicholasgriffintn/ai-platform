@@ -98,6 +98,15 @@ struct ChatView: View {
 
             ToolApprovalBatchBar()
 
+            if messages.isEmpty, !isLoadingConversation {
+                Text(AIDisclosure.text)
+                    .font(.caption)
+                    .foregroundStyle(Color.polychat.textMuted)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+            }
+
             MessageInputView(
                 messageText: $messageText,
                 selectedAttachments: $selectedAttachments,
