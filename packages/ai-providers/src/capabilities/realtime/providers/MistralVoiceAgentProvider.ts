@@ -6,6 +6,7 @@ import { resolveHostProviderApiKey } from "../../../credentials.js";
 import type { ProviderRuntime } from "../../../runtime.js";
 import { formatProviderError } from "../../../utils/errors.js";
 import type { RealtimeProvider, RealtimeSessionRequest } from "../index.js";
+import { withRealtimeSafetyInstructions } from "../safety-instructions.js";
 
 export const MISTRAL_VOICE_AGENT_DESCRIPTOR = {
   id: "mistral-voice",
@@ -40,7 +41,9 @@ export function buildMistralVoiceAgentSessionRequest(
   request: Pick<RealtimeSessionRequest, "instructions" | "language" | "voice" | "vocabulary">,
 ): Record<string, unknown> {
   return {
-    instructions: request.instructions ?? MISTRAL_VOICE_AGENT_INSTRUCTIONS,
+    instructions: withRealtimeSafetyInstructions(
+      request.instructions ?? MISTRAL_VOICE_AGENT_INSTRUCTIONS,
+    ),
     llm: { model: MISTRAL_VOICE_AGENT_LLM },
     stt: {
       model: MISTRAL_VOICE_AGENT_STT,

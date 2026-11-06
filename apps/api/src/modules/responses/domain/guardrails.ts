@@ -1,6 +1,5 @@
+import { isCrisisGuardrailReason, withCrisisSignpost } from "@ngriffin_uk/polychat-schemas";
 import { formatConjunctionList } from "@ngriffin_uk/polychat-utility-core";
-
-import { isCrisisGuardrailReason, withCrisisSignpost } from "./crisis-signposting";
 
 const SETTINGS_HINT = "change the safety check in Account settings › Guardrails";
 

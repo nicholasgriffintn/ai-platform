@@ -22,10 +22,10 @@ import {
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext, type ServiceContext } from "~/infrastructure/context/serviceContext";
+import { deliverWithChannelDisclosure } from "~/modules/channels/application/disclosed-reply";
 import { CHANNEL_TOP_LEVEL_THREAD } from "~/modules/channels/application/ports/channel-adapter";
 import { getChannelAdapter } from "~/modules/channels/infrastructure/adapters";
 import { ChannelBindingRepository } from "~/modules/channels/infrastructure/ChannelBindingRepository";
-import { deliverOutboundOperation } from "~/modules/delivery/application/outbound";
 import { sameWorkActor, taskReference } from "~/modules/project-tasks/domain/work-actors";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { enqueueTeammateWake } from "~/modules/teammates/application/wakes";
@@ -291,17 +291,23 @@ async function shareStandupSummary(
 
   const body = `${task.objective}\n\n${summary}`;
 
-  await deliverOutboundOperation({
+  await deliverWithChannelDisclosure({
     context,
+    contact: { channel: binding.channel, bindingId: binding.id },
     deliveryId: `standup_share_${task.id}`,
     userId: context.requireUser().id,
     kind: "channel_reply",
     scopeId: binding.id,
     operationId: task.id,
+    body,
     payload: { bindingId: binding.id, body },
-    send: () =>
+    send: (disclosedBody) =>
       adapter.sendReply(
-        { externalId: binding.external_id, body, threadId: CHANNEL_TOP_LEVEL_THREAD },
+        {
+          externalId: binding.external_id,
+          body: disclosedBody,
+          threadId: CHANNEL_TOP_LEVEL_THREAD,
+        },
         context.env,
       ),
   });

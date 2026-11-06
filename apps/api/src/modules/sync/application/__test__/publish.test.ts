@@ -132,7 +132,7 @@ describe("sync publishing", () => {
 
   afterEach(() => vi.useRealTimers());
 
-  it("selects workspace administrators before delivering usage refreshes", async () => {
+  it("selects workspace members before delivering usage refreshes", async () => {
     const { env, posted, stubsFor, queries } = createEnv(null, [42, 43]);
 
     await publishWorkspaceUsageChanged(
@@ -141,7 +141,7 @@ describe("sync publishing", () => {
       "2026-10",
     );
 
-    expect(queries[0]).toContain("role IN ('owner', 'admin')");
+    expect(queries[0]).toContain("kind = 'membership'");
     expect(stubsFor).toEqual(["42", "43"]);
     expect(posted[0].body.events).toEqual([
       expect.objectContaining({

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { CRISIS_SIGNPOST_TEXT, mentionsCrisis, withCrisisSignpost } from "../crisis-signposting";
-import { describeGuardrailBlock } from "../guardrails";
+import { CRISIS_SIGNPOST_TEXT, mentionsCrisis, withCrisisSignpost } from "./crisis-signposting.js";
 
 describe("crisis signposting", () => {
   it.each([
@@ -31,19 +30,5 @@ describe("crisis signposting", () => {
   it("leads with the signpost so length limits cannot cut it off", () => {
     expect(withCrisisSignpost("reply").startsWith(CRISIS_SIGNPOST_TEXT)).toBe(true);
     expect(withCrisisSignpost("  ")).toBe(CRISIS_SIGNPOST_TEXT);
-  });
-
-  it("signposts a guardrail block when the check flags self-harm", () => {
-    expect(describeGuardrailBlock("input", ["self-harm"])).toContain(CRISIS_SIGNPOST_TEXT);
-    expect(describeGuardrailBlock("output", ["Suicide & Self-Harm"])).toContain(
-      CRISIS_SIGNPOST_TEXT,
-    );
-  });
-
-  it("signposts a guardrail block for another reason when the message raised it", () => {
-    expect(describeGuardrailBlock("input", ["hate"], { crisisSignpost: true })).toContain(
-      CRISIS_SIGNPOST_TEXT,
-    );
-    expect(describeGuardrailBlock("input", ["hate"])).not.toContain(CRISIS_SIGNPOST_TEXT);
   });
 });

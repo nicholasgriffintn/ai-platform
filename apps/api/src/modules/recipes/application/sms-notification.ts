@@ -5,7 +5,7 @@ import {
   getMessagingProviderFromStoredCredential,
   selectConfiguredMessagingDelivery,
 } from "~/infrastructure/providers/capabilities/messaging/delivery";
-import { deliverOutboundOperation } from "~/modules/delivery/application/outbound";
+import { deliverWithChannelDisclosure } from "~/modules/channels/application/disclosed-reply";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IEnv, IUser } from "~/types";
 
@@ -55,22 +55,24 @@ export async function deliverRecipeSmsNotification(params: {
     context: params.context,
   });
 
-  await deliverOutboundOperation({
+  await deliverWithChannelDisclosure({
     context: params.context,
+    contact: { channel: "sms", address: destination },
     deliveryId: `routine_sms_${params.taskId}`,
     userId: params.userId,
     kind: "routine_sms",
     scopeId: params.taskData.installationId ?? params.taskData.recipeId,
     operationId: params.taskData.occurrenceId ?? params.taskId,
+    body: params.notification.body,
     payload: {
       destination,
       body: params.notification.body,
       mediaUrls: params.notification.mediaUrls,
     },
-    send: () =>
+    send: (body) =>
       provider.send({
         to: destination,
-        body: params.notification.body,
+        body,
         ...(messagingProvider.mediaUrls?.length ? { mediaUrls: messagingProvider.mediaUrls } : {}),
       }),
   });

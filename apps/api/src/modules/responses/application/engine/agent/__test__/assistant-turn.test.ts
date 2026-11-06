@@ -1,7 +1,6 @@
-import { AGENT_HARNESS_PROVIDER } from "@ngriffin_uk/polychat-schemas";
+import { AGENT_HARNESS_PROVIDER, CRISIS_SIGNPOST_TEXT } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
-import { CRISIS_SIGNPOST_TEXT } from "~/modules/responses/domain/crisis-signposting";
 import { ToolCallType } from "~/types";
 
 import { finaliseAssistantTurn, type FinaliseAssistantTurnParams } from "../assistant-turn";
