@@ -29,7 +29,7 @@ function audioProviders(runtime: ProviderRuntime): AiProviderRegistration<AudioP
     {
       name: "workers-ai",
       create: () => new WorkersAiAudioProvider(runtime),
-      metadata: { vendor: "Cloudflare", categories: ["audio"], tags: ["tts", "aura", "melotts"] },
+      metadata: { vendor: "Cloudflare", categories: ["audio"], tags: ["tts", "aura"] },
     },
     {
       name: "mistral",

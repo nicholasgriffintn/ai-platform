@@ -25,8 +25,8 @@ describe("resolveTierModel", () => {
         matchingModel: "gemini-3.8-flash",
         provider: "google-ai-studio",
       }),
-      "@cf/moonshotai/kimi-k2.7-code": model({
-        matchingModel: "@cf/moonshotai/kimi-k2.7-code",
+      "@cf/zai-org/glm-5.3": model({
+        matchingModel: "@cf/zai-org/glm-5.3",
         provider: "workers-ai",
       }),
     };
@@ -35,7 +35,7 @@ describe("resolveTierModel", () => {
       "google-ai-studio/gemini-3.8-flash",
     );
     expect(resolveTierModel(models, { plan_id: "pro" }, "medium", "coding")?.id).toBe(
-      "@cf/moonshotai/kimi-k2.7-code",
+      "@cf/zai-org/glm-5.3",
     );
     expect(resolveTierModel(models, { plan_id: "free" }, "medium", "coding")).toBeNull();
   });
@@ -47,22 +47,17 @@ describe("resolveHostedAgentModel", () => {
       matchingModel: "gemini-3.8-flash",
       provider: "google-ai-studio",
     }),
-    "@cf/moonshotai/kimi-k2.7-code": model({
-      matchingModel: "kimi-k2.7-code",
+    "@cf/zai-org/glm-5.3": model({
+      matchingModel: "glm-5.3",
       provider: "workers-ai",
     }),
   };
 
   it("prefers an explicit executable model by id or matching model", () => {
     expect(
-      resolveHostedAgentModel(
-        models,
-        { plan_id: "pro" },
-        "medium",
-        "agent",
-        "@cf/moonshotai/kimi-k2.7-code",
-      )?.id,
-    ).toBe("@cf/moonshotai/kimi-k2.7-code");
+      resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "agent", "@cf/zai-org/glm-5.3")
+        ?.id,
+    ).toBe("@cf/zai-org/glm-5.3");
     expect(
       resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "agent", "gemini-3.8-flash")
         ?.id,
@@ -79,7 +74,7 @@ describe("resolveHostedAgentModel", () => {
         { plan_id: "free" },
         "medium",
         "agent",
-        "@cf/moonshotai/kimi-k2.7-code",
+        "@cf/zai-org/glm-5.3",
       ),
     ).toBeNull();
   });
@@ -89,7 +84,7 @@ describe("resolveHostedAgentModel", () => {
       "google-ai-studio/gemini-3.8-flash",
     );
     expect(resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "coding")?.id).toBe(
-      "@cf/moonshotai/kimi-k2.7-code",
+      "@cf/zai-org/glm-5.3",
     );
   });
 });

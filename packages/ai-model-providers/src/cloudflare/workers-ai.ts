@@ -31,9 +31,6 @@ export const CLOUDFLARE_API = "https://api.cloudflare.com/client/v4";
 
 export const WORKERS_AI_LORA_BASES: Record<string, string> = {
   "mistralai/Mistral-7B-Instruct-v0.2": "@cf/mistral/mistral-7b-instruct-v0.2-lora",
-  "google/gemma-2b-it": "@cf/google/gemma-2b-it-lora",
-  "google/gemma-7b-it": "@cf/google/gemma-7b-it-lora",
-  "meta-llama/Llama-2-7b-chat-hf": "@cf/meta-llama/llama-2-7b-chat-hf-lora",
   "google/gemma-3-12b-it": "@cf/google/gemma-3-12b-it",
   "Qwen/Qwen2.5-Coder-32B-Instruct": "@cf/qwen/qwen2.5-coder-32b-instruct",
 };

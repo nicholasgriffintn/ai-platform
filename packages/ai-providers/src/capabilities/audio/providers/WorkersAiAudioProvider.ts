@@ -1,6 +1,6 @@
 import { SPEECH_PROVIDER_VOICES } from "@ngriffin_uk/polychat-schemas";
-import { isRecord, readStreamBytes } from "@ngriffin_uk/polychat-utility-core";
-import { base64ToBuffer, bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
+import { readStreamBytes } from "@ngriffin_uk/polychat-utility-core";
+import { bufferToBase64 } from "@ngriffin_uk/polychat-utility-server/base64";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { resolveAiGatewayId } from "../../../gateway.js";
@@ -8,8 +8,26 @@ import { requireRequestModel } from "../../../utils/required-model.js";
 import { BaseAudioProvider } from "../base.js";
 import type { AudioProvider, AudioSynthesisRequest, AudioSynthesisResult } from "../index.js";
 
-const MELOTTS_MODEL = "@cf/myshell-ai/melotts";
+const SPANISH_MODEL = "@cf/deepgram/aura-2-es";
+const SPANISH_VOICE = "aquila";
 const ENGLISH_ONLY_MODELS = new Set(["@cf/deepgram/aura-1", "@cf/deepgram/aura-2-en"]);
+
+function resolveSpeechModel(requested: string, locale = "en"): string {
+  const language = locale.toLowerCase().slice(0, 2);
+
+  if (language === "en" || !ENGLISH_ONLY_MODELS.has(requested)) {
+    return requested;
+  }
+
+  if (language === "es") {
+    return SPANISH_MODEL;
+  }
+
+  throw new AssistantError(
+    `Workers AI has no voice for "${locale}". Choose another speech provider.`,
+    ErrorType.PARAMS_ERROR,
+  );
+}
 
 async function readSpeechBytes(result: unknown): Promise<Uint8Array> {
   if (result instanceof ReadableStream) {
@@ -24,10 +42,6 @@ async function readSpeechBytes(result: unknown): Promise<Uint8Array> {
     return result;
   }
 
-  if (isRecord(result) && typeof result.audio === "string" && result.audio) {
-    return new Uint8Array(base64ToBuffer(result.audio));
-  }
-
   throw new AssistantError("Workers AI returned no speech", ErrorType.PROVIDER_ERROR);
 }
 
@@ -40,27 +54,29 @@ export class WorkersAiAudioProvider extends BaseAudioProvider implements AudioPr
     }
 
     const requested = requireRequestModel(request.model, "speech");
-    const english = (request.locale ?? "en").toLowerCase().startsWith("en");
-    const model = !english && ENGLISH_ONLY_MODELS.has(requested) ? MELOTTS_MODEL : requested;
-    const voice = request.voice ?? SPEECH_PROVIDER_VOICES["workers-ai"].roles.narrator;
-    const input =
-      model === MELOTTS_MODEL
-        ? { prompt: request.input, lang: request.locale?.slice(0, 2) || "en" }
-        : { text: request.input, speaker: voice, encoding: "mp3" };
+    const model = resolveSpeechModel(requested, request.locale);
+    const voice =
+      model === SPANISH_MODEL
+        ? SPANISH_VOICE
+        : (request.voice ?? SPEECH_PROVIDER_VOICES["workers-ai"].roles.narrator);
     const audio = await readSpeechBytes(
-      await request.env.AI.run(model, input, {
-        gateway: {
-          id: resolveAiGatewayId(),
-          skipCache: false,
-          metadata: request.user?.email ? { email: request.user.email } : {},
+      await request.env.AI.run(
+        model,
+        { text: request.input, speaker: voice, encoding: "mp3" },
+        {
+          gateway: {
+            id: resolveAiGatewayId(),
+            skipCache: false,
+            metadata: request.user?.email ? { email: request.user.email } : {},
+          },
         },
-      }),
+      ),
     );
     const metadata = {
       ...request.metadata,
       engine: "workers-ai",
       model,
-      voice: model === MELOTTS_MODEL ? undefined : voice,
+      voice,
     };
 
     if (!request.store) {

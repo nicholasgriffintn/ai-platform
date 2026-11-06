@@ -8,6 +8,9 @@
       "model": "whisper/openai-whisper",
       "matchingModel": "@cf/openai/whisper-tiny-en",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Whisper Tiny shuts down on 20 November 2026. Use Nova 3 instead.",
+        "replacementModel": "nova-3",
         "contextComplexity": 2,
         "reliability": 2,
         "speed": 3
@@ -48,6 +51,9 @@
       "model": "workers-ai/@cf/myshell-ai/melotts/myshell-melotts",
       "matchingModel": "@cf/myshell-ai/melotts",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "MeloTTS shuts down on 20 November 2026. Use Aura 2 instead.",
+        "replacementModel": "@cf/deepgram/aura-2-en",
         "isFree": true,
         "speed": 4,
         "lastUpdated": "November 14, 2025",
@@ -59,6 +65,9 @@
       "model": "kimi-k2/kimi-k2-6",
       "matchingModel": "@cf/moonshotai/kimi-k2.6",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2.6 shuts down on 20 November 2026. Use DeepSeek V4.1 Flash instead.",
+        "replacementModel": "@cf/deepseek-ai/deepseek-v4.1-flash-1017",
         "name": "Moonshot Kimi K2.6",
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
         "maxTokens": 256000,
@@ -96,6 +105,9 @@
       "model": "llama/llama-3-2-1b-instruct",
       "matchingModel": "@cf/meta/llama-3.2-1b-instruct",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Llama 3.2 1B shuts down on 20 November 2026. Use Gemma 4 26B instead.",
+        "replacementModel": "gemma-4-26b-a4b-it",
         "contextWindow": 60000,
         "maxTokens": 60000,
         "strengths": [
@@ -116,6 +128,9 @@
       "model": "llama/llama-3-2-3b-instruct",
       "matchingModel": "@cf/meta/llama-3.2-3b-instruct",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Llama 3.2 3B shuts down on 20 November 2026. Use Gemma 4 26B instead.",
+        "replacementModel": "gemma-4-26b-a4b-it",
         "contextWindow": 80000,
         "maxTokens": 80000,
         "strengths": [
@@ -161,6 +176,9 @@
       "model": "workers-ai/@cf/llava-hf/llava-1.5-7b-hf/huggingface-llava-1-5-7b",
       "matchingModel": "@cf/llava-hf/llava-1.5-7b-hf",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "LLaVA 1.5 7B shuts down on 20 November 2026. Use Gemma 4 26B instead.",
+        "replacementModel": "gemma-4-26b-a4b-it",
         "speed": 3
       },
       "unset": [
@@ -241,6 +259,9 @@
       "model": "stable-diffusion/stable-diffusion-1-5-inpainting",
       "matchingModel": "@cf/runwayml/stable-diffusion-v1-5-inpainting",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Stable Diffusion 1.5 Inpainting shuts down on 20 November 2026. Use FLUX.2 Klein 9B instead.",
+        "replacementModel": "@cf/black-forest-labs/flux-2-klein-9b",
         "speed": 3
       },
       "unset": [
@@ -252,6 +273,9 @@
       "model": "stable-diffusion/stable-diffusion-xl-base-1-0",
       "matchingModel": "@cf/stabilityai/stable-diffusion-xl-base-1.0",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Stable Diffusion XL shuts down on 20 November 2026. Use FLUX.2 Klein 9B instead.",
+        "replacementModel": "@cf/black-forest-labs/flux-2-klein-9b",
         "speed": 3
       },
       "unset": [
@@ -263,6 +287,9 @@
       "model": "workers-ai/@cf/lykon/dreamshaper-8-lcm/dreamshaper-8-lcm",
       "matchingModel": "@cf/lykon/dreamshaper-8-lcm",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DreamShaper 8 LCM shuts down on 20 November 2026. Use FLUX.2 Klein 9B instead.",
+        "replacementModel": "@cf/black-forest-labs/flux-2-klein-9b",
         "speed": 5
       },
       "unset": [
@@ -274,6 +301,9 @@
       "model": "stable-diffusion/stable-diffusion-xl-lightning",
       "matchingModel": "@cf/bytedance/stable-diffusion-xl-lightning",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Stable Diffusion XL Lightning shuts down on 20 November 2026. Use FLUX.2 Klein 9B instead.",
+        "replacementModel": "@cf/black-forest-labs/flux-2-klein-9b",
         "speed": 5
       },
       "unset": [
@@ -355,6 +385,9 @@
       "model": "qwen/qwq-32b",
       "matchingModel": "@cf/qwen/qwq-32b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "QwQ 32B shuts down on 20 November 2026. Use Qwen3.8 27B instead.",
+        "replacementModel": "@cf/qwen/qwen3.8-27b",
         "speed": 2,
         "isFeatured": false,
         "lastUpdated": "March 5, 2025",
@@ -473,6 +506,9 @@
       "model": "gemma/embeddinggemma-300m",
       "matchingModel": "@cf/google/embeddinggemma-300m",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "EmbeddingGemma 300M shuts down on 20 November 2026. Use Qwen3 Embedding 0.6B instead.",
+        "replacementModel": "@cf/qwen/qwen3-embedding-0.6b",
         "speed": 4
       },
       "unset": [
@@ -532,6 +568,9 @@
       "model": "deepseek-thinking/deepseek-r1-distill-qwen-32b",
       "matchingModel": "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek R1 Distill Qwen 32B shuts down on 20 November 2026. Use Qwen3.8 27B instead.",
+        "replacementModel": "@cf/qwen/qwen3.8-27b",
         "lastUpdated": "May 29, 2025",
         "costPer1kInputTokens": 0.000497,
         "costPer1kOutputTokens": 0.004881
@@ -563,6 +602,9 @@
       "model": "llama/llama-3-1-8b-instruct-fp8",
       "matchingModel": "@cf/meta/llama-3.1-8b-instruct-fp8",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Llama 3.1 8B shuts down on 20 November 2026. Use Gemma 4 26B instead.",
+        "replacementModel": "gemma-4-26b-a4b-it",
         "lastUpdated": "July 23, 2024",
         "costPer1kInputTokens": 0.000152,
         "costPer1kOutputTokens": 0.000287
@@ -612,6 +654,9 @@
       "model": "nemotron/nemotron-3-super-120b",
       "matchingModel": "@cf/nvidia/nemotron-3-120b-a12b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Nemotron 3 120B shuts down on 20 November 2026. Use DeepSeek V4.1 Flash instead.",
+        "replacementModel": "@cf/deepseek-ai/deepseek-v4.1-flash-1017",
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015
@@ -698,6 +743,9 @@
       "model": "qwen/qwen3-30b-a3b-fp8",
       "matchingModel": "@cf/qwen/qwen3-30b-a3b-fp8",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 30B shuts down on 20 November 2026. Use Qwen3.8 27B instead.",
+        "replacementModel": "@cf/qwen/qwen3.8-27b",
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.0000509,
         "costPer1kOutputTokens": 0.000335
@@ -723,6 +771,9 @@
       "model": "kimi-k2/kimi-k2-7-code",
       "matchingModel": "@cf/moonshotai/kimi-k2.7-code",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2.7 Code shuts down on 20 November 2026. Use GLM 5.3 instead.",
+        "replacementModel": "@cf/zai-org/glm-5.3",
         "modalities": {
           "input": [
             "text",
@@ -761,6 +812,9 @@
       "model": "glm/glm-5-2",
       "matchingModel": "@cf/zai-org/glm-5.2",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GLM 5.2 shuts down on 20 November 2026. Use GLM 5.3 instead.",
+        "replacementModel": "@cf/zai-org/glm-5.3",
         "name": "Glm 5.2",
         "contextWindow": 262144,
         "maxTokens": 256000,
@@ -784,6 +838,9 @@
       "model": "deepseek-flash/deepseek-v4-flash-0731",
       "matchingModel": "@cf/deepseek-ai/deepseek-v4-flash-0731",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V4 Flash shuts down on 20 November 2026. Use DeepSeek V4.1 Flash instead.",
+        "replacementModel": "@cf/deepseek-ai/deepseek-v4.1-flash-1017",
         "maxTokens": 1048576,
         "speed": 4,
         "lastUpdated": "July 31, 2026",
@@ -804,6 +861,9 @@
       "model": "deepseek-thinking/deepseek-v4-pro-0813",
       "matchingModel": "@cf/deepseek-ai/deepseek-v4-pro-0813",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V4 Pro shuts down on 20 November 2026. Use DeepSeek V4.1 Flash instead.",
+        "replacementModel": "@cf/deepseek-ai/deepseek-v4.1-flash-1017",
         "maxTokens": 1048576,
         "speed": 3,
         "isFeatured": true,
@@ -861,6 +921,9 @@
       "model": "glm-flash/glm-5-3-flash",
       "matchingModel": "@cf/zai-org/glm-5.3-flash",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GLM 5.3 Flash shuts down on 20 November 2026. Use DeepSeek V4.1 Flash instead.",
+        "replacementModel": "@cf/deepseek-ai/deepseek-v4.1-flash-1017",
         "name": "Glm 5.3 Flash",
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
         "contextWindow": 1048576,

@@ -110,7 +110,6 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     requires: { kind: "text" },
     ranking: { metric: "intelligence", minContextWindow: 200_000 },
     defaults: [
-      workersAi("@cf/zai-org/glm-5.3-flash"),
       workersAi("@cf/deepseek-ai/deepseek-v4.1-flash-1017"),
       workersAi("@cf/google/gemma-4-26b-a4b-it"),
     ],
@@ -136,7 +135,6 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     requires: { kind: "text" },
     ranking: { metric: "intelligence", minContextWindow: 200_000 },
     defaults: [
-      workersAi("@cf/zai-org/glm-5.3-flash"),
       workersAi("@cf/deepseek-ai/deepseek-v4.1-flash-1017"),
       workersAi("@cf/google/gemma-4-26b-a4b-it"),
     ],
@@ -149,7 +147,10 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     group: "writing",
     requires: { kind: "text" },
     ranking: { metric: "intelligence" },
-    defaults: [workersAi("@cf/moonshotai/kimi-k2.6"), workersAi("@cf/zai-org/glm-5.3")],
+    defaults: [
+      workersAi("@cf/zai-org/glm-5.3"),
+      workersAi("@cf/deepseek-ai/deepseek-v4.1-flash-1017"),
+    ],
   },
   {
     id: "routines",
@@ -159,7 +160,10 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     group: "writing",
     requires: { kind: "text" },
     ranking: { metric: "intelligence" },
-    defaults: [workersAi("@cf/zai-org/glm-5.3-flash"), workersAi("@cf/moonshotai/kimi-k2.6")],
+    defaults: [
+      workersAi("@cf/deepseek-ai/deepseek-v4.1-flash-1017"),
+      workersAi("@cf/zai-org/glm-5.3"),
+    ],
   },
   {
     id: "vision",
@@ -168,7 +172,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     group: "understanding",
     requires: { kind: "text", inputs: ["image"] },
     ranking: { metric: "intelligence" },
-    defaults: [workersAi("@cf/zai-org/glm-5.3-flash"), workersAi("@cf/google/gemma-4-26b-a4b-it")],
+    defaults: [workersAi("@cf/google/gemma-4-26b-a4b-it"), workersAi("@cf/qwen/qwen3.8-27b")],
   },
   {
     id: "transcription",
@@ -306,11 +310,7 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     group: "media",
     requires: { kind: "output", output: "speech", inputs: ["text"], providers: SPEECH_PROVIDERS },
     ranking: { metric: "media", key: "text_to_speechElo" },
-    defaults: [
-      workersAi("@cf/deepgram/aura-2-en"),
-      workersAi("@cf/deepgram/aura-1"),
-      workersAi("@cf/myshell-ai/melotts"),
-    ],
+    defaults: [workersAi("@cf/deepgram/aura-2-en"), workersAi("@cf/deepgram/aura-1")],
   },
   {
     id: "liveDelegation",
