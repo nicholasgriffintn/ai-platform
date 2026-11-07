@@ -20,8 +20,8 @@ export const SOURCE_CODE_URL = "https://github.com/nicholasgriffintn/personal-ai
 export const CLI_PACKAGE_NAME = "@ngriffin_uk/polychat-cli";
 export const CLI_LOGIN_COMMAND = `npx ${CLI_PACKAGE_NAME} login`;
 export const JURISDICTION = "United Kingdom";
-export const TERMS_EFFECTIVE_DATE = "March 30, 2025";
-export const PRIVACY_EFFECTIVE_DATE = "March 30, 2025";
+export const TERMS_EFFECTIVE_DATE = "November 7, 2026";
+export const PRIVACY_EFFECTIVE_DATE = "November 7, 2026";
 export const CHATS_QUERY_KEY = "chats";
 
 export const SHOW_DEV_TOOLS = IS_DEVELOPMENT;

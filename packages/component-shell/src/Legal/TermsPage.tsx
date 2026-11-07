@@ -15,7 +15,7 @@ export function TermsPage() {
       <Prose>
         <h2>1. Introduction</h2>
         <p>
-          Welcome to {APP_NAME} ("Service"). By accessing or using our AI chatbot services, you
+          Welcome to {APP_NAME} ("Service"). By accessing or using our AI assistant services, you
           acknowledge that you have read, understood, and agree to be bound by these Terms of
           Service ("Terms"). If you do not agree to these Terms, please do not use our Service.
         </p>
@@ -35,20 +35,36 @@ export function TermsPage() {
         </p>
         <h3>2.2 Service Description</h3>
         <p>
-          {APP_NAME} is an AI-powered chatbot that allows users to interact with artificial
-          intelligence language models. We utilize various AI technologies. The service provides
-          automated responses to queries and facilitates interactive discussions.
+          {APP_NAME} is an AI assistant that allows users to work with artificial intelligence
+          models from a range of providers. It answers questions, generates images, video, audio and
+          documents, and can carry out tasks and scheduled routines using tools and services you
+          connect.
         </p>
         <p>You acknowledge that:</p>
         <ul>
+          <li>You are talking to an AI, not a person</li>
           <li>The outputs generated might not always be accurate, complete, or up-to-date</li>
           <li>All outputs and responses are provided on an "as is" basis</li>
           <li>{APP_NAME} is not a substitute for professional or expert advice</li>
+          <li>
+            {APP_NAME} is not an emergency or crisis service. We show support details when a message
+            appears to involve suicide or self-harm, but this is an automated check that can miss
+            things. If you or someone else is in danger, contact your local emergency services
+          </li>
         </ul>
         <p>
           We may update, improve, or change the functionality of {APP_NAME} at our discretion and
           without obligation. We do not guarantee that any specific feature will always be
           available.
+        </p>
+
+        <h3>2.3 Tasks and Connected Services</h3>
+        <p>
+          When you run a task or routine, or connect another service, {APP_NAME} can act on your
+          behalf within the permissions you give it. You remain responsible for those actions, and
+          for reviewing work and approval requests before you rely on or accept them. A "Verified"
+          status means automated checks passed. It does not guarantee that the work is correct.
+          Services you connect have their own terms.
         </p>
 
         <h2>3. Account Responsibilities</h2>
@@ -59,6 +75,18 @@ export function TermsPage() {
           <li>Ensuring that your account information remains accurate and up-to-date</li>
           <li>Notifying us immediately of any unauthorized use of your account</li>
         </ul>
+        <h3>3.1 Plans, Credits and Billing</h3>
+        <p>
+          Paid plans are billed through Stripe and include a set amount of credits for each billing
+          period. When they run out, new work pauses until the period resets, unless you turn on
+          pay-as-you-go overage. You can cancel at any time, and your plan stays active until the
+          end of the period you have paid for.
+        </p>
+        <p>
+          You can set a credit cap on a run. We stop the run when it reaches the cap, so it may not
+          finish. If a run fails because of a fault on our side, we refund the credits it used.
+          Nothing in these Terms affects your legal rights as a consumer.
+        </p>
 
         <h2>4. Prohibited Activities</h2>
         <p>Users are strictly prohibited from:</p>
@@ -77,9 +105,17 @@ export function TermsPage() {
           </li>
           <li>
             Engaging in any automated use of the system, such as using scripts to collect
-            information or interact with the Service
+            information or interact with the Service, other than through our API and tools
           </li>
           <li>Uploading or transmitting viruses, malware, or other malicious code</li>
+          <li>
+            Generating sexual content involving children, or intimate or deceptive images of real
+            people without their consent
+          </li>
+          <li>Attempting to bypass safety filters or the age check</li>
+          <li>
+            Removing or altering provenance marks to pass off generated media as something it is not
+          </li>
         </ul>
         <h3>4.1 AI Technology Limitations</h3>
         <p>You acknowledge that:</p>
@@ -111,6 +147,10 @@ export function TermsPage() {
           display, process, and use your User Content in connection with providing and improving the
           Service.
         </p>
+        <p>
+          If you have turned off "Allow Prompt and Response Training Data", we do not use your
+          prompts and responses to improve AI models. See our <a href="/privacy">Privacy Policy</a>.
+        </p>
         <h3>5.2 Trademarks</h3>
         <p>
           All trademarks, service marks, logos, trade names, and any other proprietary designations
@@ -128,7 +168,10 @@ export function TermsPage() {
         <h2>7. Termination</h2>
         <p>These Terms remain in effect as long as you use {APP_NAME}.</p>
         <h3>7.1 Termination by You</h3>
-        <p>You may stop using our Service at any time.</p>
+        <p>
+          You may stop using our Service at any time. You can export your data from Chat history in
+          your profile, and contact us to close your account.
+        </p>
         <h3>7.2 Termination by Us</h3>
         <p>
           We reserve the right to suspend or terminate your access to the Service, without prior

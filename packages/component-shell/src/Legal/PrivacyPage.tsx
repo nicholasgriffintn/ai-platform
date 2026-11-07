@@ -14,9 +14,10 @@ export function PrivacyPage() {
         <h2>1. Introduction</h2>
         <p>
           This Privacy Policy ("Policy") explains how {APP_NAME} ("we," "us," or "our") collects,
-          uses, discloses, and safeguards your information when you access or use our AI chatbot
-          services ("Service"). We are committed to protecting your privacy and handling your data
-          with transparency and care.
+          uses, discloses, and safeguards your information when you access or use our AI assistant
+          services across our website, desktop, mobile, watch and TV apps, command line tools and
+          API ("Service"). We are committed to protecting your privacy and handling your data with
+          transparency and care.
         </p>
 
         <h2>2. Information We Collect</h2>
@@ -24,36 +25,69 @@ export function PrivacyPage() {
         <p>Information that can be used to identify you, such as:</p>
         <ul>
           <li>Name, email address, and contact details provided during registration</li>
-          <li>Account credentials and profile information</li>
-          <li>Payment information, if applicable</li>
+          <li>
+            Account credentials and profile information, including how you sign in (email link,
+            passkey, GitHub or Apple)
+          </li>
+          <li>
+            Whether you are 18 or over, and when you told us. We do not keep your date of birth
+          </li>
+          <li>
+            Subscription and billing records. Stripe handles your card details, and we do not store
+            them
+          </li>
         </ul>
 
         <h3>2.2 Conversation Data</h3>
         <ul>
-          <li>Text inputs and queries submitted to our chatbot</li>
+          <li>Text, voice, images and files you submit to the Service</li>
           <li>Content of conversations and interactions with the Service</li>
+          <li>Memories, notes, sources, tasks, routines and other work you keep in the Service</li>
+          <li>Images, video, audio and documents generated for you</li>
           <li>Preferences and settings related to your use of the Service</li>
         </ul>
+        <p>
+          Temporary chats stay on your device and are not saved to your account. Guests use
+          temporary chats, and you can make them the default for your account in your settings.
+        </p>
 
-        <h3>2.3 Technical Information</h3>
+        <h3>2.3 Information You Connect</h3>
+        <p>We only receive these if you choose to set them up:</p>
+        <ul>
+          <li>
+            Connectors and MCP integrations: content from the services you connect, when a task or
+            routine uses them
+          </li>
+          <li>Channels: messages you send to {APP_NAME} through Telegram, Slack or email</li>
+          <li>Feeds and sources you follow for Discover</li>
+          <li>
+            Apple Health on iOS: yesterday's sleep, mindful and exercise minutes, used for one line
+            in your Discover brief and never to choose topics. We keep only the latest summary
+          </li>
+          <li>Microphone audio, when you use voice features</li>
+        </ul>
+
+        <h3>2.4 Technical Information</h3>
         <ul>
           <li>IP address and location data</li>
           <li>Device information (browser type, operating system, hardware model)</li>
           <li>Log data and usage statistics</li>
-          <li>Cookies and similar tracking technologies</li>
+          <li>Cookies and similar browser storage</li>
         </ul>
 
-        <h3>2.4 Cookie Policy</h3>
-        <p>We use the following types of cookies:</p>
+        <h3>2.5 Cookie Policy</h3>
+        <p>We keep this small:</p>
         <ul>
-          <li>Essential cookies: Required for basic service functionality</li>
-          <li>Analytics cookies: Help us understand how users interact with our Service</li>
-          <li>Preference cookies: Remember your settings and preferences</li>
-          <li>Marketing cookies: Used to deliver relevant advertisements (if applicable)</li>
+          <li>Essential cookies: Keep you signed in, and recognise guests for usage limits</li>
+          <li>Browser storage: Remembers your settings, preferences and temporary chats</li>
+          <li>
+            Analytics: Our own first-party measurement, sent to our servers. We do not use
+            third-party analytics or advertising cookies
+          </li>
         </ul>
         <p>
-          You can manage cookie preferences through your browser settings. For detailed information
-          about our cookies.
+          You can clear cookies and browser storage through your browser settings, but you will be
+          signed out and temporary chats on that device will be lost.
         </p>
 
         <h2>3. How We Use Your Information</h2>
@@ -61,7 +95,8 @@ export function PrivacyPage() {
         <ul>
           <li>Processing and responding to your queries</li>
           <li>Authenticating your identity and maintaining your account</li>
-          <li>Delivering the core functionality of our AI chatbot</li>
+          <li>Delivering the core functionality of the Service</li>
+          <li>Running the tasks, routines and scheduled work you set up</li>
         </ul>
 
         <h3>3.2 Improving and Developing the Service</h3>
@@ -73,9 +108,12 @@ export function PrivacyPage() {
 
         <h3>3.3 Personalization and User Experience</h3>
         <ul>
-          <li>Customizing responses based on your interaction history</li>
+          <li>Customizing responses based on your interaction history and saved memories</li>
           <li>Remembering your preferences and settings</li>
-          <li>Providing relevant recommendations</li>
+          <li>
+            Building your Discover feed and briefs from your interests, memories, recent chat titles
+            and connected sources
+          </li>
         </ul>
 
         <h3>3.4 Legal and Compliance Purposes</h3>
@@ -88,19 +126,49 @@ export function PrivacyPage() {
         <h3>3.5 Training and Processing</h3>
         <ul>
           <li>
-            Your conversation data and app interactions may be used to train and improve AI models.
-            This includes both training models through our AI providers and training our own
-            fine-tuned models to improve {APP_NAME}'s performance.
+            Prompts and responses from conversations saved to your account may be used to train and
+            improve AI models. This includes both training models through our AI providers and
+            training our own fine-tuned models to improve {APP_NAME}'s performance. Temporary chats
+            are not used.
           </li>
           <li>
-            You can opt out of having your data used for training purposes at any time through your
-            Privacy & Data settings in your profile.
+            This is on by default. You can turn it off at any time with "Allow Prompt and Response
+            Training Data" in your profile settings. We still collect operational usage and
+            performance metrics, without prompt content.
           </li>
           <li>
             We will retain conversation data if you have asked us to store it as well as within our
             logs for as long as is permitted by law.
           </li>
         </ul>
+
+        <h3>3.6 Safety</h3>
+        <ul>
+          <li>
+            Age check: We ask for your date of birth before your first message and keep only the
+            outcome
+          </li>
+          <li>AI disclosure: We tell you in the app that you are talking to an AI, not a person</li>
+          <li>
+            Crisis support: If a message or reply appears to involve suicide or self-harm, we
+            automatically show support details alongside the reply. This is an automated check of
+            the text. No person reviews it and it does not change your account
+          </li>
+          <li>
+            Image and video safety: Where a model provider offers safety filters for generated
+            images and video, they stay on and you cannot turn them down
+          </li>
+        </ul>
+
+        <h3>3.7 Generated Media</h3>
+        <p>
+          Where the file format allows, images, video and audio generated with {APP_NAME} carry a
+          machine-readable mark showing that AI made them, and any marks from the model provider are
+          kept. We record each file's SHA-256 fingerprint with its model, provider and date, so that
+          anyone holding the file can check it. These records do not name you. When you check a file
+          at <a href="/verify">Check a file</a>, the file stays on your device and we only receive
+          its fingerprint.
+        </p>
 
         <h2>4. Data Security</h2>
         <p>
@@ -132,10 +200,24 @@ export function PrivacyPage() {
         </p>
         <p>Our key service providers include:</p>
         <ul>
-          <li>AI model providers: OpenAI, Anthropic, Cloudflare, Hugging Face, etc.</li>
-          <li>Analytics services: Cloudflare</li>
-          <li>Cloud infrastructure: Cloudflare</li>
+          <li>
+            AI model providers: The provider behind the model you choose, or that {APP_NAME} chooses
+            for you, such as OpenAI, Anthropic, Google, Mistral, Replicate and Cloudflare
+          </li>
+          <li>Cloud infrastructure, email and analytics storage: Cloudflare</li>
+          <li>Payments: Stripe</li>
+          <li>Connectors: Composio, and the services you connect</li>
+          <li>Sign-in: GitHub and Apple, if you use them</li>
+          <li>Spam protection: hCaptcha</li>
+          <li>Error reporting: Sentry</li>
         </ul>
+        <p>
+          Your prompts and files go to the model provider that handles your request. Features such
+          as Second opinion also send your question, the answer and related tool results to other
+          models. The model picker shows where each model handles your data and links to the
+          provider's own policy for location and retention. Where a provider does not document this,
+          the label says unknown.
+        </p>
 
         <h3>5.2 Legal Requirements</h3>
         <p>
@@ -152,7 +234,8 @@ export function PrivacyPage() {
         <h3>5.4 With Your Consent</h3>
         <p>
           We may share your information with third parties when you explicitly consent to such
-          sharing.
+          sharing. This includes conversations you share, sites you publish, and actions you approve
+          in connected services.
         </p>
 
         <h2>6. Your Rights and Choices</h2>
@@ -169,17 +252,29 @@ export function PrivacyPage() {
         <p>To exercise your data protection rights:</p>
         <ul>
           <li>
-            For training data collection: Visit your Profile Settings and toggle "Allow Tracking and
-            Training Data Collection" in the Privacy & Data section
+            For training data collection: Visit your profile settings and turn off "Allow Prompt and
+            Response Training Data"
           </li>
           <li>
-            For access, correction, or deletion requests: Email us at{" "}
-            <a href={CONTACT_LINK}>{CONTACT_LINK}</a> with the subject line "Data Rights Request"
+            To get a copy of your data: Go to Chat history in your profile and export it. The ZIP
+            includes your chats, memory, sources, outputs, tasks, recipes and files, with a manifest
+            of anything left out. Credentials and other people's work are never included
+          </li>
+          <li>To delete your conversations: Go to Chat history in your profile</li>
+          <li>
+            For other access, correction, or deletion requests, including closing your account:
+            Contact us at <a href={CONTACT_LINK}>{CONTACT_LINK}</a> with the subject line "Data
+            Rights Request"
           </li>
           <li>We will respond to all legitimate requests within 30 days</li>
           <li>
             We may request specific information to verify your identity before processing your
             request
+          </li>
+          <li>
+            If you are unhappy with how we handle your data, you can complain to the UK Information
+            Commissioner's Office at <a href="https://ico.org.uk/make-a-complaint/">ico.org.uk</a>{" "}
+            or your local data protection authority
           </li>
         </ul>
 
@@ -190,8 +285,13 @@ export function PrivacyPage() {
         </p>
         <ul>
           <li>Account information: Retained as long as your account is active</li>
-          <li>Conversation data: Retained for as long as the conversation is active</li>
+          <li>Conversation data: Retained until you delete it or close your account</li>
+          <li>Temporary chats: Kept only on your device</li>
           <li>Usage and analytical data: Retained for up to three years for analytics purposes</li>
+          <li>
+            Generated media records: Fingerprint records are kept so that files can still be checked
+            later
+          </li>
           <li>You can request deletion of your data at any time by contacting us</li>
         </ul>
 
@@ -211,10 +311,10 @@ export function PrivacyPage() {
         </p>
 
         <h2>10. Legal Compliance</h2>
-        <h3>10.1 General Data Protection Regulation (GDPR)</h3>
+        <h3>10.1 UK GDPR and EU GDPR</h3>
         <p>
-          For users in the European Economic Area, we process personal data in accordance with GDPR
-          principles, including:
+          For users in the United Kingdom and the European Economic Area, we process personal data
+          in accordance with UK GDPR and GDPR principles, including:
         </p>
         <ul>
           <li>Lawfulness, fairness, and transparency</li>
@@ -226,7 +326,7 @@ export function PrivacyPage() {
         <ul>
           <li>Performance of our contract with you to provide the Service</li>
           <li>Our legitimate interests in maintaining and improving the Service</li>
-          <li>Your consent, where we specifically request it</li>
+          <li>Your consent, where we specifically request it, such as for Apple Health data</li>
           <li>Compliance with our legal obligations</li>
         </ul>
 
