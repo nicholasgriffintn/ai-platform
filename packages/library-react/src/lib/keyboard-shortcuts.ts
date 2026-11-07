@@ -169,12 +169,19 @@ export function dispatchModelSelectorShortcut(shortcut: ModelSelectorShortcut): 
 }
 
 export function matchesAppKeyboardShortcut(
-  event: Pick<KeyboardEvent, "altKey" | "ctrlKey" | "key" | "metaKey" | "shiftKey">,
+  event: Pick<KeyboardEvent, "altKey" | "ctrlKey" | "metaKey" | "shiftKey"> & {
+    key?: string | null;
+  },
   id: AppKeyboardShortcutId,
 ): boolean {
   const shortcut = actionableShortcuts[id].match;
 
-  if (!shortcut || event.altKey || event.key.toLowerCase() !== shortcut.key) {
+  if (
+    !shortcut ||
+    event.altKey ||
+    typeof event.key !== "string" ||
+    event.key.toLowerCase() !== shortcut.key
+  ) {
     return false;
   }
 
