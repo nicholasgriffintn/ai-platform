@@ -1,4 +1,4 @@
-import { ShortcutTooltip, Toggle } from "@ngriffin_uk/polychat-component-ui";
+import { cn, ShortcutTooltip, Toggle } from "@ngriffin_uk/polychat-component-ui";
 import type {
   ChatSettings,
   VerbosityLevel,
@@ -26,9 +26,13 @@ import { InlineSettingSelect } from "../../InlineSettingSelect.js";
 
 interface InlineResponseControlsProps {
   isDisabled?: boolean;
+  hideSelectsOnMobile?: boolean;
 }
 
-export function InlineResponseControls({ isDisabled = false }: InlineResponseControlsProps) {
+export function InlineResponseControls({
+  isDisabled = false,
+  hideSelectsOnMobile = false,
+}: InlineResponseControlsProps) {
   const { computeSite, chatSettings, model, setChatSettings } = useChatStore(
     useShallow((state) => ({
       computeSite: state.computeSite,
@@ -111,44 +115,46 @@ export function InlineResponseControls({ isDisabled = false }: InlineResponseCon
           </Toggle>
         </ShortcutTooltip>
       )}
-      {reasoningOptions.length > 0 && (
-        <InlineSettingSelect<ReasoningEffort>
-          id="inline-reasoning"
-          label="Reasoning depth"
-          icon={<Brain className="h-4 w-4" />}
-          value={selectedReasoning || defaultReasoning}
+      <div className={cn("items-center gap-1", hideSelectsOnMobile ? "hidden md:flex" : "flex")}>
+        {reasoningOptions.length > 0 && (
+          <InlineSettingSelect<ReasoningEffort>
+            id="inline-reasoning"
+            label="Reasoning depth"
+            icon={<Brain className="h-4 w-4" />}
+            value={selectedReasoning || defaultReasoning}
+            displayLabel={
+              selectedReasoning
+                ? formatReasoningLabel(selectedReasoning)
+                : formatReasoningLabel(defaultReasoning)
+            }
+            options={reasoningOptions.map((option) => ({
+              value: option,
+              label: formatReasoningLabel(option),
+            }))}
+            isDisabled={isDisabled}
+            shortcut="/reasoning"
+            onChange={handleReasoningChange}
+          />
+        )}
+        <InlineSettingSelect<VerbosityLevel>
+          id="inline-verbosity"
+          label="Verbosity"
+          icon={<ListFilter className="h-4 w-4" />}
+          value={selectedVerbosity || defaultVerbosity}
           displayLabel={
-            selectedReasoning
-              ? formatReasoningLabel(selectedReasoning)
-              : formatReasoningLabel(defaultReasoning)
+            selectedVerbosity
+              ? formatVerbosityLabel(selectedVerbosity)
+              : formatVerbosityLabel(defaultVerbosity)
           }
-          options={reasoningOptions.map((option) => ({
+          options={verbosityOptions.map((option) => ({
             value: option,
-            label: formatReasoningLabel(option),
+            label: formatVerbosityLabel(option),
           }))}
           isDisabled={isDisabled}
-          shortcut="/reasoning"
-          onChange={handleReasoningChange}
+          shortcut="/verbosity"
+          onChange={handleVerbosityChange}
         />
-      )}
-      <InlineSettingSelect<VerbosityLevel>
-        id="inline-verbosity"
-        label="Verbosity"
-        icon={<ListFilter className="h-4 w-4" />}
-        value={selectedVerbosity || defaultVerbosity}
-        displayLabel={
-          selectedVerbosity
-            ? formatVerbosityLabel(selectedVerbosity)
-            : formatVerbosityLabel(defaultVerbosity)
-        }
-        options={verbosityOptions.map((option) => ({
-          value: option,
-          label: formatVerbosityLabel(option),
-        }))}
-        isDisabled={isDisabled}
-        shortcut="/verbosity"
-        onChange={handleVerbosityChange}
-      />
+      </div>
     </div>
   );
 }

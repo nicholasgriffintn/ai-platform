@@ -3,8 +3,6 @@ import WatchKit
 
 @MainActor
 final class PerchSession: ObservableObject {
-    private static let nudgeTurns = 0.05
-
     @Published private(set) var engine = PerchEngine(feel: .steady)
     @Published private(set) var now = Date().timeIntervalSinceReferenceDate
 
@@ -43,7 +41,6 @@ final class PerchSession: ObservableObject {
 
     func cheer() {
         engine.cheer(at: tick())
-        WKInterfaceDevice.current().play(.success)
     }
 
     func drain() -> (turns: Double, longestSpin: Double) {
@@ -57,16 +54,10 @@ final class PerchSession: ObservableObject {
     }
 
     private func play(_ beats: [PerchEngine.Beat]) {
-        for beat in beats {
-            switch beat {
-            case .milestone:
-                WKInterfaceDevice.current().play(.directionUp)
-            case .settled(let turns) where turns >= PerchEngine.longSpinTurns:
-                WKInterfaceDevice.current().play(.success)
-            case .settled(let turns) where turns >= Self.nudgeTurns:
-                WKInterfaceDevice.current().play(.click)
-            case .settled:
-                break
+        for haptic in beats.compactMap(\.haptic) {
+            switch haptic {
+            case .click: WKInterfaceDevice.current().play(.click)
+            case .milestone: WKInterfaceDevice.current().play(.directionUp)
             }
         }
     }

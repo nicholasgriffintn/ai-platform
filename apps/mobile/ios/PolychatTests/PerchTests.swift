@@ -44,7 +44,7 @@ struct PerchTests {
         }
 
         #expect(beats.count == 1)
-        guard case .settled(let turns) = beats.first else {
+        guard case .settled(let turns, _) = beats.first else {
             Issue.record("Expected the spin to settle")
             return
         }
@@ -53,13 +53,61 @@ struct PerchTests {
         #expect(engine.clip(resting: .idle, at: time + 5) == .idle)
     }
 
+    @Test func raisingYourWristAfterASpinStaysSilent() {
+        var engine = PerchEngine(feel: .steady)
+        for step in 0..<40 {
+            _ = engine.turn(by: 0.1, at: Double(step) / 30)
+        }
+
+        let beats = engine.coast(at: 60)
+
+        #expect(beats.isEmpty)
+        #expect(!engine.isMoving)
+        #expect(engine.clip(resting: .idle, at: 60.5) == .idle)
+    }
+
+    @Test func theSettleClickOnlyPlaysRightAfterYouStop() {
+        func settle(_ feel: CrownFeel) -> PerchEngine.Beat? {
+            var engine = PerchEngine(feel: feel)
+            for step in 0..<120 {
+                _ = engine.turn(by: 1.0 / 30, at: Double(step) / 30)
+            }
+            var time = 119.0 / 30
+            while time < 30 {
+                time += 0.05
+                if let beat = engine.coast(at: time).first {
+                    return beat
+                }
+            }
+            return nil
+        }
+
+        #expect(settle(.heavy)?.haptic == .click)
+        #expect(settle(.glide)?.haptic == nil)
+    }
+
+    @Test func aTinyNudgeSettlesSilently() {
+        var engine = PerchEngine(feel: .heavy)
+        _ = engine.turn(by: 0.01, at: 0)
+
+        var beats: [PerchEngine.Beat] = []
+        var time = 0.0
+        while engine.isMoving && time < 5 {
+            time += 0.05
+            beats += engine.coast(at: time)
+        }
+
+        #expect(beats.compactMap(\.haptic).isEmpty)
+    }
+
     @Test func coastingDoesNotCountAsTurning() {
         var engine = PerchEngine(feel: .glide)
         _ = engine.turn(by: 0.5, at: 0)
         let turned = engine.totalTurns
 
-        _ = engine.coast(at: 1)
-        _ = engine.coast(at: 2)
+        for frame in 1...40 {
+            _ = engine.coast(at: Double(frame) * 0.05)
+        }
 
         #expect(engine.totalTurns == turned)
         #expect(engine.heading > 0.5)

@@ -1,13 +1,29 @@
 import Foundation
 
+enum PerchHaptic: Equatable {
+    case click
+    case milestone
+}
+
 struct PerchEngine {
     enum Beat: Equatable {
         case milestone(Int)
-        case settled(turns: Double)
+        case settled(turns: Double, idleSeconds: TimeInterval)
+
+        var haptic: PerchHaptic? {
+            switch self {
+            case .milestone:
+                return .milestone
+            case .settled(let turns, let idleSeconds):
+                return turns >= PerchEngine.nudgeTurns && idleSeconds <= PerchEngine.settleClickSeconds ? .click : nil
+            }
+        }
     }
 
-    static let longSpinTurns = 3.0
-
+    private static let longSpinTurns = 3.0
+    private static let nudgeTurns = 0.05
+    private static let settleClickSeconds = 1.5
+    private static let maximumFrameGap = 0.5
     private static let spinningSpeed = 0.08
     private static let dizzySpeed = 1.6
     private static let inputHoldSeconds = 0.08
@@ -57,6 +73,12 @@ struct PerchEngine {
         if let lastInput, time - lastInput < Self.inputHoldSeconds { return [] }
 
         let elapsed = time - lastFrame
+        guard elapsed <= Self.maximumFrameGap else {
+            speed = 0
+            spinTurns = 0
+            return []
+        }
+
         heading += speed * elapsed
         speed *= exp(-friction * elapsed)
 
@@ -68,7 +90,7 @@ struct PerchEngine {
         if turns >= Self.longSpinTurns {
             reaction = (.cheer, time + Self.reactionSeconds)
         }
-        return [.settled(turns: turns)]
+        return [.settled(turns: turns, idleSeconds: time - (lastInput ?? time))]
     }
 
     mutating func poke(at time: TimeInterval) {

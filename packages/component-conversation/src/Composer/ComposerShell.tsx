@@ -128,9 +128,7 @@ export function ComposerShell({
             {isGeneratingAudio && <GeneratingAudioNotice />}
             {(footerStart || footerEnd) && (
               <div className="@container/composer-footer flex items-center justify-between gap-1 sm:gap-2">
-                <div className="flex max-w-[70%] min-w-0 flex-1 items-center gap-2 sm:max-w-none">
-                  {footerStart}
-                </div>
+                <div className="flex min-w-0 flex-1 items-center gap-2">{footerStart}</div>
                 <div className="flex flex-shrink-0 items-center gap-2">{footerEnd}</div>
               </div>
             )}

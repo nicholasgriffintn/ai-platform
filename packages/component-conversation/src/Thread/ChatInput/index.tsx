@@ -982,7 +982,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(
                     />
                   </div>
                 )}
-                {!hideInlineResponseControls && <InlineResponseControls isDisabled={isLoading} />}
+                {!hideInlineResponseControls && (
+                  <InlineResponseControls
+                    isDisabled={isLoading}
+                    hideSelectsOnMobile={!hideChatSettings}
+                  />
+                )}
                 {showFooterControls && <div className="shrink-0">{controls}</div>}
               </>
             ) : undefined
