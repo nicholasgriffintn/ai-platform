@@ -4,7 +4,10 @@ import { generateId, isRecord } from "@ngriffin_uk/polychat-utility-core";
 import type { Task } from "~/infrastructure/database/schema";
 import { normaliseIsoDateTime } from "~/infrastructure/date";
 import type { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
-import { terminateTaskWorkflow } from "~/modules/queue/infrastructure/workflow-instances";
+import {
+  readTaskWorkflow,
+  terminateTaskWorkflow,
+} from "~/modules/queue/infrastructure/workflow-instances";
 import type { IEnv } from "~/types";
 
 import type { TaskDefinition, TaskMessage } from "./types";
@@ -82,7 +85,7 @@ export class TaskService {
         max_attempts: task.max_attempts ?? 3,
       };
 
-      await this.startRun(message);
+      await this.startRun(message, task);
 
       logger.info("Task enqueued successfully", {
         taskId: task.id,
@@ -109,17 +112,20 @@ export class TaskService {
   }
 
   public async dispatchTask(task: Task): Promise<void> {
-    await this.startRun({
-      taskId: task.id,
-      task_type: task.task_type,
-      user_id: task.user_id ?? undefined,
-      project_id: task.project_id ?? undefined,
-      task_data: isRecord(task.task_data) ? task.task_data : {},
-      priority: task.priority ?? 5,
-      schedule_type: task.schedule_type,
-      scheduled_at: task.scheduled_at ?? undefined,
-      max_attempts: task.max_attempts ?? 3,
-    });
+    await this.startRun(
+      {
+        taskId: task.id,
+        task_type: task.task_type,
+        user_id: task.user_id ?? undefined,
+        project_id: task.project_id ?? undefined,
+        task_data: isRecord(task.task_data) ? task.task_data : {},
+        priority: task.priority ?? 5,
+        schedule_type: task.schedule_type,
+        scheduled_at: task.scheduled_at ?? undefined,
+        max_attempts: task.max_attempts ?? 3,
+      },
+      task,
+    );
   }
 
   public async scheduleRecurringTask(
@@ -168,20 +174,11 @@ export class TaskService {
   }
 
   public async cancelTask(taskId: string): Promise<boolean> {
-    const task = await this.taskRepository.getTaskById(taskId);
+    const task = await this.taskRepository.cancelOpenTask(taskId);
 
     if (!task) {
       return false;
     }
-
-    if (task.status === "completed" || task.status === "cancelled") {
-      return false;
-    }
-
-    await this.taskRepository.updateTask(taskId, {
-      status: "cancelled",
-      completed_at: new Date().toISOString(),
-    });
 
     if (task.workflow_instance_id && this.env.TASK_WORKFLOW) {
       await terminateTaskWorkflow(this.env.TASK_WORKFLOW, task.workflow_instance_id);
@@ -190,22 +187,37 @@ export class TaskService {
     return true;
   }
 
-  private async startRun(message: TaskMessage): Promise<void> {
+  private async startRun(
+    message: TaskMessage,
+    seen: Pick<Task, "status" | "workflow_instance_id">,
+  ): Promise<void> {
     if (!this.env.TASK_WORKFLOW) {
       throw new Error("TASK_WORKFLOW binding is not available; task remains pending for recovery");
     }
 
     const instanceId = generateId();
 
-    await this.taskRepository.updateTask(message.taskId, {
-      status: "queued",
-      workflow_instance_id: instanceId,
+    const claimed = await this.taskRepository.claimTaskForDispatch({
+      taskId: message.taskId,
+      instanceId,
+      expectedStatus: seen.status,
+      expectedInstanceId: seen.workflow_instance_id ?? null,
     });
+
+    if (!claimed) {
+      return;
+    }
 
     try {
       await this.env.TASK_WORKFLOW.create({ id: instanceId, params: message });
     } catch (error) {
-      await this.taskRepository.updateTask(message.taskId, { status: "pending" });
+      const workflow = await readTaskWorkflow(this.env.TASK_WORKFLOW, instanceId);
+
+      if (workflow.status !== "unavailable") {
+        return;
+      }
+
+      await this.taskRepository.releaseDispatchClaim(message.taskId, instanceId);
 
       throw error;
     }

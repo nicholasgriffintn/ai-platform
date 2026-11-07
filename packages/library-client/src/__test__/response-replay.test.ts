@@ -79,6 +79,37 @@ function replay(
 }
 
 describe("applyResponseReplay", () => {
+  it("does not let a reset snapshot undo a finished response", () => {
+    const state: ResponseReplayState = { cursor: 3, snapshot: snapshot("completed", 3) };
+    const outcome = applyResponseReplay(
+      state,
+      replay(3, [], { reset_required: true, snapshot: snapshot("in_progress", 4) }),
+    );
+
+    expect(outcome.state).toBe(state);
+  });
+
+  it("does not let a reset snapshot move the cursor backwards", () => {
+    const state: ResponseReplayState = { cursor: 5, snapshot: snapshot("in_progress", 5) };
+    const outcome = applyResponseReplay(
+      state,
+      replay(5, [], { reset_required: true, snapshot: snapshot("in_progress", 2) }),
+    );
+
+    expect(outcome.state.cursor).toBe(5);
+  });
+
+  it("clears what a response was waiting on once it moves on", () => {
+    const waiting = snapshot("awaiting_input", 1);
+    const state: ResponseReplayState = {
+      cursor: 1,
+      snapshot: { ...waiting, waiting_on: "input" as typeof waiting.waiting_on },
+    };
+    const outcome = applyResponseReplay(state, replay(1, [event(2, "in_progress")]));
+
+    expect(outcome.state.snapshot.waiting_on).toBeNull();
+  });
+
   it("replays retry state without changing the attempt", () => {
     const state: ResponseReplayState = { cursor: 1, snapshot: snapshot("in_progress", 1) };
     const retryEvent: ResponseEventRecord = {

@@ -246,7 +246,7 @@ export function useChat(
       return;
     }
 
-    setConversationModelSelection({
+    setConversationModelSelection(completion_id, {
       model: query.data.model,
       modelTier: query.data.model_tier,
       permissionMode: query.data.permission_mode,

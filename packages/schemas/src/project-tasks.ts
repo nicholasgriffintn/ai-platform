@@ -417,7 +417,7 @@ export const PROJECT_TASK_ACTOR_TRANSITIONS: Record<
 > = {
   user: ["backlog", "queued", "running", "blocked", "review", "done", "cancelled"],
   model: ["backlog", "review", "cancelled"],
-  system: ["queued", "running", "blocked", "review"],
+  system: ["backlog", "queued", "running", "blocked", "review", "done", "cancelled"],
 };
 
 export function canActorSetProjectTaskStatus(

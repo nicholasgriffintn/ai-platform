@@ -548,10 +548,12 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
       { runId: receipt.run.id },
       durableExecution?.kind === "project_task"
         ? {
-            dispatchTaskId: durableExecution.dispatchTaskId,
-            ownerToken: durableExecution.executionOwnerToken,
+            executionOwner: {
+              dispatchTaskId: durableExecution.dispatchTaskId,
+              ownerToken: durableExecution.executionOwnerToken,
+            },
           }
-        : undefined,
+        : {},
     );
 
     if (!updated && durableExecution?.kind === "project_task") {

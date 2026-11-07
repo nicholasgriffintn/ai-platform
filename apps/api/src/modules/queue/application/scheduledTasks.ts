@@ -16,6 +16,15 @@ const WORKFLOW_CHECK_DELAY_MS = 15 * 60 * 1000;
 const WORKFLOW_CHECK_LIMIT = 100;
 const WORKFLOW_CHECK_CONCURRENCY = 6;
 
+function hasStoppedRunning(status: string, taskStatus: string): boolean {
+  return (
+    status === "errored" ||
+    status === "terminated" ||
+    status === "complete" ||
+    (status === "unavailable" && taskStatus === "queued")
+  );
+}
+
 export async function redispatchPendingTasks(env: IEnv, now = new Date()): Promise<number> {
   const taskService = new TaskService(env, new TaskRepository(env));
   const dispatched = await taskService.dispatchPendingTasks(
@@ -51,18 +60,20 @@ export async function recoverErroredWorkflowTasks(env: IEnv, now = new Date()): 
   let recovered = 0;
 
   for (const { task, instanceId, workflow } of checks) {
-    if (workflow.status !== "errored" && workflow.status !== "terminated") {
+    if (!hasStoppedRunning(workflow.status, task.status)) {
       continue;
     }
 
     const reason = `Workflow run ${workflow.status}${workflow.error ? `: ${workflow.error}` : ""}`;
+    const settled =
+      (await repository.requeueErroredWorkflowTask(task.id, instanceId)) ||
+      (await repository.failStoppedWorkflowTask(task.id, instanceId, reason));
 
-    await repository.failRunningTaskExecutions(task.id, reason);
-
-    if (!(await repository.requeueErroredWorkflowTask(task.id, instanceId))) {
-      await repository.failOpenTask(task.id, reason);
+    if (!settled) {
+      continue;
     }
 
+    await repository.failRunningTaskExecutions(task.id, reason);
     recovered += 1;
   }
 

@@ -444,6 +444,74 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
     return task ? this.parseTask(task) : null;
   }
 
+  public async claimTaskForDispatch(params: {
+    taskId: string;
+    instanceId: string;
+    expectedStatus: string;
+    expectedInstanceId: string | null;
+  }): Promise<boolean> {
+    const task = await this.runQuery<Task>(
+      `UPDATE tasks
+       SET status = 'queued', workflow_instance_id = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND status = ? AND workflow_instance_id IS ?
+       RETURNING *`,
+      [params.instanceId, params.taskId, params.expectedStatus, params.expectedInstanceId],
+      true,
+    );
+
+    this.announce(task);
+
+    return task !== null;
+  }
+
+  public async releaseDispatchClaim(taskId: string, instanceId: string): Promise<void> {
+    const task = await this.runQuery<Task>(
+      `UPDATE tasks
+       SET status = 'pending', workflow_instance_id = NULL, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND workflow_instance_id = ? AND status = 'queued'
+       RETURNING *`,
+      [taskId, instanceId],
+      true,
+    );
+
+    this.announce(task);
+  }
+
+  public async cancelOpenTask(taskId: string): Promise<Task | null> {
+    const task = await this.runQuery<Task>(
+      `UPDATE tasks
+       SET status = 'cancelled', completed_at = ?, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND status NOT IN ('completed', 'cancelled')
+       RETURNING *`,
+      [new Date().toISOString(), taskId],
+      true,
+    );
+
+    this.announce(task);
+
+    return task ? this.parseTask(task) : null;
+  }
+
+  public async failStoppedWorkflowTask(
+    taskId: string,
+    instanceId: string,
+    errorMessage: string,
+  ): Promise<boolean> {
+    const task = await this.runQuery<Task>(
+      `UPDATE tasks
+       SET status = 'failed', execution_owner_token = NULL, error_message = ?, completed_at = ?,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = ? AND workflow_instance_id = ? AND status IN ('queued', 'running')
+       RETURNING *`,
+      [errorMessage, new Date().toISOString(), taskId, instanceId],
+      true,
+    );
+
+    this.announce(task);
+
+    return task !== null;
+  }
+
   public async failOpenTask(taskId: string, errorMessage: string): Promise<void> {
     const task = await this.runQuery<Task>(
       `UPDATE tasks

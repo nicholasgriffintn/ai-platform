@@ -101,14 +101,14 @@ impl Drop for PrivateFile {
 }
 
 struct SessionHandle {
-    child: Child,
-    stdin: ChildStdin,
+    child: AsyncMutex<Child>,
+    stdin: AsyncMutex<ChildStdin>,
     _mcp_config: Option<PrivateFile>,
 }
 
 #[derive(Default, Clone)]
 pub struct AgentSessionRegistry {
-    sessions: Arc<Mutex<HashMap<String, Arc<AsyncMutex<SessionHandle>>>>>,
+    sessions: Arc<Mutex<HashMap<String, Arc<SessionHandle>>>>,
 }
 
 pub fn session_key(driver: AgentDriver, conversation_id: &str) -> String {
@@ -126,11 +126,11 @@ fn driver_slug(driver: AgentDriver) -> &'static str {
 }
 
 impl AgentSessionRegistry {
-    fn get(&self, key: &str) -> Option<Arc<AsyncMutex<SessionHandle>>> {
+    fn get(&self, key: &str) -> Option<Arc<SessionHandle>> {
         self.sessions.lock().ok()?.get(key).cloned()
     }
 
-    fn insert(&self, key: String, handle: Arc<AsyncMutex<SessionHandle>>) -> Result<(), String> {
+    fn insert(&self, key: String, handle: Arc<SessionHandle>) -> Result<(), String> {
         self.sessions
             .lock()
             .map_err(|_| "The session registry is unavailable.".to_string())?
@@ -139,18 +139,22 @@ impl AgentSessionRegistry {
         Ok(())
     }
 
-    fn remove(&self, key: &str) -> Option<Arc<AsyncMutex<SessionHandle>>> {
+    fn remove(&self, key: &str) -> Option<Arc<SessionHandle>> {
         self.sessions.lock().ok()?.remove(key)
     }
 
-    fn remove_if_current(&self, key: &str, handle: &Arc<AsyncMutex<SessionHandle>>) {
-        if let Ok(mut sessions) = self.sessions.lock() {
-            if sessions
-                .get(key)
-                .is_some_and(|current| Arc::ptr_eq(current, handle))
-            {
+    fn remove_if_current(&self, key: &str, handle: &Arc<SessionHandle>) -> bool {
+        let Ok(mut sessions) = self.sessions.lock() else {
+            return true;
+        };
+
+        match sessions.get(key) {
+            Some(current) if Arc::ptr_eq(current, handle) => {
                 sessions.remove(key);
+                true
             }
+            Some(_) => false,
+            None => true,
         }
     }
 
@@ -160,16 +164,22 @@ impl AgentSessionRegistry {
     }
 
     pub async fn stop_all(&self) {
-        let handles: Vec<Arc<AsyncMutex<SessionHandle>>> = match self.sessions.lock() {
+        let handles: Vec<Arc<SessionHandle>> = match self.sessions.lock() {
             Ok(mut sessions) => sessions.drain().map(|(_, handle)| handle).collect(),
             Err(_) => return,
         };
 
         for handle in handles {
-            let mut guard = handle.lock().await;
-            let _ = guard.stdin.shutdown().await;
-            let _ = guard.child.kill().await;
+            terminate(&handle).await;
         }
+    }
+}
+
+async fn terminate(handle: &SessionHandle) {
+    let _ = handle.child.lock().await.kill().await;
+
+    if let Ok(mut stdin) = handle.stdin.try_lock() {
+        let _ = stdin.shutdown().await;
     }
 }
 
@@ -209,7 +219,7 @@ pub async fn start(
     let at = timestamp();
 
     if let Some(handle) = registry.get(&key) {
-        let alive = matches!(handle.lock().await.child.try_wait(), Ok(None));
+        let alive = matches!(handle.child.lock().await.try_wait(), Ok(None));
 
         if alive {
             return Ok(SessionDescriptor {
@@ -280,11 +290,11 @@ pub async fn start(
         .take()
         .ok_or_else(|| "The agent produced no diagnostic stream.".to_string())?;
 
-    let handle = Arc::new(AsyncMutex::new(SessionHandle {
-        child,
-        stdin,
+    let handle = Arc::new(SessionHandle {
+        child: AsyncMutex::new(child),
+        stdin: AsyncMutex::new(stdin),
         _mcp_config: mcp_config,
-    }));
+    });
     registry.insert(key.clone(), handle.clone())?;
 
     spawn_stdout_pump(
@@ -296,9 +306,12 @@ pub async fn start(
     );
     spawn_stderr_pump(key.clone(), stderr, on_event.clone());
 
-    directories
-        .touch(&request.directory_id, at.clone())
-        .map_err(|cause| format!("{cause:?}"))?;
+    if let Err(cause) = directories.touch(&request.directory_id, at.clone()) {
+        stop(&key, registry).await?;
+
+        return Err(format!("{cause:?}"));
+    }
+
     let _ = on_event.send(SessionEvent::Ready {
         session_key: key.clone(),
         at: at.clone(),
@@ -321,7 +334,7 @@ fn spawn_stdout_pump(
     stdout: tokio::process::ChildStdout,
     on_event: Channel<SessionEvent>,
     registry: AgentSessionRegistry,
-    handle: Arc<AsyncMutex<SessionHandle>>,
+    handle: Arc<SessionHandle>,
 ) {
     tauri::async_runtime::spawn(async move {
         let mut segments = BufReader::new(stdout).split(b'\n');
@@ -353,13 +366,13 @@ fn spawn_stdout_pump(
             }
         }
 
-        registry.remove_if_current(&key, &handle);
-
-        let _ = on_event.send(SessionEvent::Exited {
-            session_key: key,
-            code: None,
-            at: timestamp(),
-        });
+        if registry.remove_if_current(&key, &handle) {
+            let _ = on_event.send(SessionEvent::Exited {
+                session_key: key,
+                code: None,
+                at: timestamp(),
+            });
+        }
     });
 }
 
@@ -404,24 +417,21 @@ pub async fn send(
         return Err("An agent message cannot contain a line break.".to_string());
     }
 
-    let mut guard = handle.lock().await;
+    let mut stdin = handle.stdin.lock().await;
     let line = format!("{payload}\n");
 
-    guard
-        .stdin
+    stdin
         .write_all(line.as_bytes())
         .await
         .map_err(|cause| cause.to_string())?;
-    guard.stdin.flush().await.map_err(|cause| cause.to_string())
+    stdin.flush().await.map_err(|cause| cause.to_string())
 }
 
 pub async fn stop(session_key: &str, registry: &AgentSessionRegistry) -> Result<(), String> {
     let Some(handle) = registry.remove(session_key) else {
         return Ok(());
     };
-    let mut guard = handle.lock().await;
-    let _ = guard.stdin.shutdown().await;
-    let _ = guard.child.kill().await;
+    terminate(&handle).await;
 
     Ok(())
 }
@@ -430,6 +440,55 @@ pub async fn stop(session_key: &str, registry: &AgentSessionRegistry) -> Result<
 mod exit_tests {
     use super::*;
     use tauri::ipc::InvokeResponseBody;
+
+    fn idle_session() -> Arc<SessionHandle> {
+        let mut child = Command::new("/bin/sh")
+            .args(["-c", "sleep 30"])
+            .stdin(Stdio::piped())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .kill_on_drop(true)
+            .spawn()
+            .unwrap();
+        let stdin = child.stdin.take().unwrap();
+
+        Arc::new(SessionHandle {
+            child: AsyncMutex::new(child),
+            stdin: AsyncMutex::new(stdin),
+            _mcp_config: None,
+        })
+    }
+
+    #[tokio::test]
+    async fn a_finished_session_does_not_evict_its_replacement() {
+        let registry = AgentSessionRegistry::default();
+        let key = "codex:conversation-replaced".to_string();
+        let finished = idle_session();
+        let replacement = idle_session();
+
+        registry.insert(key.clone(), replacement).unwrap();
+
+        assert!(!registry.remove_if_current(&key, &finished));
+        assert!(registry.is_running(&key));
+    }
+
+    #[tokio::test]
+    async fn stopping_does_not_wait_for_a_blocked_write() {
+        let registry = AgentSessionRegistry::default();
+        let key = "codex:conversation-blocked".to_string();
+        let handle = idle_session();
+
+        registry.insert(key.clone(), handle.clone()).unwrap();
+
+        let _blocked_write = handle.stdin.lock().await;
+
+        tokio::time::timeout(std::time::Duration::from_secs(5), stop(&key, &registry))
+            .await
+            .unwrap()
+            .unwrap();
+
+        assert!(!registry.is_running(&key));
+    }
 
     #[tokio::test]
     async fn removes_the_registry_entry_once_the_process_exits_on_its_own() {
@@ -445,11 +504,11 @@ mod exit_tests {
             .unwrap();
         let stdin = child.stdin.take().unwrap();
         let stdout = child.stdout.take().unwrap();
-        let handle = Arc::new(AsyncMutex::new(SessionHandle {
-            child,
-            stdin,
+        let handle = Arc::new(SessionHandle {
+            child: AsyncMutex::new(child),
+            stdin: AsyncMutex::new(stdin),
             _mcp_config: None,
-        }));
+        });
         registry.insert(key.clone(), handle.clone()).unwrap();
         let on_event = Channel::<SessionEvent>::new(|body| {
             let _: InvokeResponseBody = body;

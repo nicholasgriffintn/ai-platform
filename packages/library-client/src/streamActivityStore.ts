@@ -50,7 +50,7 @@ interface StreamActivityStore {
   ) => void;
   completeStreamActivityMessage: (conversationId: string, messageId?: string) => void;
   updateStreamLoadingMessage: (conversationId: string, loadingMessage: string) => void;
-  endStreamActivity: (conversationId: string) => void;
+  endStreamActivity: (conversationId: string, controller?: AbortController) => void;
   clearStreamStatus: (conversationId: string) => void;
 }
 
@@ -226,11 +226,11 @@ export const useStreamActivityStore = create<StreamActivityStore>()((set) => ({
         },
       };
     }),
-  endStreamActivity: (conversationId) =>
+  endStreamActivity: (conversationId, controller) =>
     set((current) => {
       const stream = current.streams[conversationId];
 
-      if (!stream) {
+      if (!stream || (controller && stream.controller !== controller)) {
         return current;
       }
 

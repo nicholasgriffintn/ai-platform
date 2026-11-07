@@ -1286,6 +1286,8 @@ export function useRealtimeLiveSession({
   );
 
   const stop = useCallback(() => {
+    videoEnabledRef.current = false;
+    setIsVideoEnabledState(false);
     const connection = connectionRef.current;
     const lease = connectionLeaseRef.current;
 

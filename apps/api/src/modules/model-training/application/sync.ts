@@ -389,12 +389,26 @@ export async function syncTrainingRun(
       run = claimed;
 
       submitted = await trainer.submit(await buildSubmission(env, repositories, run));
-      const updated = await repositories.get(ModelTrainingRepository).recordProviderState(run.id, {
-        status: "submitted",
-        provider_job_id: submitted.providerJobId,
-        started_at: submitted.startedAt ?? now,
-        failure_reason: submitted.failureReason,
-      });
+      const providerJobId = submitted.providerJobId;
+      const updated = await repositories
+        .get(ModelTrainingRepository)
+        .recordProviderState(run.id, {
+          status: "submitted",
+          provider_job_id: providerJobId,
+          started_at: submitted.startedAt ?? now,
+          failure_reason: submitted.failureReason,
+        })
+        .catch(async (error: unknown) => {
+          await trainer.cancel(providerJobId).catch((cancelError: unknown) => {
+            logger.error("An untracked provider job could not be cancelled", {
+              runId,
+              providerJobId,
+              error: getErrorMessage(cancelError, "Job cancellation failed"),
+            });
+          });
+
+          throw error;
+        });
 
       if (!updated) {
         await trainer.cancel(submitted.providerJobId);

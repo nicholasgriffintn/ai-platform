@@ -1,5 +1,5 @@
 import { machineRunClient, useChatStore } from "@ngriffin_uk/polychat-library-client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { tauriDesktopBackend } from "../infrastructure/desktop-backend";
 import {
@@ -17,13 +17,18 @@ export function useMachineHeartbeat(): void {
     (state) => state.userSettings?.advertise_machines !== false,
   );
 
+  const lastHeartbeat = useRef<Promise<unknown>>(Promise.resolve());
+
   useEffect(() => {
     if (!isAuthenticated || !hasHydratedUserConfiguration) {
       return undefined;
     }
 
     if (!advertiseMachines) {
-      void removeMachineAdvertisement().catch(() => undefined);
+      void lastHeartbeat.current
+        .catch(() => undefined)
+        .then(removeMachineAdvertisement)
+        .catch(() => undefined);
 
       return undefined;
     }
@@ -31,7 +36,11 @@ export function useMachineHeartbeat(): void {
     const controller = new AbortController();
     let consumerStarted = false;
     const heartbeat = async () => {
-      const machine = await advertiseCurrentMachine();
+      const advertised = advertiseCurrentMachine();
+
+      lastHeartbeat.current = advertised;
+
+      const machine = await advertised;
 
       if (machine && !consumerStarted && !controller.signal.aborted) {
         consumerStarted = true;

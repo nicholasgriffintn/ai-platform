@@ -71,7 +71,7 @@ function createTriggerEvent() {
 describe("Composio webhook", () => {
   const create = vi.fn().mockResolvedValue(undefined);
   const createTaskIfAbsent = vi.fn();
-  const updateTask = vi.fn();
+  const claimTaskForDispatch = vi.fn();
   const markConnectedAccountError = vi.fn();
   const markExternalConnectionInvalid = vi.fn();
 
@@ -81,7 +81,7 @@ describe("Composio webhook", () => {
       created: true,
       task: { id: "task_1", max_attempts: 3 },
     });
-    updateTask.mockResolvedValue({ id: "task_1", max_attempts: 3 });
+    claimTaskForDispatch.mockResolvedValue(true);
     createServiceContextMock.mockReturnValue({
       repositories: fakeRepositories([
         [
@@ -126,7 +126,10 @@ describe("Composio webhook", () => {
             }),
           },
         ],
-        [TaskRepository, { createTaskIfAbsent, updateTask, getTaskById: async () => null }],
+        [
+          TaskRepository,
+          { createTaskIfAbsent, claimTaskForDispatch, getTaskById: async () => null },
+        ],
         [UserRepository, { getUserById: async () => ({ id: 42, plan_id: "pro" }) }],
       ]),
     });

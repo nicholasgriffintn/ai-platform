@@ -2,6 +2,7 @@ export * from "./arithmetic.js";
 export * from "./arrays.js";
 export * from "./async-queue.js";
 export * from "./binary.js";
+export * from "./blobs.js";
 export * from "./captions.js";
 export * from "./collections.js";
 export * from "./clock-time.js";

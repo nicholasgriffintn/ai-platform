@@ -24,7 +24,7 @@ class ConversationManager: ObservableObject {
     private var modelsStore: ModelsStore?
     private var responseReplayPolicy = ResponseReplayPolicy()
     private var streamPublishInterval: Duration = .milliseconds(50)
-    private var locallyStreamingConversationIds: Set<String> = []
+    private var localStreamOwners: [String: UUID] = [:]
     private var knownConversations: [String: Conversation] = [:]
 
     var currentConversation: Conversation? {
@@ -65,7 +65,7 @@ class ConversationManager: ObservableObject {
         turnActivities = [:]
         approvalDecisions = [:]
         isSubmittingApprovals = false
-        locallyStreamingConversationIds = []
+        localStreamOwners = [:]
     }
 
     var pendingApprovals: [ToolApprovalRequest] {
@@ -124,7 +124,7 @@ class ConversationManager: ObservableObject {
     }
 
     func isStreaming(_ conversationId: String) -> Bool {
-        locallyStreamingConversationIds.contains(conversationId)
+        localStreamOwners[conversationId] != nil
     }
 
     func loadConversations() async {
@@ -693,11 +693,14 @@ class ConversationManager: ObservableObject {
         }
 
         let commandId = UUID().uuidString
-        locallyStreamingConversationIds.insert(conversationId)
+        let streamOwner = UUID()
+        localStreamOwners[conversationId] = streamOwner
         turnActivities[conversationId] = TurnActivityProjection()
         defer {
-            locallyStreamingConversationIds.remove(conversationId)
-            turnActivities.removeValue(forKey: conversationId)
+            if localStreamOwners[conversationId] == streamOwner {
+                localStreamOwners.removeValue(forKey: conversationId)
+                turnActivities.removeValue(forKey: conversationId)
+            }
         }
 
         var assembler = ResponseTurnAssembler(
@@ -854,7 +857,9 @@ class ConversationManager: ObservableObject {
                 )
             }
 
-            locallyStreamingConversationIds.remove(conversationId)
+            if localStreamOwners[conversationId] == streamOwner {
+                localStreamOwners.removeValue(forKey: conversationId)
+            }
             if let detail = try? await apiClient.fetchConversation(id: conversationId, refreshPending: false),
                let stored = self.conversation(withId: conversationId) {
                 store(applying(detail, to: stored))

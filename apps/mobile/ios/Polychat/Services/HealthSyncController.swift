@@ -7,10 +7,11 @@ final class HealthSyncController: ObservableObject {
     static let refreshTaskId = "com.polychat-app.app.health-sync"
 
     private static let enabledKey = "discover.sharesAppleHealth"
+    private static let ownerKey = "discover.healthOwnerUserId"
     private static let syncedDateKey = "discover.healthSyncedDate"
     private static let summaryKey = "discover.healthLastSummary"
 
-    @Published private(set) var isEnabled = UserDefaults.standard.bool(forKey: HealthSyncController.enabledKey)
+    @Published private(set) var isEnabled = HealthSyncController.hasOwnedOptIn()
     @Published private(set) var lastSummary: DiscoverHealthSummary? = UserDefaults.standard
         .data(forKey: HealthSyncController.summaryKey)
         .flatMap { try? JSONDecoder().decode(DiscoverHealthSummary.self, from: $0) }
@@ -22,13 +23,27 @@ final class HealthSyncController: ObservableObject {
 
     init(apiClient: APIClient = .shared) {
         self.apiClient = apiClient
+
+        if !isEnabled, UserDefaults.standard.bool(forKey: Self.enabledKey) {
+            withdrawOptIn()
+        }
+    }
+
+    private static func hasOwnedOptIn() -> Bool {
+        UserDefaults.standard.bool(forKey: enabledKey)
+            && UserDefaults.standard.object(forKey: ownerKey) != nil
     }
 
     var isAvailable: Bool {
         health.isAvailable
     }
 
-    func setEnabled(_ enabled: Bool) async {
+    func setEnabled(_ enabled: Bool, userId: Int?) async {
+        guard !enabled || userId != nil else {
+            error = "Apple Health can be turned on once your account has loaded."
+            return
+        }
+
         isWorking = true
         defer { isWorking = false }
 
@@ -47,10 +62,20 @@ final class HealthSyncController: ObservableObject {
 
             isEnabled = enabled
             UserDefaults.standard.set(enabled, forKey: Self.enabledKey)
+            UserDefaults.standard.set(enabled ? userId : nil, forKey: Self.ownerKey)
             error = nil
         } catch {
             self.error = "Apple Health could not be updated: \(error.localizedDescription)"
         }
+    }
+
+    func confirmOwner(userId: Int?) {
+        guard isEnabled, let userId,
+              UserDefaults.standard.integer(forKey: Self.ownerKey) != userId else {
+            return
+        }
+
+        reset()
     }
 
     func syncIfNeeded() async {
@@ -73,9 +98,17 @@ final class HealthSyncController: ObservableObject {
     }
 
     func reset() {
+        withdrawOptIn()
+    }
+
+    private func withdrawOptIn() {
+        isEnabled = false
         lastSummary = nil
+        UserDefaults.standard.removeObject(forKey: Self.enabledKey)
+        UserDefaults.standard.removeObject(forKey: Self.ownerKey)
         UserDefaults.standard.removeObject(forKey: Self.syncedDateKey)
         UserDefaults.standard.removeObject(forKey: Self.summaryKey)
+        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: Self.refreshTaskId)
     }
 
     private func upload() async throws {

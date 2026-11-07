@@ -49,6 +49,7 @@ export {
   buildSiteImageRewritePatches,
   collectEmptySiteImageSlots,
   collectSiteImageSlots,
+  rewriteSiteProjectImages,
   SITE_IMAGE_ASPECT_RATIOS,
   type SiteImageSlot,
 } from "./images.js";
@@ -153,4 +154,8 @@ export {
   normaliseSiteIntegrations,
   getSitePageBoundState,
 } from "./data.js";
-export { buildSiteFrameDocument, type BuildSiteFrameDocumentOptions } from "./preview-document.js";
+export {
+  buildSiteFrameDocument,
+  type BuildSiteFrameDocumentOptions,
+  type SiteFrameInlineAssets,
+} from "./preview-document.js";

@@ -195,6 +195,7 @@ describe("reviewWorkBudgets", () => {
       "ws",
       "mara",
       expect.objectContaining({ status: "active", pausedReason: null }),
+      { status: "paused", pausedReason: "budget" },
     );
     expect(result.alerts).toEqual([]);
   });

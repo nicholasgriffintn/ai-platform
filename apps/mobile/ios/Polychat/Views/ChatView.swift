@@ -8,6 +8,7 @@ struct ChatView: View {
     @StateObject private var composer = ChatComposerController()
     @State private var messageText = ""
     @State private var selectedAttachments: [ComposerAttachment] = []
+    @State private var isPreparingSend = false
     @State private var showingModelSelector = false
     @FocusState private var isMessageInputFocused: Bool
     let projectName: String?
@@ -205,15 +206,21 @@ struct ChatView: View {
         let text = messageText.trimmingCharacters(in: .whitespacesAndNewlines)
         let attachments = selectedAttachments
         let requestedModelId = activeModelId
-        guard !text.isEmpty || !attachments.isEmpty, !composer.isUploading else { return }
+        guard !text.isEmpty || !attachments.isEmpty, !composer.isUploading, !isPreparingSend else { return }
+
+        isPreparingSend = true
 
         Task { @MainActor in
             await modelsStore.refreshModelsIfNeeded(for: requestedModelId)
-            guard modelsStore.readinessMessage(for: requestedModelId) == nil else {
-                return
+            var canSend = modelsStore.readinessMessage(for: requestedModelId) == nil
+
+            if canSend {
+                canSend = await ageGateStore.ensureConfirmed()
             }
 
-            guard await ageGateStore.ensureConfirmed() else {
+            isPreparingSend = false
+
+            guard canSend else {
                 return
             }
 

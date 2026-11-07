@@ -15,7 +15,7 @@ import {
   type SandboxRunStatus,
   SANDBOX_RUNS_CAPABILITY_ID,
 } from "@ngriffin_uk/polychat-schemas";
-import { parseServerSentEventBuffer } from "@ngriffin_uk/polychat-utility-core";
+import { getErrorMessage, parseServerSentEventBuffer } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { MAX_STORED_STREAM_EVENTS } from "~/config/chat";
@@ -35,7 +35,11 @@ import type { IEnv, IUser } from "~/types";
 import { createSandboxCredentialBrokerAccess } from "./credential-broker-grants";
 import { resolveSandboxGitHubToken } from "./github-credentials";
 import { persistSandboxRunArtifact } from "./run-artifacts";
-import { appendRunCoordinatorEvent, updateRunCoordinatorControl } from "./run-coordinator";
+import {
+  appendRunCoordinatorEvent,
+  getRunCoordinatorControl,
+  updateRunCoordinatorControl,
+} from "./run-coordinator";
 import {
   appendSandboxRunEvent,
   getSandboxActivityStatus,
@@ -193,9 +197,122 @@ async function ensureRunGoal(params: {
   }
 }
 
+async function settleRunCancelledBeforeStart(params: {
+  env: IEnv;
+  context: ServiceContext;
+  message: SandboxRunDispatchMessage;
+  runData: PersistedSandboxRunData;
+  reason?: string;
+}): Promise<void> {
+  const { env, context, message, runData } = params;
+  const cancelledAt = new Date().toISOString();
+  const cancellationReason = params.reason ?? "Cancelled before the run started";
+  const event: SandboxRunEvent = {
+    type: "run_cancelled",
+    runId: message.runId,
+    message: cancellationReason,
+    timestamp: cancelledAt,
+  };
+
+  await releaseSandboxRunReservation({
+    repositories: context.repositories,
+    runId: message.runId,
+  });
+  await appendRunCoordinatorEvent({ env, runId: message.runId, event });
+  await context.repositories.get(ActivityRepository).updateActivity(message.recordId, {
+    status: getSandboxActivityStatus("cancelled"),
+    data: {
+      ...runData,
+      status: "cancelled",
+      updatedAt: cancelledAt,
+      completedAt: cancelledAt,
+      cancelRequestedAt: runData.cancelRequestedAt ?? cancelledAt,
+      cancellationReason,
+      events: appendSandboxRunEvent(runData.events, event, MAX_STORED_STREAM_EVENTS),
+      workflowPhase: "cancelled",
+    },
+  });
+}
+
+export async function failSandboxRun(params: {
+  env: IEnv;
+  context: ServiceContext;
+  message: Pick<SandboxRunDispatchMessage, "runId" | "recordId" | "userId">;
+  runData: PersistedSandboxRunData;
+  error: unknown;
+}): Promise<void> {
+  const { env, context, message, error } = params;
+  const latest = await loadRunData({ env, recordId: message.recordId }).catch(() => null);
+  const runData = latest ?? params.runData;
+
+  if (isTerminalStatus(runData.status)) {
+    await updateRunCoordinatorControl({
+      env,
+      runId: message.runId,
+      state: toCoordinatorState(runData.status),
+      updatedAt: runData.updatedAt,
+    });
+
+    return;
+  }
+
+  const completedAt = new Date().toISOString();
+  const errorMessage = getErrorMessage(error, "Failed to start sandbox worker");
+  const event: SandboxRunEvent = {
+    type: "run_failed",
+    runId: message.runId,
+    error: errorMessage,
+    timestamp: completedAt,
+  };
+
+  await releaseSandboxRunReservation({
+    repositories: context.repositories,
+    runId: message.runId,
+  });
+  await Promise.allSettled([
+    appendRunCoordinatorEvent({ env, runId: message.runId, event }),
+    updateRunCoordinatorControl({
+      env,
+      runId: message.runId,
+      state: "cancelled",
+      updatedAt: completedAt,
+      cancellationReason: errorMessage,
+      timeoutSeconds: runData.timeoutSeconds,
+      timeoutAt: runData.timeoutAt,
+    }),
+  ]);
+  await context.repositories.get(ActivityRepository).updateActivity(message.recordId, {
+    status: getSandboxActivityStatus("failed"),
+    data: {
+      ...runData,
+      status: "failed",
+      updatedAt: completedAt,
+      completedAt,
+      error: errorMessage,
+      events: appendSandboxRunEvent(runData.events, event, MAX_STORED_STREAM_EVENTS),
+      workflowPhase: "failed",
+    },
+  });
+
+  const record = await context.repositories
+    .get(ActivityRepository)
+    .getActivityById(message.recordId);
+
+  await notifyMobileProjectRun({
+    context,
+    userId: message.userId,
+    notificationId: `sandbox:${message.runId}:failed:${completedAt}`,
+    kind: "failed",
+    projectId: record?.project_id,
+    conversationId: record?.conversation_id ?? null,
+    runId: message.runId,
+  });
+}
+
 export async function processSandboxRunDispatch(params: {
   env: IEnv;
   message: SandboxRunDispatchMessage;
+  recovered?: boolean;
 }): Promise<void> {
   const { env, message } = params;
   const context = createServiceContext({ env });
@@ -210,7 +327,7 @@ export async function processSandboxRunDispatch(params: {
     return;
   }
 
-  let runData =
+  const runData =
     (await loadRunData({
       env,
       recordId: message.recordId,
@@ -229,6 +346,62 @@ export async function processSandboxRunDispatch(params: {
     return;
   }
 
+  if (params.recovered && runData.status === "running") {
+    await failSandboxRun({
+      env,
+      context,
+      message,
+      runData,
+      error: new Error("This run was interrupted before it finished. Start it again."),
+    });
+
+    return;
+  }
+
+  try {
+    await executeClaimedRun({ env, context, user, message, runData });
+  } catch (error) {
+    logger.error("Sandbox dispatch failed after the run was claimed", {
+      run_id: message.runId,
+      error,
+    });
+    await failSandboxRun({ env, context, message, runData, error });
+  }
+}
+
+async function executeClaimedRun(params: {
+  env: IEnv;
+  context: ServiceContext;
+  user: IUser;
+  message: SandboxRunDispatchMessage;
+  runData: PersistedSandboxRunData;
+}): Promise<void> {
+  const { env, context, user, message } = params;
+  const startedAt = new Date().toISOString();
+
+  await updateRunCoordinatorControl({
+    env,
+    runId: message.runId,
+    state: "running",
+    updatedAt: startedAt,
+    timeoutSeconds: params.runData.timeoutSeconds,
+    timeoutAt: params.runData.timeoutAt,
+  });
+
+  const control = await getRunCoordinatorControl(env, message.runId);
+
+  if (control?.state === "cancelled") {
+    await settleRunCancelledBeforeStart({
+      env,
+      context,
+      message,
+      runData: params.runData,
+      reason: control.cancellationReason,
+    });
+
+    return;
+  }
+
   await ensureRunGoal({
     context,
     runId: message.runId,
@@ -236,26 +409,17 @@ export async function processSandboxRunDispatch(params: {
     objective: message.payload.task,
   });
 
-  const startedAt = new Date().toISOString();
-
-  runData = {
-    ...runData,
+  const runData: PersistedSandboxRunData = {
+    ...params.runData,
     status: "running",
     updatedAt: startedAt,
     processingStartedAt: startedAt,
     workflowPhase: "executing",
   };
+
   await context.repositories.get(ActivityRepository).updateActivity(message.recordId, {
     status: getSandboxActivityStatus(runData.status),
     data: runData,
-  });
-  await updateRunCoordinatorControl({
-    env,
-    runId: message.runId,
-    state: "running",
-    updatedAt: startedAt,
-    timeoutSeconds: runData.timeoutSeconds,
-    timeoutAt: runData.timeoutAt,
   });
 
   await reserveSandboxRun({
@@ -266,7 +430,6 @@ export async function processSandboxRunDispatch(params: {
     timeoutSeconds: runData.timeoutSeconds,
   });
 
-  let workerResponse: Response;
   const executionProvider = resolveSandboxExecutionProvider(message.payload.executionProvider);
   const taskProfile = resolveSandboxTaskProfile(message.payload);
   const deliveryPolicy = taskProfile.deliveryPolicy;
@@ -282,120 +445,51 @@ export async function processSandboxRunDispatch(params: {
         )
       : undefined;
 
-  try {
-    await resolveSandboxGitHubToken({
-      context,
-      userId: user.id,
-      repo: message.payload.repo,
-      installationId: message.payload.installationId,
-    });
-    const credentialBroker = await createSandboxCredentialBrokerAccess({
-      env,
-      apiBaseUrl: resolveSandboxApiBaseUrl(env),
-      deliveryPolicy,
-      installationId: message.payload.installationId,
-      repo: message.payload.repo,
-      runId: message.runId,
-      timeoutSeconds: message.payload.timeoutSeconds ?? runData.timeoutSeconds,
-      userId: user.id,
-    });
-    const sandboxProvider = providerLibrary.resolve("sandbox", executionProvider, {
-      env,
-      serviceContext: context,
-      user,
-    });
+  await resolveSandboxGitHubToken({
+    context,
+    userId: user.id,
+    repo: message.payload.repo,
+    installationId: message.payload.installationId,
+  });
+  const credentialBroker = await createSandboxCredentialBrokerAccess({
+    env,
+    apiBaseUrl: resolveSandboxApiBaseUrl(env),
+    deliveryPolicy,
+    installationId: message.payload.installationId,
+    repo: message.payload.repo,
+    runId: message.runId,
+    timeoutSeconds: message.payload.timeoutSeconds ?? runData.timeoutSeconds,
+    userId: user.id,
+  });
+  const sandboxProvider = providerLibrary.resolve("sandbox", executionProvider, {
+    env,
+    serviceContext: context,
+    user,
+  });
 
-    workerResponse = await executeSandboxProvider(sandboxProvider, {
-      repo: message.payload.repo,
-      task: taskProfile.task,
-      taskType: taskProfile.taskType,
-      model: message.payload.model,
-      promptStrategy: message.payload.promptStrategy,
-      deliveryPolicy,
-      shouldCommit: taskProfile.shouldCommit,
-      environmentSetup: message.payload.environmentSetup,
-      environmentPreparationMode: message.payload.environmentPreparationMode,
-      environmentCache: message.payload.environmentCache,
-      environmentCacheGeneration: message.payload.environmentCacheGeneration,
-      environmentVariables,
-      credentialBroker,
-      projectId: message.payload.projectId,
-      timeoutSeconds: message.payload.timeoutSeconds,
-      inspectionWindowSeconds: message.payload.inspectionWindowSeconds,
-      trustLevel: message.payload.trustLevel,
-      modelSettings: message.payload.modelSettings,
-      installationId: message.payload.installationId,
-      stream: true,
-      runId: message.runId,
-    });
-  } catch (error) {
-    await releaseSandboxRunReservation({
-      repositories: context.repositories,
-      runId: message.runId,
-    });
-
-    const completedAt = new Date().toISOString();
-    const errorMessage = error instanceof Error ? error.message : "Failed to start sandbox worker";
-    const nextRun: PersistedSandboxRunData = {
-      ...runData,
-      status: "failed",
-      updatedAt: completedAt,
-      completedAt,
-      error: errorMessage,
-      events: appendSandboxRunEvent(
-        runData.events,
-        {
-          type: "run_failed",
-          runId: message.runId,
-          error: errorMessage,
-          timestamp: completedAt,
-        },
-        MAX_STORED_STREAM_EVENTS,
-      ),
-      workflowPhase: "failed",
-    };
-
-    await appendRunCoordinatorEvent({
-      env,
-      runId: message.runId,
-      event: {
-        type: "run_failed",
-        runId: message.runId,
-        error: errorMessage,
-        timestamp: completedAt,
-      },
-    });
-    await updateRunCoordinatorControl({
-      env,
-      runId: message.runId,
-      state: "cancelled",
-      updatedAt: completedAt,
-      cancellationReason: errorMessage,
-      timeoutSeconds: runData.timeoutSeconds,
-      timeoutAt: runData.timeoutAt,
-    });
-    await persistRunData({
-      env,
-      recordId: message.recordId,
-      userId: message.userId,
-      runData: nextRun,
-    });
-    const record = await context.repositories
-      .get(ActivityRepository)
-      .getActivityById(message.recordId);
-
-    await notifyMobileProjectRun({
-      context,
-      userId: message.userId,
-      notificationId: `sandbox:${message.runId}:failed:${completedAt}`,
-      kind: "failed",
-      projectId: record?.project_id,
-      conversationId: record?.conversation_id ?? null,
-      runId: message.runId,
-    });
-
-    return;
-  }
+  const workerResponse = await executeSandboxProvider(sandboxProvider, {
+    repo: message.payload.repo,
+    task: taskProfile.task,
+    taskType: taskProfile.taskType,
+    model: message.payload.model,
+    promptStrategy: message.payload.promptStrategy,
+    deliveryPolicy,
+    shouldCommit: taskProfile.shouldCommit,
+    environmentSetup: message.payload.environmentSetup,
+    environmentPreparationMode: message.payload.environmentPreparationMode,
+    environmentCache: message.payload.environmentCache,
+    environmentCacheGeneration: message.payload.environmentCacheGeneration,
+    environmentVariables,
+    credentialBroker,
+    projectId: message.payload.projectId,
+    timeoutSeconds: message.payload.timeoutSeconds,
+    inspectionWindowSeconds: message.payload.inspectionWindowSeconds,
+    trustLevel: message.payload.trustLevel,
+    modelSettings: message.payload.modelSettings,
+    installationId: message.payload.installationId,
+    stream: true,
+    runId: message.runId,
+  });
 
   let status: SandboxRunStatus = "running";
   let completedAt: string | undefined;
@@ -409,6 +503,7 @@ export async function processSandboxRunDispatch(params: {
   let pauseReason: string | undefined;
   let resumeReason: string | undefined;
   let promptStrategy = runData.promptStrategy;
+  let streamError: string | undefined;
   const coordinatorWritePromises: Promise<void>[] = [];
 
   const appendEvent = (event: SandboxRunEvent) => {
@@ -564,6 +659,9 @@ export async function processSandboxRunDispatch(params: {
             },
           });
         }
+      } catch (error) {
+        streamError = getErrorMessage(error, "The sandbox worker connection was lost");
+        logger.warn("Sandbox run stream failed", { run_id: message.runId, error });
       } finally {
         reader.releaseLock();
       }
@@ -573,7 +671,11 @@ export async function processSandboxRunDispatch(params: {
   if (!isTerminalStatus(status)) {
     status = "failed";
     completedAt = new Date().toISOString();
-    errorMessage = "Sandbox run ended without a terminal event";
+    errorMessage = streamError ?? "Sandbox run ended without a terminal event";
+    await releaseSandboxRunReservation({
+      repositories: context.repositories,
+      runId: message.runId,
+    });
     appendEvent({
       type: "run_failed",
       runId: message.runId,
@@ -647,11 +749,6 @@ export async function processSandboxRunDispatch(params: {
     runData: nextRunData,
   });
 
-  await indexSandboxRunResult({
-    serviceContext: context,
-    userId: message.userId,
-    run: persisted,
-  });
   await updateRunCoordinatorControl({
     env,
     runId: message.runId,
@@ -664,6 +761,16 @@ export async function processSandboxRunDispatch(params: {
     timeoutSeconds: persisted.timeoutSeconds,
     timeoutAt: persisted.timeoutAt,
   });
+
+  try {
+    await indexSandboxRunResult({
+      serviceContext: context,
+      userId: message.userId,
+      run: persisted,
+    });
+  } catch (error) {
+    logger.warn("Failed to index the sandbox run result", { run_id: message.runId, error });
+  }
 
   if (persisted.status === "completed" || persisted.status === "failed") {
     const record = await context.repositories

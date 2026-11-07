@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import type { VListHandle } from "virtua";
+
+import { getTailRowIndexes } from "../messageListScroll.js";
 
 const BOTTOM_THRESHOLD_PX = 100;
 const MOVEMENT_TOLERANCE_PX = 4;
@@ -17,6 +19,7 @@ interface StickToBottom {
   listRef: RefObject<VListHandle | null>;
   viewportRef: RefObject<HTMLElement | null>;
   showScrollButton: boolean;
+  keepMountedRows: number[] | undefined;
   handleScroll: (offset: number) => void;
   scrollToBottom: () => void;
 }
@@ -48,7 +51,7 @@ export function useStickToBottom({
     setShowScrollButton(false);
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     rowCountRef.current = rowCount;
   }, [rowCount]);
 
@@ -63,7 +66,7 @@ export function useStickToBottom({
     list.scrollToIndex(lastRowIndex, { align: "end" });
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const prev = prevFollowTriggersRef.current;
 
     prevFollowTriggersRef.current = { enabled, followKey, resetKey, rowCount };
@@ -166,5 +169,7 @@ export function useStickToBottom({
     scrollToEnd();
   }, [scrollToEnd]);
 
-  return { listRef, viewportRef, showScrollButton, handleScroll, scrollToBottom };
+  const keepMountedRows = enabled && !showScrollButton ? getTailRowIndexes(rowCount) : undefined;
+
+  return { listRef, viewportRef, showScrollButton, keepMountedRows, handleScroll, scrollToBottom };
 }

@@ -5,6 +5,7 @@ import {
   buildSiteImageRewritePatches,
   collectEmptySiteImageSlots,
   collectSiteImageSlots,
+  rewriteSiteProjectImages,
 } from "../images.js";
 import { applySitePatch } from "../patch.js";
 import { validateSiteProject } from "../validate.js";
@@ -40,6 +41,23 @@ const { project } = validateSiteProject({
 });
 
 describe("site images", () => {
+  it("swaps image sources for a preview without touching the saved project", () => {
+    const rewritten = rewriteSiteProjectImages(project, (src) =>
+      src === "https://example.com/done.jpg" ? "data:image/png;base64,AAAA" : null,
+    );
+
+    expect(collectSiteImageSlots(rewritten).map((slot) => slot.src)).toContain(
+      "data:image/png;base64,AAAA",
+    );
+    expect(collectSiteImageSlots(project).map((slot) => slot.src)).toContain(
+      "https://example.com/done.jpg",
+    );
+  });
+
+  it("returns the same project when nothing needs swapping", () => {
+    expect(rewriteSiteProjectImages(project, () => null)).toBe(project);
+  });
+
   it("finds every image slot with its aspect and skips filled ones when asked", () => {
     const slots = collectSiteImageSlots(project);
 

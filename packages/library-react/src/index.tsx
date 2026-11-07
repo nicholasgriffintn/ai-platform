@@ -95,6 +95,7 @@ export * from "./hooks/useSources.js";
 export * from "./hooks/useMcpConnections.js";
 export * from "./hooks/useStartNewChat.js";
 export * from "./hooks/useStableRandomSeed.js";
+export * from "./hooks/useSitePreviewProject.js";
 export * from "./hooks/useSites.js";
 export * from "./hooks/useStrudel.js";
 export * from "./hooks/useTabAudioCapture.js";

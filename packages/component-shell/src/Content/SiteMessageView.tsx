@@ -1,10 +1,14 @@
 import { resolveSitePageId, SitePreview } from "@ngriffin_uk/polychat-component-sites";
 import { Badge, ButtonLink, cn } from "@ngriffin_uk/polychat-component-ui";
-import { getAppPath, getSurfaceFromPathname } from "@ngriffin_uk/polychat-library-react";
+import {
+  getAppPath,
+  getSurfaceFromPathname,
+  useSitePreviewProject,
+} from "@ngriffin_uk/polychat-library-react";
 import { listSitePages, siteProjectSchema, type SiteProject } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { ExternalLink } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocation } from "react-router";
 
 interface SiteMessageData {
@@ -36,7 +40,8 @@ function readSiteMessageData(data: unknown): SiteMessageData | null {
 export function SiteMessageView({ data, embedded }: { data: unknown; embedded?: boolean }) {
   const location = useLocation();
   const [pageId, setPageId] = useState<string | null>(null);
-  const site = readSiteMessageData(data);
+  const site = useMemo(() => readSiteMessageData(data), [data]);
+  const previewProject = useSitePreviewProject(site?.project ?? null);
 
   if (!site) {
     return null;
@@ -75,7 +80,7 @@ export function SiteMessageView({ data, embedded }: { data: unknown; embedded?: 
       </div>
       <div className={cn("w-full", embedded ? "h-72" : "h-[32rem]")}>
         <SitePreview
-          project={site.project}
+          project={previewProject ?? site.project}
           pageId={activePageId ?? undefined}
           onNavigate={setPageId}
         />

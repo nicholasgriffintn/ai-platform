@@ -25,6 +25,12 @@ final class AuthenticationManager: NSObject, ObservableObject {
     private var authSession: ASWebAuthenticationSession?
     private var currentAppleSignInNonce: String?
 
+    private enum SessionCheck {
+        case valid
+        case rejected
+        case unreachable
+    }
+
     init(tokenStore: KeychainTokenStore = .shared) {
         self.tokenStore = tokenStore
         super.init()
@@ -41,13 +47,18 @@ final class AuthenticationManager: NSObject, ObservableObject {
     func restoreSession() async {
         isLoading = true
         error = nil
+        defer { isLoading = false }
 
         if let storedToken = try? tokenStore.load(), storedToken.isUsable {
             apiClient?.setAuthToken(storedToken.value)
-            if await refreshUser() {
-                isAuthenticated = true
-                isLoading = false
+            switch await checkSession() {
+            case .valid:
                 return
+            case .unreachable:
+                isAuthenticated = true
+                return
+            case .rejected:
+                break
             }
         }
 
@@ -55,15 +66,20 @@ final class AuthenticationManager: NSObject, ObservableObject {
             let token = try await apiClient?.fetchToken()
             if let token {
                 try applyToken(token)
-                _ = await refreshUser()
+                await adoptSession()
             } else {
                 clearLocalSession()
             }
-        } catch {
+        } catch let failure where Self.isCredentialRejection(failure) {
             clearLocalSession()
+        } catch {
+            self.error = "Polychat could not be reached. Check your connection and try again."
         }
+    }
 
-        isLoading = false
+    func refreshSessionIfNeeded() async {
+        guard isAuthenticated, user == nil else { return }
+        await adoptSession()
     }
 
     func loginWithGitHub() {
@@ -241,7 +257,7 @@ final class AuthenticationManager: NSObject, ObservableObject {
                     fullName: fullName
                 ) {
                     try applyToken(token)
-                    _ = await refreshUser()
+                    await adoptSession()
                 }
             } catch {
                 self.error = error.localizedDescription
@@ -272,7 +288,7 @@ final class AuthenticationManager: NSObject, ObservableObject {
         do {
             if let token = try await apiClient?.exchangeNativeAuthCode(code) {
                 try applyToken(token)
-                _ = await refreshUser()
+                await adoptSession()
             }
         } catch {
             self.error = error.localizedDescription
@@ -296,7 +312,7 @@ final class AuthenticationManager: NSObject, ObservableObject {
             let response = try await apiClient?.verifyMagicLink(token: token)
             if response?.success == true, let sessionToken = try await apiClient?.fetchToken() {
                 try applyToken(sessionToken)
-                _ = await refreshUser()
+                await adoptSession()
             }
         } catch {
             self.error = error.localizedDescription
@@ -315,19 +331,32 @@ final class AuthenticationManager: NSObject, ObservableObject {
         isAuthenticated = true
     }
 
-    private func refreshUser() async -> Bool {
+    private func adoptSession() async {
+        if await checkSession() == .rejected {
+            clearLocalSession()
+        }
+    }
+
+    private func checkSession() async -> SessionCheck {
         do {
             let status = try await apiClient?.fetchAuthStatus()
             user = status?.user
             userSettings = status?.userSettings
             isAuthenticated = status?.user != nil
-            return isAuthenticated
-        } catch {
+            return isAuthenticated ? .valid : .rejected
+        } catch let failure where Self.isCredentialRejection(failure) {
             user = nil
             userSettings = nil
             isAuthenticated = false
-            return false
+            return .rejected
+        } catch {
+            return .unreachable
         }
+    }
+
+    static func isCredentialRejection(_ error: Error) -> Bool {
+        guard case APIClientError.httpStatus(let status, _) = error else { return false }
+        return status == 401 || status == 403
     }
 
     private func clearLocalSession() {

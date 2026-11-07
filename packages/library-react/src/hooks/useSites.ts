@@ -442,6 +442,11 @@ export function useSiteGeneration({
 
       try {
         await sitesService.generate({ ...request, projectId }, handleEvent, controller.signal);
+
+        if (abortRef.current && abortRef.current !== controller) {
+          return;
+        }
+
         setState((previous) =>
           previous.status === "streaming" ||
           previous.status === "planning" ||
@@ -455,6 +460,10 @@ export function useSiteGeneration({
             : previous,
         );
       } catch (error) {
+        if (abortRef.current && abortRef.current !== controller) {
+          return;
+        }
+
         if (controller.signal.aborted) {
           generationStartedAtRef.current = null;
           setState((previous) => ({

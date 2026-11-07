@@ -91,21 +91,26 @@ export async function reviewWorkBudgets(
       let updated: WorkspaceTeammateRecord | null = null;
 
       if (isBudgetPaused(record) && used < cap) {
-        updated = await repository.update(workspaceId, record.teammateId, {
-          status: "active",
-          pausedReason: null,
-          budgetAlertAt: null,
-        });
+        updated = await repository.update(
+          workspaceId,
+          record.teammateId,
+          { status: "active", pausedReason: null, budgetAlertAt: null },
+          { status: "paused", pausedReason: "budget" },
+        );
       } else if (isBudgetPaused(record) && !record.budgetAlertAt) {
         updated = await repository.update(workspaceId, record.teammateId, { budgetAlertAt: now });
         alerts.push(...budgetAlert(record, "paused", used, cap));
       } else if (record.status === "active" && used >= cap) {
-        updated = await repository.update(workspaceId, record.teammateId, {
-          status: "paused",
-          pausedReason: "budget",
-          budgetAlertAt: now,
-        });
-        alerts.push(...budgetAlert(record, "paused", used, cap));
+        updated = await repository.update(
+          workspaceId,
+          record.teammateId,
+          { status: "paused", pausedReason: "budget", budgetAlertAt: now },
+          { status: "active" },
+        );
+
+        if (updated) {
+          alerts.push(...budgetAlert(record, "paused", used, cap));
+        }
       } else if (
         record.status === "active" &&
         used >= cap * WORK_BUDGET_WARNING_RATIO &&

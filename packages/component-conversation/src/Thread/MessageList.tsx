@@ -279,16 +279,15 @@ export const MessageList = ({
     return undefined;
   }, [messages]);
 
-  const { listRef, viewportRef, showScrollButton, handleScroll, scrollToBottom } = useStickToBottom(
-    {
+  const { listRef, viewportRef, showScrollButton, keepMountedRows, handleScroll, scrollToBottom } =
+    useStickToBottom({
       enabled: !isSharedView,
       rowCount,
       followKey: `${lastMessageScrollKey}:${showStreamRow ? streamLoadingMessage : ""}:${
         currentStream?.turnActivity?.label ?? ""
       }`,
       resetKey: `${currentConversationId ?? "new"}:${lastUserMessageId ?? ""}`,
-    },
-  );
+    });
 
   return (
     <ResolvedToolCallsProvider resolvedToolCallIds={resolvedToolCallIds}>
@@ -308,6 +307,7 @@ export const MessageList = ({
           ref={listRef}
           data-header-scroll-source
           className="h-full w-full flex-1 overflow-auto pt-4 pr-2"
+          keepMounted={keepMountedRows}
           onScroll={handleScroll}
         >
           {showTemporaryNotice ? (

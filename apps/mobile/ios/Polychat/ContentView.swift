@@ -140,17 +140,7 @@ private struct RootTabView: View {
         if let target = pushNotificationManager.targetToOpen {
             open(target)
         }
-        if let userId = authManager.user?.id {
-            companionSync = CompanionSync(
-                client: syncClient,
-                conversations: conversationManager,
-                attention: attentionStore,
-                inbox: notificationManager,
-                discover: discoverStore,
-                work: workStore
-            )
-            syncClient.start(userId: userId)
-        }
+        startCompanionSyncIfNeeded()
 
         async let conversations: Void = conversationManager.loadConversations()
         modelsStore.applyAccountDefaults(authManager.userSettings)
@@ -160,7 +150,21 @@ private struct RootTabView: View {
         _ = await (conversations, models, inbox, teammates)
 
         await pushNotificationManager.enableForAuthenticatedUser()
+        healthSync.confirmOwner(userId: authManager.user?.id)
         await healthSync.syncIfNeeded()
+    }
+
+    private func startCompanionSyncIfNeeded() {
+        guard companionSync == nil, let userId = authManager.user?.id else { return }
+        companionSync = CompanionSync(
+            client: syncClient,
+            conversations: conversationManager,
+            attention: attentionStore,
+            inbox: notificationManager,
+            discover: discoverStore,
+            work: workStore
+        )
+        syncClient.start(userId: userId)
     }
 
     private func loadInbox() async {
@@ -189,8 +193,11 @@ private struct RootTabView: View {
     }
 
     private func refreshOnForeground() async {
+        await authManager.refreshSessionIfNeeded()
+        startCompanionSyncIfNeeded()
         companionSync?.refreshEverything()
         DiscoverBackgroundRefresh.schedule()
+        healthSync.confirmOwner(userId: authManager.user?.id)
         await healthSync.syncIfNeeded()
     }
 

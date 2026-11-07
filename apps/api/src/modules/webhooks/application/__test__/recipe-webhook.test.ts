@@ -74,7 +74,11 @@ describe("recipe webhook", () => {
         ],
         [
           TaskRepository,
-          { createTaskIfAbsent, updateTask: vi.fn(), getTaskById: async () => null },
+          {
+            createTaskIfAbsent,
+            claimTaskForDispatch: vi.fn().mockResolvedValue(true),
+            getTaskById: async () => null,
+          },
         ],
         [UserRepository, { getUserById: async () => ({ id: 42 }) }],
       ]),

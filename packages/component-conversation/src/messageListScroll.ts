@@ -1,6 +1,8 @@
 import type { Message } from "@ngriffin_uk/polychat-library-chat/conversation-types";
 import { getMessageTextContent } from "@ngriffin_uk/polychat-library-chat/messages";
 
+const TAIL_ROW_COUNT = 6;
+
 type MessageListScrollMessage = Pick<Message, "id" | "content" | "parts" | "reasoning">;
 
 interface MessageListScrollKeyInput {
@@ -23,4 +25,10 @@ export function getMessageListScrollKey({
     getMessageTextContent(lastMessage).length + (lastMessage.reasoning?.content.length ?? 0);
 
   return `${conversationKey}:${messages.length}:${lastMessage.id}:${streamedLength}`;
+}
+
+export function getTailRowIndexes(rowCount: number): number[] {
+  const firstIndex = Math.max(rowCount - TAIL_ROW_COUNT, 0);
+
+  return Array.from({ length: rowCount - firstIndex }, (_, offset) => firstIndex + offset);
 }

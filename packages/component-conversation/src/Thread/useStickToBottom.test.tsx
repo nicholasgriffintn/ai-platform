@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
-import { useEffect, useImperativeHandle, type Ref } from "react";
+import { useEffect, useImperativeHandle, useLayoutEffect, type Ref } from "react";
 import type { VListHandle } from "virtua";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -11,6 +11,7 @@ const BOTTOM_OFFSET = SCROLL_SIZE - VIEWPORT_SIZE;
 
 const scrollToIndex = vi.fn();
 let latest: ReturnType<typeof useStickToBottom>;
+let scrollsBeforePaint = 0;
 
 const handle = {
   scrollSize: SCROLL_SIZE,
@@ -28,12 +29,20 @@ function FakeList({ ref }: { ref: Ref<VListHandle> }) {
 function Harness({
   followKey,
   resetKey = "conversation-1",
+  rowCount = 4,
+  enabled = true,
 }: {
   followKey: string;
   resetKey?: string;
+  rowCount?: number;
+  enabled?: boolean;
 }) {
-  const stick = useStickToBottom({ enabled: true, rowCount: 4, followKey, resetKey });
+  const stick = useStickToBottom({ enabled, rowCount, followKey, resetKey });
   const { listRef, viewportRef } = stick;
+
+  useLayoutEffect(() => {
+    scrollsBeforePaint = scrollToIndex.mock.calls.length;
+  });
 
   useEffect(() => {
     latest = stick;
@@ -65,6 +74,44 @@ describe("useStickToBottom", () => {
     render(<Harness followKey="loaded" />);
 
     expect(scrollToIndex).toHaveBeenCalledWith(3, { align: "end" });
+  });
+
+  it("asks for the end before the browser can paint the top of the thread", () => {
+    render(<Harness followKey="loaded" />);
+
+    expect(scrollsBeforePaint).toBe(1);
+  });
+
+  it("targets the newest row when a commit adds rows", () => {
+    const { rerender } = render(<Harness followKey="chunk-1" rowCount={4} />);
+
+    scrollToIndex.mockClear();
+    rerender(<Harness followKey="chunk-2" rowCount={5} />);
+
+    expect(scrollToIndex).toHaveBeenCalledTimes(1);
+    expect(scrollToIndex).toHaveBeenCalledWith(4, { align: "end" });
+  });
+
+  it("mounts the newest rows, not the oldest, on the first commit of a long thread", () => {
+    render(<Harness followKey="loaded" rowCount={100} />);
+
+    expect(latest.keepMountedRows).toEqual([94, 95, 96, 97, 98, 99]);
+  });
+
+  it("stops holding the newest rows once the reader has scrolled away", () => {
+    const { getByTestId } = render(<Harness followKey="chunk-1" rowCount={100} />);
+
+    scrollTo(0);
+    fireEvent.wheel(getByTestId("viewport"), { deltaY: -400 });
+    scrollTo(400);
+
+    expect(latest.keepMountedRows).toBeUndefined();
+  });
+
+  it("leaves a list that does not follow the bottom to start at the top", () => {
+    render(<Harness followKey="loaded" rowCount={100} enabled={false} />);
+
+    expect(latest.keepMountedRows).toBeUndefined();
   });
 
   it("follows streamed content while the reader is at the bottom", () => {

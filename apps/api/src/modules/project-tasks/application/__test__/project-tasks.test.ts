@@ -108,7 +108,7 @@ function createContext(
     id: task.dispatchTaskId,
     status: "running",
   });
-  const updateDispatchTask = vi.fn().mockResolvedValue(undefined);
+  const cancelDispatchTask = vi.fn().mockResolvedValue({ id: "dispatch-1" });
   const getGoalById = vi.fn().mockResolvedValue({
     id: task.goalId,
     status: "active",
@@ -177,7 +177,7 @@ function createContext(
           TaskRepository,
           {
             getTaskById: getDispatchTask,
-            updateTask: updateDispatchTask,
+            cancelOpenTask: cancelDispatchTask,
           },
         ],
         [
@@ -205,7 +205,7 @@ function createContext(
     createConversation,
     cancelActiveActivitiesByGroup,
     getDispatchTask,
-    updateDispatchTask,
+    cancelDispatchTask,
     getGoalById,
     updateGoal,
   };
@@ -360,10 +360,7 @@ describe("updateProjectTask", () => {
       status: "cancelled",
     });
 
-    expect(runtime.updateDispatchTask).toHaveBeenCalledWith("dispatch-1", {
-      status: "cancelled",
-      completed_at: expect.any(String),
-    });
+    expect(runtime.cancelDispatchTask).toHaveBeenCalledWith("dispatch-1");
     expect(runtime.updateGoal).toHaveBeenCalledWith(
       "goal-1",
       expect.objectContaining({
@@ -585,7 +582,9 @@ describe("acceptProjectTask", () => {
 
     await acceptProjectTask(context, "project-1", "task-1");
 
-    expect(updateTask).toHaveBeenCalledWith("task-1", expect.objectContaining({ status: "done" }));
+    expect(updateTask).toHaveBeenCalledWith("task-1", expect.objectContaining({ status: "done" }), {
+      fromStatuses: ["review"],
+    });
   });
 });
 
@@ -874,6 +873,7 @@ describe("task dependencies", () => {
         blockedReason: "dependencies_unmet",
         runnerIdentityUserId: 7,
       }),
+      expect.objectContaining({ fromStatuses: expect.any(Array) }),
     );
   });
 

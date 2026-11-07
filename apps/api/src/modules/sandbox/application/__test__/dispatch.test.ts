@@ -13,7 +13,11 @@ import { createSandboxCredentialBrokerAccess } from "../credential-broker-grants
 import { isSandboxRunDispatchMessage, processSandboxRunDispatch } from "../dispatch";
 import { resolveSandboxGitHubToken } from "../github-credentials";
 import { persistSandboxRunArtifact } from "../run-artifacts";
-import { appendRunCoordinatorEvent, updateRunCoordinatorControl } from "../run-coordinator";
+import {
+  appendRunCoordinatorEvent,
+  getRunCoordinatorControl,
+  updateRunCoordinatorControl,
+} from "../run-coordinator";
 import { indexSandboxRunResult } from "../run-indexing";
 import { releaseSandboxRunReservation } from "../usage";
 
@@ -37,6 +41,7 @@ vi.mock("../github-credentials", () => ({
 }));
 vi.mock("../run-coordinator", () => ({
   appendRunCoordinatorEvent: vi.fn(),
+  getRunCoordinatorControl: vi.fn(),
   updateRunCoordinatorControl: vi.fn(),
 }));
 vi.mock("../run-artifacts", () => ({
@@ -107,6 +112,20 @@ const baseRunRecord = {
   timeoutSeconds: 900,
   timeoutAt: "2026-03-15T12:15:00.000Z",
 };
+
+const dispatchMessage = {
+  kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
+  runId: "run-123",
+  recordId: "record-1",
+  userId: 42,
+  payload: {
+    installationId: 99,
+    repo: "owner/repo",
+    task: "Implement feature",
+    model: "mistral-large",
+    shouldCommit: true,
+  },
+} as const;
 
 describe("sandbox dispatch", () => {
   beforeEach(() => {
@@ -301,6 +320,103 @@ describe("sandbox dispatch", () => {
       }),
     );
     expect(indexSandboxRunResult).not.toHaveBeenCalled();
+  });
+
+  it("does not execute a run cancelled while it was queued", async () => {
+    vi.mocked(getRunCoordinatorControl).mockResolvedValueOnce({
+      state: "cancelled",
+      cancellationReason: "Cancelled by run owner",
+    } as any);
+
+    await processSandboxRunDispatch({ env: {} as any, message: dispatchMessage });
+
+    expect(mockExecuteSandboxProvider).not.toHaveBeenCalled();
+    expect(mockUpdateActivity).toHaveBeenLastCalledWith(
+      "record-1",
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: "cancelled",
+          workflowPhase: "cancelled",
+          cancellationReason: "Cancelled by run owner",
+        }),
+      }),
+    );
+  });
+
+  it("fails the run and frees its resources when the worker stream drops", async () => {
+    const encoder = new TextEncoder();
+    let reads = 0;
+
+    mockExecuteSandboxProvider.mockResolvedValueOnce(
+      new Response(
+        new ReadableStream({
+          pull(controller) {
+            reads += 1;
+
+            if (reads === 1) {
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ type: "plan_created" })}\n\n`),
+              );
+
+              return;
+            }
+
+            controller.error(new Error("connection reset"));
+          },
+        }),
+        { headers: { "content-type": "text/event-stream" } },
+      ),
+    );
+
+    await processSandboxRunDispatch({ env: {} as any, message: dispatchMessage });
+
+    expect(mockUpdateActivity).toHaveBeenLastCalledWith(
+      "record-1",
+      expect.objectContaining({
+        data: expect.objectContaining({ status: "failed", error: "connection reset" }),
+      }),
+    );
+    expect(releaseSandboxRunReservation).toHaveBeenCalledWith(
+      expect.objectContaining({ runId: "run-123" }),
+    );
+    expect(updateRunCoordinatorControl).toHaveBeenLastCalledWith(
+      expect.objectContaining({ state: "cancelled" }),
+    );
+  });
+
+  it("does not launch a second worker for a run recovered mid-flight", async () => {
+    mockGetActivityById.mockResolvedValue({
+      data: JSON.stringify({ ...baseRunRecord, status: "running" }),
+    });
+
+    await processSandboxRunDispatch({
+      env: {} as any,
+      message: dispatchMessage,
+      recovered: true,
+    });
+
+    expect(mockExecuteSandboxProvider).not.toHaveBeenCalled();
+    expect(mockUpdateActivity).toHaveBeenLastCalledWith(
+      "record-1",
+      expect.objectContaining({ data: expect.objectContaining({ status: "failed" }) }),
+    );
+  });
+
+  it("settles a run that fails after the worker has started", async () => {
+    vi.mocked(persistSandboxRunArtifact).mockRejectedValueOnce(new Error("bucket unavailable"));
+
+    await processSandboxRunDispatch({ env: {} as any, message: dispatchMessage });
+
+    expect(mockUpdateActivity).toHaveBeenLastCalledWith(
+      "record-1",
+      expect.objectContaining({
+        data: expect.objectContaining({ status: "failed", error: "bucket unavailable" }),
+      }),
+    );
+    expect(releaseSandboxRunReservation).toHaveBeenCalled();
+    expect(updateRunCoordinatorControl).toHaveBeenLastCalledWith(
+      expect.objectContaining({ state: "cancelled", cancellationReason: "bucket unavailable" }),
+    );
   });
 
   it("releases the run reservation when broker grant creation fails", async () => {
