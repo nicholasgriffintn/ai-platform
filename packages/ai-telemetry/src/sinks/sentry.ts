@@ -7,6 +7,7 @@ import type {
   TelemetrySink,
 } from "../types.js";
 import { normaliseTokenUsage } from "../usage/token-usage.js";
+import { serialiseSentryMessages, toSentryConversationId } from "./sentry-messages.js";
 
 const SPAN_STATUS_ERROR = 2;
 
@@ -82,6 +83,7 @@ export function createSentrySink(
           "gen_ai.operation.name": "chat",
           "gen_ai.system": signal.provider || "unknown",
           "gen_ai.request.model": model,
+          "gen_ai.conversation.id": toSentryConversationId(signal.sessionId),
           "gen_ai.request.stream": signal.stream ?? false,
           "gen_ai.request.temperature": signal.temperature,
           "gen_ai.request.max_tokens": signal.maxTokens,
@@ -98,9 +100,13 @@ export function createSentrySink(
           "gen_ai.usage.input_tokens.cache_write": usage?.cache_creation_tokens,
           "gen_ai.usage.output_tokens.reasoning": usage?.reasoning_tokens,
           "gen_ai.input.messages":
-            signal.captureContent && signal.input ? JSON.stringify(signal.input) : undefined,
+            signal.captureContent && signal.input
+              ? serialiseSentryMessages(signal.input)
+              : undefined,
           "gen_ai.output.messages":
-            signal.captureContent && signal.output ? JSON.stringify([signal.output]) : undefined,
+            signal.captureContent && signal.output
+              ? serialiseSentryMessages([signal.output])
+              : undefined,
           "http.response.status_code": signal.httpStatus,
           "polychat.trace_id": signal.traceId,
           "polychat.session_id": signal.sessionId,

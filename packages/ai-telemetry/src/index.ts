@@ -77,6 +77,7 @@ export {
   type SentryTelemetryClient,
   type SentryTelemetrySpan,
 } from "./sinks/sentry.js";
+export { toSentryConversationId } from "./sinks/sentry-messages.js";
 export * from "./otel.js";
 export * from "./usage/extract-usage.js";
 export * from "./usage/impact.js";

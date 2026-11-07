@@ -129,6 +129,94 @@ describe("sentry sink", () => {
     expect(span.end).toHaveBeenCalledWith(10_000);
   });
 
+  it("records consented generations in the shape Sentry Conversations reads", () => {
+    const { client } = fakeSentryClient();
+
+    createSentrySink(client)?.captureAiGeneration?.({
+      traceId: "t1",
+      sessionId: "conversation-1",
+      captureContent: true,
+      input: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "What is in this image?" },
+            { type: "image_url", image_url: { url: "data:image/png;base64,AAAA" } },
+          ],
+        },
+        {
+          role: "assistant",
+          content: "",
+          tool_calls: [
+            { id: "call-1", function: { name: "search", arguments: '{"query":"cats"}' } },
+          ],
+        },
+        { role: "tool", tool_call_id: "call-1", content: "A cat" },
+      ],
+      output: { role: "assistant", content: "It is a cat." },
+    });
+
+    const attributes = vi.mocked(client.startInactiveSpan).mock.calls[0]?.[0].attributes;
+
+    expect(attributes?.["gen_ai.conversation.id"]).toBe("conversation-1");
+    expect(JSON.parse(String(attributes?.["gen_ai.input.messages"]))).toEqual([
+      {
+        role: "user",
+        parts: [
+          { type: "text", content: "What is in this image?" },
+          { type: "text", content: "[image_url]" },
+        ],
+      },
+      {
+        role: "assistant",
+        parts: [{ type: "tool_call", id: "call-1", name: "search", arguments: '{"query":"cats"}' }],
+      },
+      {
+        role: "tool",
+        parts: [{ type: "tool_call_response", id: "call-1", response: "A cat" }],
+      },
+    ]);
+    expect(JSON.parse(String(attributes?.["gen_ai.output.messages"]))).toEqual([
+      { role: "assistant", parts: [{ type: "text", content: "It is a cat." }] },
+    ]);
+  });
+
+  it("keeps the newest messages when a conversation outgrows the span budget", () => {
+    const { client } = fakeSentryClient();
+
+    createSentrySink(client)?.captureAiGeneration?.({
+      traceId: "t1",
+      captureContent: true,
+      input: [
+        { role: "user", content: "oldest" },
+        { role: "assistant", content: "x".repeat(19_990) },
+        { role: "user", content: "y".repeat(50_000) },
+      ],
+    });
+
+    const attributes = vi.mocked(client.startInactiveSpan).mock.calls[0]?.[0].attributes;
+    const messages = JSON.parse(String(attributes?.["gen_ai.input.messages"]));
+
+    expect(messages).toHaveLength(1);
+    expect(messages[0].parts[0].content).toHaveLength(20_001);
+  });
+
+  it("leaves out conversation ids that would break Sentry Conversations", () => {
+    const { client } = fakeSentryClient();
+    const sink = createSentrySink(client);
+
+    sink?.captureAiGeneration?.({ traceId: "t1", sessionId: "a/b", captureContent: false });
+    sink?.captureAiGeneration?.({
+      traceId: "t1",
+      sessionId: "recipe-event:1",
+      captureContent: false,
+    });
+
+    for (const [span] of vi.mocked(client.startInactiveSpan).mock.calls) {
+      expect(span.attributes).not.toHaveProperty("gen_ai.conversation.id");
+    }
+  });
+
   it("nests generations under a recording agent run and starts their own trace otherwise", () => {
     const agentRun = fakeSentryClient({ isRecording: () => true });
     const unsampledRequest = fakeSentryClient({ isRecording: () => false });

@@ -56,7 +56,12 @@ export type TelemetrySpan = {
   attributes: Record<string, unknown>;
 };
 
-export type TelemetryMessage = { role: string; content: unknown };
+export type TelemetryMessage = {
+  role: string;
+  content: unknown;
+  tool_calls?: unknown;
+  tool_call_id?: string;
+};
 
 export type TelemetryIdentity = {
   user?: { id: number; email?: string | null; plan_id?: string | null } | null;

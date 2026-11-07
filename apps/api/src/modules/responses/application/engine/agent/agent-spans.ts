@@ -1,4 +1,7 @@
-import type { NormalisedTokenUsage } from "@ngriffin_uk/polychat-ai-telemetry";
+import {
+  toSentryConversationId,
+  type NormalisedTokenUsage,
+} from "@ngriffin_uk/polychat-ai-telemetry";
 import { omitNullishValues } from "@ngriffin_uk/polychat-utility-server/objects";
 import * as Sentry from "@sentry/cloudflare";
 
@@ -18,7 +21,7 @@ export function withAgentRunSpan<T extends { response: { usage?: NormalisedToken
         "gen_ai.agent.name": AGENT_NAME,
         "gen_ai.system": run.provider,
         "gen_ai.request.model": run.model,
-        "gen_ai.conversation.id": run.conversationId,
+        "gen_ai.conversation.id": toSentryConversationId(run.conversationId),
         "polychat.mode": run.mode,
         "polychat.run_id": run.runId,
       }),
