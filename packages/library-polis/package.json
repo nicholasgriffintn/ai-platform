@@ -1,0 +1,37 @@
+{
+  "name": "@ngriffin_uk/polychat-library-polis",
+  "version": "0.0.0",
+  "description": "A seeded, deterministic town simulation for Polychat: people, homes, firms, money, laws and shocks with no I/O of its own",
+  "license": "Apache-2.0",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "polychat-source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc -b tsconfig.typecheck.json"
+  },
+  "dependencies": {
+    "@ngriffin_uk/polychat-schemas": "workspace:^"
+  },
+  "devDependencies": {
+    "@ngriffin_uk/polychat-config": "workspace:^",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

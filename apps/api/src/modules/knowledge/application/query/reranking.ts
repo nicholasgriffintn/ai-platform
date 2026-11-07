@@ -1,4 +1,5 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -63,7 +64,7 @@ export async function rerankAuthorisedDocuments<T extends RerankableDocument>(pa
   query: string;
   documents: readonly T[];
 }): Promise<Array<T | RerankedDocument<T>>> {
-  if (params.documents.length < 2) {
+  if (params.documents.length < 2 || !hasProEntitlement(params.user)) {
     return [...params.documents];
   }
 

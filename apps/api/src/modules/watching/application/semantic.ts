@@ -4,6 +4,7 @@ import { mapWithConcurrency } from "@ngriffin_uk/polychat-utility-server/async";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
+import { assertPlanEntitlement } from "~/middleware/requirePlan";
 import { listRecentEntries } from "~/modules/watching/domain/shelf";
 import {
   blendTaste,
@@ -90,6 +91,8 @@ export async function searchByMeaning(
   context: ServiceContext,
   input: { query: string; mediaType?: MediaType; limit: number },
 ) {
+  assertPlanEntitlement(context.requireUser(), "pro");
+
   const matches = await requireVectors(context).query(await embedQuery(context, input.query), {
     topK: VECTOR_QUERY_LIMIT,
     returnValues: true,

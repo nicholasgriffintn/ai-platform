@@ -1,3 +1,5 @@
+import { PLAN_IDS } from "@ngriffin_uk/polychat-ai-billing";
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import { SOURCE_KNOWLEDGE_INDEX_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 import { generateId, sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 import { chunkKnowledgeText } from "@ngriffin_uk/polychat-utility-server/embeddings";
@@ -184,7 +186,7 @@ async function embedKnowledgeResource(
 
   await index.prepare(current, document, target, context.requireUser().id);
 
-  if (!context.env.AI || !context.env.VECTOR_DB) {
+  if (!context.env.AI || !context.env.VECTOR_DB || !hasProEntitlement(context.requireUser())) {
     return;
   }
 
@@ -269,6 +271,7 @@ export async function scheduleKnowledgeIndexes(env: IEnv): Promise<number> {
   const candidates = await new KnowledgeIndexRepository(env).maintenance(
     Boolean(env.AI && env.VECTOR_DB),
     true,
+    PLAN_IDS.filter((plan_id) => hasProEntitlement({ plan_id })),
   );
   const tasks = new TaskService(env, new TaskRepository(env));
 

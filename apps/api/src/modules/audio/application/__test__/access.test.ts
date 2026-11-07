@@ -1,77 +1,43 @@
 import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
-import { checkSpeechAccess } from "~/modules/audio/application/access";
-import { PlanRepository } from "~/modules/plans/infrastructure/PlanRepository";
-import { AnonymousUserRepository } from "~/modules/user/infrastructure/AnonymousUserRepository";
-import type { AnonymousUser, IUser } from "~/types";
+import { hasUserProviderApiKey } from "~/infrastructure/providers/credentials";
+import { assertSpeechEntitlement } from "~/modules/audio/application/access";
+import type { IEnv, IUser } from "~/types";
 
-function makeRepositories(spentCreditMicros: number) {
-  return {
-    repositories: fakeRepositories([
-      [
-        AnonymousUserRepository,
-        {
-          getCreditSpend: vi.fn(async () => ({
-            spentCreditMicros,
-            reservedCreditMicros: 0,
-          })),
-        },
-      ],
-      [
-        PlanRepository,
-        {
-          getPlanById: vi.fn(async () => ({ included_credits: 20, grace_credits: 0 })),
-        },
-      ],
-    ]),
-  };
-}
+vi.mock("~/infrastructure/providers/credentials", () => ({
+  hasUserProviderApiKey: vi.fn(),
+}));
 
-const anonymousUser = { id: "anon-1" } as AnonymousUser;
-const user = { id: 7, plan_id: "pro" } as IUser;
+const env = {} as IEnv;
+const proUser = { id: 7, plan_id: "pro" } as IUser;
+const freeUser = { id: 8, plan_id: "free" } as IUser;
 
-const ANONYMOUS_ALLOWANCE_CREDIT_MICROS = 15_000_000;
-
-describe("checkSpeechAccess", () => {
-  it("refuses an anonymous caller that asks for a paid provider", async () => {
-    const { repositories } = makeRepositories(0);
-
-    await expect(
-      checkSpeechAccess({ repositories, anonymousUser, provider: "elevenlabs" }),
-    ).rejects.toMatchObject({ type: ErrorType.AUTHENTICATION_ERROR });
+describe("assertSpeechEntitlement", () => {
+  beforeEach(() => {
+    vi.mocked(hasUserProviderApiKey).mockReset().mockResolvedValue(false);
   });
 
-  it("refuses an anonymous caller that has spent its credits", async () => {
-    const { repositories } = makeRepositories(ANONYMOUS_ALLOWANCE_CREDIT_MICROS * 2);
+  it("lets a Pro account use the platform voice", async () => {
+    await expect(assertSpeechEntitlement(env, proUser, "workers-ai")).resolves.toBeUndefined();
+  });
 
-    await expect(checkSpeechAccess({ repositories, anonymousUser })).rejects.toMatchObject({
-      type: ErrorType.USAGE_LIMIT_ERROR,
+  it("refuses a free account on the platform voice", async () => {
+    await expect(assertSpeechEntitlement(env, freeUser, "workers-ai")).rejects.toMatchObject({
+      type: ErrorType.AUTHORISATION_ERROR,
     });
   });
 
-  it("allows an anonymous caller within its allowance on the platform-hosted provider", async () => {
-    const { repositories } = makeRepositories(0);
+  it("lets a free account use its own provider key", async () => {
+    vi.mocked(hasUserProviderApiKey).mockResolvedValue(true);
 
-    await expect(
-      checkSpeechAccess({ repositories, anonymousUser, provider: "workers-ai" }),
-    ).resolves.toBeUndefined();
+    await expect(assertSpeechEntitlement(env, freeUser, "elevenlabs")).resolves.toBeUndefined();
   });
 
-  it("leaves authenticated callers to the existing plan and key checks", async () => {
-    const { repositories } = makeRepositories(ANONYMOUS_ALLOWANCE_CREDIT_MICROS * 2);
-
-    await expect(
-      checkSpeechAccess({ repositories, user, provider: "elevenlabs" }),
-    ).resolves.toBeUndefined();
-  });
-
-  it("refuses a caller with neither an account nor an anonymous session", async () => {
-    const { repositories } = makeRepositories(0);
-
-    await expect(checkSpeechAccess({ repositories })).rejects.toMatchObject({
-      type: ErrorType.AUTHENTICATION_ERROR,
+  it("refuses a signed-out caller", async () => {
+    await expect(assertSpeechEntitlement(env, undefined, "workers-ai")).rejects.toMatchObject({
+      type: ErrorType.AUTHORISATION_ERROR,
     });
+    expect(hasUserProviderApiKey).not.toHaveBeenCalled();
   });
 });

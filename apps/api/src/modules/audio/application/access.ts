@@ -1,61 +1,25 @@
-import { anonymousCreditActor, readCreditPosition } from "@ngriffin_uk/polychat-ai-billing";
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
-import { PLATFORM_HOSTED_SPEECH_PROVIDERS } from "~/config/providers";
-import type { Repositories } from "~/infrastructure/database/repositories";
-import { createUsageStore } from "~/modules/usage/application/runtime";
-import type { AnonymousUser, IUser } from "~/types";
+import { hasUserProviderApiKey } from "~/infrastructure/providers/credentials";
+import type { IEnv, IUser } from "~/types";
 
-export interface SpeechAccessOptions {
-  repositories: Repositories;
-  user?: IUser | null;
-  anonymousUser?: AnonymousUser | null;
-  provider?: string | null;
-}
-
-export function requiresAuthenticatedSpeechProvider(provider?: string | null): boolean {
-  if (!provider) {
-    return false;
-  }
-
-  return !PLATFORM_HOSTED_SPEECH_PROVIDERS.includes(provider);
-}
-
-export async function checkSpeechAccess({
-  repositories,
-  user,
-  anonymousUser,
-  provider,
-}: SpeechAccessOptions): Promise<void> {
-  if (user?.id) {
+export async function assertSpeechEntitlement(
+  env: IEnv,
+  user: IUser | undefined,
+  provider: string,
+): Promise<void> {
+  if (hasProEntitlement(user)) {
     return;
   }
 
-  if (requiresAuthenticatedSpeechProvider(provider)) {
-    throw new AssistantError(
-      `Speech generation with ${provider} requires an authenticated account.`,
-      ErrorType.AUTHENTICATION_ERROR,
-    );
+  if (user?.id && (await hasUserProviderApiKey({ env, user, providerName: provider }))) {
+    return;
   }
 
-  if (!anonymousUser?.id) {
-    throw new AssistantError(
-      "Speech generation requires an authenticated or anonymous session.",
-      ErrorType.AUTHENTICATION_ERROR,
-    );
-  }
-
-  const position = await readCreditPosition(
-    { store: createUsageStore(repositories) },
-    {
-      actor: anonymousCreditActor(anonymousUser.id),
-    },
+  throw new AssistantError(
+    "Speech is part of Pro. Upgrade, or add your own key for a voice provider.",
+    ErrorType.AUTHORISATION_ERROR,
+    403,
   );
-
-  if (position.state === "exhausted") {
-    throw new AssistantError(
-      "This session's credits are spent. Sign in for a larger allowance.",
-      ErrorType.USAGE_LIMIT_ERROR,
-    );
-  }
 }

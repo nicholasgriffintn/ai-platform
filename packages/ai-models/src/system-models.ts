@@ -114,8 +114,7 @@ export function resolveSystemRoleModels(
 ): ResolvedSystemRoleModel[] {
   const eligible = filterSystemRoleModels(getExecutableModelsForAccount(models, user), role);
   const seen = new Set<string>();
-
-  return listSystemModelLayers(role, layers).flatMap((layer) =>
+  const resolved = listSystemModelLayers(role, layers).flatMap((layer) =>
     resolveLineupCandidates(eligible, layer.candidates).flatMap((selected) => {
       if (seen.has(selected.id)) {
         return [];
@@ -126,6 +125,9 @@ export function resolveSystemRoleModels(
       return [{ ...selected, source: layer.source }];
     }),
   );
+  const chosen = resolved.filter((candidate) => candidate.source !== "platform");
+
+  return chosen.length > 0 ? chosen : resolved;
 }
 
 export function readSystemModelChoiceStatus(

@@ -17,7 +17,7 @@ export const CONTAINED_APP_PRESENTATION: AppSurfacePresentation = {
 };
 
 export function getAppSurfacePresentation(appId: string, subpath: string): AppSurfacePresentation {
-  if (appId === "sites") {
+  if (appId === "sites" || appId === "polis") {
     return { layout: "workspace", loading: "studio" };
   }
 

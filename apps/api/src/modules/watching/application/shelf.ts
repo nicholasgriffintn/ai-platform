@@ -1,4 +1,5 @@
 import { fetchTmdbTitle, searchTmdbPerson } from "@ngriffin_uk/polychat-ai-integrations";
+import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -55,7 +56,9 @@ export async function saveToShelf(
   });
   const saved = findShelfEntry(shelf, details.id);
 
-  await indexTitleIfMissing(context.env, details.id);
+  if (hasProEntitlement(context.user)) {
+    await indexTitleIfMissing(context.env, details.id);
+  }
 
   return {
     id: details.id,

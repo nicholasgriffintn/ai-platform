@@ -8,6 +8,7 @@ import {
 import { getSpeechModel, type ResolvedSpeechModel } from "~/modules/models/application/resolve";
 import type { IEnv, IUser, IUserSettings } from "~/types";
 
+import { assertSpeechEntitlement } from "./access";
 import { resolveMistralSpeechVoice } from "./voices";
 
 export interface SpeechVoiceSelection extends ResolvedSpeechModel {
@@ -45,6 +46,9 @@ export async function resolveSpeechVoice(
     model: request.model ?? request.pinned?.model,
     required: explicit,
   });
+
+  await assertSpeechEntitlement(env, user, selected.provider);
+
   const requestedVoice =
     request.voice ?? (selected.id === request.pinned?.model ? request.pinned.voice : undefined);
   const configuredVoice =

@@ -16,7 +16,6 @@ import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { checkSpeechAccess } from "~/modules/audio/application/access";
 import { handleTextToSpeech } from "~/modules/audio/application/speech";
 import { handleTranscribe } from "~/modules/audio/application/transcribe";
 import {
@@ -80,7 +79,7 @@ addRoute(app, "post", "/speech", {
   tags: ["audio"],
   summary: "Create speech",
   description: "Generates audio from the input text.",
-  auth: "user-or-anonymous",
+  auth: true,
   bodySchema: textToSpeechSchema,
   responses: {
     200: {
@@ -92,14 +91,7 @@ addRoute(app, "post", "/speech", {
       schema: errorResponseSchema,
     },
   },
-  handler: async ({ body, serviceContext, user, anonymousUser }) => {
-    await checkSpeechAccess({
-      repositories: serviceContext.repositories,
-      user,
-      anonymousUser,
-      provider: body.provider,
-    });
-
+  handler: async ({ body, serviceContext, user }) => {
     const response = await handleTextToSpeech({
       env: serviceContext.env,
       input: body.input,

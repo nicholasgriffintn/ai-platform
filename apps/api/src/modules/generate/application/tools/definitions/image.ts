@@ -41,7 +41,6 @@ export const create_image: FunctionToolDescriptor = {
           type: "string",
           description: "Image generation provider",
           enum: Array.from(IMAGE_PROVIDERS),
-          default: "workers-ai",
         },
         model: {
           type: "string",

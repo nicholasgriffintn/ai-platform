@@ -8,6 +8,8 @@ import { hasUserProviderApiKey } from "~/infrastructure/providers/credentials";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 import type { IEnv, IUser } from "~/types";
 
+import { assertSpeechEntitlement } from "./access";
+
 const VOICE_PROVIDER = "mistral";
 
 function canUseMistralVoice(voiceId: string, savedVoices: readonly SavedSpeechVoice[]): boolean {
@@ -75,6 +77,8 @@ export async function createSpeechVoice({
   sample: File;
 }): Promise<SavedSpeechVoice> {
   await assertVoiceLibraryAccess(env, user);
+
+  await assertSpeechEntitlement(env, user, VOICE_PROVIDER);
 
   const repository = new UserSettingsRepository(env);
   const savedVoices = await readSavedVoices(repository, user.id);

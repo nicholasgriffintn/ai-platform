@@ -1,4 +1,4 @@
-import { authorise } from "@ngriffin_uk/polychat-library-policy";
+import { authorise, hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type {
   KnowledgeOrigin,
   ProjectKnowledgeSearchQuery,
@@ -124,6 +124,10 @@ async function semanticPassages(
   input: ProjectKnowledgeSearchQuery,
   scope: KnowledgeScope,
 ): Promise<KnowledgePassage[][]> {
+  if (!hasProEntitlement(context.requireUser())) {
+    return [];
+  }
+
   const targets = await context.repositories.get(KnowledgeIndexRepository).getTargets(scope);
 
   if (targets.length > 8 || targets.length === 0) {

@@ -1941,6 +1941,9 @@ importers:
       '@ngriffin_uk/polychat-library-model-registry':
         specifier: workspace:^
         version: link:../library-model-registry
+      '@ngriffin_uk/polychat-library-polis':
+        specifier: workspace:^
+        version: link:../library-polis
       '@ngriffin_uk/polychat-library-react':
         specifier: workspace:^
         version: link:../library-react
@@ -2538,6 +2541,25 @@ importers:
       '@cedar-policy/cedar-wasm':
         specifier: 4.14.0
         version: 4.14.0
+    devDependencies:
+      '@ngriffin_uk/polychat-config':
+        specifier: workspace:^
+        version: link:../config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.12(@opentelemetry/api@1.10.0)(@types/node@26.6.5)(@vitest/browser-playwright@4.1.12)(@vitest/browser-preview@5.0.5)(@vitest/coverage-v8@4.1.12)(jsdom@30.1.3)(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.1))
+
+  packages/library-polis:
+    dependencies:
+      '@ngriffin_uk/polychat-schemas':
+        specifier: workspace:^
+        version: link:../schemas
     devDependencies:
       '@ngriffin_uk/polychat-config':
         specifier: workspace:^

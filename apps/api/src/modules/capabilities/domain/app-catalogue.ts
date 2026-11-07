@@ -138,6 +138,24 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     type: "normal",
   },
   {
+    id: "polis",
+    runtime: "polis",
+    capabilityId: "featured-polis",
+    name: "Polis",
+    category: "Decisions",
+    when: "You want to see what a town of tens of thousands does when you change the rules.",
+    uses: "A simulated town in your browser, with a decision model judging how each kind of resident reacts.",
+    produces:
+      "A living town to watch, laws written in plain English, town polls and side-by-side forks of what happens with and without a change.",
+    ios: "web-only",
+    description:
+      "Run a town of up to 50,000 people, pass laws in plain English, throw disasters at it and watch how everyone reacts",
+    icon: "landmark",
+    theme: "emerald",
+    tags: ["simulation", "game", "decisions"],
+    type: "normal",
+  },
+  {
     id: "benchmarks",
     runtime: "benchmarks",
     capabilityId: "featured-benchmarks",

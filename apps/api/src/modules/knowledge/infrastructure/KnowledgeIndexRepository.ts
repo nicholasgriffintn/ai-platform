@@ -408,10 +408,12 @@ export class KnowledgeIndexRepository extends BaseRepository<Pick<IEnv, "DB">> {
   maintenance(
     includeSemantic: boolean,
     includeCleanup: boolean,
+    semanticPlanIds: readonly string[],
   ): Promise<KnowledgeIndexCandidate[]> {
     return this.runQuery(
       `WITH candidates AS (
-         SELECT s.resource_type, s.id, s.created_by_user_id AS user_id, s.project_id FROM ${knowledgeResourceSql} s
+         SELECT s.resource_type, s.id, s.created_by_user_id AS user_id, s.project_id,
+           d.status AS document_status FROM ${knowledgeResourceSql} s
          LEFT JOIN search_document d ON d.document_type = 'source' AND d.resource_type = s.resource_type
            AND d.source_id = s.id AND d.source_revision = s.search_revision
          WHERE s.status = 'available' AND ${sourceVisibilitySql("s")}
@@ -419,9 +421,11 @@ export class KnowledgeIndexRepository extends BaseRepository<Pick<IEnv, "DB">> {
              OR (s.resource_type = 'output' AND s.kind IN (SELECT value FROM json_each(?)))
              OR (s.resource_type = 'memory' AND s.kind IN (SELECT value FROM json_each(?))))
            AND length(trim(COALESCE(s.content, ''))) > 0 AND (d.id IS NULL OR (? = 1 AND d.status = 'lexical'))
-         UNION SELECT resource_type, source_id AS id, user_id, project_id FROM search_document
-           WHERE document_type = 'source' AND status = 'stale' AND ? = 1)
-       SELECT c.resource_type, c.id, (SELECT id FROM project WHERE id = c.project_id) AS project_id,
+         UNION SELECT resource_type, source_id AS id, user_id, project_id, status AS document_status
+           FROM search_document WHERE document_type = 'source' AND status = 'stale' AND ? = 1),
+       resolved AS (
+       SELECT c.resource_type, c.id, c.document_status,
+         (SELECT id FROM project WHERE id = c.project_id) AS project_id,
          (SELECT r.search_revision FROM resource r WHERE r.resource_type = c.resource_type AND r.id = c.id) AS search_revision,
          COALESCE(
            (SELECT wm.user_id FROM resource_grant wm JOIN project p ON wm.kind = 'membership' AND p.workspace_id = wm.workspace_id
@@ -436,13 +440,17 @@ export class KnowledgeIndexRepository extends BaseRepository<Pick<IEnv, "DB">> {
            AND leased.resource_type = c.resource_type AND leased.source_id = c.id AND leased.lease_expires_at >= CURRENT_TIMESTAMP)
        AND NOT EXISTS (SELECT 1 FROM tasks t WHERE t.task_type = 'source_knowledge_index'
          AND t.status IN ('pending', 'queued', 'running')
-         AND json_extract(t.task_data, '$.sourceId') = c.id)
+         AND json_extract(t.task_data, '$.sourceId') = c.id))
+       SELECT r.resource_type, r.id, r.project_id, r.search_revision, r.user_id FROM resolved r
+       WHERE r.document_status IS NOT 'lexical' OR EXISTS (SELECT 1 FROM user u
+         WHERE u.id = r.user_id AND u.plan_id IN (SELECT value FROM json_each(?)))
        LIMIT 100`,
       [
         jsonList(INDEXED_OUTPUT_KINDS),
         jsonList(INDEXED_MEMORY_KINDS),
         includeSemantic ? 1 : 0,
         includeCleanup ? 1 : 0,
+        jsonList(semanticPlanIds),
       ],
     );
   }

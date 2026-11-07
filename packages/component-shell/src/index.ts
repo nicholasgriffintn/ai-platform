@@ -14,6 +14,7 @@ export * from "./Capabilities/CapabilityLibrary.js";
 export * from "./Benchmarks/BenchmarkBoardView.js";
 export * from "./Benchmarks/BenchmarkRunPages.js";
 export * from "./Benchmarks/BenchmarksIndex.js";
+export { SharedPolisTown } from "./Apps/Polis/SharedPolisTown.js";
 export * from "./Capabilities/PublicAppsCatalogue.js";
 export * from "./Capabilities/ToolRunner.js";
 export * from "./Capabilities/useCapabilityLibraryController.js";

@@ -1,6 +1,13 @@
 import type {
   DecisionRequest,
   DecisionResponse,
+  PolisDecisionRequest,
+  PolisDecisionResponse,
+  PolisDraftRequest,
+  PolisLawDraft,
+  PolisRecording,
+  PolisScenarioDraft,
+  PolisShare,
   TwentyQuestionsAnswer,
   TwentyQuestionsAskRequest,
   TwentyQuestionsCategory,
@@ -74,5 +81,46 @@ export const twentyQuestionsService = {
   },
   reveal(token: string, projectId?: string): Promise<TwentyQuestionsReveal> {
     return postJson(withProjectScope(`${TWENTY_QUESTIONS_PATH}/reveal`, projectId), { token });
+  },
+};
+
+const POLIS_PATH = "/experiences/polis";
+
+export const polisService = {
+  share(recording: PolisRecording, projectId?: string): Promise<PolisShare> {
+    return postJson(withProjectScope(`${POLIS_PATH}/shares`, projectId), recording);
+  },
+  async stopSharing(token: string): Promise<PolisShare> {
+    const response = await fetchApiOrThrow(`${POLIS_PATH}/shares/${encodeURIComponent(token)}`, {
+      method: "DELETE",
+    });
+
+    return returnFetchedData<PolisShare>(response);
+  },
+  async shared(token: string): Promise<PolisRecording> {
+    const response = await fetchApiOrThrow(`${POLIS_PATH}/shared/${encodeURIComponent(token)}`);
+
+    return returnFetchedData<PolisRecording>(response);
+  },
+  decide(request: PolisDecisionRequest, projectId?: string): Promise<PolisDecisionResponse> {
+    return postJson(
+      withProjectScope(`${POLIS_PATH}/decisions`, projectId),
+      request,
+      MEDIA_DECISION_TIMEOUT_MS,
+    );
+  },
+  draftLaw(request: PolisDraftRequest, projectId?: string): Promise<PolisLawDraft> {
+    return postJson(
+      withProjectScope(`${POLIS_PATH}/laws`, projectId),
+      request,
+      MEDIA_DECISION_TIMEOUT_MS,
+    );
+  },
+  draftScenario(request: PolisDraftRequest, projectId?: string): Promise<PolisScenarioDraft> {
+    return postJson(
+      withProjectScope(`${POLIS_PATH}/scenarios`, projectId),
+      request,
+      MEDIA_DECISION_TIMEOUT_MS,
+    );
   },
 };

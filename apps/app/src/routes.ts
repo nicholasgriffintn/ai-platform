@@ -85,5 +85,6 @@ export default [
   route("/admin/*?", "pages/admin.tsx"),
   route("/s/:share_id", "pages/shared/[share_id].tsx"),
   route("/o/:token", "pages/shared/output.tsx"),
+  route("/polis/:token", "pages/polis/shared.tsx"),
   route("*?", "pages/catchall.tsx"),
 ] satisfies RouteConfig;

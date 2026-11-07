@@ -15,6 +15,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { StorageService } from "~/infrastructure/storage";
 import { getPrivateObjectResponse } from "~/infrastructure/storage/read-resource";
 import { narratePassages } from "~/modules/audio/application/narration";
+import { resolveSpeechVoice } from "~/modules/audio/application/speech-voice";
 import { readKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
@@ -62,6 +63,8 @@ export async function startSourceListen(
   if (passages.length === 0) {
     throw new AssistantError("This source has no text to read aloud", ErrorType.PARAMS_ERROR, 400);
   }
+
+  await resolveSpeechVoice(context.env, context.requireUser(), { role: "narrator" });
 
   const updated = await updateSourceRecord(context, source, {
     listen: {
