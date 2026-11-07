@@ -235,8 +235,8 @@ import family231 from "./families/opencode-go~2Ficeman-contributor-free.json" wi
 import family232 from "./families/opencode-go~2Fstep-5-preview.json" with { type: "json" };
 import family233 from "./families/opencode-go~2Funion-alpha.json" with { type: "json" };
 import family234 from "./families/opencode~2Fcrouton-alpha-free.json" with { type: "json" };
-import family235 from "./families/opencode~2Fjev-latest.json" with { type: "json" };
-import family236 from "./families/opencode~2Fpulse-alpha-free.json" with { type: "json" };
+import family235 from "./families/opencode~2Ficeman-free.json" with { type: "json" };
+import family236 from "./families/opencode~2Fjev-latest.json" with { type: "json" };
 import family237 from "./families/opencode~2Funion-alpha.json" with { type: "json" };
 import family238 from "./families/openrouter~2F~7Eunbiased~2Fpareto-latest.json" with { type: "json" };
 import family239 from "./families/openrouter~2Faion-labs~2Faion-1.0.json" with { type: "json" };
@@ -747,8 +747,8 @@ const catalogue: UnparsedModelCatalogue = {
     "opencode-go/step-5-preview": family232,
     "opencode-go/union-alpha": family233,
     "opencode/crouton-alpha-free": family234,
-    "opencode/jev-latest": family235,
-    "opencode/pulse-alpha-free": family236,
+    "opencode/iceman-free": family235,
+    "opencode/jev-latest": family236,
     "opencode/union-alpha": family237,
     "openrouter/~unbiased/pareto-latest": family238,
     "openrouter/aion-labs/aion-1.0": family239,

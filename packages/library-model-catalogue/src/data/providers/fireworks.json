@@ -1,8 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsAttachments": false,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": 0,
       "zeroRetention": "default",
@@ -14,7 +11,10 @@
         "us"
       ],
       "source": "https://fireworks.ai/privacy-policy"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
   },
   "models": {
     "openai/gpt-oss-120b": {
@@ -276,7 +276,7 @@
       "overrides": {
         "contextWindow": 192000,
         "maxTokens": 192000,
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "November 2024",
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -648,7 +648,6 @@
       "overrides": {
         "name": "GLM 5.3 Flash",
         "contextWindow": 1048573,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

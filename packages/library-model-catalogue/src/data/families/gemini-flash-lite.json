@@ -393,7 +393,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1254,
+              "value": 1258,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 13
@@ -438,7 +438,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1108,
+              "value": 1109,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10

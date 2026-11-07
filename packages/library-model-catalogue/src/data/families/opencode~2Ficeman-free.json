@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 6, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The opencode/iceman free family includes models that produce text.",
+  "models": {
+    "iceman-free": {
+      "defaults": {
+        "name": "Iceman Free",
+        "description": "Stealth model, free for a limited time"
+      }
+    }
+  }
+}

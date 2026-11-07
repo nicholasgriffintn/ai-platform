@@ -1,8 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": "unknown",
       "zeroRetention": "account_setting",
@@ -11,7 +8,10 @@
     "dataLocation": {
       "kind": "unknown",
       "source": "https://www.together.ai/privacy"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsTemperature": true
   },
   "models": {
     "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free": {

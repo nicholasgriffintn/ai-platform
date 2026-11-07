@@ -19,7 +19,7 @@
   },
   "description": "The kilo/ricursiveai/ripple 65b preview family includes models that produce text.",
   "models": {
-    "ricursiveai-ripple-65b-preview": {
+    "ricursive-ripple-65b-preview": {
       "defaults": {
         "name": "ricursiveAI/Ripple-65B-Preview",
         "description": "Ripple-65B-Preview by ricursiveAI, a 65B model with native tool calling, served in BF16."

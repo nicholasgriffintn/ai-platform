@@ -1,10 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": false,
-    "apiShape": "responses",
     "dataRetention": {
       "maxDays": "unknown",
       "source": "https://sakana.ai/"
@@ -12,7 +7,12 @@
     "dataLocation": {
       "kind": "unknown",
       "source": "https://sakana.ai/"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "apiShape": "responses"
   },
   "models": {
     "fugu": {

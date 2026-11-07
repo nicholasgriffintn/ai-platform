@@ -472,7 +472,7 @@
       "defaults": {
         "name": "Nemotron 3 Super 120B A12B",
         "description": "Nemotron middle tier for collaborative agents and high-volume reasoning workloads",
-        "maxTokens": 262144,
+        "contextWindow": 262144,
         "strengths": [
           "tool_use"
         ],

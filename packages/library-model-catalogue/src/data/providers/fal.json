@@ -1,7 +1,5 @@
 {
   "defaults": {
-    "supportsStreaming": false,
-    "supportsAttachments": false,
     "dataRetention": {
       "maxDays": 90,
       "zeroRetention": "on_request",
@@ -10,7 +8,9 @@
     "dataLocation": {
       "kind": "unknown",
       "source": "https://fal.ai/privacy"
-    }
+    },
+    "supportsStreaming": false,
+    "supportsAttachments": false
   },
   "models": {
     "fal-ai/qwen-image": {

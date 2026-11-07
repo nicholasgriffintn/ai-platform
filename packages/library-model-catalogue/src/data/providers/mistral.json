@@ -1,7 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": "unknown",
       "zeroRetention": "on_request",
@@ -13,7 +11,9 @@
         "eu"
       ],
       "source": "https://help.mistral.ai/en/articles/347629-where-do-you-store-my-data-and-the-data-of-my-end-users"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsTemperature": true
   },
   "models": {
     "mistral-small-creative": {
@@ -374,7 +374,6 @@
       "matchingModel": "zai-glm-5-3-flash",
       "overrides": {
         "contextWindow": 1048576,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

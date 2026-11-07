@@ -83,7 +83,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 934,
+              "value": 937,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 17
@@ -115,7 +115,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1188,
+              "value": 1187,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11
@@ -148,7 +148,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1207,
+              "value": 1208,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10
@@ -172,7 +172,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1224,
+              "value": 1227,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10

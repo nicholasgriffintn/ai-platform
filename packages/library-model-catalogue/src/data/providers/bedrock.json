@@ -1,9 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": "unknown",
       "zeroRetention": "account_setting",
@@ -12,7 +8,11 @@
     "dataLocation": {
       "kind": "deployment",
       "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "models": {
     "nova-2-lite": {

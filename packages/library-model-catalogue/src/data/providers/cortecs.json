@@ -1,9 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": "unknown",
       "zeroRetention": "account_setting",
@@ -15,7 +11,11 @@
         "eu"
       ],
       "source": "https://docs.cortecs.ai/security-and-compliance/data-governance-and-controls.md"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "models": {
     "claude-4-5-sonnet": {
@@ -622,7 +622,7 @@
       "overrides": {
         "contextWindow": 400000,
         "maxTokens": 196000,
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "November 2024",
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.000349,
@@ -716,7 +716,7 @@
       "model": "nemotron/nemotron-3-super-120b-a12b",
       "matchingModel": "nemotron-3-super-120b-a12b",
       "overrides": {
-        "contextWindow": 262144,
+        "maxTokens": 262144,
         "speed": 4,
         "knowledgeCutoffDate": "December 2025",
         "lastUpdated": "March 11, 2026",
@@ -816,7 +816,7 @@
       "overrides": {
         "name": "Qwen3 Coder 30B A3B Instruct",
         "maxTokens": 262144,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "July 31, 2025",
         "costPer1kInputTokens": 0.000179,
         "costPer1kOutputTokens": 0.000697,

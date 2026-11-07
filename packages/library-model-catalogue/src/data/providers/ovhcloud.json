@@ -1,9 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": false,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": 0,
       "zeroRetention": "default",
@@ -15,7 +11,11 @@
         "eu"
       ],
       "source": "https://www.ovhcloud.com/en/public-cloud/ai-endpoints/"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
   },
   "models": {
     "gpt-oss-120b": {
@@ -132,7 +132,7 @@
         "name": "Qwen3-Coder-30B-A3B-Instruct",
         "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
         "maxTokens": 262144,
-        "speed": 5,
+        "speed": 4,
         "releaseDate": "October 28, 2025",
         "lastUpdated": "October 28, 2025",
         "costPer1kInputTokens": 0.00007,

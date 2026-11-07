@@ -1,9 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": 0,
       "source": "https://standardcompute.com/data-privacy"
@@ -11,7 +7,11 @@
     "dataLocation": {
       "kind": "routed",
       "source": "https://standardcompute.com/data-privacy"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "models": {
     "standardcompute": {
@@ -271,7 +271,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 985,
+              "value": 986,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12

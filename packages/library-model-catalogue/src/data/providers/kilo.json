@@ -1,9 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": "unknown",
       "source": "https://kilo.ai/privacy"
@@ -11,7 +7,11 @@
     "dataLocation": {
       "kind": "routed",
       "source": "https://kilo.ai/privacy"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "models": {
     "claude-sonnet-4-5": {
@@ -201,7 +201,7 @@
       "matchingModel": "~deepseek/deepseek-pro-latest",
       "overrides": {
         "lastUpdated": "September 14, 2026",
-        "costPer1kInputTokens": 0.0000927,
+        "costPer1kInputTokens": 0.0000999,
         "costPer1kOutputTokens": 0.008,
         "supportsAttachments": false
       }
@@ -211,8 +211,8 @@
       "matchingModel": "~deepseek/deepseek-v4-flash-latest",
       "overrides": {
         "lastUpdated": "August 1, 2026",
-        "costPer1kInputTokens": 0.000059,
-        "costPer1kOutputTokens": 0.0003,
+        "costPer1kInputTokens": 0.00005764,
+        "costPer1kOutputTokens": 0.00017292,
         "supportsAttachments": false
       }
     },
@@ -241,8 +241,8 @@
       "matchingModel": "~moonshotai/kimi-latest",
       "overrides": {
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.0001529,
-        "costPer1kOutputTokens": 0.0093388
+        "costPer1kInputTokens": 0.0001539,
+        "costPer1kOutputTokens": 0.0101489
       }
     },
     "~openai/gpt-astra-latest": {
@@ -329,8 +329,8 @@
       "matchingModel": "~z-ai/glm-flash-latest",
       "overrides": {
         "lastUpdated": "August 27, 2026",
-        "costPer1kInputTokens": 0.0000335,
-        "costPer1kOutputTokens": 0.000083
+        "costPer1kInputTokens": 0.0000285,
+        "costPer1kOutputTokens": 0.0000793
       }
     },
     "~z-ai/glm-latest": {
@@ -888,7 +888,6 @@
         "lastUpdated": "March 13, 2025",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,
-        "supportsToolCalls": false,
         "supportsAttachments": false
       }
     },
@@ -932,7 +931,6 @@
         "lastUpdated": "December 13, 2024",
         "costPer1kInputTokens": 0.0000375,
         "costPer1kOutputTokens": 0.00015,
-        "supportsToolCalls": false,
         "supportsAttachments": false
       }
     },
@@ -953,11 +951,11 @@
       "overrides": {
         "name": "DeepSeek Chat",
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
-        "contextWindow": 128000,
-        "maxTokens": 16000,
+        "contextWindow": 163840,
+        "maxTokens": 16384,
         "lastUpdated": "February 28, 2026",
-        "costPer1kInputTokens": 0.0002574,
-        "costPer1kOutputTokens": 0.0010287,
+        "costPer1kInputTokens": 0.00032,
+        "costPer1kOutputTokens": 0.00089,
         "supportsAttachments": false
       }
     },
@@ -1679,8 +1677,8 @@
           ]
         },
         "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.00004,
-        "costPer1kOutputTokens": 0.00015,
+        "costPer1kInputTokens": 0.000023,
+        "costPer1kOutputTokens": 0.000068,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1852,6 +1850,7 @@
         "lastUpdated": "September 29, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0009,
+        "supportsResponseFormat": false,
         "supportsAttachments": false
       }
     },
@@ -2011,7 +2010,7 @@
       }
     },
     "meta-llama/llama-3.2-3b-instruct": {
-      "model": "llama/meta-llama-3-2-3b-instruct-retires-nov-15",
+      "model": "llama/meta-llama-3-2-3b-instruct-retires-nov-20",
       "matchingModel": "meta-llama/llama-3.2-3b-instruct",
       "overrides": {
         "lastUpdated": "September 25, 2024",
@@ -2254,7 +2253,7 @@
       "overrides": {
         "contextWindow": 204800,
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.000255,
         "costPer1kOutputTokens": 0.00102,
@@ -2312,8 +2311,8 @@
       "overrides": {
         "name": "MiniMax-M2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
-        "contextWindow": 198000,
-        "maxTokens": 32768,
+        "contextWindow": 65536,
+        "maxTokens": 58982,
         "contextComplexity": 3,
         "speed": 2,
         "lastUpdated": "February 12, 2026",
@@ -2827,8 +2826,8 @@
       "model": "nemotron/nemotron-3-super-120b-a12b",
       "matchingModel": "nvidia/nemotron-3-super-120b-a12b",
       "overrides": {
-        "contextWindow": 1048576,
-        "contextComplexity": 5,
+        "maxTokens": 16384,
+        "contextComplexity": 3,
         "speed": 4,
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.000075,
@@ -3759,8 +3758,8 @@
         "maxTokens": 65536,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
-        "costPer1kInputTokens": 0.00002,
-        "costPer1kOutputTokens": 0.000074,
+        "costPer1kInputTokens": 0.000012,
+        "costPer1kOutputTokens": 0.000044,
         "supportsAttachments": false
       }
     },
@@ -3773,8 +3772,8 @@
         "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "August 5, 2025",
-        "costPer1kInputTokens": 0.000009,
-        "costPer1kOutputTokens": 0.000037,
+        "costPer1kInputTokens": 0.000004,
+        "costPer1kOutputTokens": 0.000017,
         "supportsAttachments": false
       }
     },
@@ -4163,7 +4162,7 @@
       "model": "qwen/qwen-qwen3-14b",
       "matchingModel": "qwen/qwen3-14b",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.00024,
@@ -4270,7 +4269,7 @@
         "name": "Qwen3-Coder 30B-A3B Instruct",
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "maxTokens": 235929,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "July 31, 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -5144,7 +5143,7 @@
       "model": "kilo/stepfun/step-3.7-flash/step-3-7-flash",
       "matchingModel": "stepfun/step-3.7-flash",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "May 29, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00115
@@ -6308,7 +6307,7 @@
       }
     },
     "liquid/lfm-2.5-2.6b": {
-      "model": "liquid/liquidai-lfm2-5-2-6b",
+      "model": "liquid/liquidai-lfm2-5-2-6b-retires-nov-13",
       "matchingModel": "liquid/lfm-2.5-2.6b",
       "overrides": {
         "lastUpdated": "August 11, 2026",
@@ -6425,7 +6424,7 @@
       "model": "ling/inclusionai-ling-3-0-tiny",
       "matchingModel": "inclusionai/ling-3.0-tiny",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 6, 2026",
         "costPer1kInputTokens": 0.000015,
         "costPer1kOutputTokens": 0.000045,
@@ -6433,7 +6432,7 @@
       }
     },
     "ricursiveai/ripple-65b-preview": {
-      "model": "kilo/ricursiveai/ripple-65b-preview/ricursiveai-ripple-65b-preview",
+      "model": "kilo/ricursiveai/ripple-65b-preview/ricursive-ripple-65b-preview",
       "matchingModel": "ricursiveai/ripple-65b-preview",
       "overrides": {
         "lastUpdated": "November 4, 2026",
@@ -6451,6 +6450,7 @@
         "description": "The official release of Hy4 delivers comprehensive and substantial improvements over Hy4 Preview, with particularly strong gains in agentic capabilities and performance across a wide range of long-horizon, real-world productivity...",
         "contextWindow": 1048576,
         "maxTokens": 65536,
+        "speed": 3,
         "lastUpdated": "November 4, 2026",
         "costPer1kInputTokens": 0.000834,
         "costPer1kOutputTokens": 0.002501,
@@ -6462,6 +6462,26 @@
           ],
           "defaultEffort": "none"
         }
+      }
+    },
+    "liquid/lfm-3-1.7b": {
+      "model": "liquid/liquidai-lfm3-1-7b",
+      "matchingModel": "liquid/lfm-3-1.7b",
+      "overrides": {
+        "lastUpdated": "November 6, 2026",
+        "costPer1kInputTokens": 0.00008,
+        "costPer1kOutputTokens": 0.0002,
+        "supportsAttachments": false
+      }
+    },
+    "liquid/lfm-3-1.7b:free": {
+      "model": "liquid/liquidai-lfm3-1-7b-free",
+      "matchingModel": "liquid/lfm-3-1.7b:free",
+      "overrides": {
+        "lastUpdated": "November 6, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
       }
     }
   }

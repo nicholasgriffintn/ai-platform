@@ -1,9 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": false,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": 30,
       "source": "https://chutes.ai/privacy"
@@ -11,7 +7,11 @@
     "dataLocation": {
       "kind": "multiple",
       "source": "https://chutes.ai/privacy"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
   },
   "models": {
     "chutesai/Devstral-Small-2505": {
@@ -525,7 +525,7 @@
       "matchingModel": "Qwen/Qwen3-14B",
       "overrides": {
         "maxTokens": 40960,
-        "speed": 2,
+        "speed": 3,
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00005,
@@ -1188,7 +1188,10 @@
       "model": "chutes/tencent/Hy4/hy4",
       "matchingModel": "tencent/Hy4",
       "overrides": {
+        "speed": 3,
         "lastUpdated": "November 4, 2026",
+        "costPer1kInputTokens": 0.000834,
+        "costPer1kOutputTokens": 0.002501,
         "supportsToolCalls": false
       }
     }

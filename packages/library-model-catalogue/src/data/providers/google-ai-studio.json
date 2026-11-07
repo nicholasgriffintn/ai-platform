@@ -1,8 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": 55,
       "source": "https://aistudio.google.com/docs/usage-policies"
@@ -10,7 +7,10 @@
     "dataLocation": {
       "kind": "multiple",
       "source": "https://aistudio.google.com/docs/terms"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "models": {
     "gemini-3-flash-preview": {
@@ -494,6 +494,22 @@
             "high"
           ],
           "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1140,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 10
+            }
+          ]
         }
       }
     },
@@ -670,13 +686,13 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "speed": 2,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.0004,
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 4.4,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5

@@ -1,10 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
-    "apiBaseUrl": "https://opencode.ai/inference/openai/v1",
     "dataRetention": {
       "maxDays": 30,
       "source": "https://opencode.ai/docs/zen/"
@@ -16,7 +11,12 @@
         "eu"
       ],
       "source": "https://opencode.ai/docs/zen/"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "apiBaseUrl": "https://opencode.ai/inference/openai/v1"
   },
   "models": {
     "big-pickle": {
@@ -1093,7 +1093,6 @@
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -1471,11 +1470,21 @@
         "costPer1kOutputTokens": 0
       }
     },
-    "pulse-alpha-free": {
-      "model": "opencode/pulse-alpha-free/pulse-alpha-free",
-      "matchingModel": "pulse-alpha-free",
+    "iceman-free": {
+      "model": "opencode/iceman-free/iceman-free",
+      "matchingModel": "iceman-free",
       "overrides": {
-        "lastUpdated": "November 2, 2026",
+        "lastUpdated": "November 6, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
+      }
+    },
+    "inkling-2-small-free": {
+      "model": "ling/inkling-2-small-free",
+      "matchingModel": "inkling-2-small-free",
+      "overrides": {
+        "lastUpdated": "November 5, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       }

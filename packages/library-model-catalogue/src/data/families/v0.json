@@ -1,8 +1,6 @@
 {
   "defaults": {
     "openWeights": false,
-    "contextWindow": 32000,
-    "maxTokens": 0,
     "modalities": {
       "input": [
         "text"
@@ -11,17 +9,39 @@
         "text"
       ]
     },
-    "releaseDate": "February 26, 2026",
-    "supportsToolCalls": false,
-    "supportsAttachments": false,
-    "supportsTemperature": false
+    "supportsAttachments": false
   },
   "description": "The v0 family includes models that produce text.",
   "models": {
+    "ampersand-v0-1": {
+      "defaults": {
+        "name": "Ampersand v0.1",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 1000000,
+        "maxTokens": 32768,
+        "releaseDate": "November 6, 2026",
+        "supportsToolCalls": true,
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "embed-v1-0-6b": {
       "defaults": {
         "name": "Embed v1 0.6b",
-        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines"
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "contextWindow": 32000,
+        "maxTokens": 0,
+        "releaseDate": "February 26, 2026",
+        "supportsToolCalls": false,
+        "supportsTemperature": false
       }
     }
   }

@@ -1,8 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": "unknown",
       "source": "https://nova.amazon.com/dev/documentation"
@@ -10,7 +7,10 @@
     "dataLocation": {
       "kind": "unknown",
       "source": "https://nova.amazon.com/dev/documentation"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "models": {
     "nova-2-lite-v1": {

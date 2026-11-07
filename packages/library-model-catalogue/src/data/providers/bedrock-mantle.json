@@ -1,11 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": false,
-    "apiBaseUrl": "https://bedrock-mantle.${AWS_REGION}.api.aws/openai/v1",
-    "apiShape": "responses",
     "dataRetention": {
       "maxDays": "unknown",
       "zeroRetention": "account_setting",
@@ -14,7 +8,13 @@
     "dataLocation": {
       "kind": "deployment",
       "source": "https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "apiBaseUrl": "https://bedrock-mantle.${AWS_REGION}.api.aws/openai/v1",
+    "apiShape": "responses"
   },
   "models": {
     "openai.gpt-5.4": {
