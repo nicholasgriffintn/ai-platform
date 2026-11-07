@@ -32,7 +32,7 @@ const REFRESH_MESSAGES = {
 const CHAT_PANEL_CLASS = `absolute inset-0 z-20 flex min-h-0 flex-col bg-background lg:static lg:inset-auto lg:z-auto lg:shrink-0 lg:border-l lg:border-border ${DISCOVER_PANEL_WIDTH}`;
 
 const FLOATING_COMPOSER_CLASS =
-  "pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col pt-24 pb-2 transition-[opacity,translate] duration-200 ease-[cubic-bezier(.2,.8,.2,1)] [background:linear-gradient(to_top,var(--background)_calc(100%-6rem),transparent)] sm:px-6 sm:pb-4 motion-reduce:transition-none";
+  "pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col pt-24 pb-2 transition-[opacity,translate] duration-200 ease-[cubic-bezier(.2,.8,.2,1)] [background:linear-gradient(to_top,var(--background)_calc(100%-6rem),transparent)] sm:pb-4 @4xl/discover-pane:px-12 motion-reduce:transition-none";
 
 const COMPOSER_CLEARANCE = 40;
 const COMPOSER_HEIGHT_VARIABLE = "--discover-composer-height";
@@ -216,11 +216,14 @@ export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
         />
       )}
       <div className="relative flex h-full min-h-0 overflow-hidden">
-        <div className="relative flex min-h-0 min-w-0 flex-1">
+        <div className="@container/discover-pane relative flex min-h-0 min-w-0 flex-1">
           <div
             ref={feedRef}
             data-header-scroll-source
-            className={cn("min-h-0 min-w-0 flex-1 overflow-y-auto", panelOpen && "hidden lg:block")}
+            className={cn(
+              "min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto",
+              panelOpen && "hidden lg:block",
+            )}
             onClickCapture={(event) => capture(event.target)}
             onScroll={(event: UIEvent<HTMLDivElement>) =>
               setScrolled(event.currentTarget.scrollTop > SCROLLED_THRESHOLD)
@@ -228,7 +231,10 @@ export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
           >
             <div
               ref={feedContentRef}
-              className="@container/discover flex w-full flex-col gap-10 px-4 pt-6 pb-12 sm:px-6 lg:px-16 lg:pt-8"
+              className={cn(
+                "@container/discover flex flex-col gap-10 px-4 pt-6 pb-12 @4xl/discover-pane:px-16 @4xl/discover-pane:pt-8",
+                chatOpen ? "w-full" : "w-[100cqw]",
+              )}
               style={
                 floatingComposer
                   ? {

@@ -71,7 +71,7 @@ export function DiscoverMasonry({
 
   return (
     <section aria-label={title} className="flex max-w-full min-w-0 flex-col gap-3">
-      <h3 className="polychat-eyebrow px-1">{title}</h3>
+      <h3 className="polychat-eyebrow">{title}</h3>
       <div ref={ref} className="flex items-start gap-3">
         {distributeDiscoverCards(cards, columnCount, columnWidth).map((column, index) => (
           <div key={index} className="flex min-w-0 flex-1 flex-col gap-3">
