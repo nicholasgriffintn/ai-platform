@@ -1,6 +1,16 @@
 import { cn } from "@ngriffin_uk/polychat-component-ui";
 import { DISCOVER_HOUSE_COVER_PREFIX } from "@ngriffin_uk/polychat-schemas";
-import { Cpu, NotebookPen, Sunrise, UsersRound, type LucideIcon } from "lucide-react";
+import {
+  AppWindow,
+  Bird,
+  BriefcaseBusiness,
+  Cpu,
+  NotebookPen,
+  Scale,
+  Sunrise,
+  UsersRound,
+  type LucideIcon,
+} from "lucide-react";
 
 interface HouseCoverArt {
   icon: LucideIcon;
@@ -14,6 +24,10 @@ const HOUSE_COVERS: Record<string, HouseCoverArt> = {
   teammates: { icon: UsersRound, from: "#3b1d5a", to: "#140a21", glow: "#c084fc" },
   notebooks: { icon: NotebookPen, from: "#5a3a12", to: "#1f1407", glow: "#fbbf24" },
   discover: { icon: Sunrise, from: "#5b1f2e", to: "#1d0a10", glow: "#fb7185" },
+  council: { icon: Scale, from: "#1e2f5c", to: "#0a1022", glow: "#818cf8" },
+  work: { icon: BriefcaseBusiness, from: "#163a5c", to: "#08151f", glow: "#38bdf8" },
+  sites: { icon: AppWindow, from: "#1f4a2a", to: "#0a1a0e", glow: "#4ade80" },
+  pets: { icon: Bird, from: "#5c3216", to: "#1f1007", glow: "#fb923c" },
 };
 
 export function isHouseCover(coverId: string | undefined): coverId is string {

@@ -12,6 +12,7 @@ import { DiscoverMasthead } from "./DiscoverMasthead.js";
 import { DiscoverMediaShelf } from "./DiscoverMediaShelf.js";
 import { DiscoverSettingsDialog } from "./DiscoverSettingsDialog.js";
 import { DiscoverNoEdition, DiscoverPreparing, DiscoverTurnOn } from "./DiscoverStates.js";
+import { DiscoverWelcome } from "./DiscoverWelcome.js";
 import { slideInPanel } from "./item/discover-motion.js";
 import { DISCOVER_PANEL_WIDTH, DiscoverItemPanel } from "./item/DiscoverItemPanel.js";
 import { useDiscoverPanelMotion } from "./item/useDiscoverPanelMotion.js";
@@ -34,7 +35,7 @@ const CHAT_PANEL_CLASS = `absolute inset-0 z-20 flex min-h-0 flex-col bg-backgro
 const FLOATING_COMPOSER_CLASS =
   "pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col pt-24 pb-2 transition-[opacity,translate] duration-200 ease-[cubic-bezier(.2,.8,.2,1)] [background:linear-gradient(to_top,var(--background)_calc(100%-6rem),transparent)] sm:pb-4 @4xl/discover-pane:px-12 motion-reduce:transition-none";
 
-const COMPOSER_CLEARANCE = 40;
+const COMPOSER_CLEARANCE = "7.5rem";
 const COMPOSER_HEIGHT_VARIABLE = "--discover-composer-height";
 
 const SCROLLED_THRESHOLD = 24;
@@ -120,7 +121,9 @@ export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
   const controller = useDiscoverEditionController();
   const [showSettings, setShowSettings] = useState(false);
   const [showDay, setShowDay] = useState(false);
-  const { greeting, today } = useDiscoverGreeting(controller.discover.data?.dayProfile?.timezone);
+  const { greeting: dayGreeting, today } = useDiscoverGreeting(
+    controller.discover.data?.dayProfile?.timezone,
+  );
   const { sourceRef: composerRef, targetRef: feedContentRef } = useElementHeightVariable<
     HTMLDivElement,
     HTMLDivElement
@@ -138,6 +141,10 @@ export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
   }, [chatPanelOpen]);
 
   const { discover, edition, ownEdition, settings, isAuthenticated } = controller;
+  const greeting =
+    controller.isHouseEdition && !isAuthenticated && edition
+      ? { opener: edition.greeting, name: null }
+      : dayGreeting;
   const isLoading =
     controller.isAuthenticationLoading || (isAuthenticated && (discover.isLoading || !settings));
 
@@ -238,12 +245,20 @@ export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
               style={
                 floatingComposer
                   ? {
-                      paddingBottom: `calc(var(${COMPOSER_HEIGHT_VARIABLE}, 0px) + ${COMPOSER_CLEARANCE}px)`,
+                      paddingBottom: `calc(var(${COMPOSER_HEIGHT_VARIABLE}, 0px) + ${COMPOSER_CLEARANCE})`,
                     }
                   : undefined
               }
             >
-              <DiscoverMasthead today={today} greeting={greeting}>
+              <DiscoverMasthead
+                today={today}
+                greeting={greeting}
+                intro={
+                  controller.isHouseEdition && !controller.isPro ? (
+                    <DiscoverWelcome isAuthenticated={isAuthenticated} />
+                  ) : null
+                }
+              >
                 {edition ? (
                   <DiscoverBrief lines={discoverCurrentBrief(discover.data, edition.brief)} />
                 ) : null}

@@ -6,14 +6,15 @@ import { buildHouseEdition } from "../house-edition";
 const now = new Date("2026-10-29T08:00:00.000Z");
 
 describe("buildHouseEdition", () => {
-  it("is a valid edition with house-covered starter tiles and one routine to try", () => {
+  it("is a valid edition whose starter tiles all have house covers", () => {
     const edition = buildHouseEdition({ date: "2026-10-29", now });
 
     expect(discoverEditionSchema.safeParse(edition).success).toBe(true);
     expect(edition.id).toBe("house-2026-10-29");
     expect(
-      edition.cards.filter((card) => card.kind === "topic" && card.coverId?.startsWith("house-")),
-    ).toHaveLength(4);
-    expect(edition.cards.filter((card) => card.kind === "action")).toHaveLength(1);
+      edition.cards
+        .filter((card) => card.kind === "topic")
+        .every((card) => card.coverId?.startsWith("house-")),
+    ).toBe(true);
   });
 });

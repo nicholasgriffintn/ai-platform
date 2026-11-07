@@ -29,6 +29,24 @@ function readinessPayload(overrides: Record<string, unknown> = {}) {
 }
 
 describe("buildModelReadinessBanner", () => {
+  it("invites a signed-out person to sign in rather than reporting a failure", () => {
+    const banner = buildModelReadinessBanner(
+      "ollama/gemma3:4b",
+      model(
+        readinessPayload({
+          state: "setup_required",
+          reasonCode: "account_required",
+          reason: "Sign in before using this model.",
+          action: { kind: "sign_in", label: "Sign in" },
+        }),
+      ),
+      false,
+      now,
+    );
+
+    expect(banner).toMatchObject({ tone: "info", title: "Sign in to chat" });
+  });
+
   it("shows an unknown readiness reason without exposing an unknown action", () => {
     const banner = buildModelReadinessBanner(
       "ollama/gemma3:4b",

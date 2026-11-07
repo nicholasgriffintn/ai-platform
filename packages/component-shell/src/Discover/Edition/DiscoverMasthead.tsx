@@ -8,10 +8,12 @@ export interface DiscoverGreeting {
 export function DiscoverMasthead({
   today,
   greeting,
+  intro,
   children,
 }: {
   today: string;
   greeting: DiscoverGreeting;
+  intro?: ReactNode;
   children?: ReactNode;
 }) {
   return (
@@ -26,6 +28,7 @@ export function DiscoverMasthead({
             </>
           )}
         </h1>
+        {intro}
       </div>
       {children ? (
         <div className="@container/brief min-w-0 flex-1 @5xl/discover:border-l @5xl/discover:border-border @5xl/discover:pt-1 @5xl/discover:pl-10">

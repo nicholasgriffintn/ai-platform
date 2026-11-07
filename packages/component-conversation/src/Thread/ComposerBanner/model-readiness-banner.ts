@@ -57,6 +57,16 @@ export function buildModelReadinessBanner(
     return null;
   }
 
+  if (readiness.reasonCode === "account_required") {
+    return {
+      id: `model-readiness:${model.id || requestedModelId}:account_required`,
+      tone: "info",
+      title: "Sign in to chat",
+      message:
+        "Sending a message opens sign-in. Polychat keeps your conversations on your account.",
+    };
+  }
+
   const actionPath = readiness.action ? resolveReadinessActionPath(readiness.action) : undefined;
 
   return {

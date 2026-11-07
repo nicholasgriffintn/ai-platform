@@ -118,7 +118,7 @@ export function DiscoverFeed({
   const { ref, width = 0 } = useElementSize<HTMLDivElement>();
   const { topics, stories, forYou, comingUp, reads, watching } = groupDiscoverCards(edition.cards);
   const railCards = [...comingUp, ...forYou, ...watching];
-  const railBeside = railCards.length > 0 && width >= RAIL_MIN_FEED_PX;
+  const railBeside = railCards.length > 0 && reads.length > 0 && width >= RAIL_MIN_FEED_PX;
   const posterCount = topics.length + stories.length;
   const shelfCount = mediaCount + posterCount;
   const selectCard = useStableCallback(onSelect);
@@ -167,7 +167,7 @@ export function DiscoverFeed({
         )}
         <div className="flex min-w-0 flex-1 flex-col gap-10">
           {railCards.length > 0 && !railBeside && (
-            <DiscoverCardStrip title="Also for you">
+            <DiscoverCardStrip title={reads.length > 0 ? "Also for you" : "For you"}>
               <RailCards cards={railCards} {...cardProps} />
             </DiscoverCardStrip>
           )}

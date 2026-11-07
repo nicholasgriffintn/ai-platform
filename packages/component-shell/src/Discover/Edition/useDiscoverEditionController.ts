@@ -64,6 +64,7 @@ function cardPrompt(card: DiscoverCard): string | null {
 export function useDiscoverEditionController() {
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
+  const isPro = useChatStore((state) => state.isPro);
   const setChatInput = useChatStore((state) => state.setChatInput);
   const [searchParams, setSearchParams] = useSearchParams();
   const linkedMedia = readPlayParam(searchParams.get(PLAY_PARAM));
@@ -251,6 +252,7 @@ export function useDiscoverEditionController() {
   return {
     isAuthenticated,
     isAuthenticationLoading,
+    isPro,
     discover,
     house,
     edition,
