@@ -170,7 +170,6 @@ export function dispatchModelSelectorShortcut(shortcut: ModelSelectorShortcut): 
 
 export function matchesAppKeyboardShortcut(
   event: Pick<KeyboardEvent, "altKey" | "ctrlKey" | "metaKey" | "shiftKey"> & {
-    // Some Android/Chrome autofill and IME keydown events arrive without a `key`.
     key?: string | null;
   },
   id: AppKeyboardShortcutId,
