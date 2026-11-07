@@ -1,7 +1,5 @@
 {
   "defaults": {
-    "supportsStreaming": false,
-    "supportsAttachments": false,
     "dataRetention": {
       "maxDays": "unknown",
       "source": "https://ideogram.ai/legal/api-tos"
@@ -9,7 +7,9 @@
     "dataLocation": {
       "kind": "unknown",
       "source": "https://ideogram.ai/legal/api-tos"
-    }
+    },
+    "supportsStreaming": false,
+    "supportsAttachments": false
   },
   "models": {
     "ideogram/ideogram-v3": {

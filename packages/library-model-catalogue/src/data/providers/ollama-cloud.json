@@ -1,9 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": false,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": 0,
       "zeroRetention": "default",
@@ -12,7 +8,11 @@
     "dataLocation": {
       "kind": "unknown",
       "source": "https://ollama.com/privacy"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "models": {
     "gpt-oss:120b": {
@@ -155,7 +155,6 @@
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

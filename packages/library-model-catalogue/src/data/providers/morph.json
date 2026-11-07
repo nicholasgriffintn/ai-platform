@@ -1,9 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": false,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": 30,
       "zeroRetention": "on_request",
@@ -12,7 +8,11 @@
     "dataLocation": {
       "kind": "unknown",
       "source": "https://www.morphllm.com/privacy"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
   },
   "models": {
     "morph-auto": {

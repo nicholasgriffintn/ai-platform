@@ -1,9 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": false,
     "dataRetention": {
       "maxDays": 30,
       "zeroRetention": "on_request",
@@ -12,7 +8,11 @@
     "dataLocation": {
       "kind": "deployment",
       "source": "https://developers.openai.com/api/docs/guides/your-data"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
   },
   "models": {
     "o3": {

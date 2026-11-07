@@ -1,8 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": 30,
       "zeroRetention": "account_setting",
@@ -11,7 +8,10 @@
     "dataLocation": {
       "kind": "multiple",
       "source": "https://docs.x.ai/docs/key-information/regions"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "models": {
     "grok-3-mini-fast-latest": {

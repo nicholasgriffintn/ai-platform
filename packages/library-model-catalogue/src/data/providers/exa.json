@@ -1,8 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": false,
-    "supportsAttachments": false,
-    "supportsTemperature": false,
     "dataRetention": {
       "maxDays": "unknown",
       "zeroRetention": "on_request",
@@ -11,7 +8,10 @@
     "dataLocation": {
       "kind": "unknown",
       "source": "https://exa.ai/privacy-policy"
-    }
+    },
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
   },
   "models": {
     "exa": {

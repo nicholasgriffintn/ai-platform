@@ -1,9 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": false,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": "unknown",
       "source": "https://huggingface.co/docs/inference-providers/security"
@@ -11,7 +7,11 @@
     "dataLocation": {
       "kind": "routed",
       "source": "https://huggingface.co/docs/inference-providers/security"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
   },
   "models": {
     "deepseek-ai/Deepseek-V3-0324": {
@@ -571,7 +571,7 @@
         "description": "Efficient open MiniMax model built for coding agents and tool-heavy workflows",
         "contextWindow": 204800,
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -669,7 +669,7 @@
       "overrides": {
         "name": "Qwen3-Coder 30B-A3B Instruct",
         "maxTokens": 65536,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "July 31, 2025",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.00026
@@ -868,7 +868,7 @@
       "model": "huggingface/stepfun-ai/Step-3.7-Flash/step-3-7-flash",
       "matchingModel": "stepfun-ai/Step-3.7-Flash",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "May 29, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00115,
@@ -1229,7 +1229,6 @@
       "overrides": {
         "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
         "contextWindow": 1048576,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -1352,7 +1351,7 @@
       "model": "minimax/minimax-m1-80k",
       "matchingModel": "MiniMaxAI/MiniMax-M1-80k",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.00055,
         "costPer1kOutputTokens": 0.0022

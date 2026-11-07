@@ -111,18 +111,33 @@
         "releaseDate": "October 13, 2026"
       }
     },
-    "liquidai-lfm2-5-2-6b": {
+    "lfm3-1-7b": {
       "defaults": {
-        "name": "LiquidAI: LFM2.5-2.6B",
-        "openWeights": false,
-        "description": "LFM2.5-2.6B is a compact reasoning model from Liquid AI. It is suited for agent workflows, data extraction, RAG, and long-context processing. Liquid advises against using it for agentic coding or...",
-        "contextWindow": 128000,
-        "releaseDate": "August 11, 2026",
+        "name": "LFM3-1.7B",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 262144,
+        "releaseDate": "November 6, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "high"
+            "none",
+            "thinking"
           ],
-          "defaultEffort": "high"
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "lfm3-1-7b-free": {
+      "defaults": {
+        "name": "LFM3-1.7B (free)",
+        "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads",
+        "contextWindow": 262144,
+        "releaseDate": "November 6, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
         }
       }
     },
@@ -141,6 +156,21 @@
         }
       }
     },
+    "liquidai-lfm2-5-2-6b-retires-nov-13": {
+      "defaults": {
+        "name": "LiquidAI: LFM2.5-2.6B",
+        "openWeights": false,
+        "description": "LFM2.5-2.6B is a compact reasoning model from Liquid AI. It is suited for agent workflows, data extraction, RAG, and long-context processing. Liquid advises against using it for agentic coding or...",
+        "contextWindow": 128000,
+        "releaseDate": "August 11, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
     "liquidai-lfm2-5-24b-a2b": {
       "defaults": {
         "name": "LiquidAI: LFM2.5-24B-A2B",
@@ -148,6 +178,36 @@
         "description": "LFM2.5-24B-A2B is a mixture-of-experts reasoning model from Liquid AI with 24B total and 2.45B active parameters. It always reasons before answering and is built for agents that call tools. Liquid...",
         "contextWindow": 128000,
         "releaseDate": "October 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "liquidai-lfm3-1-7b": {
+      "defaults": {
+        "name": "LiquidAI: LFM3-1.7B",
+        "openWeights": false,
+        "description": "A compact 1.7B-parameter text model with a 256K-token context, post-trained for agents, tool calling, and structured outputs. It reasons before it answers. Prompts and outputs may be retained and used...",
+        "contextWindow": 262144,
+        "releaseDate": "November 6, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "liquidai-lfm3-1-7b-free": {
+      "defaults": {
+        "name": "LiquidAI: LFM3-1.7B (free)",
+        "openWeights": false,
+        "description": "A compact 1.7B-parameter text model with a 256K-token context, post-trained for agents, tool calling, and structured outputs. It reasons before it answers. Prompts and outputs may be retained and used...",
+        "contextWindow": 262144,
+        "releaseDate": "November 6, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high"

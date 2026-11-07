@@ -1,11 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsCodeExecution": true,
-    "supportsTemperature": false,
-    "supportsTopP": false,
     "dataRetention": {
       "maxDays": 30,
       "zeroRetention": "on_request",
@@ -14,7 +8,13 @@
     "dataLocation": {
       "kind": "multiple",
       "source": "https://platform.claude.com/docs/en/build-with-claude/data-residency"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsCodeExecution": true,
+    "supportsTemperature": false,
+    "supportsTopP": false
   },
   "models": {
     "claude-4.6-opus": {
