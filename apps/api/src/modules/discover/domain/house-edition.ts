@@ -7,7 +7,6 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 
 export const HOUSE_EDITION_ID_PREFIX = "house";
-const HOUSE_TOPIC = "Polychat";
 
 const START_LINES: readonly DiscoverBriefLine[] = [
   {
@@ -35,7 +34,7 @@ const STARTER_CARDS: readonly DiscoverCard[] = [
     kind: "topic",
     id: "start-models",
     coverId: `${DISCOVER_HOUSE_COVER_PREFIX}models`,
-    topic: HOUSE_TOPIC,
+    topic: "Models",
     title: "Every model in one picker",
     angle:
       "Ask once and choose who answers: the frontier models, the open ones, and whichever you bring your own keys for. Change your mind mid-conversation and the thread carries on.",
@@ -47,7 +46,7 @@ const STARTER_CARDS: readonly DiscoverCard[] = [
     kind: "topic",
     id: "start-council",
     coverId: `${DISCOVER_HOUSE_COVER_PREFIX}council`,
-    topic: HOUSE_TOPIC,
+    topic: "Council",
     title: "Let a council argue it out",
     angle:
       "Put one question to several models at once and let them review each other. You read where they agree, where they part ways and why.",
@@ -60,7 +59,7 @@ const STARTER_CARDS: readonly DiscoverCard[] = [
     kind: "topic",
     id: "start-teammates",
     coverId: `${DISCOVER_HOUSE_COVER_PREFIX}teammates`,
-    topic: HOUSE_TOPIC,
+    topic: "Teammates",
     title: "Teammates that take the work",
     angle:
       "A teammate is a colleague with a brief, tools and a budget. Hand it a task and it reports back, asking before it sends, spends or deletes anything.",
@@ -72,7 +71,7 @@ const STARTER_CARDS: readonly DiscoverCard[] = [
     kind: "topic",
     id: "start-work",
     coverId: `${DISCOVER_HOUSE_COVER_PREFIX}work`,
-    topic: HOUSE_TOPIC,
+    topic: "Work",
     title: "Work, for projects with people in them",
     angle:
       "When a question grows into a project, open Work: shared workspaces, projects and tasks, with teammates to run them and usage beside the work.",
@@ -85,7 +84,7 @@ const STARTER_CARDS: readonly DiscoverCard[] = [
     kind: "topic",
     id: "start-notebooks",
     coverId: `${DISCOVER_HOUSE_COVER_PREFIX}notebooks`,
-    topic: HOUSE_TOPIC,
+    topic: "Notebooks",
     title: "A notebook for what you keep",
     angle:
       "Notebooks gather sources, notes and the conversations about them in one place, with guides, audio and video overviews drawn from what is inside.",
@@ -98,7 +97,7 @@ const STARTER_CARDS: readonly DiscoverCard[] = [
     kind: "topic",
     id: "start-sites",
     coverId: `${DISCOVER_HOUSE_COVER_PREFIX}sites`,
-    topic: HOUSE_TOPIC,
+    topic: "Sites",
     title: "A site from one description",
     angle:
       "Describe a website, an app screen or a component and watch it appear as it is written. Keep editing it in conversation until it is right.",
@@ -110,7 +109,7 @@ const STARTER_CARDS: readonly DiscoverCard[] = [
     kind: "topic",
     id: "start-discover",
     coverId: `${DISCOVER_HOUSE_COVER_PREFIX}discover`,
-    topic: HOUSE_TOPIC,
+    topic: "Discover",
     title: "A morning edition, written for you",
     angle:
       "Turn on Discover and Poly reads what you have been talking about, then leaves an edition here each morning: a brief, topics worth a look, links and a round-up to listen to.",
@@ -122,7 +121,7 @@ const STARTER_CARDS: readonly DiscoverCard[] = [
     kind: "topic",
     id: "start-pets",
     coverId: `${DISCOVER_HOUSE_COVER_PREFIX}pets`,
-    topic: HOUSE_TOPIC,
+    topic: "Pets",
     title: "Meet the flock",
     angle:
       "A pet perches above the composer and reacts to whatever Polychat is doing. Four parrots that used to be logos, and a few strays that turned up on their own.",
