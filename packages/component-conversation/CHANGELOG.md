@@ -1,5 +1,13 @@
 # @ngriffin_uk/polychat-component-conversation
 
+## 2.2.7
+
+### Patch Changes
+
+- 376ee71: The model selector now has more room in the mobile composer. Reasoning depth and verbosity have moved out of the composer bar on mobile, and you can still change both from the settings cog.
+- Updated dependencies [676fff8]
+  - @ngriffin_uk/polychat-library-client@0.15.1
+
 ## 2.2.6
 
 ### Patch Changes

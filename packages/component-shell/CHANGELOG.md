@@ -1,5 +1,15 @@
 # @ngriffin_uk/polychat-component-shell
 
+## 2.10.1
+
+### Patch Changes
+
+- 676fff8: The Privacy Policy and Terms of Service now describe what Polychat does today, including connectors, Discover, generated media marks, safety measures, data export, credits and run caps.
+- Updated dependencies [676fff8]
+- Updated dependencies [376ee71]
+  - @ngriffin_uk/polychat-library-client@0.15.1
+  - @ngriffin_uk/polychat-component-conversation@2.2.7
+
 ## 2.10.0
 
 ### Minor Changes
