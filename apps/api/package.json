@@ -77,7 +77,7 @@
     "fflate": "^0.8.3",
     "hono": "4.13.14",
     "hono-openapi": "1.5.0",
-    "hyparquet": "1.31.5",
+    "hyparquet": "1.32.0",
     "isbot": "5.2.2",
     "postal-mime": "4.1.4",
     "stripe": "23.0.1",
