@@ -1,5 +1,9 @@
 import { Link } from "@ngriffin_uk/polychat-component-ui";
-import { AI_DISCLOSURE_TEXT } from "@ngriffin_uk/polychat-schemas";
+import {
+  AI_DISCLOSURE_TEXT,
+  MOBILE_AI_DISCLOSURE_TEXT,
+  AI_DISCLOSURE_WARNING,
+} from "@ngriffin_uk/polychat-schemas";
 import { Loader2 } from "lucide-react";
 
 export interface ConversationFooterInfoProps {
@@ -24,8 +28,8 @@ export const ConversationFooterInfo = ({
         <p className="mb-1">
           {hasConversationContext ? (
             <>
-              {AI_DISCLOSURE_TEXT} It can make mistakes.
-              {!isMobile && " Check relevant sources before decisions."}
+              {isMobile ? MOBILE_AI_DISCLOSURE_TEXT : AI_DISCLOSURE_TEXT}
+              {!isMobile && ` ${AI_DISCLOSURE_WARNING}`}
             </>
           ) : (
             <>
