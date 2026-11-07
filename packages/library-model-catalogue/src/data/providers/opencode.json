@@ -1064,7 +1064,6 @@
       "matchingModel": "gemini-3.8-flash",
       "overrides": {
         "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
-        "maxTokens": 65536,
         "speed": 3,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.0015,
@@ -1154,6 +1153,8 @@
       "model": "opencode/union-alpha/union-alpha-free",
       "matchingModel": "union-alpha",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Union Alpha Free is no longer offered by OpenCode.",
         "lastUpdated": "September 16, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -1166,6 +1167,8 @@
       "model": "opencode/jev-latest/jev",
       "matchingModel": "jev-latest",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Jev is no longer offered by OpenCode.",
         "lastUpdated": "September 15, 2026",
         "costPer1kInputTokens": 0.000042,
         "costPer1kOutputTokens": 0,
@@ -1370,7 +1373,6 @@
       "matchingModel": "gemini-4-argon",
       "overrides": {
         "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
-        "maxTokens": 65536,
         "speed": 2,
         "lastUpdated": "October 13, 2026",
         "costPer1kInputTokens": 0.002,

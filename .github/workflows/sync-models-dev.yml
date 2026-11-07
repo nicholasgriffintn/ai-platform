@@ -28,13 +28,13 @@ jobs:
         uses: ./.github/actions/vite-task-cache
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Build the shared schemas package
-        run: pnpm exec vp run --filter=@ngriffin_uk/polychat-schemas build
+      - name: Build the model catalogue package
+        run: pnpm exec vp run --filter=@ngriffin_uk/polychat-library-model-catalogue build
       - name: Run models.dev sync
         env:
           POLYCHAT_API_KEY: ${{ secrets.POLYCHAT_MODEL_ANALYSIS_TASK_API_KEY }}
           POLYCHAT_API_BASE_URL: https://api.polychat.app
-        run: pnpm --filter @ngriffin_uk/polychat-library-model-catalogue models:sync --write --verbose --trigger-analysis-task
+        run: pnpm --filter @ngriffin_uk/polychat-library-model-sync models:sync --write --verbose --trigger-analysis-task
       - name: Commit model updates
         id: sync-commit
         env:

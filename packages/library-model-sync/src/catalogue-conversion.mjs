@@ -1,6 +1,10 @@
 import { isDeepStrictEqual } from "node:util";
 
-import { modelCatalogueSchema, resolveCatalogueProvider } from "../../src/schema.ts";
+import {
+  modelCatalogueSchema,
+  resolveCatalogueProvider,
+} from "@ngriffin_uk/polychat-library-model-catalogue/schema";
+
 import { describeFamily, describeModel, modelIdentity } from "./catalogue-identity.mjs";
 import { differingValues, majorityValues } from "./value-utils.mjs";
 

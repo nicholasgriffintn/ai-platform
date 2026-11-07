@@ -134,6 +134,8 @@
       "matchingModel": "deepseek/deepseek-r1-distill-llama-70b",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek R1 Distill Llama 70B is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "January 20, 2025",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00099,
@@ -145,6 +147,8 @@
       "matchingModel": "anthropic/claude-4-1-opus",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Claude Opus 4 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "May 22, 2025",
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.075
@@ -170,6 +174,8 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
+        "deprecated": true,
+        "deprecationMessage": "Claude Haiku 3.5 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "October 22, 2024",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.004,
@@ -192,6 +198,8 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
+        "deprecated": true,
+        "deprecationMessage": "Claude Sonnet 4 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "May 22, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -207,6 +215,8 @@
       "model": "claude/claude-opus-4",
       "matchingModel": "anthropic/claude-4-opus",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Claude Opus 4 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "May 22, 2025",
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.075
@@ -276,6 +286,8 @@
       "model": "magistral-medium/magistral-medium",
       "matchingModel": "mistral/magistral-medium",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Magistral Medium is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 20, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.005,
@@ -299,6 +311,8 @@
       "matchingModel": "mistral/pixtral-large",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Pixtral Large is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "November 4, 2024",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
@@ -308,6 +322,8 @@
       "model": "pixtral/pixtral-12b",
       "matchingModel": "mistral/pixtral-12b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Pixtral 12B is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 1, 2024",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00015
@@ -361,6 +377,8 @@
       "model": "mistral/mixtral-8x22b",
       "matchingModel": "mistral/mixtral-8x22b-instruct",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Mixtral 8x22B is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 17, 2024",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
@@ -374,6 +392,8 @@
         "strengths": [
           "tool_use"
         ],
+        "deprecated": true,
+        "deprecationMessage": "Magistral Small is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 17, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015,
@@ -384,6 +404,8 @@
       "model": "mistral/mistral-large",
       "matchingModel": "mistral/mistral-large",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Mistral Large is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "November 4, 2024",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
@@ -394,6 +416,8 @@
       "model": "qwen/qwen-3-coder-480b",
       "matchingModel": "cerebras/qwen3-coder",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen 3 Coder 480B is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "July 23, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.002,
@@ -521,6 +545,8 @@
       "model": "qwen/qwen3-coder-plus",
       "matchingModel": "alibaba/qwen3-coder-plus",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Coder Plus is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "July 23, 2025",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
@@ -597,6 +623,8 @@
       "overrides": {
         "maxTokens": 32768,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Max is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.006,
@@ -621,6 +649,8 @@
       "matchingModel": "alibaba/qwen3-max-preview",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Max Preview is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.006,
@@ -681,6 +711,8 @@
       "model": "qwen/qwen3-vl-thinking",
       "matchingModel": "alibaba/qwen3-vl-thinking",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 VL Thinking is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 24, 2025",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.004
@@ -747,6 +779,8 @@
       "model": "claude-opus/claude-opus-4",
       "matchingModel": "anthropic/claude-opus-4",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Claude Opus 4 is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "May 22, 2025",
         "costPer1kInputTokens": 0.015,
@@ -812,6 +846,8 @@
       "overrides": {
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
         "contextWindow": 1000000,
+        "deprecated": true,
+        "deprecationMessage": "Claude Sonnet 4 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "May 22, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
@@ -837,6 +873,8 @@
       "model": "trinity/trinity-large-preview",
       "matchingModel": "arcee-ai/trinity-large-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Trinity Large Preview is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "January 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.001,
@@ -847,6 +885,8 @@
       "model": "trinity/trinity-mini",
       "matchingModel": "arcee-ai/trinity-mini",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Trinity Mini is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "December 2025",
         "costPer1kInputTokens": 0.000045,
         "costPer1kOutputTokens": 0.00015,
@@ -924,7 +964,6 @@
       "model": "seed/seed-1-8",
       "matchingModel": "bytedance/seed-1.8",
       "overrides": {
-        "name": "Seed 1.8",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 32768,
         "knowledgeCutoffDate": "October 2024",
@@ -977,6 +1016,8 @@
         "contextWindow": 163840,
         "maxTokens": 163840,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V3 0324 is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "December 26, 2024",
         "lastUpdated": "December 26, 2024",
@@ -1019,6 +1060,8 @@
         "maxTokens": 32768,
         "contextComplexity": 3,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V3.1 Terminus is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "July 2025",
         "lastUpdated": "September 22, 2025",
         "costPer1kInputTokens": 0.00027,
@@ -1068,6 +1111,8 @@
       "matchingModel": "deepseek/deepseek-v3.2-exp",
       "overrides": {
         "maxTokens": 163840,
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V3.2 Exp is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "September 2025",
         "lastUpdated": "September 29, 2025",
         "costPer1kInputTokens": 0.00027,
@@ -1139,12 +1184,17 @@
       "model": "gemini/nano-banana-preview-gemini-2-5-flash-image-preview",
       "matchingModel": "google/gemini-2.5-flash-image-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Nano Banana Preview (Gemini 2.5 Flash Image Preview) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 20, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025,
         "supportsToolCalls": false,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "google/gemini-2.5-flash-lite": {
       "model": "gemini-flash-lite/gemini-2-5-flash-lite",
@@ -1176,6 +1226,8 @@
       "model": "gemini/gemini-2-5-flash-lite-preview-09-25",
       "matchingModel": "google/gemini-2.5-flash-lite-preview-09-2025",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Flash Lite Preview 09-25 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 25, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004,
@@ -1186,12 +1238,17 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "google/gemini-2.5-flash-preview-09-2025": {
       "model": "gemini/gemini-2-5-flash-preview-09-25",
       "matchingModel": "google/gemini-2.5-flash-preview-09-2025",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Flash Preview 09-25 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 25, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025,
@@ -1202,7 +1259,10 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "google/gemini-2.5-pro": {
       "model": "gemini-pro/gemini-2-5-pro",
@@ -1302,6 +1362,8 @@
       "model": "gemini-pro/gemini-3-pro-preview",
       "matchingModel": "google/gemini-3-pro-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Gemini 3 Pro Preview is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "November 18, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012
@@ -1324,6 +1386,8 @@
       "model": "imagen/imagen-4-fast",
       "matchingModel": "google/imagen-4.0-fast-generate-001",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Imagen 4 Fast is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "June 2025",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -1333,6 +1397,8 @@
       "model": "imagen/imagen-4",
       "matchingModel": "google/imagen-4.0-generate-001",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Imagen 4 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "May 22, 2025",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -1345,6 +1411,8 @@
       "model": "imagen/imagen-4-ultra",
       "matchingModel": "google/imagen-4.0-ultra-generate-001",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Imagen 4 Ultra is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "May 24, 2025",
         "supportsToolCalls": false,
         "supportsAttachments": false,
@@ -1396,6 +1464,8 @@
       "model": "kat-coder/kat-coder-pro-v1",
       "matchingModel": "kwaipilot/kat-coder-pro-v1",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "KAT-Coder-Pro V1 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "October 24, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -1407,6 +1477,8 @@
       "model": "longcat/longcat-flash-chat",
       "matchingModel": "meituan/longcat-flash-chat",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "LongCat Flash Chat is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "August 30, 2025",
         "supportsAttachments": false
       }
@@ -1446,6 +1518,8 @@
       "overrides": {
         "openWeights": false,
         "maxTokens": 8192,
+        "deprecated": true,
+        "deprecationMessage": "Llama 3.2 11B Vision Instruct is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 25, 2024",
         "costPer1kInputTokens": 0.00016,
         "costPer1kOutputTokens": 0.00016
@@ -1458,6 +1532,8 @@
         "openWeights": false,
         "contextWindow": 128000,
         "maxTokens": 8192,
+        "deprecated": true,
+        "deprecationMessage": "Llama 3.2 1B Instruct is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 18, 2024",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0001,
@@ -1472,6 +1548,8 @@
         "openWeights": false,
         "contextWindow": 128000,
         "maxTokens": 8192,
+        "deprecated": true,
+        "deprecationMessage": "Llama 3.2 3B Instruct is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 18, 2024",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00015,
@@ -1485,6 +1563,8 @@
       "overrides": {
         "name": "Llama 3.2 90B Vision Instruct",
         "openWeights": false,
+        "deprecated": true,
+        "deprecationMessage": "Llama 3.2 90B Vision Instruct is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 25, 2024",
         "costPer1kInputTokens": 0.00072,
         "costPer1kOutputTokens": 0.00072
@@ -1603,6 +1683,8 @@
           "tool_use"
         ],
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Devstral 2 is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "December 9, 2025",
         "costPer1kInputTokens": 0.0004,
@@ -1618,6 +1700,8 @@
       "matchingModel": "mistral/devstral-small",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Devstral Small 1.1 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "May 7, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0003,
@@ -1632,6 +1716,8 @@
       "matchingModel": "mistral/devstral-small-2",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Devstral Small 2 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "May 7, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0003,
@@ -1702,6 +1788,8 @@
           ]
         },
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Mistral Medium 3.1 is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "May 7, 2025",
         "lastUpdated": "May 7, 2025",
@@ -1732,6 +1820,8 @@
         "contextWindow": 216144,
         "maxTokens": 216144,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2 Thinking is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "November 6, 2025",
         "costPer1kInputTokens": 0.00047,
         "costPer1kOutputTokens": 0.002,
@@ -1751,6 +1841,8 @@
       "model": "kimi/kimi-k2-turbo",
       "matchingModel": "moonshotai/kimi-k2-turbo",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2 Turbo is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 5, 2025",
         "costPer1kInputTokens": 0.00115,
         "costPer1kOutputTokens": 0.008,
@@ -1874,6 +1966,8 @@
       "model": "vercel/openai/codex-mini/codex-mini",
       "matchingModel": "openai/codex-mini",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Codex Mini is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "May 16, 2025",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.006
@@ -1883,6 +1977,8 @@
       "model": "gpt/gpt-3-5-turbo",
       "matchingModel": "openai/gpt-3.5-turbo",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GPT-3.5 Turbo is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "November 6, 2023",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015,
@@ -1896,6 +1992,8 @@
       "overrides": {
         "contextWindow": 8192,
         "maxTokens": 4096,
+        "deprecated": true,
+        "deprecationMessage": "GPT-3.5 Turbo Instruct is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "September 2021",
         "releaseDate": "September 18, 2023",
         "lastUpdated": "March 1, 2023",
@@ -1912,6 +2010,8 @@
       "model": "gpt-mini/gpt-4o-mini-search-preview",
       "matchingModel": "openai/gpt-4o-mini-search-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GPT 4o Mini Search Preview is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "January 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -1929,6 +2029,8 @@
       "model": "gpt/gpt-5-chat",
       "matchingModel": "openai/gpt-5-chat",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GPT-5 Chat is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01
@@ -2088,6 +2190,8 @@
       "model": "gpt/gpt-5-1-instant",
       "matchingModel": "openai/gpt-5.1-instant",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GPT-5.1 Instant is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01
@@ -2155,6 +2259,8 @@
             "text"
           ]
         },
+        "deprecated": true,
+        "deprecationMessage": "GPT-5.2 Chat is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00175,
@@ -2269,6 +2375,8 @@
             "text"
           ]
         },
+        "deprecated": true,
+        "deprecationMessage": "o3-deep-research is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "June 26, 2024",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.04
@@ -2376,6 +2484,8 @@
           "tool_use"
         ],
         "contextComplexity": 4,
+        "deprecated": true,
+        "deprecationMessage": "Sonar Pro is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "February 19, 2025",
         "lastUpdated": "February 19, 2025",
@@ -2387,6 +2497,8 @@
       "model": "vercel/perplexity/sonar-reasoning/sonar-reasoning",
       "matchingModel": "perplexity/sonar-reasoning",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Sonar Reasoning is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "February 19, 2025",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
@@ -2409,6 +2521,8 @@
           ]
         },
         "contextComplexity": 2,
+        "deprecated": true,
+        "deprecationMessage": "Sonar Reasoning Pro is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "February 19, 2025",
         "lastUpdated": "February 19, 2025",
@@ -2431,6 +2545,8 @@
       "model": "vercel/prime-intellect/intellect-3/intellect-3",
       "matchingModel": "prime-intellect/intellect-3",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "INTELLECT 3 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "November 26, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0011,
@@ -2558,6 +2674,8 @@
       "model": "grok/grok-2-vision",
       "matchingModel": "xai/grok-2-vision",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok 2 Vision is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "August 20, 2024",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01
@@ -2574,6 +2692,8 @@
           "tool_use"
         ],
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Grok 3 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -2587,6 +2707,8 @@
       "model": "grok/grok-3-fast",
       "matchingModel": "xai/grok-3-fast",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok 3 Fast is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -2600,6 +2722,8 @@
       "model": "grok/grok-3-mini",
       "matchingModel": "xai/grok-3-mini",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok 3 Mini is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0005,
@@ -2614,6 +2738,8 @@
       "model": "grok/grok-3-mini-fast",
       "matchingModel": "xai/grok-3-mini-fast",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok 3 Mini Fast is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.004,
@@ -2629,6 +2755,8 @@
       "matchingModel": "xai/grok-4",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Grok 4 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "July 9, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -2643,6 +2771,8 @@
       "model": "grok/grok-4-fast-non-reasoning",
       "matchingModel": "xai/grok-4-fast-non-reasoning",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok 4 Fast (Non-Reasoning) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 19, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005
@@ -2669,6 +2799,8 @@
           "tool_use"
         ],
         "contextComplexity": 5,
+        "deprecated": true,
+        "deprecationMessage": "Grok 4 Fast Reasoning is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "July 9, 2025",
         "lastUpdated": "July 9, 2025",
@@ -2695,6 +2827,8 @@
             "text"
           ]
         },
+        "deprecated": true,
+        "deprecationMessage": "Grok 4.1 Fast Non-Reasoning is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "July 9, 2025",
         "costPer1kInputTokens": 0.0002,
@@ -2717,6 +2851,8 @@
         "strengths": [
           "tool_use"
         ],
+        "deprecated": true,
+        "deprecationMessage": "Grok 4.1 Fast Reasoning is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "July 9, 2025",
         "costPer1kInputTokens": 0.0002,
@@ -2728,6 +2864,8 @@
       "model": "grok/grok-code-fast-1",
       "matchingModel": "xai/grok-code-fast-1",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok Code Fast 1 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "August 28, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0015,
@@ -2746,6 +2884,8 @@
         "maxTokens": 32000,
         "contextComplexity": 4,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "MiMo V2 Flash is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "February 4, 2026",
         "costPer1kInputTokens": 0.0001,
@@ -2843,6 +2983,8 @@
         ],
         "contextComplexity": 3,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "GLM-4.6V is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "December 8, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0009
@@ -2855,6 +2997,8 @@
       "model": "glm/glm-4-6v-flash",
       "matchingModel": "zai/glm-4.6v-flash",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GLM-4.6V-Flash is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 30, 2025"
       },
       "unset": [
@@ -2915,6 +3059,8 @@
       "model": "qwen/qwen-3-6-max-preview",
       "matchingModel": "alibaba/qwen-3.6-max-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen 3.6 Max Preview is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.0013,
         "costPer1kOutputTokens": 0.0078
@@ -2949,6 +3095,8 @@
           "document"
         ],
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 VL 235B A22B Instruct is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0016,
@@ -3093,6 +3241,8 @@
       "overrides": {
         "contextWindow": 262100,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Trinity Large Thinking is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.0008,
@@ -3160,6 +3310,8 @@
       "model": "gemini-flash/gemini-3-1-flash-image-preview-nano-banana-2",
       "matchingModel": "google/gemini-3.1-flash-image-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Gemini 3.1 Flash Image Preview (Nano Banana 2) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "February 26, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
@@ -3208,6 +3360,8 @@
       "matchingModel": "google/gemini-3.1-flash-lite-preview",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 3.1 Flash Lite Preview is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 3, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.0015
@@ -3323,6 +3477,8 @@
       "model": "vercel/inception/mercury-edit-2/mercury-edit-2",
       "matchingModel": "inception/mercury-edit-2",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Mercury Edit 2 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 30, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00075,
@@ -3346,6 +3502,8 @@
       "overrides": {
         "name": "Kat Coder Pro V2",
         "maxTokens": 256000,
+        "deprecated": true,
+        "deprecationMessage": "Kat Coder Pro V2 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 30, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -3481,6 +3639,8 @@
       "model": "gpt/gpt-5-3-chat",
       "matchingModel": "openai/gpt-5.3-chat",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GPT-5.3 Chat is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 6, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014
@@ -3698,6 +3858,8 @@
             "text"
           ]
         },
+        "deprecated": true,
+        "deprecationMessage": "Grok 4.20 Multi-Agent is no longer offered by Vercel AI Gateway.",
         "releaseDate": "March 10, 2026",
         "lastUpdated": "March 23, 2026",
         "costPer1kInputTokens": 0.00125,
@@ -3724,6 +3886,8 @@
             "text"
           ]
         },
+        "deprecated": true,
+        "deprecationMessage": "Grok 4.20 Multi Agent Beta is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
@@ -3756,6 +3920,8 @@
         },
         "contextComplexity": 5,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Grok 4.20 Non-Reasoning is no longer offered by Vercel AI Gateway.",
         "releaseDate": "March 10, 2026",
         "lastUpdated": "March 23, 2026",
         "costPer1kInputTokens": 0.00125,
@@ -3766,6 +3932,8 @@
       "model": "grok/grok-4-20-beta-non-reasoning",
       "matchingModel": "xai/grok-4.20-non-reasoning-beta",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok 4.20 Beta Non-Reasoning is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025
@@ -3787,6 +3955,8 @@
             "text"
           ]
         },
+        "deprecated": true,
+        "deprecationMessage": "Grok 4.20 Reasoning is no longer offered by Vercel AI Gateway.",
         "releaseDate": "March 10, 2026",
         "lastUpdated": "March 23, 2026",
         "costPer1kInputTokens": 0.00125,
@@ -3801,6 +3971,8 @@
       "model": "grok/grok-4-20-beta-reasoning",
       "matchingModel": "xai/grok-4.20-reasoning-beta",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok 4.20 Beta Reasoning is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
@@ -3819,6 +3991,8 @@
       "overrides": {
         "maxTokens": 1000000,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Grok 4.3 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
@@ -3849,6 +4023,8 @@
           "image",
           "creative"
         ],
+        "deprecated": true,
+        "deprecationMessage": "Grok Imagine Image is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "February 19, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -3858,6 +4034,8 @@
       "model": "grok/grok-imagine-image-pro",
       "matchingModel": "xai/grok-imagine-image-pro",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok Imagine Image Pro is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "February 19, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -3871,6 +4049,8 @@
       "matchingModel": "xiaomi/mimo-v2-pro",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "MiMo V2 Pro is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.003,
@@ -3885,6 +4065,8 @@
       "matchingModel": "xiaomi/mimo-v2.5",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "MiMo M2.5 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.000119,
         "costPer1kOutputTokens": 0.000238
@@ -3906,6 +4088,8 @@
           "tool_use"
         ],
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "MiMo V2.5 Pro is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.0003045,
         "costPer1kOutputTokens": 0.000609,
@@ -4155,6 +4339,8 @@
       "model": "grok-build/grok-build-0-1",
       "matchingModel": "xai/grok-build-0.1",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok Build 0.1 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 16, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.002
@@ -4337,6 +4523,8 @@
       "matchingModel": "stepfun/step-3.5-flash",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "StepFun 3.5 Flash is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "February 13, 2026",
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.0003,
@@ -4541,6 +4729,8 @@
       "model": "seed/seedance-v1-0-lite-image-to-video",
       "matchingModel": "bytedance/seedance-v1.0-lite-i2v",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Seedance v1.0 Lite Image-to-Video is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "June 1, 2025",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -4553,6 +4743,8 @@
       "model": "seed/seedance-v1-0-lite-text-to-video",
       "matchingModel": "bytedance/seedance-v1.0-lite-t2v",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Seedance v1.0 Lite Text-to-Video is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "June 1, 2025",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -4676,6 +4868,8 @@
       "model": "veo/veo-3-0-fast-generate",
       "matchingModel": "google/veo-3.0-fast-generate-001",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Veo 3.0 Fast Generate is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "June 8, 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false,
@@ -4686,6 +4880,8 @@
       "model": "veo/veo-3-0",
       "matchingModel": "google/veo-3.0-generate-001",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Veo 3.0 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "June 8, 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false,
@@ -4808,6 +5004,8 @@
       "model": "longcat/longcat-flash-thinking-2601",
       "matchingModel": "meituan/longcat-flash-thinking-2601",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "LongCat Flash Thinking 2601 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 13, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -4829,6 +5027,8 @@
         "strengths": [
           "image"
         ],
+        "deprecated": true,
+        "deprecationMessage": "GPT Image 1 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.04,
@@ -5015,6 +5215,8 @@
           "video",
           "creative"
         ],
+        "deprecated": true,
+        "deprecationMessage": "Grok Imagine is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "January 28, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -5024,7 +5226,9 @@
       "model": "grok/grok-imagine-video-1-5-preview",
       "matchingModel": "xai/grok-imagine-video-1.5-preview",
       "overrides": {
-        "isFeatured": true,
+        "isFeatured": false,
+        "deprecated": true,
+        "deprecationMessage": "Grok Imagine Video 1.5 Preview is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "May 30, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -5290,6 +5494,8 @@
       "model": "grok/grok-voice-think-fast-1-0",
       "matchingModel": "xai/grok-voice-think-fast-1.0",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok Voice Think Fast 1.0 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 23, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -5299,6 +5505,8 @@
       "model": "grok/grok-stt",
       "matchingModel": "xai/grok-stt",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok STT is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 16, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -5310,6 +5518,8 @@
       "overrides": {
         "contextWindow": 0,
         "maxTokens": 0,
+        "deprecated": true,
+        "deprecationMessage": "Grok TTS is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 16, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -5321,6 +5531,8 @@
       "overrides": {
         "description": "Video model for image-to-video generation, editing, and extension workflows",
         "contextWindow": 0,
+        "deprecated": true,
+        "deprecationMessage": "Grok Imagine Video 1.5 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "May 30, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -5353,6 +5565,8 @@
       "model": "claude-haiku/claude-3-5-haiku",
       "matchingModel": "anthropic/claude-3.5-haiku",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Claude 3.5 Haiku is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "October 22, 2024",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.004
@@ -5373,6 +5587,8 @@
             "image"
           ]
         },
+        "deprecated": true,
+        "deprecationMessage": "Arrow 1.1 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 16, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -5420,6 +5636,8 @@
       "model": "claude-haiku/claude-haiku-3",
       "matchingModel": "anthropic/claude-3-haiku",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Claude Haiku 3 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 13, 2024",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00125
@@ -5484,6 +5702,8 @@
       "matchingModel": "xai/grok-4.5",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Grok 4.5 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "July 8, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
@@ -5589,6 +5809,8 @@
       "matchingModel": "kwaipilot/kat-coder-air-v2.5",
       "overrides": {
         "name": "Kat Coder Air V2.5",
+        "deprecated": true,
+        "deprecationMessage": "Kat Coder Air V2.5 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "July 10, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -5608,6 +5830,8 @@
       "overrides": {
         "name": "Kat Coder Pro V2.5",
         "maxTokens": 80000,
+        "deprecated": true,
+        "deprecationMessage": "Kat Coder Pro V2.5 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "July 10, 2026",
         "costPer1kInputTokens": 0.00074,
         "costPer1kOutputTokens": 0.00296,
@@ -5657,6 +5881,8 @@
       "matchingModel": "anthropic/claude-opus-4.7-fast",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Claude Opus 4.7 (Fast) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 16, 2026",
         "costPer1kInputTokens": 0.03,
         "costPer1kOutputTokens": 0.15,
@@ -5870,6 +6096,8 @@
       "model": "laguna/laguna-s-2-1-free",
       "matchingModel": "poolside/laguna-s-2.1-free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Laguna S 2.1 Free is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -5898,6 +6126,8 @@
         "openWeights": false,
         "maxTokens": 256000,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Ling 3.0 Flash is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "July 23, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -6003,6 +6233,8 @@
       "model": "grok/grok-voice-think-fast-2-0",
       "matchingModel": "xai/grok-voice-think-fast-2.0",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok Voice Think Fast 2.0 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "July 29, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -6216,6 +6448,8 @@
         "contextWindow": 256000,
         "maxTokens": 32000,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Ling 3.0 Tiny (Free) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "August 6, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -6240,6 +6474,8 @@
       "model": "grok/grok-imagine-image-2-0-preview",
       "matchingModel": "xai/grok-imagine-image-2.0-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok Imagine Image 2.0 Preview is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "August 8, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -6299,6 +6535,8 @@
           "image",
           "creative"
         ],
+        "deprecated": true,
+        "deprecationMessage": "Grok Imagine Image 2.0 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "August 7, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false,
@@ -6325,6 +6563,8 @@
           "coding"
         ],
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Grok 4.6 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
@@ -6419,8 +6659,8 @@
       "overrides": {
         "speed": 5,
         "lastUpdated": "August 11, 2026",
-        "costPer1kInputTokens": 0.00005,
-        "costPer1kOutputTokens": 0.0002,
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00016,
         "supportsAttachments": false
       }
     },
@@ -6449,6 +6689,8 @@
       "matchingModel": "openai/gpt-4.1-nano-fast",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "GPT-4.1 nano (Fast) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0008
@@ -6609,6 +6851,8 @@
       "matchingModel": "openai/o4-mini-fast",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "o4-mini (Fast) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 16, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008,
@@ -6633,6 +6877,8 @@
       "model": "o/s1-free",
       "matchingModel": "fish-audio/s1-free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "S1 (Free) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "October 20, 2025",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -6645,6 +6891,8 @@
       "model": "o/s2-pro-free",
       "matchingModel": "fish-audio/s2-pro-free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "S2 Pro (Free) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 9, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -6657,6 +6905,8 @@
       "model": "o/s2-1-pro-free",
       "matchingModel": "fish-audio/s2.1-pro-free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "S2.1 Pro (Free) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "July 28, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -6669,6 +6919,8 @@
       "model": "o/transcribe-1-free",
       "matchingModel": "fish-audio/transcribe-1-free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Transcribe-1 (Free) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 1, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -6694,6 +6946,8 @@
             "text"
           ]
         },
+        "deprecated": true,
+        "deprecationMessage": "Grok 4.1 Fast Non-Reasoning is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "November 19, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005
@@ -6716,6 +6970,8 @@
             "text"
           ]
         },
+        "deprecated": true,
+        "deprecationMessage": "Grok 4.1 Fast Reasoning is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "November 19, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005,
@@ -7021,6 +7277,8 @@
       "model": "grok/grok-imagine-video-1-5-preview",
       "matchingModel": "spacexai/grok-imagine-video-1.5-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok Imagine Video 1.5 Preview is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "May 30, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -7057,6 +7315,8 @@
       "model": "grok/grok-voice-think-fast-1-0",
       "matchingModel": "spacexai/grok-voice-think-fast-1.0",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok Voice Think Fast 1.0 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 23, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -7070,6 +7330,8 @@
       "matchingModel": "spacexai/grok-voice-think-fast-2.0",
       "overrides": {
         "description": "Realtime voice model for low-latency spoken conversations",
+        "deprecated": true,
+        "deprecationMessage": "Grok Voice Think Fast 2.0 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "July 29, 2026",
         "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
       }
@@ -7178,6 +7440,8 @@
         "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
         "maxTokens": 196608,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Minimax M2.7 (Free) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7206,6 +7470,8 @@
           "tool_use"
         ],
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "MiniMax M3 (Free) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -7268,6 +7534,7 @@
       "model": "gemini/gemini-3-5-transcribe",
       "matchingModel": "google/gemini-3.5-transcribe",
       "overrides": {
+        "releaseDate": "August 26, 2026",
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
@@ -7310,6 +7577,8 @@
         "contextWindow": 256000,
         "maxTokens": 32000,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Ling 3.0 Flash Fin (Free) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "August 27, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7385,6 +7654,8 @@
       "matchingModel": "alibaba/qwen3.8-flash-next",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen 3.8 Flash Next is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "August 27, 2026",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.0004
@@ -7394,6 +7665,8 @@
       "model": "mimo/mimo-v2-5-pro-ultraspeed",
       "matchingModel": "xiaomi/mimo-v2.5-pro-ultraspeed",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "MiMo V2.5 Pro UltraSpeed is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0.001305,
         "costPer1kOutputTokens": 0.00261,
@@ -7553,6 +7826,8 @@
       "matchingModel": "zai/glm-5.3-promo-50",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "GLM 5.3 (50% off) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "August 18, 2026",
         "costPer1kInputTokens": 0.0007,
         "costPer1kOutputTokens": 0.0022,
@@ -7591,6 +7866,8 @@
         "name": "Ling 3.0 Flash Sante (Free)",
         "contextWindow": 256000,
         "maxTokens": 32000,
+        "deprecated": true,
+        "deprecationMessage": "Ling 3.0 Flash Sante (Free) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 4, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7638,6 +7915,8 @@
       "model": "deepseek/deepseek-v4-1-flash-beta",
       "matchingModel": "deepseek/deepseek-v4.1-flash-beta",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V4.1 Flash Beta is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 8, 2026",
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00066
@@ -7827,6 +8106,8 @@
           "document",
           "tool_use"
         ],
+        "deprecated": true,
+        "deprecationMessage": "Ling 3.0 Flash VL (Free) is no longer offered by Vercel AI Gateway.",
         "releaseDate": "September 8, 2026",
         "lastUpdated": "September 8, 2026",
         "costPer1kInputTokens": 0,
@@ -8288,6 +8569,8 @@
       "model": "longcat/longcat-2-5-preview",
       "matchingModel": "meituan/longcat-2.5-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "LongCat 2.5 Preview is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 25, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -8298,6 +8581,8 @@
       "model": "vercel/stealth/pixel-canary/pixel-canary",
       "matchingModel": "stealth/pixel-canary",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Pixel Canary is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 25, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -8308,7 +8593,6 @@
       "model": "ling/ling-3-1-flash",
       "matchingModel": "inclusionai/ling-3.1-flash",
       "overrides": {
-        "contextWindow": 262144,
         "maxTokens": 32768,
         "contextComplexity": 4,
         "speed": 4,
@@ -8325,13 +8609,18 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "inclusionai/ling-3.1-flash-free": {
       "model": "ling/ling-3-1-flash-free",
       "matchingModel": "inclusionai/ling-3.1-flash-free",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Ling 3.1 Flash (Free) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 29, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -8342,6 +8631,8 @@
       "model": "mai/mai-transcribe-1-5",
       "matchingModel": "microsoft/mai-transcribe-1.5",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "MAI-Transcribe-1.5 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "June 1, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false
@@ -8958,15 +9249,7 @@
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsTemperature": false
       }
     },
     "moonshotai/kimi-k3.1-pro-highspeed": {
@@ -9155,7 +9438,10 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "tencent/hy4": {
       "model": "Hy/tencent-hy4",
@@ -9194,6 +9480,26 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsAttachments": false
+      }
+    },
+    "openai/gpt-image-2.6-flare": {
+      "model": "gpt-image/gpt-image-2-6-flare",
+      "matchingModel": "openai/gpt-image-2.6-flare",
+      "overrides": {
+        "lastUpdated": "November 4, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.03,
+        "supportsToolCalls": false
+      }
+    },
+    "openai/gpt-image-2.6-sunburst": {
+      "model": "gpt-image/gpt-image-2-6-sunburst",
+      "matchingModel": "openai/gpt-image-2.6-sunburst",
+      "overrides": {
+        "lastUpdated": "November 4, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.03,
+        "supportsToolCalls": false
       }
     }
   }

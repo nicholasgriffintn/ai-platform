@@ -33,6 +33,8 @@
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
+        "deprecationMessage": "o3 shuts down on 11 December 2026. Use GPT-5.6 Sol instead.",
+        "replacementModel": "gpt-5.6-sol",
         "lastUpdated": "April 16, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008,
@@ -59,6 +61,8 @@
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
+        "deprecationMessage": "GPT-4o shuts down on 14 January 2027. Use GPT-6 Luna instead.",
+        "replacementModel": "gpt-6-luna",
         "lastUpdated": "August 6, 2024",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,
@@ -102,6 +106,8 @@
         "speed": 3,
         "isFeatured": false,
         "deprecated": true,
+        "deprecationMessage": "GPT-4o mini shuts down on 14 January 2027. Use GPT-6 Luna instead.",
+        "replacementModel": "gpt-6-luna",
         "lastUpdated": "July 18, 2024",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -172,6 +178,8 @@
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
+        "deprecationMessage": "GPT-4.1 shuts down on 14 January 2027. Use GPT-6 Luna instead.",
+        "replacementModel": "gpt-6-luna",
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008,
@@ -218,6 +226,8 @@
         "speed": 4,
         "isFeatured": false,
         "deprecated": true,
+        "deprecationMessage": "GPT-4.1 mini shuts down on 14 January 2027. Use GPT-6 Luna instead.",
+        "replacementModel": "gpt-6-luna",
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0016,
@@ -254,6 +264,8 @@
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
+        "deprecationMessage": "GPT-5 shuts down on 11 December 2026. Use GPT-5.6 Sol instead.",
+        "replacementModel": "gpt-5.6-sol",
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -307,6 +319,8 @@
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
+        "deprecationMessage": "GPT-5 Mini shuts down on 11 December 2026. Use GPT-5.6 Terra instead.",
+        "replacementModel": "gpt-5.6-terra",
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
@@ -358,6 +372,8 @@
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
+        "deprecationMessage": "GPT-5 Nano shuts down on 11 December 2026. Use GPT-5.6 Luna instead.",
+        "replacementModel": "gpt-5.6-luna",
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0004,
@@ -444,6 +460,8 @@
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
+        "deprecationMessage": "GPT-5.1 Codex was retired on 23 July 2026. Use GPT-5.6 Sol instead.",
+        "replacementModel": "gpt-5.6-sol",
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -486,6 +504,8 @@
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
+        "deprecationMessage": "GPT-5.1 Codex mini was retired on 23 July 2026. Use GPT-5.6 Terra instead.",
+        "replacementModel": "gpt-5.6-terra",
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
@@ -618,6 +638,8 @@
       "matchingModel": "gpt-5-chat-latest",
       "overrides": {
         "deprecated": true,
+        "deprecationMessage": "GPT-5 Chat was retired on 23 July 2026. Use GPT-5.6 Sol instead.",
+        "replacementModel": "gpt-5.6-sol",
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -658,6 +680,8 @@
         ],
         "speed": 3,
         "deprecated": true,
+        "deprecationMessage": "GPT-5-Codex was retired on 23 July 2026. Use GPT-5.6 Sol instead.",
+        "replacementModel": "gpt-5.6-sol",
         "lastUpdated": "September 15, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -697,6 +721,8 @@
           ]
         },
         "deprecated": true,
+        "deprecationMessage": "GPT-5 Pro shuts down on 11 December 2026. Use GPT-5.6 Sol instead.",
+        "replacementModel": "gpt-5.6-sol",
         "lastUpdated": "October 6, 2025",
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.12,
@@ -740,6 +766,8 @@
         ],
         "speed": 3,
         "deprecated": true,
+        "deprecationMessage": "GPT-5.1 shuts down on 1 April 2027. Use GPT-6 Sol instead.",
+        "replacementModel": "gpt-6-sol",
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -775,6 +803,8 @@
       "matchingModel": "gpt-5.1-chat-latest",
       "overrides": {
         "deprecated": true,
+        "deprecationMessage": "GPT-5.1 Chat was retired on 23 July 2026. Use GPT-5.6 Sol instead.",
+        "replacementModel": "gpt-5.6-sol",
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -818,6 +848,8 @@
       "matchingModel": "gpt-5.1-codex-max",
       "overrides": {
         "deprecated": true,
+        "deprecationMessage": "GPT-5.1 Codex Max was retired on 23 July 2026. Use GPT-5.6 Sol instead.",
+        "replacementModel": "gpt-5.6-sol",
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -863,6 +895,8 @@
         },
         "speed": 2,
         "deprecated": true,
+        "deprecationMessage": "GPT-5.2 Codex was retired on 23 July 2026. Use GPT-5.6 Sol instead.",
+        "replacementModel": "gpt-5.6-sol",
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -942,6 +976,9 @@
           "coding"
         ],
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "GPT-5.3 Codex shuts down on 1 April 2027. Use GPT-6 Sol instead.",
+        "replacementModel": "gpt-6-sol",
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -1046,6 +1083,8 @@
           ]
         },
         "deprecated": true,
+        "deprecationMessage": "o3-deep-research was retired on 23 July 2026. Use GPT-5.6 Sol instead.",
+        "replacementModel": "gpt-5.6-sol",
         "lastUpdated": "June 26, 2024",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.04,
@@ -1071,6 +1110,8 @@
         },
         "speed": 2,
         "deprecated": true,
+        "deprecationMessage": "o3-pro shuts down on 11 December 2026. Use GPT-5.6 Sol instead.",
+        "replacementModel": "gpt-5.6-sol",
         "lastUpdated": "June 10, 2025",
         "costPer1kInputTokens": 0.02,
         "costPer1kOutputTokens": 0.08,
@@ -1100,6 +1141,8 @@
           ]
         },
         "deprecated": true,
+        "deprecationMessage": "o4-mini-deep-research was retired on 23 July 2026. Use GPT-5.6 Sol instead.",
+        "replacementModel": "gpt-5.6-sol",
         "lastUpdated": "June 26, 2024",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008,
@@ -1304,6 +1347,9 @@
         ],
         "speed": 3,
         "multimodal": true,
+        "deprecated": true,
+        "deprecationMessage": "GPT-5.4 nano shuts down on 1 April 2027. Use GPT-6 Luna instead.",
+        "replacementModel": "gpt-6-luna",
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00125,
@@ -1629,6 +1675,9 @@
       "matchingModel": "gpt-audio-mini",
       "overrides": {
         "speed": 5,
+        "deprecated": true,
+        "deprecationMessage": "GPT Audio Mini shuts down on 20 January 2027. Use GPT Audio 1.5 instead.",
+        "replacementModel": "gpt-audio-1.5",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0024,
         "supportsResponseFormat": false,
@@ -2180,6 +2229,178 @@
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005
+      }
+    },
+    "gpt-image-2.6-flare": {
+      "model": "gpt-image/gpt-image-2-6-flare",
+      "matchingModel": "gpt-image-2.6-flare",
+      "overrides": {
+        "strengths": [
+          "creative",
+          "vision",
+          "document",
+          "image"
+        ],
+        "speed": 3,
+        "lastUpdated": "November 4, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.03,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsImageEdits": true,
+        "supportsTemperature": true,
+        "timeout": 1000000,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt for image generation or editing.",
+              "required": true
+            },
+            {
+              "name": "size",
+              "type": "string",
+              "description": "Output size."
+            },
+            {
+              "name": "quality",
+              "type": "string",
+              "description": "Rendering quality.",
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "auto"
+              ]
+            },
+            {
+              "name": "output_format",
+              "type": "string",
+              "description": "Output image format.",
+              "enum": [
+                "png",
+                "jpeg",
+                "webp"
+              ]
+            },
+            {
+              "name": "output_compression",
+              "type": "integer",
+              "description": "Compression level for JPEG and WebP outputs."
+            },
+            {
+              "name": "background",
+              "type": "string",
+              "description": "Background handling. Transparent backgrounds are not supported.",
+              "enum": [
+                "auto",
+                "opaque"
+              ]
+            },
+            {
+              "name": "moderation",
+              "type": "string",
+              "description": "Image moderation strictness.",
+              "enum": [
+                "auto",
+                "low"
+              ]
+            },
+            {
+              "name": "n",
+              "type": "integer",
+              "description": "Number of images to generate."
+            }
+          ],
+          "reference": "https://developers.openai.com/api/docs/guides/image-generation"
+        }
+      }
+    },
+    "gpt-image-2.6-sunburst": {
+      "model": "gpt-image/gpt-image-2-6-sunburst",
+      "matchingModel": "gpt-image-2.6-sunburst",
+      "overrides": {
+        "strengths": [
+          "creative",
+          "vision",
+          "document",
+          "image"
+        ],
+        "speed": 3,
+        "lastUpdated": "November 4, 2026",
+        "costPer1kInputTokens": 0.005,
+        "costPer1kOutputTokens": 0.03,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsImageEdits": true,
+        "supportsTemperature": true,
+        "timeout": 1000000,
+        "inputSchema": {
+          "fields": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "description": "Text prompt for image generation or editing.",
+              "required": true
+            },
+            {
+              "name": "size",
+              "type": "string",
+              "description": "Output size."
+            },
+            {
+              "name": "quality",
+              "type": "string",
+              "description": "Rendering quality.",
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "auto"
+              ]
+            },
+            {
+              "name": "output_format",
+              "type": "string",
+              "description": "Output image format.",
+              "enum": [
+                "png",
+                "jpeg",
+                "webp"
+              ]
+            },
+            {
+              "name": "output_compression",
+              "type": "integer",
+              "description": "Compression level for JPEG and WebP outputs."
+            },
+            {
+              "name": "background",
+              "type": "string",
+              "description": "Background handling. Transparent backgrounds are not supported.",
+              "enum": [
+                "auto",
+                "opaque"
+              ]
+            },
+            {
+              "name": "moderation",
+              "type": "string",
+              "description": "Image moderation strictness.",
+              "enum": [
+                "auto",
+                "low"
+              ]
+            },
+            {
+              "name": "n",
+              "type": "integer",
+              "description": "Number of images to generate."
+            }
+          ],
+          "reference": "https://developers.openai.com/api/docs/guides/image-generation"
+        }
       }
     }
   }

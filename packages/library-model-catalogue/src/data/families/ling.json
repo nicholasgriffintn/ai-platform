@@ -926,6 +926,8 @@
         "name": "Ling 3.1 Flash",
         "openWeights": true,
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text"
@@ -939,6 +941,7 @@
         ],
         "reliability": 2,
         "releaseDate": "September 29, 2026",
+        "supportsResponseFormat": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,

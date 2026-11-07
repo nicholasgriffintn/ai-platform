@@ -6,7 +6,7 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { isStealthModel } from "@ngriffin_uk/polychat-schemas";
 import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { isDismissed, useComposerBannerDismissals } from "./dismissal.js";
 import { buildModelReadinessBanner } from "./model-readiness-banner.js";
@@ -48,6 +48,8 @@ export function useComposerBanner({
   const dismissals = useComposerBannerDismissals((state) => state.dismissals);
   const cooldownUntil = useComposerBannerDismissals((state) => state.cooldownUntil);
   const storeDismiss = useComposerBannerDismissals((state) => state.dismiss);
+  const messagesSent = useComposerBannerDismissals((state) => state.messagesSent);
+  const handledMessagesSent = useRef(messagesSent);
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -157,6 +159,18 @@ export function useComposerBanner({
 
     storeDismiss(banner.id, banner.dismissal.scope, banner.dismissal.suggestion);
   }, [banner, storeDismiss]);
+
+  useEffect(() => {
+    if (handledMessagesSent.current === messagesSent) {
+      return;
+    }
+
+    handledMessagesSent.current = messagesSent;
+
+    if (banner?.dismissal?.suggestion) {
+      dismiss();
+    }
+  }, [banner, dismiss, messagesSent]);
 
   return { banner, dismiss };
 }

@@ -200,7 +200,7 @@ export function ModelSelectorPanel({
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-2 pb-2">
+      <div className="@container flex min-h-0 flex-1 flex-col overflow-hidden px-2 pb-2">
         <ModelsList
           autoContent={
             showTiers ? (

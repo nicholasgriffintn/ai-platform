@@ -45,12 +45,16 @@ function readCooldownUntil(): number {
 interface ComposerBannerDismissalStore {
   dismissals: Record<string, string>;
   cooldownUntil: number;
+  messagesSent: number;
   dismiss: (id: string, scope: BannerDismissalScope, suggestion?: boolean) => void;
+  noteMessageSent: () => void;
 }
 
 export const useComposerBannerDismissals = create<ComposerBannerDismissalStore>()((set) => ({
   dismissals: readDismissals(),
   cooldownUntil: readCooldownUntil(),
+  messagesSent: 0,
+  noteMessageSent: () => set((state) => ({ messagesSent: state.messagesSent + 1 })),
   dismiss: (id, scope, suggestion) =>
     set((state) => {
       const value =

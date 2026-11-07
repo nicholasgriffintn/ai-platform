@@ -60,6 +60,8 @@
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
         "maxTokens": 1048576,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "deepseek-v4-flash is no longer offered by Ollama Cloud.",
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00066,
@@ -117,6 +119,8 @@
         "name": "glm-5.1",
         "contextWindow": 202752,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "glm-5.1 is no longer offered by Ollama Cloud.",
         "releaseDate": "March 27, 2026",
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.001,
@@ -192,6 +196,8 @@
           "tool_use"
         ],
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "kimi-k2.5 is no longer offered by Ollama Cloud.",
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003
@@ -275,6 +281,8 @@
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "maxTokens": 131072,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "minimax-m2.5 is no longer offered by Ollama Cloud.",
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -390,6 +398,8 @@
       "model": "qwen/qwen3-5-397b",
       "matchingModel": "qwen3.5:397b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "qwen3.5:397b is no longer offered by Ollama Cloud.",
         "lastUpdated": "February 17, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0036
@@ -536,6 +546,19 @@
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.000435,
         "costPer1kOutputTokens": 0.00087
+      }
+    },
+    "kimi-k3.1-pro": {
+      "model": "kimi-k3/kimi-k3-1-pro",
+      "matchingModel": "kimi-k3.1-pro",
+      "overrides": {
+        "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
+        "maxTokens": 1048576,
+        "lastUpdated": "October 23, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": true,
+        "supportsTemperature": false
       }
     }
   }

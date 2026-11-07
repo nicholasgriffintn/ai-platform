@@ -41,7 +41,8 @@
     "sonar": {
       "defaults": {
         "name": "Sonar",
-        "description": "Sonar search model for current answers, retrieval, and citation-backed chat"
+        "description": "Sonar search model for current answers, retrieval, and citation-backed chat",
+        "supportsToolCalls": true
       }
     }
   }

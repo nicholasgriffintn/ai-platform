@@ -276,6 +276,8 @@
       "overrides": {
         "name": "Qwen3-Next-80B-A3B-Thinking",
         "maxTokens": 131072,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3-Next-80B-A3B-Thinking is no longer offered by Hugging Face.",
         "releaseDate": "September 11, 2025",
         "lastUpdated": "September 11, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -297,6 +299,8 @@
         "maxTokens": 4096,
         "contextComplexity": 3,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "MiMo-V2-Flash is no longer offered by Hugging Face.",
         "lastUpdated": "December 16, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0003

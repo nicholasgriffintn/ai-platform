@@ -1,4 +1,5 @@
-import { resolveCatalogueProvider } from "../../src/schema.ts";
+import { resolveCatalogueProvider } from "@ngriffin_uk/polychat-library-model-catalogue/schema";
+
 import {
   buildArtificialAnalysisUpdateValues,
   findArtificialAnalysisModel,
@@ -7,6 +8,7 @@ import { convertCatalogue } from "./catalogue-conversion.mjs";
 import { modelIdentity } from "./catalogue-identity.mjs";
 import { CURATED_MODEL_IDS, PROVIDER_ALIASES } from "./constants.mjs";
 import { buildUpdateValues } from "./model-values.mjs";
+import { reconcileProviderAvailability } from "./provider-availability.mjs";
 import {
   remoteModelBelongsToProvider,
   resolveRemoteModelProvider,
@@ -98,7 +100,13 @@ function collectProviderTransfers(catalogue, remoteProviders, providerOrder, sel
   return { transferredEntries, transferredKeys };
 }
 
-export function syncCatalogue(catalogue, remoteProviders, analysisLookup, selectedProviders) {
+export function syncCatalogue(
+  catalogue,
+  remoteProviders,
+  analysisLookup,
+  selectedProviders,
+  providerAvailability = {},
+) {
   for (const selected of selectedProviders) {
     if (
       !Object.keys(catalogue.providers).some(
@@ -111,7 +119,13 @@ export function syncCatalogue(catalogue, remoteProviders, analysisLookup, select
   }
 
   const providers = {};
-  const stats = { updatedModels: 0, addedModels: 0, removedModels: 0 };
+  const stats = {
+    updatedModels: 0,
+    addedModels: 0,
+    removedModels: 0,
+    retiredModels: 0,
+    restoredModels: 0,
+  };
   const selection = buildSelection(selectedProviders);
   const providerOrder = planProviders(catalogue, remoteProviders, selection);
   const { transferredEntries, transferredKeys } = collectProviderTransfers(
@@ -254,7 +268,23 @@ export function syncCatalogue(catalogue, remoteProviders, analysisLookup, select
       stats.addedModels++;
     }
 
-    providers[provider] = next;
+    const availability = providerAvailability[provider];
+
+    if (!availability) {
+      providers[provider] = next;
+      continue;
+    }
+
+    const reconciled = reconcileProviderAvailability({
+      provider,
+      models: next,
+      remoteModels,
+      availability,
+    });
+
+    providers[provider] = reconciled.models;
+    stats.retiredModels += reconciled.retired;
+    stats.restoredModels += reconciled.restored;
   }
 
   const selectedRemoteProviders = Object.fromEntries(

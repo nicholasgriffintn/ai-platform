@@ -663,12 +663,23 @@
       "model": "nemotron/nemotron-3-super-120b",
       "matchingModel": "@cf/nvidia/nemotron-3-120b-a12b",
       "overrides": {
+        "name": "Nemotron 3 Super",
+        "contextWindow": 256000,
+        "maxTokens": 256000,
         "deprecated": true,
         "deprecationMessage": "Nemotron 3 120B shuts down on 20 November 2026. Use DeepSeek V4.1 Flash instead.",
         "replacementModel": "@cf/deepseek-ai/deepseek-v4.1-flash-1017",
+        "releaseDate": "March 11, 2026",
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.0015
+        "costPer1kOutputTokens": 0.0015,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "@cf/zai-org/glm-4.7-flash": {

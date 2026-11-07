@@ -46,6 +46,7 @@ import { OpencodeProvider } from "../capabilities/chat/providers/opencode.js";
 import { OpenRouterProvider } from "../capabilities/chat/providers/openrouter.js";
 import { OvhCloudProvider } from "../capabilities/chat/providers/ovhcloud.js";
 import { ParallelProvider } from "../capabilities/chat/providers/parallel.js";
+import { PerplexityAgentProvider } from "../capabilities/chat/providers/perplexity-agent.js";
 import { PerplexityProvider } from "../capabilities/chat/providers/perplexity.js";
 import { PollyProvider } from "../capabilities/chat/providers/polly.js";
 import { PoolsideProvider } from "../capabilities/chat/providers/poolside.js";
@@ -189,6 +190,11 @@ function chatProviders(runtime: ProviderRuntime): AiProviderRegistration<AIProvi
       aliases: ["perplexity"],
       create: () => new PerplexityProvider(runtime),
       metadata: { vendor: "Perplexity", categories: ["chat", "search"] },
+    },
+    {
+      name: "perplexity-agent",
+      create: () => new PerplexityAgentProvider(runtime),
+      metadata: { vendor: "Perplexity", categories: ["chat"], tags: ["multi-provider"] },
     },
     {
       name: "replicate",

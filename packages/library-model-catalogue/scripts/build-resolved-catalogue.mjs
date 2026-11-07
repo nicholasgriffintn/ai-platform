@@ -2,8 +2,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { resolveModelCatalogueWithProviderIds } from "../src/schema.ts";
-import { readCatalogue } from "./sync-models-dev/catalogue-files.mjs";
+import { readCatalogue } from "../dist/files.js";
+import { resolveModelCatalogueWithProviderIds } from "../dist/schema.js";
 
 const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const RESOLVED_TYPES = `import type { ModelConfig } from "@ngriffin_uk/polychat-schemas";

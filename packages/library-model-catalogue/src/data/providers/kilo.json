@@ -19,6 +19,8 @@
       "matchingModel": "claude-sonnet-4-5",
       "overrides": {
         "contextWindow": 200000,
+        "deprecated": true,
+        "deprecationMessage": "Claude Sonnet 4.5 is no longer offered by Kilo.",
         "lastUpdated": "September 29, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015
@@ -32,6 +34,8 @@
       "matchingModel": "claude-opus-4-5",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Claude Opus 4.5 is no longer offered by Kilo.",
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025
@@ -130,6 +134,8 @@
       "model": "deepseek-thinking/deepseek-reasoner",
       "matchingModel": "deepseek-reasoner",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek Reasoner is no longer offered by Kilo.",
         "lastUpdated": "January 20, 2025",
         "costPer1kInputTokens": 0.00055,
         "costPer1kOutputTokens": 0.00219
@@ -691,6 +697,8 @@
       "model": "claude-sonnet/anthropic-claude-sonnet-4",
       "matchingModel": "anthropic/claude-sonnet-4",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Anthropic: Claude Sonnet 4 is no longer offered by Kilo.",
         "lastUpdated": "May 22, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -791,6 +799,8 @@
       "matchingModel": "arcee-ai/trinity-large-thinking",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Trinity Large Thinking is no longer offered by Kilo.",
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.0008,
@@ -1170,7 +1180,6 @@
       "matchingModel": "google/gemini-2.5-pro-preview",
       "overrides": {
         "name": "Google: Gemini 2.5 Pro Preview 06-05",
-        "openWeights": false,
         "modalities": {
           "input": [
             "pdf",
@@ -1578,7 +1587,6 @@
       "matchingModel": "google/gemini-3.8-flash",
       "overrides": {
         "description": "Gemini 3.8 Flash is Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows.",
-        "maxTokens": 65536,
         "speed": 3,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
@@ -1753,6 +1761,8 @@
       "model": "granite/ibm-granite-4-0-micro",
       "matchingModel": "ibm-granite/granite-4.0-h-micro",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "IBM: Granite 4.0 Micro is no longer offered by Kilo.",
         "lastUpdated": "October 20, 2025",
         "costPer1kInputTokens": 0.000017,
         "costPer1kOutputTokens": 0.000112,
@@ -1815,6 +1825,8 @@
       "matchingModel": "inclusionai/ling-3.0-flash-fin",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "inclusionAI: Ling 3.0 Flash Fin is no longer offered by Kilo.",
         "lastUpdated": "August 27, 2026",
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.00022,
@@ -1826,6 +1838,8 @@
       "model": "ling/inclusionai-ling-3-0-flash-sante",
       "matchingModel": "inclusionai/ling-3.0-flash-sante",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "inclusionAI: Ling 3.0 Flash Sante is no longer offered by Kilo.",
         "lastUpdated": "September 4, 2026",
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.00022,
@@ -1936,6 +1950,8 @@
       "model": "liquid/liquidai-lfm2-5-2-6b-free",
       "matchingModel": "liquid/lfm-2.5-2.6b:free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "LiquidAI: LFM2.5-2.6B (free) is no longer offered by Kilo.",
         "lastUpdated": "August 11, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2217,6 +2233,8 @@
       "model": "kilo/microsoft/wizardlm-2-8x22b/wizardlm-2-8x22b",
       "matchingModel": "microsoft/wizardlm-2-8x22b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "WizardLM-2 8x22B is no longer offered by Kilo.",
         "lastUpdated": "April 16, 2024",
         "costPer1kInputTokens": 0.00062,
         "costPer1kOutputTokens": 0.00062,
@@ -2229,6 +2247,8 @@
       "model": "minimax/minimax-minimax-01-retires-nov-5",
       "matchingModel": "minimax/minimax-01",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "MiniMax: MiniMax-01 is no longer offered by Kilo.",
         "lastUpdated": "January 15, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0011,
@@ -2254,6 +2274,8 @@
         "contextWindow": 204800,
         "maxTokens": 131072,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "MiniMax-M2 is no longer offered by Kilo.",
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.000255,
         "costPer1kOutputTokens": 0.00102,
@@ -2272,6 +2294,8 @@
       "matchingModel": "minimax/minimax-m2-her",
       "overrides": {
         "name": "MiniMax-M2 Her",
+        "deprecated": true,
+        "deprecationMessage": "MiniMax-M2 Her is no longer offered by Kilo.",
         "lastUpdated": "January 23, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -2292,6 +2316,8 @@
       "matchingModel": "minimax/minimax-m2.1",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "MiniMax-M2.1 is no longer offered by Kilo.",
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -2847,6 +2873,8 @@
       "model": "nemotron/nvidia-nemotron-3-super-free",
       "matchingModel": "nvidia/nemotron-3-super-120b-a12b:free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "NVIDIA: Nemotron 3 Super (free) is no longer offered by Kilo.",
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2910,6 +2938,8 @@
       "model": "nemotron/nvidia-nemotron-3-5-content-safety-free",
       "matchingModel": "nvidia/nemotron-3.5-content-safety:free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "NVIDIA: Nemotron 3.5 Content Safety (free) is no longer offered by Kilo.",
         "lastUpdated": "June 2, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2972,6 +3002,8 @@
       "model": "gpt/openai-gpt-3-5-turbo-instruct",
       "matchingModel": "openai/gpt-3.5-turbo-instruct",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "OpenAI: GPT-3.5 Turbo Instruct is no longer offered by Kilo.",
         "lastUpdated": "September 28, 2023",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.002,
@@ -3017,6 +3049,8 @@
           ]
         },
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "GPT-4 Turbo is no longer offered by Kilo.",
         "lastUpdated": "April 9, 2024",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.03
@@ -3346,6 +3380,8 @@
       "model": "gpt/openai-gpt-5-2-chat",
       "matchingModel": "openai/gpt-5.2-chat",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "OpenAI: GPT-5.2 Chat is no longer offered by Kilo.",
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -3813,6 +3849,8 @@
       "matchingModel": "openai/o1",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "o1 is no longer offered by Kilo.",
         "lastUpdated": "December 5, 2024",
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.06,
@@ -3829,6 +3867,8 @@
       "model": "o-pro/o1-pro",
       "matchingModel": "openai/o1-pro",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "o1-pro is no longer offered by Kilo.",
         "lastUpdated": "March 19, 2025",
         "costPer1kInputTokens": 0.15,
         "costPer1kOutputTokens": 0.6,
@@ -3867,6 +3907,8 @@
         "name": "o3-mini",
         "description": "O-series reasoning model for hard analysis, math, coding, and planning",
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "o3-mini is no longer offered by Kilo.",
         "lastUpdated": "January 29, 2025",
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0044,
@@ -3884,6 +3926,8 @@
       "matchingModel": "openai/o3-mini-high",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "OpenAI: o3 Mini High is no longer offered by Kilo.",
         "lastUpdated": "February 12, 2025",
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0044,
@@ -3931,6 +3975,8 @@
           "tool_use"
         ],
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "o4-mini is no longer offered by Kilo.",
         "lastUpdated": "April 16, 2025",
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0044,
@@ -3947,6 +3993,8 @@
       "model": "o/openai-o4-mini-high",
       "matchingModel": "openai/o4-mini-high",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "OpenAI: o4 Mini High is no longer offered by Kilo.",
         "lastUpdated": "April 16, 2025",
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0044,
@@ -4074,6 +4122,8 @@
       "model": "laguna/poolside-laguna-s-2-1-free",
       "matchingModel": "poolside/laguna-s-2.1:free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Poolside: Laguna S 2.1 (free) is no longer offered by Kilo.",
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -4085,6 +4135,8 @@
       "model": "laguna/poolside-laguna-xs-2-1-free",
       "matchingModel": "poolside/laguna-xs-2.1:free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Poolside: Laguna XS 2.1 (free) is no longer offered by Kilo.",
         "lastUpdated": "July 2, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -4213,6 +4265,8 @@
       "model": "qwen/qwen-qwen3-30b-a3b-thinking-2507-retires-oct-9",
       "matchingModel": "qwen/qwen3-30b-a3b-thinking-2507",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen: Qwen3 30B A3B Thinking 2507 (retires Oct 9) is no longer offered by Kilo.",
         "lastUpdated": "August 28, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0024,
@@ -4245,6 +4299,8 @@
       "matchingModel": "qwen/qwen3-8b",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Qwen: Qwen3 8B (retires Oct 9) is no longer offered by Kilo.",
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.000117,
         "costPer1kOutputTokens": 0.000455,
@@ -4305,6 +4361,8 @@
       "matchingModel": "qwen/qwen3-coder-plus",
       "overrides": {
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Coder Plus is no longer offered by Kilo.",
         "lastUpdated": "July 23, 2025",
         "costPer1kInputTokens": 0.00065,
         "costPer1kOutputTokens": 0.00325,
@@ -4317,6 +4375,8 @@
       "overrides": {
         "description": "Flagship Qwen model for complex reasoning, coding, and agentic workflows",
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Max is no longer offered by Kilo.",
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.00078,
         "costPer1kOutputTokens": 0.0039,
@@ -4327,6 +4387,8 @@
       "model": "qwen/qwen-qwen3-max-thinking-retires-oct-9",
       "matchingModel": "qwen/qwen3-max-thinking",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen: Qwen3 Max Thinking (retires Oct 9) is no longer offered by Kilo.",
         "lastUpdated": "February 9, 2026",
         "costPer1kInputTokens": 0.00078,
         "costPer1kOutputTokens": 0.0039,
@@ -4354,6 +4416,8 @@
         "name": "Qwen3-Next 80B-A3B (Thinking)",
         "maxTokens": 235929,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3-Next 80B-A3B (Thinking) is no longer offered by Kilo.",
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0012,
@@ -4388,6 +4452,8 @@
       "model": "qwen/qwen3-vl-235b-a22b-thinking",
       "matchingModel": "qwen/qwen3-vl-235b-a22b-thinking",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 VL 235B A22B Thinking is no longer offered by Kilo.",
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.004,
@@ -4429,6 +4495,8 @@
       "matchingModel": "qwen/qwen3-vl-32b-instruct",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen: Qwen3 VL 32B Instruct (retires Oct 9) is no longer offered by Kilo.",
         "lastUpdated": "October 23, 2025",
         "costPer1kInputTokens": 0.000104,
         "costPer1kOutputTokens": 0.000416
@@ -4448,6 +4516,8 @@
       "model": "qwen/qwen-qwen3-vl-8b-thinking-retires-oct-9",
       "matchingModel": "qwen/qwen3-vl-8b-thinking",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen: Qwen3 VL 8B Thinking (retires Oct 9) is no longer offered by Kilo.",
         "lastUpdated": "October 14, 2025",
         "costPer1kInputTokens": 0.00018,
         "costPer1kOutputTokens": 0.0021
@@ -4698,6 +4768,8 @@
       "matchingModel": "qwen/qwen3.6-max-preview",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3.6 Max Preview is no longer offered by Kilo.",
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.001027,
         "costPer1kOutputTokens": 0.006162,
@@ -5037,6 +5109,8 @@
       "model": "llama/sao10k-llama-3-3-euryale-70b",
       "matchingModel": "sao10k/l3.3-euryale-70b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Sao10K: Llama 3.3 Euryale 70B is no longer offered by Kilo.",
         "lastUpdated": "December 18, 2024",
         "costPer1kInputTokens": 0.00065,
         "costPer1kOutputTokens": 0.00075,
@@ -5049,6 +5123,8 @@
       "matchingModel": "stealth/claude-opus-4.6",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Stealth: Claude Opus 4.6 (20% off) is no longer offered by Kilo.",
         "lastUpdated": "August 26, 2025",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
@@ -5062,6 +5138,8 @@
       "matchingModel": "stealth/claude-opus-4.7",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Stealth: Claude Opus 4.7 (20% off) is no longer offered by Kilo.",
         "lastUpdated": "August 26, 2025",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
@@ -5075,6 +5153,8 @@
       "matchingModel": "stealth/claude-opus-4.8",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Stealth: Claude Opus 4.8 (20% off) is no longer offered by Kilo.",
         "lastUpdated": "August 26, 2025",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
@@ -5088,6 +5168,8 @@
       "matchingModel": "stealth/claude-sonnet-4.6",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Stealth: Claude Sonnet 4.6 (20% off) is no longer offered by Kilo.",
         "lastUpdated": "August 26, 2025",
         "costPer1kInputTokens": 0.0024,
         "costPer1kOutputTokens": 0.012,
@@ -5113,6 +5195,8 @@
       "matchingModel": "stealth/qwen3.6-plus",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Stealth: Qwen3.6 Plus (50% off) is no longer offered by Kilo.",
         "lastUpdated": "August 26, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.0015,
@@ -5163,6 +5247,8 @@
       "model": "step/stepfun-step-5-preview-free",
       "matchingModel": "stepfun/step-5-preview-free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "StepFun: Step 5 Preview (free) is no longer offered by Kilo.",
         "lastUpdated": "August 26, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -5380,6 +5466,8 @@
       "model": "ling/thinking-machines-inkling-small-free",
       "matchingModel": "thinkingmachines/inkling-small:free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Thinking Machines: Inkling Small (free) is no longer offered by Kilo.",
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -5390,6 +5478,8 @@
       "model": "kilo/unbiased/pareto/pareto",
       "matchingModel": "unbiased/pareto",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Pareto is no longer offered by Kilo.",
         "lastUpdated": "September 17, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.0075,
@@ -5400,6 +5490,8 @@
       "model": "kilo/unbiased/pareto-26.10-preview/pareto-26-10-preview-retires-oct-15",
       "matchingModel": "unbiased/pareto-26.10-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Pareto 26.10 Preview is no longer offered by Kilo.",
         "lastUpdated": "October 1, 2026",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.0032,
@@ -5433,6 +5525,8 @@
       "matchingModel": "upstage/solar-pro-3",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Upstage: Solar Pro 3 is no longer offered by Kilo.",
         "lastUpdated": "March 23, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -6254,6 +6348,8 @@
       "model": "flint/recursive-flint-free",
       "matchingModel": "recursive/flint-v1.0:free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Recursive: Flint (free) is no longer offered by Kilo.",
         "lastUpdated": "October 21, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -6300,6 +6396,8 @@
       "model": "agi/xingchen-xing4-0-29b-a4b-free",
       "matchingModel": "xingchen-agi/xing4.0-29b-a4b:free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "XingChen: Xing4.0 29B A4B (free) is no longer offered by Kilo.",
         "lastUpdated": "October 16, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -6371,6 +6469,8 @@
       "model": "ling/inclusionai-ling-3-1-flash-1019-free",
       "matchingModel": "inclusionai/ling-3.1-flash-1019-free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "inclusionAI: Ling 3.1 Flash 1019 (free) is no longer offered by Kilo.",
         "lastUpdated": "August 26, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,

@@ -18,6 +18,8 @@
       "model": "chutes/chutesai/Devstral-Small-2505/devstral-small-2505",
       "matchingModel": "chutesai/Devstral-Small-2505",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Devstral Small (2505) is no longer offered by Chutes.",
         "lastUpdated": "May 21, 2025",
         "costPer1kInputTokens": 0.00002,
         "costPer1kOutputTokens": 0.00008
@@ -30,6 +32,8 @@
       "model": "mistral/mistral-small-3-2-24b-instruct-2506",
       "matchingModel": "chutesai/Mistral-Small-3.2-24B-Instruct-2506",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Mistral Small 3.2 24B Instruct 2506 is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00018
@@ -44,6 +48,8 @@
         "contextWindow": 75000,
         "maxTokens": 163840,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V3 (0324) is no longer offered by Chutes.",
         "releaseDate": "August 1, 2025",
         "lastUpdated": "August 1, 2025",
         "costPer1kInputTokens": 0.00018,
@@ -59,6 +65,8 @@
       "matchingModel": "deepseek-ai/DeepSeek-R1-0528",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek R1 (0528) is no longer offered by Chutes.",
         "lastUpdated": "August 1, 2025",
         "costPer1kInputTokens": 0.00018,
         "costPer1kOutputTokens": 0.00072
@@ -72,6 +80,8 @@
       "matchingModel": "deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek R1 Distill Llama 70B is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.0000272,
         "costPer1kOutputTokens": 0.0001087
@@ -81,6 +91,8 @@
       "model": "deepseek/deepseek-r1-0528-qwen3-8b",
       "matchingModel": "deepseek-ai/DeepSeek-R1-0528-Qwen3-8B",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek R1 0528 Qwen3 8B is no longer offered by Chutes.",
         "lastUpdated": "May 29, 2025",
         "costPer1kInputTokens": 0.00002,
         "costPer1kOutputTokens": 0.00007
@@ -96,6 +108,8 @@
         "description": "Kimi K2 instruction-tuned model with large context.",
         "contextWindow": 75000,
         "maxTokens": 75000,
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2 Instruct is no longer offered by Chutes.",
         "releaseDate": "August 1, 2025",
         "lastUpdated": "August 1, 2025",
         "costPer1kInputTokens": 0.00015,
@@ -113,6 +127,8 @@
         "description": "Qwen3 30B A3B model with reasoning support.",
         "maxTokens": 40960,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 30B A3B is no longer offered by Chutes.",
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "April 25, 2026",
@@ -128,6 +144,8 @@
         "maxTokens": 131072,
         "contextComplexity": 4,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 235B A22B Instruct 2507 is no longer offered by Chutes.",
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "lastUpdated": "July 21, 2025",
@@ -144,6 +162,8 @@
       "matchingModel": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Coder 480B A35B Instruct (FP8) is no longer offered by Chutes.",
         "lastUpdated": "August 1, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0008
@@ -159,6 +179,8 @@
       "overrides": {
         "description": "Thinking-optimized Qwen3 model for complex reasoning tasks.",
         "maxTokens": 262144,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 235B A22B Thinking 2507 is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.00011,
@@ -169,6 +191,8 @@
       "model": "deepseek/deepseek-tng-r1t2-chimera",
       "matchingModel": "tngtech/DeepSeek-TNG-R1T2-Chimera",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek TNG R1T2 Chimera is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00085
@@ -178,6 +202,8 @@
       "model": "deepseek/deepseek-r1t-chimera",
       "matchingModel": "tngtech/DeepSeek-R1T-Chimera",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek R1T Chimera is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -189,6 +215,8 @@
       "matchingModel": "zai-org/GLM-4.5-Air",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "GLM 4.5 Air is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00005,
@@ -202,6 +230,8 @@
       "model": "glm/glm-4-5-fp8",
       "matchingModel": "zai-org/GLM-4.5-FP8",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GLM 4.5 FP8 is no longer offered by Chutes.",
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -214,6 +244,8 @@
       "model": "mistral/mistral-small-3-1-24b-instruct-2503",
       "matchingModel": "chutesai/Mistral-Small-3.1-24B-Instruct-2503",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Mistral Small 3.1 24B Instruct 2503 is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00003,
         "costPer1kOutputTokens": 0.00011
@@ -223,6 +255,8 @@
       "model": "deepseek-thinking/deepseek-r1-0528-tee",
       "matchingModel": "deepseek-ai/DeepSeek-R1-0528-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek R1 0528 TEE is no longer offered by Chutes.",
         "lastUpdated": "May 29, 2025",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.00215
@@ -235,6 +269,8 @@
       "model": "deepseek/deepseek-r1-tee",
       "matchingModel": "deepseek-ai/DeepSeek-R1-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek R1 TEE is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -249,6 +285,8 @@
         "maxTokens": 163840,
         "contextComplexity": 4,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V3 is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -264,6 +302,8 @@
       "model": "deepseek/deepseek-v3-0324-tee",
       "matchingModel": "deepseek-ai/DeepSeek-V3-0324-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V3 0324 TEE is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.001
@@ -273,6 +313,8 @@
       "model": "deepseek/deepseek-v3-1-tee",
       "matchingModel": "deepseek-ai/DeepSeek-V3.1-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V3.1 TEE is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.00027,
         "costPer1kOutputTokens": 0.001
@@ -282,6 +324,8 @@
       "model": "deepseek/deepseek-v3-1-terminus-tee",
       "matchingModel": "deepseek-ai/DeepSeek-V3.1-Terminus-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V3.1 Terminus TEE is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00023,
         "costPer1kOutputTokens": 0.0009
@@ -291,6 +335,8 @@
       "model": "deepseek/deepseek-v3-2-speciale-tee",
       "matchingModel": "deepseek-ai/DeepSeek-V3.2-Speciale-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V3.2 Speciale TEE is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00027,
         "costPer1kOutputTokens": 0.00041,
@@ -310,6 +356,8 @@
       "model": "minimax/minimax-m2-1-tee",
       "matchingModel": "MiniMaxAI/MiniMax-M2.1-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "MiniMax M2.1 TEE is no longer offered by Chutes.",
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.00027,
         "costPer1kOutputTokens": 0.00112
@@ -322,7 +370,9 @@
       "model": "chutes/miromind-ai/MiroThinker-v1.5-235B/mirothinker-v1-5-235b",
       "matchingModel": "miromind-ai/MiroThinker-v1.5-235B",
       "overrides": {
-        "isFeatured": true,
+        "isFeatured": false,
+        "deprecated": true,
+        "deprecationMessage": "MiroThinker V1.5 235B is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -334,6 +384,8 @@
       "model": "mistral/devstral-2-123b-instruct-2512-tee",
       "matchingModel": "mistralai/Devstral-2-123B-Instruct-2512-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Devstral 2 123B Instruct 2512 TEE is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.00022
@@ -344,6 +396,8 @@
       "matchingModel": "moonshotai/Kimi-K2-Instruct-0905",
       "overrides": {
         "name": "Kimi K2 Instruct 0905",
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2 Instruct 0905 is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00039,
@@ -354,6 +408,8 @@
       "model": "kimi/kimi-k2-thinking-tee",
       "matchingModel": "moonshotai/Kimi-K2-Thinking-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2 Thinking TEE is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.00175
@@ -363,6 +419,8 @@
       "model": "kimi-k2/kimi-k2-5-tee",
       "matchingModel": "moonshotai/Kimi-K2.5-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2.5 TEE is no longer offered by Chutes.",
         "lastUpdated": "January 2026",
         "costPer1kInputTokens": 0.00044,
         "costPer1kOutputTokens": 0.002,
@@ -373,6 +431,8 @@
       "model": "nousresearch/deephermes-3-mistral-24b-preview",
       "matchingModel": "NousResearch/DeepHermes-3-Mistral-24B-Preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepHermes 3 Mistral 24B Preview is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.0000245,
         "costPer1kOutputTokens": 0.0000978
@@ -382,6 +442,8 @@
       "model": "nousresearch/hermes-4-14b",
       "matchingModel": "NousResearch/Hermes-4-14B",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Hermes 4 14B is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.0000136,
         "costPer1kOutputTokens": 0.0000543
@@ -391,6 +453,8 @@
       "model": "chutes/NousResearch/Hermes-4-405B-FP8-TEE/hermes-4-405b-fp8-tee",
       "matchingModel": "NousResearch/Hermes-4-405B-FP8-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Hermes 4 405B FP8 TEE is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -400,6 +464,8 @@
       "model": "chutes/NousResearch/Hermes-4-70B/hermes-4-70b",
       "matchingModel": "NousResearch/Hermes-4-70B",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Hermes 4 70B is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00011,
         "costPer1kOutputTokens": 0.00038
@@ -409,6 +475,8 @@
       "model": "chutes/NousResearch/Hermes-4.3-36B/hermes-4-3-36b",
       "matchingModel": "NousResearch/Hermes-4.3-36B",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Hermes 4.3 36B is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.00039,
@@ -420,6 +488,8 @@
       "model": "nemotron/nvidia-nemotron-3-nano-30b-a3b-bf16",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "NVIDIA Nemotron 3 Nano 30B A3B BF16 is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00024
@@ -432,6 +502,8 @@
       "model": "gpt-oss/gpt-oss-120b-tee",
       "matchingModel": "openai/gpt-oss-120b-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "gpt oss 120b TEE is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.00036
@@ -453,6 +525,8 @@
         ],
         "contextComplexity": 4,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "gpt oss 20b is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00002,
@@ -466,6 +540,8 @@
       "model": "chutes/OpenGVLab/InternVL3-78B-TEE/internvl3-78b-tee",
       "matchingModel": "OpenGVLab/InternVL3-78B-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "InternVL3 78B TEE is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.00039,
@@ -478,6 +554,8 @@
       "overrides": {
         "maxTokens": 32768,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Qwen2.5 72B Instruct is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.0002989,
@@ -489,6 +567,8 @@
       "matchingModel": "Qwen/Qwen2.5-Coder-32B-Instruct",
       "overrides": {
         "maxTokens": 32768,
+        "deprecated": true,
+        "deprecationMessage": "Qwen2.5 Coder 32B Instruct is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.0000272,
@@ -500,6 +580,8 @@
       "model": "qwen/qwen2-5-vl-32b-instruct",
       "matchingModel": "Qwen/Qwen2.5-VL-32B-Instruct",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen2.5 VL 32B Instruct is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.0000543,
         "costPer1kOutputTokens": 0.0002174,
@@ -511,6 +593,8 @@
       "model": "qwen/qwen2-5-vl-72b-instruct-tee",
       "matchingModel": "Qwen/Qwen2.5-VL-72B-Instruct-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen2.5 VL 72B Instruct TEE is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -526,6 +610,8 @@
       "overrides": {
         "maxTokens": 40960,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 14B is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00005,
@@ -543,6 +629,8 @@
         "name": "Qwen3 235B A22B",
         "maxTokens": 40960,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 235B A22B is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -557,6 +645,8 @@
       "model": "qwen/qwen3-235b-a22b-instruct-2507-tee",
       "matchingModel": "Qwen/Qwen3-235B-A22B-Instruct-2507-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 235B A22B Instruct 2507 TEE is no longer offered by Chutes.",
         "lastUpdated": "April 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0006
@@ -567,6 +657,8 @@
       "matchingModel": "Qwen/Qwen3-30B-A3B-Instruct-2507",
       "overrides": {
         "maxTokens": 262144,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 30B A3B Instruct 2507 is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00008,
@@ -583,6 +675,8 @@
         "contextWindow": 40960,
         "maxTokens": 40960,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 32B is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00008,
@@ -598,6 +692,8 @@
       "model": "qwen/qwen3-coder-480b-a35b-instruct-fp8-tee",
       "matchingModel": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Coder 480B A35B Instruct FP8 TEE is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.00095
@@ -613,6 +709,8 @@
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "maxTokens": 65536,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Coder Next is no longer offered by Chutes.",
         "releaseDate": "February 5, 2026",
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00007,
@@ -631,6 +729,8 @@
         "name": "Qwen3 Next 80B A3B Instruct",
         "maxTokens": 262144,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Next 80B A3B Instruct is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.0001,
@@ -650,6 +750,8 @@
           "tool_use"
         ],
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 VL 235B A22B Instruct is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -666,6 +768,8 @@
       "overrides": {
         "name": "Qwen3Guard Gen 0.6B",
         "maxTokens": 8192,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3Guard Gen 0.6B is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.00001,
@@ -678,6 +782,8 @@
       "model": "rednote/dots-ocr",
       "matchingModel": "rednote-hilab/dots.ocr",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "dots.ocr is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.00001,
         "costPer1kOutputTokens": 0.0000109,
@@ -689,6 +795,8 @@
       "model": "chutes/tngtech/TNG-R1T-Chimera-TEE/tng-r1t-chimera-tee",
       "matchingModel": "tngtech/TNG-R1T-Chimera-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "TNG R1T Chimera TEE is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00085
@@ -698,6 +806,8 @@
       "model": "chutes/tngtech/TNG-R1T-Chimera-Turbo/tng-r1t-chimera-turbo",
       "matchingModel": "tngtech/TNG-R1T-Chimera-Turbo",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "TNG R1T Chimera Turbo is no longer offered by Chutes.",
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.0006
@@ -707,6 +817,8 @@
       "model": "unsloth/gemma-3-12b-it",
       "matchingModel": "unsloth/gemma-3-12b-it",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "gemma 3 12b it is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.00003,
         "costPer1kOutputTokens": 0.0001,
@@ -718,6 +830,8 @@
       "model": "unsloth/gemma-3-27b-it",
       "matchingModel": "unsloth/gemma-3-27b-it",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "gemma 3 27b it is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.0000272,
         "costPer1kOutputTokens": 0.0001087,
@@ -728,6 +842,8 @@
       "model": "unsloth/gemma-3-4b-it",
       "matchingModel": "unsloth/gemma-3-4b-it",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "gemma 3 4b it is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.00001,
         "costPer1kOutputTokens": 0.0000272,
@@ -739,6 +855,8 @@
       "model": "unsloth/llama-3-2-1b-instruct",
       "matchingModel": "unsloth/Llama-3.2-1B-Instruct",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Llama 3.2 1B Instruct is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.00001,
         "costPer1kOutputTokens": 0.0000109,
@@ -750,6 +868,8 @@
       "model": "unsloth/mistral-nemo-instruct-2407",
       "matchingModel": "unsloth/Mistral-Nemo-Instruct-2407",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Mistral Nemo Instruct 2407 is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.00002,
         "costPer1kOutputTokens": 0.00004,
@@ -760,6 +880,8 @@
       "model": "mistral/mistral-small-24b-instruct-2501",
       "matchingModel": "unsloth/Mistral-Small-24B-Instruct-2501",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Mistral Small 24B Instruct 2501 is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00003,
         "costPer1kOutputTokens": 0.00011
@@ -770,6 +892,8 @@
       "matchingModel": "XiaomiMiMo/MiMo-V2-Flash",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "MiMo V2 Flash is no longer offered by Chutes.",
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.00029,
@@ -781,6 +905,8 @@
       "model": "glm/glm-4-5-tee",
       "matchingModel": "zai-org/GLM-4.5-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GLM 4.5 TEE is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00035,
         "costPer1kOutputTokens": 0.00155
@@ -793,6 +919,8 @@
       "model": "glm/glm-4-6-fp8",
       "matchingModel": "zai-org/GLM-4.6-FP8",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GLM 4.6 FP8 is no longer offered by Chutes.",
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -805,6 +933,8 @@
       "model": "glm/glm-4-6-tee",
       "matchingModel": "zai-org/GLM-4.6-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GLM 4.6 TEE is no longer offered by Chutes.",
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00035,
         "costPer1kOutputTokens": 0.0015
@@ -835,6 +965,8 @@
           "tool_use"
         ],
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "GLM 4.6V is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -850,6 +982,8 @@
       "matchingModel": "zai-org/GLM-4.7-Flash",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "GLM 4.7 Flash is no longer offered by Chutes.",
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00035
@@ -862,6 +996,8 @@
       "model": "glm/glm-4-7-fp8",
       "matchingModel": "zai-org/GLM-4.7-FP8",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GLM 4.7 FP8 is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.0002989,
         "costPer1kOutputTokens": 0.0011957
@@ -871,6 +1007,8 @@
       "model": "glm/glm-4-7-tee",
       "matchingModel": "zai-org/GLM-4.7-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GLM 4.7 TEE is no longer offered by Chutes.",
         "lastUpdated": "December 22, 2025",
         "costPer1kInputTokens": 0.00039,
         "costPer1kOutputTokens": 0.00175
@@ -890,6 +1028,8 @@
       "model": "minimax/minimax-m2-5-tee",
       "matchingModel": "MiniMaxAI/MiniMax-M2.5-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "MiniMax M2.5 TEE is no longer offered by Chutes.",
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0012
@@ -909,6 +1049,8 @@
       "model": "qwen/qwen3-32b-tee",
       "matchingModel": "Qwen/Qwen3-32B-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 32B TEE is no longer offered by Chutes.",
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.000104,
         "costPer1kOutputTokens": 0.000416
@@ -918,6 +1060,8 @@
       "model": "qwen/qwen3-coder-next-tee",
       "matchingModel": "Qwen/Qwen3-Coder-Next-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Coder Next TEE is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.00075
@@ -947,6 +1091,8 @@
       "model": "deepseek/deepseek-tng-r1t2-chimera-tee",
       "matchingModel": "tngtech/DeepSeek-TNG-R1T2-Chimera-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek TNG R1T2 Chimera TEE is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0011
@@ -956,6 +1102,8 @@
       "model": "unsloth/llama-3-2-3b-instruct",
       "matchingModel": "unsloth/Llama-3.2-3B-Instruct",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Llama 3.2 3B Instruct is no longer offered by Chutes.",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.00001,
         "costPer1kOutputTokens": 0.0000136,
@@ -969,6 +1117,8 @@
       "model": "mimo/mimo-v2-flash-tee",
       "matchingModel": "XiaomiMiMo/MiMo-V2-Flash-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "MiMo V2 Flash TEE is no longer offered by Chutes.",
         "lastUpdated": "February 4, 2026",
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.00029
@@ -981,6 +1131,8 @@
       "model": "glm/glm-5-tee",
       "matchingModel": "zai-org/GLM-5-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GLM 5 TEE is no longer offered by Chutes.",
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.00255
@@ -992,6 +1144,8 @@
       "overrides": {
         "openWeights": true,
         "maxTokens": 65535,
+        "deprecated": true,
+        "deprecationMessage": "GLM 5 Turbo is no longer offered by Chutes.",
         "releaseDate": "March 11, 2026",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.0004891,
@@ -1011,6 +1165,8 @@
       "model": "qwen/qwen3-235b-a22b-thinking-2507-tee",
       "matchingModel": "Qwen/Qwen3-235B-A22B-Thinking-2507-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 235B A22B Thinking 2507 TEE is no longer offered by Chutes.",
         "lastUpdated": "July 25, 2025",
         "costPer1kInputTokens": 0.0002989,
         "costPer1kOutputTokens": 0.0011957
@@ -1020,6 +1176,8 @@
       "model": "mistral-nemo/mistral-nemo-instruct-2407-tee",
       "matchingModel": "unsloth/Mistral-Nemo-Instruct-2407-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Mistral Nemo Instruct 2407 TEE is no longer offered by Chutes.",
         "lastUpdated": "July 18, 2024",
         "costPer1kInputTokens": 0.0000245,
         "costPer1kOutputTokens": 0.0000978,
@@ -1042,6 +1200,8 @@
       "model": "nemotron/nemotron-3-nano-omni-30b-tee",
       "matchingModel": "Nemotron-3-Nano-Omni-30B-TEE",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Nemotron 3 Nano Omni 30B TEE is no longer offered by Chutes.",
         "lastUpdated": "July 23, 2026",
         "costPer1kInputTokens": 0.0000245,
         "costPer1kOutputTokens": 0.0000978,

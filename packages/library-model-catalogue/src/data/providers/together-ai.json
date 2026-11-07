@@ -19,7 +19,9 @@
       "matchingModel": "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
       "overrides": {
         "isFree": true,
-        "speed": 3
+        "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Meta Llama 3.3 70B Instruct Turbo Free was removed from Together AI serverless on 13 November 2025."
       },
       "unset": [
         "openWeights",
@@ -34,6 +36,8 @@
       "matchingModel": "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Meta Llama 3.2 90B Vision Instruct Turbo was removed from Together AI serverless on 28 August 2025.",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.0012
       },
@@ -50,6 +54,8 @@
       "matchingModel": "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Meta Llama 3.2 11B Vision Instruct Turbo was removed from Together AI serverless on 28 August 2025.",
         "costPer1kInputTokens": 0.00018,
         "costPer1kOutputTokens": 0.00018
       },
@@ -66,7 +72,9 @@
       "matchingModel": "meta-llama/Llama-Vision-Free",
       "overrides": {
         "isFree": true,
-        "speed": 3
+        "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Meta Llama Vision Free was removed from Together AI serverless on 28 August 2025."
       },
       "unset": [
         "openWeights",
@@ -82,6 +90,8 @@
       "overrides": {
         "speed": 4,
         "isFeatured": false,
+        "deprecated": true,
+        "deprecationMessage": "Meta Llama 3.1 405B Instruct Turbo was removed from Together AI serverless on 6 February 2026.",
         "costPer1kInputTokens": 0.0035,
         "costPer1kOutputTokens": 0.0035
       },
@@ -98,7 +108,9 @@
       "matchingModel": "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
       "overrides": {
         "isFree": true,
-        "speed": 3
+        "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek R1 Distill Llama 70B Free was removed from Together AI serverless on 13 November 2025."
       },
       "unset": [
         "supportsToolCalls",
@@ -112,7 +124,9 @@
       "matchingModel": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
       "overrides": {
         "speed": 4,
-        "isFeatured": false
+        "isFeatured": false,
+        "deprecated": true,
+        "deprecationMessage": "Llama 4 Maverick Instruct was removed from Together AI serverless on 31 March 2026."
       },
       "unset": [
         "openWeights",
@@ -126,7 +140,9 @@
       "model": "together-ai/togethercomputer/Refuel-Llm-V2/refuel-llm-v2",
       "matchingModel": "togethercomputer/Refuel-Llm-V2",
       "overrides": {
-        "speed": 4
+        "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Refuel LLM V2 was removed from Together AI serverless on 6 February 2026."
       },
       "unset": [
         "supportsToolCalls",
@@ -138,7 +154,9 @@
       "model": "together-ai/togethercomputer/Refuel-Llm-V2-Small/refuel-llm-v2-small",
       "matchingModel": "togethercomputer/Refuel-Llm-V2-Small",
       "overrides": {
-        "speed": 4
+        "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Refuel LLM V2 Small was removed from Together AI serverless on 6 February 2026."
       },
       "unset": [
         "supportsToolCalls",
@@ -152,6 +170,9 @@
       "overrides": {
         "contextWindow": 131072,
         "maxTokens": 131072,
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2 Instruct was removed from Together AI serverless on 29 July 2026. Use Kimi K3.1 Pro instead.",
+        "replacementModel": "moonshotai/Kimi-K3.1-Pro",
         "releaseDate": "July 14, 2025",
         "lastUpdated": "July 14, 2025",
         "costPer1kInputTokens": 0.001,
@@ -166,6 +187,9 @@
       "matchingModel": "moonshotai/Kimi-K2-Instruct-0905",
       "overrides": {
         "name": "Kimi K2 Instruct-0905",
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2 Instruct-0905 was removed from Together AI serverless on 29 July 2026. Use Kimi K3.1 Pro instead.",
+        "replacementModel": "moonshotai/Kimi-K3.1-Pro",
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "September 5, 2025",
         "lastUpdated": "September 5, 2025",
@@ -183,6 +207,9 @@
         "contextWindow": 262144,
         "maxTokens": 262144,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2 Thinking was removed from Together AI serverless on 29 July 2026. Use Kimi K3.1 Pro instead.",
+        "replacementModel": "moonshotai/Kimi-K3.1-Pro",
         "knowledgeCutoffDate": "July 2025",
         "lastUpdated": "November 6, 2025",
         "costPer1kInputTokens": 0.0012,
@@ -210,6 +237,8 @@
         "name": "Qwen3-Next-80B-A3B-Instruct",
         "maxTokens": 262144,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3-Next-80B-A3B-Instruct was removed from Together AI serverless on 29 July 2026. Use Qwen/Qwen3.5-122B-A10B instead.",
         "knowledgeCutoffDate": "July 2025",
         "releaseDate": "July 25, 2025",
         "lastUpdated": "July 25, 2025",
@@ -228,6 +257,8 @@
         "contextWindow": 200000,
         "maxTokens": 200000,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "GLM 4.6 was removed from Together AI serverless on 29 July 2026. Use zai-org/GLM-5.1 instead.",
         "knowledgeCutoffDate": "September 2025",
         "lastUpdated": "September 30, 2025",
         "costPer1kInputTokens": 0.0006,
@@ -247,6 +278,8 @@
         "contextWindow": 200000,
         "maxTokens": 200000,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "GLM-4.7 was removed from Together AI serverless on 29 July 2026. Use zai-org/GLM-5.1 instead.",
         "knowledgeCutoffDate": "July 2025",
         "releaseDate": "July 25, 2025",
         "lastUpdated": "July 25, 2025",
@@ -263,6 +296,8 @@
       "model": "gemma/gemma-4-31b-instruct",
       "matchingModel": "google/gemma-4-31B-it",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Gemma 4 31B Instruct was removed from Together AI serverless on 15 September 2026.",
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.00039,
         "costPer1kOutputTokens": 0.00097
@@ -291,6 +326,8 @@
           "coding"
         ],
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2.6 was removed from Together AI serverless on 19 August 2026.",
         "releaseDate": "April 21, 2026",
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.0012,
@@ -339,6 +376,8 @@
       "overrides": {
         "contextWindow": 163840,
         "maxTokens": 163840,
+        "deprecated": true,
+        "deprecationMessage": "Cogito v2.1 671B was removed from Together AI serverless on 21 August 2026.",
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00125,
@@ -353,6 +392,8 @@
       "matchingModel": "google/gemma-3n-E4B-it",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Gemma 3N E4B Instruct was removed from Together AI serverless on 25 August 2026.",
         "lastUpdated": "May 20, 2025",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00012,
@@ -363,6 +404,8 @@
       "model": "llama/meta-llama-3-8b-instruct-lite",
       "matchingModel": "meta-llama/Meta-Llama-3-8B-Instruct-Lite",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Meta Llama 3 8B Instruct Lite was removed from Together AI serverless on 10 July 2026.",
         "lastUpdated": "April 18, 2024",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00014,
@@ -380,6 +423,8 @@
         "maxTokens": 131072,
         "contextComplexity": 4,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "GPT OSS 20B was removed from Together AI serverless on 15 September 2026.",
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0002
@@ -392,6 +437,8 @@
       "model": "gemma/pearl-ai-gemma-4-31b-instruct",
       "matchingModel": "pearl-ai/gemma-4-31b-it",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Pearl AI Gemma 4 31B Instruct was removed from Together AI serverless on 27 August 2026.",
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.00028,
         "costPer1kOutputTokens": 0.00086,
@@ -432,6 +479,8 @@
           "tool_use"
         ],
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "MiniMax-M3 was removed from Together AI serverless on 6 November 2026. Use MiniMaxAI/MiniMax-M3.1-Flash instead.",
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -456,6 +505,8 @@
           "tool_use"
         ],
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2.7 Code was removed from Together AI serverless on 27 August 2026.",
         "releaseDate": "June 14, 2026",
         "lastUpdated": "June 14, 2026",
         "costPer1kInputTokens": 0.00095,
@@ -504,6 +555,9 @@
           ]
         },
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Inkling was removed from Together AI serverless on 6 November 2026. Use Muse Spark Open instead.",
+        "replacementModel": "meta-models/Muse-Spark-Open-816B-A42B",
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.00405,

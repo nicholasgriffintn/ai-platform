@@ -2,8 +2,8 @@
 
 import process from "node:process";
 
-import { parseArgs, printHelp } from "./sync-models-dev/cli.mjs";
-import { runSyncModelsDev } from "./sync-models-dev/run-sync.mjs";
+import { parseArgs, printHelp } from "../src/cli.mjs";
+import { runSyncModelsDev } from "../src/run-sync.mjs";
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));

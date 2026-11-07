@@ -68,12 +68,9 @@
         "name": "Granite 4.2 8B",
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 131072,
-        "maxTokens": 117964,
         "strengths": [
           "tool_use"
         ],
-        "releaseDate": "August 25, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

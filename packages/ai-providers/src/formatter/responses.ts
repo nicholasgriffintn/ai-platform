@@ -15,6 +15,7 @@ import { buildOpenAIResponseOutputParts } from "../openai-response-parts.js";
 import { preprocessQwQResponse } from "../unterminated-thinking.js";
 import { readProviderRefusal } from "../utils/generation-signals.js";
 import { readGoogleThoughtSignature } from "../utils/googleThoughtSignatures.js";
+import { fromPerplexityAgentToolName } from "../utils/perplexityAgentToolNames.js";
 import { extractReasoningContentBlocks } from "./content-blocks.js";
 
 interface ResponseFormatOptions {
@@ -96,6 +97,7 @@ export class ResponseFormatter {
       groq: openAI,
       mistral: openAI,
       "perplexity-ai": openAI,
+      "perplexity-agent": openAI,
       deepseek: openAI,
       huggingface: openAI,
       "github-models": openAI,
@@ -671,9 +673,12 @@ export class ResponseFormatter {
             id: item.call_id,
             type: "function",
             function: {
-              name: item.name,
+              name: fromPerplexityAgentToolName(item.name),
               arguments: item.arguments || "{}",
             },
+            ...(readGoogleThoughtSignature(item)
+              ? { thought_signature: readGoogleThoughtSignature(item) }
+              : {}),
           },
         ];
       }

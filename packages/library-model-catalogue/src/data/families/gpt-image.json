@@ -180,6 +180,42 @@
           ]
         }
       }
+    },
+    "gpt-image-2-6-flare": {
+      "defaults": {
+        "name": "GPT Image 2.6 Flare",
+        "description": "GPT Image 2.6 Flare accepts text, image and produces image.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "releaseDate": "November 4, 2026",
+        "supportsResponseFormat": false,
+        "supportsTemperature": true
+      }
+    },
+    "gpt-image-2-6-sunburst": {
+      "defaults": {
+        "name": "GPT Image 2.6 Sunburst",
+        "description": "GPT Image 2.6 Sunburst accepts text, image and produces image.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "releaseDate": "November 4, 2026",
+        "supportsResponseFormat": false,
+        "supportsTemperature": true
+      }
     }
   }
 }

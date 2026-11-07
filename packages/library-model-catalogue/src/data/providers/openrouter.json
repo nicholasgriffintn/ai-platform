@@ -79,6 +79,8 @@
           "tool_use"
         ],
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "o4 Mini is no longer offered by OpenRouter.",
         "lastUpdated": "April 16, 2025",
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0044,
@@ -255,6 +257,8 @@
       "overrides": {
         "isFree": true,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "R1 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "January 20, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -270,6 +274,8 @@
       "overrides": {
         "isFree": true,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "R1 0528 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "May 28, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -306,6 +312,8 @@
         "speed": 3,
         "multimodal": true,
         "isFeatured": false,
+        "deprecated": true,
+        "deprecationMessage": "Claude Sonnet 4 is no longer offered by OpenRouter.",
         "knowledgeCutoffDate": "January 31, 2025",
         "lastUpdated": "May 22, 2025",
         "costPer1kInputTokens": 0.003,
@@ -338,6 +346,8 @@
         "speed": 2,
         "multimodal": true,
         "isFeatured": false,
+        "deprecated": true,
+        "deprecationMessage": "Claude Opus 4 is no longer offered by OpenRouter.",
         "knowledgeCutoffDate": "January 31, 2025",
         "lastUpdated": "May 22, 2025",
         "costPer1kInputTokens": 0.015,
@@ -354,6 +364,8 @@
       "matchingModel": "anthropic/claude-3.5-haiku",
       "overrides": {
         "speed": 5,
+        "deprecated": true,
+        "deprecationMessage": "Claude 3.5 Haiku is no longer offered by OpenRouter.",
         "lastUpdated": "November 4, 2024",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.004,
@@ -372,6 +384,8 @@
           "tool_use"
         ],
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Grok 3 is no longer offered by OpenRouter.",
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -395,6 +409,8 @@
         "contextComplexity": 3,
         "reliability": 4,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Grok 3 Mini is no longer offered by OpenRouter.",
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0005,
@@ -448,6 +464,8 @@
       "overrides": {
         "isFree": true,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Llama 3.3 70B Instruct (free) is no longer offered by OpenRouter.",
         "lastUpdated": "December 6, 2024",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -461,6 +479,8 @@
       "overrides": {
         "isFree": true,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Coder 480B A35B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "July 23, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -473,6 +493,8 @@
       "matchingModel": "mistralai/devstral-small-2507",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Devstral Small 1.1 is no longer offered by OpenRouter.",
         "lastUpdated": "July 10, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0003
@@ -491,6 +513,8 @@
       "matchingModel": "allenai/molmo-2-8b:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Molmo2 8B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "January 31, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -523,6 +547,8 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
+        "deprecated": true,
+        "deprecationMessage": "Claude Sonnet 3.7 is no longer offered by OpenRouter.",
         "knowledgeCutoffDate": "January 2024",
         "lastUpdated": "February 19, 2025",
         "costPer1kInputTokens": 0.015,
@@ -664,6 +690,8 @@
       "model": "openrouter/arcee-ai/trinity-large-preview:free/trinity-large-preview",
       "matchingModel": "arcee-ai/trinity-large-preview:free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Trinity Large Preview is no longer offered by OpenRouter.",
         "lastUpdated": "January 28, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -677,6 +705,8 @@
       "model": "openrouter/arcee-ai/trinity-mini:free/trinity-mini",
       "matchingModel": "arcee-ai/trinity-mini:free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Trinity Mini is no longer offered by OpenRouter.",
         "lastUpdated": "January 28, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -858,6 +888,8 @@
       "matchingModel": "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Uncensored (free) is no longer offered by OpenRouter.",
         "lastUpdated": "July 9, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -869,6 +901,8 @@
       "model": "mistral/dolphin3-0-mistral-24b",
       "matchingModel": "cognitivecomputations/dolphin3.0-mistral-24b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Dolphin3.0 Mistral 24B is no longer offered by OpenRouter.",
         "lastUpdated": "February 13, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -882,6 +916,8 @@
       "model": "mistral/dolphin3-0-r1-mistral-24b",
       "matchingModel": "cognitivecomputations/dolphin3.0-r1-mistral-24b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Dolphin3.0 R1 Mistral 24B is no longer offered by OpenRouter.",
         "lastUpdated": "February 13, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -926,6 +962,8 @@
       "matchingModel": "deepseek/deepseek-r1-0528-qwen3-8b:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Deepseek R1 0528 Qwen3 8B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "May 29, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -940,6 +978,8 @@
       "matchingModel": "deepseek/deepseek-r1-distill-llama-70b",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "R1 Distill Llama 70B is no longer offered by OpenRouter.",
         "lastUpdated": "January 23, 2025",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.0008,
@@ -952,6 +992,8 @@
       "model": "deepseek/deepseek-r1-distill-qwen-14b",
       "matchingModel": "deepseek/deepseek-r1-distill-qwen-14b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek R1 Distill Qwen 14B is no longer offered by OpenRouter.",
         "lastUpdated": "January 29, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -967,6 +1009,8 @@
       "matchingModel": "deepseek/deepseek-v3-base:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V3 Base (free) is no longer offered by OpenRouter.",
         "lastUpdated": "March 29, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1004,6 +1048,8 @@
       "matchingModel": "deepseek/deepseek-v3.1-terminus:exacto",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V3.1 Terminus (exacto) is no longer offered by OpenRouter.",
         "lastUpdated": "September 22, 2025",
         "costPer1kInputTokens": 0.00027,
         "costPer1kOutputTokens": 0.001,
@@ -1032,6 +1078,8 @@
         "name": "DeepSeek V3.2 Speciale",
         "contextWindow": 163840,
         "maxTokens": 163840,
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V3.2 Speciale is no longer offered by OpenRouter.",
         "lastUpdated": "December 1, 2025",
         "costPer1kInputTokens": 0.000287,
         "costPer1kOutputTokens": 0.000431,
@@ -1043,6 +1091,8 @@
       "model": "openrouter/featherless/qwerky-72b/qwerky-72b",
       "matchingModel": "featherless/qwerky-72b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwerky 72B is no longer offered by OpenRouter.",
         "lastUpdated": "March 20, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1077,23 +1127,31 @@
           "video",
           "tool_use"
         ],
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.0 Flash is no longer offered by OpenRouter.",
         "knowledgeCutoffDate": "August 31, 2024",
         "releaseDate": "February 5, 2025",
         "lastUpdated": "February 5, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "google/gemini-2.0-flash-exp:free": {
       "model": "gemini/gemini-2-0-flash-experimental-free",
       "matchingModel": "google/gemini-2.0-flash-exp:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.0 Flash Experimental (free) is no longer offered by OpenRouter.",
         "lastUpdated": "December 11, 2024",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       },
       "unset": [
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -1101,6 +1159,8 @@
       "model": "gemini-flash-lite/gemini-2-5-flash-lite-preview-09-2025",
       "matchingModel": "google/gemini-2.5-flash-lite-preview-09-2025",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Flash Lite Preview 09-2025 is no longer offered by OpenRouter.",
         "lastUpdated": "September 25, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004,
@@ -1111,11 +1171,14 @@
       "model": "gemini/gemini-2-5-flash-preview-09-25",
       "matchingModel": "google/gemini-2.5-flash-preview-09-2025",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Flash Preview 09-25 is no longer offered by OpenRouter.",
         "lastUpdated": "September 25, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025
       },
       "unset": [
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -1123,6 +1186,8 @@
       "model": "gemini-pro/gemini-2-5-pro-preview-05-06",
       "matchingModel": "google/gemini-2.5-pro-preview-05-06",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Pro Preview 05-06 is no longer offered by OpenRouter.",
         "lastUpdated": "May 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -1145,12 +1210,15 @@
             "text"
           ]
         },
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Pro Preview 06-05 is no longer offered by OpenRouter.",
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "June 5, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01
       },
       "unset": [
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -1191,11 +1259,14 @@
       "model": "gemini/gemini-3-pro-preview",
       "matchingModel": "google/gemini-3-pro-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Gemini 3 Pro Preview is no longer offered by OpenRouter.",
         "lastUpdated": "November 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012
       },
       "unset": [
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -1203,6 +1274,8 @@
       "model": "gemma/gemma-2-9b",
       "matchingModel": "google/gemma-2-9b-it",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Gemma 2 9B is no longer offered by OpenRouter.",
         "lastUpdated": "June 28, 2024",
         "costPer1kInputTokens": 0.00003,
         "costPer1kOutputTokens": 0.00009,
@@ -1246,6 +1319,8 @@
       "matchingModel": "google/gemma-3-12b-it:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemma 3 12B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "March 13, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1288,6 +1363,8 @@
       "matchingModel": "google/gemma-3-27b-it:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemma 3 27B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "March 12, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -1326,6 +1403,8 @@
       "matchingModel": "google/gemma-3-4b-it:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemma 3 4B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "March 13, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1340,6 +1419,8 @@
       "matchingModel": "google/gemma-3n-e2b-it:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemma 3n 2B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "July 9, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1356,6 +1437,8 @@
         "openWeights": true,
         "contextWindow": 32768,
         "maxTokens": 32768,
+        "deprecated": true,
+        "deprecationMessage": "Gemma 3n 4B is no longer offered by OpenRouter.",
         "knowledgeCutoffDate": "August 31, 2024",
         "lastUpdated": "May 20, 2025",
         "costPer1kInputTokens": 0.00006,
@@ -1369,6 +1452,8 @@
       "matchingModel": "google/gemma-3n-e4b-it:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemma 3n 4B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "May 20, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1383,6 +1468,8 @@
       "matchingModel": "kwaipilot/kat-coder-pro:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Kat Coder Pro (free) is no longer offered by OpenRouter.",
         "lastUpdated": "November 10, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1398,6 +1485,8 @@
       "overrides": {
         "isFree": true,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "LFM2.5-1.2B-Instruct (free) is no longer offered by OpenRouter.",
         "lastUpdated": "January 20, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1410,6 +1499,8 @@
       "matchingModel": "liquid/lfm-2.5-1.2b-thinking:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "LFM2.5-1.2B-Thinking (free) is no longer offered by OpenRouter.",
         "lastUpdated": "January 20, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1421,6 +1512,8 @@
       "matchingModel": "meta-llama/llama-3.1-405b-instruct:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Llama 3.1 405B Instruct (free) is no longer offered by OpenRouter.",
         "lastUpdated": "April 5, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1437,6 +1530,8 @@
       "overrides": {
         "contextWindow": 131072,
         "maxTokens": 16384,
+        "deprecated": true,
+        "deprecationMessage": "Llama 3.2 11B Vision Instruct is no longer offered by OpenRouter.",
         "knowledgeCutoffDate": "December 31, 2023",
         "lastUpdated": "September 25, 2024",
         "costPer1kInputTokens": 0.000345,
@@ -1450,6 +1545,8 @@
       "matchingModel": "meta-llama/llama-3.2-3b-instruct:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Llama 3.2 3B Instruct (free) is no longer offered by OpenRouter.",
         "lastUpdated": "September 25, 2024",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1464,6 +1561,8 @@
       "overrides": {
         "isFree": true,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Llama 4 Scout (free) is no longer offered by OpenRouter.",
         "lastUpdated": "April 5, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -1478,6 +1577,8 @@
       "matchingModel": "microsoft/mai-ds-r1:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "MAI DS R1 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "April 21, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1491,6 +1592,8 @@
       "model": "minimax/minimax-01",
       "matchingModel": "minimax/minimax-01",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "MiniMax-01 is no longer offered by OpenRouter.",
         "lastUpdated": "January 15, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0011,
@@ -1518,6 +1621,8 @@
         "contextWindow": 204800,
         "maxTokens": 131072,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "MiniMax M2 is no longer offered by OpenRouter.",
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.000255,
         "costPer1kOutputTokens": 0.00102,
@@ -1532,6 +1637,8 @@
         "name": "MiniMax M2.1",
         "description": "Earlier MiniMax agent model for practical coding and productivity tasks",
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "MiniMax M2.1 is no longer offered by OpenRouter.",
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -1554,6 +1661,8 @@
       "matchingModel": "mistralai/devstral-2512:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Devstral 2 2512 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "September 12, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1568,6 +1677,8 @@
       "matchingModel": "mistralai/devstral-small-2505:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Devstral Small 2505 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "May 21, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1583,6 +1694,8 @@
       "overrides": {
         "isFree": true,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Mistral 7B Instruct (free) is no longer offered by OpenRouter.",
         "lastUpdated": "May 27, 2024",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1617,6 +1730,8 @@
       "matchingModel": "mistralai/mistral-nemo:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Mistral Nemo (free) is no longer offered by OpenRouter.",
         "lastUpdated": "July 19, 2024",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1652,6 +1767,8 @@
       "matchingModel": "mistralai/mistral-small-3.2-24b-instruct:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Mistral Small 3.2 24B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "June 20, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -1665,6 +1782,8 @@
       "matchingModel": "moonshotai/kimi-dev-72b:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Kimi Dev 72b (free) is no longer offered by OpenRouter.",
         "lastUpdated": "June 16, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1678,6 +1797,8 @@
       "model": "kimi/kimi-k2-instruct-0905-exacto",
       "matchingModel": "moonshotai/kimi-k2-0905:exacto",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2 Instruct 0905 (exacto) is no longer offered by OpenRouter.",
         "lastUpdated": "September 5, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0025,
@@ -1693,6 +1814,8 @@
       "overrides": {
         "isFree": true,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "July 11, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1722,6 +1845,8 @@
       "model": "llama/deephermes-3-llama-3-8b-preview",
       "matchingModel": "nousresearch/deephermes-3-llama-3-8b-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepHermes 3 Llama 3 8B Preview is no longer offered by OpenRouter.",
         "lastUpdated": "February 28, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1737,6 +1862,8 @@
       "matchingModel": "nousresearch/hermes-3-llama-3.1-405b:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Hermes 3 405B Instruct (free) is no longer offered by OpenRouter.",
         "lastUpdated": "August 16, 2024",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1761,6 +1888,8 @@
       "model": "hermes/hermes-4-70b",
       "matchingModel": "nousresearch/hermes-4-70b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Hermes 4 70B is no longer offered by OpenRouter.",
         "lastUpdated": "August 26, 2025",
         "costPer1kInputTokens": 0.00013,
         "costPer1kOutputTokens": 0.0004,
@@ -1774,6 +1903,8 @@
       "matchingModel": "nvidia/nemotron-3-nano-30b-a3b:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Nemotron 3 Nano 30B A3B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "December 15, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1786,6 +1917,8 @@
       "matchingModel": "nvidia/nemotron-nano-12b-v2-vl:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Nemotron Nano 12B 2 VL (free) is no longer offered by OpenRouter.",
         "lastUpdated": "October 28, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1797,6 +1930,8 @@
       "matchingModel": "nvidia/nemotron-nano-9b-v2",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Nemotron Nano 9B V2 is no longer offered by OpenRouter.",
         "lastUpdated": "August 18, 2025",
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00016,
@@ -1812,6 +1947,8 @@
       "matchingModel": "nvidia/nemotron-nano-9b-v2:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Nemotron Nano 9B V2 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "August 18, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1834,6 +1971,8 @@
             "text"
           ]
         },
+        "deprecated": true,
+        "deprecationMessage": "GPT-5 Chat is no longer offered by OpenRouter.",
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -1857,6 +1996,8 @@
           "tool_use"
         ],
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "GPT-5 Codex is no longer offered by OpenRouter.",
         "lastUpdated": "September 15, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -1940,6 +2081,8 @@
             "text"
           ]
         },
+        "deprecated": true,
+        "deprecationMessage": "GPT-5.1 Chat is no longer offered by OpenRouter.",
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -2096,6 +2239,8 @@
       "matchingModel": "openai/gpt-oss-120b:exacto",
       "overrides": {
         "speed": 5,
+        "deprecated": true,
+        "deprecationMessage": "GPT OSS 120B (exacto) is no longer offered by OpenRouter.",
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.00024,
@@ -2112,6 +2257,8 @@
       "overrides": {
         "isFree": true,
         "speed": 5,
+        "deprecated": true,
+        "deprecationMessage": "gpt-oss-120b (free) is no longer offered by OpenRouter.",
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2125,6 +2272,8 @@
       "overrides": {
         "isFree": true,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "gpt-oss-20b (free) is no longer offered by OpenRouter.",
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2152,6 +2301,8 @@
       "model": "openrouter/openrouter/sherlock-dash-alpha/sherlock-dash-alpha",
       "matchingModel": "openrouter/sherlock-dash-alpha",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Sherlock Dash Alpha is no longer offered by OpenRouter.",
         "lastUpdated": "December 14, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -2164,6 +2315,8 @@
       "model": "openrouter/openrouter/sherlock-think-alpha/sherlock-think-alpha",
       "matchingModel": "openrouter/sherlock-think-alpha",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Sherlock Think Alpha is no longer offered by OpenRouter.",
         "lastUpdated": "December 14, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -2192,6 +2345,8 @@
       "matchingModel": "qwen/qwen-2.5-vl-7b-instruct:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Qwen2.5-VL 7B Instruct (free) is no longer offered by OpenRouter.",
         "lastUpdated": "August 28, 2024",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -2206,6 +2361,8 @@
       "matchingModel": "qwen/qwen2.5-vl-32b-instruct:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Qwen2.5 VL 32B Instruct (free) is no longer offered by OpenRouter.",
         "lastUpdated": "March 24, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -2233,6 +2390,8 @@
       "matchingModel": "qwen/qwen2.5-vl-72b-instruct:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Qwen2.5 VL 72B Instruct (free) is no longer offered by OpenRouter.",
         "lastUpdated": "February 1, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -2248,6 +2407,8 @@
       "overrides": {
         "isFree": true,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 14B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2265,6 +2426,8 @@
         "maxTokens": 131072,
         "contextComplexity": 4,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 235B A22B Instruct 2507 is no longer offered by OpenRouter.",
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "April 28, 2025",
         "lastUpdated": "July 21, 2025",
@@ -2283,6 +2446,8 @@
       "overrides": {
         "isFree": true,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 235B A22B Instruct 2507 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2313,6 +2478,8 @@
       "overrides": {
         "isFree": true,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 235B A22B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2339,6 +2506,8 @@
       "model": "qwen/qwen3-30b-a3b-thinking-2507",
       "matchingModel": "qwen/qwen3-30b-a3b-thinking-2507",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 30B A3B Thinking 2507 is no longer offered by OpenRouter.",
         "lastUpdated": "August 28, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0024,
@@ -2352,6 +2521,8 @@
       "overrides": {
         "isFree": true,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 30B A3B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2368,6 +2539,8 @@
       "overrides": {
         "isFree": true,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 32B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2383,6 +2556,8 @@
       "matchingModel": "qwen/qwen3-4b:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 4B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "July 23, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2399,6 +2574,8 @@
       "overrides": {
         "isFree": true,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 8B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2447,6 +2624,8 @@
       "model": "qwen/qwen3-coder-exacto",
       "matchingModel": "qwen/qwen3-coder:exacto",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Coder (exacto) is no longer offered by OpenRouter.",
         "lastUpdated": "July 23, 2025",
         "costPer1kInputTokens": 0.00038,
         "costPer1kOutputTokens": 0.00153,
@@ -2462,6 +2641,8 @@
       "matchingModel": "qwen/qwen3-max",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Max is no longer offered by OpenRouter.",
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.00078,
         "costPer1kOutputTokens": 0.0039,
@@ -2488,6 +2669,8 @@
       "overrides": {
         "isFree": true,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Next 80B A3B Instruct (free) is no longer offered by OpenRouter.",
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2501,6 +2684,8 @@
         "description": "Efficient Qwen thinking model for local reasoning, math, and coding agents",
         "maxTokens": 235929,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Next 80B A3B Thinking is no longer offered by OpenRouter.",
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0012,
@@ -2519,6 +2704,8 @@
       "overrides": {
         "isFree": true,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "QwQ 32B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "March 5, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2553,6 +2740,8 @@
       "matchingModel": "sarvamai/sarvam-m:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Sarvam-M (free) is no longer offered by OpenRouter.",
         "lastUpdated": "May 25, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2566,7 +2755,9 @@
       "model": "openrouter/sourceful/riverflow-v2-fast-preview/riverflow-v2-fast-preview",
       "matchingModel": "sourceful/riverflow-v2-fast-preview",
       "overrides": {
-        "isFeatured": true,
+        "isFeatured": false,
+        "deprecated": true,
+        "deprecationMessage": "Riverflow V2 Fast Preview is no longer offered by OpenRouter.",
         "lastUpdated": "January 28, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2581,6 +2772,8 @@
       "model": "openrouter/sourceful/riverflow-v2-max-preview/riverflow-v2-max-preview",
       "matchingModel": "sourceful/riverflow-v2-max-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Riverflow V2 Max Preview is no longer offered by OpenRouter.",
         "lastUpdated": "January 28, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2595,6 +2788,8 @@
       "model": "openrouter/sourceful/riverflow-v2-standard-preview/riverflow-v2-standard-preview",
       "matchingModel": "sourceful/riverflow-v2-standard-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Riverflow V2 Standard Preview is no longer offered by OpenRouter.",
         "lastUpdated": "January 28, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2623,6 +2818,8 @@
       "overrides": {
         "isFree": true,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Step 3.5 Flash (free) is no longer offered by OpenRouter.",
         "lastUpdated": "January 29, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2637,6 +2834,8 @@
       "matchingModel": "thudm/glm-z1-32b:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "GLM Z1 32B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "April 17, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2652,6 +2851,8 @@
       "matchingModel": "tngtech/deepseek-r1t2-chimera:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek R1T2 Chimera (free) is no longer offered by OpenRouter.",
         "lastUpdated": "July 8, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2667,6 +2868,8 @@
       "matchingModel": "tngtech/tng-r1t-chimera:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "R1T Chimera (free) is no longer offered by OpenRouter.",
         "lastUpdated": "January 31, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2680,6 +2883,8 @@
       "model": "grok/grok-3-beta",
       "matchingModel": "x-ai/grok-3-beta",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok 3 Beta is no longer offered by OpenRouter.",
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -2694,6 +2899,8 @@
       "model": "grok/grok-3-mini-beta",
       "matchingModel": "x-ai/grok-3-mini-beta",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok 3 Mini Beta is no longer offered by OpenRouter.",
         "lastUpdated": "February 17, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0005,
@@ -2709,6 +2916,8 @@
       "matchingModel": "x-ai/grok-4",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Grok 4 is no longer offered by OpenRouter.",
         "lastUpdated": "July 9, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -2727,6 +2936,8 @@
           "vision",
           "tool_use"
         ],
+        "deprecated": true,
+        "deprecationMessage": "Grok 4 Fast is no longer offered by OpenRouter.",
         "knowledgeCutoffDate": "November 2024",
         "releaseDate": "August 19, 2025",
         "lastUpdated": "August 19, 2025",
@@ -2747,6 +2958,8 @@
           "vision",
           "tool_use"
         ],
+        "deprecated": true,
+        "deprecationMessage": "Grok 4.1 Fast is no longer offered by OpenRouter.",
         "knowledgeCutoffDate": "November 2024",
         "lastUpdated": "November 19, 2025",
         "costPer1kInputTokens": 0.0002,
@@ -2762,6 +2975,8 @@
       "model": "grok/grok-code-fast-1",
       "matchingModel": "x-ai/grok-code-fast-1",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Grok Code Fast 1 is no longer offered by OpenRouter.",
         "knowledgeCutoffDate": "August 2025",
         "releaseDate": "August 26, 2025",
         "lastUpdated": "August 26, 2025",
@@ -2779,6 +2994,8 @@
       "matchingModel": "xiaomi/mimo-v2-flash",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "MiMo-V2-Flash is no longer offered by OpenRouter.",
         "lastUpdated": "February 4, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0003,
@@ -2805,6 +3022,8 @@
       "overrides": {
         "isFree": true,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "GLM 4.5 Air (free) is no longer offered by OpenRouter.",
         "lastUpdated": "July 28, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -2845,6 +3064,8 @@
       "matchingModel": "z-ai/glm-4.6:exacto",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "GLM 4.6 (exacto) is no longer offered by OpenRouter.",
         "lastUpdated": "September 30, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0019,
@@ -3016,6 +3237,8 @@
       "model": "gpt/openai-gpt-latest",
       "matchingModel": "~openai/gpt-latest",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "OpenAI GPT Latest is no longer offered by OpenRouter.",
         "lastUpdated": "April 27, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
@@ -3042,6 +3265,8 @@
       "model": "jamba/jamba-large-1-7",
       "matchingModel": "ai21/jamba-large-1.7",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Jamba Large 1.7 is no longer offered by OpenRouter.",
         "lastUpdated": "August 8, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008,
@@ -3056,6 +3281,8 @@
       "model": "openrouter/aion-labs/aion-1.0/aion-1-0",
       "matchingModel": "aion-labs/aion-1.0",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Aion-1.0 is no longer offered by OpenRouter.",
         "lastUpdated": "February 4, 2025",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.008,
@@ -3068,6 +3295,8 @@
       "model": "openrouter/aion-labs/aion-1.0-mini/aion-1-0-mini",
       "matchingModel": "aion-labs/aion-1.0-mini",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Aion-1.0-Mini is no longer offered by OpenRouter.",
         "lastUpdated": "February 4, 2025",
         "costPer1kInputTokens": 0.0007,
         "costPer1kOutputTokens": 0.0014,
@@ -3103,6 +3332,8 @@
       "model": "llama/codellama-7b-instruct-solidity",
       "matchingModel": "alfredpros/codellama-7b-instruct-solidity",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "CodeLLaMa 7B Instruct Solidity is no longer offered by OpenRouter.",
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.0012,
@@ -3118,6 +3349,8 @@
       "model": "openrouter/alibaba/tongyi-deepresearch-30b-a3b/tongyi-deepresearch-30b-a3b",
       "matchingModel": "alibaba/tongyi-deepresearch-30b-a3b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Tongyi DeepResearch 30B A3B is no longer offered by OpenRouter.",
         "lastUpdated": "September 18, 2025",
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.00045,
@@ -3128,6 +3361,8 @@
       "model": "allenai/olmo-3-32b-think",
       "matchingModel": "allenai/olmo-3-32b-think",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Olmo 3 32B Think is no longer offered by OpenRouter.",
         "lastUpdated": "November 21, 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005,
@@ -3231,6 +3466,8 @@
       "model": "claude/claude-3-haiku",
       "matchingModel": "anthropic/claude-3-haiku",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Claude 3 Haiku is no longer offered by OpenRouter.",
         "lastUpdated": "March 13, 2024",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00125,
@@ -3242,6 +3479,8 @@
       "matchingModel": "anthropic/claude-opus-4.6-fast",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Claude Opus 4.6 (Fast) is no longer offered by OpenRouter.",
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.03,
         "costPer1kOutputTokens": 0.15
@@ -3277,6 +3516,8 @@
       "matchingModel": "anthropic/claude-opus-4.7-fast",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Claude Opus 4.7 (Fast) is no longer offered by OpenRouter.",
         "lastUpdated": "April 16, 2026",
         "costPer1kInputTokens": 0.03,
         "costPer1kOutputTokens": 0.15,
@@ -3318,6 +3559,8 @@
       "model": "openrouter/arcee-ai/coder-large/coder-large",
       "matchingModel": "arcee-ai/coder-large",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Coder Large is no longer offered by OpenRouter.",
         "lastUpdated": "May 5, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0008,
@@ -3330,6 +3573,8 @@
       "model": "openrouter/arcee-ai/maestro-reasoning/maestro-reasoning",
       "matchingModel": "arcee-ai/maestro-reasoning",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Maestro Reasoning is no longer offered by OpenRouter.",
         "lastUpdated": "May 5, 2025",
         "costPer1kInputTokens": 0.0009,
         "costPer1kOutputTokens": 0.0033,
@@ -3342,6 +3587,8 @@
       "model": "openrouter/arcee-ai/spotlight/spotlight",
       "matchingModel": "arcee-ai/spotlight",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Spotlight is no longer offered by OpenRouter.",
         "lastUpdated": "May 5, 2025",
         "costPer1kInputTokens": 0.00018,
         "costPer1kOutputTokens": 0.00018,
@@ -3353,6 +3600,8 @@
       "model": "openrouter/arcee-ai/trinity-large-preview/trinity-large-preview",
       "matchingModel": "arcee-ai/trinity-large-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Trinity Large Preview is no longer offered by OpenRouter.",
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00045,
@@ -3364,6 +3613,8 @@
       "matchingModel": "arcee-ai/trinity-large-thinking",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Trinity Large Thinking is no longer offered by OpenRouter.",
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.0008,
@@ -3387,6 +3638,8 @@
       "overrides": {
         "isFree": true,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Trinity Large Thinking (free) is no longer offered by OpenRouter.",
         "lastUpdated": "April 1, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -3398,6 +3651,8 @@
       "model": "trinity-mini/trinity-mini",
       "matchingModel": "arcee-ai/trinity-mini",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Trinity Mini is no longer offered by OpenRouter.",
         "lastUpdated": "December 1, 2025",
         "costPer1kInputTokens": 0.000045,
         "costPer1kOutputTokens": 0.00015,
@@ -3408,6 +3663,8 @@
       "model": "openrouter/arcee-ai/virtuoso-large/virtuoso-large",
       "matchingModel": "arcee-ai/virtuoso-large",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Virtuoso Large is no longer offered by OpenRouter.",
         "lastUpdated": "May 5, 2025",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.0012,
@@ -3420,6 +3677,8 @@
       "matchingModel": "baidu/cobuddy:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "CoBuddy (free) is no longer offered by OpenRouter.",
         "lastUpdated": "May 6, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -3432,6 +3691,8 @@
       "model": "openrouter/baidu/ernie-4.5-21b-a3b/ernie-4-5-21b-a3b",
       "matchingModel": "baidu/ernie-4.5-21b-a3b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "ERNIE 4.5 21B A3B is no longer offered by OpenRouter.",
         "lastUpdated": "August 12, 2025",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.00028,
@@ -3443,6 +3704,8 @@
       "model": "openrouter/baidu/ernie-4.5-21b-a3b-thinking/ernie-4-5-21b-a3b-thinking",
       "matchingModel": "baidu/ernie-4.5-21b-a3b-thinking",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "ERNIE 4.5 21B A3B Thinking is no longer offered by OpenRouter.",
         "lastUpdated": "October 9, 2025",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.00028,
@@ -3455,6 +3718,8 @@
       "model": "openrouter/baidu/ernie-4.5-300b-a47b/ernie-4-5-300b-a47b",
       "matchingModel": "baidu/ernie-4.5-300b-a47b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "ERNIE 4.5 300B A47B  is no longer offered by OpenRouter.",
         "lastUpdated": "June 30, 2025",
         "costPer1kInputTokens": 0.00028,
         "costPer1kOutputTokens": 0.0011,
@@ -3467,6 +3732,8 @@
       "model": "openrouter/baidu/ernie-4.5-vl-28b-a3b/ernie-4-5-vl-28b-a3b",
       "matchingModel": "baidu/ernie-4.5-vl-28b-a3b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "ERNIE 4.5 VL 28B A3B is no longer offered by OpenRouter.",
         "lastUpdated": "August 12, 2025",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00056,
@@ -3477,6 +3744,8 @@
       "model": "ernie/ernie-4-5-vl-424b-a47b",
       "matchingModel": "baidu/ernie-4.5-vl-424b-a47b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "ERNIE 4.5 VL 424B A47B  is no longer offered by OpenRouter.",
         "lastUpdated": "June 30, 2025",
         "costPer1kInputTokens": 0.00042,
         "costPer1kOutputTokens": 0.00125,
@@ -3488,6 +3757,8 @@
       "model": "openrouter/baidu/qianfan-ocr-fast/qianfan-ocr-fast",
       "matchingModel": "baidu/qianfan-ocr-fast",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qianfan-OCR-Fast is no longer offered by OpenRouter.",
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00068,
         "costPer1kOutputTokens": 0.00281,
@@ -3601,6 +3872,8 @@
       "overrides": {
         "contextWindow": 128000,
         "maxTokens": 128000,
+        "deprecated": true,
+        "deprecationMessage": "Cogito v2.1 671B is no longer offered by OpenRouter.",
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00125,
@@ -3638,6 +3911,8 @@
       "model": "deepseek/r1-distill-qwen-32b",
       "matchingModel": "deepseek/deepseek-r1-distill-qwen-32b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "R1 Distill Qwen 32B is no longer offered by OpenRouter.",
         "lastUpdated": "January 29, 2025",
         "costPer1kInputTokens": 0.00029,
         "costPer1kOutputTokens": 0.00029,
@@ -3684,6 +3959,8 @@
       "overrides": {
         "isFree": true,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V4 Flash (free) is no longer offered by OpenRouter.",
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -3717,6 +3994,8 @@
       "model": "openrouter/essentialai/rnj-1-instruct/rnj-1-instruct",
       "matchingModel": "essentialai/rnj-1-instruct",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Rnj 1 Instruct is no longer offered by OpenRouter.",
         "lastUpdated": "December 7, 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00015,
@@ -3727,10 +4006,15 @@
       "model": "gemini/gemini-2-0-flash-lite",
       "matchingModel": "google/gemini-2.0-flash-lite-001",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.0 Flash Lite is no longer offered by OpenRouter.",
         "lastUpdated": "February 25, 2025",
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.0003
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "google/gemini-2.5-flash-image": {
       "model": "gemini-flash/nano-banana",
@@ -3757,7 +4041,6 @@
       "model": "gemini/gemini-2-5-pro-preview-06-05",
       "matchingModel": "google/gemini-2.5-pro-preview",
       "overrides": {
-        "openWeights": false,
         "modalities": {
           "input": [
             "pdf",
@@ -4146,6 +4429,8 @@
       "model": "granite/granite-4-0-micro",
       "matchingModel": "ibm-granite/granite-4.0-h-micro",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Granite 4.0 Micro is no longer offered by OpenRouter.",
         "lastUpdated": "October 20, 2025",
         "costPer1kInputTokens": 0.000017,
         "costPer1kOutputTokens": 0.000112,
@@ -4159,6 +4444,8 @@
       "matchingModel": "ibm-granite/granite-4.1-8b",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Granite 4.1 8B is no longer offered by OpenRouter.",
         "lastUpdated": "April 30, 2026",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0001,
@@ -4191,6 +4478,8 @@
       "overrides": {
         "name": "Ling-2.6-1T",
         "maxTokens": 32768,
+        "deprecated": true,
+        "deprecationMessage": "Ling-2.6-1T is no longer offered by OpenRouter.",
         "lastUpdated": "April 23, 2026",
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.000625,
@@ -4203,6 +4492,8 @@
       "overrides": {
         "name": "Ling-2.6-flash",
         "maxTokens": 32768,
+        "deprecated": true,
+        "deprecationMessage": "Ling-2.6-flash is no longer offered by OpenRouter.",
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.00001,
         "costPer1kOutputTokens": 0.00003,
@@ -4216,6 +4507,8 @@
         "name": "Ring-2.6-1T",
         "maxTokens": 65536,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Ring-2.6-1T is no longer offered by OpenRouter.",
         "lastUpdated": "May 8, 2026",
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.000625,
@@ -4234,6 +4527,8 @@
       "model": "openrouter/inflection/inflection-3-pi/inflection-3-pi",
       "matchingModel": "inflection/inflection-3-pi",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Inflection 3 Pi is no longer offered by OpenRouter.",
         "lastUpdated": "October 11, 2024",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,
@@ -4246,6 +4541,8 @@
       "model": "openrouter/inflection/inflection-3-productivity/inflection-3-productivity",
       "matchingModel": "inflection/inflection-3-productivity",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Inflection 3 Productivity is no longer offered by OpenRouter.",
         "lastUpdated": "October 11, 2024",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,
@@ -4261,6 +4558,8 @@
         "name": "KAT-Coder-Pro V2",
         "contextWindow": 262144,
         "maxTokens": 144000,
+        "deprecated": true,
+        "deprecationMessage": "KAT-Coder-Pro V2 is no longer offered by OpenRouter.",
         "lastUpdated": "March 27, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -4272,6 +4571,8 @@
       "matchingModel": "liquid/lfm-2-24b-a2b",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "LFM2-24B-A2B is no longer offered by OpenRouter.",
         "lastUpdated": "February 25, 2026",
         "costPer1kInputTokens": 0.00003,
         "costPer1kOutputTokens": 0.00012,
@@ -4297,6 +4598,8 @@
       "matchingModel": "meta-llama/llama-3-70b-instruct",
       "overrides": {
         "maxTokens": 8000,
+        "deprecated": true,
+        "deprecationMessage": "Llama 3 70B Instruct is no longer offered by OpenRouter.",
         "knowledgeCutoffDate": "December 31, 2023",
         "releaseDate": "April 18, 2024",
         "lastUpdated": "April 18, 2024",
@@ -4314,6 +4617,8 @@
       "matchingModel": "meta-llama/llama-3-8b-instruct",
       "overrides": {
         "maxTokens": 8192,
+        "deprecated": true,
+        "deprecationMessage": "Llama 3 8B Instruct is no longer offered by OpenRouter.",
         "knowledgeCutoffDate": "December 31, 2023",
         "releaseDate": "April 18, 2024",
         "lastUpdated": "April 18, 2024",
@@ -4427,6 +4732,8 @@
       "model": "llama/llama-guard-3-8b",
       "matchingModel": "meta-llama/llama-guard-3-8b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Llama Guard 3 8B is no longer offered by OpenRouter.",
         "knowledgeCutoffDate": "December 31, 2023",
         "releaseDate": "February 12, 2025",
         "lastUpdated": "February 12, 2025",
@@ -4484,6 +4791,8 @@
       "matchingModel": "microsoft/phi-4-mini-instruct",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Phi 4 Mini Instruct is no longer offered by OpenRouter.",
         "lastUpdated": "October 17, 2025",
         "costPer1kInputTokens": 0.00008,
         "costPer1kOutputTokens": 0.00035,
@@ -4498,6 +4807,8 @@
       "model": "openrouter/microsoft/wizardlm-2-8x22b/wizardlm-2-8x22b",
       "matchingModel": "microsoft/wizardlm-2-8x22b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "WizardLM-2 8x22B is no longer offered by OpenRouter.",
         "lastUpdated": "April 16, 2024",
         "costPer1kInputTokens": 0.00062,
         "costPer1kOutputTokens": 0.00062,
@@ -4511,6 +4822,8 @@
       "matchingModel": "minimax/minimax-m2-her",
       "overrides": {
         "name": "MiniMax M2-her",
+        "deprecated": true,
+        "deprecationMessage": "MiniMax M2-her is no longer offered by OpenRouter.",
         "lastUpdated": "January 23, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -4538,6 +4851,8 @@
       "overrides": {
         "isFree": true,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "MiniMax M2.5 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -4569,6 +4884,8 @@
       "matchingModel": "mistralai/devstral-medium",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Devstral Medium is no longer offered by OpenRouter.",
         "lastUpdated": "July 10, 2025",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.002
@@ -4598,6 +4915,8 @@
       "model": "mistral/mistral-7b-instruct-v0-1",
       "matchingModel": "mistralai/mistral-7b-instruct-v0.1",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Mistral 7B Instruct v0.1 is no longer offered by OpenRouter.",
         "lastUpdated": "September 28, 2023",
         "costPer1kInputTokens": 0.00011,
         "costPer1kOutputTokens": 0.00019,
@@ -4701,6 +5020,8 @@
       "matchingModel": "mistralai/pixtral-large-2411",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Pixtral Large 2411 is no longer offered by OpenRouter.",
         "lastUpdated": "November 19, 2024",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006
@@ -4761,6 +5082,8 @@
       "model": "deepseek/deepseek-v3-1-nex-n1",
       "matchingModel": "nex-agi/deepseek-v3.1-nex-n1",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V3.1 Nex N1 is no longer offered by OpenRouter.",
         "lastUpdated": "December 8, 2025",
         "costPer1kInputTokens": 0.000135,
         "costPer1kOutputTokens": 0.0005,
@@ -4771,6 +5094,8 @@
       "model": "llama/hermes-2-pro-llama-3-8b",
       "matchingModel": "nousresearch/hermes-2-pro-llama-3-8b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Hermes 2 Pro - Llama-3 8B is no longer offered by OpenRouter.",
         "lastUpdated": "May 27, 2024",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.00014,
@@ -4785,6 +5110,8 @@
       "model": "nemotron/llama-3-3-nemotron-super-49b-v1-5",
       "matchingModel": "nvidia/llama-3.3-nemotron-super-49b-v1.5",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Llama 3.3 Nemotron Super 49B V1.5 is no longer offered by OpenRouter.",
         "lastUpdated": "July 25, 2025",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0004,
@@ -4849,6 +5176,8 @@
       "matchingModel": "nvidia/nemotron-3-super-120b-a12b:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Nemotron 3 Super (free) is no longer offered by OpenRouter.",
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -4871,6 +5200,8 @@
       "overrides": {
         "contextWindow": 4095,
         "maxTokens": 3685,
+        "deprecated": true,
+        "deprecationMessage": "GPT-3.5 Turbo Instruct is no longer offered by OpenRouter.",
         "knowledgeCutoffDate": "September 30, 2021",
         "releaseDate": "September 28, 2023",
         "lastUpdated": "September 28, 2023",
@@ -4896,6 +5227,8 @@
       "matchingModel": "openai/gpt-4-1106-preview",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "GPT-4 Turbo (older v1106) is no longer offered by OpenRouter.",
         "lastUpdated": "November 6, 2023",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.03,
@@ -4919,6 +5252,8 @@
           ]
         },
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "GPT-4 Turbo is no longer offered by OpenRouter.",
         "lastUpdated": "April 9, 2024",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.03
@@ -4928,6 +5263,8 @@
       "model": "gpt/gpt-4-turbo-preview",
       "matchingModel": "openai/gpt-4-turbo-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GPT-4 Turbo Preview is no longer offered by OpenRouter.",
         "lastUpdated": "January 25, 2024",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.03,
@@ -4959,6 +5296,8 @@
       "model": "gpt/gpt-4o-audio",
       "matchingModel": "openai/gpt-4o-audio-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GPT-4o Audio is no longer offered by OpenRouter.",
         "lastUpdated": "August 15, 2025",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01
@@ -4971,6 +5310,8 @@
       "model": "o-mini/gpt-4o-mini-search-preview",
       "matchingModel": "openai/gpt-4o-mini-search-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GPT-4o-mini Search Preview is no longer offered by OpenRouter.",
         "lastUpdated": "March 12, 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -4990,6 +5331,8 @@
       "model": "gpt/gpt-4o-search-preview",
       "matchingModel": "openai/gpt-4o-search-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GPT-4o Search Preview is no longer offered by OpenRouter.",
         "lastUpdated": "March 12, 2025",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,
@@ -5022,6 +5365,8 @@
       "model": "gpt/gpt-5-3-chat",
       "matchingModel": "openai/gpt-5.3-chat",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GPT-5.3 Chat is no longer offered by OpenRouter.",
         "lastUpdated": "March 3, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -5309,6 +5654,8 @@
       "matchingModel": "openai/o1",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "o1 is no longer offered by OpenRouter.",
         "lastUpdated": "December 5, 2024",
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.06,
@@ -5327,6 +5674,8 @@
       "model": "o-pro/o1-pro",
       "matchingModel": "openai/o1-pro",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "o1-pro is no longer offered by OpenRouter.",
         "lastUpdated": "March 19, 2025",
         "costPer1kInputTokens": 0.15,
         "costPer1kOutputTokens": 0.6,
@@ -5385,6 +5734,8 @@
             "text"
           ]
         },
+        "deprecated": true,
+        "deprecationMessage": "o3 Deep Research is no longer offered by OpenRouter.",
         "lastUpdated": "June 26, 2024",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.04
@@ -5396,6 +5747,8 @@
       "overrides": {
         "name": "o3 Mini",
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "o3 Mini is no longer offered by OpenRouter.",
         "lastUpdated": "January 29, 2025",
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0044,
@@ -5415,6 +5768,8 @@
       "matchingModel": "openai/o3-mini-high",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "o3 Mini High is no longer offered by OpenRouter.",
         "lastUpdated": "February 12, 2025",
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0044,
@@ -5465,6 +5820,8 @@
             "text"
           ]
         },
+        "deprecated": true,
+        "deprecationMessage": "o4 Mini Deep Research is no longer offered by OpenRouter.",
         "lastUpdated": "June 26, 2024",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.008
@@ -5479,6 +5836,8 @@
       "model": "o/o4-mini-high",
       "matchingModel": "openai/o4-mini-high",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "o4 Mini High is no longer offered by OpenRouter.",
         "lastUpdated": "April 16, 2025",
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0044,
@@ -5510,6 +5869,8 @@
       "matchingModel": "openrouter/owl-alpha",
       "overrides": {
         "status": "alpha",
+        "deprecated": true,
+        "deprecationMessage": "Owl Alpha is no longer offered by OpenRouter.",
         "lastUpdated": "April 28, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -5635,6 +5996,8 @@
       "matchingModel": "poolside/laguna-m.1:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Laguna M.1 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -5647,6 +6010,8 @@
       "matchingModel": "poolside/laguna-xs.2:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Laguna XS.2 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "April 28, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -5658,6 +6023,8 @@
       "model": "openrouter/prime-intellect/intellect-3/intellect-3",
       "matchingModel": "prime-intellect/intellect-3",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "INTELLECT-3 is no longer offered by OpenRouter.",
         "lastUpdated": "November 27, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0011,
@@ -5706,6 +6073,8 @@
       "model": "qwen/qwen-plus-0728-thinking",
       "matchingModel": "qwen/qwen-plus-2025-07-28:thinking",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen Plus 0728 (thinking) is no longer offered by OpenRouter.",
         "lastUpdated": "September 8, 2025",
         "costPer1kInputTokens": 0.00026,
         "costPer1kOutputTokens": 0.00078,
@@ -5757,6 +6126,8 @@
         "contextWindow": 131072,
         "maxTokens": 8192,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 8B is no longer offered by OpenRouter.",
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "April 28, 2025",
         "lastUpdated": "April 28, 2025",
@@ -5786,6 +6157,8 @@
       "model": "qwen/qwen3-coder-plus",
       "matchingModel": "qwen/qwen3-coder-plus",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Coder Plus is no longer offered by OpenRouter.",
         "lastUpdated": "July 23, 2025",
         "costPer1kInputTokens": 0.00065,
         "costPer1kOutputTokens": 0.00325,
@@ -5796,6 +6169,8 @@
       "model": "qwen/qwen3-max-thinking",
       "matchingModel": "qwen/qwen3-max-thinking",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Max Thinking is no longer offered by OpenRouter.",
         "lastUpdated": "February 9, 2026",
         "costPer1kInputTokens": 0.00078,
         "costPer1kOutputTokens": 0.0039,
@@ -5817,6 +6192,8 @@
       "model": "qwen/qwen3-vl-235b-a22b-thinking",
       "matchingModel": "qwen/qwen3-vl-235b-a22b-thinking",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 VL 235B A22B Thinking is no longer offered by OpenRouter.",
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.004,
@@ -5855,6 +6232,8 @@
       "matchingModel": "qwen/qwen3-vl-32b-instruct",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 VL 32B Instruct is no longer offered by OpenRouter.",
         "lastUpdated": "October 23, 2025",
         "costPer1kInputTokens": 0.000104,
         "costPer1kOutputTokens": 0.000416
@@ -5874,6 +6253,8 @@
       "model": "qwen/qwen3-vl-8b-thinking",
       "matchingModel": "qwen/qwen3-vl-8b-thinking",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 VL 8B Thinking is no longer offered by OpenRouter.",
         "lastUpdated": "October 14, 2025",
         "costPer1kInputTokens": 0.00018,
         "costPer1kOutputTokens": 0.0021
@@ -6090,6 +6471,8 @@
       "matchingModel": "qwen/qwen3.6-max-preview",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3.6 Max Preview is no longer offered by OpenRouter.",
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.001027,
         "costPer1kOutputTokens": 0.006162,
@@ -6150,6 +6533,8 @@
       "model": "openrouter/sao10k/l3-euryale-70b/llama-3-euryale-70b-v2-1",
       "matchingModel": "sao10k/l3-euryale-70b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Llama 3 Euryale 70B v2.1 is no longer offered by OpenRouter.",
         "lastUpdated": "June 18, 2024",
         "costPer1kInputTokens": 0.00148,
         "costPer1kOutputTokens": 0.00148,
@@ -6172,6 +6557,8 @@
       "model": "llama/llama-3-1-70b-hanami-x1",
       "matchingModel": "sao10k/l3.1-70b-hanami-x1",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Llama 3.1 70B Hanami x1 is no longer offered by OpenRouter.",
         "lastUpdated": "January 8, 2025",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.003,
@@ -6194,6 +6581,8 @@
       "model": "llama/llama-3-3-euryale-70b",
       "matchingModel": "sao10k/l3.3-euryale-70b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Llama 3.3 Euryale 70B is no longer offered by OpenRouter.",
         "lastUpdated": "December 18, 2024",
         "costPer1kInputTokens": 0.00065,
         "costPer1kOutputTokens": 0.00075,
@@ -6205,6 +6594,8 @@
       "model": "openrouter/switchpoint/router/switchpoint-router",
       "matchingModel": "switchpoint/router",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Switchpoint Router is no longer offered by OpenRouter.",
         "lastUpdated": "July 11, 2025",
         "costPer1kInputTokens": 0.00085,
         "costPer1kOutputTokens": 0.0034,
@@ -6251,6 +6642,8 @@
       "model": "openrouter/thedrummer/rocinante-12b/rocinante-12b",
       "matchingModel": "thedrummer/rocinante-12b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Rocinante 12B is no longer offered by OpenRouter.",
         "lastUpdated": "September 30, 2024",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.0005,
@@ -6296,6 +6689,8 @@
       "matchingModel": "upstage/solar-pro-3",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Solar Pro 3 is no longer offered by OpenRouter.",
         "lastUpdated": "March 23, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -6390,6 +6785,8 @@
       "matchingModel": "xiaomi/mimo-v2-omni",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "MiMo-V2-Omni is no longer offered by OpenRouter.",
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.002,
@@ -6401,6 +6798,8 @@
       "matchingModel": "xiaomi/mimo-v2-pro",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "MiMo-V2-Pro is no longer offered by OpenRouter.",
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.003,
@@ -6412,6 +6811,8 @@
       "model": "glm/glm-4-32b",
       "matchingModel": "z-ai/glm-4-32b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GLM 4 32B  is no longer offered by OpenRouter.",
         "lastUpdated": "July 24, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0001,
@@ -6614,6 +7015,8 @@
         ],
         "speed": 2,
         "multimodal": true,
+        "deprecated": true,
+        "deprecationMessage": "Claude Opus 4.8 (Fast) is no longer offered by OpenRouter.",
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
@@ -6636,6 +7039,8 @@
       "overrides": {
         "isFree": true,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2.6 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -6740,6 +7145,8 @@
       "matchingModel": "nvidia/nemotron-3.5-content-safety:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Nemotron 3.5 Content Safety (free) is no longer offered by OpenRouter.",
         "lastUpdated": "June 2, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -6752,6 +7159,8 @@
       "matchingModel": "nex-agi/nex-n2-pro:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Nex-N2-Pro (free) is no longer offered by OpenRouter.",
         "lastUpdated": "June 8, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -6927,6 +7336,8 @@
       "model": "laguna/laguna-m-1",
       "matchingModel": "poolside/laguna-m.1",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Laguna M.1 is no longer offered by OpenRouter.",
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0004,
@@ -6938,6 +7349,8 @@
       "model": "openrouter/poolside/laguna-xs.2/laguna-xs-2",
       "matchingModel": "poolside/laguna-xs.2",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Laguna XS.2 is no longer offered by OpenRouter.",
         "lastUpdated": "April 28, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0002,
@@ -6949,6 +7362,8 @@
       "model": "agi/nex-n2-pro",
       "matchingModel": "nex-agi/nex-n2-pro",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Nex-N2-Pro is no longer offered by OpenRouter.",
         "lastUpdated": "June 8, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.001,
@@ -7028,6 +7443,8 @@
       "model": "agi/nex-n2-mini",
       "matchingModel": "nex-agi/nex-n2-mini",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Nex-N2-Mini is no longer offered by OpenRouter.",
         "lastUpdated": "June 24, 2026",
         "costPer1kInputTokens": 0.000025,
         "costPer1kOutputTokens": 0.0001
@@ -7050,6 +7467,8 @@
       "overrides": {
         "isFree": true,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Hy3 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "July 6, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7192,6 +7611,8 @@
       "matchingModel": "kwaipilot/kat-coder-air-v2.5",
       "overrides": {
         "name": "KAT-Coder-Air V2.5",
+        "deprecated": true,
+        "deprecationMessage": "KAT-Coder-Air V2.5 is no longer offered by OpenRouter.",
         "lastUpdated": "July 10, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -7205,6 +7626,8 @@
         "name": "KAT-Coder-Pro V2.5",
         "contextWindow": 262144,
         "maxTokens": 235929,
+        "deprecated": true,
+        "deprecationMessage": "KAT-Coder-Pro V2.5 is no longer offered by OpenRouter.",
         "lastUpdated": "July 10, 2026",
         "costPer1kInputTokens": 0.00074,
         "costPer1kOutputTokens": 0.00296,
@@ -7342,6 +7765,8 @@
       "overrides": {
         "isFree": true,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Ling-3.0-flash (free) is no longer offered by OpenRouter.",
         "lastUpdated": "July 23, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7377,6 +7802,8 @@
       "matchingModel": "anthropic/claude-opus-5-fast",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Claude Opus 5 (Fast) is no longer offered by OpenRouter.",
         "lastUpdated": "July 24, 2026",
         "costPer1kInputTokens": 0.01,
         "costPer1kOutputTokens": 0.05,
@@ -7511,6 +7938,8 @@
         "maxTokens": 32768,
         "isFree": true,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Ling 3.0 Tiny (free) is no longer offered by OpenRouter.",
         "lastUpdated": "August 6, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7748,6 +8177,8 @@
       "overrides": {
         "isFree": true,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "GLM 5.2 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "June 13, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7786,6 +8217,8 @@
       "model": "alpha/ox-alpha",
       "matchingModel": "stealth/ox-alpha",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Ox Alpha is no longer offered by OpenRouter.",
         "lastUpdated": "August 20, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7858,6 +8291,8 @@
       "overrides": {
         "isFree": true,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Inkling Small (free) is no longer offered by OpenRouter.",
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7870,6 +8305,8 @@
       "overrides": {
         "isFree": true,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Inkling (free) is no longer offered by OpenRouter.",
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7896,6 +8333,8 @@
         "maxTokens": 176947,
         "isFree": true,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "MiniMax M2.7 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7927,6 +8366,8 @@
           "tool_use"
         ],
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "MiniMax M3 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -7967,6 +8408,8 @@
         "maxTokens": 32768,
         "isFree": true,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Ling 3.0 Flash Fin (free) is no longer offered by OpenRouter.",
         "lastUpdated": "August 27, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -8052,7 +8495,9 @@
       "model": "granite/granite-4-2-8b",
       "matchingModel": "ibm-granite/granite-4.2-8b",
       "overrides": {
+        "maxTokens": 117964,
         "speed": 3,
+        "releaseDate": "August 25, 2026",
         "lastUpdated": "August 25, 2026",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00025,
@@ -8084,7 +8529,6 @@
       "model": "gemini-flash/gemini-3-8-flash",
       "matchingModel": "google/gemini-3.8-flash",
       "overrides": {
-        "maxTokens": 65536,
         "speed": 3,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
@@ -8099,6 +8543,8 @@
       "model": "mercury/mercury-2-5-preview",
       "matchingModel": "inception/mercury-2.5-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Mercury 2.5 Preview is no longer offered by OpenRouter.",
         "lastUpdated": "August 31, 2026",
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00015,
@@ -8115,6 +8561,8 @@
         "contextWindow": 262144,
         "maxTokens": 32768,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Ling 3.0 Flash Fin is no longer offered by OpenRouter.",
         "lastUpdated": "August 27, 2026",
         "costPer1kInputTokens": 0.000042,
         "costPer1kOutputTokens": 0.0001232,
@@ -8181,6 +8629,8 @@
         "contextWindow": 262144,
         "maxTokens": 32768,
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Ling 3.0 Flash Sante (free) is no longer offered by OpenRouter.",
         "lastUpdated": "September 4, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -8242,6 +8692,8 @@
       "matchingModel": "nex-agi/nex-n2.5-mini:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Nex-N2.5-Mini (free) is no longer offered by OpenRouter.",
         "lastUpdated": "September 8, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -8252,6 +8704,8 @@
       "matchingModel": "nex-agi/nex-n2.5-pro:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Nex-N2.5-Pro (free) is no longer offered by OpenRouter.",
         "lastUpdated": "September 8, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -8387,6 +8841,8 @@
           "document",
           "tool_use"
         ],
+        "deprecated": true,
+        "deprecationMessage": "Ling 3.0 Flash VL (free) is no longer offered by OpenRouter.",
         "releaseDate": "September 10, 2026",
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0,
@@ -8486,6 +8942,8 @@
       "model": "alpha/union-alpha",
       "matchingModel": "stealth/union-alpha",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Union Alpha is no longer offered by OpenRouter.",
         "lastUpdated": "September 16, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -8498,6 +8956,8 @@
       "overrides": {
         "isFree": true,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "DeepSeek V4 Flash 0731 (free) is no longer offered by OpenRouter.",
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -8519,6 +8979,8 @@
       "overrides": {
         "isFree": true,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3.8 27B (free) is no longer offered by OpenRouter.",
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -8528,6 +8990,8 @@
       "model": "openrouter/unbiased/pareto/pareto",
       "matchingModel": "unbiased/pareto",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Pareto is no longer offered by OpenRouter.",
         "lastUpdated": "September 17, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.0075,
@@ -8820,6 +9284,8 @@
       "model": "alpha/space-bunny-alpha",
       "matchingModel": "stealth/space-bunny-alpha",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Space Bunny Alpha is no longer offered by OpenRouter.",
         "lastUpdated": "September 23, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -8878,6 +9344,8 @@
       "matchingModel": "apodex/apodex-1.1-mini:free",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Apodex 1.1 Mini (free) is no longer offered by OpenRouter.",
         "lastUpdated": "October 1, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -8910,6 +9378,8 @@
       "model": "openrouter/unbiased/pareto-26.10-preview/pareto-26-10-preview",
       "matchingModel": "unbiased/pareto-26.10-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Pareto 26.10 Preview is no longer offered by OpenRouter.",
         "lastUpdated": "October 1, 2026",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.0032,
@@ -8921,7 +9391,6 @@
       "matchingModel": "inclusionai/ling-3.1-flash",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 262144,
         "contextComplexity": 5,
         "speed": 4,
         "lastUpdated": "September 29, 2026",
@@ -9016,6 +9485,8 @@
       "overrides": {
         "contextWindow": 262144,
         "maxTokens": 32768,
+        "deprecated": true,
+        "deprecationMessage": "Ling 3.0 Flash Sante is no longer offered by OpenRouter.",
         "lastUpdated": "September 4, 2026",
         "costPer1kInputTokens": 0.000042,
         "costPer1kOutputTokens": 0.0001232,
@@ -9271,7 +9742,20 @@
       "model": "nemotron/nemotron-3-5-super-vl",
       "matchingModel": "nvidia/nemotron-3.5-super-vl",
       "overrides": {
+        "contextWindow": 1048576,
+        "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "speed": 5,
+        "releaseDate": "October 15, 2026",
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005
@@ -9459,18 +9943,6 @@
       "model": "gemini/gemini-omni-1-2-flash",
       "matchingModel": "google/gemini-omni-1.2-flash",
       "overrides": {
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text",
-            "video"
-          ]
-        },
         "lastUpdated": "November 5, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.009,

@@ -39,11 +39,7 @@ const DEFAULT_MODELS_BY_TYPE: Record<RealtimeSessionType, string> = {
   transcription: DEFAULT_TRANSCRIPTION_MODEL,
 };
 const SESSION_MODELS_BY_TYPE: Record<RealtimeSessionRequest["type"], string[]> = {
-  realtime: [
-    DEFAULT_REALTIME_MODEL,
-    "gemini-3.8-live-extended-thinking",
-    "gemini-3.1-flash-live-preview",
-  ],
+  realtime: [DEFAULT_REALTIME_MODEL, "gemini-3.8-live-extended-thinking"],
   translation: [DEFAULT_TRANSLATION_MODEL],
   transcription: [DEFAULT_TRANSCRIPTION_MODEL],
 };

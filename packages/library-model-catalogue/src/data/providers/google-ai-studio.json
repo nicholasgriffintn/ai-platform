@@ -93,30 +93,48 @@
       "matchingModel": "gemini-1.5-flash",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 1.5 Flash has been retired. Use Gemini 3.6 Flash instead.",
+        "replacementModel": "gemini-3.6-flash",
         "lastUpdated": "May 14, 2024",
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.0003
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "gemini-1.5-flash-8b": {
       "model": "gemini/gemini-1-5-flash-8b",
       "matchingModel": "gemini-1.5-flash-8b",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 1.5 Flash-8B has been retired. Use Gemini 3.5 Flash Lite instead.",
+        "replacementModel": "gemini-3.5-flash-lite",
         "lastUpdated": "October 3, 2024",
         "costPer1kInputTokens": 0.0000375,
         "costPer1kOutputTokens": 0.00015
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "gemini-1.5-pro": {
       "model": "gemini/gemini-1-5-pro",
       "matchingModel": "gemini-1.5-pro",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 1.5 Pro has been retired. Use Gemini 3.8 Flash instead.",
+        "replacementModel": "gemini-3.8-flash",
         "lastUpdated": "February 15, 2024",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.005
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "gemini-2.5-flash": {
       "model": "gemini-flash/gemini-2-5-flash",
@@ -137,6 +155,9 @@
         ],
         "reliability": 1,
         "speed": 5,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Flash shuts down on 1 December 2026. Use Gemini 3.5 Flash Lite instead.",
+        "replacementModel": "gemini-3.5-flash-lite",
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025,
@@ -160,11 +181,17 @@
       "matchingModel": "gemini-2.5-flash-image-preview",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Flash Image (Preview) was retired on 15 January 2026. Use Nano Banana 2.1 instead.",
+        "replacementModel": "gemini-nano-banana-2.1",
         "lastUpdated": "August 26, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.03,
         "supportsToolCalls": false
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "gemini-2.5-flash-lite": {
       "model": "gemini-flash-lite/gemini-2-5-flash-lite",
@@ -206,58 +233,91 @@
       "matchingModel": "gemini-2.5-flash-lite-preview-06-17",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Flash Lite Preview 06-17 has been retired. Use Gemini 3.1 Flash Lite instead.",
+        "replacementModel": "gemini-3.1-flash-lite",
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "gemini-2.5-flash-lite-preview-09-2025": {
       "model": "gemini/gemini-2-5-flash-lite-preview-09-25",
       "matchingModel": "gemini-2.5-flash-lite-preview-09-2025",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Flash Lite Preview 09-25 was retired on 31 March 2026. Use Gemini 3.1 Flash Lite instead.",
+        "replacementModel": "gemini-3.1-flash-lite",
         "lastUpdated": "September 25, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004,
         "supportsResponseFormat": true
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "gemini-2.5-flash-preview-04-17": {
       "model": "gemini/gemini-2-5-flash-preview-04-17",
       "matchingModel": "gemini-2.5-flash-preview-04-17",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Flash Preview 04-17 has been retired. Use Gemini 3.6 Flash instead.",
+        "replacementModel": "gemini-3.6-flash",
         "lastUpdated": "April 17, 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "gemini-2.5-flash-preview-05-20": {
       "model": "gemini/gemini-2-5-flash-preview-05-20",
       "matchingModel": "gemini-2.5-flash-preview-05-20",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Flash Preview 05-20 was retired on 18 November 2025. Use Gemini 3.6 Flash instead.",
+        "replacementModel": "gemini-3.6-flash",
         "lastUpdated": "May 20, 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "gemini-2.5-flash-preview-09-2025": {
       "model": "gemini/gemini-2-5-flash-preview-09-25",
       "matchingModel": "gemini-2.5-flash-preview-09-2025",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Flash Preview 09-25 was retired on 17 February 2026. Use Gemini 3.6 Flash instead.",
+        "replacementModel": "gemini-3.6-flash",
         "lastUpdated": "September 25, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025,
         "supportsResponseFormat": true
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "gemini-2.5-flash-preview-tts": {
       "model": "gemini-flash/gemini-2-5-flash-preview-tts",
       "matchingModel": "gemini-2.5-flash-preview-tts",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Flash Preview TTS shuts down on 17 November 2026. Use Gemini 3.8 Flash TTS instead.",
+        "replacementModel": "gemini-3.8-flash-tts",
         "lastUpdated": "May 1, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.01,
@@ -274,6 +334,9 @@
       "matchingModel": "gemini-3.1-flash-tts-preview",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 3.1 Flash TTS Preview shuts down on 17 November 2026. Use Gemini 3.8 Flash TTS instead.",
+        "replacementModel": "gemini-3.8-flash-tts",
         "lastUpdated": "April 15, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.02,
@@ -303,6 +366,9 @@
           "coding"
         ],
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Pro shuts down on 1 December 2026. Use Gemini 3.8 Flash instead.",
+        "replacementModel": "gemini-3.8-flash",
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -326,10 +392,16 @@
       "matchingModel": "gemini-2.5-pro-preview-05-06",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Pro Preview 05-06 was retired on 2 December 2025. Use Gemini 3.8 Flash instead.",
+        "replacementModel": "gemini-3.8-flash",
         "lastUpdated": "May 6, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "gemini-2.5-pro-preview-06-05": {
       "model": "gemini/gemini-2-5-pro-preview-06-05",
@@ -348,17 +420,26 @@
           ]
         },
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Pro Preview 06-05 was retired on 2 December 2025. Use Gemini 3.8 Flash instead.",
+        "replacementModel": "gemini-3.8-flash",
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "June 5, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "gemini-2.5-pro-preview-tts": {
       "model": "gemini-flash/gemini-2-5-pro-preview-tts",
       "matchingModel": "gemini-2.5-pro-preview-tts",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Pro Preview TTS shuts down on 17 November 2026. Use Gemini 3.8 Flash TTS instead.",
+        "replacementModel": "gemini-3.8-flash-tts",
         "lastUpdated": "May 1, 2025",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.02,
@@ -423,6 +504,9 @@
       "matchingModel": "gemini-3.1-flash-live-preview",
       "overrides": {
         "isFree": true,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 3.1 Flash Live Preview shuts down on 17 November 2026. Use Gemini 3.8 Live instead.",
+        "replacementModel": "gemini-3.8-live",
         "lastUpdated": "March 26, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.0045,
@@ -482,6 +566,9 @@
           "creative"
         ],
         "contextComplexity": 4,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 3.1 Flash Image (Preview) was retired on 25 June 2026. Use Nano Banana 2.1 instead.",
+        "replacementModel": "gemini-nano-banana-2.1",
         "releaseDate": "February 26, 2026",
         "lastUpdated": "February 26, 2026",
         "costPer1kInputTokens": 0.0005,
@@ -756,6 +843,9 @@
           "image",
           "creative"
         ],
+        "deprecated": true,
+        "deprecationMessage": "Nano Banana Pro was retired on 25 June 2026. Use Nano Banana Pro instead.",
+        "replacementModel": "gemini-3-pro-image",
         "releaseDate": "November 20, 2025",
         "lastUpdated": "November 20, 2025",
         "costPer1kInputTokens": 0.002,
@@ -823,6 +913,9 @@
             "video"
           ]
         },
+        "deprecated": true,
+        "deprecationMessage": "Gemini Omni Flash Preview was retired on 22 October 2026. Use Gemini Omni 1.2 Flash instead.",
+        "replacementModel": "gemini-omni-1.2-flash",
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.0175,
@@ -914,6 +1007,9 @@
       "model": "gemini-pro/gemini-2-5-computer-use-preview-10-2025",
       "matchingModel": "gemini-2.5-computer-use-preview-10-2025",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Gemini 2.5 Computer Use Preview was retired on 28 July 2026. Use Gemini 3.8 Flash instead.",
+        "replacementModel": "gemini-3.8-flash",
         "lastUpdated": "October 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01
@@ -1079,6 +1175,8 @@
       "model": "gemini/gemini-robotics-er-1-6-preview",
       "matchingModel": "gemini-robotics-er-1.6-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Gemini Robotics-ER 1.6 Preview was retired on 31 August 2026.",
         "lastUpdated": "April 14, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005
@@ -1110,6 +1208,9 @@
       "model": "veo/veo-3-1-fast",
       "matchingModel": "veo-3.1-fast-generate-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Veo 3.1 Fast Preview was retired on 22 October 2026. Use Gemini Omni 1.2 Flash instead.",
+        "replacementModel": "gemini-omni-1.2-flash",
         "lastUpdated": "January 1, 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false
@@ -1140,6 +1241,9 @@
         ],
         "contextComplexity": 2,
         "reliability": 4,
+        "deprecated": true,
+        "deprecationMessage": "Veo 3.1 Preview was retired on 22 October 2026. Use Gemini Omni 1.2 Flash instead.",
+        "replacementModel": "gemini-omni-1.2-flash",
         "lastUpdated": "January 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false,
@@ -1165,7 +1269,10 @@
       "model": "veo/veo-3-1-lite",
       "matchingModel": "veo-3.1-lite-generate-preview",
       "overrides": {
-        "isFeatured": true,
+        "isFeatured": false,
+        "deprecated": true,
+        "deprecationMessage": "Veo 3.1 Lite Preview was retired on 22 October 2026. Use Gemini Omni 1.2 Flash instead.",
+        "replacementModel": "gemini-omni-1.2-flash",
         "lastUpdated": "March 31, 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false
@@ -1202,7 +1309,6 @@
       "matchingModel": "gemini-3.8-flash",
       "overrides": {
         "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
-        "maxTokens": 65536,
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 2, 2026",
@@ -1248,6 +1354,67 @@
         "lastUpdated": "February 19, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012
+      }
+    },
+    "gemini-3.5-transcribe": {
+      "model": "gemini/gemini-3-5-transcribe",
+      "matchingModel": "gemini-3.5-transcribe",
+      "overrides": {
+        "releaseDate": "September 25, 2026",
+        "lastUpdated": "September 25, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.012,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      }
+    },
+    "gemini-3.8-flash-lite-tts": {
+      "model": "gemini/gemini-3-8-flash-lite-tts",
+      "matchingModel": "gemini-3.8-flash-lite-tts",
+      "overrides": {
+        "lastUpdated": "September 23, 2026",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.006,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "gemini-3.8-flash-tts": {
+      "model": "gemini/gemini-3-8-flash-tts",
+      "matchingModel": "gemini-3.8-flash-tts",
+      "overrides": {
+        "lastUpdated": "September 23, 2026",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.009,
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "gemini-nano-banana-2.1": {
+      "model": "gemini/nano-banana-2-1",
+      "matchingModel": "gemini-nano-banana-2.1",
+      "overrides": {
+        "lastUpdated": "October 6, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.0075
+      }
+    },
+    "gemini-omni-1.2-flash": {
+      "model": "gemini/gemini-omni-1-2-flash",
+      "matchingModel": "gemini-omni-1.2-flash",
+      "overrides": {
+        "lastUpdated": "November 5, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.009,
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

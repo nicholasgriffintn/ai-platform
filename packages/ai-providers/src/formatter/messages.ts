@@ -8,6 +8,7 @@ import { hasToolCalls } from "@ngriffin_uk/polychat-utility-server/tool-calls";
 
 import { estimateMessageTokens } from "../message-tokens.js";
 import type { ContentType, Message, MessageContent } from "../types/index.js";
+import { readGoogleThoughtSignature } from "../utils/googleThoughtSignatures.js";
 
 type OpenAIResponsesInputItem = Record<string, unknown>;
 
@@ -928,6 +929,9 @@ export class MessageFormatter {
         MessageFormatter.getResponseFunctionArguments(toolCall),
       ),
       ...(typeof toolCall.status === "string" ? { status: toolCall.status } : {}),
+      ...(readGoogleThoughtSignature(toolCall)
+        ? { thought_signature: readGoogleThoughtSignature(toolCall) }
+        : {}),
     };
   }
 

@@ -92,6 +92,7 @@ import { QueuedFollowUps } from "./ChatInput/QueuedFollowUps.js";
 import { uploadComposerAttachment } from "./ChatInput/uploadAttachment.js";
 import { ChatRunStatusBanner } from "./ChatRunStatusBanner.js";
 import { ChatSuggestions } from "./ChatSuggestions.js";
+import { useComposerBannerDismissals } from "./ComposerBanner/dismissal.js";
 import { ComposerBanner } from "./ComposerBanner/index.js";
 import { FooterInfo } from "./FooterInfo.js";
 import { MessageList } from "./MessageList.js";
@@ -686,6 +687,8 @@ export const ConversationThread = ({ modeConfig: configuredMode }: ConversationT
           modeConfig?.requestOptions,
           actionSubmit.requestOptions,
         );
+
+        useComposerBannerDismissals.getState().noteMessageSent();
         const result = await sendMessage(
           actionSubmit.input,
           attachments,

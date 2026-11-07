@@ -22,18 +22,20 @@ Use the family description when a model has no narrower description. Keep provid
 
 ## Sync and reproduce
 
-Build the shared schemas before running the tooling. Run the existing Node 24 project toolchain from the repository root:
+Build the catalogue package before running the sync tooling in `packages/library-model-sync`. Run the existing Node 24 project toolchain from the repository root:
 
 ```sh
-pnpm exec vp run --filter=@ngriffin_uk/polychat-schemas build
-pnpm --filter @ngriffin_uk/polychat-library-model-catalogue models:sync
-pnpm --filter @ngriffin_uk/polychat-library-model-catalogue models:sync --write --save-snapshot /tmp/models-dev.json
-pnpm --filter @ngriffin_uk/polychat-library-model-catalogue models:sync --snapshot /tmp/models-dev.json
+pnpm exec vp run --filter=@ngriffin_uk/polychat-library-model-catalogue build
+pnpm --filter @ngriffin_uk/polychat-library-model-sync models:sync
+pnpm --filter @ngriffin_uk/polychat-library-model-sync models:sync --write --save-snapshot /tmp/models-dev.json
+pnpm --filter @ngriffin_uk/polychat-library-model-sync models:sync --snapshot /tmp/models-dev.json
 ```
 
 The command defaults to a dry run. Use `--provider <id>` to restrict upstream updates, and `--models-dir <directory>` to inspect generated output separately. A saved snapshot disables all network access, including cached Artificial Analysis reads. Live sync reads cached analysis only when `POLYCHAT_API_KEY` is configured; it never launches an analysis task or spends model credits.
 
 The sync imports [models.dev](https://models.dev/) descriptions and family metadata, resolves existing configuration, applies upstream updates and compacts the result back into shared defaults and explicit exceptions. Upstream fields remain sync-owned; preserve durable corrections in the sync rules. Keep Anthropic's sampling restrictions in `model-values.mjs` and direct OpenAI contract corrections in `model-contract-overrides.mjs`. Fields not supplied upstream, including custom API operations, hosted tools, pricing tiers and reasoning API settings, survive conversion.
+
+Live sync also reads the public model lists in `provider-availability.mjs`, because models.dev silently drops models that providers retire. It retires an offering only when both models.dev and a complete provider list omit it, and restores it if the provider lists it again. Gateways can keep listing a model after its vendor shuts it down, so record vendor retirements as `deprecated` overrides. A provider whose list fails, or would retire over half its active models, is skipped with a warning.
 
 Upstream routing rules in `provider-routing.mjs` can split one remote provider across local providers. The sync creates the target provider, moves existing offerings without losing local overrides, and copies the models.dev `provider.api` and `provider.shape` values into `apiBaseUrl` and `apiShape` for the adapters. `amazon-bedrock` traffic splits into `bedrock` and `bedrock-mantle` this way.
 

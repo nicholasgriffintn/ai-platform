@@ -3,15 +3,15 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { afterEach, describe, expect, it } from "vitest";
-
+import { catalogueFiles, readCatalogue } from "@ngriffin_uk/polychat-library-model-catalogue/files";
 import {
   modelCatalogueSchema,
   resolveCatalogueProvider,
   resolveModelCatalogue,
-} from "../../src/schema.ts";
+} from "@ngriffin_uk/polychat-library-model-catalogue/schema";
+import { afterEach, describe, expect, it } from "vitest";
+
 import { convertCatalogue } from "./catalogue-conversion.mjs";
-import { catalogueFiles, readCatalogue } from "./catalogue-files.mjs";
 import { syncCatalogue } from "./catalogue-sync.mjs";
 import { runSyncModelsDev } from "./run-sync.mjs";
 
@@ -80,7 +80,7 @@ const providers = {
 describe("layered model catalogue", () => {
   it("gives every catalogued model a sourced location and retention label", async () => {
     const catalogue = await readCatalogue(
-      fileURLToPath(new URL("../../src/data", import.meta.url)),
+      fileURLToPath(new URL("../../library-model-catalogue/src/data", import.meta.url)),
     );
     const unlabelled = Object.entries(resolveModelCatalogue(catalogue))
       .filter(([, model]) => !model.dataLocation?.source || !model.dataRetention?.source)
@@ -193,7 +193,9 @@ describe("layered model catalogue", () => {
 
 describe("models.dev catalogue sync", () => {
   it("retains Anthropic and OpenAI execution overrides when upstream advertises incompatible reasoning settings", async () => {
-    const catalogue = await readCatalogue(path.resolve(import.meta.dirname, "../../src/data"));
+    const catalogue = await readCatalogue(
+      path.resolve(import.meta.dirname, "../../library-model-catalogue/src/data"),
+    );
     const anthropic = resolveCatalogueProvider(catalogue, "anthropic");
     const openai = resolveCatalogueProvider(catalogue, "openai");
     const source = {

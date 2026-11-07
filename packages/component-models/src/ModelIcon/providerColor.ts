@@ -13,6 +13,7 @@ export const getProviderColor = (provider: string): string => {
     case "groq":
       return "text-accent-orange bg-accent-orange/12";
     case "perplexity-ai":
+    case "perplexity-agent":
       return "text-accent-pink bg-accent-pink/12";
     case "deepseek":
       return "text-accent-teal bg-accent-teal/12";

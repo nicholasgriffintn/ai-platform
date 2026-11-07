@@ -121,7 +121,7 @@ export const MODEL_MAKERS: readonly ModelMaker[] = [
   {
     id: "perplexity",
     label: "Perplexity",
-    providers: ["perplexity-ai", "perplexity"],
+    providers: ["perplexity-ai", "perplexity-agent", "perplexity"],
     families: ["sonar"],
   },
   {

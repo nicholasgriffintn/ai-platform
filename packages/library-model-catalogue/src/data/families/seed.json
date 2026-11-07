@@ -65,6 +65,7 @@
     },
     "seed-1-8": {
       "defaults": {
+        "name": "Seed 1.8",
         "description": "ByteDance Seed model for multimodal reasoning, long-context analysis, and agent workflows",
         "contextWindow": 256000,
         "modalities": {
@@ -78,6 +79,7 @@
         },
         "releaseDate": "December 28, 2025",
         "supportsToolCalls": true,
+        "supportsResponseFormat": false,
         "supportsTemperature": true
       }
     },

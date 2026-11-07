@@ -5,6 +5,35 @@ import { getErrorMessage } from "./errors.js";
 
 export { safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 
+export function omitJsonSchemaPatterns(schema: unknown): unknown {
+  if (Array.isArray(schema)) {
+    return schema.map(omitJsonSchemaPatterns);
+  }
+
+  if (!isRecord(schema)) {
+    return schema;
+  }
+
+  return Object.fromEntries(
+    Object.entries(schema).flatMap(([key, value]) => {
+      if (key === "pattern" && typeof value === "string") {
+        return [];
+      }
+
+      if (key === "properties" && isRecord(value)) {
+        const properties = Object.entries(value).map(([name, property]) => [
+          name,
+          omitJsonSchemaPatterns(property),
+        ]);
+
+        return [[key, Object.fromEntries(properties)]];
+      }
+
+      return [[key, omitJsonSchemaPatterns(value)]];
+    }),
+  );
+}
+
 export function parseJsonColumn<T>(value: T | string | null | undefined, fallback: T): T {
   if (value === null || value === undefined) {
     return fallback;

@@ -240,6 +240,9 @@
       "overrides": {
         "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Gemini 3.7 Flash shuts down on 28 January 2027. Use Gemini 3.8 Flash instead.",
+        "replacementModel": "gemini-3.8-flash",
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375
@@ -329,7 +332,6 @@
       "matchingModel": "gemini-3.8-flash",
       "overrides": {
         "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
-        "maxTokens": 65536,
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 2, 2026",
@@ -421,7 +423,6 @@
       "matchingModel": "gemini-4-argon",
       "overrides": {
         "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
-        "maxTokens": 65536,
         "speed": 2,
         "lastUpdated": "October 13, 2026",
         "costPer1kInputTokens": 0.002,

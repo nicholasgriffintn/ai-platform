@@ -509,6 +509,7 @@ import provider59 from "./providers/nebius.json" with { type: "json" };
 import provider60 from "./providers/baseten.json" with { type: "json" };
 import provider61 from "./providers/nvidia.json" with { type: "json" };
 import provider62 from "./providers/polly.json" with { type: "json" };
+import provider63 from "./providers/perplexity-agent.json" with { type: "json" };
 
 const catalogue: UnparsedModelCatalogue = {
   families: {
@@ -1023,6 +1024,7 @@ const catalogue: UnparsedModelCatalogue = {
     "baseten": provider60,
     "nvidia": provider61,
     "polly": provider62,
+    "perplexity-agent": provider63,
   },
 };
 

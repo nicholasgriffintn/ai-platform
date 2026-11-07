@@ -116,7 +116,7 @@ export function printHelp() {
   console.log(`Sync provider model configs from models.dev.
 
 Usage:
-  pnpm --filter @ngriffin_uk/polychat-library-model-catalogue models:sync [options]
+  pnpm --filter @ngriffin_uk/polychat-library-model-sync models:sync [options]
 
 Options:
   --write                 Apply changes to files (default is dry run)

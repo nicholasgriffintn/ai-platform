@@ -5,6 +5,6 @@ export default defineConfig({
   ...workspaceSourceResolve,
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts", "scripts/**/*.test.mjs"],
+    include: ["src/**/*.test.mjs"],
   },
 });

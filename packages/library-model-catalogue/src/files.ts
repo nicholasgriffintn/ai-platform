@@ -1,9 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { modelCatalogueSchema } from "../../src/schema.ts";
+import { modelCatalogueSchema, type ModelCatalogue } from "./schema.js";
 
-export function catalogueFileSegment(value) {
+export function catalogueFileSegment(value: string): string {
   if (!value || value === "." || value === "..") {
     throw new Error(`Invalid catalogue path segment: ${value}`);
   }
@@ -11,12 +11,12 @@ export function catalogueFileSegment(value) {
   return encodeURIComponent(value).replaceAll("~", "%7E").replaceAll("%", "~");
 }
 
-export async function readCatalogue(directory) {
-  const families = {};
-  const providers = {};
+export async function readCatalogue(directory: string): Promise<ModelCatalogue> {
+  const families: Record<string, unknown> = {};
+  const providers: Record<string, unknown> = {};
   const familyFiles = await fs.readdir(path.join(directory, "families"), { withFileTypes: true });
 
-  for (const entry of familyFiles.toSorted((a, b) => a.name.localeCompare(b.name))) {
+  for (const entry of [...familyFiles].sort((a, b) => a.name.localeCompare(b.name))) {
     if (!entry.isFile() || !entry.name.endsWith(".json")) {
       continue;
     }
@@ -33,7 +33,9 @@ export async function readCatalogue(directory) {
     );
   }
 
-  const order = JSON.parse(await fs.readFile(path.join(directory, "providers/index.json"), "utf8"));
+  const order: unknown = JSON.parse(
+    await fs.readFile(path.join(directory, "providers/index.json"), "utf8"),
+  );
 
   if (
     !Array.isArray(order) ||
@@ -55,11 +57,11 @@ export async function readCatalogue(directory) {
   return modelCatalogueSchema.parse({ families, providers });
 }
 
-export function catalogueFiles(catalogue) {
-  const files = new Map();
-  const imports = [];
-  const familyEntries = [];
-  const providerEntries = [];
+export function catalogueFiles(catalogue: ModelCatalogue): Map<string, string> {
+  const files = new Map<string, string>();
+  const imports: string[] = [];
+  const familyEntries: string[] = [];
+  const providerEntries: string[] = [];
 
   for (const [index, [family, definition]] of Object.entries(catalogue.families).entries()) {
     const file = `families/${catalogueFileSegment(family)}.json`;
@@ -89,20 +91,24 @@ export function catalogueFiles(catalogue) {
   return files;
 }
 
-export async function listCatalogueFiles(directory, prefix = "") {
+function isMissingFileError(error: unknown): boolean {
+  return error instanceof Error && "code" in error && error.code === "ENOENT";
+}
+
+export async function listCatalogueFiles(directory: string, prefix = ""): Promise<string[]> {
   let entries;
 
   try {
     entries = await fs.readdir(path.join(directory, prefix), { withFileTypes: true });
   } catch (error) {
-    if (error.code === "ENOENT") {
+    if (isMissingFileError(error)) {
       return [];
     }
 
     throw error;
   }
 
-  const files = [];
+  const files: string[] = [];
 
   for (const entry of entries) {
     const relative = path.join(prefix, entry.name);
@@ -120,7 +126,7 @@ export async function listCatalogueFiles(directory, prefix = "") {
   return files;
 }
 
-export async function removeCatalogueFiles(directory, files) {
+export async function removeCatalogueFiles(directory: string, files: string[]): Promise<void> {
   for (const relative of files) {
     await fs.unlink(path.join(directory, relative));
   }

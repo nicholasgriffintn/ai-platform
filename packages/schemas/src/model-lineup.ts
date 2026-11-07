@@ -102,18 +102,18 @@ type TierLineup = Record<ModelTier, Record<ModelTierRole, readonly ModelLineupCa
 
 const hostedFreeAgent = {
   ultra: [
-    { model: "z-ai/glm-5.2:free", provider: "openrouter", effort: "xhigh" },
+    { model: "nvidia/nemotron-3-ultra-550b-a55b:free", provider: "openrouter" },
     { model: "deepseek-v4-pro", provider: "deepseek", effort: "max" },
     { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "high" },
   ],
   high: [
-    { model: "z-ai/glm-5.2:free", provider: "openrouter", effort: "xhigh" },
+    { model: "nvidia/nemotron-3-ultra-550b-a55b:free", provider: "openrouter" },
     { model: "deepseek-v4-pro", provider: "deepseek", effort: "max" },
     { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "high" },
   ],
   medium: [
     { model: "deepseek-v4-pro", provider: "deepseek", effort: "high" },
-    { model: "minimax/minimax-m3:free", provider: "openrouter", effort: "thinking" },
+    { model: "google/gemma-4-31b-it:free", provider: "openrouter" },
     { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "medium" },
   ],
   low: [
@@ -129,18 +129,18 @@ const hostedFreeAgent = {
 
 const hostedFreeCoding = {
   ultra: [
-    { model: "z-ai/glm-5.2:free", provider: "openrouter", effort: "xhigh" },
+    { model: "nvidia/nemotron-3-ultra-550b-a55b:free", provider: "openrouter" },
     { model: "deepseek-v4-pro", provider: "deepseek", effort: "max" },
     { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "high" },
   ],
   high: [
     { model: "deepseek-v4-pro", provider: "deepseek", effort: "max" },
-    { model: "z-ai/glm-5.2:free", provider: "openrouter", effort: "xhigh" },
+    { model: "nvidia/nemotron-3-ultra-550b-a55b:free", provider: "openrouter" },
     { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "high" },
   ],
   medium: [
     { model: "deepseek-v4-pro", provider: "deepseek", effort: "high" },
-    { model: "minimax/minimax-m3:free", provider: "openrouter", effort: "thinking" },
+    { model: "google/gemma-4-31b-it:free", provider: "openrouter" },
     { model: "google-ai-studio/gemini-3.5-flash", provider: "google-ai-studio", effort: "medium" },
   ],
   low: [

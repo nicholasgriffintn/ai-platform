@@ -80,6 +80,14 @@
         "contextComplexity": 5,
         "reliability": 2,
         "releaseDate": "October 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 46.5,
           "codingIndex": null,

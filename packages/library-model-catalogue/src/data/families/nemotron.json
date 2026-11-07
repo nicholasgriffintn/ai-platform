@@ -135,6 +135,17 @@
         }
       }
     },
+    "nemotron-3-5-lightning": {
+      "defaults": {
+        "name": "Nemotron 3.5 Lightning",
+        "openWeights": false,
+        "description": "Nemotron 3.5 Lightning accepts text and produces text.",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "releaseDate": "November 7, 2026",
+        "supportsResponseFormat": false
+      }
+    },
     "nemotron-3-5-lightning-30b": {
       "defaults": {
         "name": "Nemotron 3.5 Lightning 30B",
@@ -196,22 +207,29 @@
         }
       }
     },
+    "nemotron-3-5-super-120b-a12b": {
+      "defaults": {
+        "name": "Nemotron 3.5 Super 120B A12B",
+        "description": "NVIDIA Nemotron 3.5 Super reasoning model (120B total, 12B active) served with text-only input",
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "releaseDate": "October 15, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "nemotron-3-5-super-vl": {
       "defaults": {
         "name": "Nemotron 3.5 Super VL",
         "description": "Nemotron multimodal model for visual reasoning and agentic AI workflows",
-        "contextWindow": 1048576,
-        "maxTokens": 943718,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "video",
@@ -220,7 +238,6 @@
         ],
         "contextComplexity": 5,
         "reliability": 1,
-        "releaseDate": "October 15, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -453,19 +470,8 @@
     },
     "nemotron-3-super-120b": {
       "defaults": {
-        "name": "Nemotron 3 Super",
         "description": "Nemotron middle tier for collaborative agents and high-volume reasoning workloads",
-        "contextWindow": 256000,
-        "maxTokens": 256000,
-        "knowledgeCutoffDate": "June 2025",
-        "releaseDate": "March 11, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "knowledgeCutoffDate": "June 2025"
       }
     },
     "nemotron-3-super-120b-a12b": {
@@ -521,6 +527,24 @@
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "nemotron-3-ultra-550b": {
+      "defaults": {
+        "name": "Nemotron 3 Ultra 550B",
+        "openWeights": false,
+        "description": "Nemotron 3 Ultra 550B accepts text and produces text.",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "releaseDate": "November 7, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
         }
       }
     },

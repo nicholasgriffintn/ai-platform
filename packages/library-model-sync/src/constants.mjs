@@ -30,6 +30,16 @@ export const CURATED_MODEL_IDS = {
 export const IGNORED_REMOTE_MODEL_IDS = {
   mistral: new Set(["mistral-nemo"]),
   "google-vertex": (modelId) => !modelId.startsWith("gemini-"),
+  "perplexity-agent": new Set([
+    "anthropic/claude-haiku-4-5",
+    "anthropic/claude-opus-4-5",
+    "anthropic/claude-opus-4-6",
+    "anthropic/claude-opus-4-7",
+    "anthropic/claude-sonnet-4-5",
+    "anthropic/claude-sonnet-4-6",
+    "google/gemini-3-flash-preview",
+    "google/gemini-3.1-pro-preview",
+  ]),
 };
 
 export const SUPPORTED_MODALITIES = new Set([

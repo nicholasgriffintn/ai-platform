@@ -1,5 +1,6 @@
 {
   "defaults": {
+    "openWeights": false,
     "supportsToolCalls": true,
     "supportsAttachments": true,
     "supportsTemperature": true
@@ -449,7 +450,6 @@
     "gemini-3-1-flash-lite-preview": {
       "defaults": {
         "name": "Gemini 3.1 Flash Lite Preview",
-        "openWeights": false,
         "description": "Gemini 3.1 Flash Lite Preview accepts text, image, pdf and produces text.",
         "contextWindow": 1000000,
         "maxTokens": 65000,
@@ -491,7 +491,6 @@
     "gemini-3-5-transcribe": {
       "defaults": {
         "name": "Gemini 3.5 Transcribe",
-        "openWeights": false,
         "description": "Speech-to-text model with language detection, speaker diarization, word timestamps, and custom vocabulary",
         "contextWindow": 98304,
         "maxTokens": 32768,
@@ -510,9 +509,7 @@
         ],
         "contextComplexity": 3,
         "reliability": 4,
-        "releaseDate": "August 26, 2026",
         "supportsToolCalls": false,
-        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -534,7 +531,6 @@
     "gemini-3-5-transcribe-live": {
       "defaults": {
         "name": "Gemini 3.5 Transcribe Live",
-        "openWeights": false,
         "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
         "contextWindow": 0,
         "maxTokens": 0,
@@ -550,10 +546,49 @@
         "supportsToolCalls": false
       }
     },
+    "gemini-3-8-flash-lite-tts": {
+      "defaults": {
+        "name": "Gemini 3.8 Flash Lite TTS",
+        "description": "Gemini 3.8 Flash Lite TTS accepts text and produces audio.",
+        "contextWindow": 32768,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "September 23, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      }
+    },
+    "gemini-3-8-flash-tts": {
+      "defaults": {
+        "name": "Gemini 3.8 Flash TTS",
+        "description": "Gemini 3.8 Flash TTS accepts text and produces audio.",
+        "contextWindow": 32768,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "September 23, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false
+      }
+    },
     "gemini-3-8-live": {
       "defaults": {
         "name": "Gemini 3.8 Live",
-        "openWeights": false,
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "contextWindow": 0,
         "maxTokens": 0,
@@ -614,7 +649,6 @@
     "gemini-3-8-live-extended-thinking": {
       "defaults": {
         "name": "Gemini 3.8 Live Extended Thinking",
-        "openWeights": false,
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
         "contextWindow": 0,
         "maxTokens": 0,
@@ -661,7 +695,6 @@
     "gemini-3-flash": {
       "defaults": {
         "name": "Gemini 3 Flash",
-        "openWeights": false,
         "description": "Gemini 3 Flash accepts text, image, audio, video, pdf and produces text.",
         "contextWindow": 1048576,
         "maxTokens": 65536,
@@ -743,9 +776,9 @@
     "gemini-4-argon": {
       "defaults": {
         "name": "Gemini 4 Argon",
-        "openWeights": false,
         "description": "Gemini multimodal model for text, image, audio, video, and document tasks",
         "contextWindow": 1048576,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -790,7 +823,6 @@
     "gemini-4-argon-eu": {
       "defaults": {
         "name": "Gemini 4 Argon (EU)",
-        "openWeights": false,
         "description": "Google's flagship reasoning model for complex software engineering, deep math and science, and long-horizon autonomous agents",
         "contextWindow": 1048576,
         "maxTokens": 65536,
@@ -840,7 +872,6 @@
     "gemini-embedding-001": {
       "defaults": {
         "name": "Gemini Embedding 001",
-        "openWeights": false,
         "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
         "contextWindow": 2048,
         "maxTokens": 1,
@@ -862,7 +893,6 @@
     "gemini-embedding-2": {
       "defaults": {
         "name": "Gemini Embedding 2",
-        "openWeights": false,
         "description": "Multimodal embedding model mapping text, images, video, audio, and PDFs into a unified embedding space",
         "contextWindow": 8192,
         "knowledgeCutoffDate": "November 2025",
@@ -874,7 +904,6 @@
     "gemini-omni-1-1-flash": {
       "defaults": {
         "name": "Gemini Omni 1.1 Flash",
-        "openWeights": false,
         "description": "Omni-modal model for text, vision, audio, and multimodal agent tasks",
         "contextWindow": 131072,
         "maxTokens": 65536,
@@ -904,17 +933,28 @@
     "gemini-omni-1-2-flash": {
       "defaults": {
         "name": "Gemini Omni 1.2 Flash",
-        "openWeights": false,
         "description": "Omni-modal model for text, vision, audio, and multimodal agent tasks",
         "contextWindow": 131072,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text",
+            "video"
+          ]
+        },
         "releaseDate": "November 5, 2026",
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
       }
     },
     "gemini-omni-flash-preview": {
       "defaults": {
         "name": "Gemini Omni Flash Preview",
-        "openWeights": false,
         "description": "Video generation and editing model for fast, conversational text- and image-to-video workflows",
         "releaseDate": "June 30, 2026",
         "supportsToolCalls": false
@@ -923,7 +963,6 @@
     "gemini-pro-latest": {
       "defaults": {
         "name": "Gemini Pro Latest",
-        "openWeights": false,
         "description": "Lab latest market for Gemini Pro frontier supply. You contract for the latest qualifying route, not a specific model.",
         "contextWindow": 1000000,
         "maxTokens": 65536,
@@ -952,7 +991,6 @@
     "gemini-robotics-er-1-6-preview": {
       "defaults": {
         "name": "Gemini Robotics-ER 1.6 Preview",
-        "openWeights": false,
         "description": "Gemini Robotics-ER 1.6 Preview accepts text, image, video, audio and produces text.",
         "contextWindow": 131072,
         "maxTokens": 65536,
@@ -982,7 +1020,6 @@
     "google-gemini-omni-1-1-flash": {
       "defaults": {
         "name": "Google: Gemini Omni 1.1 Flash",
-        "openWeights": false,
         "description": "Gemini Omni 1.1 Flash is Google's native multimodal video generation and editing model, the generally available successor to Gemini Omni Flash Preview. It is suited for text-to-video, image-to-video, first and...",
         "contextWindow": 131072,
         "maxTokens": 65536,
@@ -1013,7 +1050,6 @@
     "google-gemini-omni-1-2-flash": {
       "defaults": {
         "name": "Google: Gemini Omni 1.2 Flash",
-        "openWeights": false,
         "description": "Gemini Omni 1.2 Flash is Google's native multimodal video generation and editing model, the successor to Gemini Omni 1.1 Flash. It generates clips up to 15 seconds long with native...",
         "contextWindow": 131072,
         "maxTokens": 65536,
@@ -1038,6 +1074,33 @@
             "high"
           ],
           "defaultEffort": "low"
+        }
+      }
+    },
+    "nano-banana-2-1": {
+      "defaults": {
+        "name": "Nano Banana 2.1",
+        "description": "Nano Banana 2.1 accepts image, text and produces text, image.",
+        "contextWindow": 65536,
+        "maxTokens": 58982,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
+        "releaseDate": "October 6, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
         }
       }
     },

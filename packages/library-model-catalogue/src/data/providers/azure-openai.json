@@ -48,6 +48,9 @@
       "model": "azure-openai/o1-preview/o1-preview",
       "matchingModel": "o1-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "o1-preview was retired on 28 July 2025. Use GPT-5.6 Sol instead.",
+        "replacementModel": "gpt-5.6-sol",
         "lastUpdated": "September 12, 2024",
         "costPer1kInputTokens": 0.0165,
         "costPer1kOutputTokens": 0.066,
@@ -59,6 +62,9 @@
       "model": "gpt/gpt-4-32k",
       "matchingModel": "gpt-4-32k",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GPT-4 32K was retired on 6 June 2025. Use GPT-5.6 Terra instead.",
+        "replacementModel": "gpt-5.6-terra",
         "lastUpdated": "March 14, 2023",
         "costPer1kInputTokens": 0.06,
         "costPer1kOutputTokens": 0.12,
@@ -371,6 +377,9 @@
       "overrides": {
         "contextWindow": 128000,
         "maxTokens": 16384,
+        "deprecated": true,
+        "deprecationMessage": "GPT-5 Chat was retired on 29 June 2026. Use GPT Chat Latest instead.",
+        "replacementModel": "gpt-chat-latest",
         "knowledgeCutoffDate": "October 24, 2024",
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00125,
@@ -519,6 +528,9 @@
             "audio"
           ]
         },
+        "deprecated": true,
+        "deprecationMessage": "GPT-5.1 Chat was retired on 29 June 2026. Use GPT Chat Latest instead.",
+        "replacementModel": "gpt-chat-latest",
         "releaseDate": "November 14, 2025",
         "lastUpdated": "November 14, 2025",
         "costPer1kInputTokens": 0.00125,
@@ -619,6 +631,9 @@
       "model": "gpt-codex/gpt-5-2-chat",
       "matchingModel": "gpt-5.2-chat",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GPT-5.2 Chat was retired on 13 May 2026. Use GPT Chat Latest instead.",
+        "replacementModel": "gpt-chat-latest",
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -1231,6 +1246,9 @@
       "model": "gpt-codex/gpt-5-3-chat",
       "matchingModel": "gpt-5.3-chat",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "GPT-5.3 Chat was retired on 29 June 2026. Use GPT Chat Latest instead.",
+        "replacementModel": "gpt-chat-latest",
         "lastUpdated": "March 3, 2026",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,

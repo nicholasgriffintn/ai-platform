@@ -79,6 +79,7 @@ export const PROVIDER_PLATFORM_ENV_KEYS: Record<string, PlatformEnvKeyGroups> = 
   ovh: single("OVHCLOUD_API_KEY"),
   parallel: single("PARALLEL_API_KEY"),
   "perplexity-ai": single("PERPLEXITY_API_KEY"),
+  "perplexity-agent": single("PERPLEXITY_API_KEY"),
   perplexity: single("PERPLEXITY_API_KEY"),
   polly: [
     ["POLLY_ACCESS_KEY_ID", "POLLY_SECRET_ACCESS_KEY"],

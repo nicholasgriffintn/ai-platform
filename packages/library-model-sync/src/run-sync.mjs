@@ -1,14 +1,16 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-import { buildArtificialAnalysisLookup } from "./artificial-analysis.mjs";
 import {
   catalogueFiles,
   listCatalogueFiles,
   readCatalogue,
   removeCatalogueFiles,
-} from "./catalogue-files.mjs";
+} from "@ngriffin_uk/polychat-library-model-catalogue/files";
+
+import { buildArtificialAnalysisLookup } from "./artificial-analysis.mjs";
 import { syncCatalogue } from "./catalogue-sync.mjs";
+import { fetchProviderModelLists } from "./provider-availability.mjs";
 import {
   fetchApiData,
   fetchArtificialAnalysisData,
@@ -27,11 +29,13 @@ export async function runSyncModelsDev(options) {
         apiUrl: options.polychatApiBaseUrl,
         apiKey: options.polychatApiKey,
       });
+  const providerAvailability = options.snapshot ? {} : await fetchProviderModelLists();
   const { catalogue, stats } = syncCatalogue(
     current,
     remoteProviders,
     buildArtificialAnalysisLookup(analysis),
     options.providers,
+    providerAvailability,
   );
 
   const outputs = [];

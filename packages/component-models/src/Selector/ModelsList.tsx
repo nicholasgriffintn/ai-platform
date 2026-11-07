@@ -297,11 +297,11 @@ export function ModelsList({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-surface">
-      <div className="flex max-h-[320px] min-h-0 flex-1 flex-col sm:max-h-[420px] sm:min-h-[320px] sm:flex-row">
+      <div className="flex max-h-[320px] min-h-0 flex-1 flex-col @xl:max-h-[420px] @xl:min-h-[320px] @xl:flex-row">
         {!isSearchActive && (
-          <div className="border-b border-border/70 sm:flex sm:w-16 sm:flex-col sm:border-r sm:border-b-0 md:w-20">
-            <div className="overflow-x-auto px-2 py-2 sm:flex-1 sm:overflow-x-hidden sm:overflow-y-auto sm:px-2">
-              <div className="flex gap-2 sm:block sm:space-y-1">
+          <div className="border-b border-border/70 @xl:flex @xl:w-20 @xl:flex-col @xl:border-r @xl:border-b-0">
+            <div className="overflow-x-auto px-2 py-2 @xl:flex-1 @xl:overflow-x-hidden @xl:overflow-y-auto @xl:px-2">
+              <div className="flex gap-2 @xl:block @xl:space-y-1">
                 {autoContent && (
                   <button
                     type="button"
@@ -311,7 +311,7 @@ export function ModelsList({
                     }}
                     aria-pressed={showAuto}
                     className={cn(
-                      "flex min-w-[88px] shrink-0 items-center gap-2 rounded-lg border px-2 py-2 text-xs sm:w-full sm:min-w-0 sm:flex-col sm:gap-1 sm:px-1 sm:text-[11px]",
+                      "flex min-w-[88px] shrink-0 items-center gap-2 rounded-lg border px-2 py-2 text-xs @xl:w-full @xl:min-w-0 @xl:flex-col @xl:gap-1 @xl:px-1 @xl:text-[11px]",
                       showAuto
                         ? "border-creative/45 bg-creative/12 text-creative"
                         : "border-transparent text-muted-foreground hover:border-border-strong hover:bg-surface-elevated",
@@ -335,7 +335,7 @@ export function ModelsList({
                         setSelectedProvider(providerEntry.key);
                       }}
                       className={cn(
-                        "flex min-w-[88px] flex-shrink-0 items-center gap-2 rounded-lg border px-2 py-2 text-left text-xs transition-colors sm:w-full sm:min-w-0 sm:flex-col sm:gap-1 sm:px-1 sm:text-[11px]",
+                        "flex min-w-[88px] flex-shrink-0 items-center gap-2 rounded-lg border px-2 py-2 text-left text-xs transition-colors @xl:w-full @xl:min-w-0 @xl:flex-col @xl:gap-1 @xl:px-1 @xl:text-[11px]",
                         isSelected
                           ? "border-creative/45 bg-creative/12 text-creative"
                           : "border-transparent text-muted-foreground hover:border-border-strong hover:bg-surface-elevated",
@@ -355,7 +355,7 @@ export function ModelsList({
                           mono={mono}
                         />
                       )}
-                      <span className="line-clamp-1 min-w-0 flex-1 text-left sm:w-full sm:flex-none sm:text-center">
+                      <span className="line-clamp-1 min-w-0 flex-1 text-left @xl:w-full @xl:flex-none @xl:text-center">
                         {isFeaturedProvider
                           ? "Featured"
                           : providerEntry.key === "recent"
@@ -377,7 +377,7 @@ export function ModelsList({
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <div className="flex-shrink-0 border-b border-border/70 px-3 py-2">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+            <div className="flex flex-col gap-1 @xl:flex-row @xl:items-center @xl:justify-between @xl:gap-2">
               <h4 className="text-sm font-semibold break-words whitespace-normal text-foreground">
                 {isSearchActive
                   ? "Search results"

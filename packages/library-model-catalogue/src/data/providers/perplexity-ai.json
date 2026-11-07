@@ -16,7 +16,9 @@
       "matchingModel": "sonar-reasoning",
       "overrides": {
         "speed": 3,
-        "isFeatured": true,
+        "isFeatured": false,
+        "deprecated": true,
+        "deprecationMessage": "Perplexity Sonar Reasoning was retired on 15 December 2025.",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
         "costPer1kSearches": 0.005

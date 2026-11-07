@@ -116,7 +116,7 @@ export const ModelOption = ({
             : "border-transparent hover:border-border-strong hover:bg-surface-elevated",
       )}
     >
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-2 @xl:flex-row @xl:items-start @xl:justify-between">
         <div className="flex min-w-0 flex-1 items-start gap-2.5">
           <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center">
             <ModelIcon
@@ -163,17 +163,16 @@ export const ModelOption = ({
                 </span>
               ) : null}
             </div>
-            {locationLabel && <p className="mt-1 text-xs text-muted-foreground">{locationLabel}</p>}
-            <p
-              className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground"
-              title={dataLocation.detail}
-            >
-              <MapPin size={11} aria-hidden className="flex-shrink-0" />
-              <span>
-                <span className="sr-only">Data location: </span>
-                {dataLocation.short}
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+              {locationLabel && <span>{locationLabel}</span>}
+              <span className="flex items-center gap-1" title={dataLocation.detail}>
+                <MapPin size={11} aria-hidden className="flex-shrink-0" />
+                <span>
+                  <span className="sr-only">Data location: </span>
+                  {dataLocation.short}
+                </span>
               </span>
-            </p>
+            </div>
             {model.description ? (
               <p className="mt-0.5 text-xs leading-5 break-words whitespace-normal text-muted-foreground">
                 {model.description}
@@ -191,7 +190,7 @@ export const ModelOption = ({
             ) : null}
           </div>
         </div>
-        <div className="flex w-full flex-wrap items-center gap-2 pl-[2.6rem] sm:w-[132px] sm:flex-shrink-0 sm:justify-end sm:pl-0">
+        <div className="flex w-full flex-wrap items-center gap-2 pl-[2.6rem] @xl:w-[132px] @xl:flex-shrink-0 @xl:justify-end @xl:pl-0">
           {hasRegionOptions && (
             <div
               className="relative flex max-w-[112px] items-center"

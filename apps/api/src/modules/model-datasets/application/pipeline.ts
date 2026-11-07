@@ -69,6 +69,7 @@ export const RESTRICTED_TEACHER_PROVIDERS = new Set([
   "grok",
   "xai",
   "perplexity-ai",
+  "perplexity-agent",
   "bedrock",
 ]);
 

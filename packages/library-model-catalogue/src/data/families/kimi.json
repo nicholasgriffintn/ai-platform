@@ -245,6 +245,34 @@
         }
       }
     },
+    "kimi-k3-1-pro": {
+      "defaults": {
+        "name": "Kimi K3.1 Pro",
+        "openWeights": false,
+        "description": "Kimi K3.1 Pro accepts text, image and produces text.",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 7, 2026",
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "kimi-latest": {
       "defaults": {
         "openWeights": false,

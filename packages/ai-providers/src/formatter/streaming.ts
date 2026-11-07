@@ -4,6 +4,7 @@ import type { InferenceImpact } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 
 import { readGoogleThoughtSignature } from "../utils/googleThoughtSignatures.js";
+import { fromPerplexityAgentToolName } from "../utils/perplexityAgentToolNames.js";
 import { extractReasoningContentBlocks } from "./content-blocks.js";
 
 export class StreamingFormatter {
@@ -146,9 +147,12 @@ export class StreamingFormatter {
               id: item.call_id || item.id,
               type: "function",
               function: {
-                name: item.name,
+                name: item.name && fromPerplexityAgentToolName(item.name),
                 arguments: item.arguments || "{}",
               },
+              ...(readGoogleThoughtSignature(item)
+                ? { thought_signature: readGoogleThoughtSignature(item) }
+                : {}),
             },
           ];
         }

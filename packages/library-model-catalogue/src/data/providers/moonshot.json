@@ -30,6 +30,9 @@
           "tool_use"
         ],
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2 Thinking is being retired by the end of December 2026. Use Kimi K3 instead.",
+        "replacementModel": "kimi-k3",
         "lastUpdated": "November 6, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0025,
@@ -64,6 +67,9 @@
           "document"
         ],
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2.5 is being retired by the end of December 2026. Use Kimi K3 instead.",
+        "replacementModel": "kimi-k3",
         "releaseDate": "January 2026",
         "lastUpdated": "January 2026",
         "costPer1kInputTokens": 0.0006,
@@ -75,6 +81,9 @@
       "matchingModel": "kimi-k2-0711-preview",
       "overrides": {
         "maxTokens": 16384,
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2 0711 is being retired by the end of December 2026. Use Kimi K3 instead.",
+        "replacementModel": "kimi-k3",
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "July 14, 2025",
         "lastUpdated": "July 14, 2025",
@@ -95,6 +104,9 @@
       "matchingModel": "kimi-k2-0905-preview",
       "overrides": {
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2 0905 is being retired by the end of December 2026. Use Kimi K3 instead.",
+        "replacementModel": "kimi-k3",
         "lastUpdated": "September 5, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0025,
@@ -109,6 +121,9 @@
       "model": "kimi-thinking/kimi-k2-thinking-turbo",
       "matchingModel": "kimi-k2-thinking-turbo",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2 Thinking Turbo is being retired by the end of December 2026. Use Kimi K3 instead.",
+        "replacementModel": "kimi-k3",
         "lastUpdated": "November 6, 2025",
         "costPer1kInputTokens": 0.00115,
         "costPer1kOutputTokens": 0.008,
@@ -123,6 +138,9 @@
       "model": "kimi-k2/kimi-k2-turbo",
       "matchingModel": "kimi-k2-turbo-preview",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Kimi K2 Turbo is being retired by the end of December 2026. Use Kimi K3 instead.",
+        "replacementModel": "kimi-k3",
         "lastUpdated": "September 5, 2025",
         "costPer1kInputTokens": 0.0024,
         "costPer1kOutputTokens": 0.01,
@@ -245,15 +263,7 @@
         "speed": 2,
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.01,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "costPer1kOutputTokens": 0.01
       }
     },
     "kimi-k3.1-pro-highspeed": {

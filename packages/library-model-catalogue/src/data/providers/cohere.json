@@ -63,6 +63,9 @@
       "model": "cohere/c4ai-aya-expanse-8b/aya-expanse-8b",
       "matchingModel": "c4ai-aya-expanse-8b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Aya Expanse 8B was retired on 4 April 2026. Use Command R7B instead.",
+        "replacementModel": "command-r7b-12-2024",
         "lastUpdated": "October 24, 2024",
         "supportsToolCalls": false
       }
@@ -80,6 +83,9 @@
       "model": "cohere/c4ai-aya-vision-8b/aya-vision-8b",
       "matchingModel": "c4ai-aya-vision-8b",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Aya Vision 8B was retired on 4 April 2026. Use Command A Vision instead.",
+        "replacementModel": "command-a-vision-07-2025",
         "lastUpdated": "May 14, 2025",
         "supportsToolCalls": false,
         "supportsAttachments": true

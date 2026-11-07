@@ -468,6 +468,7 @@
         "name": "Gemini 3.8 Flash",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
         "contextWindow": 1048576,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
