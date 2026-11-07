@@ -36,7 +36,7 @@ addRoute(app, "post", "/fim", {
   tags: ["code"],
   summary: "Create fill-in-the-middle completion",
   description:
-    "Generates code completions by filling the gap between a prefix and suffix using supported FIM models.",
+    "Generates code completions by filling the gap between a prefix and suffix using native FIM models, or prompted chat models with a coding strength.",
   bodySchema: fillInMiddleRequestSchema,
   responses: {
     200: {

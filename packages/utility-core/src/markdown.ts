@@ -1,3 +1,7 @@
+export function stripEnclosingCodeFence(text: string): string {
+  return text.trim().match(/^```[^\n]*\n([\s\S]*?)\n?```$/)?.[1] ?? text;
+}
+
 function downgradeH1Headings(markdown: string): string {
   return markdown.replace(/^# (.*)$/gm, "## $1");
 }

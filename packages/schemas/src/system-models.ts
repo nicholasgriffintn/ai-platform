@@ -48,7 +48,12 @@ export const SYSTEM_MODEL_CAPABILITIES = [
 export type SystemModelCapability = (typeof SYSTEM_MODEL_CAPABILITIES)[number];
 
 export type SystemModelRequirement =
-  | { kind: "text"; inputs?: readonly ModelModality[]; providers?: readonly string[] }
+  | {
+      kind: "text";
+      inputs?: readonly ModelModality[];
+      strengths?: readonly ModelModality[];
+      providers?: readonly string[];
+    }
   | {
       kind: "output";
       output: ModelModality;
@@ -62,7 +67,7 @@ export type SystemModelRequirement =
 export type SystemModelRanking =
   | { metric: "intelligence"; minContextWindow?: number }
   | { metric: "media"; key: string; lowerIsBetter?: boolean }
-  | { metric: "cost" };
+  | { metric: "cost"; prefers?: SystemModelCapability };
 
 export interface SystemModelRoleDefinition {
   id: SystemModelRole;
@@ -327,8 +332,14 @@ export const SYSTEM_MODEL_LINEUP: readonly SystemModelRoleDefinition[] = [
     label: "Code completion",
     description: "Fill-in-the-middle completions for editors.",
     group: "code",
-    requires: { kind: "capability", capability: "supportsFim" },
-    ranking: { metric: "cost" },
+    requires: {
+      kind: "anyOf",
+      options: [
+        { kind: "capability", capability: "supportsFim" },
+        { kind: "text", strengths: ["coding"] },
+      ],
+    },
+    ranking: { metric: "cost", prefers: "supportsFim" },
     defaults: [],
   },
   {

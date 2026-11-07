@@ -4,6 +4,8 @@ import { resolveExecutableModelForRequest } from "~/modules/models/application/a
 import { requireSystemModel } from "~/modules/models/application/resolve";
 import type { IEnv, IUser, ChatCompletionParameters } from "~/types";
 
+import { createPromptedFimCompletion } from "./promptedFimCompletions";
+
 interface HandleCreateFimCompletionsRequest {
   env: IEnv;
   model?: string;
@@ -34,16 +36,31 @@ export const handleCreateFimCompletions = async ({
   user,
 }: HandleCreateFimCompletionsRequest) => {
   const selectedModel = model ?? (await requireSystemModel(env, user, "fim")).id;
-  const { config: modelConfig, credentialAuthority } = await resolveExecutableModelForRequest({
+  const target = await resolveExecutableModelForRequest({
     env,
     user,
     model: selectedModel,
     provider: requestedProvider,
-    capability: "supportsFim",
+    role: "fim",
   });
+  const { config: modelConfig, credentialAuthority } = target;
+  const context = createServiceContext({ env, user });
+
+  if (!modelConfig.supportsFim) {
+    return createPromptedFimCompletion({
+      context,
+      target,
+      prompt,
+      suffix,
+      max_tokens,
+      temperature,
+      top_p,
+      stream,
+      stop,
+    });
+  }
 
   const provider = getChatProvider(modelConfig.provider, { env, user });
-  const context = createServiceContext({ env, user });
 
   const fimRequest: ChatCompletionParameters = {
     env,
