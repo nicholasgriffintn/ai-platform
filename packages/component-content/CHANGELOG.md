@@ -1,5 +1,48 @@
 # @ngriffin_uk/polychat-component-content
 
+## 1.3.8
+
+### Patch Changes
+
+- 457ff99: Images in chat replies now open in the file viewer when you click them, and generated images show in their file view. **Check this file** only appears for files stored in Polychat. Second opinion now only asks models you can use. The run credit cap setting says what it does and matches the other settings.
+- e0ffb42: Images now open in the same viewer as your files, wherever you click them. Choose **File info** on a generated image, video or audio file and **Check this file** to see whether we have a record of it, including the model that made it.
+
+  To check a file someone sent you, open `/verify` and drop it in. It's checked on your device and only its fingerprint is sent. Screenshots and re-saved copies won't match, so no record doesn't mean a file isn't AI-generated.
+
+- 8fcabd3: Polychat now feels quicker across web, desktop and iOS. Replies start sooner, long replies stream more smoothly, and the web and desktop apps download less before they open.
+
+  The inbox and bulk read actions respond faster, hosted computer actions take less time, and opening chats on desktop no longer holds up the window. Desktop can take up to 10 minutes to notice a newly installed agent CLI.
+
+- b571a91: Nano Banana Pro, SDXL Lightning, MusicGen and Hunyuan Video work again from the Replicate page, and finished predictions show their image, audio player or video. Safety settings we control no longer appear as options you can change.
+
+  Errors are clearer: when a provider rejects a request you see the reason, and a failed run shows its banner straight away.
+
+  Second opinion now picks reviewers from your own model tiers, always on different providers from each other, checks the answer you asked about, and tests it against what your tools actually returned. Tool results, arguments and approval details read as plain labelled text instead of raw JSON, and leaked model control text no longer reaches your replies. Inline images in chat now display, and they stay out of conversation titles.
+
+  Your connected MCP integrations now show as ready when the assistant looks for them, and you can keep chatting after a reply that is waiting on setup.
+
+- Updated dependencies [5edfedc]
+- Updated dependencies [e0ffb42]
+- Updated dependencies [6d1bb6e]
+- Updated dependencies [fd91d91]
+- Updated dependencies [8fcabd3]
+- Updated dependencies [150be98]
+- Updated dependencies [8a4bbaf]
+- Updated dependencies [d29cc10]
+- Updated dependencies [150be98]
+- Updated dependencies [7f6655e]
+- Updated dependencies [b571a91]
+- Updated dependencies [f824dd2]
+- Updated dependencies [777a55e]
+- Updated dependencies [5a2391a]
+- Updated dependencies [e68f76a]
+- Updated dependencies [79859ac]
+  - @ngriffin_uk/polychat-schemas@1.17.0
+  - @ngriffin_uk/polychat-utility-core@0.11.1
+  - @ngriffin_uk/polychat-library-chat@1.4.3
+  - @ngriffin_uk/polychat-utility-react@0.7.4
+  - @ngriffin_uk/polychat-component-ui@0.7.4
+
 ## 1.3.7
 
 ### Patch Changes

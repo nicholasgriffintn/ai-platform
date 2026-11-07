@@ -1,5 +1,50 @@
 # @assistant/app
 
+## 0.13.1
+
+### Patch Changes
+
+- 8fcabd3: Polychat now feels quicker across web, desktop and iOS. Replies start sooner, long replies stream more smoothly, and the web and desktop apps download less before they open.
+
+  The inbox and bulk read actions respond faster, hosted computer actions take less time, and opening chats on desktop no longer holds up the window. Desktop can take up to 10 minutes to notice a newly installed agent CLI.
+
+- Updated dependencies [5edfedc]
+- Updated dependencies [777a55e]
+- Updated dependencies [777a55e]
+- Updated dependencies [457ff99]
+- Updated dependencies [e0ffb42]
+- Updated dependencies [6d1bb6e]
+- Updated dependencies [777a55e]
+- Updated dependencies [fd91d91]
+- Updated dependencies [fc332c6]
+- Updated dependencies [8fcabd3]
+- Updated dependencies [150be98]
+- Updated dependencies [8a4bbaf]
+- Updated dependencies [d29cc10]
+- Updated dependencies [150be98]
+- Updated dependencies [7f6655e]
+- Updated dependencies [b571a91]
+- Updated dependencies [f824dd2]
+- Updated dependencies [777a55e]
+- Updated dependencies [5a2391a]
+- Updated dependencies [e68f76a]
+- Updated dependencies [79859ac]
+  - @ngriffin_uk/polychat-component-conversation@2.2.6
+  - @ngriffin_uk/polychat-schemas@1.17.0
+  - @ngriffin_uk/polychat-component-shell@2.10.0
+  - @ngriffin_uk/polychat-component-content@1.3.8
+  - @ngriffin_uk/polychat-library-react@0.16.0
+  - @ngriffin_uk/polychat-utility-core@0.11.1
+  - @ngriffin_uk/polychat-component-capabilities@1.0.8
+  - @ngriffin_uk/polychat-library-chat@1.4.3
+  - @ngriffin_uk/polychat-library-client@0.15.0
+  - @ngriffin_uk/polychat-utility-react@0.7.4
+  - @ngriffin_uk/polychat-component-account@1.2.0
+  - @ngriffin_uk/polychat-component-models@1.3.0
+  - @ngriffin_uk/polychat-component-experiences@0.7.4
+  - @ngriffin_uk/polychat-component-workspaces@1.2.1
+  - @ngriffin_uk/polychat-component-ui@0.7.4
+
 ## 0.13.0
 
 ### Minor Changes

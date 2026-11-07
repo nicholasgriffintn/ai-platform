@@ -1,5 +1,62 @@
 # @ngriffin_uk/polychat-library-client
 
+## 0.15.0
+
+### Minor Changes
+
+- 150be98: Export everything you made. Profile, Chat History, Export everything now downloads your chats, memory, sources, outputs, tasks, recipes, app records, earlier revisions and files as a ZIP, with a manifest of every section and anything left out. Large accounts download in several parts. Credentials and other people's work are never included.
+
+### Patch Changes
+
+- 777a55e: The composer now keeps the model you picked after you send a message, instead of sometimes falling back to Default. New chats show your account default as soon as you leave a conversation, so the model you see is the one your first message uses.
+- fd91d91: Discover now learns from what you skip as well as what you open. Topics you keep scrolling past move down the page, and each page leads with what you tend to read.
+
+  Reading now splits into what is new since you last looked and what came earlier, so you can tell when you are caught up. Stories show their article image, link to the Hacker News or Lobsters discussion, and list the other outlets covering them.
+
+  Artists you listen to now bring you their new releases instead of loosely related news. If a connected service stops working, Discover says so in plain words at the top of the feed. A day with nothing in your calendar no longer shows as an error.
+
+  Discover's page now adapts to what it has. Posters run across the top and scroll when they do not all fit. Reading is a masonry that keeps cards where they are as more stories load, and Coming up, For you, and Watching and listening sit in a sidebar beside it that scrolls with the page and stays put once you reach its last card. On narrower screens the sidebar becomes a strip above Reading.
+
+  Discover is also much lighter to use. Scrolling no longer re-downloads every story image or redraws the page, and the app stops redrawing the conversation and composer on a timer, which keeps it smoother while you chat with models.
+
+- b571a91: Nano Banana Pro, SDXL Lightning, MusicGen and Hunyuan Video work again from the Replicate page, and finished predictions show their image, audio player or video. Safety settings we control no longer appear as options you can change.
+
+  Errors are clearer: when a provider rejects a request you see the reason, and a failed run shows its banner straight away.
+
+  Second opinion now picks reviewers from your own model tiers, always on different providers from each other, checks the answer you asked about, and tests it against what your tools actually returned. Tool results, arguments and approval details read as plain labelled text instead of raw JSON, and leaked model control text no longer reaches your replies. Inline images in chat now display, and they stay out of conversation titles.
+
+  Your connected MCP integrations now show as ready when the assistant looks for them, and you can keep chatting after a reply that is waiting on setup.
+
+- f824dd2: Runs can now stop at a limit you set, and a run that fails on our side costs nothing.
+
+  - Set **Run credit cap** in chat settings, or send `budget.credits` to the Responses API. The run stops before it could go over, and you are never charged more than the cap.
+  - A run that fails on our side costs nothing. Credits it used are returned automatically and shown on the run.
+
+- 777a55e: Cancelling a queued sandbox run now stops it, and a run that loses its worker connection, stops responding or is interrupted now fails and returns its held credits instead of staying in progress. Cancelled and finished tasks stay that way when a run finishes at the same moment, and two conflicting status changes now ask you to refresh. Two admins deciding the same hire can no longer both win, and a manual pause on a teammate is no longer replaced by a budget pause. On iOS, Apple Health sharing now belongs to the account that turned it on and ends at sign-out, so turn it on again after updating or signing back in, and opening the app offline keeps you signed in. Notes save your last edits when you leave mid-save, the microphone turns off when you leave the chat, spoken replies no longer get stuck on generating, and a failed dictation session no longer looks live. Generated images and Google Fonts now show in site previews, and the preview no longer comes up blank where a browser blocks its sandboxed frame from loading files. Sites hold refinements and manual edits until image generation finishes. On desktop, reopening a terminal straight after closing it keeps the new one working, and stopping an agent no longer hangs behind a stuck message. Logging in to several servers at once from the CLI keeps all of them.
+- e68f76a: Runs now have to show their work before they count as finished. Each completed task run is checked against what it actually did, and the task shows whether the result is verified, unverified or failed its checks. A run with no evidence stays in review for a person instead of being marked done, and the council now sees a run's evidence when it reviews the work.
+
+  Generated documents, sheets, decks and Word, Excel and PowerPoint files are reopened and checked before a run can pass. Routines now show how often they finished with evidence over the last four weeks, alongside their settings.
+
+- Updated dependencies [5edfedc]
+- Updated dependencies [e0ffb42]
+- Updated dependencies [6d1bb6e]
+- Updated dependencies [fd91d91]
+- Updated dependencies [8fcabd3]
+- Updated dependencies [150be98]
+- Updated dependencies [8a4bbaf]
+- Updated dependencies [d29cc10]
+- Updated dependencies [150be98]
+- Updated dependencies [7f6655e]
+- Updated dependencies [b571a91]
+- Updated dependencies [f824dd2]
+- Updated dependencies [777a55e]
+- Updated dependencies [5a2391a]
+- Updated dependencies [e68f76a]
+- Updated dependencies [79859ac]
+  - @ngriffin_uk/polychat-schemas@1.17.0
+  - @ngriffin_uk/polychat-utility-core@0.11.1
+  - @ngriffin_uk/polychat-library-chat@1.4.3
+
 ## 0.14.0
 
 ### Minor Changes

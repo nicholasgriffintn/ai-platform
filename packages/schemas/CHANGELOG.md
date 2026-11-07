@@ -1,5 +1,68 @@
 # @ngriffin_uk/polychat-schemas
 
+## 1.17.0
+
+### Minor Changes
+
+- 150be98: Export everything you made. Profile, Chat History, Export everything now downloads your chats, memory, sources, outputs, tasks, recipes, app records, earlier revisions and files as a ZIP, with a manifest of every section and anything left out. Large accounts download in several parts. Credentials and other people's work are never included.
+- 8a4bbaf: Generated images, video and audio now carry a machine-readable provenance mark that stays with the file when you download it. Content Credentials and other marks from the model provider are kept exactly as they arrived, and files without one get a Polychat mark that labels them as AI-generated. Marks are signed on deployments that set `PROVENANCE_SIGNING_KEY`.
+
+  To check a file, look up its SHA-256 at `GET /provenance/{fingerprint}`. The result says how the file was handled, including files recorded without an embedded mark. Signing keys are published at `GET /provenance/keys`.
+
+- 150be98: See where a model handles your data before you choose it. Every model in the picker now shows a data location, and its details link to the provider's own policy for location and retention. Where a provider does not document this, the label says unknown.
+- 7f6655e: Connect Pashi to your Polychat account. Approve Pashi in Polychat and it runs its AI on your plan and your default models, with a key that cannot reach your chats, projects or files. Polychat can then use Pashi tools for you, and on Pro that includes converting images, audio, video and documents from your chat. Pashi shows in Plugins with its connection status. Connecting again replaces the old key, and disconnecting from Plugins or from Pashi ends access in both directions. Device sign-in now tells you when a name comes from the device itself, so Polychat cannot vouch for it.
+
+### Patch Changes
+
+- 5edfedc: Polychat now tells you that you are talking to an AI from the start of a conversation. The line sits under the composer on web and desktop, including the home screen, and appears on new chats on iPhone, iPad and Apple Watch.
+
+  Messages that mention suicide or self-harm now get support details at the top of the reply, whether or not guardrails are on. The details also appear when guardrails stop a message, and in connected channels when the assistant would otherwise stay quiet.
+
+- fd91d91: Discover now learns from what you skip as well as what you open. Topics you keep scrolling past move down the page, and each page leads with what you tend to read.
+
+  Reading now splits into what is new since you last looked and what came earlier, so you can tell when you are caught up. Stories show their article image, link to the Hacker News or Lobsters discussion, and list the other outlets covering them.
+
+  Artists you listen to now bring you their new releases instead of loosely related news. If a connected service stops working, Discover says so in plain words at the top of the feed. A day with nothing in your calendar no longer shows as an error.
+
+  Discover's page now adapts to what it has. Posters run across the top and scroll when they do not all fit. Reading is a masonry that keeps cards where they are as more stories load, and Coming up, For you, and Watching and listening sit in a sidebar beside it that scrolls with the page and stays put once you reach its last card. On narrower screens the sidebar becomes a strip above Reading.
+
+  Discover is also much lighter to use. Scrolling no longer re-downloads every story image or redraws the page, and the app stops redrawing the conversation and composer on a timer, which keeps it smoother while you chat with models.
+
+- d29cc10: MCP connections now work with servers on the new stateless `2026-07-28` protocol as well as session-based servers. Polychat picks the right one for each server automatically, so there is nothing to change on existing connections. Signing in to an MCP server now identifies Polychat with a Client ID Metadata Document where the server accepts one, and checks that the sign-in response came from the expected issuer.
+- b571a91: Nano Banana Pro, SDXL Lightning, MusicGen and Hunyuan Video work again from the Replicate page, and finished predictions show their image, audio player or video. Safety settings we control no longer appear as options you can change.
+
+  Errors are clearer: when a provider rejects a request you see the reason, and a failed run shows its banner straight away.
+
+  Second opinion now picks reviewers from your own model tiers, always on different providers from each other, checks the answer you asked about, and tests it against what your tools actually returned. Tool results, arguments and approval details read as plain labelled text instead of raw JSON, and leaked model control text no longer reaches your replies. Inline images in chat now display, and they stay out of conversation titles.
+
+  Your connected MCP integrations now show as ready when the assistant looks for them, and you can keep chatting after a reply that is waiting on setup.
+
+- f824dd2: Runs can now stop at a limit you set, and a run that fails on our side costs nothing.
+
+  - Set **Run credit cap** in chat settings, or send `budget.credits` to the Responses API. The run stops before it could go over, and you are never charged more than the cap.
+  - A run that fails on our side costs nothing. Credits it used are returned automatically and shown on the run.
+
+- 777a55e: Cancelling a queued sandbox run now stops it, and a run that loses its worker connection, stops responding or is interrupted now fails and returns its held credits instead of staying in progress. Cancelled and finished tasks stay that way when a run finishes at the same moment, and two conflicting status changes now ask you to refresh. Two admins deciding the same hire can no longer both win, and a manual pause on a teammate is no longer replaced by a budget pause. On iOS, Apple Health sharing now belongs to the account that turned it on and ends at sign-out, so turn it on again after updating or signing back in, and opening the app offline keeps you signed in. Notes save your last edits when you leave mid-save, the microphone turns off when you leave the chat, spoken replies no longer get stuck on generating, and a failed dictation session no longer looks live. Generated images and Google Fonts now show in site previews, and the preview no longer comes up blank where a browser blocks its sandboxed frame from loading files. Sites hold refinements and manual edits until image generation finishes. On desktop, reopening a terminal straight after closing it keeps the new one working, and stopping an agent no longer hangs behind a stuck message. Logging in to several servers at once from the CLI keeps all of them.
+- 5a2391a: Discover's feed now holds still. Stories you have already been shown stay where they are instead of cycling back to the top, a reworded headline updates in place, and the same story from two outlets shows once.
+
+  Hacker News, Lobsters and Hugging Face now refresh every two hours through the day instead of once each morning. Topic research drops results that are not about the topic, along with press releases and ranked buying guides, and old papers no longer appear as new.
+
+  Interests now come from what you listen to, watch and open, rather than from whatever is on a public front page that day.
+
+- e68f76a: Runs now have to show their work before they count as finished. Each completed task run is checked against what it actually did, and the task shows whether the result is verified, unverified or failed its checks. A run with no evidence stays in review for a person instead of being marked done, and the council now sees a run's evidence when it reviews the work.
+
+  Generated documents, sheets, decks and Word, Excel and PowerPoint files are reopened and checked before a run can pass. Routines now show how often they finished with evidence over the last four weeks, alongside their settings.
+
+- 79859ac: Cloudflare is retiring 24 Workers AI models on 20 November 2026, so they now show as deprecated with a suggested replacement. Built-in defaults have moved to DeepSeek V4.1 Flash, GLM 5.3, Gemma 4 26B and Qwen3.8 27B. Workers AI speech now reads Spanish with a Spanish voice and asks you to choose another speech provider for other non-English languages. New Workers AI LoRA deployments can no longer use the Gemma 2B, Gemma 7B or Llama 2 7B bases.
+- Updated dependencies [e0ffb42]
+- Updated dependencies [6d1bb6e]
+- Updated dependencies [8fcabd3]
+- Updated dependencies [b571a91]
+- Updated dependencies [777a55e]
+- Updated dependencies [5a2391a]
+- Updated dependencies [e68f76a]
+  - @ngriffin_uk/polychat-utility-core@0.11.1
+
 ## 1.16.0
 
 ### Minor Changes

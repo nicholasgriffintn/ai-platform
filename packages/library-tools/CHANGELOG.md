@@ -1,5 +1,31 @@
 # @ngriffin_uk/polychat-library-tools
 
+## 0.4.7
+
+### Patch Changes
+
+- 5c52117: Tools from connected MCP integrations now get the same intent check as other external actions, even when the integration says a tool only reads. A call that does not match what you asked for will ask you first, so you may see the occasional extra approval. A tool marked as both read-only and destructive now counts as destructive.
+- Updated dependencies [5edfedc]
+- Updated dependencies [e0ffb42]
+- Updated dependencies [6d1bb6e]
+- Updated dependencies [fd91d91]
+- Updated dependencies [8fcabd3]
+- Updated dependencies [150be98]
+- Updated dependencies [8a4bbaf]
+- Updated dependencies [d29cc10]
+- Updated dependencies [150be98]
+- Updated dependencies [7f6655e]
+- Updated dependencies [b571a91]
+- Updated dependencies [f824dd2]
+- Updated dependencies [777a55e]
+- Updated dependencies [5a2391a]
+- Updated dependencies [e68f76a]
+- Updated dependencies [79859ac]
+  - @ngriffin_uk/polychat-schemas@1.17.0
+  - @ngriffin_uk/polychat-utility-core@0.11.1
+  - @ngriffin_uk/polychat-utility-server@0.8.0
+  - @ngriffin_uk/polychat-library-policy@0.5.1
+
 ## 0.4.6
 
 ### Patch Changes
