@@ -1,5 +1,36 @@
 # @ngriffin_uk/polychat-ai-billing
 
+## 0.3.10
+
+### Patch Changes
+
+- f824dd2: Runs can now stop at a limit you set, and a run that fails on our side costs nothing.
+
+  - Set **Run credit cap** in chat settings, or send `budget.credits` to the Responses API. The run stops before it could go over, and you are never charged more than the cap.
+  - A run that fails on our side costs nothing. Credits it used are returned automatically and shown on the run.
+
+- Updated dependencies [5edfedc]
+- Updated dependencies [e0ffb42]
+- Updated dependencies [6d1bb6e]
+- Updated dependencies [fd91d91]
+- Updated dependencies [8fcabd3]
+- Updated dependencies [150be98]
+- Updated dependencies [8a4bbaf]
+- Updated dependencies [d29cc10]
+- Updated dependencies [150be98]
+- Updated dependencies [7f6655e]
+- Updated dependencies [b571a91]
+- Updated dependencies [f824dd2]
+- Updated dependencies [777a55e]
+- Updated dependencies [5a2391a]
+- Updated dependencies [e68f76a]
+- Updated dependencies [79859ac]
+  - @ngriffin_uk/polychat-schemas@1.17.0
+  - @ngriffin_uk/polychat-utility-core@0.11.1
+  - @ngriffin_uk/polychat-utility-server@0.8.0
+  - @ngriffin_uk/polychat-ai-models@0.5.2
+  - @ngriffin_uk/polychat-ai-telemetry@0.4.3
+
 ## 0.3.9
 
 ### Patch Changes

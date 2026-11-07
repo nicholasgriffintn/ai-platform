@@ -1,5 +1,53 @@
 # @ngriffin_uk/polychat-utility-server
 
+## 0.8.0
+
+### Minor Changes
+
+- 150be98: Export everything you made. Profile, Chat History, Export everything now downloads your chats, memory, sources, outputs, tasks, recipes, app records, earlier revisions and files as a ZIP, with a manifest of every section and anything left out. Large accounts download in several parts. Credentials and other people's work are never included.
+- 8a4bbaf: Generated images, video and audio now carry a machine-readable provenance mark that stays with the file when you download it. Content Credentials and other marks from the model provider are kept exactly as they arrived, and files without one get a Polychat mark that labels them as AI-generated. Marks are signed on deployments that set `PROVENANCE_SIGNING_KEY`.
+
+  To check a file, look up its SHA-256 at `GET /provenance/{fingerprint}`. The result says how the file was handled, including files recorded without an embedded mark. Signing keys are published at `GET /provenance/keys`.
+
+### Patch Changes
+
+- fd91d91: Discover now learns from what you skip as well as what you open. Topics you keep scrolling past move down the page, and each page leads with what you tend to read.
+
+  Reading now splits into what is new since you last looked and what came earlier, so you can tell when you are caught up. Stories show their article image, link to the Hacker News or Lobsters discussion, and list the other outlets covering them.
+
+  Artists you listen to now bring you their new releases instead of loosely related news. If a connected service stops working, Discover says so in plain words at the top of the feed. A day with nothing in your calendar no longer shows as an error.
+
+  Discover's page now adapts to what it has. Posters run across the top and scroll when they do not all fit. Reading is a masonry that keeps cards where they are as more stories load, and Coming up, For you, and Watching and listening sit in a sidebar beside it that scrolls with the page and stays put once you reach its last card. On narrower screens the sidebar becomes a strip above Reading.
+
+  Discover is also much lighter to use. Scrolling no longer re-downloads every story image or redraws the page, and the app stops redrawing the conversation and composer on a timer, which keeps it smoother while you chat with models.
+
+- b571a91: Nano Banana Pro, SDXL Lightning, MusicGen and Hunyuan Video work again from the Replicate page, and finished predictions show their image, audio player or video. Safety settings we control no longer appear as options you can change.
+
+  Errors are clearer: when a provider rejects a request you see the reason, and a failed run shows its banner straight away.
+
+  Second opinion now picks reviewers from your own model tiers, always on different providers from each other, checks the answer you asked about, and tests it against what your tools actually returned. Tool results, arguments and approval details read as plain labelled text instead of raw JSON, and leaked model control text no longer reaches your replies. Inline images in chat now display, and they stay out of conversation titles.
+
+  Your connected MCP integrations now show as ready when the assistant looks for them, and you can keep chatting after a reply that is waiting on setup.
+
+- Updated dependencies [5edfedc]
+- Updated dependencies [e0ffb42]
+- Updated dependencies [6d1bb6e]
+- Updated dependencies [fd91d91]
+- Updated dependencies [8fcabd3]
+- Updated dependencies [150be98]
+- Updated dependencies [8a4bbaf]
+- Updated dependencies [d29cc10]
+- Updated dependencies [150be98]
+- Updated dependencies [7f6655e]
+- Updated dependencies [b571a91]
+- Updated dependencies [f824dd2]
+- Updated dependencies [777a55e]
+- Updated dependencies [5a2391a]
+- Updated dependencies [e68f76a]
+- Updated dependencies [79859ac]
+  - @ngriffin_uk/polychat-schemas@1.17.0
+  - @ngriffin_uk/polychat-utility-core@0.11.1
+
 ## 0.7.1
 
 ### Patch Changes

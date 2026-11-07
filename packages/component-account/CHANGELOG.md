@@ -1,5 +1,41 @@
 # @ngriffin_uk/polychat-component-account
 
+## 1.2.0
+
+### Minor Changes
+
+- 150be98: Export everything you made. Profile, Chat History, Export everything now downloads your chats, memory, sources, outputs, tasks, recipes, app records, earlier revisions and files as a ZIP, with a manifest of every section and anything left out. Large accounts download in several parts. Credentials and other people's work are never included.
+- 7f6655e: Connect Pashi to your Polychat account. Approve Pashi in Polychat and it runs its AI on your plan and your default models, with a key that cannot reach your chats, projects or files. Polychat can then use Pashi tools for you, and on Pro that includes converting images, audio, video and documents from your chat. Pashi shows in Plugins with its connection status. Connecting again replaces the old key, and disconnecting from Plugins or from Pashi ends access in both directions. Device sign-in now tells you when a name comes from the device itself, so Polychat cannot vouch for it.
+
+### Patch Changes
+
+- Updated dependencies [5edfedc]
+- Updated dependencies [457ff99]
+- Updated dependencies [e0ffb42]
+- Updated dependencies [6d1bb6e]
+- Updated dependencies [777a55e]
+- Updated dependencies [fd91d91]
+- Updated dependencies [8fcabd3]
+- Updated dependencies [150be98]
+- Updated dependencies [8a4bbaf]
+- Updated dependencies [d29cc10]
+- Updated dependencies [150be98]
+- Updated dependencies [7f6655e]
+- Updated dependencies [b571a91]
+- Updated dependencies [f824dd2]
+- Updated dependencies [777a55e]
+- Updated dependencies [5a2391a]
+- Updated dependencies [e68f76a]
+- Updated dependencies [79859ac]
+  - @ngriffin_uk/polychat-schemas@1.17.0
+  - @ngriffin_uk/polychat-library-react@0.16.0
+  - @ngriffin_uk/polychat-utility-core@0.11.1
+  - @ngriffin_uk/polychat-component-capabilities@1.0.8
+  - @ngriffin_uk/polychat-library-client@0.15.0
+  - @ngriffin_uk/polychat-utility-react@0.7.4
+  - @ngriffin_uk/polychat-component-models@1.3.0
+  - @ngriffin_uk/polychat-component-ui@0.7.4
+
 ## 1.1.6
 
 ### Patch Changes

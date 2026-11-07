@@ -1,5 +1,62 @@
 # @ngriffin_uk/polychat-component-conversation
 
+## 2.2.6
+
+### Patch Changes
+
+- 5edfedc: Polychat now tells you that you are talking to an AI from the start of a conversation. The line sits under the composer on web and desktop, including the home screen, and appears on new chats on iPhone, iPad and Apple Watch.
+
+  Messages that mention suicide or self-harm now get support details at the top of the reply, whether or not guardrails are on. The details also appear when guardrails stop a message, and in connected channels when the assistant would otherwise stay quiet.
+
+- 777a55e: Conversations now open straight onto your latest messages, without a blank moment while the list gets ready.
+- 457ff99: Images in chat replies now open in the file viewer when you click them, and generated images show in their file view. **Check this file** only appears for files stored in Polychat. Second opinion now only asks models you can use. The run credit cap setting says what it does and matches the other settings.
+- 8fcabd3: Polychat now feels quicker across web, desktop and iOS. Replies start sooner, long replies stream more smoothly, and the web and desktop apps download less before they open.
+
+  The inbox and bulk read actions respond faster, hosted computer actions take less time, and opening chats on desktop no longer holds up the window. Desktop can take up to 10 minutes to notice a newly installed agent CLI.
+
+- b571a91: Nano Banana Pro, SDXL Lightning, MusicGen and Hunyuan Video work again from the Replicate page, and finished predictions show their image, audio player or video. Safety settings we control no longer appear as options you can change.
+
+  Errors are clearer: when a provider rejects a request you see the reason, and a failed run shows its banner straight away.
+
+  Second opinion now picks reviewers from your own model tiers, always on different providers from each other, checks the answer you asked about, and tests it against what your tools actually returned. Tool results, arguments and approval details read as plain labelled text instead of raw JSON, and leaked model control text no longer reaches your replies. Inline images in chat now display, and they stay out of conversation titles.
+
+  Your connected MCP integrations now show as ready when the assistant looks for them, and you can keep chatting after a reply that is waiting on setup.
+
+- f824dd2: Runs can now stop at a limit you set, and a run that fails on our side costs nothing.
+
+  - Set **Run credit cap** in chat settings, or send `budget.credits` to the Responses API. The run stops before it could go over, and you are never charged more than the cap.
+  - A run that fails on our side costs nothing. Credits it used are returned automatically and shown on the run.
+
+- 777a55e: Cancelling a queued sandbox run now stops it, and a run that loses its worker connection, stops responding or is interrupted now fails and returns its held credits instead of staying in progress. Cancelled and finished tasks stay that way when a run finishes at the same moment, and two conflicting status changes now ask you to refresh. Two admins deciding the same hire can no longer both win, and a manual pause on a teammate is no longer replaced by a budget pause. On iOS, Apple Health sharing now belongs to the account that turned it on and ends at sign-out, so turn it on again after updating or signing back in, and opening the app offline keeps you signed in. Notes save your last edits when you leave mid-save, the microphone turns off when you leave the chat, spoken replies no longer get stuck on generating, and a failed dictation session no longer looks live. Generated images and Google Fonts now show in site previews, and the preview no longer comes up blank where a browser blocks its sandboxed frame from loading files. Sites hold refinements and manual edits until image generation finishes. On desktop, reopening a terminal straight after closing it keeps the new one working, and stopping an agent no longer hangs behind a stuck message. Logging in to several servers at once from the CLI keeps all of them.
+- Updated dependencies [5edfedc]
+- Updated dependencies [457ff99]
+- Updated dependencies [e0ffb42]
+- Updated dependencies [6d1bb6e]
+- Updated dependencies [777a55e]
+- Updated dependencies [fd91d91]
+- Updated dependencies [8fcabd3]
+- Updated dependencies [150be98]
+- Updated dependencies [8a4bbaf]
+- Updated dependencies [d29cc10]
+- Updated dependencies [150be98]
+- Updated dependencies [7f6655e]
+- Updated dependencies [b571a91]
+- Updated dependencies [f824dd2]
+- Updated dependencies [777a55e]
+- Updated dependencies [5a2391a]
+- Updated dependencies [e68f76a]
+- Updated dependencies [79859ac]
+  - @ngriffin_uk/polychat-schemas@1.17.0
+  - @ngriffin_uk/polychat-component-content@1.3.8
+  - @ngriffin_uk/polychat-library-react@0.16.0
+  - @ngriffin_uk/polychat-utility-core@0.11.1
+  - @ngriffin_uk/polychat-library-chat@1.4.3
+  - @ngriffin_uk/polychat-library-client@0.15.0
+  - @ngriffin_uk/polychat-utility-react@0.7.4
+  - @ngriffin_uk/polychat-component-models@1.3.0
+  - @ngriffin_uk/polychat-component-experiences@0.7.4
+  - @ngriffin_uk/polychat-component-ui@0.7.4
+
 ## 2.2.5
 
 ### Patch Changes

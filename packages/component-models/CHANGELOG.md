@@ -1,5 +1,35 @@
 # @ngriffin_uk/polychat-component-models
 
+## 1.3.0
+
+### Minor Changes
+
+- 150be98: See where a model handles your data before you choose it. Every model in the picker now shows a data location, and its details link to the provider's own policy for location and retention. Where a provider does not document this, the label says unknown.
+
+### Patch Changes
+
+- Updated dependencies [5edfedc]
+- Updated dependencies [e0ffb42]
+- Updated dependencies [6d1bb6e]
+- Updated dependencies [fd91d91]
+- Updated dependencies [8fcabd3]
+- Updated dependencies [150be98]
+- Updated dependencies [8a4bbaf]
+- Updated dependencies [d29cc10]
+- Updated dependencies [150be98]
+- Updated dependencies [7f6655e]
+- Updated dependencies [b571a91]
+- Updated dependencies [f824dd2]
+- Updated dependencies [777a55e]
+- Updated dependencies [5a2391a]
+- Updated dependencies [e68f76a]
+- Updated dependencies [79859ac]
+  - @ngriffin_uk/polychat-schemas@1.17.0
+  - @ngriffin_uk/polychat-utility-core@0.11.1
+  - @ngriffin_uk/polychat-library-chat@1.4.3
+  - @ngriffin_uk/polychat-utility-react@0.7.4
+  - @ngriffin_uk/polychat-component-ui@0.7.4
+
 ## 1.2.8
 
 ### Patch Changes

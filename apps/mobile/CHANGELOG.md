@@ -1,5 +1,20 @@
 # @assistant/mobile
 
+## 1.6.0
+
+### Minor Changes
+
+- 150be98: See where a model handles your data before you choose it. Every model in the picker now shows a data location, and its details link to the provider's own policy for location and retention. Where a provider does not document this, the label says unknown.
+
+### Patch Changes
+
+- 9497086: Discover on iPhone and iPad now shows story images on feed cards and at the top of each story. Stories also link to the Hacker News or Lobsters discussion with "Read the discussion", and list other outlets under "Also covered by". Links name the outlet alone, so "Open on Hacker News" no longer carries a points count.
+- 8fcabd3: Polychat now feels quicker across web, desktop and iOS. Replies start sooner, long replies stream more smoothly, and the web and desktop apps download less before they open.
+
+  The inbox and bulk read actions respond faster, hosted computer actions take less time, and opening chats on desktop no longer holds up the window. Desktop can take up to 10 minutes to notice a newly installed agent CLI.
+
+- 777a55e: Cancelling a queued sandbox run now stops it, and a run that loses its worker connection, stops responding or is interrupted now fails and returns its held credits instead of staying in progress. Cancelled and finished tasks stay that way when a run finishes at the same moment, and two conflicting status changes now ask you to refresh. Two admins deciding the same hire can no longer both win, and a manual pause on a teammate is no longer replaced by a budget pause. On iOS, Apple Health sharing now belongs to the account that turned it on and ends at sign-out, so turn it on again after updating or signing back in, and opening the app offline keeps you signed in. Notes save your last edits when you leave mid-save, the microphone turns off when you leave the chat, spoken replies no longer get stuck on generating, and a failed dictation session no longer looks live. Generated images and Google Fonts now show in site previews, and the preview no longer comes up blank where a browser blocks its sandboxed frame from loading files. Sites hold refinements and manual edits until image generation finishes. On desktop, reopening a terminal straight after closing it keeps the new one working, and stopping an agent no longer hangs behind a stuck message. Logging in to several servers at once from the CLI keeps all of them.
+
 ## 1.5.0
 
 ### Minor Changes
