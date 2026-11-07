@@ -67,8 +67,8 @@
     width: 2rem;
     height: 2rem;
     border-radius: 999px;
-    background: rgb(255 255 255 / 0.8);
-    color: #3f3f46;
+    background: rgb(0 0 0 / 0.6);
+    color: #fff;
     text-decoration: none;
   }
   .polychat-content-favicon {

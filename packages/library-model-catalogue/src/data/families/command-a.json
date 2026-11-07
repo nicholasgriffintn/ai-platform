@@ -60,6 +60,9 @@
             "text"
           ]
         },
+        "strengths": [
+          "tool_use"
+        ],
         "contextComplexity": 3,
         "reliability": 1,
         "releaseDate": "March 13, 2025",

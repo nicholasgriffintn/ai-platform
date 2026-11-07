@@ -3,7 +3,7 @@ import { quoteShellArgument, truncateText } from "@ngriffin_uk/polychat-utility-
 import z from "zod/v4";
 
 import type { HarnessToolEffect } from "../harness/approval-policy";
-import type { WorkspaceRpc } from "../types";
+import type { WorkspaceTarget } from "../types";
 
 const MAX_TOOL_OUTPUT_CHARS = 30_000;
 const DEFAULT_COMMAND_TIMEOUT_SECONDS = 300;
@@ -15,13 +15,13 @@ interface HarnessToolSpec<Input> {
   effect: HarnessToolEffect;
   input: z.ZodType<Input>;
   describe(input: Input): string;
-  execute(input: Input, workspace: WorkspaceRpc): Promise<string>;
+  execute(input: Input, workspace: WorkspaceTarget): Promise<string>;
 }
 
 export interface PreparedToolCall {
   input: unknown;
   description: string;
-  run(workspace: WorkspaceRpc): Promise<string>;
+  run(workspace: WorkspaceTarget): Promise<string>;
 }
 
 export interface HarnessTool {
@@ -60,7 +60,7 @@ function limitOutput(value: string): string {
   return truncateText(value, MAX_TOOL_OUTPUT_CHARS);
 }
 
-async function runOrThrow(workspace: WorkspaceRpc, command: string): Promise<string> {
+async function runOrThrow(workspace: WorkspaceTarget, command: string): Promise<string> {
   const result = await workspace.exec(command, { timeoutMs: 60_000 });
 
   if (!result.success) {
@@ -133,8 +133,10 @@ const writeFile = defineTool({
   async execute(input, workspace) {
     const path = resolvePath(input.path);
 
-    await runOrThrow(workspace, `mkdir -p "$(dirname ${quoteShellArgument(path)})"`);
-    await workspace.writeFile(path, input.content);
+    await workspace.writeFile(path, input.content).catch(async () => {
+      await runOrThrow(workspace, `mkdir -p "$(dirname ${quoteShellArgument(path)})"`);
+      await workspace.writeFile(path, input.content);
+    });
 
     return `Wrote ${input.content.length} characters to ${path}`;
   },

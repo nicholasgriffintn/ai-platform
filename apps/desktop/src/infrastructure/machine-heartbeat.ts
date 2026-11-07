@@ -14,6 +14,7 @@ import {
 } from "./desktop-backend";
 
 export const MACHINE_HEARTBEAT_INTERVAL_MS = 2 * 60_000;
+export const AGENT_PROBE_INTERVAL_MS = 10 * 60_000;
 
 function checkedAt(): string {
   return new Date().toISOString();
@@ -37,6 +38,24 @@ async function inspectAgentRuntime(
     vendor,
     readiness,
     supportsSessions,
+  };
+}
+
+function inspectAgentRuntimes(backend: ConnectedDesktopBackend) {
+  return Promise.all(AGENT_RUNTIME_VENDORS.map((vendor) => inspectAgentRuntime(backend, vendor)));
+}
+
+type AgentRuntimeReader = typeof inspectAgentRuntimes;
+
+export function createAgentRuntimeReader(now: () => number = Date.now): AgentRuntimeReader {
+  let recent: { checkedAt: number; runtimes: ReturnType<AgentRuntimeReader> } | undefined;
+
+  return (backend) => {
+    if (!recent || now() - recent.checkedAt >= AGENT_PROBE_INTERVAL_MS) {
+      recent = { checkedAt: now(), runtimes: inspectAgentRuntimes(backend) };
+    }
+
+    return recent.runtimes;
   };
 }
 
@@ -93,15 +112,14 @@ async function inspectRuntime(
 export async function buildMachineHeartbeatPayload(
   backend: ConnectedDesktopBackend,
   diagnostics: DesktopDiagnostics,
+  readAgentRuntimes: AgentRuntimeReader = inspectAgentRuntimes,
 ): Promise<MachineHeartbeat> {
   const endpoints = await backend.listEndpoints();
   const modelEndpoints = endpoints.filter((endpoint) => endpoint.kind === "model");
   const modelRuntimes = await Promise.all(
     modelEndpoints.map((endpoint) => inspectRuntime(backend, endpoint)),
   );
-  const agentRuntimes = await Promise.all(
-    AGENT_RUNTIME_VENDORS.map((vendor) => inspectAgentRuntime(backend, vendor)),
-  );
+  const agentRuntimes = await readAgentRuntimes(backend);
   const hasAgentRuntime = agentRuntimes.some(
     (runtime) => runtime.readiness.state === "ready" && runtime.supportsSessions,
   );
@@ -216,9 +234,15 @@ export function createMachineHeartbeatScheduler(options: {
   };
 }
 
+const readAdvertisedAgentRuntimes = createAgentRuntimeReader();
+
 export async function advertiseCurrentMachine(): Promise<MachineRecord | null> {
   const diagnostics = await tauriDesktopBackend.collectDiagnostics();
-  const payload = await buildMachineHeartbeatPayload(tauriDesktopBackend, diagnostics);
+  const payload = await buildMachineHeartbeatPayload(
+    tauriDesktopBackend,
+    diagnostics,
+    readAdvertisedAgentRuntimes,
+  );
 
   return apiService.heartbeatMachine(payload);
 }

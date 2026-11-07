@@ -20,6 +20,7 @@ import {
   useOpenSitePullRequest,
   useProject,
   useSiteGeneration,
+  useSitePreviewProject,
   useSiteData,
   useVerifySite,
   useTrackEvent,
@@ -124,6 +125,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const trackedPreviewLatencyRef = useRef<number | null>(null);
   const project = revisionPreview?.project ?? state.project;
+  const previewProject = useSitePreviewProject(project);
   const pages = useMemo(() => (project ? listSitePages(project) : []), [project]);
   const resolvedPageId = project ? resolveSitePageId(project, activePageId ?? undefined) : null;
   const activePage = project && resolvedPageId ? project.pages[resolvedPageId] : null;
@@ -134,6 +136,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
     [exportTarget, project, view],
   );
   const isBusy = !["idle", "done", "error"].includes(state.status);
+  const isGeneratingImages = state.imageStatus === "generating";
   const siteData = useSiteData(state.site, !isBusy && !revisionPreview);
   const verification = useVerifySite(state.site);
   const composerSources = useSiteComposerSources({
@@ -463,7 +466,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
             attachments={composerSources.attachments}
             controls={composerControls}
             error={composerSources.error}
-            isDisabled={composerSources.isPending || Boolean(revisionPreview)}
+            isDisabled={composerSources.isPending || Boolean(revisionPreview) || isGeneratingImages}
             submitLabel={state.site ? "Refine" : "Build"}
             isBusy={isBusy}
             onSubmit={handleSubmit}
@@ -651,7 +654,7 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
             ) : (
               <>
                 <SitePreview
-                  project={project}
+                  project={previewProject ?? project}
                   pageId={resolvedPageId ?? undefined}
                   viewport={viewport}
                   onNavigate={handleSelectPage}
@@ -674,15 +677,19 @@ export function SiteStudio({ basePath, projectId, site }: SiteStudioProps) {
                     }}
                   />
                 )}
-                {!historyOpen && selectedElement && activePage && resolvedPageId && (
-                  <SiteInspector
-                    pageId={resolvedPageId}
-                    page={activePage}
-                    elementKey={selectedKey as string}
-                    onSelect={handleSelectElement}
-                    onEdit={edit}
-                  />
-                )}
+                {!historyOpen &&
+                  !isGeneratingImages &&
+                  selectedElement &&
+                  activePage &&
+                  resolvedPageId && (
+                    <SiteInspector
+                      pageId={resolvedPageId}
+                      page={activePage}
+                      elementKey={selectedKey as string}
+                      onSelect={handleSelectElement}
+                      onEdit={edit}
+                    />
+                  )}
               </>
             )
           ) : state.status === "error" ? (

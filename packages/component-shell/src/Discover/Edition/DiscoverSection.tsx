@@ -38,7 +38,7 @@ function shelfStyle(width: number | undefined, count: number): ShelfStyle | unde
 
 function DiscoverShelfHeading({ title, controls }: { title: string; controls: ReactNode }) {
   return (
-    <div className="flex h-7 items-center gap-2 px-1">
+    <div className="flex h-7 items-center gap-2">
       <h3 className="polychat-eyebrow flex-1">{title}</h3>
       {controls}
     </div>

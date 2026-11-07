@@ -2,6 +2,8 @@ import { listSitePages, type SitePatch, type SiteProject } from "@ngriffin_uk/po
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 
 import { elementPatchPath } from "./edit.js";
+import { applySitePatch } from "./patch.js";
+import { validateSiteProject } from "./validate.js";
 
 export interface SiteImageSlot {
   pageId: string;
@@ -174,4 +176,22 @@ export function buildSiteImageRewritePatches(
   }
 
   return patches;
+}
+
+export function rewriteSiteProjectImages(
+  project: SiteProject,
+  rewrite: (src: string) => string | null,
+): SiteProject {
+  const patches = buildSiteImageRewritePatches(project, rewrite);
+  const document: unknown = structuredClone(project);
+
+  if (patches.length === 0 || !isRecord(document)) {
+    return project;
+  }
+
+  for (const patch of patches) {
+    applySitePatch(document, patch);
+  }
+
+  return validateSiteProject(document).project;
 }

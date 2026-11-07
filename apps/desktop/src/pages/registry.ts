@@ -6,9 +6,11 @@ export interface DesktopPageRoutes {
   layout?: string;
 }
 
-export interface DesktopPageComponent {
+export type DesktopPageLoader = () => Promise<{ default: ComponentType }>;
+
+export interface DesktopPageModule {
   page: string;
-  Page: ComponentType;
+  load: DesktopPageLoader;
 }
 
 function directoryName(file: string): string {
@@ -37,13 +39,11 @@ export function readPageRoutes(
   );
 }
 
-export function readPageComponents(
-  modules: Record<string, { default: ComponentType }>,
-): DesktopPageComponent[] {
+export function readPageModules(modules: Record<string, DesktopPageLoader>): DesktopPageModule[] {
   return byPage(
-    Object.entries(modules).map(([file, module]) => ({
+    Object.entries(modules).map(([file, load]) => ({
       page: directoryName(file),
-      Page: module.default,
+      load,
     })),
   );
 }

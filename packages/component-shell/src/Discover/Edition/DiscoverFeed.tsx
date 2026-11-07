@@ -93,7 +93,7 @@ function RailGroup({
 
   return (
     <section aria-label={title} className="flex flex-col gap-3">
-      <h3 className="polychat-eyebrow px-1">{title}</h3>
+      <h3 className="polychat-eyebrow">{title}</h3>
       <div className="flex flex-col gap-3">
         <RailCards cards={cards} {...cardProps} />
       </div>
@@ -174,7 +174,7 @@ export function DiscoverFeed({
           <DiscoverMasonry title="New since you last looked" cards={newReads} {...cardProps} />
           <DiscoverMasonry title={earlierTitle} cards={earlierReads} {...cardProps} />
           {edition.interests.length > 0 && (
-            <p className="px-1 text-xs leading-relaxed text-muted-foreground">
+            <p className="text-xs leading-relaxed text-muted-foreground">
               Built around{" "}
               {edition.interests.map((interest, index) => (
                 <span key={interest.topic} title={interest.reason}>

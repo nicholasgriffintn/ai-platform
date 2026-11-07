@@ -1,8 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsAttachments": false,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": 0,
       "zeroRetention": "default",
@@ -14,7 +11,10 @@
         "sg"
       ],
       "source": "https://docs.z.ai/legal-agreement/privacy-policy"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
   },
   "models": {
     "glm-4.7": {
@@ -268,7 +268,6 @@
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

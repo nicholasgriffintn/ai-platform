@@ -10,7 +10,7 @@ import {
   DEFAULT_TASK_MAX_ATTEMPTS,
   type TaskHandlerRegistry,
 } from "@ngriffin_uk/polychat-library-tasks";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 import {
   getErrorMessage,
   isConfigurationError,
@@ -41,6 +41,13 @@ const logger = getLogger({ prefix: "services/tasks/executor" });
 const BOOKKEEPING_RETRIES = 5;
 const DONE: TaskStepOutcome = { status: "done" };
 const durableClaimSchema = z.object({ ownerToken: z.string() });
+
+export function describeTaskFailure(result: Pick<TaskResult, "message" | "data">): string {
+  const message = result.message || "Unknown error during task execution";
+  const detail = isRecord(result.data) ? readOptionalString(result.data.error) : undefined;
+
+  return detail ? `${message}: ${detail}` : message;
+}
 
 export class TaskExecutor {
   private env: IEnv;
@@ -161,7 +168,7 @@ export class TaskExecutor {
       const result = await handler.handle(message, this.env, execution);
 
       if (result.status === "error") {
-        throw new Error(result.message || "Unknown error during task execution");
+        throw new Error(describeTaskFailure(result));
       }
 
       await step.text("settle", { retries: BOOKKEEPING_RETRIES }, async () => {
@@ -274,7 +281,7 @@ export class TaskExecutor {
       const result = await handler.handle(message, this.env, execution);
 
       if (result.status === "error") {
-        throw new Error(result.message || "Unknown error during task execution");
+        throw new Error(describeTaskFailure(result));
       }
 
       await fence.assertOwned();

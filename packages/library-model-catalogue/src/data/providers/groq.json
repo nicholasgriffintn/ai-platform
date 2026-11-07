@@ -1,8 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsAttachments": false,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": 30,
       "zeroRetention": "account_setting",
@@ -11,7 +8,10 @@
     "dataLocation": {
       "kind": "multiple",
       "source": "https://console.groq.com/docs/legal/customer-data-processing-addendum"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
   },
   "models": {
     "deepseek-r1-distill-qwen-32b": {

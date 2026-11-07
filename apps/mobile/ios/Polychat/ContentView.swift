@@ -137,32 +137,39 @@ private struct RootTabView: View {
     private func start() async {
         DiscoverBackgroundRefresh.schedule()
         ageGateStore.reset()
-        if let userId = authManager.user?.id {
-            companionSync = CompanionSync(
-                client: syncClient,
-                conversations: conversationManager,
-                attention: attentionStore,
-                inbox: notificationManager,
-                discover: discoverStore,
-                work: workStore
-            )
-            syncClient.start(userId: userId)
+        if let target = pushNotificationManager.targetToOpen {
+            open(target)
         }
+        startCompanionSyncIfNeeded()
 
         async let conversations: Void = conversationManager.loadConversations()
         modelsStore.applyAccountDefaults(authManager.userSettings)
         async let models: Void = modelsStore.fetchModels()
-        _ = await (conversations, models)
+        async let inbox: Void = loadInbox()
+        async let teammates: Void = bindTeammates()
+        _ = await (conversations, models, inbox, teammates)
 
+        await pushNotificationManager.enableForAuthenticatedUser()
+        healthSync.confirmOwner(userId: authManager.user?.id)
+        await healthSync.syncIfNeeded()
+    }
+
+    private func startCompanionSyncIfNeeded() {
+        guard companionSync == nil, let userId = authManager.user?.id else { return }
+        companionSync = CompanionSync(
+            client: syncClient,
+            conversations: conversationManager,
+            attention: attentionStore,
+            inbox: notificationManager,
+            discover: discoverStore,
+            work: workStore
+        )
+        syncClient.start(userId: userId)
+    }
+
+    private func loadInbox() async {
         await notificationManager.reconcileAuthenticatedState(isAuthenticated: true)
         await attentionStore.refresh(notifications: notificationManager.items)
-        await pushNotificationManager.enableForAuthenticatedUser()
-        await healthSync.syncIfNeeded()
-        await bindTeammates()
-
-        if let target = pushNotificationManager.targetToOpen {
-            open(target)
-        }
     }
 
     private func stop() async {
@@ -186,14 +193,18 @@ private struct RootTabView: View {
     }
 
     private func refreshOnForeground() async {
+        await authManager.refreshSessionIfNeeded()
+        startCompanionSyncIfNeeded()
         companionSync?.refreshEverything()
         DiscoverBackgroundRefresh.schedule()
+        healthSync.confirmOwner(userId: authManager.user?.id)
         await healthSync.syncIfNeeded()
     }
 
     private func bindTeammates() async {
-        await polyStore.refresh()
-        await teammatesStore.refresh()
+        async let agenda: Void = polyStore.refresh()
+        async let teammates: Void = teammatesStore.refresh()
+        _ = await (agenda, teammates)
         conversationManager.bindTeammates(teammatesStore.teammatesByConversation)
         if let polyConversationId = polyStore.agenda?.conversationId {
             conversationManager.bindTeammates([polyConversationId: PolyThread.teammateId])

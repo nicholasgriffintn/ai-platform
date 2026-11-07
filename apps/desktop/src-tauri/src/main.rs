@@ -228,16 +228,24 @@ fn streaming_client() -> Result<reqwest::Client, String> {
         .map_err(|cause| cause.to_string())
 }
 
-#[tauri::command]
-fn list_endpoints(store: State<'_, Store>) -> Result<Vec<DesktopEndpoint>, String> {
-    store.list_endpoints()
+async fn off_main_thread<T: Send + 'static>(
+    app: tauri::AppHandle,
+    work: impl FnOnce(&Store) -> Result<T, String> + Send + 'static,
+) -> Result<T, String> {
+    tauri::async_runtime::spawn_blocking(move || work(&app.state::<Store>()))
+        .await
+        .map_err(|cause| cause.to_string())?
 }
 
 #[tauri::command]
-fn save_endpoint(
+async fn list_endpoints(app: tauri::AppHandle) -> Result<Vec<DesktopEndpoint>, String> {
+    off_main_thread(app, Store::list_endpoints).await
+}
+
+fn store_endpoint(
+    store: &Store,
     endpoint: DesktopEndpoint,
     pairing_secret: Option<String>,
-    store: State<'_, Store>,
 ) -> Result<(), String> {
     let key = secrets::pairing_key(&endpoint.id);
     let existing_secret = secrets::read(&key)?;
@@ -268,10 +276,25 @@ fn save_endpoint(
 }
 
 #[tauri::command]
-fn forget_endpoint(endpoint_id: String, store: State<'_, Store>) -> Result<(), String> {
-    secrets::forget(&secrets::pairing_key(&endpoint_id))?;
+async fn save_endpoint(
+    endpoint: DesktopEndpoint,
+    pairing_secret: Option<String>,
+    app: tauri::AppHandle,
+) -> Result<(), String> {
+    off_main_thread(app, move |store| {
+        store_endpoint(store, endpoint, pairing_secret)
+    })
+    .await
+}
 
-    store.forget_endpoint(&endpoint_id)
+#[tauri::command]
+async fn forget_endpoint(endpoint_id: String, app: tauri::AppHandle) -> Result<(), String> {
+    off_main_thread(app, move |store| {
+        secrets::forget(&secrets::pairing_key(&endpoint_id))?;
+
+        store.forget_endpoint(&endpoint_id)
+    })
+    .await
 }
 
 #[tauri::command]
@@ -370,11 +393,11 @@ async fn discover_models(
 }
 
 #[tauri::command]
-fn list_conversations(
+async fn list_conversations(
     account_id: String,
-    store: State<'_, Store>,
+    app: tauri::AppHandle,
 ) -> Result<Vec<LocalConversation>, String> {
-    store.list_conversations(&account_id)
+    off_main_thread(app, move |store| store.list_conversations(&account_id)).await
 }
 
 #[tauri::command]
@@ -386,11 +409,11 @@ fn save_conversation(
 }
 
 #[tauri::command]
-fn list_messages(
+async fn list_messages(
     conversation_id: String,
-    store: State<'_, Store>,
+    app: tauri::AppHandle,
 ) -> Result<Vec<LocalMessage>, String> {
-    store.list_messages(&conversation_id)
+    off_main_thread(app, move |store| store.list_messages(&conversation_id)).await
 }
 
 #[tauri::command]
@@ -399,8 +422,17 @@ fn append_message(message: LocalMessage, store: State<'_, Store>) -> Result<(), 
 }
 
 #[tauri::command]
-fn list_local_chats(scope: String, store: State<'_, Store>) -> Result<Vec<String>, String> {
-    store.list_local_chats(&scope)
+async fn list_local_chats(scope: String, app: tauri::AppHandle) -> Result<Vec<String>, String> {
+    off_main_thread(app, move |store| store.list_local_chats(&scope)).await
+}
+
+#[tauri::command]
+async fn read_local_chat(
+    scope: String,
+    id: String,
+    app: tauri::AppHandle,
+) -> Result<Option<String>, String> {
+    off_main_thread(app, move |store| store.read_local_chat(&scope, &id)).await
 }
 
 #[tauri::command]
@@ -586,8 +618,10 @@ fn new_client_state() -> String {
 }
 
 #[tauri::command]
-fn list_agent_directories(store: State<'_, Store>) -> Result<Vec<process::DirectoryGrant>, String> {
-    store.list_agent_directories()
+async fn list_agent_directories(
+    app: tauri::AppHandle,
+) -> Result<Vec<process::DirectoryGrant>, String> {
+    off_main_thread(app, Store::list_agent_directories).await
 }
 
 #[tauri::command]
@@ -641,19 +675,24 @@ async fn pick_agent_directory(app: tauri::AppHandle) -> Result<Option<String>, S
 #[tauri::command]
 async fn run_local_tool(
     request: local_tools::LocalToolRequest,
-    directories: State<'_, DirectoryGrants>,
-    store: State<'_, Store>,
+    app: tauri::AppHandle,
 ) -> Result<local_tools::LocalToolResult, String> {
-    let result = local_tools::run_local_tool(&directories, &request)
-        .map_err(|refusal| refusal.describe())?;
-    let used_at = timestamp();
+    let handle = app.clone();
 
-    directories
-        .touch(&request.directory_id, used_at.clone())
-        .map_err(|cause| format!("{cause:?}"))?;
-    store.mark_agent_directory_used(&request.directory_id, &used_at)?;
+    off_main_thread(app, move |store| {
+        let directories = handle.state::<DirectoryGrants>();
+        let result = local_tools::run_local_tool(&directories, &request)
+            .map_err(|refusal| refusal.describe())?;
+        let used_at = timestamp();
 
-    Ok(result)
+        directories
+            .touch(&request.directory_id, used_at.clone())
+            .map_err(|cause| format!("{cause:?}"))?;
+        store.mark_agent_directory_used(&request.directory_id, &used_at)?;
+
+        Ok(result)
+    })
+    .await
 }
 
 #[tauri::command]
@@ -669,11 +708,11 @@ fn revoke_agent_directory(
 }
 
 #[tauri::command]
-fn read_agent_thread(
+async fn read_agent_thread(
     conversation_id: String,
-    store: State<'_, Store>,
+    app: tauri::AppHandle,
 ) -> Result<Option<AgentThreadBinding>, String> {
-    store.read_agent_thread(&conversation_id)
+    off_main_thread(app, move |store| store.read_agent_thread(&conversation_id)).await
 }
 
 #[tauri::command]
@@ -737,25 +776,26 @@ fn agent_supports_sessions(driver: AgentDriver) -> bool {
 }
 
 #[tauri::command]
-fn collect_diagnostics(
-    app: tauri::AppHandle,
-    store: State<'_, Store>,
-) -> Result<Diagnostics, String> {
+async fn collect_diagnostics(app: tauri::AppHandle) -> Result<Diagnostics, String> {
     let directory = app
         .path()
         .app_data_dir()
         .map_err(|cause| cause.to_string())?;
+    let app_version = app.package_info().version.to_string();
 
-    Ok(Diagnostics {
-        app_version: app.package_info().version.to_string(),
-        machine_id: store.machine_id()?,
-        platform: std::env::consts::OS.to_string(),
-        target: format!("{} {}", std::env::consts::OS, std::env::consts::ARCH),
-        api_base_url: API_BASE_URL.to_string(),
-        database_path: directory.join("polychat.sqlite").display().to_string(),
-        endpoint_count: store.list_endpoints()?.len(),
-        collected_at: timestamp(),
+    off_main_thread(app, move |store| {
+        Ok(Diagnostics {
+            app_version,
+            machine_id: store.machine_id()?,
+            platform: std::env::consts::OS.to_string(),
+            target: format!("{} {}", std::env::consts::OS, std::env::consts::ARCH),
+            api_base_url: API_BASE_URL.to_string(),
+            database_path: directory.join("polychat.sqlite").display().to_string(),
+            endpoint_count: store.list_endpoints()?.len(),
+            collected_at: timestamp(),
+        })
     })
+    .await
 }
 
 #[tauri::command]
@@ -938,6 +978,7 @@ fn main() {
             list_messages,
             append_message,
             list_local_chats,
+            read_local_chat,
             save_local_chat,
             delete_local_chat,
             delete_all_local_chats,

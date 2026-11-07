@@ -1,8 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsAttachments": false,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": "unknown",
       "source": "https://inference.net/terms-of-service"
@@ -10,7 +7,10 @@
     "dataLocation": {
       "kind": "unknown",
       "source": "https://docs.inference.net/"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
   },
   "models": {
     "google/gemma-3": {

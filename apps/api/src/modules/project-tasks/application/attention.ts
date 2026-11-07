@@ -150,15 +150,14 @@ export async function listProjectTaskAttention(
 ) {
   const user = requireWorkAccess(context);
   const limit = Math.min(options.limit ?? DEFAULT_ATTENTION_LIMIT, 100);
-  const [rows, unread] = await Promise.all([
-    context.repositories.get(TaskNotificationRepository).listInbox(user.id, limit + 1),
-    context.repositories.get(TaskNotificationRepository).countUnreadInbox(user.id),
-  ]);
+  const rows = await context.repositories
+    .get(TaskNotificationRepository)
+    .listInbox(user.id, limit + 1);
   const items = rows
     .map(formatInboxItem)
     .filter((item): item is ProjectTaskAttentionItem => item !== null);
 
-  return { ...toListPage(items, limit, (item) => item.id), unread };
+  return { ...toListPage(items, limit, (item) => item.id), unread: rows[0]?.unread_total ?? 0 };
 }
 
 export async function getTaskNotificationSettings(context: ServiceContext) {

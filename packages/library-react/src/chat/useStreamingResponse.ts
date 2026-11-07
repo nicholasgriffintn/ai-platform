@@ -953,7 +953,7 @@ export function useStreamingResponse(
       } finally {
         streamSettled = true;
         stopLoading("stream-response");
-        endStreamActivity(conversationId);
+        endStreamActivity(conversationId, requestController);
         clearAgentApprovals(conversationId);
       }
     },

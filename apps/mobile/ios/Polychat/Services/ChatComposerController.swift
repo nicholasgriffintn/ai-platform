@@ -4,6 +4,7 @@ import Foundation
 final class ChatComposerController: ObservableObject {
     @Published private(set) var isUploading = false
     @Published private(set) var isRecording = false
+    private var isStartingDictation = false
     @Published private(set) var isTranscribing = false
     @Published var error: String?
 
@@ -44,6 +45,8 @@ final class ChatComposerController: ObservableObject {
     }
 
     func toggleDictation(apiClient: APIClient) async -> String? {
+        guard !isStartingDictation else { return nil }
+
         if voiceRecorder.isRecording {
             isRecording = false
             do {
@@ -56,6 +59,9 @@ final class ChatComposerController: ObservableObject {
         }
 
         error = nil
+        isStartingDictation = true
+        defer { isStartingDictation = false }
+
         do {
             try await voiceRecorder.start()
             isRecording = true

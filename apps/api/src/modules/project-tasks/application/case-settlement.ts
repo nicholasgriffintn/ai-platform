@@ -34,21 +34,25 @@ export async function settleCasesResolvedBy(
     const resolvedAt = new Date().toISOString();
     const keys = resolverTasks.map((resolver) => taskReference(resolver)).join(", ");
 
-    await repository.updateTask(caseTask.id, {
-      status: "done",
-      blockedReason: null,
-      blockedDetail: null,
-      completedAt: resolvedAt,
-      details: {
-        ...caseTask.details,
-        case: caseTask.details.case
-          ? {
-              ...caseTask.details.case,
-              resolution: caseTask.details.case.resolution ?? `Resolved by ${keys}.`,
-              resolvedAt,
-            }
-          : undefined,
+    await repository.updateTask(
+      caseTask.id,
+      {
+        status: "done",
+        blockedReason: null,
+        blockedDetail: null,
+        completedAt: resolvedAt,
+        details: {
+          ...caseTask.details,
+          case: caseTask.details.case
+            ? {
+                ...caseTask.details.case,
+                resolution: caseTask.details.case.resolution ?? `Resolved by ${keys}.`,
+                resolvedAt,
+              }
+            : undefined,
+        },
       },
-    });
+      { fromStatuses: [caseTask.status] },
+    );
   }
 }

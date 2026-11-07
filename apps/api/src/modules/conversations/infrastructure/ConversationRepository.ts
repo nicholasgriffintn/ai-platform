@@ -15,6 +15,10 @@ import { compareNaturalText, sortCopy } from "@ngriffin_uk/polychat-utility-core
 import { escapeSqlLikePattern } from "@ngriffin_uk/polychat-utility-server/sql";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import {
+  forgetConversationReads,
+  readConversationOnce,
+} from "~/modules/conversations/infrastructure/conversation-read-window";
 import { publishUserEvent } from "~/modules/sync/application/conversation-events";
 
 export type { ConversationArchiveFilter, ConversationSortBy } from "@ngriffin_uk/polychat-schemas";
@@ -75,6 +79,14 @@ export interface GlobalConversationSearchRow {
 }
 
 export class ConversationRepository extends BaseRepository {
+  protected override async executeRun(query: string, params: any[] = []): Promise<D1Result> {
+    const result = await super.executeRun(query, params);
+
+    forgetConversationReads();
+
+    return result;
+  }
+
   public async markUnreadForUser(conversationId: string, userId: number): Promise<void> {
     await this.executeRun(
       `INSERT INTO user_resource_state (resource_type, conversation_id, user_id, is_unread, updated_at)
@@ -103,7 +115,7 @@ export class ConversationRepository extends BaseRepository {
     const permissionMode = options.permission_mode ?? "auto_accept_edits";
     const subject = options.subject ?? null;
 
-    const result = this.runQuery<Record<string, unknown>>(
+    const result = await this.runQuery<Record<string, unknown>>(
       `INSERT INTO conversation (
          id, 
          user_id, 
@@ -145,6 +157,8 @@ export class ConversationRepository extends BaseRepository {
       true,
     );
 
+    forgetConversationReads();
+
     return result;
   }
 
@@ -169,6 +183,14 @@ export class ConversationRepository extends BaseRepository {
   }
 
   public async getConversation(conversationId: string): Promise<Record<string, unknown> | null> {
+    const conversation = await readConversationOnce(conversationId, () =>
+      this.loadConversation(conversationId),
+    );
+
+    return conversation ? { ...conversation } : null;
+  }
+
+  private async loadConversation(conversationId: string): Promise<Record<string, unknown> | null> {
     const conversation = await this.runQuery<Record<string, unknown>>(
       `SELECT c.*,
          COALESCE(c.model_id, (
@@ -530,6 +552,8 @@ export class ConversationRepository extends BaseRepository {
         .prepare("DELETE FROM conversation WHERE user_id = ? AND project_id IS NULL")
         .bind(userId),
     ]);
+
+    forgetConversationReads();
   }
 
   public async searchAccessibleConversations(

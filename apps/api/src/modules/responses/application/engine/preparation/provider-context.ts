@@ -10,10 +10,15 @@ import type { LatestTurn } from "./turn-context";
 
 const logger = getLogger({ prefix: "services/chat/preparation/provider-context" });
 
-export interface BuildProviderContextParams {
+export interface LoadActiveMessagesParams {
   conversationManager: ConversationManager;
   completionId?: string;
   shouldStoreMessages: boolean;
+}
+
+export interface BuildProviderContextParams {
+  activeMessages: Message[] | null;
+  completionId?: string;
   fallbackMessages: Message[];
   latestTurn: LatestTurn;
 }
@@ -52,32 +57,17 @@ export function buildFinalMessages(
   return toProviderMessages(chatMessages).filter((msg) => msg.role !== "system");
 }
 
-export async function buildProviderContext({
+export async function loadActiveMessages({
   conversationManager,
   completionId,
   shouldStoreMessages,
-  fallbackMessages,
-  latestTurn,
-}: BuildProviderContextParams): Promise<Message[]> {
+}: LoadActiveMessagesParams): Promise<Message[] | null> {
   if (!shouldStoreMessages || !completionId) {
-    return buildFinalMessages(fallbackMessages, latestTurn);
+    return null;
   }
 
   try {
-    const activeMessages = await conversationManager.get(completionId);
-
-    if (Array.isArray(activeMessages) && activeMessages.length > 0) {
-      const providerMessages = buildFinalMessages(activeMessages, latestTurn);
-
-      if (providerMessages.length > 0) {
-        return providerMessages;
-      }
-    }
-
-    throw new AssistantError(
-      "Stored conversation has no active messages for provider context",
-      ErrorType.PARAMS_ERROR,
-    );
+    return await conversationManager.get(completionId);
   } catch (error) {
     logger.warn("Failed to load active conversation messages for provider context", {
       error,
@@ -85,4 +75,29 @@ export async function buildProviderContext({
     });
     throw error;
   }
+}
+
+export function buildProviderContext({
+  activeMessages,
+  completionId,
+  fallbackMessages,
+  latestTurn,
+}: BuildProviderContextParams): Message[] {
+  if (activeMessages === null) {
+    return buildFinalMessages(fallbackMessages, latestTurn);
+  }
+
+  const providerMessages =
+    activeMessages.length > 0 ? buildFinalMessages(activeMessages, latestTurn) : [];
+
+  if (providerMessages.length > 0) {
+    return providerMessages;
+  }
+
+  logger.warn("Stored conversation has no active messages for provider context", { completionId });
+
+  throw new AssistantError(
+    "Stored conversation has no active messages for provider context",
+    ErrorType.PARAMS_ERROR,
+  );
 }

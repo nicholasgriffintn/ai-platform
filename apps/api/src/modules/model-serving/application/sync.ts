@@ -94,15 +94,36 @@ export async function syncDeployment(
       }
 
       deployment = claimed;
-      const state = await host.create({
+      const input = {
         deploymentId: deployment.id,
         name: deployment.name,
         spec: deployment.spec,
         model,
         adapters,
-      });
+      };
+      const state = await host.create(input);
 
-      await applyHostState(repositories, deployment, state);
+      try {
+        await applyHostState(repositories, deployment, state);
+      } catch (error) {
+        await host
+          .delete({
+            providerRef: state.providerRef,
+            spec: input.spec,
+            model,
+            adapters,
+            desired: "deleted",
+          })
+          .catch((deleteError: unknown) => {
+            logger.error("An untracked provider deployment could not be removed", {
+              deploymentId,
+              providerRef: state.providerRef,
+              error: getErrorMessage(deleteError, "Deployment removal failed"),
+            });
+          });
+
+        throw error;
+      }
 
       return PENDING;
     }

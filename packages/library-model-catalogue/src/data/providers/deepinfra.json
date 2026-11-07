@@ -1,9 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": 0,
       "zeroRetention": "default",
@@ -15,7 +11,11 @@
         "us"
       ],
       "source": "https://deepinfra.com/privacy"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "models": {
     "moonshotai/Kimi-K2-Instruct": {
@@ -160,7 +160,7 @@
         "name": "MiniMax M2",
         "contextWindow": 262144,
         "maxTokens": 32768,
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "November 13, 2025",
         "lastUpdated": "November 13, 2025",
@@ -325,13 +325,13 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "speed": 2,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0004,
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 4.4,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -974,7 +974,6 @@
       "matchingModel": "zai-org/GLM-5.3-Flash",
       "overrides": {
         "contextWindow": 1048576,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

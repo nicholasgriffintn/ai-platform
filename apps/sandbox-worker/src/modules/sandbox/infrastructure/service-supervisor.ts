@@ -830,6 +830,10 @@ export class ProjectServiceSupervisor {
     exitCode: number | undefined,
     failed: boolean,
   ): Promise<void> {
+    if (service.desiredStopped || this.stopping) {
+      return;
+    }
+
     service.processId = undefined;
     service.status = "unhealthy";
     service.error = message;

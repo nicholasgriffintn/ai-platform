@@ -6,6 +6,8 @@ struct InlineArtifactMatch {
 }
 
 enum InlineArtifactParser {
+    private static let artifactRegex = try? NSRegularExpression(pattern: "<artifact\\s+([^>]*)>([\\s\\S]*?)(</artifact>|$)")
+
     static func artifacts(in text: String) -> [Artifact] {
         matches(in: text).map(\.artifact)
     }
@@ -14,16 +16,23 @@ enum InlineArtifactParser {
         in text: String,
         with replacement: (Artifact) -> String
     ) -> String {
+        replacing(matches(in: text), in: text, with: replacement)
+    }
+
+    static func replacing(
+        _ matches: [InlineArtifactMatch],
+        in text: String,
+        with replacement: (Artifact) -> String
+    ) -> String {
         var result = text
-        for match in matches(in: text).reversed() {
+        for match in matches.reversed() {
             result = (result as NSString).replacingCharacters(in: match.range, with: replacement(match.artifact))
         }
         return result
     }
 
     static func matches(in text: String) -> [InlineArtifactMatch] {
-        let pattern = "<artifact\\s+([^>]*)>([\\s\\S]*?)(</artifact>|$)"
-        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+        guard text.contains("<artifact"), let regex = artifactRegex else {
             return []
         }
 

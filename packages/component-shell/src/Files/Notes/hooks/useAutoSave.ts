@@ -13,7 +13,9 @@ export function useAutoSave({ text, onSave, enabled, delay = 1000 }: UseAutoSave
   const [failedText, setFailedText] = useState<string | null>(null);
   const textRef = useRef(text);
   const lastSavedRef = useRef(lastSavedText);
-  const isSavingRef = useRef(false);
+  const queuedTextRef = useRef<string | null>(null);
+  const savingTextRef = useRef<string | null>(null);
+  const drainRef = useRef<Promise<void> | null>(null);
 
   useEffect(() => {
     textRef.current = text;
@@ -23,27 +25,41 @@ export function useAutoSave({ text, onSave, enabled, delay = 1000 }: UseAutoSave
     lastSavedRef.current = lastSavedText;
   }, [lastSavedText]);
 
-  const save = useCallback(
-    async (textToSave: string) => {
-      if (isSavingRef.current) {
-        return;
-      }
+  const drainSaves = useCallback(async () => {
+    setIsSaving(true);
 
-      isSavingRef.current = true;
-      setIsSaving(true);
+    while (queuedTextRef.current !== null) {
+      const textToSave = queuedTextRef.current;
+
+      queuedTextRef.current = null;
+      savingTextRef.current = textToSave;
 
       try {
         await onSave(textToSave);
+        lastSavedRef.current = textToSave;
         setLastSavedText(textToSave);
         setFailedText(null);
       } catch {
         setFailedText(textToSave);
-      } finally {
-        isSavingRef.current = false;
-        setIsSaving(false);
       }
+    }
+
+    savingTextRef.current = null;
+    drainRef.current = null;
+    setIsSaving(false);
+  }, [onSave]);
+
+  const save = useCallback(
+    (textToSave: string) => {
+      if (textToSave !== savingTextRef.current) {
+        queuedTextRef.current = textToSave;
+      }
+
+      drainRef.current ??= drainSaves();
+
+      return drainRef.current;
     },
-    [onSave],
+    [drainSaves],
   );
 
   const forceSave = useCallback(() => {

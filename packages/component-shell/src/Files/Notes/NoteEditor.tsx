@@ -84,7 +84,7 @@ export function NoteEditor({
     sessionType: "transcription",
     onTranscript: dictation.handleTranscript,
   });
-  const isTranscribing = transcription.status !== "idle";
+  const isTranscribing = transcription.status === "connecting" || transcription.status === "active";
   const { isSpeechDetected, lastSilenceAt } = useSpeechActivity(
     transcription.inputAudioLevel,
     transcription.isActive,

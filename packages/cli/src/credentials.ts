@@ -1,6 +1,7 @@
-import { chmod, mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
+import { setTimeout as sleep } from "node:timers/promises";
 
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
@@ -31,6 +32,9 @@ export function credentialsPath(env: NodeJS.ProcessEnv = process.env): string {
   return join(base, "polychat", "credentials.json");
 }
 
+const LOCK_RETRY_MS = 20;
+const LOCK_STALE_MS = 10_000;
+
 async function readCredentialFile(path: string): Promise<CredentialFile> {
   let text: string;
 
@@ -54,6 +58,36 @@ async function writeCredentialFile(path: string, file: CredentialFile): Promise<
   await rename(temporaryPath, path);
 }
 
+async function withCredentialLock<T>(path: string, action: () => Promise<T>): Promise<T> {
+  const lockPath = `${path}.lock`;
+  const staleAt = Date.now() + LOCK_STALE_MS;
+
+  await mkdir(dirname(path), { recursive: true, mode: 0o700 });
+
+  for (;;) {
+    try {
+      await mkdir(lockPath);
+      break;
+    } catch (error) {
+      if (!(error instanceof Error) || !("code" in error) || error.code !== "EEXIST") {
+        throw error;
+      }
+
+      if (Date.now() >= staleAt) {
+        await rm(lockPath, { recursive: true, force: true });
+      } else {
+        await sleep(LOCK_RETRY_MS);
+      }
+    }
+  }
+
+  try {
+    return await action();
+  } finally {
+    await rm(lockPath, { recursive: true, force: true });
+  }
+}
+
 export async function readCredential(path: string, apiBaseUrl: string): Promise<Credential | null> {
   const file = await readCredentialFile(path);
 
@@ -65,23 +99,27 @@ export async function saveCredential(
   apiBaseUrl: string,
   credential: Credential,
 ): Promise<void> {
-  const file = await readCredentialFile(path);
+  await withCredentialLock(path, async () => {
+    const file = await readCredentialFile(path);
 
-  await writeCredentialFile(path, {
-    servers: { ...file.servers, [apiBaseUrl]: credential },
+    await writeCredentialFile(path, {
+      servers: { ...file.servers, [apiBaseUrl]: credential },
+    });
   });
 }
 
 export async function forgetCredential(path: string, apiBaseUrl: string): Promise<boolean> {
-  const file = await readCredentialFile(path);
+  return withCredentialLock(path, async () => {
+    const file = await readCredentialFile(path);
 
-  if (!file.servers[apiBaseUrl]) {
-    return false;
-  }
+    if (!file.servers[apiBaseUrl]) {
+      return false;
+    }
 
-  const { [apiBaseUrl]: _removed, ...servers } = file.servers;
+    const { [apiBaseUrl]: _removed, ...servers } = file.servers;
 
-  await writeCredentialFile(path, { servers });
+    await writeCredentialFile(path, { servers });
 
-  return true;
+    return true;
+  });
 }

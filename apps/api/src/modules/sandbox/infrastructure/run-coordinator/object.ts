@@ -387,6 +387,7 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
       await processSandboxRunDispatch({
         env: this.env,
         message,
+        recovered: fiberContext === undefined,
       });
       stash("completed");
     } catch (error) {
@@ -529,6 +530,11 @@ export class SandboxRunCoordinator extends Agent<IEnv> {
           payload.state === "inspection"
             ? payload.state
             : undefined;
+
+        if (existing.state === "cancelled" && nextState && nextState !== "cancelled") {
+          return Response.json({ error: "Run has already been cancelled" }, { status: 409 });
+        }
+
         const next: CoordinatorState = {
           ...existing,
           ...(nextState ? { state: nextState } : {}),

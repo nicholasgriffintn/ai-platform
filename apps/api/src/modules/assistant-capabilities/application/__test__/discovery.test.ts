@@ -170,7 +170,7 @@ describe("discoverAssistantCapabilities", () => {
 });
 
 describe("discoverAssistantCapabilities match quality", () => {
-  const connectorDefaults = {
+  const connectorDefaults: Omit<RecipeConnectorManifest, "id" | "name" | "description"> = {
     categories: [],
     authType: "composio",
     status: "disconnected",
@@ -178,7 +178,7 @@ describe("discoverAssistantCapabilities match quality", () => {
     toolCount: 1,
     readToolCount: 1,
     writeToolCount: 0,
-  } as const;
+  };
   const connectors: RecipeConnectorManifest[] = [
     {
       ...connectorDefaults,

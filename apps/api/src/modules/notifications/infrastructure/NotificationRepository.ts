@@ -105,24 +105,25 @@ export class NotificationRepository extends BaseRepository {
     ids: readonly string[],
     action: "read" | "dismiss",
   ): Promise<number> {
-    let changed = 0;
+    const notificationIds = [...new Set(ids.filter((id) => id.startsWith("notification:")))];
 
-    for (const id of new Set(ids.filter((value) => value.startsWith("notification:")))) {
-      const result = await this.executeRun(
-        `UPDATE activity_record SET data = json_set(data, ?, ?), updated_at = ?
-         WHERE id = ? AND created_by_user_id = ? AND project_id IS NULL AND capability_id = 'notifications' AND kind = 'notification' AND status = 'succeeded'`,
-        [
-          action === "read" ? "$.readAt" : "$.dismissedAt",
-          new Date().toISOString(),
-          new Date().toISOString(),
-          id,
-          userId,
-        ],
-      );
-
-      changed += result.meta.changes ?? 0;
+    if (notificationIds.length === 0) {
+      return 0;
     }
 
-    return changed;
+    const now = new Date().toISOString();
+    const result = await this.executeRun(
+      `UPDATE activity_record SET data = json_set(data, ?, ?), updated_at = ?
+       WHERE id IN (SELECT value FROM json_each(?)) AND created_by_user_id = ? AND project_id IS NULL AND capability_id = 'notifications' AND kind = 'notification' AND status = 'succeeded'`,
+      [
+        action === "read" ? "$.readAt" : "$.dismissedAt",
+        now,
+        now,
+        JSON.stringify(notificationIds),
+        userId,
+      ],
+    );
+
+    return result.meta.changes ?? 0;
   }
 }

@@ -116,7 +116,7 @@ export function useAutoPlayResponses({
     return () => {
       stopPlayback();
     };
-  }, [stopPlayback]);
+  }, [conversationId, stopPlayback]);
 
   useEffect(() => {
     if (!isEnabled || isStreaming) {
@@ -168,8 +168,6 @@ export function useAutoPlayResponses({
       return undefined;
     }
 
-    let isCancelled = false;
-
     lastHandledMessageIdRef.current = latestAssistantMessage.id;
     stopPlayback();
     const requestId = generationRequestIdRef.current + 1;
@@ -180,11 +178,14 @@ export function useAutoPlayResponses({
     apiService
       .generateSpeech(text)
       .then((response) => {
-        if (
-          isCancelled ||
-          generationRequestIdRef.current !== requestId ||
-          response.status !== "success"
-        ) {
+        if (generationRequestIdRef.current !== requestId) {
+          return undefined;
+        }
+
+        if (response.status !== "success") {
+          toast.error("Failed to generate speech for this response");
+          setIsGeneratingSpeech(false);
+
           return undefined;
         }
 
@@ -204,10 +205,12 @@ export function useAutoPlayResponses({
             })
           : Promise.resolve();
 
-        return persistSpeech.then(() => playAudioSource(audioSource));
+        return persistSpeech.then(() =>
+          generationRequestIdRef.current === requestId ? playAudioSource(audioSource) : undefined,
+        );
       })
       .catch((error) => {
-        if (isCancelled || generationRequestIdRef.current !== requestId) {
+        if (generationRequestIdRef.current !== requestId) {
           return;
         }
 
@@ -217,9 +220,7 @@ export function useAutoPlayResponses({
         setIsPlaying(false);
       });
 
-    return () => {
-      isCancelled = true;
-    };
+    return undefined;
   }, [
     conversationId,
     isEnabled,

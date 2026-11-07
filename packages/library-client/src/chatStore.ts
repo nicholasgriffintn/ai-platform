@@ -64,14 +64,18 @@ export interface ChatStore {
   setHomeChatMode: (mode: HomeChatModeId) => void;
   model: string | null;
   modelSelectionOrigin: "account" | "local" | "conversation";
+  modelSelectionConversationId: string | undefined;
   setModel: (model: string | null) => void;
   modelTier: ModelTier | null;
   setModelTier: (tier: ModelTier | null) => void;
-  setConversationModelSelection: (selection: {
-    model?: string | null;
-    modelTier?: ModelTier | null;
-    permissionMode?: PermissionMode;
-  }) => void;
+  setConversationModelSelection: (
+    conversationId: string,
+    selection: {
+      model?: string | null;
+      modelTier?: ModelTier | null;
+      permissionMode?: PermissionMode;
+    },
+  ) => void;
   permissionMode: PermissionMode;
   setPermissionMode: (mode: PermissionMode) => void;
   useMultiModel: boolean;
@@ -101,6 +105,28 @@ export interface ChatStore {
   initializeStore: (completionId?: string) => Promise<void>;
 }
 
+function releaseConversationModelSelection(state: ChatStore): Partial<ChatStore> {
+  if (state.modelSelectionOrigin !== "conversation") {
+    return {};
+  }
+
+  return {
+    ...resolveAccountModelSelection(state.userSettings),
+    modelSelectionOrigin: "account",
+    permissionMode: "auto_accept_edits",
+  };
+}
+
+function leaveConversation(state: ChatStore): Partial<ChatStore> {
+  return {
+    currentConversationId: undefined,
+    modelSelectionConversationId: undefined,
+    temporaryChat: undefined,
+    isComposingGoal: false,
+    ...releaseConversationModelSelection(state),
+  };
+}
+
 export const useChatStore = create<ChatStore>()(
   persist(
     (set) => ({
@@ -108,7 +134,11 @@ export const useChatStore = create<ChatStore>()(
       locallyCreatedConversationIds: {},
       isComposingGoal: false,
       setCurrentConversationId: (id) =>
-        set({ currentConversationId: id, temporaryChat: undefined, isComposingGoal: false }),
+        set((state) =>
+          id
+            ? { currentConversationId: id, temporaryChat: undefined, isComposingGoal: false }
+            : leaveConversation(state),
+        ),
       setComposingGoal: (composing) => set({ isComposingGoal: composing }),
       startNewConversation: (id?: string) => {
         const conversationId = id || generateId();
@@ -116,13 +146,8 @@ export const useChatStore = create<ChatStore>()(
         set((state) => ({
           currentConversationId: conversationId,
           temporaryChat: undefined,
-          ...(state.modelSelectionOrigin === "conversation"
-            ? {
-                ...resolveAccountModelSelection(state.userSettings),
-                modelSelectionOrigin: "account" as const,
-                permissionMode: "auto_accept_edits" as const,
-              }
-            : {}),
+          modelSelectionConversationId: conversationId,
+          ...(state.currentConversationId ? releaseConversationModelSelection(state) : {}),
           locallyCreatedConversationIds: {
             ...state.locallyCreatedConversationIds,
             [conversationId]: true,
@@ -145,8 +170,7 @@ export const useChatStore = create<ChatStore>()(
 
           return { locallyCreatedConversationIds: remainingIds };
         }),
-      clearCurrentConversation: () =>
-        set({ currentConversationId: undefined, temporaryChat: undefined, isComposingGoal: false }),
+      clearCurrentConversation: () => set(leaveConversation),
 
       hasApiKey: false,
       setHasApiKey: (hasApiKey) => set({ hasApiKey }),
@@ -172,15 +196,28 @@ export const useChatStore = create<ChatStore>()(
       setHomeChatMode: (mode) => set({ homeChatMode: mode }),
       model: null,
       modelSelectionOrigin: "local" as const,
+      modelSelectionConversationId: undefined,
       setModel: (model) => set({ model, modelSelectionOrigin: "local" }),
       modelTier: null,
       setModelTier: (modelTier) => set({ modelTier, modelSelectionOrigin: "local" }),
-      setConversationModelSelection: ({ model = null, modelTier = null, permissionMode }) =>
-        set({
-          model,
-          modelTier,
-          permissionMode: permissionMode ?? "auto_accept_edits",
-          modelSelectionOrigin: "conversation",
+      setConversationModelSelection: (conversationId, { model, modelTier, permissionMode }) =>
+        set((state) => {
+          const hasStoredSelection = model !== undefined || modelTier !== undefined;
+          const isComposerSelection =
+            state.modelSelectionConversationId === conversationId &&
+            state.modelSelectionOrigin !== "conversation";
+
+          if (!hasStoredSelection || isComposerSelection) {
+            return state;
+          }
+
+          return {
+            model: model ?? null,
+            modelTier: modelTier ?? null,
+            permissionMode: permissionMode ?? "auto_accept_edits",
+            modelSelectionOrigin: "conversation",
+            modelSelectionConversationId: conversationId,
+          };
         }),
       permissionMode: "auto_accept_edits",
       setPermissionMode: (permissionMode) => set({ permissionMode }),

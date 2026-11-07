@@ -30,7 +30,7 @@ export default defineConfig(({ command }) => ({
       build: {
         rolldownOptions: {
           output: {
-            manualChunks: manualVendorChunk,
+            codeSplitting: { groups: vendorChunkGroups() },
           },
         },
       },
@@ -116,6 +116,10 @@ const chunkGroups = [
     packages: ["react-router", "@react-router"],
   },
   {
+    name: "query-vendor",
+    packages: ["@tanstack/react-query", "@tanstack/query-core"],
+  },
+  {
     name: "ui-vendor",
     packages: [
       "@radix-ui/react-checkbox",
@@ -134,6 +138,26 @@ const chunkGroups = [
     ],
   },
   {
+    name: "icons-vendor",
+    packages: ["lucide-react"],
+  },
+  {
+    name: "markdown-vendor",
+    packages: ["react-markdown", "remark-gfm"],
+  },
+  {
+    name: "highlight-vendor",
+    packages: ["rehype-highlight"],
+  },
+  {
+    name: "sucrase-vendor",
+    packages: ["sucrase"],
+  },
+  {
+    name: "webllm-vendor",
+    packages: ["@mlc-ai/web-llm"],
+  },
+  {
     name: "strudel-vendor",
     packages: [
       "@strudel/codemirror",
@@ -148,38 +172,21 @@ const chunkGroups = [
       "@strudel/webaudio",
     ],
   },
-  {
-    name: "query-vendor",
-    packages: ["@tanstack/react-query", "@tanstack/query-core"],
-  },
-  {
-    name: "markdown-vendor",
-    packages: ["react-markdown", "rehype-highlight", "remark-gfm"],
-  },
-  {
-    name: "icons-vendor",
-    packages: ["lucide-react"],
-  },
-  {
-    name: "webllm-vendor",
-    packages: ["@mlc-ai/web-llm"],
-  },
-  {
-    name: "sucrase-vendor",
-    packages: ["sucrase"],
-  },
 ];
 
-function manualVendorChunk(id: string): string | undefined {
-  const packageName = getNodeModulePackageName(id);
+function vendorChunkGroups() {
+  return chunkGroups.map((group, index) => ({
+    name: group.name,
+    priority: chunkGroups.length - index,
+    test: (id: string) => {
+      const packageName = getNodeModulePackageName(id);
 
-  if (!packageName) {
-    return undefined;
-  }
-
-  return chunkGroups.find((group) =>
-    group.packages.some((entry) => matchesPackage(packageName, entry)),
-  )?.name;
+      return (
+        packageName !== undefined &&
+        group.packages.some((entry) => matchesPackage(packageName, entry))
+      );
+    },
+  }));
 }
 
 function getNodeModulePackageName(id: string): string | undefined {

@@ -2,6 +2,7 @@ import { cn } from "@ngriffin_uk/polychat-component-ui";
 import {
   buildSiteFrameDocument,
   buildSiteGoogleFontsUrl,
+  type SiteFrameInlineAssets,
 } from "@ngriffin_uk/polychat-library-sites";
 import { useEffect, useId, useMemo, useState } from "react";
 
@@ -24,6 +25,19 @@ export interface SiteFrameProps {
   onSelect?: (key: string | null) => void;
 }
 
+let inlineAssetsRequest: Promise<SiteFrameInlineAssets> | null = null;
+
+function loadInlineAssets(): Promise<SiteFrameInlineAssets> {
+  inlineAssetsRequest ??= Promise.all([
+    fetch(SITE_PREVIEW_RUNTIME_URL).then((response) => response.text()),
+    fetch(SITE_PREVIEW_STYLESHEET_URL, { headers: { Accept: "text/css" } }).then((response) =>
+      response.text(),
+    ),
+  ]).then(([runtime, stylesheet]) => ({ runtime, stylesheet }));
+
+  return inlineAssetsRequest;
+}
+
 export function SiteFrame({
   payload,
   width,
@@ -35,6 +49,7 @@ export function SiteFrame({
   const reactId = useId();
   const frameId = `site-frame-${reactId.replaceAll(":", "")}`;
   const [frame, setFrame] = useState<HTMLIFrameElement | null>(null);
+  const [inlineAssets, setInlineAssets] = useState<SiteFrameInlineAssets | null>(null);
   const fontUrl = buildSiteGoogleFontsUrl(payload.project.theme);
   const documentContent = useMemo(
     () =>
@@ -44,8 +59,14 @@ export function SiteFrame({
         fontUrl,
         runtimeUrl: SITE_PREVIEW_RUNTIME_URL,
         stylesheetUrl: SITE_PREVIEW_STYLESHEET_URL,
+        runtimeFailureMessage: {
+          channel: SITE_PREVIEW_CHANNEL,
+          type: "runtime-failed",
+          frameId,
+        },
+        inlineAssets,
       }),
-    [frameId, fontUrl, title],
+    [frameId, fontUrl, inlineAssets, title],
   );
 
   useEffect(() => {
@@ -75,6 +96,8 @@ export function SiteFrame({
 
       if (event.data.type === "ready") {
         sendRender();
+      } else if (event.data.type === "runtime-failed") {
+        void loadInlineAssets().then(setInlineAssets);
       } else if (event.data.type === "navigate") {
         onNavigate?.(event.data.path);
       } else {

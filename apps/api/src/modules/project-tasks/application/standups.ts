@@ -40,6 +40,7 @@ import {
 import type { IEnv } from "~/types";
 
 import { createProjectTask } from "./index";
+import { transitionProjectTask } from "./task-status";
 import { postToTaskThread } from "./thread";
 import type { WorkCaller } from "./work";
 
@@ -248,15 +249,10 @@ async function completeStandup(
   }
 
   const summarisedAt = new Date().toISOString();
-  const updated = await context.repositories.get(ProjectTaskRepository).updateTask(task.id, {
-    status: "done",
+  const updated = await transitionProjectTask(context, task, "done", {
     completedAt: summarisedAt,
     details: { ...task.details, standup: { ...standup, summary, summarisedAt } },
   });
-
-  if (!updated) {
-    throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
-  }
 
   await postToTaskThread(context, updated, {
     kind: "update",

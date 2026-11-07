@@ -1,9 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": false,
     "dataRetention": {
       "maxDays": "unknown",
       "source": "https://platform.kimi.ai/docs/agreement/modeluse"
@@ -14,7 +10,11 @@
         "sg"
       ],
       "source": "https://platform.kimi.ai/docs/agreement/userprivacy"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
   },
   "models": {
     "kimi-k2-thinking": {

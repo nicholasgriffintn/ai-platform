@@ -1,8 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": "unknown",
       "source": "https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html"
@@ -13,7 +10,10 @@
         "cn"
       ],
       "source": "https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "models": {
     "deepseek-chat": {

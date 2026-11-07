@@ -25,7 +25,7 @@ export const ConversationFooterInfo = ({
           {hasConversationContext ? (
             <>
               {AI_DISCLOSURE_TEXT} It can make mistakes.
-              {!isMobile && " Check relevant sources before making important decisions."}
+              {!isMobile && " Check relevant sources before decisions."}
             </>
           ) : (
             <>

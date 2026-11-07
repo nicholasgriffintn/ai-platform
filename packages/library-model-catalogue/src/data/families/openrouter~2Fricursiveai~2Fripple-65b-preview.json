@@ -19,7 +19,7 @@
   },
   "description": "The openrouter/ricursiveai/ripple 65b preview family includes models that produce text.",
   "models": {
-    "ricursiveai-ripple-65b-preview": {
+    "ripple-65b-preview": {
       "defaults": {
         "name": "ricursiveAI/Ripple-65B-Preview",
         "description": "Preview model for early access evaluation, prototyping, and compatibility testing"

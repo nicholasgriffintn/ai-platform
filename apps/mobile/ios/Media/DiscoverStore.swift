@@ -26,6 +26,8 @@ final class DiscoverStore: ObservableObject {
     private let apiClient: APIClient
     private let onEdition: (DiscoverEdition?) -> Void
     private let onDiscover: (DiscoverResponse?) -> Void
+    private var session = 0
+    private var mediaRequest = 0
     private static let coverPixelSize: CGFloat = 768
     private static let artPixelSize: CGFloat = 1920
     private static let imageConcurrency = 4
@@ -42,11 +44,13 @@ final class DiscoverStore: ObservableObject {
     }
 
     func refresh() async {
+        let session = self.session
         isLoading = true
         defer { isLoading = false }
 
         do {
             let updated = try await apiClient.fetchDiscover()
+            guard session == self.session else { return }
             if updated.feed?.updatedAt != discover?.feed?.updatedAt || discover == nil {
                 laterFeedItems = []
                 nextFeedCursor = updated.feed?.nextCursor
@@ -55,11 +59,14 @@ final class DiscoverStore: ObservableObject {
             onEdition(discover?.edition)
             onDiscover(discover)
             await requestCurrentRefreshIfNeeded(updated)
+            guard session == self.session else { return }
             if discover?.edition != nil {
                 isWriting = false
             }
             if let viewed = viewedEdition, let summary = discover?.editions.first(where: { $0.id == viewed.id }) {
-                viewedEdition = try await apiClient.fetchDiscoverEdition(date: summary.date, edition: summary.edition)
+                let fetched = try await apiClient.fetchDiscoverEdition(date: summary.date, edition: summary.edition)
+                guard session == self.session else { return }
+                viewedEdition = fetched
             } else {
                 viewedEdition = nil
             }
@@ -67,6 +74,8 @@ final class DiscoverStore: ObservableObject {
             isLoading = false
             await loadImagesAndMedia()
         } catch let error where error.isCancellation {
+            return
+        } catch _ where session != self.session {
             return
         } catch APIClientError.httpStatus(401, _) {
             credentialRejected = true
@@ -109,12 +118,13 @@ final class DiscoverStore: ObservableObject {
 
     func loadMore() async {
         guard let cursor = nextFeedCursor, !isLoadingMore else { return }
+        let session = self.session
         isLoadingMore = true
         let version = discover?.feed?.updatedAt
         defer { isLoadingMore = false }
         do {
             let page = try await apiClient.fetchDiscoverFeed(before: cursor)
-            guard version == discover?.feed?.updatedAt else { return }
+            guard session == self.session, version == discover?.feed?.updatedAt else { return }
             laterFeedItems = DiscoverLivePresentation.merge(laterFeedItems, page.items)
             nextFeedCursor = page.nextCursor
             await loadCovers()
@@ -175,11 +185,14 @@ final class DiscoverStore: ObservableObject {
 
     func view(_ summary: DiscoverEditionSummary) async {
         guard summary.id != edition?.id else { return }
+        let session = self.session
         if summary.id == discover?.edition?.id {
             viewedEdition = nil
         } else {
             do {
-                viewedEdition = try await apiClient.fetchDiscoverEdition(date: summary.date, edition: summary.edition)
+                let fetched = try await apiClient.fetchDiscoverEdition(date: summary.date, edition: summary.edition)
+                guard session == self.session else { return }
+                viewedEdition = fetched
             } catch {
                 self.error = "That edition could not be opened: \(error.localizedDescription)"
                 return
@@ -248,6 +261,9 @@ final class DiscoverStore: ObservableObject {
             return
         }
 
+        let session = self.session
+        mediaRequest += 1
+        let request = mediaRequest
         async let episode = fetchEpisode(edition.episodeId)
         async let perch = fetchSource(edition.listenSourceId)
         async let week = fetchRecording(.week, of: edition, present: edition.weekSourceId != nil)
@@ -260,6 +276,7 @@ final class DiscoverStore: ObservableObject {
             .week: DiscoverMediaPresentation.listen(item: .week, sourceId: edition.weekSourceId, source: await week),
             .windDown: DiscoverMediaPresentation.windDown(await windDown)
         ]
+        guard session == self.session, request == mediaRequest else { return }
         media = states
 
         let coverKeys = states.compactMapValues(\.coverKey)
@@ -272,8 +289,10 @@ final class DiscoverStore: ObservableObject {
             ) { [apiClient] key in
                 await Self.fetchArt(key: key, episode: loadedEpisode, apiClient: apiClient)
             }
+            guard session == self.session else { return }
             artCache.merge(loaded) { _, new in new }
         }
+        guard request == mediaRequest else { return }
         mediaArt = coverKeys.compactMapValues { artCache[$0] }
     }
 
@@ -319,6 +338,7 @@ final class DiscoverStore: ObservableObject {
     }
 
     func reset() {
+        session += 1
         currentRefreshRequestedAt = nil
         discover = nil
         viewedEdition = nil
@@ -427,6 +447,7 @@ final class DiscoverStore: ObservableObject {
         let missing = Set((cardEdition?.cards ?? []).compactMap(\.coverId)).subtracting(covers.keys)
         guard !missing.isEmpty else { return }
 
+        let session = self.session
         let loaded = await ImageDownsampling.images(
             for: Array(missing),
             maxPixelSize: Self.coverPixelSize,
@@ -434,6 +455,7 @@ final class DiscoverStore: ObservableObject {
         ) { [apiClient] coverId in
             try? await apiClient.fetchDiscoverCover(coverId: coverId)
         }
+        guard session == self.session else { return }
         covers.merge(loaded) { _, new in new }
     }
 }

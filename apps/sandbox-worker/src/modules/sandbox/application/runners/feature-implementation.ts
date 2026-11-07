@@ -240,7 +240,7 @@ export async function executeFeatureImplementation(
 
     await execOrThrow(
       sandbox,
-      `git clone --filter=blob:none --depth 1 ${quoteShellArgument(repo.checkoutUrl)} ${quoteShellArgument(repo.targetDir)}`,
+      `git clone --depth 1 ${quoteShellArgument(repo.checkoutUrl)} ${quoteShellArgument(repo.targetDir)}`,
       executionLogs,
     );
 

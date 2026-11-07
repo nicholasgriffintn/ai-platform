@@ -203,6 +203,53 @@ export function splitMarkdownBlocks(markdown: string): MarkdownBlock[] {
   return blocks;
 }
 
+export interface MarkdownSegment {
+  start: number;
+  text: string;
+}
+
+const MARKDOWN_FENCE = /^ {0,3}(`{3,}(?=[^`]*$)|~{3,})/;
+
+function closesMarkdownFence(line: string, marker: string | undefined, fence: string): boolean {
+  return (
+    marker !== undefined &&
+    marker[0] === fence[0] &&
+    marker.length >= fence.length &&
+    line.trim() === marker
+  );
+}
+
+function startsTopLevelSegment(line: string | undefined): boolean {
+  return (
+    line !== undefined && line.trim() !== "" && !/^\s/.test(line) && !MARKDOWN_LIST_ITEM.test(line)
+  );
+}
+
+export function splitMarkdownSegments(markdown: string): MarkdownSegment[] {
+  const lines = markdown.split("\n");
+  const segments: MarkdownSegment[] = [];
+  let start = 0;
+  let fence: string | null = null;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const marker = MARKDOWN_FENCE.exec(line)?.[1];
+
+    if (fence) {
+      fence = closesMarkdownFence(line, marker, fence) ? null : fence;
+    } else if (marker) {
+      fence = marker;
+    } else if (line.trim() === "" && startsTopLevelSegment(lines[index + 1])) {
+      segments.push({ start, text: lines.slice(start, index).join("\n") });
+      start = index + 1;
+    }
+  }
+
+  segments.push({ start, text: lines.slice(start).join("\n") });
+
+  return segments;
+}
+
 export function removeMarkdownBlock(markdown: string, block: Pick<MarkdownBlock, "start" | "end">) {
   const lines = markdown.split("\n");
 

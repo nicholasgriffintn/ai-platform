@@ -167,7 +167,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1126,
+              "value": 1128,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11

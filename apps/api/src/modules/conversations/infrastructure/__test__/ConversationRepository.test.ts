@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { withConversationReadWindow } from "../conversation-read-window";
 import { ConversationRepository } from "../ConversationRepository";
 
 function createMockD1(
@@ -38,6 +39,73 @@ function createMockD1(
 
   return { batch, calls, db };
 }
+
+function countConversationReads(calls: { query: string }[]) {
+  return calls.filter(({ query }) => query.includes("AS has_threads")).length;
+}
+
+describe("conversation read windows", () => {
+  it("shares one read across callers without sharing the returned row", async () => {
+    const { calls, db } = createMockD1();
+    const repository = new ConversationRepository({ DB: db } as any);
+
+    await withConversationReadWindow(async () => {
+      const [first, second] = await Promise.all([
+        repository.getConversation("conversation-1"),
+        repository.getConversation("conversation-1"),
+      ]);
+
+      first.title = "changed by a caller";
+
+      expect(second?.title).toBeUndefined();
+      expect((await repository.getConversation("conversation-1"))?.title).toBeUndefined();
+    });
+
+    expect(countConversationReads(calls)).toBe(1);
+  });
+
+  it("reads again after a write and after a create in the window", async () => {
+    const { calls, db } = createMockD1();
+    const repository = new ConversationRepository({ DB: db } as any);
+
+    await withConversationReadWindow(async () => {
+      await repository.getConversation("conversation-1");
+      await repository.updateConversation("conversation-1", { model_id: "model" });
+      await repository.getConversation("conversation-1");
+      await repository.createConversation("conversation-2", 123);
+      await repository.getConversation("conversation-1");
+    });
+
+    expect(countConversationReads(calls)).toBe(3);
+  });
+
+  it("does not memoise outside a window or for work that outlives it", async () => {
+    const { calls, db } = createMockD1();
+    const repository = new ConversationRepository({ DB: db } as any);
+    let readAfterClose: () => Promise<unknown> = async () => null;
+
+    await repository.getConversation("conversation-1");
+    await repository.getConversation("conversation-1");
+    await withConversationReadWindow(async () => {
+      await repository.getConversation("conversation-1");
+      readAfterClose = () => repository.getConversation("conversation-1");
+    });
+    await readAfterClose();
+
+    expect(countConversationReads(calls)).toBe(4);
+  });
+
+  it("keeps windows from concurrent turns apart", async () => {
+    const { calls, db } = createMockD1();
+    const repository = new ConversationRepository({ DB: db } as any);
+    const turn = () =>
+      withConversationReadWindow(() => repository.getConversation("conversation-1"));
+
+    await Promise.all([turn(), turn()]);
+
+    expect(countConversationReads(calls)).toBe(2);
+  });
+});
 
 describe("ConversationRepository", () => {
   it("persists the caller-owned conversation type and defaults ordinary chats", async () => {

@@ -77,6 +77,17 @@ impl TerminalRegistry {
     fn remove(&self, id: &str) -> Option<Arc<Terminal>> {
         self.terminals.lock().ok()?.remove(id)
     }
+
+    fn remove_if_current(&self, id: &str, terminal: &Arc<Terminal>) {
+        if let Ok(mut terminals) = self.terminals.lock() {
+            if terminals
+                .get(id)
+                .is_some_and(|current| Arc::ptr_eq(current, terminal))
+            {
+                terminals.remove(id);
+            }
+        }
+    }
 }
 
 pub fn trim_scrollback(scrollback: &mut Vec<u8>) {
@@ -157,7 +168,7 @@ fn spawn_reader(
             .and_then(|mut child| child.wait().ok())
             .map(|status| status.exit_code());
 
-        registry.remove(&id);
+        registry.remove_if_current(&id, &terminal);
 
         if let Ok(output) = terminal.output.lock() {
             if let Some(channel) = &output.channel {

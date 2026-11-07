@@ -1,4 +1,5 @@
 use std::fs;
+use std::io::Read;
 use std::path::{Component, Path, PathBuf};
 use std::time::UNIX_EPOCH;
 
@@ -283,7 +284,12 @@ fn read_file(grant: &DirectoryGrant, relative: &str) -> Result<LocalToolResult, 
         return Err(LocalToolRefusal::NotAFile);
     }
 
-    let bytes = fs::read(&path).map_err(io)?;
+    let mut bytes = Vec::new();
+
+    fs::File::open(&path)
+        .and_then(|file| file.take(MAX_READ_BYTES as u64 + 1).read_to_end(&mut bytes))
+        .map_err(io)?;
+
     let truncated = bytes.len() > MAX_READ_BYTES;
     let slice = &bytes[..bytes.len().min(MAX_READ_BYTES)];
     let content = std::str::from_utf8(slice)
@@ -546,6 +552,22 @@ mod tests {
 
         match read_file(&grant, "notes/todo.md").expect("read") {
             LocalToolResult::ReadFile { content, .. } => assert!(content.contains("call mum")),
+            _ => panic!("wrong result"),
+        }
+
+        fs::write(root.join("notes/big.txt"), "a".repeat(MAX_READ_BYTES + 10)).expect("write");
+
+        match read_file(&grant, "notes/big.txt").expect("read") {
+            LocalToolResult::ReadFile {
+                content,
+                size,
+                truncated,
+                ..
+            } => {
+                assert_eq!(content.len(), MAX_READ_BYTES);
+                assert_eq!(size, MAX_READ_BYTES as u64 + 10);
+                assert!(truncated);
+            }
             _ => panic!("wrong result"),
         }
 

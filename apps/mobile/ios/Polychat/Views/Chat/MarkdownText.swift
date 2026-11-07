@@ -29,7 +29,7 @@ struct MarkdownText: View {
     }
 }
 
-private struct MarkdownStyle {
+private struct MarkdownStyle: Equatable {
     let font: Font
     let foregroundColor: Color
     let lineSpacing: CGFloat
@@ -44,12 +44,13 @@ private struct MarkdownBlocksView: View {
         VStack(alignment: .leading, spacing: style.blockSpacing) {
             ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
                 MarkdownBlockView(block: block, style: style)
+                    .equatable()
             }
         }
     }
 }
 
-private struct MarkdownBlockView: View {
+private struct MarkdownBlockView: View, Equatable {
     let block: MarkdownBlock
     let style: MarkdownStyle
 

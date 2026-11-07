@@ -1,10 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
-    "apiBaseUrl": "https://opencode.ai/inference/go/openai/v1",
     "dataRetention": {
       "maxDays": 30,
       "source": "https://opencode.ai/docs/go/"
@@ -16,7 +11,12 @@
         "eu"
       ],
       "source": "https://opencode.ai/docs/go/"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "apiBaseUrl": "https://opencode.ai/inference/go/openai/v1"
   },
   "models": {
     "deepseek-v4-flash": {
@@ -373,7 +373,6 @@
       "overrides": {
         "name": "GLM-5.3-Flash (2x usage)",
         "contextWindow": 1000000,
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

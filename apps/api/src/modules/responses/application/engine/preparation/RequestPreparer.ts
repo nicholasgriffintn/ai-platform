@@ -37,7 +37,10 @@ import {
 } from "~/modules/responses/application/engine/preparation/memory-scope";
 import { storeUserTurn } from "~/modules/responses/application/engine/preparation/message-store";
 import { buildModelConfigs } from "~/modules/responses/application/engine/preparation/model-configs";
-import { buildProviderContext } from "~/modules/responses/application/engine/preparation/provider-context";
+import {
+  buildProviderContext,
+  loadActiveMessages,
+} from "~/modules/responses/application/engine/preparation/provider-context";
 import {
   resolveScopedSkillCatalog,
   resolveSkillScope,
@@ -557,30 +560,36 @@ export class RequestPreparer {
       await storeMessagesTask;
     }
 
-    const baseSystemPrompt = await systemPromptTask;
-    const runMemoryDocuments = await loadRunMemoryDocuments(
-      scope.memoryScope,
-      scope.options.context,
-    );
+    const [
+      baseSystemPrompt,
+      runMemoryDocuments,
+      subjectProjection,
+      notebookProjection,
+      activeMessages,
+    ] = await Promise.all([
+      systemPromptTask,
+      loadRunMemoryDocuments(scope.memoryScope, scope.options.context),
+      resolveSubjectProjection({
+        context: scope.options.context,
+        conversationId: shouldStoreMessages ? completionId : undefined,
+        requested: requestedSubject,
+        requestedProjectId: requestedSubjectProjectId,
+        contextWindow: primaryModelConfig.contextWindow,
+      }),
+      resolveNotebookProjection({
+        context: scope.options.context,
+        conversationId: shouldStoreMessages ? completionId : undefined,
+        requested: scope.options.conversation_notebook ?? null,
+        requestedProjectId: requestedSubjectProjectId,
+        contextWindow: primaryModelConfig.contextWindow,
+      }),
+      loadActiveMessages({ conversationManager, completionId, shouldStoreMessages }),
+    ]);
     const memoryProjection = projectRunMemory(
       runMemoryDocuments,
       primaryModelConfig.contextWindow,
       baseSystemPrompt.prompt,
     );
-    const subjectProjection = await resolveSubjectProjection({
-      context: scope.options.context,
-      conversationId: shouldStoreMessages ? completionId : undefined,
-      requested: requestedSubject,
-      requestedProjectId: requestedSubjectProjectId,
-      contextWindow: primaryModelConfig.contextWindow,
-    });
-    const notebookProjection = await resolveNotebookProjection({
-      context: scope.options.context,
-      conversationId: shouldStoreMessages ? completionId : undefined,
-      requested: scope.options.conversation_notebook ?? null,
-      requestedProjectId: requestedSubjectProjectId,
-      contextWindow: primaryModelConfig.contextWindow,
-    });
     const contextDocuments = subjectProjection.document
       ? [...memoryProjection.documents, subjectProjection.document]
       : memoryProjection.documents;
@@ -657,11 +666,8 @@ export class RequestPreparer {
       ...notebookProjection.disabledTools,
     ]);
 
-    if (shouldStoreMessages && completionId && scope.options.options?.toolInteraction) {
-      toolIntentRequest = resolveToolIntentRequest(
-        await conversationManager.get(completionId),
-        messageWithContext,
-      );
+    if (activeMessages && scope.options.options?.toolInteraction) {
+      toolIntentRequest = resolveToolIntentRequest(activeMessages, messageWithContext);
     }
 
     const [perMessageSkills, polyAgenda] = await Promise.all([
@@ -675,10 +681,9 @@ export class RequestPreparer {
       activeGoal,
       skills: withTurnGuide(resolveTurnGuide(scope.options), perMessageSkills),
     });
-    const messages = await buildProviderContext({
-      conversationManager,
+    const messages = buildProviderContext({
+      activeMessages,
       completionId: scope.options.completion_id,
-      shouldStoreMessages,
       fallbackMessages: sanitisedMessages,
       latestTurn,
     });

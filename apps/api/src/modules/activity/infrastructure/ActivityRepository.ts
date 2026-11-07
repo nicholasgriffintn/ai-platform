@@ -262,6 +262,22 @@ export class ActivityRepository extends BaseRepository {
     return record;
   }
 
+  async listActiveActivitiesUpdatedBefore(
+    capabilityId: string,
+    updatedBefore: string,
+    limit: number,
+  ): Promise<ActivityRecord[]> {
+    return this.runQuery<ActivityRecord>(
+      `SELECT * FROM activity_record
+       WHERE capability_id = ?
+         AND status IN ('queued', 'running')
+         AND datetime(updated_at) < datetime(?)
+       ORDER BY updated_at ASC
+       LIMIT ?`,
+      [capabilityId, updatedBefore, limit],
+    );
+  }
+
   async cancelActiveActivitiesByGroup(capabilityId: string, groupId: string): Promise<void> {
     await this.executeRun(
       `UPDATE activity_record

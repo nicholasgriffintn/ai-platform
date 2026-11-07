@@ -1,8 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsAttachments": false,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": 30,
       "zeroRetention": "on_request",
@@ -11,7 +8,10 @@
     "dataLocation": {
       "kind": "unknown",
       "source": "https://cohere.com/data-usage-policy"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
   },
   "models": {
     "rerank-v3.5": {
@@ -91,9 +91,6 @@
       "overrides": {
         "maxTokens": 8000,
         "isFree": true,
-        "strengths": [
-          "tool_use"
-        ],
         "speed": 2,
         "knowledgeCutoffDate": "June 1, 2024",
         "lastUpdated": "March 13, 2025",

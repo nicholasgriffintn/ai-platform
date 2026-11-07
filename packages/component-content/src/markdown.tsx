@@ -1,14 +1,22 @@
 import { Button, cn } from "@ngriffin_uk/polychat-component-ui";
-import { fixMarkdown, isRasterDataImageUrl } from "@ngriffin_uk/polychat-utility-core";
+import {
+  fixMarkdown,
+  isRasterDataImageUrl,
+  splitMarkdownSegments,
+} from "@ngriffin_uk/polychat-utility-core";
 import { useCopyToClipboard } from "@ngriffin_uk/polychat-utility-react";
 import { Check, Copy } from "lucide-react";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { Children, isValidElement, memo, useMemo } from "react";
-import ReactMarkdown, { defaultUrlTransform, type UrlTransform } from "react-markdown";
-import rehypeHighlight from "rehype-highlight";
+import ReactMarkdown, {
+  defaultUrlTransform,
+  type Options,
+  type UrlTransform,
+} from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { MarkdownImage } from "./media";
+import { useCodeHighlightPlugins } from "./useCodeHighlightPlugins";
 
 type PreProps = ComponentPropsWithoutRef<"pre">;
 type TableProps = ComponentPropsWithoutRef<"table">;
@@ -103,16 +111,37 @@ const components = {
 const allowInlineImages: UrlTransform = (url, key) =>
   key === "src" && isRasterDataImageUrl(url) ? url : defaultUrlTransform(url);
 
-const rehypePlugins = [() => rehypeHighlight({ detect: false })];
 const remarkPlugins = [remarkGfm];
+
+const MarkdownSegment = memo(function MarkdownSegment({
+  children,
+  rehypePlugins,
+}: Pick<Options, "children" | "rehypePlugins">) {
+  return (
+    <ReactMarkdown
+      components={components}
+      rehypePlugins={rehypePlugins}
+      remarkPlugins={remarkPlugins}
+      urlTransform={allowInlineImages}
+    >
+      {children}
+    </ReactMarkdown>
+  );
+});
 
 export interface MarkdownProps {
   children: string;
   className?: string;
+  incremental?: boolean;
   isStreaming?: boolean;
 }
 
-export function Markdown({ children, className, isStreaming = false }: MarkdownProps) {
+export function Markdown({
+  children,
+  className,
+  incremental = false,
+  isStreaming = false,
+}: MarkdownProps) {
   const markdownClassName = useMemo(
     () =>
       `max-w-full w-full markdown prose dark:prose-invert prose-zinc prose-code:before:content-none prose-code:after:content-none ${className || ""}`,
@@ -122,17 +151,22 @@ export function Markdown({ children, className, isStreaming = false }: MarkdownP
     () => fixMarkdown(children, isStreaming),
     [children, isStreaming],
   );
+  const segments = useMemo(
+    () =>
+      incremental
+        ? splitMarkdownSegments(processedMarkdown)
+        : [{ start: 0, text: processedMarkdown }],
+    [incremental, processedMarkdown],
+  );
+  const rehypePlugins = useCodeHighlightPlugins(processedMarkdown);
 
   return (
     <div className={`relative ${markdownClassName}`}>
-      <ReactMarkdown
-        components={components}
-        rehypePlugins={rehypePlugins}
-        remarkPlugins={remarkPlugins}
-        urlTransform={allowInlineImages}
-      >
-        {processedMarkdown}
-      </ReactMarkdown>
+      {segments.map((segment) => (
+        <MarkdownSegment key={segment.start} rehypePlugins={rehypePlugins}>
+          {segment.text}
+        </MarkdownSegment>
+      ))}
       {isStreaming && (
         <span
           className="ml-1 inline-block h-4 w-2 animate-pulse bg-active-work align-text-bottom"

@@ -1,9 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": false,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": "unknown",
       "source": "https://platform.minimax.io/protocol/privacy-policy"
@@ -14,7 +10,11 @@
         "us"
       ],
       "source": "https://platform.minimax.io/protocol/privacy-policy"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "models": {
     "MiniMax-M3": {

@@ -12,7 +12,8 @@ export function useBrowserSession(sessionId: string | undefined) {
   const queryClient = useQueryClient();
   const busy = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [closed, setClosed] = useState(false);
+  const [closedSessionId, setClosedSessionId] = useState<string | null>(null);
+  const closed = Boolean(sessionId) && closedSessionId === sessionId;
   const [actionError, setActionError] = useState<string | null>(null);
   const queryKey = ["browser-session", sessionId];
   const query = useQuery({
@@ -39,7 +40,7 @@ export function useBrowserSession(sessionId: string | undefined) {
     try {
       await action();
       if (close) {
-        setClosed(true);
+        setClosedSessionId(sessionId);
         queryClient.removeQueries({ queryKey });
       } else {
         await query.refetch();

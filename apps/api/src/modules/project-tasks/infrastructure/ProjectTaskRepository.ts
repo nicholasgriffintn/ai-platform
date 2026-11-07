@@ -75,6 +75,11 @@ export interface CreateProjectTaskParams {
   details?: ProjectTaskDetails | null;
 }
 
+export interface ProjectTaskUpdateGuard {
+  executionOwner?: { dispatchTaskId: string; ownerToken: string };
+  fromStatuses?: readonly ProjectTaskStatus[];
+}
+
 export interface UpdateProjectTaskParams {
   objective?: string;
   acceptanceCriteria?: ProjectTaskCriterion[];
@@ -689,7 +694,7 @@ export class ProjectTaskRepository extends BaseRepository {
   async updateTask(
     taskId: string,
     updates: UpdateProjectTaskParams,
-    executionOwner?: { dispatchTaskId: string; ownerToken: string },
+    guard: ProjectTaskUpdateGuard = {},
   ): Promise<ProjectTask | null> {
     const columns: string[] = [];
     const values: unknown[] = [];
@@ -873,7 +878,18 @@ export class ProjectTaskRepository extends BaseRepository {
     columns.push("updated_at = CURRENT_TIMESTAMP");
     values.push(taskId);
 
+    let statusClause = "";
+
+    if (guard.fromStatuses) {
+      statusClause = ` AND status IN (${guard.fromStatuses.map(() => "?").join(", ")})`;
+      values.push(...guard.fromStatuses);
+    } else if (updates.status !== undefined) {
+      statusClause = " AND (status NOT IN ('done', 'cancelled') OR status = ?)";
+      values.push(updates.status);
+    }
+
     let ownershipClause = "";
+    const { executionOwner } = guard;
 
     if (executionOwner) {
       ownershipClause = `
@@ -892,7 +908,7 @@ export class ProjectTaskRepository extends BaseRepository {
     }
 
     const row = await this.runQuery<ProjectTaskRow>(
-      `UPDATE project_task SET ${columns.join(", ")} WHERE id = ?${ownershipClause} RETURNING *`,
+      `UPDATE project_task SET ${columns.join(", ")} WHERE id = ?${statusClause}${ownershipClause} RETURNING *`,
       values,
       true,
     );
@@ -1028,6 +1044,7 @@ export class ProjectTaskRepository extends BaseRepository {
            blocked_detail = ?,
            updated_at = CURRENT_TIMESTAMP
        WHERE id = ? AND project_id = ? AND dispatch_task_id = ?
+         AND status IN ('queued', 'running')
        RETURNING *`,
       [params.detail.slice(0, 500), params.taskId, params.projectId, params.dispatchTaskId],
       true,

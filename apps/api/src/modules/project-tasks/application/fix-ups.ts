@@ -21,10 +21,14 @@ export async function sendFixUp(
   }
 
   const inFlight = task.status === "running" || task.status === "queued";
-  const updated = await context.repositories.get(ProjectTaskRepository).updateTask(task.id, {
-    details: { ...task.details, fixUp: { ...fixUp, at: new Date().toISOString() } },
-    ...(inFlight ? {} : { status: "backlog", blockedReason: null, blockedDetail: null }),
-  });
+  const updated = await context.repositories.get(ProjectTaskRepository).updateTask(
+    task.id,
+    {
+      details: { ...task.details, fixUp: { ...fixUp, at: new Date().toISOString() } },
+      ...(inFlight ? {} : { status: "backlog", blockedReason: null, blockedDetail: null }),
+    },
+    inFlight ? {} : { fromStatuses: [task.status] },
+  );
 
   if (!updated) {
     return task;

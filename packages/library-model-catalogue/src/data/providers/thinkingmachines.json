@@ -1,9 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": "unknown",
       "source": "https://thinkingmachines.ai/legal/privacy/"
@@ -11,7 +7,11 @@
     "dataLocation": {
       "kind": "unknown",
       "source": "https://thinkingmachines.ai/tinker/"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "models": {
     "thinkingmachines/Inkling": {
@@ -21,6 +21,14 @@
         "description": "Multimodal MoE reasoning model (975B total, 41B active) for text, image, and audio",
         "contextWindow": 65536,
         "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "document",
           "tool_use"
@@ -249,7 +257,7 @@
       "model": "nemotron/nemotron-3-super-120b-a12b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16:peft:262144",
       "overrides": {
-        "contextWindow": 262144,
+        "maxTokens": 262144,
         "speed": 4,
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.00057,

@@ -523,7 +523,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "April 2, 2026",
         "supportsResponseFormat": false,
@@ -535,7 +535,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 4.4,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5

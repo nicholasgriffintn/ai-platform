@@ -51,6 +51,7 @@ function applyStatusEvent(response: PlatformResponse, event: ReplayEvent): Platf
   return {
     ...response,
     status: status.data,
+    waiting_on: status.data.startsWith("awaiting_") ? response.waiting_on : null,
     attempt: event.attempt,
     updated_at: event.occurred_at,
     completed_at: isTerminalResponseStatus(status.data)
@@ -88,6 +89,21 @@ function applyRetryEvent(response: PlatformResponse, event: ReplayEvent): Platfo
   return { ...response, retry: retry.data, updated_at: event.occurred_at };
 }
 
+function reconcileResponseSnapshot(
+  state: ResponseReplayState,
+  snapshot: AuthoritativeResponseSnapshot,
+): ResponseReplayState {
+  if (
+    snapshot.id !== state.snapshot.id ||
+    snapshot.cursor < state.cursor ||
+    (isTerminalResponseStatus(state.snapshot.status) && snapshot.status !== state.snapshot.status)
+  ) {
+    return state;
+  }
+
+  return { cursor: snapshot.cursor, snapshot };
+}
+
 export function applyResponseReplay(
   state: ResponseReplayState,
   replay: AppResponseReplayResponse,
@@ -101,10 +117,7 @@ export function applyResponseReplay(
       return { state, requiresSnapshot: true };
     }
 
-    return {
-      state: { cursor: replay.snapshot.cursor, snapshot: replay.snapshot },
-      requiresSnapshot: false,
-    };
+    return { state: reconcileResponseSnapshot(state, replay.snapshot), requiresSnapshot: false };
   }
 
   const events = [...replay.data].sort((left, right) => left.sequence - right.sequence);

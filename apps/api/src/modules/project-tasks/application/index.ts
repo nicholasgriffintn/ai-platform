@@ -60,6 +60,7 @@ import { getProjectTaskPlanEvidence, getProjectTaskResumeCapability } from "./pl
 import { answerProjectTaskQuestions, getPendingProjectTaskQuestions } from "./questions";
 import { queueProjectTaskRun, releaseReadyDependentTasks } from "./runner";
 import { assertTaskSourcesAvailable } from "./source-context";
+import { transitionProjectTask } from "./task-status";
 import { listTaskThread } from "./thread";
 import { assertProjectTaskTransition } from "./transitions";
 
@@ -786,17 +787,29 @@ export async function updateProjectTask(
 
   const nextStatus = input.status ?? task.status;
   const isFinishing = isTerminalProjectTaskStatus(nextStatus) && nextStatus !== task.status;
-  const updated = await context.repositories.get(ProjectTaskRepository).updateTask(taskId, {
-    ...input,
-    ...ownership,
-    acceptanceCriteria: withCriterionIds(input.acceptanceCriteria),
-    assumptions: input.assumptions ? withGeneratedIds(input.assumptions) : undefined,
-    killConditions: input.killConditions ? withGeneratedIds(input.killConditions) : undefined,
-    ...(input.status !== undefined && input.status !== "blocked"
-      ? { blockedReason: null, blockedDetail: null }
-      : {}),
-    ...(isFinishing ? { completedAt: new Date().toISOString() } : {}),
-  });
+  const updated = await context.repositories.get(ProjectTaskRepository).updateTask(
+    taskId,
+    {
+      ...input,
+      ...ownership,
+      acceptanceCriteria: withCriterionIds(input.acceptanceCriteria),
+      assumptions: input.assumptions ? withGeneratedIds(input.assumptions) : undefined,
+      killConditions: input.killConditions ? withGeneratedIds(input.killConditions) : undefined,
+      ...(input.status !== undefined && input.status !== "blocked"
+        ? { blockedReason: null, blockedDetail: null }
+        : {}),
+      ...(isFinishing ? { completedAt: new Date().toISOString() } : {}),
+    },
+    input.status !== undefined ? { fromStatuses: [task.status] } : {},
+  );
+
+  if (!updated && input.status !== undefined) {
+    throw new AssistantError(
+      "This task changed before it could be updated. Refresh and try again.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
 
   if (!updated) {
     throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
@@ -895,8 +908,7 @@ export async function startProjectTask(
   const unmet = await resolveUnmetDependencies(context, task);
 
   if (unmet.length > 0) {
-    const blocked = await context.repositories.get(ProjectTaskRepository).updateTask(taskId, {
-      status: "blocked",
+    const blocked = await transitionProjectTask(context, task, "blocked", {
       blockedReason: "dependencies_unmet",
       blockedDetail:
         `Starts when these finish: ${unmet.map((dependency) => dependency.objective).join("; ")}`.slice(
@@ -906,9 +918,7 @@ export async function startProjectTask(
       runnerIdentityUserId: user.id,
     });
 
-    if (blocked) {
-      await reconcileTaskNotifications(context, blocked);
-    }
+    await reconcileTaskNotifications(context, blocked);
 
     throw new AssistantError(
       `This task will start when its dependencies are done: ${unmet
@@ -985,17 +995,25 @@ export async function acceptProjectTask(
       stageId: nextStage,
     });
   } else {
-    updated = await context.repositories.get(ProjectTaskRepository).updateTask(taskId, {
-      status: "done",
-      blockedReason: null,
-      blockedDetail: null,
-      completions: approveLatestProjectTaskCompletion(task.completions, user.id),
-      completedAt: new Date().toISOString(),
-    });
+    updated = await context.repositories.get(ProjectTaskRepository).updateTask(
+      taskId,
+      {
+        status: "done",
+        blockedReason: null,
+        blockedDetail: null,
+        completions: approveLatestProjectTaskCompletion(task.completions, user.id),
+        completedAt: new Date().toISOString(),
+      },
+      { fromStatuses: ["review"] },
+    );
   }
 
   if (!updated) {
-    throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
+    throw new AssistantError(
+      "This task changed before it could be accepted. Refresh and try again.",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
   }
 
   await context.repositories.get(AuditRepository).createRecord({

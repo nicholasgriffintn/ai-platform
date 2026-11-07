@@ -38,8 +38,15 @@ export interface SitePreviewSelectMessage {
   key: string | null;
 }
 
+export interface SitePreviewRuntimeFailedMessage {
+  channel: typeof SITE_PREVIEW_CHANNEL;
+  type: "runtime-failed";
+  frameId: string;
+}
+
 export type SitePreviewRuntimeMessage =
   | SitePreviewReadyMessage
+  | SitePreviewRuntimeFailedMessage
   | SitePreviewNavigateMessage
   | SitePreviewSelectMessage;
 
@@ -63,7 +70,7 @@ export function isSitePreviewRuntimeMessage(value: unknown): value is SitePrevie
     return false;
   }
 
-  if (value.type === "ready") {
+  if (value.type === "ready" || value.type === "runtime-failed") {
     return true;
   }
 

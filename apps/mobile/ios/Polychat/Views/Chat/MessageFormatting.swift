@@ -17,29 +17,36 @@ struct FormattedMessageContent {
 }
 
 enum MessageFormatting {
+    private static let fenceRegex = try? NSRegularExpression(pattern: "```[\\s\\S]*?```")
+    private static let customTagRegex = try? NSRegularExpression(pattern: "<([A-Za-z][\\w-]*)\\b[^>]*>([\\s\\S]*?)</\\1>")
+    private static let artifactPlaceholderRegex = try? NSRegularExpression(pattern: "\\[\\[ARTIFACT:([^\\]]+)\\]\\]")
+    private static let thinkRegex = wrappedContentRegex(tag: "think")
+    private static let analysisRegex = wrappedContentRegex(tag: "analysis")
+    private static let answerRegex = wrappedContentRegex(tag: "answer")
+
     static func formattedMessageContent(role: String, originalContent: String) -> FormattedMessageContent {
         var content = originalContent
         var reasoning: [FormattedMessageContent.ReasoningItem] = []
         var artifacts: [Artifact] = []
 
-        extractReasoning(tag: "think", from: &content, into: &reasoning)
-        extractReasoning(tag: "analysis", from: &content, into: &reasoning)
+        extractReasoning(tag: "think", regex: thinkRegex, from: &content, into: &reasoning)
+        extractReasoning(tag: "analysis", regex: analysisRegex, from: &content, into: &reasoning)
 
         if role == "assistant" {
-            artifacts = InlineArtifactParser.artifacts(in: content)
-            content = InlineArtifactParser.replacingArtifacts(in: content) { artifact in
+            let matches = InlineArtifactParser.matches(in: content)
+            artifacts = matches.map(\.artifact)
+            content = InlineArtifactParser.replacing(matches, in: content) { artifact in
                 "[[ARTIFACT:\(artifact.id)]]"
             }
         }
 
-        content = unwrapTag("answer", in: content).trimmingCharacters(in: .whitespacesAndNewlines)
+        content = unwrapTag("answer", regex: answerRegex, in: content).trimmingCharacters(in: .whitespacesAndNewlines)
         let segments = splitContentByArtifacts(content: content, artifacts: artifacts)
         return FormattedMessageContent(segments: segments, reasoning: reasoning, artifacts: artifacts)
     }
 
     static func processCustomXmlTags(_ text: String) -> String {
-        let fencePattern = "```[\\s\\S]*?```"
-        guard let fenceRegex = try? NSRegularExpression(pattern: fencePattern) else {
+        guard text.contains("<"), let fenceRegex, let customTagRegex else {
             return text
         }
 
@@ -54,14 +61,9 @@ enum MessageFormatting {
             protected = (protected as NSString).replacingCharacters(in: match.range, with: "<<CODE_BLOCK_\(fences.count - 1)>>")
         }
 
-        let tagPattern = "<([A-Za-z][\\w-]*)\\b[^>]*>([\\s\\S]*?)</\\1>"
-        guard let tagRegex = try? NSRegularExpression(pattern: tagPattern) else {
-            return text
-        }
-
         let nsProtected = protected as NSString
         var processed = protected
-        let tagMatches = tagRegex.matches(in: protected, range: NSRange(location: 0, length: nsProtected.length))
+        let tagMatches = customTagRegex.matches(in: protected, range: NSRange(location: 0, length: nsProtected.length))
         for match in tagMatches.reversed() where match.numberOfRanges >= 3 {
             let tagName = nsProtected.substring(with: match.range(at: 1))
             let inner = nsProtected.substring(with: match.range(at: 2))
@@ -79,13 +81,17 @@ enum MessageFormatting {
         return processed
     }
 
+    private static func wrappedContentRegex(tag: String) -> NSRegularExpression? {
+        try? NSRegularExpression(pattern: "<\(tag)>([\\s\\S]*?)(</\(tag)>|$)")
+    }
+
     private static func extractReasoning(
         tag: String,
+        regex: NSRegularExpression?,
         from content: inout String,
         into reasoning: inout [FormattedMessageContent.ReasoningItem]
     ) {
-        let pattern = "<\(tag)>([\\s\\S]*?)(</\(tag)>|$)"
-        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+        guard let regex else {
             return
         }
 
@@ -99,9 +105,8 @@ enum MessageFormatting {
         }
     }
 
-    private static func unwrapTag(_ tag: String, in content: String) -> String {
-        let pattern = "<\(tag)>([\\s\\S]*?)(</\(tag)>|$)"
-        guard let regex = try? NSRegularExpression(pattern: pattern) else {
+    private static func unwrapTag(_ tag: String, regex: NSRegularExpression?, in content: String) -> String {
+        guard let regex else {
             return content.replacingOccurrences(of: "<\(tag)>", with: "").replacingOccurrences(of: "</\(tag)>", with: "")
         }
 
@@ -116,8 +121,7 @@ enum MessageFormatting {
     }
 
     private static func splitContentByArtifacts(content: String, artifacts: [Artifact]) -> [MessageContentSegment] {
-        guard !artifacts.isEmpty,
-              let regex = try? NSRegularExpression(pattern: "\\[\\[ARTIFACT:([^\\]]+)\\]\\]") else {
+        guard !artifacts.isEmpty, let regex = artifactPlaceholderRegex else {
             return [.text(content)]
         }
 

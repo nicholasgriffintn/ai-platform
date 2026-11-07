@@ -1,9 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": "unknown",
       "zeroRetention": "account_setting",
@@ -12,7 +8,11 @@
     "dataLocation": {
       "kind": "routed",
       "source": "https://docs.requesty.ai/features/eu-routing"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "models": {
     "openai/gpt-4.1-mini": {
@@ -251,7 +251,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 985,
+              "value": 986,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -2751,7 +2751,7 @@
         "name": "ling-3.0-tiny",
         "description": "Ling-3.0-tiny is an efficient 7.9B parameter MoE model from inclusionAI with only 1.3B active parameters per token. Built for responsive agents, reliable instruction following and multi turn conversation, with a 256K context window, native function calling, prompt caching and switchable Thinking and Instant modes.",
         "maxTokens": 32768,
-        "speed": 2,
+        "speed": 3,
         "releaseDate": "August 5, 2026",
         "lastUpdated": "August 5, 2026",
         "costPer1kInputTokens": 0,
@@ -3183,7 +3183,7 @@
       "matchingModel": "nvidia-nemotron-3-super-120b-a12b",
       "overrides": {
         "name": "nvidia-nemotron-3-super-120b-a12b",
-        "contextWindow": 262144,
+        "maxTokens": 262144,
         "speed": 4,
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.0001,
@@ -3448,7 +3448,7 @@
       "overrides": {
         "name": "ring-2.6-1t",
         "maxTokens": 262144,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "May 8, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0025,
@@ -3578,7 +3578,7 @@
       "model": "requesty/step-3.7-flash/step-3-7-flash",
       "matchingModel": "step-3.7-flash",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "May 29, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00115

@@ -10,12 +10,12 @@ export function GeneratedImageView({ data }: GeneratedImageViewProps) {
     <div data-responsetype="generated-image" className="space-y-3">
       <h2 className="text-lg font-semibold text-foreground">{data.title}</h2>
       {data.content && <p className="text-sm text-foreground">{data.content}</p>}
-      <div className="overflow-hidden rounded-lg border border-border">
+      <div className="w-fit max-w-full overflow-hidden rounded-lg border border-border">
         <ImageModal
           src={data.imageUrl}
           alt={data.title}
-          thumbnailClassName="block w-full"
-          imageClassName="h-auto w-full rounded-lg object-contain"
+          thumbnailClassName="block"
+          imageClassName="h-auto max-w-full object-contain"
           crossOrigin="use-credentials"
         />
       </div>

@@ -1,8 +1,6 @@
 {
   "defaults": {
     "hiddenFromDefaultList": true,
-    "supportsStreaming": true,
-    "supportsRealtimeSession": false,
     "dataRetention": {
       "maxDays": "unknown",
       "zeroRetention": "on_request",
@@ -14,7 +12,9 @@
         "us"
       ],
       "source": "https://elevenlabs.io/docs/overview/administration/data-residency"
-    }
+    },
+    "supportsStreaming": true,
+    "supportsRealtimeSession": false
   },
   "models": {
     "scribe_v2_realtime": {

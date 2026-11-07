@@ -174,6 +174,7 @@ export class WorkspaceTeammateRepository extends BaseRepository {
       projectIds: string[];
       proposal: HireProposal | null;
     }>,
+    expected?: { status: EmploymentStatus; pausedReason?: EmploymentPauseReason },
   ): Promise<WorkspaceTeammateRecord | null> {
     const columns: Record<string, unknown> = {};
     const map: Record<string, string> = {
@@ -206,12 +207,18 @@ export class WorkspaceTeammateRepository extends BaseRepository {
       return this.get(workspaceId, teammateId);
     }
 
+    const expectedClause = expected
+      ? ` AND status = ?${expected.pausedReason ? " AND paused_reason = ?" : ""}`
+      : "";
+    const expectedValues = expected
+      ? [expected.status, ...(expected.pausedReason ? [expected.pausedReason] : [])]
+      : [];
     const row = await this.runQuery<WorkspaceTeammateRow>(
       `UPDATE workspace_teammate
        SET ${assignments.map((column) => `${column} = ?`).join(", ")}, updated_at = CURRENT_TIMESTAMP
-       WHERE workspace_id = ? AND teammate_id = ?
+       WHERE workspace_id = ? AND teammate_id = ?${expectedClause}
        RETURNING *`,
-      [...assignments.map((column) => columns[column]), workspaceId, teammateId],
+      [...assignments.map((column) => columns[column]), workspaceId, teammateId, ...expectedValues],
       true,
     );
 
@@ -246,6 +253,22 @@ export class WorkspaceTeammateRepository extends BaseRepository {
        LIMIT 1000`,
       [workspaceId, since],
     );
+  }
+
+  async deleteProposal(workspaceId: string, teammateId: string): Promise<boolean> {
+    const row = await this.runQuery<WorkspaceTeammateRow>(
+      `DELETE FROM workspace_teammate
+       WHERE workspace_id = ? AND teammate_id = ? AND status = 'proposed'
+       RETURNING *`,
+      [workspaceId, teammateId],
+      true,
+    );
+
+    if (row) {
+      await this.publishAttentionChanged(workspaceId);
+    }
+
+    return row !== null;
   }
 
   async delete(workspaceId: string, teammateId: string): Promise<void> {

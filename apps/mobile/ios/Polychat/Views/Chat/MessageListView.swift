@@ -25,7 +25,7 @@ struct MessageListView: View {
     @State private var position = ScrollPosition(edge: .bottom)
 
     private var scrollSignature: String {
-        "\(messages.count):\(messages.last?.id ?? ""):\(messages.last?.textContent.count ?? 0):\(messages.last?.status ?? "")"
+        "\(messages.count):\(messages.last?.id ?? ""):\(messages.last?.textContent.utf8.count ?? 0):\(messages.last?.status ?? "")"
     }
 
     var body: some View {
@@ -53,9 +53,15 @@ struct MessageListView: View {
                     emptyState
                 } else {
                     ForEach(messages) { message in
-                        row(for: message)
-                            .id(message.id)
-                            .padding(.top, message.role == "user" ? 8 : 0)
+                        MessageRow(
+                            message: message,
+                            activityLabel: message.isAwaitingFirstToken ? activityLabel : nil,
+                            onRetry: onRetry,
+                            onEdit: onEdit
+                        )
+                        .equatable()
+                        .id(message.id)
+                        .padding(.top, message.role == "user" ? 8 : 0)
                     }
                 }
 
@@ -130,15 +136,25 @@ struct MessageListView: View {
         }
         .background(Color.polychat.background)
     }
+}
 
-    @ViewBuilder
-    private func row(for message: ChatMessage) -> some View {
+private struct MessageRow: View, Equatable {
+    let message: ChatMessage
+    let activityLabel: String?
+    let onRetry: (ChatMessage) -> Void
+    let onEdit: (ChatMessage, String) -> Void
+
+    static func == (lhs: MessageRow, rhs: MessageRow) -> Bool {
+        lhs.message == rhs.message && lhs.activityLabel == rhs.activityLabel
+    }
+
+    var body: some View {
         if message.isVisibleCompactionStatus {
             CompactionStatusRow(label: message.compactionStatusLabel, detail: message.compactionCoverageDetail)
         } else if !message.isCompactionMarker {
             MessageBubble(
                 message: message,
-                activityLabel: message.isAwaitingFirstToken ? activityLabel : nil,
+                activityLabel: activityLabel,
                 onRetry: { onRetry(message) },
                 onEdit: { onEdit(message, $0) }
             )

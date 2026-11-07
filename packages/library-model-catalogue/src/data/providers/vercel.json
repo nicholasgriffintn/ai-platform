@@ -1,8 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": "unknown",
       "zeroRetention": "account_setting",
@@ -11,7 +8,10 @@
     "dataLocation": {
       "kind": "routed",
       "source": "https://vercel.com/docs/ai-gateway/security-and-compliance/regional-inference"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "models": {
     "openai/o3": {
@@ -410,7 +410,7 @@
       "overrides": {
         "name": "Qwen3-14B",
         "openWeights": false,
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "April 2025",
         "costPer1kInputTokens": 0.00012,
@@ -948,9 +948,6 @@
       "matchingModel": "cohere/command-a",
       "overrides": {
         "maxTokens": 8000,
-        "strengths": [
-          "tool_use"
-        ],
         "speed": 2,
         "knowledgeCutoffDate": "August 31, 2024",
         "lastUpdated": "March 13, 2025",
@@ -1116,7 +1113,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 985,
+              "value": 986,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -1552,7 +1549,7 @@
         "description": "Efficient open MiniMax model built for coding agents and tool-heavy workflows",
         "contextWindow": 205000,
         "maxTokens": 196608,
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -4350,7 +4347,7 @@
       "model": "step/step-3-7-flash",
       "matchingModel": "stepfun/step-3.7-flash",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "May 29, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00115
@@ -6218,7 +6215,7 @@
         "name": "Ling 3.0 Tiny (Free)",
         "contextWindow": 256000,
         "maxTokens": 32000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 6, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -9167,6 +9164,7 @@
         "name": "Tencent Hy4",
         "contextWindow": 1024000,
         "maxTokens": 64000,
+        "speed": 3,
         "lastUpdated": "November 4, 2026",
         "costPer1kInputTokens": 0.000417,
         "costPer1kOutputTokens": 0.0012505,
@@ -9177,6 +9175,25 @@
           ],
           "defaultEffort": "none"
         }
+      }
+    },
+    "deepseek/deepseek-v4.1-flash-1017-ultrafast": {
+      "model": "deepseek/deepseek-v4-1-flash-1017-ultrafast",
+      "matchingModel": "deepseek/deepseek-v4.1-flash-1017-ultrafast",
+      "overrides": {
+        "lastUpdated": "November 6, 2026",
+        "costPer1kInputTokens": 0.0024,
+        "costPer1kOutputTokens": 0.0096
+      }
+    },
+    "humansand/ampersand-v0.1": {
+      "model": "v0/ampersand-v0-1",
+      "matchingModel": "humansand/ampersand-v0.1",
+      "overrides": {
+        "lastUpdated": "November 6, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
       }
     }
   }

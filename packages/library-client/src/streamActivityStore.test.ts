@@ -26,6 +26,18 @@ describe("streamActivityStore", () => {
     });
   });
 
+  it("does not let an older stream end the one that replaced it", () => {
+    const first = new AbortController();
+    const second = new AbortController();
+    const store = useStreamActivityStore.getState();
+
+    store.beginStreamActivity("conversation-1", first);
+    store.beginStreamActivity("conversation-1", second);
+    store.endStreamActivity("conversation-1", first);
+
+    expect(useStreamActivityStore.getState().streams["conversation-1"]?.controller).toBe(second);
+  });
+
   it("keeps an action marker after a stream finishes", () => {
     const store = useStreamActivityStore.getState();
 

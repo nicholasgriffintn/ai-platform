@@ -80,6 +80,7 @@ import { getPendingProjectTaskQuestions } from "./questions";
 import { retainTaskReviewCompletion } from "./review-output";
 import { assertReviewDispatchAuthority } from "./review-policy";
 import { buildProjectTaskContext } from "./source-context";
+import { transitionProjectTask } from "./task-status";
 import { projectTaskStatusForGoal } from "./transitions";
 
 const logger = getLogger({ prefix: "services/project-tasks/runner" });
@@ -143,17 +144,12 @@ export async function queueProjectTaskRun(params: {
   const routeBlocker = await findExecutionRouteBlocker(context, task, runnerIdentityUserId);
 
   if (routeBlocker) {
-    const waiting = await context.repositories.get(ProjectTaskRepository).updateTask(task.id, {
-      status: "blocked",
+    const waiting = await transitionProjectTask(context, task, "blocked", {
       blockedReason: routeBlocker.reason,
       blockedDetail: routeBlocker.detail,
       runnerIdentityUserId,
       ...(stageId !== undefined ? { stageId } : {}),
     });
-
-    if (!waiting) {
-      throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
-    }
 
     await reconcileTaskNotifications(context, waiting);
 
@@ -392,8 +388,10 @@ async function updateOwnedProjectTask(params: {
   const updated = await params.context.repositories
     .get(ProjectTaskRepository)
     .updateTask(params.taskId, params.updates, {
-      dispatchTaskId: params.dispatchTaskId,
-      ownerToken: params.executionFence.ownerToken,
+      executionOwner: {
+        dispatchTaskId: params.dispatchTaskId,
+        ownerToken: params.executionFence.ownerToken,
+      },
     });
 
   if (!updated) {
@@ -403,6 +401,43 @@ async function updateOwnedProjectTask(params: {
   await reconcileTaskNotifications(params.context, updated, { notifyMobile: false });
 
   return updated;
+}
+
+async function settleProjectTaskRun(params: {
+  context: ServiceContext;
+  taskId: string;
+  dispatchTaskId: string;
+  executionFence: TaskExecutionFence;
+  current: ProjectTask | null;
+  bookkeeping: Parameters<ProjectTaskRepository["updateTask"]>[1];
+  outcome: Parameters<ProjectTaskRepository["updateTask"]>[1];
+}): Promise<ProjectTask | null> {
+  const { context, taskId, dispatchTaskId, executionFence, current, bookkeeping, outcome } = params;
+  const owned = { context, taskId, dispatchTaskId, executionFence };
+
+  if (current && isTerminalProjectTaskStatus(current.status)) {
+    await updateOwnedProjectTask({ ...owned, updates: bookkeeping });
+
+    return current;
+  }
+
+  try {
+    await updateOwnedProjectTask({ ...owned, updates: { ...outcome, ...bookkeeping } });
+
+    return null;
+  } catch (error) {
+    const latest = isTaskError(error, "ownership_lost")
+      ? await context.repositories.get(ProjectTaskRepository).getTaskById(taskId)
+      : null;
+
+    if (!latest || !isTerminalProjectTaskStatus(latest.status)) {
+      throw error;
+    }
+
+    await updateOwnedProjectTask({ ...owned, updates: bookkeeping });
+
+    return latest;
+  }
 }
 
 async function releaseDurableRunResources(
@@ -1061,38 +1096,34 @@ export async function runProjectTaskDispatch(params: {
         })
       : null;
   const current = await context.repositories.get(ProjectTaskRepository).getTaskById(taskId);
-  const finished = current && isTerminalProjectTaskStatus(current.status) ? current : null;
-  const nextStatus = finished
-    ? finished.status
-    : metKillCondition
-      ? "blocked"
-      : goal?.status === "completed"
-        ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId, council, verification)
-        : projection.status;
-
-  await updateOwnedProjectTask({
+  const plannedStatus = metKillCondition
+    ? "blocked"
+    : goal?.status === "completed"
+      ? projectTaskStatusAfterCompletedGoal(runtime.stage, nextStageId, council, verification)
+      : projection.status;
+  const finished = await settleProjectTaskRun({
     context,
     taskId,
     dispatchTaskId: params.dispatchTaskId,
     executionFence: params.executionFence,
-    updates: finished
-      ? {
-          tokensSpent,
-          ...(completion ? { completions: [...claimed.completions, completion] } : {}),
-        }
-      : {
-          status: nextStatus,
-          blockedReason: metKillCondition ? "kill_condition_met" : projection.blockedReason,
-          blockedDetail: metKillCondition?.condition ?? goal?.stopped_reason ?? null,
-          tokensSpent,
-          ...(completion ? { completions: [...claimed.completions, completion] } : {}),
-          ...(nextStatus === "done"
-            ? { completedAt: new Date().toISOString() }
-            : nextStatus === "review"
-              ? { completedAt: null }
-              : {}),
-        },
+    current,
+    bookkeeping: {
+      tokensSpent,
+      ...(completion ? { completions: [...claimed.completions, completion] } : {}),
+    },
+    outcome: {
+      status: plannedStatus,
+      blockedReason: metKillCondition ? "kill_condition_met" : projection.blockedReason,
+      blockedDetail: metKillCondition?.condition ?? goal?.stopped_reason ?? null,
+      ...(plannedStatus === "done"
+        ? { completedAt: new Date().toISOString() }
+        : plannedStatus === "review"
+          ? { completedAt: null }
+          : {}),
+    },
   });
+  const nextStatus = finished?.status ?? plannedStatus;
+
   await params.executionFence.assertOwned();
   await context.repositories.get(ActivityRepository).updateActivity(activity.id, {
     status: nextStatus === "blocked" ? "waiting" : "succeeded",

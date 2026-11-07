@@ -1,9 +1,5 @@
 {
   "defaults": {
-    "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": false,
-    "supportsTemperature": true,
     "dataRetention": {
       "maxDays": "unknown",
       "source": "https://docs.tokenfactory.nebius.com/"
@@ -11,7 +7,11 @@
     "dataLocation": {
       "kind": "unknown",
       "source": "https://docs.tokenfactory.nebius.com/"
-    }
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
   },
   "models": {
     "deepseek-ai/DeepSeek-V4-Flash-0731": {
@@ -224,7 +224,6 @@
       "matchingModel": "nvidia/nemotron-3-super-120b-a12b",
       "overrides": {
         "name": "Nemotron-3-Super-120B-A12B",
-        "contextWindow": 262144,
         "maxTokens": 32768,
         "speed": 4,
         "lastUpdated": "March 11, 2026",

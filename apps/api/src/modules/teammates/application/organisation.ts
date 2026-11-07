@@ -392,14 +392,35 @@ export async function decideHire(
     throw new AssistantError("That hire has already been decided", ErrorType.CONFLICT_ERROR, 409);
   }
 
+  const employments = context.repositories.get(WorkspaceTeammateRepository);
+  const decided =
+    decision === "approve"
+      ? (await employments.update(
+          workspaceId,
+          teammateId,
+          { status: "active", pausedReason: null },
+          { status: "proposed" },
+        )) !== null
+      : await employments.deleteProposal(workspaceId, teammateId);
+
+  if (!decided) {
+    throw new AssistantError("That hire has already been decided", ErrorType.CONFLICT_ERROR, 409);
+  }
+
   if (decision === "approve") {
-    await grantProjects(context, workspaceId, teammateId, record.projectIds);
-    await context.repositories.get(WorkspaceTeammateRepository).update(workspaceId, teammateId, {
-      status: "active",
-      pausedReason: null,
-    });
+    try {
+      await grantProjects(context, workspaceId, teammateId, record.projectIds);
+    } catch (error) {
+      await employments.update(
+        workspaceId,
+        teammateId,
+        { status: "proposed" },
+        { status: "active" },
+      );
+
+      throw error;
+    }
   } else {
-    await context.repositories.get(WorkspaceTeammateRepository).delete(workspaceId, teammateId);
     await context.repositories.get(TeammateRepository).deleteTeammate(teammateId);
   }
 
@@ -491,10 +512,14 @@ export async function assertTeammateEmploymentAvailable(
     return;
   }
 
-  await context.repositories.get(WorkspaceTeammateRepository).update(workspaceId, teammateId, {
-    status: "paused",
-    pausedReason: "budget",
-  });
+  await context.repositories
+    .get(WorkspaceTeammateRepository)
+    .update(
+      workspaceId,
+      teammateId,
+      { status: "paused", pausedReason: "budget" },
+      { status: "active" },
+    );
 
   throw new AssistantError(
     describeEmploymentUnavailable({ status: "paused", pausedReason: "budget" }, name),

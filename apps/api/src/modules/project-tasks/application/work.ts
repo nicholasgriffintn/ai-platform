@@ -34,6 +34,7 @@ import {
   updateProjectTask,
 } from "./index";
 import { getPendingProjectTaskQuestions } from "./questions";
+import { transitionProjectTask } from "./task-status";
 import { postToTaskThread } from "./thread";
 
 export interface WorkCaller {
@@ -228,16 +229,11 @@ export async function requestReview(
     throw new AssistantError("This task is already finished", ErrorType.CONFLICT_ERROR, 409);
   }
 
-  const updated = await context.repositories.get(ProjectTaskRepository).updateTask(task.id, {
+  const updated = await transitionProjectTask(context, task, "review", {
     reviewer,
-    status: "review",
     blockedReason: null,
     blockedDetail: null,
   });
-
-  if (!updated) {
-    throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
-  }
 
   const reviewerName = await describeActor(context, reviewer);
 
@@ -306,8 +302,7 @@ export async function reviewTask(
   const rounds = (task.details.reviewRounds ?? 0) + (caller.actor.type === "teammate" ? 1 : 0);
   const handToPerson = caller.actor.type === "teammate" && rounds >= WORK_MAX_AGENT_REVIEW_ROUNDS;
   const responsible = task.runnerIdentityUserId ?? task.createdByUserId;
-  const updated = await context.repositories.get(ProjectTaskRepository).updateTask(task.id, {
-    status: handToPerson ? "review" : "backlog",
+  const updated = await transitionProjectTask(context, task, handToPerson ? "review" : "backlog", {
     details: {
       ...task.details,
       reviewRounds: rounds,
@@ -361,16 +356,11 @@ export async function blockTask(
   }
 
   const unblockerName = await describeActor(context, unblocker);
-  const updated = await context.repositories.get(ProjectTaskRepository).updateTask(task.id, {
-    status: "blocked",
+  const updated = await transitionProjectTask(context, task, "blocked", {
     blockedReason: "awaiting_input",
     blockedDetail: `Needs ${unblockerName}: ${reason}`.slice(0, 500),
     details: { ...task.details, unblocker },
   });
-
-  if (!updated) {
-    throw new AssistantError("Task not found", ErrorType.NOT_FOUND, 404);
-  }
 
   await postEvent(context, updated, caller, `Blocked. Needs ${unblockerName}: ${reason}`);
   await reconcileTaskNotifications(context, updated);
@@ -618,8 +608,7 @@ export async function resolveCase(
   }
 
   const resolvedAt = new Date().toISOString();
-  const updated = await context.repositories.get(ProjectTaskRepository).updateTask(task.id, {
-    status: "done",
+  const updated = await transitionProjectTask(context, task, "done", {
     blockedReason: null,
     blockedDetail: null,
     completedAt: resolvedAt,

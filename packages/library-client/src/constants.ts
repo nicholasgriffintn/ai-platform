@@ -62,8 +62,14 @@ const COMMON_CSP = {
     ...(PREVIEW_FRAME_SOURCE ? [PREVIEW_FRAME_SOURCE] : []),
     ...(COMPUTER_SCREEN_FRAME_SOURCE ? [COMPUTER_SCREEN_FRAME_SOURCE] : []),
   ],
-  styleSrc: ["https://hcaptcha.com", "https://*.hcaptcha.com", "'self'", "'unsafe-inline'"],
-  fontSrc: ["'self'", "data:"],
+  styleSrc: [
+    "https://hcaptcha.com",
+    "https://*.hcaptcha.com",
+    "https://fonts.googleapis.com",
+    "'self'",
+    "'unsafe-inline'",
+  ],
+  fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
   imgSrc: [
     "https://appleid.apple.com",
     "openweathermap.org",

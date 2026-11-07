@@ -127,7 +127,7 @@ struct SettingsView: View {
                     "Apple Health",
                     isOn: Binding(
                         get: { healthSync.isEnabled },
-                        set: { enabled in Task { await healthSync.setEnabled(enabled) } }
+                        set: { enabled in Task { await healthSync.setEnabled(enabled, userId: authManager.user?.id) } }
                     )
                 )
                 .disabled(healthSync.isWorking)

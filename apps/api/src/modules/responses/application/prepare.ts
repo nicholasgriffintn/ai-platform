@@ -34,16 +34,14 @@ export async function prepareConversationCompletion({
   const user = { ...location, ...userContext };
 
   if (user?.id) {
-    try {
-      await getRequestUserSettings(context);
-    } catch (error) {
+    void getRequestUserSettings(context).catch((error) => {
       context
         .getLogger({ prefix: "conversations/completion-preparation" })
         .warn("Failed to preload user settings", {
           requestId: context.requestId,
           error,
         });
-    }
+    });
   }
 
   const completionContext = {

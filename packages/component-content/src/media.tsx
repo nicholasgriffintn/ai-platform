@@ -104,7 +104,7 @@ export function ImageModal({
       download={alt}
       target="_blank"
       rel="noreferrer"
-      className="polychat-content-image-download"
+      className="polychat-content-image-download no-underline"
       aria-label={`Download ${alt}`}
     >
       <span aria-hidden="true">↓</span>

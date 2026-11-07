@@ -37,23 +37,16 @@ async function withTimeout<T>(op: string, ms: number, work: Promise<T>): Promise
 }
 
 async function waitForBrowserDebugger(sandbox: ComputerSandbox): Promise<void> {
-  const deadline = Date.now() + DEBUGGER_WAIT_TIMEOUT_MS;
+  const result = await sandbox
+    .exec(
+      `(deadline=$(($(date +%s) + ${DEBUGGER_WAIT_TIMEOUT_MS / 1000})); until curl -s -m 2 ${DEBUGGER_BASE_URL}/json/list 2>/dev/null | grep -q '"type"[[:space:]]*:[[:space:]]*"page"'; do [ "$(date +%s)" -ge "$deadline" ] && exit 1; sleep 0.1; done)`,
+      { timeoutMs: DEBUGGER_WAIT_TIMEOUT_MS },
+    )
+    .catch(() => null);
 
-  while (Date.now() < deadline) {
-    const result = await sandbox
-      .exec(
-        `curl -s -m 2 ${DEBUGGER_BASE_URL}/json/list 2>/dev/null | grep -q '"type"[[:space:]]*:[[:space:]]*"page"'`,
-      )
-      .catch(() => null);
-
-    if (result?.success) {
-      return;
-    }
-
-    await sandbox.exec("sleep 0.5").catch(() => null);
+  if (!result?.success) {
+    throw timeoutError("debugger wait");
   }
-
-  throw timeoutError("debugger wait");
 }
 
 async function assertComputerHealthy(sandbox: ComputerSandbox): Promise<void> {
@@ -64,7 +57,7 @@ async function assertComputerHealthy(sandbox: ComputerSandbox): Promise<void> {
   }
 }
 
-async function stopProcessesByPidfile(sandbox: ComputerSandbox): Promise<void> {
+export async function stopComputer(sandbox: ComputerSandbox): Promise<void> {
   const names = PROCESS_PIDFILES.join(" ");
 
   await sandbox
@@ -74,19 +67,20 @@ async function stopProcessesByPidfile(sandbox: ComputerSandbox): Promise<void> {
         '  pid=$(cat /tmp/computer/$pf.pid 2>/dev/null || echo "")',
         '  [ -n "$pid" ] && kill -TERM "$pid" 2>/dev/null || true',
         "done",
-        "for _ in 1 2 3 4 5; do",
+        "for _ in $(seq 1 25); do",
         "  alive=0",
         "  for pf in " + names + "; do",
         '    pid=$(cat /tmp/computer/$pf.pid 2>/dev/null || echo "")',
         '    if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then alive=1; fi',
         "  done",
         '  [ "$alive" = 0 ] && break',
-        "  sleep 1",
+        "  sleep 0.2",
         "done",
         "for pf in " + names + "; do",
         '  pid=$(cat /tmp/computer/$pf.pid 2>/dev/null || echo "")',
         '  [ -n "$pid" ] && kill -KILL "$pid" 2>/dev/null || true',
         "done",
+        "rm -f /tmp/.X99-lock /tmp/.X11-unix/X99 /workspace/profile/Singleton*",
       ].join("; "),
       { timeoutMs: 15_000 },
     )
@@ -94,19 +88,14 @@ async function stopProcessesByPidfile(sandbox: ComputerSandbox): Promise<void> {
 }
 
 async function capturePaintScore(sandbox: ComputerSandbox): Promise<number | null> {
-  const shot = await sandbox
-    .exec("DISPLAY=:99 scrot -o /tmp/computer-screen.png", { timeoutMs: 5_000 })
+  const scored = await sandbox
+    .exec(
+      "DISPLAY=:99 scrot -o /tmp/computer-screen.png && python3 /usr/local/bin/check-paint /tmp/computer-screen.png",
+      { timeoutMs: 15_000 },
+    )
     .catch(() => null);
 
-  if (!shot?.success) {
-    return null;
-  }
-
-  const scored = await sandbox.exec("python3 /usr/local/bin/check-paint /tmp/computer-screen.png", {
-    timeoutMs: 10_000,
-  });
-
-  if (!scored.success) {
+  if (!scored?.success) {
     return null;
   }
 
@@ -182,15 +171,6 @@ export async function startComputer(sandbox: ComputerSandbox): Promise<void> {
   throw new Error(lastError);
 }
 
-export async function stopComputer(sandbox: ComputerSandbox): Promise<void> {
-  await stopProcessesByPidfile(sandbox);
-  await sandbox
-    .exec("rm -f /tmp/.X99-lock; rm -f /tmp/.X11-unix/X99; rm -f /workspace/profile/Singleton*", {
-      timeoutMs: 5_000,
-    })
-    .catch(() => null);
-}
-
 export async function stopScreenServer(sandbox: ComputerSandbox): Promise<void> {
   await sandbox.exec("pkill -f '[w]ebsockify.*6080' || true").catch(() => null);
 }
@@ -198,6 +178,10 @@ export async function stopScreenServer(sandbox: ComputerSandbox): Promise<void> 
 export async function observeComputer(sandbox: ComputerSandbox): Promise<Record<string, unknown>> {
   await startComputer(sandbox);
 
+  return observeStartedComputer(sandbox);
+}
+
+async function observeStartedComputer(sandbox: ComputerSandbox): Promise<Record<string, unknown>> {
   const score = await capturePaintScore(sandbox);
 
   if (score === null || score < PAINT_BRIGHTNESS_THRESHOLD) {
@@ -210,14 +194,16 @@ export async function observeComputer(sandbox: ComputerSandbox): Promise<Record<
 }
 
 async function readObservation(sandbox: ComputerSandbox): Promise<Record<string, unknown>> {
-  const titleResult = await sandbox
-    .exec("DISPLAY=:99 xdotool getactivewindow getwindowname", { timeoutMs: 5_000 })
-    .catch(() => null);
+  const [titleResult, screenshot] = await Promise.all([
+    sandbox
+      .exec("DISPLAY=:99 xdotool getactivewindow getwindowname", { timeoutMs: 5_000 })
+      .catch(() => null),
+    readScreenshot(sandbox),
+  ]);
   const title =
     titleResult?.success && titleResult.stdout.trim()
       ? titleResult.stdout.trim()
       : "Hosted computer";
-  const screenshot = await readScreenshot(sandbox);
 
   return {
     title,
@@ -277,7 +263,7 @@ export async function inputComputer(
   if (input.type === "navigate") {
     await navigateBrowser(sandbox, input.url);
 
-    return observeComputer(sandbox);
+    return observeStartedComputer(sandbox);
   }
 
   if (input.type === "read") {
@@ -326,5 +312,5 @@ export async function inputComputer(
     throw new Error(result.stderr || "Could not control the computer");
   }
 
-  return observeComputer(sandbox);
+  return observeStartedComputer(sandbox);
 }

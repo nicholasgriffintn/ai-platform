@@ -2,13 +2,17 @@
 """Score a PNG screenshot for visible content.
 
 Prints the mean pixel brightness (0-255). A fresh X framebuffer scores near
-0; a painted page scores well above that. Any failure prints 0 so callers
-treat unreadable captures as blank. Standard library only.
+0; a painted page scores well above that. Scoring stops once the frame has
+cleared the paint threshold, so a painted frame prints a lower bound on its
+mean. Any failure prints 0 so callers treat unreadable captures as blank.
+Standard library only.
 """
 
 import struct
 import sys
 import zlib
+
+PAINT_BRIGHTNESS_THRESHOLD = 6.0
 
 
 def read_chunks(path):
@@ -42,9 +46,8 @@ def read_chunks(path):
     return width, height, bit_depth, color_type, bytes(compressed)
 
 
-def unfilter(width, height, channels, raw):
+def unfiltered_rows(width, height, channels, raw):
     stride = width * channels
-    out = bytearray(len(raw))
     previous = bytearray(stride)
 
     for row in range(height):
@@ -68,19 +71,21 @@ def unfilter(width, height, channels, raw):
                 left = current[i - channels] if i >= channels else 0
                 above = previous[i]
                 upper_left = previous[i - channels] if i >= channels else 0
-                paeth = left + above - upper_left
-                predictor = min(
-                    (abs(paeth - left), left),
-                    (abs(paeth - above), above),
-                    (abs(paeth - upper_left), upper_left),
-                    key=lambda pair: pair[0],
-                )[1]
+                left_distance = abs(above - upper_left)
+                above_distance = abs(left - upper_left)
+                corner_distance = abs(left + above - 2 * upper_left)
+
+                if left_distance <= above_distance and left_distance <= corner_distance:
+                    predictor = left
+                elif above_distance <= corner_distance:
+                    predictor = above
+                else:
+                    predictor = upper_left
+
                 current[i] = (current[i] + predictor) & 0xFF
 
-        out[offset - row : offset - row + stride] = current
+        yield row, current
         previous = current
-
-    return bytes(out)
 
 
 def main():
@@ -92,18 +97,20 @@ def main():
             return
 
         channels = 3 if color_type == 2 else 4
-        pixels = unfilter(width, height, channels, zlib.decompress(compressed))
-        stride = width * channels
         step = max(1, height // 200)
+        columns = range(0, width * channels, channels * 7)
+        count = len(range(0, height, step)) * len(columns) * 3
         total = 0
-        count = 0
 
-        for row in range(0, height, step):
-            base = row * stride
+        for row, pixels in unfiltered_rows(width, height, channels, zlib.decompress(compressed)):
+            if row % step:
+                continue
 
-            for col in range(0, stride, channels * 7):
-                total += pixels[base + col] + pixels[base + col + 1] + pixels[base + col + 2]
-                count += 3
+            for col in columns:
+                total += pixels[col] + pixels[col + 1] + pixels[col + 2]
+
+            if total >= PAINT_BRIGHTNESS_THRESHOLD * count:
+                break
 
         print(f"{total / max(1, count):.1f}")
     except Exception:

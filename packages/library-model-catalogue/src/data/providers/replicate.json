@@ -1,7 +1,5 @@
 {
   "defaults": {
-    "supportsStreaming": false,
-    "supportsAttachments": false,
     "dataRetention": {
       "maxDays": 1,
       "source": "https://replicate.com/docs/topics/predictions/data-retention"
@@ -9,7 +7,9 @@
     "dataLocation": {
       "kind": "unknown",
       "source": "https://replicate.com/docs/topics/predictions/data-retention"
-    }
+    },
+    "supportsStreaming": false,
+    "supportsAttachments": false
   },
   "models": {
     "replicate-prunaai-p-video-2-pro": {
