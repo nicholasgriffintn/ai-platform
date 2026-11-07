@@ -1,5 +1,35 @@
 # @ngriffin_uk/polychat-ai-integrations
 
+## 0.8.0
+
+### Minor Changes
+
+- d29cc10: MCP connections now work with servers on the new stateless `2026-07-28` protocol as well as session-based servers. Polychat picks the right one for each server automatically, so there is nothing to change on existing connections. Signing in to an MCP server now identifies Polychat with a Client ID Metadata Document where the server accepts one, and checks that the sign-in response came from the expected issuer.
+- 7f6655e: Connect Pashi to your Polychat account. Approve Pashi in Polychat and it runs its AI on your plan and your default models, with a key that cannot reach your chats, projects or files. Polychat can then use Pashi tools for you, and on Pro that includes converting images, audio, video and documents from your chat. Pashi shows in Plugins with its connection status. Connecting again replaces the old key, and disconnecting from Plugins or from Pashi ends access in both directions. Device sign-in now tells you when a name comes from the device itself, so Polychat cannot vouch for it.
+
+### Patch Changes
+
+- Updated dependencies [5edfedc]
+- Updated dependencies [e0ffb42]
+- Updated dependencies [6d1bb6e]
+- Updated dependencies [fd91d91]
+- Updated dependencies [8fcabd3]
+- Updated dependencies [150be98]
+- Updated dependencies [8a4bbaf]
+- Updated dependencies [d29cc10]
+- Updated dependencies [150be98]
+- Updated dependencies [7f6655e]
+- Updated dependencies [b571a91]
+- Updated dependencies [f824dd2]
+- Updated dependencies [777a55e]
+- Updated dependencies [5a2391a]
+- Updated dependencies [e68f76a]
+- Updated dependencies [79859ac]
+  - @ngriffin_uk/polychat-schemas@1.17.0
+  - @ngriffin_uk/polychat-utility-core@0.11.1
+  - @ngriffin_uk/polychat-utility-server@0.8.0
+  - @ngriffin_uk/polychat-library-policy@0.5.1
+
 ## 0.7.0
 
 ### Minor Changes

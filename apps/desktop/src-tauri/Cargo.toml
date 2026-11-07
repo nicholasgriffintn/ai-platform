@@ -1,6 +1,6 @@
 [package]
 name = "polychat-desktop"
-version = "0.6.10"
+version = "0.6.11"
 description = "Polychat desktop shell"
 edition = "2021"
 rust-version = "1.85"

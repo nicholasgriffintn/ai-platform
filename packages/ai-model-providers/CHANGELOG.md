@@ -1,5 +1,32 @@
 # @ngriffin_uk/polychat-ai-model-providers
 
+## 0.3.11
+
+### Patch Changes
+
+- 79859ac: Cloudflare is retiring 24 Workers AI models on 20 November 2026, so they now show as deprecated with a suggested replacement. Built-in defaults have moved to DeepSeek V4.1 Flash, GLM 5.3, Gemma 4 26B and Qwen3.8 27B. Workers AI speech now reads Spanish with a Spanish voice and asks you to choose another speech provider for other non-English languages. New Workers AI LoRA deployments can no longer use the Gemma 2B, Gemma 7B or Llama 2 7B bases.
+- Updated dependencies [5edfedc]
+- Updated dependencies [e0ffb42]
+- Updated dependencies [6d1bb6e]
+- Updated dependencies [fd91d91]
+- Updated dependencies [8fcabd3]
+- Updated dependencies [150be98]
+- Updated dependencies [8a4bbaf]
+- Updated dependencies [9900df9]
+- Updated dependencies [d29cc10]
+- Updated dependencies [150be98]
+- Updated dependencies [7f6655e]
+- Updated dependencies [b571a91]
+- Updated dependencies [f824dd2]
+- Updated dependencies [777a55e]
+- Updated dependencies [5a2391a]
+- Updated dependencies [e68f76a]
+- Updated dependencies [79859ac]
+  - @ngriffin_uk/polychat-schemas@1.17.0
+  - @ngriffin_uk/polychat-utility-core@0.11.1
+  - @ngriffin_uk/polychat-utility-server@0.8.0
+  - @ngriffin_uk/polychat-ai-providers@0.10.0
+
 ## 0.3.10
 
 ### Patch Changes

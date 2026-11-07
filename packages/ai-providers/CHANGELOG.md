@@ -1,5 +1,49 @@
 # @ngriffin_uk/polychat-ai-providers
 
+## 0.10.0
+
+### Minor Changes
+
+- 8a4bbaf: Generated images, video and audio now carry a machine-readable provenance mark that stays with the file when you download it. Content Credentials and other marks from the model provider are kept exactly as they arrived, and files without one get a Polychat mark that labels them as AI-generated. Marks are signed on deployments that set `PROVENANCE_SIGNING_KEY`.
+
+  To check a file, look up its SHA-256 at `GET /provenance/{fingerprint}`. The result says how the file was handled, including files recorded without an embedded mark. Signing keys are published at `GET /provenance/keys`.
+
+### Patch Changes
+
+- 9900df9: Provider safety filters now stay on for image and video generation, so they can no longer be turned down in model options.
+- b571a91: Nano Banana Pro, SDXL Lightning, MusicGen and Hunyuan Video work again from the Replicate page, and finished predictions show their image, audio player or video. Safety settings we control no longer appear as options you can change.
+
+  Errors are clearer: when a provider rejects a request you see the reason, and a failed run shows its banner straight away.
+
+  Second opinion now picks reviewers from your own model tiers, always on different providers from each other, checks the answer you asked about, and tests it against what your tools actually returned. Tool results, arguments and approval details read as plain labelled text instead of raw JSON, and leaked model control text no longer reaches your replies. Inline images in chat now display, and they stay out of conversation titles.
+
+  Your connected MCP integrations now show as ready when the assistant looks for them, and you can keep chatting after a reply that is waiting on setup.
+
+- 79859ac: Cloudflare is retiring 24 Workers AI models on 20 November 2026, so they now show as deprecated with a suggested replacement. Built-in defaults have moved to DeepSeek V4.1 Flash, GLM 5.3, Gemma 4 26B and Qwen3.8 27B. Workers AI speech now reads Spanish with a Spanish voice and asks you to choose another speech provider for other non-English languages. New Workers AI LoRA deployments can no longer use the Gemma 2B, Gemma 7B or Llama 2 7B bases.
+- Updated dependencies [5edfedc]
+- Updated dependencies [e0ffb42]
+- Updated dependencies [6d1bb6e]
+- Updated dependencies [fd91d91]
+- Updated dependencies [8fcabd3]
+- Updated dependencies [150be98]
+- Updated dependencies [8a4bbaf]
+- Updated dependencies [5c52117]
+- Updated dependencies [d29cc10]
+- Updated dependencies [150be98]
+- Updated dependencies [7f6655e]
+- Updated dependencies [b571a91]
+- Updated dependencies [f824dd2]
+- Updated dependencies [777a55e]
+- Updated dependencies [5a2391a]
+- Updated dependencies [e68f76a]
+- Updated dependencies [79859ac]
+  - @ngriffin_uk/polychat-schemas@1.17.0
+  - @ngriffin_uk/polychat-utility-core@0.11.1
+  - @ngriffin_uk/polychat-utility-server@0.8.0
+  - @ngriffin_uk/polychat-library-tools@0.4.7
+  - @ngriffin_uk/polychat-ai-models@0.5.2
+  - @ngriffin_uk/polychat-ai-telemetry@0.4.3
+
 ## 0.9.2
 
 ### Patch Changes
