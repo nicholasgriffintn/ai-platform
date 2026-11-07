@@ -4,7 +4,7 @@ import {
   recipeExecutionTaskDataSchema,
   type TeammateInvocation,
 } from "@ngriffin_uk/polychat-schemas";
-import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
+import { getRootErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
@@ -249,7 +249,7 @@ export class RecipeExecutionHandler implements TaskHandler {
           ...invocation,
           conversationId,
           response,
-          error: getErrorMessage(error),
+          error: getRootErrorMessage(error),
         },
       };
     }

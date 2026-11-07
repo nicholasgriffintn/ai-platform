@@ -109,6 +109,12 @@ export function toError(error: unknown): Error {
   return error instanceof Error ? error : new Error(getErrorMessage(error));
 }
 
+export function getRootErrorMessage(error: unknown): string {
+  return error instanceof Error && error.cause
+    ? getRootErrorMessage(error.cause)
+    : getErrorMessage(error);
+}
+
 export function getErrorMessage(error: unknown, fallback = "Unknown error"): string {
   if (error instanceof Error && error.message.trim().length > 0) {
     return error.message;

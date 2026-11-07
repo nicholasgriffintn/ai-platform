@@ -33,7 +33,7 @@ vi.mock("~/modules/experiments/application", () => ({
   taskFlags: () => ({}),
 }));
 
-import { TaskExecutor } from "../TaskExecutor";
+import { describeTaskFailure, TaskExecutor } from "../TaskExecutor";
 
 const message: TaskMessage = {
   taskId: "task-1",
@@ -232,5 +232,16 @@ describe("TaskExecutor", () => {
       expect.any(String),
       expect.objectContaining({ status: "failed", error_message: "voice unavailable" }),
     );
+  });
+});
+
+describe("describeTaskFailure", () => {
+  it("keeps the underlying error on the task record", () => {
+    expect(
+      describeTaskFailure({
+        message: "Recipe execution failed and was recorded",
+        data: { error: "no such column: spend_cap_credit_micros" },
+      }),
+    ).toBe("Recipe execution failed and was recorded: no such column: spend_cap_credit_micros");
   });
 });

@@ -319,7 +319,11 @@ export class ChatOrchestrator {
       const errorMessage = this.getErrorMessage(error, errorType);
       const statusCode = error.status || error.statusCode || 500;
 
-      throw new AssistantError(errorMessage, errorType, statusCode);
+      const wrapped = new AssistantError(errorMessage, errorType, statusCode);
+
+      wrapped.cause = error;
+
+      throw wrapped;
     }
   }
 
