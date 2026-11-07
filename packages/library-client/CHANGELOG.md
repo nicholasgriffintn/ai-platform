@@ -1,5 +1,11 @@
 # @ngriffin_uk/polychat-library-client
 
+## 0.15.1
+
+### Patch Changes
+
+- 676fff8: The Privacy Policy and Terms of Service now describe what Polychat does today, including connectors, Discover, generated media marks, safety measures, data export, credits and run caps.
+
 ## 0.15.0
 
 ### Minor Changes
