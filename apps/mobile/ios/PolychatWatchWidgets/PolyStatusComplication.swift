@@ -6,7 +6,7 @@ private struct PolyStatusView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 6) {
-            PolyMark(size: 20)
+            PetPoseWidgetImage(pose: snapshot.pose(), size: 24)
             VStack(alignment: .leading, spacing: 2) {
                 Text(snapshot.poly?.status ?? "Ready when you are")
                     .font(.headline)

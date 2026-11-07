@@ -3,17 +3,28 @@ import SwiftUI
 struct WatchHomeView: View {
     @EnvironmentObject private var signIn: DeviceSignIn
     @EnvironmentObject private var store: WatchStore
+    @EnvironmentObject private var perch: PerchStore
+    @State private var showingPerch = false
 
     var body: some View {
         NavigationStack {
             List {
                 Section {
-                    HStack(spacing: 8) {
-                        PolyMark(size: 28)
-                        Text(store.snapshot.poly?.status ?? PolyPresence.derive(from: store.agenda).status)
-                            .font(.headline)
+                    NavigationLink {
+                        WatchPerchView()
+                    } label: {
+                        HStack(spacing: 8) {
+                            PetPoseImage(pose: store.snapshot.pose(), size: 40)
+                                .id(perch.pet?.selection)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(store.snapshot.poly?.status ?? PolyPresence.derive(from: store.agenda).status)
+                                    .font(.headline)
+                                Text("Play with \(perch.pet?.name ?? "your pet")")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
-                    .listRowBackground(Color.clear)
                 }
 
                 if !store.actionable.isEmpty {
@@ -68,7 +79,16 @@ struct WatchHomeView: View {
                     WatchItemView(item: item)
                 }
             }
-            .task { await store.refresh() }
+            .navigationDestination(isPresented: $showingPerch) {
+                WatchPerchView()
+            }
+            .onOpenURL { url in
+                showingPerch = url.host == "perch"
+            }
+            .task {
+                await store.refresh()
+                await perch.refresh()
+            }
             .refreshable { await store.refresh() }
         }
     }

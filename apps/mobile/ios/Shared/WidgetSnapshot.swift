@@ -26,6 +26,7 @@ struct WidgetSnapshot: Codable, Equatable {
         let needsYou: Int
         let workingOn: Int
         let items: [Line]
+        var pausedUntil: Date? = nil
     }
 
     var today: Today?
@@ -34,6 +35,15 @@ struct WidgetSnapshot: Codable, Equatable {
     var updatedAt: Date?
 
     static let empty = WidgetSnapshot()
+
+    var needsYou: Int { attention?.needsYou ?? poly?.needsYou ?? 0 }
+    var running: Int { attention?.running ?? poly?.workingOn ?? 0 }
+
+    func pose(at now: Date = Date()) -> PetPose {
+        if needsYou > 0 { return .wait }
+        if let pausedUntil = poly?.pausedUntil, pausedUntil > now { return .doze }
+        return running > 0 ? .work : .idle
+    }
 }
 
 enum WidgetSnapshotStore {

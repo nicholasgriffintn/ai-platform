@@ -21,7 +21,7 @@ struct AskPolyWidgetView: View {
         case .accessoryCircular:
             ZStack {
                 AccessoryWidgetBackground()
-                PolyMark(size: 30)
+                PetPoseWidgetImage(pose: entry.snapshot.pose(), size: 30)
             }
         case .accessoryRectangular:
             VStack(alignment: .leading, spacing: 2) {
@@ -30,7 +30,7 @@ struct AskPolyWidgetView: View {
             }
         case .systemSmall:
             VStack(alignment: .leading, spacing: 6) {
-                PolyMark(size: 40)
+                PetPoseWidgetImage(pose: entry.snapshot.pose(), size: 40)
                 Spacer(minLength: 0)
                 Text(poly?.status ?? "Ready when you are")
                     .font(.subheadline.weight(.semibold))
@@ -43,7 +43,7 @@ struct AskPolyWidgetView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         default:
             HStack(alignment: .top, spacing: 12) {
-                PolyMark(size: 48)
+                PetPoseWidgetImage(pose: entry.snapshot.pose(), size: 48)
                 VStack(alignment: .leading, spacing: 8) {
                     Text(poly?.status ?? "Ready when you are").font(.headline)
                     if let items = poly?.items, !items.isEmpty {

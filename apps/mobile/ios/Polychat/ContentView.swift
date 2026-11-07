@@ -35,6 +35,7 @@ private struct RootTabView: View {
     @EnvironmentObject private var workStore: WorkStore
     @EnvironmentObject private var healthSync: HealthSyncController
     @EnvironmentObject private var syncClient: DeviceSyncClient
+    @EnvironmentObject private var perchStore: PerchStore
     @State private var selectedTab: AppTab = .home
     @State private var chatsPath: [ChatsRoute] = []
     @State private var workPath: [WorkRoute] = []
@@ -98,6 +99,7 @@ private struct RootTabView: View {
                 syncClient.resume()
                 ProductAnalytics.shared.track("app_foreground", category: "session")
                 Task { await refreshOnForeground() }
+                Task { await perchStore.refresh() }
             case .background:
                 syncClient.suspend()
                 ProductAnalytics.shared.flush()
@@ -147,7 +149,8 @@ private struct RootTabView: View {
         async let models: Void = modelsStore.fetchModels()
         async let inbox: Void = loadInbox()
         async let teammates: Void = bindTeammates()
-        _ = await (conversations, models, inbox, teammates)
+        async let pet: Void = perchStore.refresh()
+        _ = await (conversations, models, inbox, teammates, pet)
 
         await pushNotificationManager.enableForAuthenticatedUser()
         healthSync.confirmOwner(userId: authManager.user?.id)
@@ -185,6 +188,7 @@ private struct RootTabView: View {
         workStore.reset()
         healthSync.reset()
         WidgetPublisher.clear()
+        perchStore.reset()
         await attentionStore.reset()
         await notificationManager.reconcileAuthenticatedState(isAuthenticated: false)
         chatsPath = []

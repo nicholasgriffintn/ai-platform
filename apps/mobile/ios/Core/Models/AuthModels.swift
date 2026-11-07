@@ -19,11 +19,17 @@ public struct AuthUserSettings: Codable, Equatable {
     public let defaultModelTier: String?
     public let defaultModelId: String?
     public let defaultComputeSite: String?
+    public var petSource: String? = nil
+    public var petId: String? = nil
+    public var petAnimationEnabled: Bool? = nil
 
     enum CodingKeys: String, CodingKey {
         case defaultModelTier = "default_model_tier"
         case defaultModelId = "default_model_id"
         case defaultComputeSite = "default_compute_site"
+        case petSource = "pet_source"
+        case petId = "pet_id"
+        case petAnimationEnabled = "pet_animation_enabled"
     }
 }
 

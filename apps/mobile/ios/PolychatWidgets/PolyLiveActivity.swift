@@ -47,6 +47,14 @@ private extension WorkLine.State {
     var action: String {
         self == .needsYou ? "Respond" : "View work"
     }
+
+    var pose: PetPose {
+        switch self {
+        case .running: return .work
+        case .needsYou: return .wait
+        case .completed, .failed: return .idle
+        }
+    }
 }
 
 private extension WorkLine {
@@ -131,7 +139,7 @@ private struct TitleRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            PolyMark(size: 22)
+            PetPoseWidgetImage(pose: line.state.pose, size: 24)
             Text(line.title)
                 .font(.headline)
                 .lineLimit(2)
@@ -152,7 +160,7 @@ private struct PolyActivityLockScreen: View {
         case .small:
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
-                    PolyMark(size: 16)
+                    PetPoseWidgetImage(pose: state.focus.state.pose, size: 20)
                     Image(systemName: state.focus.state.symbol)
                         .font(.caption2)
                         .foregroundStyle(state.focus.state.tint)
@@ -195,7 +203,7 @@ struct PolyLiveActivity: Widget {
             let focus = context.state.focus
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    PolyMark(size: 28)
+                    PetPoseWidgetImage(pose: focus.state.pose, size: 30)
                         .padding(.leading, 4)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
@@ -219,7 +227,7 @@ struct PolyLiveActivity: Widget {
                     .padding(.top, 4)
                 }
             } compactLeading: {
-                PolyMark(size: 18)
+                PetPoseWidgetImage(pose: focus.state.pose, size: 20)
             } compactTrailing: {
                 if focus.state == .running {
                     Elapsed(line: focus)

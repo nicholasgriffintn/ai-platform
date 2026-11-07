@@ -18,6 +18,7 @@ struct PolychatApp: App {
     @StateObject private var workStore = WorkStore()
     @StateObject private var healthSync = HealthSyncController.shared
     @StateObject private var syncClient = DeviceSyncClient()
+    @StateObject private var perchStore = PerchStore { WatchBridge.shared.publishPerch() }
 
     var body: some Scene {
         WindowGroup {
@@ -38,6 +39,7 @@ struct PolychatApp: App {
                 .environmentObject(workStore)
                 .environmentObject(healthSync)
                 .environmentObject(syncClient)
+                .environmentObject(perchStore)
                 .tint(Color.polychat.primary)
                 .onAppear {
                     authManager.configure(apiClient: apiClient)

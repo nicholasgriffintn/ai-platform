@@ -20,6 +20,7 @@ enum WidgetPublisher {
 
     static func clear() {
         WidgetSnapshotStore.clear()
+        PerchStorage.clear()
         WidgetCenter.shared.reloadAllTimelines()
         WatchBridge.shared.publish(.empty)
     }

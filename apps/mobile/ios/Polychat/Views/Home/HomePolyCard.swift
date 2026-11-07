@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct HomePolyCard: View {
+    @EnvironmentObject private var perch: PerchStore
     let agenda: PolyAgenda
     let onOpen: (String) -> Void
 
@@ -14,7 +15,11 @@ struct HomePolyCard: View {
                 onOpen(agenda.conversationId)
             } label: {
                 HStack(spacing: 10) {
-                    PolyMark(size: 28)
+                    if let sheet = perch.pet?.sheet {
+                        PetSpriteView(sheet: sheet, clip: PetClipName(pose: presence.mood.pose), time: 0, size: 32)
+                    } else {
+                        PolyMark(size: 28)
+                    }
                     Text(presence.status)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(Color.polychat.text)

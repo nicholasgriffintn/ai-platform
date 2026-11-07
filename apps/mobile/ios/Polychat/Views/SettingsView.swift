@@ -9,6 +9,7 @@ struct SettingsView: View {
     @EnvironmentObject private var healthSync: HealthSyncController
     @EnvironmentObject private var polyStore: PolyStore
     @EnvironmentObject private var conversationManager: ConversationManager
+    @EnvironmentObject private var perch: PerchStore
     let onOpenConversation: (String) -> Void
     @AppStorage("autoTitleGeneration") private var autoTitleGeneration = true
     @State private var showingModelSelector = false
@@ -21,6 +22,7 @@ struct SettingsView: View {
                 accountSection
                 chatSection
                 discoverSection
+                petSection
                 notificationSection
                 aboutSection
             }
@@ -159,6 +161,28 @@ struct SettingsView: View {
                 return
             }
             onOpenConversation(id)
+        }
+    }
+
+    private var petSection: some View {
+        Section {
+            NavigationLink {
+                PerchSettingsView()
+            } label: {
+                HStack(spacing: 12) {
+                    PetPoseImage(pose: .idle, size: 36)
+                        .id(perch.pet?.selection)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(perch.pet?.name ?? "Your pet")
+                            .foregroundStyle(Color.polychat.text)
+                        Text(WatchBridge.isSupported ? "Your pet, crown feel and Apple Watch" : "Your pet")
+                            .font(.caption)
+                            .foregroundStyle(Color.polychat.textMuted)
+                    }
+                }
+            }
+        } header: {
+            Text("Pet")
         }
     }
 

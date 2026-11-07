@@ -5,15 +5,15 @@ private struct NeedsYouView: View {
     @Environment(\.widgetFamily) private var family
     let snapshot: WidgetSnapshot
 
-    private var needsYou: Int { snapshot.attention?.needsYou ?? snapshot.poly?.needsYou ?? 0 }
-    private var running: Int { snapshot.attention?.running ?? snapshot.poly?.workingOn ?? 0 }
+    private var needsYou: Int { snapshot.needsYou }
+    private var running: Int { snapshot.running }
 
     var body: some View {
         switch family {
         case .accessoryInline:
             Text(needsYou > 0 ? "\(needsYou) need you" : running > 0 ? "\(running) in flight" : "All quiet")
         case .accessoryCorner:
-            PolyMark(size: 22)
+            PetPoseWidgetImage(pose: snapshot.pose(), size: 24)
                 .widgetLabel(needsYou > 0 ? "\(needsYou) need you" : "All quiet")
         default:
             ZStack {

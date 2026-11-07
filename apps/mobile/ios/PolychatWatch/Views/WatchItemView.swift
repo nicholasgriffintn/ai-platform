@@ -2,13 +2,17 @@ import SwiftUI
 
 struct WatchItemView: View {
     @EnvironmentObject private var store: WatchStore
+    @EnvironmentObject private var perch: PerchStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
     @State private var interaction: ProjectTaskInteraction?
     @State private var runApproval: SandboxRunInstruction?
     @State private var answer = ""
     @State private var isLoaded = false
     @State private var isWorking = false
     @State private var message: String?
+    @State private var winding = false
+    @State private var pendingApproval: (() async throws -> Void)?
     let item: WorkAttentionItem
 
     private let apiClient = APIClient.shared
@@ -77,12 +81,30 @@ struct WatchItemView: View {
             }
         }
         .task { await load() }
+        .sheet(isPresented: $winding) {
+            WatchWindApprovalView(title: item.title) {
+                winding = false
+                if let pendingApproval {
+                    perform(pendingApproval)
+                }
+            }
+        }
     }
 
     private func decisionButtons(_ decide: @escaping (Bool) async throws -> Void) -> some View {
         VStack(spacing: 6) {
-            Button("Approve") { perform { try await decide(true) } }
+            if perch.preferences.windToApprove && !voiceOverEnabled {
+                Button {
+                    pendingApproval = { try await decide(true) }
+                    winding = true
+                } label: {
+                    Label("Wind to approve", systemImage: "dial.medium")
+                }
                 .buttonStyle(.borderedProminent)
+            } else {
+                Button("Approve") { perform { try await decide(true) } }
+                    .buttonStyle(.borderedProminent)
+            }
             Button("Decline", role: .destructive) { perform { try await decide(false) } }
         }
         .disabled(isWorking)

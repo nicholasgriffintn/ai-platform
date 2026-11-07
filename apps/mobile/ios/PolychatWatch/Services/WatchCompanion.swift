@@ -27,6 +27,18 @@ final class WatchCompanion: NSObject, ObservableObject, WCSessionDelegate {
         }
     }
 
+    func publishPerch() {
+        guard WCSession.default.activationState == .activated,
+              let preferences = try? JSONEncoder().encode(PerchStorage.preferences),
+              let stats = try? JSONEncoder().encode(PerchStorage.stats) else {
+            return
+        }
+        try? WCSession.default.updateApplicationContext([
+            CompanionMessage.perchPreferences: preferences,
+            CompanionMessage.perchStats: stats
+        ])
+    }
+
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
         receive(session.receivedApplicationContext)
         publishReachability(session.isReachable)
@@ -45,6 +57,8 @@ final class WatchCompanion: NSObject, ObservableObject, WCSessionDelegate {
     }
 
     private func receive(_ payload: [String: Any]) {
+        receivePerch(payload)
+
         guard let data = payload[CompanionMessage.snapshot] as? Data,
               let snapshot = try? JSONDecoder().decode(WidgetSnapshot.self, from: data) else {
             return
@@ -54,6 +68,18 @@ final class WatchCompanion: NSObject, ObservableObject, WCSessionDelegate {
         WidgetCenter.shared.reloadAllTimelines()
         Task { @MainActor in
             NotificationCenter.default.post(name: .watchSnapshotChanged, object: nil)
+        }
+    }
+
+    private func receivePerch(_ payload: [String: Any]) {
+        guard let data = payload[CompanionMessage.perchPreferences] as? Data,
+              let preferences = try? JSONDecoder().decode(PerchPreferences.self, from: data) else {
+            return
+        }
+
+        PerchStorage.merge(preferences)
+        Task { @MainActor in
+            NotificationCenter.default.post(name: .perchChanged, object: nil)
         }
     }
 

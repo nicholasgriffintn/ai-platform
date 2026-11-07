@@ -120,6 +120,39 @@ final class APIClient: ObservableObject {
         try await send(path: "/poly/agenda", method: "GET")
     }
 
+    func fetchUserPets() async throws -> [UserPet] {
+        let page: UserPetsPage = try await send(
+            path: "/pets",
+            method: "GET",
+            queryItems: [URLQueryItem(name: "limit", value: "50")]
+        )
+        return page.data
+    }
+
+    func fetchUserPet(id: String) async throws -> UserPet {
+        try await send(path: "/pets/\(id)", method: "GET")
+    }
+
+    func fetchUserPetSheet(id: String) async throws -> Data {
+        try await fetchData(path: "/pets/\(id)/sheet")
+    }
+
+    func updatePetAnimation(enabled: Bool) async throws {
+        let _: SuccessResponse = try await send(
+            path: "/account",
+            method: "PATCH",
+            body: PetAnimationUpdate(enabled: enabled)
+        )
+    }
+
+    func updatePetSelection(_ selection: PetSelection) async throws {
+        let _: SuccessResponse = try await send(
+            path: "/account",
+            method: "PATCH",
+            body: PetSelectionUpdate(selection: selection)
+        )
+    }
+
     func fetchDiscover() async throws -> DiscoverResponse {
         try await send(path: "/discover", method: "GET")
     }

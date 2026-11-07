@@ -6,6 +6,7 @@ struct PolychatWatchApp: App {
     @StateObject private var signIn = DeviceSignIn()
     @StateObject private var store = WatchStore()
     @StateObject private var companion = WatchCompanion.shared
+    @StateObject private var perch = PerchStore { WatchCompanion.shared.publishPerch() }
 
     var body: some Scene {
         WindowGroup {
@@ -13,6 +14,7 @@ struct PolychatWatchApp: App {
                 .environmentObject(signIn)
                 .environmentObject(store)
                 .environmentObject(companion)
+                .environmentObject(perch)
                 .tint(Color.polychat.primary)
         }
     }

@@ -3,6 +3,10 @@ import WidgetKit
 struct SnapshotEntry: TimelineEntry {
     let date: Date
     let snapshot: WidgetSnapshot
+
+    var relevance: TimelineEntryRelevance? {
+        TimelineEntryRelevance(score: snapshot.needsYou > 0 ? 100 : snapshot.running > 0 ? 30 : 0)
+    }
 }
 
 struct SnapshotProvider: TimelineProvider {

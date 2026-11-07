@@ -75,7 +75,8 @@ extension WidgetSnapshot.Poly {
             workingOn: agenda.workingOn.count,
             items: (agenda.needsYou + agenda.workingOn).prefix(4).map {
                 WidgetSnapshot.Line(title: $0.title, detail: $0.status, systemImage: "circle.fill")
-            }
+            },
+            pausedUntil: AppDateParser.parse(agenda.pausedUntil)
         )
     }
 }

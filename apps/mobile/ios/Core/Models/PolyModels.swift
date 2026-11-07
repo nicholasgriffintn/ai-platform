@@ -54,6 +54,10 @@ enum PolyMood: String, Codable, Hashable {
     case doze
 }
 
+extension PolyMood {
+    var pose: PetPose { PetPose(rawValue: rawValue) ?? .idle }
+}
+
 struct PolyPresence: Equatable {
     let mood: PolyMood
     let status: String
