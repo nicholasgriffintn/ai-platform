@@ -1,5 +1,27 @@
 # @ngriffin_uk/polychat-library-prompts-catalogue
 
+## 0.9.3
+
+### Patch Changes
+
+- b571a91: Nano Banana Pro, SDXL Lightning, MusicGen and Hunyuan Video work again from the Replicate page, and finished predictions show their image, audio player or video. Safety settings we control no longer appear as options you can change.
+
+  Errors are clearer: when a provider rejects a request you see the reason, and a failed run shows its banner straight away.
+
+  Second opinion now picks reviewers from your own model tiers, always on different providers from each other, checks the answer you asked about, and tests it against what your tools actually returned. Tool results, arguments and approval details read as plain labelled text instead of raw JSON, and leaked model control text no longer reaches your replies. Inline images in chat now display, and they stay out of conversation titles.
+
+  Your connected MCP integrations now show as ready when the assistant looks for them, and you can keep chatting after a reply that is waiting on setup.
+
+- 5a2391a: Discover's feed now holds still. Stories you have already been shown stay where they are instead of cycling back to the top, a reworded headline updates in place, and the same story from two outlets shows once.
+
+  Hacker News, Lobsters and Hugging Face now refresh every two hours through the day instead of once each morning. Topic research drops results that are not about the topic, along with press releases and ranked buying guides, and old papers no longer appear as new.
+
+  Interests now come from what you listen to, watch and open, rather than from whatever is on a public front page that day.
+
+- e68f76a: Runs now have to show their work before they count as finished. Each completed task run is checked against what it actually did, and the task shows whether the result is verified, unverified or failed its checks. A run with no evidence stays in review for a person instead of being marked done, and the council now sees a run's evidence when it reviews the work.
+
+  Generated documents, sheets, decks and Word, Excel and PowerPoint files are reopened and checked before a run can pass. Routines now show how often they finished with evidence over the last four weeks, alongside their settings.
+
 ## 0.9.2
 
 ### Patch Changes

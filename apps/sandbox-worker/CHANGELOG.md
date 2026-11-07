@@ -1,5 +1,42 @@
 # @assistant/sandbox-worker
 
+## 0.2.11
+
+### Patch Changes
+
+- 8fcabd3: Polychat now feels quicker across web, desktop and iOS. Replies start sooner, long replies stream more smoothly, and the web and desktop apps download less before they open.
+
+  The inbox and bulk read actions respond faster, hosted computer actions take less time, and opening chats on desktop no longer holds up the window. Desktop can take up to 10 minutes to notice a newly installed agent CLI.
+
+- 777a55e: Cancelling a queued sandbox run now stops it, and a run that loses its worker connection, stops responding or is interrupted now fails and returns its held credits instead of staying in progress. Cancelled and finished tasks stay that way when a run finishes at the same moment, and two conflicting status changes now ask you to refresh. Two admins deciding the same hire can no longer both win, and a manual pause on a teammate is no longer replaced by a budget pause. On iOS, Apple Health sharing now belongs to the account that turned it on and ends at sign-out, so turn it on again after updating or signing back in, and opening the app offline keeps you signed in. Notes save your last edits when you leave mid-save, the microphone turns off when you leave the chat, spoken replies no longer get stuck on generating, and a failed dictation session no longer looks live. Generated images and Google Fonts now show in site previews, and the preview no longer comes up blank where a browser blocks its sandboxed frame from loading files. Sites hold refinements and manual edits until image generation finishes. On desktop, reopening a terminal straight after closing it keeps the new one working, and stopping an agent no longer hangs behind a stuck message. Logging in to several servers at once from the CLI keeps all of them.
+- Updated dependencies [5edfedc]
+- Updated dependencies [e0ffb42]
+- Updated dependencies [6d1bb6e]
+- Updated dependencies [777a55e]
+- Updated dependencies [fd91d91]
+- Updated dependencies [8fcabd3]
+- Updated dependencies [150be98]
+- Updated dependencies [8a4bbaf]
+- Updated dependencies [5c52117]
+- Updated dependencies [d29cc10]
+- Updated dependencies [150be98]
+- Updated dependencies [7f6655e]
+- Updated dependencies [b571a91]
+- Updated dependencies [f824dd2]
+- Updated dependencies [777a55e]
+- Updated dependencies [5a2391a]
+- Updated dependencies [e68f76a]
+- Updated dependencies [79859ac]
+  - @ngriffin_uk/polychat-schemas@1.17.0
+  - @ngriffin_uk/polychat-utility-core@0.11.1
+  - @ngriffin_uk/polychat-library-client@0.15.0
+  - @ngriffin_uk/polychat-utility-server@0.8.0
+  - @ngriffin_uk/polychat-library-tools@0.4.7
+  - @ngriffin_uk/polychat-library-policy@0.5.1
+  - @ngriffin_uk/polychat-ai-agents@0.4.10
+  - @ngriffin_uk/polychat-ai-models@0.5.2
+  - @ngriffin_uk/polychat-library-sandbox@0.3.9
+
 ## 0.2.10
 
 ### Patch Changes

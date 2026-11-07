@@ -1,5 +1,42 @@
 # @ngriffin_uk/polychat-library-chat
 
+## 1.4.3
+
+### Patch Changes
+
+- 6d1bb6e: When a request needs an app you haven't connected, the chat now shows one short **Setup needed** card instead of a long list. You'll only see apps that fit what you asked, and you can connect one straight from the card, then ask again.
+- b571a91: Nano Banana Pro, SDXL Lightning, MusicGen and Hunyuan Video work again from the Replicate page, and finished predictions show their image, audio player or video. Safety settings we control no longer appear as options you can change.
+
+  Errors are clearer: when a provider rejects a request you see the reason, and a failed run shows its banner straight away.
+
+  Second opinion now picks reviewers from your own model tiers, always on different providers from each other, checks the answer you asked about, and tests it against what your tools actually returned. Tool results, arguments and approval details read as plain labelled text instead of raw JSON, and leaked model control text no longer reaches your replies. Inline images in chat now display, and they stay out of conversation titles.
+
+  Your connected MCP integrations now show as ready when the assistant looks for them, and you can keep chatting after a reply that is waiting on setup.
+
+- f824dd2: Runs can now stop at a limit you set, and a run that fails on our side costs nothing.
+
+  - Set **Run credit cap** in chat settings, or send `budget.credits` to the Responses API. The run stops before it could go over, and you are never charged more than the cap.
+  - A run that fails on our side costs nothing. Credits it used are returned automatically and shown on the run.
+
+- Updated dependencies [5edfedc]
+- Updated dependencies [e0ffb42]
+- Updated dependencies [6d1bb6e]
+- Updated dependencies [fd91d91]
+- Updated dependencies [8fcabd3]
+- Updated dependencies [150be98]
+- Updated dependencies [8a4bbaf]
+- Updated dependencies [d29cc10]
+- Updated dependencies [150be98]
+- Updated dependencies [7f6655e]
+- Updated dependencies [b571a91]
+- Updated dependencies [f824dd2]
+- Updated dependencies [777a55e]
+- Updated dependencies [5a2391a]
+- Updated dependencies [e68f76a]
+- Updated dependencies [79859ac]
+  - @ngriffin_uk/polychat-schemas@1.17.0
+  - @ngriffin_uk/polychat-utility-core@0.11.1
+
 ## 1.4.2
 
 ### Patch Changes

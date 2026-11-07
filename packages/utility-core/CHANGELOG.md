@@ -1,5 +1,37 @@
 # @ngriffin_uk/polychat-utility-core
 
+## 0.11.1
+
+### Patch Changes
+
+- e0ffb42: Images now open in the same viewer as your files, wherever you click them. Choose **File info** on a generated image, video or audio file and **Check this file** to see whether we have a record of it, including the model that made it.
+
+  To check a file someone sent you, open `/verify` and drop it in. It's checked on your device and only its fingerprint is sent. Screenshots and re-saved copies won't match, so no record doesn't mean a file isn't AI-generated.
+
+- 6d1bb6e: When a request needs an app you haven't connected, the chat now shows one short **Setup needed** card instead of a long list. You'll only see apps that fit what you asked, and you can connect one straight from the card, then ask again.
+- 8fcabd3: Polychat now feels quicker across web, desktop and iOS. Replies start sooner, long replies stream more smoothly, and the web and desktop apps download less before they open.
+
+  The inbox and bulk read actions respond faster, hosted computer actions take less time, and opening chats on desktop no longer holds up the window. Desktop can take up to 10 minutes to notice a newly installed agent CLI.
+
+- b571a91: Nano Banana Pro, SDXL Lightning, MusicGen and Hunyuan Video work again from the Replicate page, and finished predictions show their image, audio player or video. Safety settings we control no longer appear as options you can change.
+
+  Errors are clearer: when a provider rejects a request you see the reason, and a failed run shows its banner straight away.
+
+  Second opinion now picks reviewers from your own model tiers, always on different providers from each other, checks the answer you asked about, and tests it against what your tools actually returned. Tool results, arguments and approval details read as plain labelled text instead of raw JSON, and leaked model control text no longer reaches your replies. Inline images in chat now display, and they stay out of conversation titles.
+
+  Your connected MCP integrations now show as ready when the assistant looks for them, and you can keep chatting after a reply that is waiting on setup.
+
+- 777a55e: Cancelling a queued sandbox run now stops it, and a run that loses its worker connection, stops responding or is interrupted now fails and returns its held credits instead of staying in progress. Cancelled and finished tasks stay that way when a run finishes at the same moment, and two conflicting status changes now ask you to refresh. Two admins deciding the same hire can no longer both win, and a manual pause on a teammate is no longer replaced by a budget pause. On iOS, Apple Health sharing now belongs to the account that turned it on and ends at sign-out, so turn it on again after updating or signing back in, and opening the app offline keeps you signed in. Notes save your last edits when you leave mid-save, the microphone turns off when you leave the chat, spoken replies no longer get stuck on generating, and a failed dictation session no longer looks live. Generated images and Google Fonts now show in site previews, and the preview no longer comes up blank where a browser blocks its sandboxed frame from loading files. Sites hold refinements and manual edits until image generation finishes. On desktop, reopening a terminal straight after closing it keeps the new one working, and stopping an agent no longer hangs behind a stuck message. Logging in to several servers at once from the CLI keeps all of them.
+- 5a2391a: Discover's feed now holds still. Stories you have already been shown stay where they are instead of cycling back to the top, a reworded headline updates in place, and the same story from two outlets shows once.
+
+  Hacker News, Lobsters and Hugging Face now refresh every two hours through the day instead of once each morning. Topic research drops results that are not about the topic, along with press releases and ranked buying guides, and old papers no longer appear as new.
+
+  Interests now come from what you listen to, watch and open, rather than from whatever is on a public front page that day.
+
+- e68f76a: Runs now have to show their work before they count as finished. Each completed task run is checked against what it actually did, and the task shows whether the result is verified, unverified or failed its checks. A run with no evidence stays in review for a person instead of being marked done, and the council now sees a run's evidence when it reviews the work.
+
+  Generated documents, sheets, decks and Word, Excel and PowerPoint files are reopened and checked before a run can pass. Routines now show how often they finished with evidence over the last four weeks, alongside their settings.
+
 ## 0.11.0
 
 ### Minor Changes
