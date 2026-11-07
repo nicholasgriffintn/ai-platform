@@ -234,16 +234,15 @@ describe("Cedar authorisation", () => {
     const model = {
       plan: "",
       active: true,
-      free: true,
-      byok: false,
+      byok: true,
       onDevice: false,
       platformEnabled: true,
     };
     const contexts = [
       model,
-      { ...model, free: false },
+      { ...model, byok: false },
       { ...model, active: false },
-      { ...model, free: false, plan: "pro" },
+      { ...model, byok: false, plan: "pro" },
       model,
     ];
 
@@ -251,6 +250,20 @@ describe("Cedar authorisation", () => {
       contexts.map((context) => authorise("model.execute", context).allowed),
     );
     expect(new Set(contexts.map((context) => canExecute(context))).size).toBe(2);
+  });
+
+  it("keeps platform-hosted models for Pro, and free accounts on their own keys", () => {
+    const platformModel = { active: true, byok: false, onDevice: false, platformEnabled: true };
+
+    expect(authorise("model.execute", { ...platformModel, plan: "pro" }).allowed).toBe(true);
+    expect(authorise("model.execute", { ...platformModel, plan: "free" }).allowed).toBe(false);
+    expect(authorise("model.execute", { ...platformModel, plan: "" }).allowed).toBe(false);
+    expect(authorise("model.execute", { ...platformModel, plan: "free", byok: true }).allowed).toBe(
+      true,
+    );
+    expect(
+      authorise("model.platform", { ...platformModel, plan: "free", byok: true }).allowed,
+    ).toBe(false);
   });
 
   it("lets free accounts benchmark only on their own keys", () => {

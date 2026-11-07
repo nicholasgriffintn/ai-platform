@@ -3,12 +3,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { IEnv, IUserSettings } from "~/types";
 
 const mocks = vi.hoisted(() => ({
-  getAuxiliaryGuardrailsModel: vi.fn(),
+  getSystemModel: vi.fn(),
   resolve: vi.fn(),
 }));
 
 vi.mock("../host", () => ({
-  providerHost: { models: { getAuxiliaryGuardrailsModel: mocks.getAuxiliaryGuardrailsModel } },
+  providerHost: { models: { getSystemModel: mocks.getSystemModel } },
 }));
 
 vi.mock("../library", () => ({
@@ -41,7 +41,7 @@ describe("getGuardrailsProvider", () => {
     [{ model: "mistral-moderation-latest", provider: "mistral" }, "mistral"],
     [{ model: "@cf/meta/llama-guard-3-8b", provider: "workers-ai" }, "llamaguard"],
   ])("runs the chosen Guardrails model %o through %s", async (chosen, service) => {
-    mocks.getAuxiliaryGuardrailsModel.mockResolvedValue(chosen);
+    mocks.getSystemModel.mockResolvedValue(chosen);
 
     await expect(
       getGuardrailsProvider(env, undefined, settings({ guardrails_provider: "model" })),
@@ -56,10 +56,19 @@ describe("getGuardrailsProvider", () => {
     }
   });
 
+  it("skips checks when the account has no Guardrails model it can run", async () => {
+    mocks.getSystemModel.mockResolvedValue(null);
+
+    await expect(
+      getGuardrailsProvider(env, undefined, settings({ guardrails_provider: "model" })),
+    ).resolves.toBeNull();
+    expect(mocks.resolve).not.toHaveBeenCalled();
+  });
+
   it("uses an external service without consulting the Guardrails model", async () => {
     await expect(
       getGuardrailsProvider(env, undefined, settings({ guardrails_provider: "shieldstral" })),
     ).resolves.toEqual({ name: "shieldstral" });
-    expect(mocks.getAuxiliaryGuardrailsModel).not.toHaveBeenCalled();
+    expect(mocks.getSystemModel).not.toHaveBeenCalled();
   });
 });

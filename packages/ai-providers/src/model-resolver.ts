@@ -83,9 +83,10 @@ export function createCatalogueModelResolver(): ProviderModelResolver {
     inputs: readonly ModelModality[] = [],
   ): AuxiliaryModelRef | null => {
     const available = Object.fromEntries(
-      Object.entries(getModels()).filter(
-        ([, config]) =>
-          isModelRuntimeAvailable(config, env) && modelHasInputModalities(config, inputs),
+      Object.entries(getModels()).flatMap(([id, config]) =>
+        isModelRuntimeAvailable(config, env) && modelHasInputModalities(config, inputs)
+          ? [[id, { ...config, isByokEnabled: true }]]
+          : [],
       ),
     );
     const selected = resolveSystemRoleModel(available, role);

@@ -118,7 +118,7 @@ describe("rankPolicyModelsByMediaScore", () => {
         { model: "aura-1", provider: "workers-ai" },
         { model: "melotts", provider: "workers-ai" },
       ],
-      { plan_id: "free" },
+      { plan_id: "pro" },
     );
 
     expect(ranked.map((entry) => entry.id)).toEqual(["eleven", "polly", "aura-1", "melotts"]);

@@ -202,13 +202,13 @@ export function modelHasInputModalities(
 }
 
 export function requiresPaidPlan(
-  model: Pick<ModelConfigItem, "isByokEnabled" | "isFree" | "runsOn">,
+  model: Pick<ModelConfigItem, "isByokEnabled" | "runsOn">,
 ): boolean {
-  return !runsOnDevice(model) && !model.isFree && !model.isByokEnabled;
+  return !runsOnDevice(model) && !model.isByokEnabled;
 }
 
 export function isModelSelectableForAccount(
-  model: Pick<ModelConfigItem, "isByokEnabled" | "isFree" | "runsOn">,
+  model: Pick<ModelConfigItem, "isByokEnabled" | "runsOn">,
   isPro: boolean,
 ) {
   return isPro || !requiresPaidPlan(model);

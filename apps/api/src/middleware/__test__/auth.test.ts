@@ -798,7 +798,7 @@ describe("Auth Middleware", () => {
       }
     });
 
-    it("should block tool usage for unauthenticated users", async () => {
+    it("asks signed-out visitors to sign in before chatting", async () => {
       const context = createMockContext({
         req: {
           ...createMockRequest(),
@@ -823,9 +823,8 @@ describe("Auth Middleware", () => {
       });
 
       await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(AssistantError);
-      await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow(
-        "Tool usage requires authentication",
-      );
+      await expect(allowRestrictedPaths(context, mockNext)).rejects.toThrow("Sign in to chat.");
+      expect(mockNext).not.toHaveBeenCalled();
     });
 
     it("lets non-pro users send managed and builtin tool selections on /responses", async () => {

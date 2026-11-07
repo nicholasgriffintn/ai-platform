@@ -24,7 +24,6 @@ const resourceShape = {
 const modelShape = {
   plan: string,
   active: boolean,
-  free: boolean,
   byok: boolean,
   onDevice: boolean,
   platformEnabled: boolean,

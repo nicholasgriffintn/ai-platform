@@ -17,8 +17,17 @@ export type { GuardrailInput, GuardrailResult, GuardrailsProvider };
 
 const DEFAULT_BEDROCK_GUARDRAIL_VERSION = "1";
 
-async function modelGuardrailsProvider(env: IEnv, user?: IUser): Promise<GuardrailsProvider> {
-  const { model, provider } = await providerHost.models.getAuxiliaryGuardrailsModel(env, user);
+async function modelGuardrailsProvider(
+  env: IEnv,
+  user?: IUser,
+): Promise<GuardrailsProvider | null> {
+  const selected = await providerHost.models.getSystemModel(env, user, "guardrails");
+
+  if (!selected) {
+    return null;
+  }
+
+  const { model, provider } = selected;
 
   if (SYSTEM_ONE_PROVIDER_NAMES.includes(provider)) {
     return providerLibrary.resolve("guardrails", "typesafe", {

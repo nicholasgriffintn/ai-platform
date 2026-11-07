@@ -29,6 +29,7 @@ import { upsertConversationInChatCaches } from "../conversation-cache.js";
 import { useEnsureAgeConfirmed } from "../hooks/useAgeGate.js";
 import { useConversationScope } from "../state/conversation-scope.js";
 import { useLoadingActions } from "../state/LoadingContext.js";
+import { useUIStore } from "../state/stores/uiStore.js";
 import { useGenerateTitle } from "./useChat.js";
 import { useConversationActions } from "./useConversationActions.js";
 import { useConversationStorage } from "./useConversationStorage.js";
@@ -50,6 +51,8 @@ export function useChatManager(
   const endStreamActivity = useStreamActivityStore((state) => state.endStreamActivity);
 
   const model = useChatStore((state) => state.model);
+  const isAuthenticated = useChatStore((state) => state.isAuthenticated);
+  const setShowLoginModal = useUIStore((state) => state.setShowLoginModal);
   const { currentConversationId, startNewConversation, getCurrentConversationId } =
     useConversationScope();
 
@@ -158,6 +161,15 @@ export function useChatManager(
       overrideRequestOptions?: ChatRequestOptions,
       timelineOptions?: { goalStarted?: string },
     ) => {
+      if (!isAuthenticated) {
+        setShowLoginModal(true);
+
+        return {
+          status: "error",
+          response: "",
+        };
+      }
+
       if ((!input.trim() && !attachments?.length) || !(await ensureAgeConfirmed())) {
         return {
           status: "error",
@@ -234,6 +246,8 @@ export function useChatManager(
       }
     },
     [
+      isAuthenticated,
+      setShowLoginModal,
       ensureAgeConfirmed,
       model,
       startNewConversation,

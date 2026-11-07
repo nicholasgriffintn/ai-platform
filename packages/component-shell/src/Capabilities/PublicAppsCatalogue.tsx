@@ -58,6 +58,7 @@ function AppList({ apps }: { apps: ProjectExperienceDefinition[] }) {
           badges={
             <>
               {app.category ? <Badge variant="outline">{app.category}</Badge> : null}
+              {app.type === "premium" && <Badge variant="info">Pro</Badge>}
               {app.scope === "personal" ? (
                 <Badge variant="outline" title={app.scopeReason ?? undefined}>
                   Personal only
@@ -244,8 +245,8 @@ export function PublicAppsCatalogue() {
   const roleGroups = listTeammateRolesByCategory();
   const roleCount = roleGroups.reduce((total, group) => total + group.roles.length, 0);
   const lede = data
-    ? `${apps.length} apps, ${roleCount} teammate roles, ${modelTools.length + tools.length} tools and ${recipes.length} automation templates come with every account.`
-    : "Apps, teammate roles, tools and automation templates come with every account.";
+    ? `${apps.length} apps, ${roleCount} teammate roles, ${modelTools.length + tools.length} tools and ${recipes.length} automation templates. Apps need a Pro plan, and the rest come with every account.`
+    : "Apps need a Pro plan. Teammate roles, tools and automation templates come with every account.";
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-14 px-4 pb-16 sm:px-6">
@@ -285,7 +286,7 @@ export function PublicAppsCatalogue() {
             headingId="catalogue-apps-title"
             eyebrow="Built in"
             title="Apps"
-            lede="Longer jobs with their own surface. Each says when to reach for it, what it works from and what it leaves behind."
+            lede="Longer jobs with their own surface, on a Pro plan. Each says when to reach for it, what it works from and what it leaves behind."
           >
             {isLoading ? <CatalogueSkeletonGrid count={6} /> : <AppList apps={apps} />}
           </CatalogueSection>

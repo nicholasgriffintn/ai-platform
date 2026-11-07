@@ -31,7 +31,6 @@ export function getExecutableModelsForAccount(
       canExecute({
         plan: user?.plan_id ?? "",
         active: isActiveModel(model),
-        free: model.isFree === true,
         byok: model.isByokEnabled === true,
         onDevice: model.runsOn === "device",
         platformEnabled: model.isPlatformEnabled !== false,
@@ -41,13 +40,12 @@ export function getExecutableModelsForAccount(
 }
 
 export function getModelCredentialAuthority(
-  model: Pick<ModelConfigItem, "isByokEnabled" | "isFree" | "isPlatformEnabled">,
+  model: Pick<ModelConfigItem, "isByokEnabled" | "isPlatformEnabled">,
   user?: AccountPlan,
 ): CredentialAuthority {
   return authorise("model.platform", {
     plan: user?.plan_id ?? "",
     active: true,
-    free: model.isFree === true,
     byok: model.isByokEnabled === true,
     onDevice: false,
     platformEnabled: model.isPlatformEnabled !== false,

@@ -9,7 +9,7 @@ import {
   getPluginsPath,
   isExperienceEnabled,
 } from "@ngriffin_uk/polychat-library-react";
-import { Puzzle } from "lucide-react";
+import { Puzzle, Sparkles } from "lucide-react";
 import { useMemo } from "react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
@@ -38,6 +38,7 @@ export function AppRoute({
 }) {
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const isAuthenticationLoading = useChatStore((state) => state.isAuthenticationLoading);
+  const isPro = useChatStore((state) => state.isPro);
   const {
     data: catalog,
     isLoading: isCatalogLoading,
@@ -49,6 +50,7 @@ export function AppRoute({
   const basePath = getAppPath(surface, appId);
   const presentation = getAppSurfacePresentation(appId, subpath);
   const needsSignIn = !isAuthenticationLoading && !isAuthenticated;
+  const needsPro = !isAuthenticationLoading && isAuthenticated && !isPro;
   const isLoading = isCatalogLoading || isAuthenticationLoading || Boolean(project?.isLoading);
   const pageError = project?.error ?? catalogError;
   const isEnabled =
@@ -75,6 +77,17 @@ export function AppRoute({
         title="Sign in to open this app"
         message="This app keeps your work, so it needs an account."
         className="min-h-[300px]"
+      />
+    ) : needsPro ? (
+      <EmptyState
+        icon={<Sparkles size={24} className="text-muted-foreground" />}
+        title="Apps are part of Pro"
+        message={`Upgrade to Pro to open ${title ?? "this app"} and every other app.`}
+        action={
+          <ButtonLink variant="primary" href="/pricing">
+            See plans
+          </ButtonLink>
+        }
       />
     ) : pageError ? (
       <EmptyState title="App unavailable" message={pageError.message} />

@@ -314,18 +314,13 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
   const isProUser = hasProEntitlement(user);
 
   if (!isProUser) {
-    const anonymousUser = context.get("anonymousUser");
-
-    if (!user && !anonymousUser) {
-      logger.warn("Missing user or anonymous user data for restricted path access");
-      throw new AssistantError(
-        "User usage tracking required for this endpoint.",
-        ErrorType.AUTHENTICATION_ERROR,
-      );
-    }
-
     const path = context.req.path;
     const method = context.req.method;
+    const isGetSharedPath = /^\/conversations\/shared\/[^/]+$/.test(path) && method === "GET";
+
+    if (!user && !isGetSharedPath) {
+      throw new AssistantError("Sign in to chat.", ErrorType.AUTHENTICATION_ERROR);
+    }
 
     const isGenerateTitlePath = /^\/conversations\/[^/]+\/title$/.test(path) && method === "POST";
     const isUpdatePath = /^\/conversations\/[^/]+$/.test(path) && method === "PATCH";
@@ -334,7 +329,6 @@ export async function allowRestrictedPaths(context: Context, next: Next) {
     const isReactionsPath = /^\/conversations\/[^/]+\/reactions$/.test(path) && method === "POST";
     const isSharePath = /^\/conversations\/[^/]+\/share$/.test(path) && method === "POST";
     const isUnsharePath = /^\/conversations\/[^/]+\/share$/.test(path) && method === "DELETE";
-    const isGetSharedPath = /^\/conversations\/shared\/[^/]+$/.test(path) && method === "GET";
     const isGoalPath = /^\/conversations\/[^/]+\/goal$/.test(path);
     const isCodePath = path.startsWith("/code/") && method === "POST";
 

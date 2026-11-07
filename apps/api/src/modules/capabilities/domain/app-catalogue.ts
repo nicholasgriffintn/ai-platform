@@ -45,7 +45,7 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     icon: "music",
     theme: "indigo",
     tags: ["music", "audio", "generation"],
-    type: "normal",
+    type: "premium",
   },
   {
     id: "sites",
@@ -63,7 +63,7 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     icon: "layout",
     theme: "sky",
     tags: ["sites", "react", "generation", "code"],
-    type: "normal",
+    type: "premium",
   },
   {
     id: "verbatim",
@@ -99,7 +99,7 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     icon: "clapperboard",
     theme: "rose",
     tags: ["video", "game", "decisions"],
-    type: "normal",
+    type: "premium",
   },
   {
     id: "photo-sorter",
@@ -117,7 +117,7 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     icon: "images",
     theme: "amber",
     tags: ["image", "classification", "decisions"],
-    type: "normal",
+    type: "premium",
   },
   {
     id: "twenty-questions",
@@ -135,7 +135,7 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     icon: "message-circle-question",
     theme: "violet",
     tags: ["text", "game", "decisions"],
-    type: "normal",
+    type: "premium",
   },
   {
     id: "polis",
@@ -153,7 +153,7 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     icon: "landmark",
     theme: "emerald",
     tags: ["simulation", "game", "decisions"],
-    type: "normal",
+    type: "premium",
   },
   {
     id: "benchmarks",
@@ -171,7 +171,7 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     icon: "trophy",
     theme: "amber",
     tags: ["models", "game", "evaluation"],
-    type: "normal",
+    type: "premium",
   },
 ];
 

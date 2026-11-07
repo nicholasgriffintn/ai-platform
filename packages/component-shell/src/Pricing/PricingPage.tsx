@@ -25,6 +25,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "live voice sessions",
     "sandboxed coding runs and agents",
     "Work: shared workspaces, projects and tasks",
+    "apps such as Polis, Sites, Verbatim and Strudel",
   ],
   enterprise: ["everything in Pro", "a bespoke credit allowance", "priority support"],
 };
@@ -201,8 +202,8 @@ export function PricingPage() {
           {(plans ?? []).length === 0 && (
             <Card className="p-6 sm:col-span-2">
               <p className="text-sm text-muted-foreground">
-                Plans are being arranged on the perch. In the meantime, everything here works on the
-                free tier and your own provider keys.
+                Plans are being arranged on the perch. In the meantime, everything here works with
+                your own provider keys.
               </p>
             </Card>
           )}
