@@ -137,6 +137,9 @@ private struct RootTabView: View {
     private func start() async {
         DiscoverBackgroundRefresh.schedule()
         ageGateStore.reset()
+        if let target = pushNotificationManager.targetToOpen {
+            open(target)
+        }
         if let userId = authManager.user?.id {
             companionSync = CompanionSync(
                 client: syncClient,
@@ -152,17 +155,17 @@ private struct RootTabView: View {
         async let conversations: Void = conversationManager.loadConversations()
         modelsStore.applyAccountDefaults(authManager.userSettings)
         async let models: Void = modelsStore.fetchModels()
-        _ = await (conversations, models)
+        async let inbox: Void = loadInbox()
+        async let teammates: Void = bindTeammates()
+        _ = await (conversations, models, inbox, teammates)
 
-        await notificationManager.reconcileAuthenticatedState(isAuthenticated: true)
-        await attentionStore.refresh(notifications: notificationManager.items)
         await pushNotificationManager.enableForAuthenticatedUser()
         await healthSync.syncIfNeeded()
-        await bindTeammates()
+    }
 
-        if let target = pushNotificationManager.targetToOpen {
-            open(target)
-        }
+    private func loadInbox() async {
+        await notificationManager.reconcileAuthenticatedState(isAuthenticated: true)
+        await attentionStore.refresh(notifications: notificationManager.items)
     }
 
     private func stop() async {
@@ -192,8 +195,9 @@ private struct RootTabView: View {
     }
 
     private func bindTeammates() async {
-        await polyStore.refresh()
-        await teammatesStore.refresh()
+        async let agenda: Void = polyStore.refresh()
+        async let teammates: Void = teammatesStore.refresh()
+        _ = await (agenda, teammates)
         conversationManager.bindTeammates(teammatesStore.teammatesByConversation)
         if let polyConversationId = polyStore.agenda?.conversationId {
             conversationManager.bindTeammates([polyConversationId: PolyThread.teammateId])

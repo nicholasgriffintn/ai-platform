@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use tauri::State;
+use tauri::{AppHandle, Manager};
 
 use super::changes::{self, BranchChanges, TurnChanges, WorktreeInfo, WorktreeRoot};
 use super::process::{self, DirectoryGrants};
@@ -49,40 +49,50 @@ pub(crate) fn resolve(
     })
 }
 
-async fn blocking<T: Send + 'static>(
-    work: impl FnOnce() -> Result<T, String> + Send + 'static,
+async fn in_workspace<T: Send + 'static>(
+    app: AppHandle,
+    directory_id: String,
+    conversation_id: String,
+    work: impl FnOnce(Workspace) -> Result<T, String> + Send + 'static,
 ) -> Result<T, String> {
-    tauri::async_runtime::spawn_blocking(work)
-        .await
-        .map_err(|cause| cause.to_string())?
+    tauri::async_runtime::spawn_blocking(move || {
+        work(resolve(
+            &app.state::<DirectoryGrants>(),
+            &app.state::<WorktreeRoot>(),
+            &directory_id,
+            &conversation_id,
+        )?)
+    })
+    .await
+    .map_err(|cause| cause.to_string())?
 }
 
 #[tauri::command]
-pub fn agent_worktree(
+pub async fn agent_worktree(
     directory_id: String,
     conversation_id: String,
-    directories: State<'_, DirectoryGrants>,
-    root: State<'_, WorktreeRoot>,
+    app: AppHandle,
 ) -> Result<Option<WorktreeInfo>, String> {
-    Ok(resolve(&directories, &root, &directory_id, &conversation_id)?.worktree)
+    in_workspace(app, directory_id, conversation_id, |workspace| {
+        Ok(workspace.worktree)
+    })
+    .await
 }
 
 #[tauri::command]
 pub async fn agent_snapshot(
     directory_id: String,
     conversation_id: String,
-    directories: State<'_, DirectoryGrants>,
-    root: State<'_, WorktreeRoot>,
+    app: AppHandle,
 ) -> Result<Option<String>, String> {
-    let workspace = resolve(&directories, &root, &directory_id, &conversation_id)?;
+    in_workspace(app, directory_id, conversation_id, |workspace| {
+        if !workspace.is_git_repo {
+            return Ok(None);
+        }
 
-    if !workspace.is_git_repo {
-        return Ok(None);
-    }
-
-    let directory = workspace.directory();
-
-    blocking(move || changes::snapshot(&directory).map(Some)).await
+        changes::snapshot(&workspace.directory()).map(Some)
+    })
+    .await
 }
 
 #[tauri::command]
@@ -91,12 +101,12 @@ pub async fn agent_turn_changes(
     conversation_id: String,
     from: String,
     to: String,
-    directories: State<'_, DirectoryGrants>,
-    root: State<'_, WorktreeRoot>,
+    app: AppHandle,
 ) -> Result<TurnChanges, String> {
-    let directory = resolve(&directories, &root, &directory_id, &conversation_id)?.directory();
-
-    blocking(move || changes::diff(&directory, &from, &to)).await
+    in_workspace(app, directory_id, conversation_id, move |workspace| {
+        changes::diff(&workspace.directory(), &from, &to)
+    })
+    .await
 }
 
 #[tauri::command]
@@ -104,25 +114,25 @@ pub async fn agent_commit(
     directory_id: String,
     conversation_id: String,
     message: String,
-    directories: State<'_, DirectoryGrants>,
-    root: State<'_, WorktreeRoot>,
+    app: AppHandle,
 ) -> Result<String, String> {
-    let workspace = resolve(&directories, &root, &directory_id, &conversation_id)?;
-    let directory = PathBuf::from(&workspace.require_worktree()?.path);
-
-    blocking(move || changes::commit(&directory, &message)).await
+    in_workspace(app, directory_id, conversation_id, move |workspace| {
+        changes::commit(
+            &PathBuf::from(&workspace.require_worktree()?.path),
+            &message,
+        )
+    })
+    .await
 }
 
 #[tauri::command]
 pub async fn agent_branch_changes(
     directory_id: String,
     conversation_id: String,
-    directories: State<'_, DirectoryGrants>,
-    root: State<'_, WorktreeRoot>,
+    app: AppHandle,
 ) -> Result<BranchChanges, String> {
-    let workspace = resolve(&directories, &root, &directory_id, &conversation_id)?;
-    let worktree = workspace.require_worktree()?.clone();
-    let repository = workspace.repository;
-
-    blocking(move || changes::branch_changes(&repository, &worktree)).await
+    in_workspace(app, directory_id, conversation_id, |workspace| {
+        changes::branch_changes(&workspace.repository, workspace.require_worktree()?)
+    })
+    .await
 }

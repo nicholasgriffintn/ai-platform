@@ -91,6 +91,7 @@ export interface TaskInboxRow {
   updated_at: string;
   completed_at: string | null;
   read_at: string | null;
+  unread_total: number;
 }
 
 export interface TaskNotificationDeliveryContext {
@@ -316,7 +317,8 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
          pt.conversation_id,
          pt.updated_at,
          pt.completed_at,
-         receipt.read_at
+         receipt.read_at,
+         SUM(receipt.read_at IS NULL) OVER () AS unread_total
        ${INBOX_SOURCE}
        ORDER BY (receipt.read_at IS NULL) DESC, pt.updated_at DESC
        LIMIT ?`,
@@ -324,57 +326,54 @@ export class TaskNotificationRepository extends BaseRepository<Pick<IEnv, "DB" |
     );
   }
 
-  /** Unread inbox items across the whole inbox, not only the page listInbox returns. */
-  async countUnreadInbox(userId: number): Promise<number> {
-    const row = await this.runQuery<{ unread: number }>(
-      `SELECT COUNT(*) AS unread
-       ${INBOX_SOURCE}
-         AND receipt.read_at IS NULL`,
-      [userId, userId, userId, userId, userId],
-      true,
-    );
-
-    return row?.unread ?? 0;
-  }
-
   async updateInboxReceipts(
     userId: number,
     itemIds: string[],
     action: "read" | "dismiss",
   ): Promise<number> {
-    const changes = await Promise.all(
-      [...new Set(itemIds)].map(async (itemId) => {
-        const parsed = parseTaskInboxItemId(itemId);
-
-        if (!parsed) {
-          return 0;
-        }
-
-        const timestampColumn = action === "read" ? "read_at" : "dismissed_at";
-        const result = await this.executeRun(
-          `INSERT INTO user_resource_state
-           (resource_type, user_id, task_id, task_version, read_at, dismissed_at)
-         SELECT 'task', ?, pt.id, pt.attention_version,
-           ${action === "read" ? "CURRENT_TIMESTAMP" : "NULL"},
-           ${action === "dismiss" ? "CURRENT_TIMESTAMP" : "NULL"}
-         FROM project_task pt
-         JOIN resource_grant member ON member.kind = 'membership' AND member.workspace_id = pt.workspace_id AND member.user_id = ?
-         WHERE pt.id = ? AND pt.attention_version = ?
-           AND (
-             pt.status IN ('blocked', 'review')
-             OR (pt.status = 'backlog' AND pt.assignee_user_id = ?)
-             OR (pt.status = 'done' AND (pt.created_by_user_id = ? OR pt.assignee_user_id = ?))
-           )
-         ON CONFLICT(user_id, task_id, task_version) WHERE task_id IS NOT NULL DO UPDATE SET
-           ${timestampColumn} = CURRENT_TIMESTAMP`,
-          [userId, userId, parsed.taskId, parsed.taskVersion, userId, userId, userId],
-        );
-
-        return result.meta.changes ?? 0;
-      }),
+    const timestampColumn = action === "read" ? "read_at" : "dismissed_at";
+    const statement = this.env.DB.prepare(
+      `INSERT INTO user_resource_state
+         (resource_type, user_id, task_id, task_version, read_at, dismissed_at)
+       SELECT 'task', ?, pt.id, pt.attention_version,
+         ${action === "read" ? "CURRENT_TIMESTAMP" : "NULL"},
+         ${action === "dismiss" ? "CURRENT_TIMESTAMP" : "NULL"}
+       FROM project_task pt
+       JOIN resource_grant member ON member.kind = 'membership' AND member.workspace_id = pt.workspace_id AND member.user_id = ?
+       WHERE pt.id = ? AND pt.attention_version = ?
+         AND (
+           pt.status IN ('blocked', 'review')
+           OR (pt.status = 'backlog' AND pt.assignee_user_id = ?)
+           OR (pt.status = 'done' AND (pt.created_by_user_id = ? OR pt.assignee_user_id = ?))
+         )
+       ON CONFLICT(user_id, task_id, task_version) WHERE task_id IS NOT NULL DO UPDATE SET
+         ${timestampColumn} = CURRENT_TIMESTAMP`,
     );
+    const statements = [...new Set(itemIds)].flatMap((itemId) => {
+      const parsed = parseTaskInboxItemId(itemId);
 
-    return changes.reduce((total, change) => total + change, 0);
+      return parsed
+        ? [
+            statement.bind(
+              userId,
+              userId,
+              parsed.taskId,
+              parsed.taskVersion,
+              userId,
+              userId,
+              userId,
+            ),
+          ]
+        : [];
+    });
+
+    if (statements.length === 0) {
+      return 0;
+    }
+
+    const results = await this.executeBatch(statements);
+
+    return results.reduce((total, result) => total + (result.meta.changes ?? 0), 0);
   }
 
   async createDeliveries(

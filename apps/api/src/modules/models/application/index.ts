@@ -67,14 +67,16 @@ export async function listModels(env: IEnv, user?: IUser): Promise<ModelConfig> 
     excludeModalities: [...CATALOGUE_EXCLUDED_MODALITIES],
     chatSurfaceOnly: true,
   });
-  const filteredModels = await filterModelsForUserAccess(allModels, env, user?.id, {
-    shouldUseCache: false,
-    includePlatformModels: true,
-  });
+  const [filteredModels, benchmarks] = await Promise.all([
+    filterModelsForUserAccess(allModels, env, user?.id, {
+      shouldUseCache: false,
+      includePlatformModels: true,
+    }),
+    loadBenchmarkStandings(env, user?.id),
+  ]);
   const executableModelIds = new Set(
     Object.keys(getExecutableModelsForAccount(filteredModels, user)),
   );
-  const benchmarks = await loadBenchmarkStandings(env, user?.id);
 
   return Object.fromEntries(
     Object.entries(includeModelIds(filteredModels)).map(([id, model]) => {

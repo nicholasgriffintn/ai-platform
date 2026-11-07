@@ -90,7 +90,9 @@ const renderTextContent = (
     for (let i = 0; i < textParts.length; i++) {
       if (textParts[i]) {
         renderedParts.push(
-          <MemoizedMarkdown key={`content-${i}`}>{textParts[i]}</MemoizedMarkdown>,
+          <MemoizedMarkdown key={`content-${i}`} incremental={isGenerating}>
+            {textParts[i]}
+          </MemoizedMarkdown>,
         );
       }
 
@@ -196,7 +198,9 @@ const renderTextContent = (
       {messageData?.searchGrounding && (
         <SearchGroundingSection searchGrounding={messageData.searchGrounding} />
       )}
-      <MemoizedMarkdown key={key}>{content}</MemoizedMarkdown>
+      <MemoizedMarkdown key={key} incremental={isGenerating}>
+        {content}
+      </MemoizedMarkdown>
       {messageData && messageData.attachments?.length > 0 && (
         <div className="space-y-4">
           {messageData.attachments.map((attachment: Attachment, i: number) => {

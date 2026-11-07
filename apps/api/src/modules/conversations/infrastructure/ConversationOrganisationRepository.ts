@@ -3,6 +3,7 @@ import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import { forgetConversationReads } from "~/modules/conversations/infrastructure/conversation-read-window";
 
 export interface ConversationUserStateRow {
   conversation_id: string;
@@ -196,6 +197,8 @@ export class ConversationOrganisationRepository extends BaseRepository {
         "DELETE FROM resource_collection WHERE collection_type = 'conversation' AND id = ?",
       ).bind(groupId),
     ]);
+
+    forgetConversationReads();
   }
 
   async setConversationGroup(params: {
@@ -216,5 +219,7 @@ export class ConversationOrganisationRepository extends BaseRepository {
         params.groupId,
       ],
     );
+
+    forgetConversationReads();
   }
 }

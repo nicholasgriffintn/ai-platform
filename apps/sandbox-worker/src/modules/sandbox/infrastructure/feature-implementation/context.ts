@@ -295,12 +295,47 @@ export async function readRepositoryFileSnippet(params: {
   };
 }
 
+async function readContextSnippet(params: {
+  sandbox: SandboxInstance;
+  repoTargetDir: string;
+  path: string;
+}): Promise<FileContextSnippet | null> {
+  const result = await readRepositoryFileSnippet({
+    ...params,
+    startLine: 1,
+    endLine: MAX_CONTEXT_SNIPPET_LINES,
+  });
+
+  return result.error || !result.content.trim()
+    ? null
+    : { path: result.path, snippet: result.content };
+}
+
 export async function collectRepositoryContext(params: {
   sandbox: SandboxInstance;
   repoTargetDir: string;
 }): Promise<RepositoryContext> {
   const { sandbox, repoTargetDir } = params;
-  const topLevelResult = await sandbox.exec(`ls -1 ${quoteShellArgument(repoTargetDir)}`);
+  const [topLevelResult, contextPaths, instructionPaths] = await Promise.all([
+    sandbox.exec(`ls -1 ${quoteShellArgument(repoTargetDir)}`),
+    discoverRepoFiles({
+      sandbox,
+      repoTargetDir,
+      findExpression:
+        "\\( -name 'README.md' -o -name 'README' -o -name 'package.json' -o " +
+        "-name 'pnpm-workspace.yaml' -o -name 'tsconfig.json' -o -name 'pyproject.toml' -o " +
+        "-name 'Cargo.toml' -o -name 'go.mod' -o -name 'requirements.txt' \\)",
+      maxFiles: MAX_CONTEXT_FILES,
+    }),
+    discoverRepoFiles({
+      sandbox,
+      repoTargetDir,
+      findExpression:
+        "\\( -name 'prd.json' -o -name 'PRD.md' -o -name 'prd.md' -o " +
+        "-path '*/tasks/prd-*.md' -o -name '.implement' -o -name '.implement.md' \\)",
+      maxFiles: MAX_INSTRUCTION_FILES,
+    }),
+  ]);
   const topLevelEntries = topLevelResult.success
     ? topLevelResult.stdout
         .split("\n")
@@ -309,75 +344,37 @@ export async function collectRepositoryContext(params: {
         .slice(0, 80)
     : [];
 
-  const contextPaths = await discoverRepoFiles({
-    sandbox,
-    repoTargetDir,
-    findExpression:
-      "\\( -name 'README.md' -o -name 'README' -o -name 'package.json' -o " +
-      "-name 'pnpm-workspace.yaml' -o -name 'tsconfig.json' -o -name 'pyproject.toml' -o " +
-      "-name 'Cargo.toml' -o -name 'go.mod' -o -name 'requirements.txt' \\)",
-    maxFiles: MAX_CONTEXT_FILES,
-  });
+  const [contextSnippets, instructionSnippets] = await Promise.all([
+    Promise.all(contextPaths.map((path) => readContextSnippet({ sandbox, repoTargetDir, path }))),
+    Promise.all(
+      instructionPaths.map(async (path) => {
+        const snippet = await readContextSnippet({ sandbox, repoTargetDir, path });
 
-  const instructionPaths = await discoverRepoFiles({
-    sandbox,
-    repoTargetDir,
-    findExpression:
-      "\\( -name 'prd.json' -o -name 'PRD.md' -o -name 'prd.md' -o " +
-      "-path '*/tasks/prd-*.md' -o -name '.implement' -o -name '.implement.md' \\)",
-    maxFiles: MAX_INSTRUCTION_FILES,
-  });
-
-  const files: FileContextSnippet[] = [];
+        return snippet
+          ? {
+              snippet,
+              parsedPrdContext: await loadRalphPrdContextForPath({
+                sandbox,
+                repoTargetDir,
+                ...snippet,
+              }),
+            }
+          : null;
+      }),
+    ),
+  ]);
+  const files = contextSnippets.filter((snippet) => snippet !== null);
   const prdInstructions: FileContextSnippet[] = [];
   const implementInstructions: FileContextSnippet[] = [];
   let prdContext: RalphPrdContext | undefined;
 
-  for (const candidatePath of contextPaths) {
-    const snippetResult = await readRepositoryFileSnippet({
-      sandbox,
-      repoTargetDir,
-      path: candidatePath,
-      startLine: 1,
-      endLine: MAX_CONTEXT_SNIPPET_LINES,
-    });
-
-    if (snippetResult.error || !snippetResult.content.trim()) {
+  for (const instruction of instructionSnippets) {
+    if (!instruction) {
       continue;
     }
 
-    files.push({
-      path: snippetResult.path,
-      snippet: snippetResult.content,
-    });
-  }
-
-  for (const candidatePath of instructionPaths) {
-    const snippetResult = await readRepositoryFileSnippet({
-      sandbox,
-      repoTargetDir,
-      path: candidatePath,
-      startLine: 1,
-      endLine: MAX_CONTEXT_SNIPPET_LINES,
-    });
-
-    if (snippetResult.error || !snippetResult.content.trim()) {
-      continue;
-    }
-
-    const parsedPrdContext = await loadRalphPrdContextForPath({
-      sandbox,
-      repoTargetDir,
-      path: snippetResult.path,
-      snippet: snippetResult.content,
-    });
-    const contextEntry = normaliseTaskInstructionSnippet(
-      {
-        path: snippetResult.path,
-        snippet: snippetResult.content,
-      },
-      parsedPrdContext,
-    );
+    const { snippet, parsedPrdContext } = instruction;
+    const contextEntry = normaliseTaskInstructionSnippet(snippet, parsedPrdContext);
 
     if (isPrdInstructionPath(contextEntry.path)) {
       if (!prdContext && parsedPrdContext) {

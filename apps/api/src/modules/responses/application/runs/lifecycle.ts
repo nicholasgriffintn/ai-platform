@@ -119,10 +119,12 @@ async function authoriseRunScope(options: CoreChatOptions) {
   }
 
   context.ensureDatabase();
-  const conversation = await context.repositories
-    .get(ConversationRepository)
-    .getConversation(conversationId);
-  const projectAccess = await resolveChatProjectAccess(context, options);
+  const [conversation, projectAccess, projectTask, childDelegation] = await Promise.all([
+    context.repositories.get(ConversationRepository).getConversation(conversationId),
+    resolveChatProjectAccess(context, options),
+    context.repositories.get(ProjectTaskRepository).getTaskByConversation(conversationId),
+    context.repositories.get(DelegationRepository).getByChildConversationId(conversationId),
+  ]);
 
   if (conversation && !conversation.project_id && !ownsResource(user.id, conversation.user_id)) {
     throw new AssistantError(
@@ -131,13 +133,6 @@ async function authoriseRunScope(options: CoreChatOptions) {
       403,
     );
   }
-
-  const projectTask = await context.repositories
-    .get(ProjectTaskRepository)
-    .getTaskByConversation(conversationId);
-  const childDelegation = await context.repositories
-    .get(DelegationRepository)
-    .getByChildConversationId(conversationId);
 
   if (
     childDelegation &&
@@ -487,6 +482,20 @@ export async function findAcceptedChatRunCommand(
     : null;
 }
 
+async function announceAcceptedRun(context: ServiceContext, run: ChatRun): Promise<void> {
+  const publisher = withoutOrigin(context);
+
+  try {
+    await publishRunChanged(publisher, run);
+    await publishConversationChanged(publisher, run.conversationId, { runId: run.id });
+  } catch (error) {
+    logger.warn("Failed to announce the accepted run", {
+      runId: run.id,
+      error: getErrorMessage(error),
+    });
+  }
+}
+
 export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLifecycle | null> {
   const scope = await authoriseRunScope(options);
 
@@ -525,12 +534,7 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
   }
 
   if (!receipt.duplicate) {
-    const publisher = withoutOrigin(scope.context);
-
-    await publishRunChanged(publisher, receipt.run);
-    await publishConversationChanged(publisher, receipt.run.conversationId, {
-      runId: receipt.run.id,
-    });
+    scope.context.waitUntil(announceAcceptedRun(scope.context, receipt.run));
 
     if (receipt.kind === "interaction_response" && teammateRunNeedsReconciliation(receipt.run)) {
       await reconcileTeammateRun(scope.context, receipt.run);

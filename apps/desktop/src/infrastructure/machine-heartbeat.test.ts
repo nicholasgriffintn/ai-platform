@@ -1,7 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { ConnectedDesktopBackend, DesktopDiagnostics } from "./desktop-backend";
-import { buildMachineHeartbeatPayload, createMachineHeartbeatScheduler } from "./machine-heartbeat";
+import {
+  AGENT_PROBE_INTERVAL_MS,
+  buildMachineHeartbeatPayload,
+  createAgentRuntimeReader,
+  createMachineHeartbeatScheduler,
+} from "./machine-heartbeat";
 
 const diagnostics: DesktopDiagnostics = {
   appVersion: "0.1.0",
@@ -93,6 +98,27 @@ describe("machine heartbeat", () => {
     expect(serialised).not.toContain("127.0.0.1");
     expect(serialised).not.toContain("11434");
     expect(serialised).not.toContain("/Users/someone");
+  });
+
+  it("reuses agent probes between heartbeats until the probe interval passes", async () => {
+    let now = 0;
+    const probeAgentTool = vi.fn().mockResolvedValue({
+      state: "missing",
+      checkedAt: "2026-09-07T09:00:00.000Z",
+    });
+    const backend = { probeAgentTool } as unknown as ConnectedDesktopBackend;
+    const readAgentRuntimes = createAgentRuntimeReader(() => now);
+
+    await readAgentRuntimes(backend);
+    const probesPerRead = probeAgentTool.mock.calls.length;
+
+    now = AGENT_PROBE_INTERVAL_MS - 1;
+    await readAgentRuntimes(backend);
+    expect(probeAgentTool).toHaveBeenCalledTimes(probesPerRead);
+
+    now = AGENT_PROBE_INTERVAL_MS;
+    await readAgentRuntimes(backend);
+    expect(probeAgentTool).toHaveBeenCalledTimes(probesPerRead * 2);
   });
 
   it("runs immediately, avoids overlapping heartbeats and re-runs after a pending trigger", async () => {

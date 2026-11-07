@@ -1,20 +1,39 @@
-import type { ComponentType } from "react";
+import { type ComponentType, lazy, Suspense } from "react";
 import { Route, Routes } from "react-router";
 
 import { DESKTOP_LAYOUTS } from "./layouts";
-import { readPageComponents } from "./pages/registry";
-import { DESKTOP_ROUTE_DEFINITIONS, type DesktopRouteDefinition } from "./route-definitions";
+import { readPageModules } from "./pages/registry";
+import {
+  DESKTOP_ROUTE_DEFINITIONS,
+  type DesktopRouteDefinition,
+  readPageForPath,
+} from "./route-definitions";
 
-const COMPONENTS = new Map(
-  readPageComponents(
-    import.meta.glob<{ default: ComponentType }>("./pages/*/page.tsx", { eager: true }),
-  ).map(({ page, Page }) => [page, Page]),
+const LOADERS = new Map(
+  readPageModules(import.meta.glob<{ default: ComponentType }>("./pages/*/page.tsx")).map(
+    ({ page, load }) => [page, load],
+  ),
 );
+const COMPONENTS = new Map([...LOADERS].map(([page, load]) => [page, lazy(load)]));
+
+export async function preloadPage(pathname: string): Promise<void> {
+  await LOADERS.get(readPageForPath(pathname) ?? "")?.();
+}
 
 function renderRoute({ path, page }: DesktopRouteDefinition) {
   const Page = COMPONENTS.get(page);
 
-  return Page ? <Route key={path} path={path} element={<Page />} /> : null;
+  return Page ? (
+    <Route
+      key={path}
+      path={path}
+      element={
+        <Suspense fallback={null}>
+          <Page />
+        </Suspense>
+      }
+    />
+  ) : null;
 }
 
 function groupByLayout(definitions: readonly DesktopRouteDefinition[]) {

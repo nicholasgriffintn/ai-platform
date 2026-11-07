@@ -3,7 +3,7 @@ import Combine
 
 @MainActor
 class ConversationManager: ObservableObject {
-    @Published var currentConversation: Conversation?
+    let activeConversation = ActiveConversationStore()
     @Published var composerPrefill: ComposerPrefill?
     private(set) var teammateIdsByConversation: [String: String] = [:]
     @Published var conversations: [Conversation] = []
@@ -26,6 +26,14 @@ class ConversationManager: ObservableObject {
     private var streamPublishInterval: Duration = .milliseconds(50)
     private var locallyStreamingConversationIds: Set<String> = []
     private var knownConversations: [String: Conversation] = [:]
+
+    var currentConversation: Conversation? {
+        get { activeConversation.conversation }
+        set {
+            objectWillChange.send()
+            activeConversation.conversation = newValue
+        }
+    }
 
     func configure(
         apiClient: any ConversationAPIClient,
@@ -61,14 +69,7 @@ class ConversationManager: ObservableObject {
     }
 
     var pendingApprovals: [ToolApprovalRequest] {
-        let pending = (currentConversation?.messages ?? []).filter { message in
-            message.role == "tool" && message.status == "pending"
-                && message.approvalRequest.map { !$0.isResolved && $0.isDirectResolution } == true
-        }
-        let runId = pending.last?.runId
-        return pending
-            .filter { runId == nil || $0.runId == runId }
-            .compactMap(\.approvalRequest)
+        activeConversation.pendingApprovals
     }
 
     func decideApproval(_ request: ToolApprovalRequest, option: String) async {
@@ -918,7 +919,11 @@ class ConversationManager: ObservableObject {
         }
 
         if currentConversation?.id == conversation.id {
-            currentConversation = conversation
+            if updateList {
+                currentConversation = conversation
+            } else {
+                activeConversation.conversation = conversation
+            }
         }
     }
 
@@ -1260,6 +1265,22 @@ class ConversationManager: ObservableObject {
             currentTaskActivity = nil
             currentConnectorApproval = nil
         }
+    }
+}
+
+@MainActor
+final class ActiveConversationStore: ObservableObject {
+    @Published fileprivate(set) var conversation: Conversation?
+
+    var pendingApprovals: [ToolApprovalRequest] {
+        let pending = (conversation?.messages ?? []).filter { message in
+            message.role == "tool" && message.status == "pending"
+                && message.approvalRequest.map { !$0.isResolved && $0.isDirectResolution } == true
+        }
+        let runId = pending.last?.runId
+        return pending
+            .filter { runId == nil || $0.runId == runId }
+            .compactMap(\.approvalRequest)
     }
 }
 

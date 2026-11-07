@@ -24,6 +24,7 @@ struct PolychatApp: App {
             ContentView()
                 .environmentObject(authManager)
                 .environmentObject(conversationManager)
+                .environmentObject(conversationManager.activeConversation)
                 .environmentObject(apiClient)
                 .environmentObject(modelsStore)
                 .environmentObject(notificationManager)

@@ -115,3 +115,14 @@ export function moveCopy<T>(values: readonly T[], from: number, to: number): T[]
 
   return next;
 }
+
+export function byNameThenId<T extends { id: string | number; name: string }>(
+  left: T,
+  right: T,
+): number {
+  if (left.name !== right.name) {
+    return left.name < right.name ? -1 : 1;
+  }
+
+  return left.id < right.id ? -1 : left.id > right.id ? 1 : 0;
+}

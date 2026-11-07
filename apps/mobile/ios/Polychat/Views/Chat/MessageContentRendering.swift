@@ -157,11 +157,9 @@ private struct TextContentSection: View {
     let data: ChatMessageData?
     let isStreaming: Bool
 
-    private var formatted: FormattedMessageContent {
-        MessageFormatting.formattedMessageContent(role: role, originalContent: text)
-    }
-
     var body: some View {
+        let formatted = MessageFormatting.formattedMessageContent(role: role, originalContent: text)
+
         VStack(alignment: .leading, spacing: 10) {
             if let reasoning, !reasoning.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 ReasoningSectionView(reasoning: reasoning)

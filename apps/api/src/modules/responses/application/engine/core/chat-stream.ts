@@ -11,6 +11,7 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
 import { closeComposioConnectorRun } from "~/modules/connectors/application/composio-run";
+import type { ConversationManager } from "~/modules/conversations/application/manager";
 import {
   runAgentLoop,
   type AgentLoopExecutionParams,
@@ -22,6 +23,7 @@ import {
 import {
   createChatSseStreamWriter,
   startChatStreamHeartbeat,
+  type ChatEventSink,
 } from "~/modules/responses/application/engine/streaming/emitter";
 import { writeTurnActivity } from "~/modules/responses/application/engine/streaming/turn-activity";
 import { watchTurnCancellation } from "~/modules/responses/application/engine/streaming/turn-cancellation";
@@ -57,6 +59,21 @@ export function createChatRunReceiptStream(receipt: ChatRunCommandReceipt): Read
   })();
 
   return stream.readable;
+}
+
+async function writeUsageLimits(
+  sink: ChatEventSink,
+  conversationManager: ConversationManager,
+): Promise<void> {
+  try {
+    const usageLimits = await conversationManager.getUsageLimits();
+
+    if (usageLimits) {
+      await sink.write({ type: "response.usage_limits", usage_limits: usageLimits });
+    }
+  } catch (error) {
+    logger.warn("Failed to write usage limits", { error });
+  }
 }
 
 export function createChatTurnStream(params: CreateChatTurnStreamParams): ReadableStream {
@@ -133,14 +150,7 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
         await stream.write(prelude);
       }
 
-      const usageLimits = await params.conversationManager.getUsageLimits();
-
-      if (usageLimits) {
-        await stream.write({
-          type: "response.usage_limits",
-          usage_limits: usageLimits,
-        });
-      }
+      const usageLimitsWritten = writeUsageLimits(stream, params.conversationManager);
 
       const result = await runAgentLoop({
         ...params,
@@ -160,6 +170,8 @@ export function createChatTurnStream(params: CreateChatTurnStreamParams): Readab
             }
           : undefined,
       });
+
+      await usageLimitsWritten;
 
       if (params.runLifecycle) {
         await params.runLifecycle.complete(result);

@@ -6,7 +6,7 @@ import { hidePolyPerch, openPolyWindow } from "./infrastructure/poly-bridge";
 
 const PERCH_PET_SIZE = 76;
 
-export function PerchWindow() {
+export default function PerchWindow() {
   const isAuthenticated = useChatStore((state) => state.isAuthenticated);
   const { data: agenda } = usePolyAgenda(isAuthenticated);
   const presence = useCharacterPresence({ conversationId: agenda?.conversation_id });

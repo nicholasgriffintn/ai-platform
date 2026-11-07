@@ -15,10 +15,13 @@ import {
 import { lazy, Suspense, useCallback, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-import { FileViewerOverlay } from "../Files/Viewer/FileViewerOverlay.js";
-import { PolyOverlay } from "../Poly/PolyOverlay.js";
+import { LazyFileViewerOverlay } from "../Files/Viewer/LazyFileViewerOverlay.js";
 import { usePolyPresentation } from "../Poly/usePolyPresentation.js";
 import { useShellHost } from "./ShellHostContext.js";
+
+const PolyOverlay = lazy(() =>
+  import("../Poly/PolyOverlay.js").then((module) => ({ default: module.PolyOverlay })),
+);
 
 const ProjectPickerDialog = lazy(() =>
   import("../Work/ProjectPickerDialog.js").then((module) => ({
@@ -108,8 +111,12 @@ export function ShellDialogs() {
 
   return (
     <>
-      {polyPresentation === "window" && <PolyOverlay open onClose={() => setShowPoly(false)} />}
-      <FileViewerOverlay />
+      {polyPresentation === "window" && (
+        <Suspense fallback={null}>
+          <PolyOverlay open onClose={() => setShowPoly(false)} />
+        </Suspense>
+      )}
+      <LazyFileViewerOverlay />
       {projectPicker && (
         <Suspense fallback={null}>
           <ProjectPickerDialog

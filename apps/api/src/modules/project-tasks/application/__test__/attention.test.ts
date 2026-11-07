@@ -77,7 +77,6 @@ function context(overrides: Record<string, unknown> = {}): ServiceContext {
         TaskNotificationRepository,
         {
           listInbox: vi.fn().mockResolvedValue([]),
-          countUnreadInbox: vi.fn().mockResolvedValue(0),
           updateInboxReceipts: vi.fn().mockResolvedValue(1),
           upsertRegistration: vi.fn().mockResolvedValue({
             id: "registration-1",
@@ -136,6 +135,7 @@ describe("task attention inbox", () => {
         updated_at: "2026-09-05T12:00:00.000Z",
         completed_at: null,
         read_at: null,
+        unread_total: 64,
       },
       {
         task_id: "done-task",
@@ -153,12 +153,9 @@ describe("task attention inbox", () => {
         updated_at: "2026-09-05T12:01:00.000Z",
         completed_at: "2026-09-05T12:01:00.000Z",
         read_at: "2026-09-05T12:02:00.000Z",
+        unread_total: 64,
       },
     ]);
-
-    vi.mocked(
-      serviceContext.repositories.get(TaskNotificationRepository).countUnreadInbox,
-    ).mockResolvedValue(64);
 
     const response = await listProjectTaskAttention(serviceContext);
 

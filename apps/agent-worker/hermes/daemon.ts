@@ -12,8 +12,9 @@ import { z } from "zod";
 
 const HERMES_URL = "http://127.0.0.1:8642";
 const API_SERVER_KEY = randomUUID();
-const HEALTH_ATTEMPTS = 240;
-const RUN_POLL_MS = 1_000;
+const HEALTH_ATTEMPTS = 1_200;
+const HEALTH_POLL_MS = 100;
+const RUN_POLL_MS = 250;
 const TERMINAL_STATUSES = new Set(["completed", "failed", "cancelled", "interrupted"]);
 
 const hermesEventSchema = z.object({
@@ -56,7 +57,7 @@ async function waitForHealth(): Promise<void> {
       return;
     }
 
-    await delay(500);
+    await delay(HEALTH_POLL_MS);
   }
 
   throw new Error("Hermes did not become healthy");

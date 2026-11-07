@@ -120,11 +120,12 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
   public async createTaskIfAbsent(
     params: CreateTaskParams & { id: string },
   ): Promise<{ task: Task | null; created: boolean }> {
-    const result = await this.executeRun(
+    const [inserted] = await this.runQuery<Task>(
       `INSERT OR IGNORE INTO tasks (
 				id, task_type, user_id, project_id, task_data, schedule_type, scheduled_at,
 				cron_expression, priority, metadata, created_by, status, attempts, max_attempts
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, 3)`,
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0, 3)
+			RETURNING *`,
       [
         params.id,
         params.task_type,
@@ -139,15 +140,14 @@ export class TaskRepository extends BaseRepository<Pick<IEnv, "DB">> {
         params.created_by,
       ],
     );
-    const task = await this.getTaskById(params.id);
 
-    const created = Boolean(result.meta?.changes);
-
-    if (created) {
-      this.announce(task);
+    if (!inserted) {
+      return { task: await this.getTaskById(params.id), created: false };
     }
 
-    return { task, created };
+    this.announce(inserted);
+
+    return { task: this.parseTask(inserted), created: true };
   }
 
   public async getTaskById(taskId: string): Promise<Task | null> {

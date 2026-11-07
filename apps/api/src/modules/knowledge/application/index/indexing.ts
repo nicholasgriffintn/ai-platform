@@ -220,16 +220,12 @@ export async function indexKnowledgeResource(
   );
 }
 
-async function revisionTaskId(
-  env: IEnv,
+function revisionTaskId(
   resourceType: IndexedResourceType,
   resourceId: string,
-): Promise<string | undefined> {
-  const resource = await new KnowledgeIndexRepository(env).getResource(resourceType, resourceId);
-
-  return resource
-    ? `${SOURCE_KNOWLEDGE_INDEX_TASK_TYPE}:${resourceType}:${resourceId}:${resource.search_revision}`
-    : undefined;
+  revision: number,
+): string {
+  return `${SOURCE_KNOWLEDGE_INDEX_TASK_TYPE}:${resourceType}:${resourceId}:${revision}`;
 }
 
 function indexTask(
@@ -251,9 +247,11 @@ export async function enqueueKnowledgeProcessing(
   userId: number,
   resourceType: IndexedResourceType = "source",
 ): Promise<void> {
+  const current = await new KnowledgeIndexRepository(env).getResource(resourceType, resource.id);
+
   await new TaskService(env, new TaskRepository(env)).enqueueTask({
     ...indexTask(resource, userId, resourceType),
-    id: await revisionTaskId(env, resourceType, resource.id),
+    id: current ? revisionTaskId(resourceType, resource.id, current.search_revision) : undefined,
   });
 }
 
@@ -277,7 +275,10 @@ export async function scheduleKnowledgeIndexes(env: IEnv): Promise<number> {
   for (const candidate of candidates) {
     await tasks.enqueueTask({
       ...indexTask(candidate, candidate.user_id ?? undefined, candidate.resource_type),
-      id: await revisionTaskId(env, candidate.resource_type, candidate.id),
+      id:
+        candidate.search_revision === null
+          ? undefined
+          : revisionTaskId(candidate.resource_type, candidate.id, candidate.search_revision),
     });
   }
 

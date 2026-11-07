@@ -240,20 +240,27 @@ export class ConversationManager {
   }
 
   private async incrementUsageForAssistantResponse(messages: Message[]): Promise<void> {
-    for (const message of messages) {
-      if (
+    const attempts = messages.filter(
+      (message) =>
         message.role === "assistant" &&
         !hasSnapshotPart(message) &&
-        !isCompactionMarkerMessage(message)
-      ) {
-        try {
-          await this.usageManager.incrementUsage();
-          break;
-        } catch (error) {
-          logger.error("Failed to increment usage:", {
-            error_message: error instanceof Error ? error.message : "Unknown error",
-          });
-        }
+        !isCompactionMarkerMessage(message),
+    ).length;
+
+    if (attempts === 0) {
+      return;
+    }
+
+    await this.assertWriteOwnership();
+
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      try {
+        await this.usageManager.incrementUsage();
+        break;
+      } catch (error) {
+        logger.error("Failed to increment usage:", {
+          error_message: error instanceof Error ? error.message : "Unknown error",
+        });
       }
     }
   }
@@ -388,15 +395,18 @@ export class ConversationManager {
 
     const selectionUpdates: Record<string, unknown> = {};
 
-    if (options?.model_id !== undefined) {
+    if (options?.model_id !== undefined && options.model_id !== conversation.model_id) {
       selectionUpdates.model_id = options.model_id;
     }
 
-    if (options?.model_tier !== undefined) {
+    if (options?.model_tier !== undefined && options.model_tier !== conversation.model_tier) {
       selectionUpdates.model_tier = options.model_tier;
     }
 
-    if (options?.permission_mode !== undefined) {
+    if (
+      options?.permission_mode !== undefined &&
+      options.permission_mode !== conversation.permission_mode
+    ) {
       selectionUpdates.permission_mode = options.permission_mode;
     }
 
@@ -539,7 +549,6 @@ export class ConversationManager {
 
     const normalisedMessages = this.prepareMessagesForStorage(messages);
 
-    await this.assertWriteOwnership();
     await this.incrementUsageForAssistantResponse(normalisedMessages);
 
     if (!this.store) {
@@ -579,7 +588,6 @@ export class ConversationManager {
   ): Promise<void> {
     const normalisedMessages = this.prepareMessagesForStorage([snapshotMessage, compactionMessage]);
 
-    await this.assertWriteOwnership();
     await this.incrementUsageForAssistantResponse(normalisedMessages);
 
     if (!this.store) {

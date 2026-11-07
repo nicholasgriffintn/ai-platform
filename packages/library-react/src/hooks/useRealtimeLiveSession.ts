@@ -42,7 +42,6 @@ import {
   type RealtimeLiveProviderOption,
   type RealtimeLiveStatus,
 } from "@ngriffin_uk/polychat-library-realtime/live-providers";
-import { connectRealtimeLiveKit } from "@ngriffin_uk/polychat-library-realtime/livekit";
 import {
   extractRealtimeErrorMessage,
   extractRealtimeEvent,
@@ -969,7 +968,10 @@ export function useRealtimeLiveSession({
       lease: RealtimeSessionLease,
       selectedModel?: string | null,
     ) => {
-      const audioStream = await ensureAudioStream();
+      const [audioStream, { connectRealtimeLiveKit }] = await Promise.all([
+        ensureAudioStream(),
+        import("@ngriffin_uk/polychat-library-realtime/livekit"),
+      ]);
 
       if (!sessionController.isCurrent(lease)) {
         releaseAudioStream(audioStream);

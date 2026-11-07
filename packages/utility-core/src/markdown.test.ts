@@ -4,6 +4,7 @@ import {
   fixMarkdown,
   removeMarkdownBlock,
   splitMarkdownBlocks,
+  splitMarkdownSegments,
   stripModelControlTokens,
 } from "./markdown";
 
@@ -90,5 +91,37 @@ describe("stripModelControlTokens", () => {
     expect(stripModelControlTokens("analysis of the assistant role")).toBe(
       "analysis of the assistant role",
     );
+  });
+});
+
+describe("splitMarkdownSegments", () => {
+  const texts = (markdown: string) => splitMarkdownSegments(markdown).map(({ text }) => text);
+
+  it("splits top-level blocks at blank lines", () => {
+    expect(texts("## Title\n\nFirst.\n\nSecond.")).toEqual(["## Title", "First.", "Second."]);
+  });
+
+  it("keeps a fenced block whole, including blank lines and shorter fences", () => {
+    const fenced = "````md\nfirst\n\n```\n\nnot closed\n````";
+
+    expect(texts(`Before.\n\n${fenced}\n\nAfter.`)).toEqual(["Before.", fenced, "After."]);
+  });
+
+  it("does not split inside an unterminated fence", () => {
+    const open = "```ts\nconst a = 1;\n\nconst b = 2;";
+
+    expect(texts(`Intro.\n\n${open}`)).toEqual(["Intro.", open]);
+  });
+
+  it("keeps loose lists and indented continuations together", () => {
+    const list = "- one\n\n- two\n\n  continuation\n\n1. three";
+
+    expect(texts(`${list}\n\nAfter.`)).toEqual([list, "After."]);
+  });
+
+  it("keeps settled segments stable as text streams in", () => {
+    const settled = splitMarkdownSegments("One.\n\nTwo.\n\nThr").slice(0, 2);
+
+    expect(splitMarkdownSegments("One.\n\nTwo.\n\nThree is here.").slice(0, 2)).toEqual(settled);
   });
 });

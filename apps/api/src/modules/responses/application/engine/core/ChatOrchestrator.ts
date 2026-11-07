@@ -16,6 +16,7 @@ import { resolveServiceContext } from "~/infrastructure/context/serviceContext";
 import { closeComposioConnectorRun } from "~/modules/connectors/application/composio-run";
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { SessionManager } from "~/modules/conversations/application/SessionManager";
+import { withConversationReadWindow } from "~/modules/conversations/infrastructure/conversation-read-window";
 import {
   acquireThread,
   threadLockError,
@@ -147,6 +148,21 @@ export class ChatOrchestrator {
     });
   }
 
+  private validateAndFindAcceptedRun(requestOptions: CoreChatOptions) {
+    return withConversationReadWindow(async () => {
+      const validationResult = await this.validator.validate(requestOptions);
+      const options = applyTierReasoningEffort(
+        requestOptions,
+        validationResult.context.reasoningEffort,
+      );
+      const existingRun = validationResult?.validation?.isValid
+        ? await findAcceptedChatRunCommand(options)
+        : null;
+
+      return { validationResult, options, existingRun };
+    });
+  }
+
   async process(requestOptions: CoreChatOptions) {
     let options = requestOptions;
 
@@ -159,9 +175,10 @@ export class ChatOrchestrator {
         }
       }
 
-      const validationResult = await this.validator.validate(options);
+      const admission = await this.validateAndFindAcceptedRun(options);
+      const { validationResult, existingRun } = admission;
 
-      options = applyTierReasoningEffort(options, validationResult.context.reasoningEffort);
+      options = admission.options;
 
       if (!validationResult?.validation?.isValid) {
         logger.warn("Validation failed", {
@@ -187,8 +204,6 @@ export class ChatOrchestrator {
           rawViolations: validationResult.validation.rawViolations,
         };
       }
-
-      const existingRun = await findAcceptedChatRunCommand(options);
 
       if (existingRun) {
         return {
@@ -234,7 +249,7 @@ export class ChatOrchestrator {
       let result: Awaited<ReturnType<typeof this.executeRequest>>;
 
       try {
-        runLifecycle = await acceptChatRun(options);
+        runLifecycle = await withConversationReadWindow(() => acceptChatRun(options));
 
         if (runLifecycle?.receipt.duplicate) {
           await release();
@@ -248,11 +263,9 @@ export class ChatOrchestrator {
           };
         }
 
-        const prepared = await this.preparer.prepare(
-          options,
-          validationResult.context,
-          threadLease,
-          runLifecycle?.run.id,
+        const runId = runLifecycle?.run.id;
+        const prepared = await withConversationReadWindow(() =>
+          this.preparer.prepare(options, validationResult.context, threadLease, runId),
         );
 
         const runProvenance = resolveRunProvenance({

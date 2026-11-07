@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ToolApprovalCard: View {
     @EnvironmentObject private var conversationManager: ConversationManager
+    @EnvironmentObject private var activeConversation: ActiveConversationStore
     let request: ToolApprovalRequest
     let isPending: Bool
 
@@ -20,7 +21,7 @@ struct ToolApprovalCard: View {
 
         guard let decision else { return nil }
 
-        let waiting = conversationManager.pendingApprovals.filter {
+        let waiting = activeConversation.pendingApprovals.filter {
             conversationManager.approvalDecisions[$0.interactionId] == nil
         }.count
         if conversationManager.isSubmittingApprovals {
@@ -77,9 +78,10 @@ struct ToolApprovalCard: View {
 
 struct ToolApprovalBatchBar: View {
     @EnvironmentObject private var conversationManager: ConversationManager
+    @EnvironmentObject private var activeConversation: ActiveConversationStore
 
     var body: some View {
-        let pending = conversationManager.pendingApprovals
+        let pending = activeConversation.pendingApprovals
         let decided = pending.filter { conversationManager.approvalDecisions[$0.interactionId] != nil }.count
         let remaining = pending.count - decided
 

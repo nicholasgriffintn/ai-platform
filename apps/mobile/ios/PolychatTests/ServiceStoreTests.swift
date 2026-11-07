@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import Testing
 @testable import Polychat
@@ -204,6 +205,36 @@ struct ServiceStoreTests {
         let conversation = makeConversation(id: "pending")
 
         #expect(conversation.isTemporary == false)
+    }
+
+    @MainActor
+    @Test func streamedTokensUpdateTheTranscriptWithoutInvalidatingManagerObservers() async throws {
+        func publishCounts(deltas: Int) async throws -> (manager: Int, transcript: Int) {
+            let apiClient = ConversationAPIClientStub()
+            apiClient.streamEvents = Array(repeating: .content("token"), count: deltas) + [.messageStop, .done]
+
+            let manager = ConversationManager()
+            manager.configure(apiClient: apiClient, streamPublishInterval: .zero)
+            _ = manager.startNewConversation()
+
+            var managerCount = 0
+            var transcriptCount = 0
+            let subscriptions = [
+                manager.objectWillChange.sink { managerCount += 1 },
+                manager.activeConversation.objectWillChange.sink { transcriptCount += 1 }
+            ]
+            try await manager.addMessage(ChatMessage(role: "user", content: "Hi"))
+            subscriptions.forEach { $0.cancel() }
+
+            #expect(manager.currentConversation?.messages.last?.textContent == String(repeating: "token", count: deltas))
+            return (managerCount, transcriptCount)
+        }
+
+        let short = try await publishCounts(deltas: 1)
+        let long = try await publishCounts(deltas: 40)
+
+        #expect(long.manager == short.manager)
+        #expect(long.transcript == short.transcript + 39)
     }
 
     @MainActor

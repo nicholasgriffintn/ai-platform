@@ -17,6 +17,8 @@ export interface WorkspaceRpc extends Rpc.DurableObjectBranded {
   writeFile(path: string, content: string): Promise<void>;
 }
 
+export type WorkspaceTarget = Pick<WorkspaceRpc, "exec" | "readFile" | "writeFile">;
+
 export interface Env {
   POLYCHAT_API: Fetcher;
   JWT_SECRET?: string;

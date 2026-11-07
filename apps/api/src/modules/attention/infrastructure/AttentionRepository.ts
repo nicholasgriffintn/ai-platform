@@ -5,6 +5,7 @@ import type {
   WorkAttentionType,
 } from "@ngriffin_uk/polychat-schemas";
 import { SANDBOX_RUNS_CAPABILITY_ID } from "@ngriffin_uk/polychat-schemas";
+import { byNameThenId } from "@ngriffin_uk/polychat-utility-core";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import { isConversationUnread } from "~/modules/conversations/application/conversation-unread";
@@ -26,11 +27,17 @@ interface AttentionRow {
   title: string;
   detail: string | null;
   occurred_at: string;
+  total: number;
 }
 
 interface CountRow {
   total: number;
 }
+
+type FacetRow = Pick<
+  AttentionRow,
+  "workspace_id" | "workspace_name" | "project_id" | "project_name" | "owner_user_id" | "owner_name"
+>;
 
 const CANDIDATES_QUERY = `
   WITH candidates AS (
@@ -318,86 +325,73 @@ function formatItem(row: AttentionRow): WorkAttentionItem {
   };
 }
 
+function candidateValues(userId: number): unknown[] {
+  return [
+    userId,
+    userId,
+    userId,
+    userId,
+    SANDBOX_RUNS_CAPABILITY_ID,
+    userId,
+    userId,
+    userId,
+    userId,
+  ];
+}
+
 export class AttentionRepository extends BaseRepository {
   async list(userId: number, query: WorkAttentionQuery) {
     const filters = filtersQuery(query);
-    const baseValues = [
-      userId,
-      userId,
-      userId,
-      userId,
-      SANDBOX_RUNS_CAPABILITY_ID,
-      userId,
-      userId,
-      userId,
-      userId,
-    ];
+    const baseValues = candidateValues(userId);
     const cursor = query.after
-      ? `${filters.sql ? " AND" : " WHERE"} (occurred_at, id) < (SELECT occurred_at, id FROM candidates WHERE id = ?)`
+      ? " WHERE (occurred_at, id) < (SELECT occurred_at, id FROM candidates WHERE id = ?)"
       : "";
-    const [rows, count] = await Promise.all([
-      this.runQuery<AttentionRow>(
-        `${CANDIDATES_QUERY}
-         SELECT * FROM candidates${filters.sql}${cursor}
-         ORDER BY occurred_at DESC, id DESC
-         LIMIT ?`,
-        [...baseValues, ...filters.values, ...(query.after ? [query.after] : []), query.limit + 1],
-      ),
-      this.runQuery<CountRow>(
-        `${CANDIDATES_QUERY}
-         SELECT COUNT(*) AS total FROM candidates${filters.sql}`,
-        [...baseValues, ...filters.values],
-        true,
-      ),
-    ]);
+    const rows = await this.runQuery<AttentionRow>(
+      `${CANDIDATES_QUERY}
+       SELECT * FROM (SELECT *, COUNT(*) OVER () AS total FROM candidates${filters.sql})${cursor}
+       ORDER BY occurred_at DESC, id DESC
+       LIMIT ?`,
+      [...baseValues, ...filters.values, ...(query.after ? [query.after] : []), query.limit + 1],
+    );
 
-    return { items: rows.map(formatItem), total: count?.total ?? 0 };
+    if (rows.length > 0 || !query.after) {
+      return { items: rows.map(formatItem), total: rows[0]?.total ?? 0 };
+    }
+
+    const count = await this.runQuery<CountRow>(
+      `${CANDIDATES_QUERY}
+       SELECT COUNT(*) AS total FROM candidates${filters.sql}`,
+      [...baseValues, ...filters.values],
+      true,
+    );
+
+    return { items: [], total: count?.total ?? 0 };
   }
 
   async listFacets(userId: number) {
-    const baseValues = [
-      userId,
-      userId,
-      userId,
-      userId,
-      SANDBOX_RUNS_CAPABILITY_ID,
-      userId,
-      userId,
-      userId,
-      userId,
-    ];
-    const [workspaces, projects, owners] = await Promise.all([
-      this.runQuery<{ id: string; name: string }>(
-        `${CANDIDATES_QUERY}
-         SELECT DISTINCT workspace_id AS id, workspace_name AS name
-         FROM candidates
-         ORDER BY name ASC, id ASC`,
-        baseValues,
-      ),
-      this.runQuery<{ id: string; workspace_id: string; name: string }>(
-        `${CANDIDATES_QUERY}
-         SELECT DISTINCT project_id AS id, workspace_id, project_name AS name
-         FROM candidates
-         ORDER BY name ASC, id ASC`,
-        baseValues,
-      ),
-      this.runQuery<{ id: number; name: string }>(
-        `${CANDIDATES_QUERY}
-         SELECT DISTINCT owner_user_id AS id, owner_name AS name
-         FROM candidates
-         ORDER BY name ASC, id ASC`,
-        baseValues,
-      ),
-    ]);
+    const rows = await this.runQuery<FacetRow>(
+      `${CANDIDATES_QUERY}
+       SELECT DISTINCT workspace_id, workspace_name, project_id, project_name, owner_user_id, owner_name
+       FROM candidates`,
+      candidateValues(userId),
+    );
+    const workspaces = new Map(
+      rows.map((row) => [row.workspace_id, { id: row.workspace_id, name: row.workspace_name }]),
+    );
+    const projects = new Map(
+      rows.map((row) => [
+        row.project_id,
+        { id: row.project_id, workspaceId: row.workspace_id, name: row.project_name },
+      ]),
+    );
+    const owners = new Map(
+      rows.map((row) => [row.owner_user_id, { id: row.owner_user_id, name: row.owner_name }]),
+    );
 
     return {
-      workspaces,
-      projects: projects.map((project) => ({
-        id: project.id,
-        workspaceId: project.workspace_id,
-        name: project.name,
-      })),
-      owners,
+      workspaces: [...workspaces.values()].sort(byNameThenId),
+      projects: [...projects.values()].sort(byNameThenId),
+      owners: [...owners.values()].sort(byNameThenId),
     };
   }
 }

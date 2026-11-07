@@ -84,6 +84,7 @@ export interface KnowledgeIndexCandidate {
   resource_type: IndexedResourceType;
   user_id: number | null;
   project_id: string | null;
+  search_revision: number | null;
 }
 
 export const INDEXED_OUTPUT_KINDS = ["document", "deck", "sheet"] as const;
@@ -421,6 +422,7 @@ export class KnowledgeIndexRepository extends BaseRepository<Pick<IEnv, "DB">> {
          UNION SELECT resource_type, source_id AS id, user_id, project_id FROM search_document
            WHERE document_type = 'source' AND status = 'stale' AND ? = 1)
        SELECT c.resource_type, c.id, (SELECT id FROM project WHERE id = c.project_id) AS project_id,
+         (SELECT r.search_revision FROM resource r WHERE r.resource_type = c.resource_type AND r.id = c.id) AS search_revision,
          COALESCE(
            (SELECT wm.user_id FROM resource_grant wm JOIN project p ON wm.kind = 'membership' AND p.workspace_id = wm.workspace_id
             WHERE p.id = c.project_id AND wm.user_id = c.user_id LIMIT 1),

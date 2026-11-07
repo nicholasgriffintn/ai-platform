@@ -18,6 +18,7 @@ import { invoke } from "@tauri-apps/api/core";
 import z from "zod/v4";
 
 const payloadListSchema = z.string().array();
+const payloadSchema = z.string().nullable();
 
 function currentScope(): string {
   return getLocalChatScope(useChatStore.getState().user?.id);
@@ -53,9 +54,16 @@ async function write(conversation: Conversation): Promise<void> {
 }
 
 async function readOne(chatId: string): Promise<Conversation | null> {
-  const conversations = await readAll();
+  const scope = currentScope();
+  const payload = payloadSchema.parse(await invoke("read_local_chat", { scope, id: chatId }));
 
-  return conversations.find((conversation) => conversation.id === chatId) ?? null;
+  if (payload === null) {
+    return null;
+  }
+
+  const conversation = JSON.parse(payload) as Conversation;
+
+  return isConversationInLocalScope(conversation, scope) ? conversation : null;
 }
 
 export const sqliteConversationStore: LocalConversationStore = {

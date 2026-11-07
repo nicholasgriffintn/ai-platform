@@ -567,6 +567,18 @@ impl Store {
         })
     }
 
+    pub fn read_local_chat(&self, scope: &str, id: &str) -> Result<Option<String>, String> {
+        self.with_connection(|connection| {
+            connection
+                .query_row(
+                    "SELECT payload FROM local_chats WHERE scope = ?1 AND id = ?2",
+                    params![scope, id],
+                    |row| row.get(0),
+                )
+                .optional()
+        })
+    }
+
     pub fn delete_local_chat(&self, scope: &str, id: &str) -> Result<(), String> {
         self.with_connection(|connection| {
             connection.execute(
@@ -876,6 +888,14 @@ mod tests {
         assert_eq!(
             store.list_local_chats("user-1").expect("listed"),
             vec!["{\"id\":\"chat-1\"}".to_string()]
+        );
+        assert_eq!(
+            store.read_local_chat("user-1", "chat-1").expect("read"),
+            Some("{\"id\":\"chat-1\"}".to_string())
+        );
+        assert_eq!(
+            store.read_local_chat("user-1", "chat-2").expect("read"),
+            None
         );
 
         store.delete_all_local_chats("user-1").expect("cleared");

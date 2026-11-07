@@ -8,6 +8,7 @@ import {
 } from "@ngriffin_uk/polychat-utility-server/tool-calls";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
+import { forgetConversationReads } from "~/modules/conversations/infrastructure/conversation-read-window";
 import { buildAppendRunEventStatements } from "~/modules/conversations/infrastructure/run-event-statements";
 import { publishMessageChanged } from "~/modules/sync/application/conversation-events";
 import type { Message } from "~/types";
@@ -148,6 +149,8 @@ export class MessageRepository extends BaseRepository {
         )
         .bind(lastMessage.id, messages.length, conversationId),
     ]);
+
+    forgetConversationReads();
   }
 
   public async createProjectedMessage(
@@ -196,6 +199,8 @@ export class MessageRepository extends BaseRepository {
           conversationId,
         ),
     ]);
+
+    forgetConversationReads();
 
     await publishMessageChanged({ env: this.env }, conversationId, {
       messageId: message.id,
@@ -262,6 +267,8 @@ export class MessageRepository extends BaseRepository {
         )
         .bind(conversationId, conversationId, conversationId, conversationId),
     ]);
+
+    forgetConversationReads();
   }
 
   public async replaceConversationMessages(
@@ -345,6 +352,8 @@ export class MessageRepository extends BaseRepository {
           conversationId,
         ),
     ]);
+
+    forgetConversationReads();
 
     const upsertResults = results.slice(1, 1 + messages.length);
 

@@ -92,6 +92,7 @@ describe("ChatRunLifecycle", () => {
     const context = {
       user: { id: 7 },
       ensureDatabase: vi.fn(),
+      waitUntil: vi.fn(),
       repositories: fakeRepositories([
         [
           ConversationRepository,
@@ -206,6 +207,7 @@ describe("ChatRunLifecycle", () => {
       user: { id: 7 },
       requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
       ensureDatabase: vi.fn(),
+      waitUntil: vi.fn(),
       repositories: fakeRepositories([
         [
           ConversationRepository,

@@ -34,3 +34,8 @@ tauri-plugin-updater = "2"
 [features]
 default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+codegen-units = 1
+lto = true
+strip = true

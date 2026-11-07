@@ -13,7 +13,7 @@ import type z from "zod/v4";
 
 import { MAX_POLY_ATTENTION_LIMIT, MAX_POLY_READ_MESSAGES } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { listWorkAttention } from "~/modules/attention/application";
+import { listWorkAttentionPage } from "~/modules/attention/application";
 import { requireConversationAccess } from "~/modules/conversations/application/access";
 import {
   getConversationOrganisation,
@@ -490,7 +490,7 @@ export const list_attention: ApiToolDefinition = {
   execute: async (args: z.infer<typeof listAttentionInputSchema>, toolContext) => {
     const scope = requirePolyNavigationScope(toolContext, listAttentionDescriptor.name);
     const limit = Math.min(args.limit ?? DEFAULT_ATTENTION_LIMIT, MAX_POLY_ATTENTION_LIMIT);
-    const { data: items, total } = await listWorkAttention(scope.context, {
+    const { data: items, total } = await listWorkAttentionPage(scope.context, {
       ...(args.kind ? { kind: args.kind } : {}),
       ...(args.projectId ? { project_id: args.projectId } : {}),
       limit,

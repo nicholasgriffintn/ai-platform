@@ -16,13 +16,18 @@ import {
   useArtifactWorkbench,
   useProjectWorkbenchLayout,
 } from "@ngriffin_uk/polychat-library-react";
-import { useMemo, type ReactNode } from "react";
+import { lazy, Suspense, useMemo, type ReactNode } from "react";
 
 import { WorkbenchComputerPreview } from "../Work/WorkbenchComputerPreview.js";
 import { ConversationContextRail } from "./ConversationContextRail.js";
-import { ConversationTerminalPanel } from "./ConversationTerminalPanel.js";
 import { useConversationWorkbenchContext } from "./useConversationWorkbenchContext.js";
 import { WorktreeChangesPanel } from "./WorktreeChangesPanel.js";
+
+const ConversationTerminalPanel = lazy(() =>
+  import("./ConversationTerminalPanel.js").then((module) => ({
+    default: module.ConversationTerminalPanel,
+  })),
+);
 
 const CHAT_WORKBENCH_LAYOUT_KEY = "polychat:chat-workbench";
 
@@ -137,7 +142,12 @@ function ConversationWorkbenchLayoutInner({
           ) : undefined,
         terminal:
           conversationId && directoryId ? (
-            <ConversationTerminalPanel conversationId={conversationId} directoryId={directoryId} />
+            <Suspense fallback={null}>
+              <ConversationTerminalPanel
+                conversationId={conversationId}
+                directoryId={directoryId}
+              />
+            </Suspense>
           ) : undefined,
       }}
       availablePanes={["artifact", "activity", "preview", "changes", "terminal"]}
