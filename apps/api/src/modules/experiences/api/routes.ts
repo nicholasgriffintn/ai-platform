@@ -2,7 +2,7 @@ import { Hono } from "hono";
 
 import { requireAuth } from "~/middleware/auth";
 
-import { defineTwentyQuestions, defineVerbatim } from "./games";
+import { defineVerbatim } from "./games";
 import { definePolis, isPublicPolisRead } from "./polis";
 import { defineStrudel } from "./strudel";
 
@@ -13,7 +13,6 @@ app.use("/*", async (context, next) =>
 );
 
 defineStrudel(app);
-defineTwentyQuestions(app);
 defineVerbatim(app);
 definePolis(app);
 

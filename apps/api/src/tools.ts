@@ -80,7 +80,6 @@ import { ask_user, request_approval } from "~/modules/tools/application/builtin/
 import { mcp_call_tool, mcp_list_tools } from "~/modules/tools/application/builtin/mcp_gateway";
 import { extract_text_from_document } from "~/modules/tools/application/builtin/ocr";
 import { get_on_this_day } from "~/modules/tools/application/builtin/on_this_day";
-import { run_pashi_tools, search_pashi_tools } from "~/modules/tools/application/builtin/pashi";
 import { preview_html } from "~/modules/tools/application/builtin/preview_html";
 import { create_qr_code } from "~/modules/tools/application/builtin/qr";
 import { capture_screenshot } from "~/modules/tools/application/builtin/screenshot";
@@ -117,8 +116,6 @@ registerTools([
   write_sheet,
   get_document,
   create_qr_code,
-  search_pashi_tools,
-  run_pashi_tools,
   call_api,
   research,
   search_documents,

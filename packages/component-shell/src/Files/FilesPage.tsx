@@ -9,6 +9,7 @@ import {
 } from "@ngriffin_uk/polychat-library-react";
 import { lazy, type ReactNode, Suspense, useState } from "react";
 
+import { AppSurface, AppSurfaceLoading, CONTAINED_APP_PRESENTATION } from "../Apps/AppSurface.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { FilesBreadcrumb } from "./FilesBreadcrumb.js";
 import { FolderView } from "./FolderView.js";
@@ -21,6 +22,10 @@ const ImageStudio = lazy(async () => ({
 const ReplicateStudio = lazy(async () => ({
   default: (await import("./Studio/Replicate/ReplicateStudio.js")).ReplicateStudio,
 }));
+
+function StudioLoading() {
+  return <AppSurfaceLoading label="Loading studio" presentation={CONTAINED_APP_PRESENTATION} />;
+}
 
 function useLibraryFilter(location: FilesLocation): FilesFilter {
   const [filter, setFilter] = useState<FilesFilter>(
@@ -84,7 +89,7 @@ function FilesView({
       return (
         <div className="space-y-4">
           <FilesBreadcrumb basePath={basePath} trail={[{ label: "Image studio" }]} />
-          <Suspense fallback={null}>
+          <Suspense fallback={<StudioLoading />}>
             <ImageStudio projectId={projectId} />
           </Suspense>
         </div>
@@ -94,7 +99,7 @@ function FilesView({
   return (
     <div className="space-y-4">
       <FilesBreadcrumb basePath={basePath} trail={[{ label: "Replicate" }]} />
-      <Suspense fallback={null}>
+      <Suspense fallback={<StudioLoading />}>
         <ReplicateStudio
           basePath={getFilesPath(basePath, "replicate")}
           subpath={location.subpath}
@@ -117,9 +122,9 @@ export function FilesPage({
   header?: ReactNode;
 }) {
   return (
-    <PageShell.Content className="max-w-6xl">
+    <AppSurface presentation={CONTAINED_APP_PRESENTATION}>
       {header ?? <PageShell.Header title="Files" />}
       <FilesView location={parseFilesSubpath(subpath)} basePath={basePath} projectId={projectId} />
-    </PageShell.Content>
+    </AppSurface>
   );
 }

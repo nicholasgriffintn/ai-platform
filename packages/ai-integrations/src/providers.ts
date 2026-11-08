@@ -144,7 +144,7 @@ const localConnectorProviders: ConnectorProviderConfig[] = [
     id: "pashi",
     name: "Pashi",
     description:
-      "Run Pashi generators and converters from chat, and use your Polychat plan for AI on pashi.app. Converting files needs Pro.",
+      "Open Pashi's apps and use its tools in your chats, and use your Polychat plan for AI on pashi.app. Converting files needs Pro.",
     logoUrl: "https://pashi.app/icon-192.png",
     appUrl: "https://pashi.app",
     categories: [{ id: "developer-tools", name: "Developer tools" }],
