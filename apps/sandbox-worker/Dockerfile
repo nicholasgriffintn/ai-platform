@@ -7,6 +7,8 @@ RUN apt-get update \
     build-essential ca-certificates coreutils curl git inotify-tools jq procps \
     python3 python3-pip python3-venv unzip wget \
   && rm -rf /var/lib/apt/lists/* \
+  && npm install -g corepack@0.36.0 \
+  && npm cache clean --force \
   && corepack enable
 
 COPY --from=sandbox /usr/local/bin/sandbox-shim /usr/local/bin/sandbox-shim

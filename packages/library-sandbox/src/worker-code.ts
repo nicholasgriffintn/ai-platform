@@ -30,7 +30,7 @@ export interface WorkerCodeSpec {
   tails?: Fetcher[];
 }
 
-export const DEFAULT_COMPATIBILITY_DATE = "2026-11-04";
+export const DEFAULT_COMPATIBILITY_DATE = "2026-11-01";
 
 function stableJson(value: unknown): string {
   if (Array.isArray(value)) {
