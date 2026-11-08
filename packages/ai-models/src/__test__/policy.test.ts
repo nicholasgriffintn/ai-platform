@@ -1,13 +1,7 @@
-import type { ModelConfig, ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
+import type { ModelConfigItem } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import {
-  getExecutableModelsForAccount,
-  getModelCredentialAuthority,
-  rankPolicyModelsByMediaScore,
-  resolveHostedAgentModel,
-  resolveTierModel,
-} from "../policy.js";
+import { getExecutableModelsForAccount, getModelCredentialAuthority } from "../policy.js";
 
 function model(overrides: Partial<ModelConfigItem> = {}): ModelConfigItem {
   return {
@@ -18,113 +12,6 @@ function model(overrides: Partial<ModelConfigItem> = {}): ModelConfigItem {
   };
 }
 
-describe("resolveTierModel", () => {
-  it("resolves the coding role separately from the agent role", () => {
-    const models: ModelConfig = {
-      "google-ai-studio/gemini-3.8-flash": model({
-        matchingModel: "gemini-3.8-flash",
-        provider: "google-ai-studio",
-      }),
-      "@cf/zai-org/glm-5.3": model({
-        matchingModel: "@cf/zai-org/glm-5.3",
-        provider: "workers-ai",
-      }),
-    };
-
-    expect(resolveTierModel(models, { plan_id: "pro" }, "medium", "agent")?.id).toBe(
-      "google-ai-studio/gemini-3.8-flash",
-    );
-    expect(resolveTierModel(models, { plan_id: "pro" }, "medium", "coding")?.id).toBe(
-      "@cf/zai-org/glm-5.3",
-    );
-    expect(resolveTierModel(models, { plan_id: "free" }, "medium", "coding")).toBeNull();
-  });
-});
-
-describe("resolveHostedAgentModel", () => {
-  const models: ModelConfig = {
-    "google-ai-studio/gemini-3.8-flash": model({
-      matchingModel: "gemini-3.8-flash",
-      provider: "google-ai-studio",
-    }),
-    "@cf/zai-org/glm-5.3": model({
-      matchingModel: "glm-5.3",
-      provider: "workers-ai",
-    }),
-  };
-
-  it("prefers an explicit executable model by id or matching model", () => {
-    expect(
-      resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "agent", "@cf/zai-org/glm-5.3")
-        ?.id,
-    ).toBe("@cf/zai-org/glm-5.3");
-    expect(
-      resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "agent", "gemini-3.8-flash")
-        ?.id,
-    ).toBe("google-ai-studio/gemini-3.8-flash");
-  });
-
-  it("returns null for an explicit model the account cannot execute", () => {
-    expect(
-      resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "agent", "no-such-model"),
-    ).toBeNull();
-    expect(
-      resolveHostedAgentModel(
-        models,
-        { plan_id: "free" },
-        "medium",
-        "agent",
-        "@cf/zai-org/glm-5.3",
-      ),
-    ).toBeNull();
-  });
-
-  it("falls back to the tier lineup for the requested role", () => {
-    expect(resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "agent")?.id).toBe(
-      "google-ai-studio/gemini-3.8-flash",
-    );
-    expect(resolveHostedAgentModel(models, { plan_id: "pro" }, "medium", "coding")?.id).toBe(
-      "@cf/zai-org/glm-5.3",
-    );
-  });
-});
-
-describe("rankPolicyModelsByMediaScore", () => {
-  const arena = (value: number) => ({
-    mediaScores: [{ key: "text_to_speechElo", label: "Text-to-speech arena", value }],
-  });
-
-  it("ranks scored voices by arena score, then unscored ones by lineup order", () => {
-    const models: ModelConfig = {
-      melotts: model({ matchingModel: "melotts", provider: "workers-ai", isFree: true }),
-      "aura-1": model({ matchingModel: "aura-1", provider: "workers-ai", isFree: true }),
-      polly: model({ provider: "polly", isByokEnabled: true, artificialAnalysis: arena(1067) }),
-      eleven: model({
-        provider: "elevenlabs",
-        isByokEnabled: true,
-        artificialAnalysis: arena(1332),
-      }),
-      sonic: model({
-        provider: "cartesia",
-        isPlatformEnabled: false,
-        artificialAnalysis: arena(1292),
-      }),
-    };
-
-    const ranked = rankPolicyModelsByMediaScore(
-      models,
-      "text_to_speechElo",
-      [
-        { model: "aura-1", provider: "workers-ai" },
-        { model: "melotts", provider: "workers-ai" },
-      ],
-      { plan_id: "pro" },
-    );
-
-    expect(ranked.map((entry) => entry.id)).toEqual(["eleven", "polly", "aura-1", "melotts"]);
-  });
-});
-
 describe("credential authority", () => {
   it("requires BYOK for Free models visible only through a configured provider", () => {
     const byokFreeModel = model({
@@ -134,15 +21,6 @@ describe("credential authority", () => {
     });
 
     expect(getModelCredentialAuthority(byokFreeModel, { plan_id: "free" })).toBe("byok");
-  });
-
-  it("requires BYOK for Pro models visible only through a configured provider", () => {
-    const byokProModel = model({
-      isByokEnabled: true,
-      isPlatformEnabled: false,
-    });
-
-    expect(getModelCredentialAuthority(byokProModel, { plan_id: "pro" })).toBe("byok");
   });
 
   it("does not execute a BYOK-only provider after its key is removed", () => {

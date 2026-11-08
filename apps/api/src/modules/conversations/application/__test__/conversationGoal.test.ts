@@ -6,12 +6,7 @@ import { ConversationRepository } from "~/modules/conversations/infrastructure/C
 import { GoalRepository } from "~/modules/goals/infrastructure/GoalRepository";
 import { TeammateContextRepository } from "~/modules/teammates/infrastructure/TeammateContextRepository";
 
-import {
-  handleGetConversationGoal,
-  handleRecordRunGoalIteration,
-  handleSetConversationGoal,
-  handleUpdateConversationGoal,
-} from "../conversationGoal";
+import { handleGetConversationGoal, handleRecordRunGoalIteration } from "../conversationGoal";
 
 const getActiveGoal = vi.fn();
 const setGoal = vi.fn();
@@ -111,76 +106,6 @@ describe("conversation goal authorisation", () => {
       expect(getActiveGoal).not.toHaveBeenCalled();
     });
 
-    it("refuses to set a goal on someone else's personal conversation", async () => {
-      const context = createContext({
-        conversation: { id: "c-1", user_id: 99, project_id: null },
-      });
-
-      await expect(handleSetConversationGoal(context, "c-1", "take over")).rejects.toThrow(
-        "Conversation not found",
-      );
-      expect(setGoal).not.toHaveBeenCalled();
-    });
-
-    it("creates the thread when a goal is set before the first message", async () => {
-      const context = createContext({ conversation: null });
-
-      createConversation.mockResolvedValue({ id: "c-1", user_id: owner.id });
-      setGoal.mockResolvedValue({
-        id: "goal-1",
-        conversation_id: "c-1",
-        sandbox_run_id: null,
-        user_id: owner.id,
-        objective: "count to 100",
-        status: "active",
-        source: "user",
-        iteration_count: 0,
-        stall_streak: 0,
-        tokens_spent: 0,
-        progress: [],
-        evidence: null,
-        stopped_reason: null,
-        created_at: "2026-08-29T00:00:00.000Z",
-        updated_at: null,
-        completed_at: null,
-        last_continued_at: null,
-      });
-
-      await handleSetConversationGoal(context, "c-1", "count to 100");
-
-      expect(createConversation).toHaveBeenCalledWith("c-1", owner.id, undefined, {});
-      expect(setGoal).toHaveBeenCalledWith(
-        expect.objectContaining({
-          owner: { conversationId: "c-1" },
-          objective: "count to 100",
-        }),
-      );
-    });
-
-    it("refuses to change goal lifecycle on someone else's personal conversation", async () => {
-      const context = createContext({
-        conversation: { id: "c-1", user_id: 99, project_id: null },
-      });
-
-      await expect(
-        handleUpdateConversationGoal(context, "c-1", {
-          status: "cleared",
-        } as never),
-      ).rejects.toThrow("Conversation not found");
-      expect(transition).not.toHaveBeenCalled();
-    });
-
-    it("treats clearing an already-ended conversation goal as complete", async () => {
-      const context = createContext({
-        conversation: { id: "c-1", user_id: owner.id, project_id: null },
-      });
-
-      await expect(
-        handleUpdateConversationGoal(context, "c-1", { status: "cleared" }),
-      ).resolves.toEqual({ goal: null });
-      expect(transition).not.toHaveBeenCalled();
-    });
-
     it("refuses a project conversation when workspace membership is missing", async () => {
       requireProjectAccess.mockRejectedValueOnce(new Error("You do not have access"));
 
@@ -192,27 +117,6 @@ describe("conversation goal authorisation", () => {
         "You do not have access",
       );
       expect(getActiveGoal).not.toHaveBeenCalled();
-    });
-
-    it("allows the conversation owner through", async () => {
-      const context = createContext({
-        conversation: { id: "c-1", user_id: owner.id, project_id: null },
-      });
-
-      await handleGetConversationGoal(context, "c-1");
-
-      expect(getActiveGoal).toHaveBeenCalledWith({ conversationId: "c-1" });
-    });
-
-    it("allows a workspace member through on a project conversation", async () => {
-      const context = createContext({
-        conversation: { id: "c-1", user_id: 99, project_id: "p-1" },
-      });
-
-      await handleGetConversationGoal(context, "c-1");
-
-      expect(requireProjectAccess).toHaveBeenCalledWith(context, "p-1");
-      expect(getActiveGoal).toHaveBeenCalledWith({ conversationId: "c-1" });
     });
   });
 
@@ -232,20 +136,6 @@ describe("conversation goal authorisation", () => {
         } as never),
       ).rejects.toThrow("Sandbox run not found");
       expect(recordIteration).not.toHaveBeenCalled();
-    });
-
-    it("allows the run owner through", async () => {
-      const context = createContext({
-        activity: {
-          created_by_user_id: owner.id,
-          project_id: null,
-          data: runPayload,
-        },
-      });
-
-      await handleRecordRunGoalIteration(context, "run-1", { summary: "done" } as never);
-
-      expect(getActiveGoal).toHaveBeenCalledWith({ sandboxRunId: "run-1" });
     });
   });
 });

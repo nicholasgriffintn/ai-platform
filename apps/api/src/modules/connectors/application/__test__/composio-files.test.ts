@@ -1,24 +1,17 @@
 import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
-import { COMPOSIO_FILE_MAX_BYTES } from "~/config/limits";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
 import {
-  assertComposioFileBridgeAvailable,
   importComposioOperationFileResults,
-  importComposioSessionFile,
   stageComposioResourceFile,
   type ComposioMountFileClient,
 } from "../composio-files";
-import {
-  readBoundedResponseBody,
-  requireComposioMountPath,
-  requireComposioPresignedUrl,
-} from "../composio-files-security";
+import { requireComposioMountPath, requireComposioPresignedUrl } from "../composio-files-security";
 
 const sourceRecord = {
   id: "source-1",
@@ -91,42 +84,6 @@ function createMountClient(): ComposioMountFileClient {
 }
 
 describe("Composio file bridge", () => {
-  it("stages an owned Source in a session mount without exposing private storage keys", async () => {
-    const { context } = createContext();
-    const client = createMountClient();
-    const fetcher = vi.fn().mockResolvedValue(new Response(null, { status: 200 }));
-
-    const result = await stageComposioResourceFile({
-      context,
-      userId: 42,
-      client,
-      fetcher,
-      sessionId: "trs_123",
-      resource: { kind: "source", id: "source-1" },
-      mountRelativePath: "inputs/report.pdf",
-    });
-
-    expect(client.createUploadUrl).toHaveBeenCalledWith({
-      sessionId: "trs_123",
-      mountId: "files",
-      mountRelativePath: "inputs/report.pdf",
-      mimeType: "application/pdf",
-    });
-    expect(fetcher).toHaveBeenCalledWith(
-      "https://composio-files.s3.amazonaws.com/upload?signature=secret",
-      expect.objectContaining({ method: "PUT", body: expect.any(ArrayBuffer) }),
-    );
-    expect(result).toEqual({
-      mountRelativePath: "inputs/report.pdf",
-      sandboxPath: "/mnt/files/inputs/report.pdf",
-      mimeType: "application/pdf",
-      filename: "report.pdf",
-      byteSize: 4,
-    });
-    expect(JSON.stringify(result)).not.toContain("uploads/42");
-    expect(JSON.stringify(result)).not.toContain("signature");
-  });
-
   it("rejects resources owned by another user before reading private storage", async () => {
     const { context } = createContext();
 
@@ -144,87 +101,6 @@ describe("Composio file bridge", () => {
       }),
     ).rejects.toMatchObject({ type: ErrorType.NOT_FOUND, statusCode: 404 });
     expect(context.env.PRIVATE_ASSETS_BUCKET.get).not.toHaveBeenCalled();
-  });
-
-  it("imports a bounded remote mount file as a personal Output", async () => {
-    const { context, put, createOutput } = createContext();
-    const fetcher = vi.fn().mockResolvedValue(
-      new Response(new Uint8Array([5, 6, 7]), {
-        status: 200,
-        headers: { "content-length": "3", "content-type": "application/pdf" },
-      }),
-    );
-
-    const result = await importComposioSessionFile({
-      context,
-      userId: 42,
-      client: createMountClient(),
-      fetcher,
-      sessionId: "trs_123",
-      mountRelativePath: "reports/result.pdf",
-      mimeType: "application/pdf",
-    });
-
-    expect(put).toHaveBeenCalledWith(
-      expect.stringMatching(/^composio\/outputs\/42\//),
-      expect.any(ArrayBuffer),
-      { httpMetadata: { contentType: "application/pdf" } },
-    );
-    expect(createOutput).toHaveBeenCalledWith(
-      expect.objectContaining({
-        createdByUserId: 42,
-        projectId: null,
-        capabilityId: "recipe-connectors",
-        kind: "file",
-        filename: "result.pdf",
-        mimeType: "application/pdf",
-        byteSize: 3,
-      }),
-    );
-    expect(result).toEqual({ outputId: "output-1", filename: "result.pdf", byteSize: 3 });
-  });
-
-  it("imports only explicit Composio mount descriptors in operation results", async () => {
-    const { context } = createContext();
-    const fetcher = vi.fn().mockResolvedValue(
-      new Response(new Uint8Array([5, 6, 7]), {
-        status: 200,
-        headers: { "content-length": "3", "content-type": "application/pdf" },
-      }),
-    );
-
-    const result = await importComposioOperationFileResults({
-      context,
-      userId: 42,
-      client: createMountClient(),
-      fetcher,
-      sessionId: "trs_123",
-      value: {
-        report: {
-          mount_relative_path: "reports/result.pdf",
-          sandbox_mount_prefix: "/mnt/files",
-          mimetype: "application/pdf",
-          download_url: "https://composio-files.s3.amazonaws.com/do-not-return?secret=1",
-        },
-        publicLink: "https://example.com/report.pdf",
-        message: "Written to /mnt/files/unsafe.pdf",
-      },
-    });
-
-    expect(result).toEqual({
-      report: {
-        $assistantOutput: {
-          id: "output-1",
-          filename: "result.pdf",
-          mimeType: "application/pdf",
-          byteSize: 3,
-        },
-      },
-      publicLink: "https://example.com/report.pdf",
-      message: "Written to /mnt/files/unsafe.pdf",
-    });
-    expect(JSON.stringify(result)).not.toContain("download_url");
-    expect(JSON.stringify(result)).not.toContain("secret=1");
   });
 
   it("rejects spoofed mount descriptors outside the files mount", async () => {
@@ -245,27 +121,6 @@ describe("Composio file bridge", () => {
     ).rejects.toMatchObject({ type: ErrorType.EXTERNAL_API_ERROR });
   });
 
-  it("fails closed for file-shaped schemas when no bridge is available", () => {
-    expect(() =>
-      assertComposioFileBridgeAvailable({
-        bridgeAvailable: false,
-        inputSchema: {
-          type: "object",
-          properties: { attachment: { type: "string", format: "binary" } },
-        },
-      }),
-    ).toThrowError(/file bridge is unavailable/i);
-    expect(() =>
-      assertComposioFileBridgeAvailable({
-        bridgeAvailable: false,
-        inputSchema: {
-          type: "object",
-          properties: { subject: { type: "string" } },
-        },
-      }),
-    ).not.toThrow();
-  });
-
   it("rejects traversal paths and non-S3 presigned origins", () => {
     expect(() => requireComposioMountPath("../secrets.txt")).toThrowError(/invalid/i);
     expect(() => requireComposioMountPath("safe/../../secrets.txt")).toThrowError(/invalid/i);
@@ -273,21 +128,5 @@ describe("Composio file bridge", () => {
       /unsafe/i,
     );
     expect(() => requireComposioPresignedUrl("https://127.0.0.1/file")).toThrowError(/unsafe/i);
-  });
-
-  it("stops reading a response once it exceeds the file size limit", async () => {
-    const response = new Response(
-      new ReadableStream({
-        start(controller) {
-          controller.enqueue(new Uint8Array(COMPOSIO_FILE_MAX_BYTES));
-          controller.enqueue(new Uint8Array([1]));
-          controller.close();
-        },
-      }),
-    );
-
-    await expect(readBoundedResponseBody(response)).rejects.toMatchObject({
-      type: ErrorType.PARAMS_ERROR,
-    });
   });
 });

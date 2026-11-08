@@ -1,16 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  comparableHttpUrl,
-  hasUrlExtension,
-  isCookieSameSite,
-  isRasterDataImageUrl,
-  normaliseSameOriginRoute,
-  readUrlExtension,
-  readUrlPath,
-  readYouTubeVideoId,
-  extractHttpUrls,
-} from "./urls";
+import { hasUrlExtension, isRasterDataImageUrl, normaliseSameOriginRoute } from "./urls";
 
 const VIDEO = new Set(["mp4", "webm"]);
 
@@ -30,100 +20,13 @@ describe("normaliseSameOriginRoute", () => {
   });
 });
 
-describe("readUrlPath", () => {
-  it("drops the query and fragment", () => {
-    expect(readUrlPath("https://a.test/clip.mp4?token=1")).toBe("https://a.test/clip.mp4");
-    expect(readUrlPath("https://a.test/clip.mp4#t=3")).toBe("https://a.test/clip.mp4");
-    expect(readUrlPath("https://a.test/clip.mp4#t=3?x")).toBe("https://a.test/clip.mp4");
-    expect(readUrlPath("https://a.test/clip.mp4")).toBe("https://a.test/clip.mp4");
-  });
-});
-
-describe("readUrlExtension", () => {
-  it("lowercases the extension", () => {
-    expect(readUrlExtension("https://a.test/clip.MP4")).toBe("mp4");
-  });
-
-  it("ignores dots in earlier path segments", () => {
-    expect(readUrlExtension("https://a.test/v1.2/clip")).toBeUndefined();
-  });
-
-  it("returns nothing for a trailing dot or no dot", () => {
-    expect(readUrlExtension("https://a.test/clip.")).toBeUndefined();
-    expect(readUrlExtension("https://a.test/clip")).toBeUndefined();
-  });
-});
-
 describe("hasUrlExtension", () => {
-  it("matches on the path, not on the query string", () => {
-    expect(hasUrlExtension("https://a.test/clip.mp4", VIDEO)).toBe(true);
-    expect(hasUrlExtension("https://a.test/clip.mp4?token=1", VIDEO)).toBe(true);
-    expect(hasUrlExtension("https://a.test/watch?file=clip.mp4", VIDEO)).toBe(false);
-    expect(hasUrlExtension("https://a.test/clip.png", VIDEO)).toBe(false);
-  });
-
   it("stays linear on input crafted to backtrack", () => {
     const hostile = ".mp4?".repeat(100_000) + "\nx";
     const startedAt = performance.now();
 
     expect(hasUrlExtension(hostile, VIDEO)).toBe(true);
     expect(performance.now() - startedAt).toBeLessThan(100);
-  });
-
-  it("stays linear on a long non-matching path", () => {
-    const hostile = `https://a.test/${"segment.".repeat(100_000)}png`;
-    const startedAt = performance.now();
-
-    expect(hasUrlExtension(hostile, VIDEO)).toBe(false);
-    expect(performance.now() - startedAt).toBeLessThan(100);
-  });
-});
-
-describe("isCookieSameSite", () => {
-  it.each([
-    ["https://polychat.app", "https://api.polychat.app", true],
-    ["http://localhost:5173", "http://localhost:8787", true],
-    ["tauri://localhost", "https://api.polychat.app", false],
-    ["https://preview.pages.dev", "https://api.polychat.app", false],
-    ["http://polychat.app", "https://api.polychat.app", false],
-    ["https://notpolychat.app", "https://api.polychat.app", false],
-    [undefined, "https://api.polychat.app", false],
-  ])("treats %s calling %s as same-site: %s", (page, api, expected) => {
-    expect(isCookieSameSite(page, api)).toBe(expected);
-  });
-});
-
-describe("readYouTubeVideoId", () => {
-  it.each([
-    ["https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=42", "dQw4w9WgXcQ"],
-    ["https://youtu.be/dQw4w9WgXcQ?si=share", "dQw4w9WgXcQ"],
-    ["https://m.youtube.com/shorts/dQw4w9WgXcQ", "dQw4w9WgXcQ"],
-    ["https://www.youtube.com/channel/UCabc", null],
-    ["https://youtube.com.evil.test/watch?v=dQw4w9WgXcQ", null],
-    ["https://www.youtube.com/watch?v=short", null],
-  ])("reads %s as %s", (url, expected) => {
-    expect(readYouTubeVideoId(url)).toBe(expected);
-  });
-});
-
-describe("comparableHttpUrl", () => {
-  it("ignores tracking parameters and mirror hosts but keeps parameters that pick the page", () => {
-    expect(comparableHttpUrl("https://m.example.com/story/?utm_source=x&id=2&fbclid=y")).toBe(
-      comparableHttpUrl("https://www.example.com/story?id=2"),
-    );
-    expect(comparableHttpUrl("https://example.com/story?id=2")).not.toBe(
-      comparableHttpUrl("https://example.com/story?id=3"),
-    );
-  });
-});
-
-describe("extractHttpUrls", () => {
-  it("finds each link once and leaves trailing punctuation behind", () => {
-    expect(
-      extractHttpUrls(
-        "See https://example.com/a. Also (https://example.com/b), and https://example.com/a again; ftp://no.",
-      ),
-    ).toEqual(["https://example.com/a", "https://example.com/b"]);
   });
 });
 

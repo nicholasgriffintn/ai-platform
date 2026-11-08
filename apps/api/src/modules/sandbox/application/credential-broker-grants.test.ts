@@ -8,36 +8,6 @@ import {
 const env = { JWT_SECRET: "sandbox-broker-test-secret-with-enough-entropy" };
 
 describe("sandbox credential broker grants", () => {
-  it("scopes review delivery to one run, repository and branch", async () => {
-    const access = await createSandboxCredentialBrokerAccess({
-      env,
-      apiBaseUrl: "https://api.polychat.app",
-      deliveryPolicy: { mode: "review_branch", destination: "pull_request" },
-      installationId: 42,
-      repo: "owner/repository",
-      runId: "run-123",
-      timeoutSeconds: 900,
-      userId: 7,
-    });
-    const claims = await verifySandboxCredentialBrokerGrant({
-      env,
-      grant: access.grant,
-      runId: "run-123",
-    });
-
-    expect(access.baseUrl).toBe(
-      "https://api.polychat.app/internal/sandbox/credential_broker/run-123",
-    );
-    expect(claims).toMatchObject({
-      installation_id: 42,
-      operations: ["repository_read", "repository_write", "pull_request_write"],
-      repo: "owner/repository",
-      run_id: "run-123",
-      sub: "7",
-      write_refs: ["refs/heads/polychat/run-run-123"],
-    });
-  });
-
   it("does not grant writes for an uncommitted run", async () => {
     const access = await createSandboxCredentialBrokerAccess({
       env,

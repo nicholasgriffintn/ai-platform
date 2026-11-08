@@ -1,5 +1,7 @@
+import { buildSandboxDocument } from "@ngriffin_uk/polychat-utility-core";
+
 import type { ArtifactProps } from "../artifact";
-import { buildSandboxDocument, SandboxIframe } from "./shared";
+import { SandboxIframe } from "./shared";
 
 const JS_SANDBOX_TEMPLATE = `
 <!DOCTYPE html>

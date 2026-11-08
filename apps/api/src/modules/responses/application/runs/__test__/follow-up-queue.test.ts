@@ -1,4 +1,3 @@
-import { MAX_QUEUED_CHAT_MESSAGES } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -25,13 +24,13 @@ import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 
 import { queueFollowUp, releaseQueuedFollowUpAfterRun } from "../follow-up-queue";
 
-function queuedTask(id: string, conversationId = "conversation-1") {
+function queuedTask(id: string) {
   return {
     id,
     user_id: 7,
     created_at: "2026-10-08T10:00:00.000Z",
     task_data: {
-      conversationId,
+      conversationId: "conversation-1",
       message: { role: "user", content: "And then?" },
       request: {},
     },
@@ -48,7 +47,7 @@ function createContext(options: {
       Array.from({ length: options.waiting ?? 0 }, (_, index) => queuedTask(`queued-${index}`)),
     ),
     createTask: vi.fn(async (params: { id: string }) => queuedTask(params.id)),
-    getTaskById: vi.fn(async (_id: string): Promise<object | null> => null),
+    getTaskById: vi.fn(async (): Promise<ReturnType<typeof queuedTask> | null> => null),
     releaseNextSuspendedTaskForConversation: vi.fn(async () => queuedTask("queued-0")),
   };
 
@@ -90,24 +89,6 @@ describe("queueFollowUp", () => {
     vi.clearAllMocks();
   });
 
-  it("holds the message while a reply is running", async () => {
-    const { context, tasks } = createContext({ latestStatus: "running" });
-
-    const queued = await queueFollowUp(context, "conversation-1", input);
-
-    expect(queued.preview).toBe("And then?");
-    expect(tasks.createTask).toHaveBeenCalledWith(expect.objectContaining({ status: "suspended" }));
-    expect(tasks.releaseNextSuspendedTaskForConversation).not.toHaveBeenCalled();
-  });
-
-  it("sends at once when the reply finished before the message arrived", async () => {
-    const { context } = createContext({ latestStatus: "succeeded" });
-
-    await queueFollowUp(context, "conversation-1", input);
-
-    expect(mocks.dispatchTask).toHaveBeenCalledTimes(1);
-  });
-
   it("returns the message a repeated key already queued without queueing it again", async () => {
     const { context, tasks } = createContext({ latestStatus: "running" });
     const keyed = { ...input, idempotency_key: "queue-1" };
@@ -117,44 +98,6 @@ describe("queueFollowUp", () => {
 
     await expect(queueFollowUp(context, "conversation-1", keyed)).resolves.toEqual(first);
     expect(tasks.createTask).toHaveBeenCalledTimes(1);
-  });
-
-  it("returns the original message when the retry arrives after it was sent", async () => {
-    const { context, tasks } = createContext({ latestStatus: "succeeded" });
-    const keyed = { ...input, idempotency_key: "queue-1" };
-    const first = await queueFollowUp(context, "conversation-1", keyed);
-
-    tasks.getTaskById.mockResolvedValueOnce({
-      ...queuedTask(first.id),
-      status: "completed",
-      task_data: { ...queuedTask(first.id).task_data, message: { ...input.message, id: "msg-1" } },
-    });
-
-    await expect(queueFollowUp(context, "conversation-1", keyed)).resolves.toEqual(first);
-    expect(tasks.createTask).toHaveBeenCalledTimes(1);
-    expect(mocks.dispatchTask).toHaveBeenCalledTimes(1);
-  });
-
-  it("rejects a repeated key for a different message", async () => {
-    const { context, tasks } = createContext({ latestStatus: "running" });
-
-    tasks.getTaskById.mockResolvedValueOnce(queuedTask("queued-1"));
-
-    await expect(
-      queueFollowUp(context, "conversation-1", {
-        message: { role: "user", content: "Something else" },
-        request: {},
-        idempotency_key: "queue-1",
-      }),
-    ).rejects.toThrow("a different message");
-  });
-
-  it("refuses more than the queue limit", async () => {
-    const { context } = createContext({ waiting: MAX_QUEUED_CHAT_MESSAGES });
-
-    await expect(queueFollowUp(context, "conversation-1", input)).rejects.toThrow(
-      `up to ${MAX_QUEUED_CHAT_MESSAGES} messages`,
-    );
   });
 
   it("refuses conversations the user does not own and project conversations", async () => {

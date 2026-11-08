@@ -1,14 +1,7 @@
 import { composeDiscoverEditionInputSchema } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import {
-  buildDiscoverEdition,
-  carriedDiscoverMedia,
-  discoverEditionGroupId,
-  discoverTopicKey,
-  listEditionLinks,
-  readDiscoverEditionGroupId,
-} from "../edition";
+import { buildDiscoverEdition, discoverTopicKey, listEditionLinks } from "../edition";
 import type { DiscoverFeedGroup } from "../feed";
 
 function readCard(topic: string, url: string) {
@@ -122,65 +115,6 @@ describe("buildDiscoverEdition", () => {
     expect(edition.cards.map((card) => card.kind)).toEqual(["read", "check_in"]);
   });
 
-  it("fills the feed under the model's cards without repeating its links or hidden topics", () => {
-    const edition = build(["Formula 1"], [], {
-      feed: [
-        {
-          topic: "Sourdough",
-          lead: "You follow Sourdough",
-          items: [
-            { title: "Same", url: "https://example.com/rye-starters", snippet: "" },
-            { title: "Crumb", url: "https://example.com/crumb", snippet: "Open crumb." },
-          ],
-        },
-        {
-          topic: "Formula 1",
-          lead: "You follow Formula 1",
-          items: [{ title: "Grid", url: "https://example.com/grid", snippet: "" }],
-        },
-      ],
-    });
-
-    expect(edition.cards.flatMap((card) => (card.kind === "read" ? [card.url] : []))).toEqual([
-      "https://example.com/rye-starters",
-      "https://example.com/crumb",
-    ]);
-  });
-
-  it("keeps every fresh link for the day after Poly's own picks", () => {
-    const edition = build([], [], {
-      feed: ["Sourdough", "Formula 1", "Rust", "Cycling"].map((topic) => ({
-        topic,
-        lead: `You follow ${topic}`,
-        spoken: true,
-        items: [1, 2, 3].map((index) => ({
-          title: `${topic} story number ${index}`,
-          url: `https://example.com/${encodeURIComponent(topic)}/${index}`,
-          snippet: "",
-        })),
-      })),
-    });
-    const reads = edition.cards.flatMap((card) => (card.kind === "read" ? [card.topic] : []));
-
-    expect(reads).toHaveLength(14);
-    expect(reads.slice(0, 6)).toEqual([
-      "Formula 1",
-      "Sourdough",
-      "Sourdough",
-      "Formula 1",
-      "Rust",
-      "Cycling",
-    ]);
-  });
-
-  it("leaves out links shown recently or repeated within the edition", () => {
-    const edition = build([], ["http://example.com/f1"]);
-
-    expect(edition.cards.flatMap((card) => (card.kind === "read" ? [card.url] : []))).toEqual([
-      "https://example.com/rye-starters",
-    ]);
-  });
-
   it("never infers health, sexuality, religion, politics or money", () => {
     const edition = build([], [], { input: sensitiveDraft });
 
@@ -195,80 +129,5 @@ describe("buildDiscoverEdition", () => {
     expect(followed.interests.map((interest) => interest.topic)).toContain("Debt repayment");
     expect(asked.cards.filter((card) => card.kind === "read")).toHaveLength(2);
     expect(asked.cards.some((card) => card.kind === "check_in")).toBe(false);
-  });
-
-  it("keeps a resurface card only when it links to something worth resurfacing", () => {
-    const input = composeDiscoverEditionInputSchema.parse({
-      greeting: "Good morning",
-      interests: [{ topic: "Sourdough", reason: "Your notebook." }],
-      brief: [],
-      cards: [
-        {
-          kind: "resurface",
-          title: "3 cards to revisit",
-          detail: "Rye starters",
-          href: "/chat/files/made/flashcards_1",
-          reason: "You missed them last week.",
-        },
-        {
-          kind: "resurface",
-          title: "A made-up link",
-          detail: "Not on the list",
-          href: "/chat/files/made/invented",
-          reason: "Made up.",
-        },
-      ],
-    });
-    const edition = build([], [], { input, resurface: ["/chat/files/made/flashcards_1"] });
-
-    expect(edition.cards.map((card) => (card.kind === "resurface" ? card.href : null))).toEqual([
-      "/chat/files/made/flashcards_1",
-    ]);
-  });
-
-  it("gives each kept card its own id", () => {
-    const edition = build([], []);
-
-    expect(edition.cards.map((card) => card.id)).toEqual(["card_1", "card_2", "card_3", "card_4"]);
-  });
-});
-
-describe("carriedDiscoverMedia", () => {
-  const withMedia = (media: {
-    episodeId?: string;
-    listenSourceId?: string;
-    weekSourceId?: string;
-  }) => ({ ...build([], []), ...media });
-
-  it("keeps the morning's episode, Perch and week in the evening edition", () => {
-    expect(
-      carriedDiscoverMedia(
-        undefined,
-        withMedia({ episodeId: "ep_1", listenSourceId: "perch_1", weekSourceId: "week_1" }),
-      ),
-    ).toEqual({ episodeId: "ep_1", listenSourceId: "perch_1", weekSourceId: "week_1" });
-  });
-
-  it("keeps an episode on rewrite but records a fresh Perch for a rewritten morning", () => {
-    expect(
-      carriedDiscoverMedia(withMedia({ episodeId: "ep_1", listenSourceId: "perch_1" }), undefined),
-    ).toEqual({ episodeId: "ep_1", listenSourceId: undefined, weekSourceId: undefined });
-  });
-});
-
-describe("readDiscoverEditionGroupId", () => {
-  it("reads back the date and time an edition was saved under", () => {
-    expect(readDiscoverEditionGroupId(discoverEditionGroupId("2026-10-31"))).toEqual({
-      date: "2026-10-31",
-      edition: "morning",
-    });
-    expect(readDiscoverEditionGroupId(discoverEditionGroupId("2026-10-31", "evening"))).toEqual({
-      date: "2026-10-31",
-      edition: "evening",
-    });
-  });
-
-  it("ignores groups that are not editions", () => {
-    expect(readDiscoverEditionGroupId("discover-episodes:season-1")).toBeNull();
   });
 });

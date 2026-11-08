@@ -1,6 +1,5 @@
+import { hardenStandaloneHtml } from "@ngriffin_uk/polychat-utility-core";
 import { useMemo } from "react";
-
-import { hardenStandaloneHtml } from "./shared";
 
 export function HardenedHtmlFrame({
   html,

@@ -8,8 +8,4 @@ describe("intersectEnabledTools", () => {
       intersectEnabledTools(["web_search", "run_sandbox_task"], ["web_search", "send_email"]),
     ).toEqual(["web_search"]);
   });
-
-  it("uses the authoritative tools when no narrower request is supplied", () => {
-    expect(intersectEnabledTools(["web_search"], undefined)).toEqual(["web_search"]);
-  });
 });

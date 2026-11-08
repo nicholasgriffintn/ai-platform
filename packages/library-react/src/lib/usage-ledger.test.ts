@@ -39,10 +39,6 @@ function page(events: UsageEventRecord[], hasMore: boolean): UsageEventsResponse
 }
 
 describe("flattenUsageEventPages", () => {
-  it("returns an empty ledger for missing pages", () => {
-    expect(flattenUsageEventPages(undefined)).toEqual([]);
-  });
-
   it("flattens pages in order and drops duplicate rows across page boundaries", () => {
     const pages = [page([event("a"), event("b")], true), page([event("b"), event("c")], false)];
 

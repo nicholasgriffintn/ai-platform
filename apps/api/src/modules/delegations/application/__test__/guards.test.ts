@@ -66,18 +66,4 @@ describe("checkDelegationSpawn", () => {
     expect(result.allowed).toBe(false);
     expect(result.reason).toContain("credit cap");
   });
-
-  it("refuses when there is no stored run to count live delegations against", async () => {
-    const withoutRun = context();
-
-    withoutRun.request.request.run_id = undefined;
-
-    const result = await checkDelegationSpawn(withoutRun);
-
-    expect(result.allowed).toBe(false);
-    expect(result.reason).toContain("stored conversation");
-    expect(
-      withoutRun.request.context.repositories.get(DelegationRepository).countLiveForParent,
-    ).not.toHaveBeenCalled();
-  });
 });

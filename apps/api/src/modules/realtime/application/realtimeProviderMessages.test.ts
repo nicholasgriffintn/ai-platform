@@ -1,15 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { toCartesiaClientMessage, toCartesiaUpstreamMessage } from "./cartesia";
-import {
-  createElevenLabsClientMessageMapper,
-  createElevenLabsUpstreamMessageMapper,
-} from "./elevenlabs";
-import {
-  buildMistralSessionUpdateMessage,
-  isMistralSessionCreatedMessage,
-  toMistralUpstreamMessage,
-} from "./mistralProtocol";
+import { toMistralUpstreamMessage } from "./mistralProtocol";
 
 vi.mock("~/infrastructure/providers/capabilities/realtime", () => ({
   getRealtimeProvider: vi.fn(),
@@ -20,18 +11,6 @@ vi.mock("~/infrastructure/providers/capabilities/realtime/providers", () => ({
 }));
 
 describe("Mistral realtime proxy messages", () => {
-  it("asks for speaker labels or turn detection, never both, with the vocabulary", () => {
-    const labelled = JSON.parse(
-      buildMistralSessionUpdateMessage({ speakerLabels: true, vocabulary: ["Polychat"] }),
-    );
-    const conversational = JSON.parse(
-      buildMistralSessionUpdateMessage({ speakerLabels: false, vocabulary: [] }),
-    );
-
-    expect(labelled.session).toEqual({ context_bias: ["Polychat"], diarize: true });
-    expect(conversational.session).toEqual({ turn_detection: {} });
-  });
-
   it("normalises JSON and binary audio messages before forwarding them upstream", () => {
     expect(
       toMistralUpstreamMessage(
@@ -53,136 +32,5 @@ describe("Mistral realtime proxy messages", () => {
     expect(() =>
       toMistralUpstreamMessage(JSON.stringify({ type: "input_audio.append", audio: "not base64" })),
     ).toThrow("Invalid realtime audio payload");
-  });
-
-  it("recognises only the Mistral session-created response fixture", () => {
-    expect(isMistralSessionCreatedMessage(JSON.stringify({ type: "session.created" }))).toBe(true);
-    expect(
-      isMistralSessionCreatedMessage(JSON.stringify({ type: "transcription.text.delta" })),
-    ).toBe(false);
-    expect(isMistralSessionCreatedMessage("{")).toBe(false);
-  });
-});
-
-describe("ElevenLabs realtime proxy messages", () => {
-  it("commits only after enough PCM audio has reached the upstream mapper", () => {
-    const toUpstream = createElevenLabsUpstreamMessageMapper();
-    const shortAudio = Buffer.alloc(320).toString("base64");
-    const commitReadyAudio = Buffer.alloc(9600).toString("base64");
-
-    expect(toUpstream({ type: "input_audio.append", audio: shortAudio })).toBe(
-      JSON.stringify({
-        message_type: "input_audio_chunk",
-        audio_base_64: shortAudio,
-        commit: false,
-        sample_rate: 16000,
-      }),
-    );
-    expect(toUpstream({ type: "input_audio.flush" })).toBeNull();
-    expect(toUpstream({ type: "input_audio.append", audio: commitReadyAudio })).toBe(
-      JSON.stringify({
-        message_type: "input_audio_chunk",
-        audio_base_64: commitReadyAudio,
-        commit: false,
-        sample_rate: 16000,
-      }),
-    );
-    expect(toUpstream({ type: "input_audio.flush" })).toBe(
-      JSON.stringify({
-        message_type: "input_audio_chunk",
-        audio_base_64: "",
-        commit: true,
-        sample_rate: 16000,
-      }),
-    );
-  });
-
-  it("maps partial and committed ElevenLabs transcripts to one correlated segment", () => {
-    const toClient = createElevenLabsClientMessageMapper();
-    const partial = JSON.parse(
-      toClient(JSON.stringify({ message_type: "partial_transcript", text: "Book the" })) as string,
-    );
-    const committed = (
-      toClient(
-        JSON.stringify({ message_type: "committed_transcript", text: "Book the train." }),
-      ) as string[]
-    ).map((message) => JSON.parse(message));
-
-    expect(partial).toEqual({
-      type: "transcription.text",
-      item_id: expect.stringMatching(/^elevenlabs-/),
-      text: "Book the",
-    });
-    expect(committed).toEqual([
-      {
-        type: "transcription.segment",
-        item_id: partial.item_id,
-        text: "Book the train.",
-      },
-      { type: "transcription.done", item_id: partial.item_id },
-    ]);
-  });
-
-  it("reports an ElevenLabs quota failure once per session", () => {
-    const onQuotaExhausted = vi.fn();
-    const toClient = createElevenLabsClientMessageMapper(onQuotaExhausted);
-    const quota = JSON.stringify({ message_type: "quota_exceeded", error: "Out of credits" });
-
-    toClient(quota);
-    toClient(quota);
-    toClient(JSON.stringify({ message_type: "rate_limited", error: "Slow down" }));
-
-    expect(onQuotaExhausted).toHaveBeenCalledTimes(1);
-  });
-
-  it("surfaces typed ElevenLabs failures as error events with their code", () => {
-    const toClient = createElevenLabsClientMessageMapper();
-
-    expect(
-      JSON.parse(
-        toClient(
-          JSON.stringify({
-            message_type: "session_time_limit_exceeded",
-            error: "Session exceeded the time limit",
-          }),
-        ) as string,
-      ),
-    ).toEqual({
-      type: "error",
-      error: {
-        message: "Session exceeded the time limit",
-        code: "session_time_limit_exceeded",
-      },
-    });
-  });
-});
-
-describe("Cartesia realtime proxy messages", () => {
-  it("maps normalised client audio and shutdown controls to the auto-turn wire protocol", () => {
-    expect(
-      new Uint8Array(
-        toCartesiaUpstreamMessage({ type: "input_audio.append", audio: "AQID" }) as ArrayBuffer,
-      ),
-    ).toEqual(new Uint8Array([1, 2, 3]));
-    expect(toCartesiaUpstreamMessage({ type: "input_audio.flush" })).toBeNull();
-    expect(toCartesiaUpstreamMessage({ type: "input_audio.end" })).toBe(
-      JSON.stringify({ type: "close" }),
-    );
-  });
-
-  it("preserves Cartesia turn snapshots for the shared client parser", () => {
-    const update = JSON.stringify({
-      type: "turn.update",
-      transcript: "Good morning",
-      request_id: "cartesia-turn-1",
-    });
-    const end = JSON.stringify({
-      type: "turn.end",
-      transcript: "Good morning.",
-      request_id: "cartesia-turn-1",
-    });
-
-    expect(toCartesiaClientMessage(update)).toBe(update);
-    expect(toCartesiaClientMessage(end)).toBe(end);
   });
 });

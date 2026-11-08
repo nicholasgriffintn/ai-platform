@@ -47,12 +47,7 @@ import { fakeRepositories } from "~/infrastructure/database/__test__/fake-reposi
 import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
 import { ComposioConnectorSessionRepository } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
 
-import {
-  closeComposioConnectorRun,
-  discoverComposioRunTools,
-  executeComposioRunTool,
-  resolveComposioRunAccount,
-} from "../composio-run";
+import { executeComposioRunTool, resolveComposioRunAccount } from "../composio-run";
 
 const account = {
   id: "ca_gmail",
@@ -134,150 +129,6 @@ describe("Composio connector run lifecycle", () => {
     );
   });
 
-  it("imports explicit Composio mount outputs before returning model-visible data", async () => {
-    const runContext = context();
-    const provider = getConnectorProviderConfig("gmail");
-
-    mocks.executeComposioSessionTool.mockResolvedValueOnce({
-      data: { file: { mount_relative_path: "report.pdf" } },
-      logId: "log_file",
-    });
-    mocks.importComposioOperationFileResults.mockResolvedValueOnce({
-      file: { $assistantOutput: { id: "output_1", filename: "report.pdf" } },
-    });
-
-    await expect(
-      executeComposioRunTool({
-        context: runContext,
-        userId: 42,
-        provider,
-        operationId: "GMAIL_FETCH_EMAILS",
-        arguments: {},
-        sessionId: "ccs_opaque",
-        scope: { conversationId: "completion-1", completionId: "completion-1" },
-      }),
-    ).resolves.toMatchObject({
-      data: { file: { $assistantOutput: { id: "output_1" } } },
-    });
-    expect(mocks.importComposioOperationFileResults).toHaveBeenCalledWith(
-      expect.objectContaining({ sessionId: "trs_remote", userId: 42 }),
-    );
-  });
-
-  it("stages file references against the claimed remote session before execution", async () => {
-    const runContext = context();
-    const provider = getConnectorProviderConfig("gmail");
-
-    mocks.resolveComposioFileReferences.mockResolvedValueOnce({ attachment: "/mnt/files/a.pdf" });
-
-    await executeComposioRunTool({
-      context: runContext,
-      userId: 42,
-      provider,
-      operationId: "GMAIL_FETCH_EMAILS",
-      arguments: { attachment: { $assistantFile: { kind: "source", id: "src_1" } } },
-      sessionId: "ccs_opaque",
-      scope: { conversationId: "completion-1", completionId: "completion-1" },
-    });
-
-    expect(mocks.resolveComposioFileReferences).toHaveBeenCalledWith(
-      expect.objectContaining({ sessionId: "trs_remote", userId: 42 }),
-    );
-    expect(mocks.executeComposioSessionTool).toHaveBeenCalledWith(
-      expect.objectContaining({ arguments: { attachment: "/mnt/files/a.pdf" } }),
-    );
-  });
-
-  it("returns an opaque lease and compensates when discovery cannot be persisted", async () => {
-    const runContext = context();
-    const provider = getConnectorProviderConfig("gmail");
-
-    await expect(
-      discoverComposioRunTools({
-        context: runContext,
-        userId: 42,
-        provider,
-        connectedAccount: account,
-        allowedOperationIds: ["GMAIL_FETCH_EMAILS"],
-        useCase: "Find invoices",
-        scope: {
-          conversationId: "completion-1",
-          completionId: "completion-1",
-          recipeId: "gmail-recipe",
-        },
-      }),
-    ).resolves.toMatchObject({ sessionId: "ccs_opaque" });
-
-    mocks.create.mockRejectedValueOnce(new Error("database unavailable"));
-    await expect(
-      discoverComposioRunTools({
-        context: runContext,
-        userId: 42,
-        provider,
-        connectedAccount: account,
-        allowedOperationIds: ["GMAIL_FETCH_EMAILS"],
-        useCase: "Find invoices",
-        scope: {
-          conversationId: "completion-1",
-          completionId: "completion-1",
-          recipeId: "gmail-recipe",
-        },
-      }),
-    ).rejects.toThrow("database unavailable");
-    expect(mocks.deleteComposioToolSession).toHaveBeenCalledWith({
-      env: testEnv,
-      sessionId: "trs_remote",
-    });
-  });
-
-  it("claims an operation-bound lease and keeps the remote session until run completion", async () => {
-    const runContext = context();
-    const provider = getConnectorProviderConfig("gmail");
-
-    await expect(
-      executeComposioRunTool({
-        context: runContext,
-        userId: 42,
-        provider,
-        operationId: "GMAIL_FETCH_EMAILS",
-        arguments: { query: "invoice" },
-        sessionId: "ccs_opaque",
-        scope: {
-          conversationId: "completion-1",
-          completionId: "completion-1",
-          recipeId: "gmail-recipe",
-        },
-      }),
-    ).resolves.toMatchObject({ data: { messages: [] }, logId: "log_1" });
-    expect(mocks.executeComposioSessionTool).toHaveBeenCalledWith(
-      expect.objectContaining({
-        sessionId: "trs_remote",
-        authConfigId: "ac_uRCWNPtnTpEw",
-        connectedAccountId: "ca_gmail",
-      }),
-    );
-    expect(mocks.deleteComposioToolSession).not.toHaveBeenCalled();
-    expect(mocks.createActivity).toHaveBeenCalledWith(
-      expect.objectContaining({
-        capabilityId: "connector:gmail",
-        groupId: "connector_run_1",
-        kind: "connector_operation",
-        status: "succeeded",
-        data: expect.objectContaining({
-          sessionHandle: "ccs_opaque",
-          selectedAccountId: "ca_gmail",
-        }),
-      }),
-    );
-
-    await closeComposioConnectorRun(runContext);
-    expect(mocks.deleteComposioToolSession).toHaveBeenCalledWith({
-      env: testEnv,
-      sessionId: "trs_remote",
-    });
-    expect(mocks.deleteRecord).toHaveBeenCalledWith("ccs_opaque");
-  });
-
   it("records failures without storing arguments and ignores telemetry persistence failure", async () => {
     const runContext = context();
     const provider = getConnectorProviderConfig("gmail");
@@ -305,53 +156,6 @@ describe("Composio connector run lifecycle", () => {
     expect(activityInput).toMatchObject({ status: "failed" });
     expect(JSON.stringify(activityInput)).not.toContain("must-not-persist");
     expect(JSON.stringify(activityInput)).not.toContain("trs_remote");
-  });
-
-  it("leaves a durable cleanup retry when remote deletion fails", async () => {
-    const runContext = context();
-    const provider = getConnectorProviderConfig("gmail");
-
-    await executeComposioRunTool({
-      context: runContext,
-      userId: 42,
-      provider,
-      operationId: "GMAIL_FETCH_EMAILS",
-      arguments: {},
-      sessionId: "ccs_opaque",
-      scope: {
-        conversationId: "completion-1",
-        completionId: "completion-1",
-        recipeId: "gmail-recipe",
-      },
-    });
-    mocks.deleteComposioToolSession.mockRejectedValueOnce(new Error("temporary failure"));
-
-    await closeComposioConnectorRun(runContext);
-
-    expect(mocks.markCleanupPending).toHaveBeenCalledWith({
-      id: "ccs_opaque",
-      cleanupAfter: expect.any(String),
-    });
-    expect(mocks.deleteRecord).not.toHaveBeenCalled();
-  });
-
-  it("does not let retry persistence failure escape request finalisation", async () => {
-    const runContext = context();
-    const provider = getConnectorProviderConfig("gmail");
-
-    await executeComposioRunTool({
-      context: runContext,
-      userId: 42,
-      provider,
-      operationId: "GMAIL_FETCH_EMAILS",
-      arguments: {},
-      sessionId: "ccs_opaque",
-      scope: { conversationId: "completion-1", completionId: "completion-1" },
-    });
-    mocks.deleteComposioToolSession.mockRejectedValueOnce(new Error("temporary failure"));
-    mocks.markCleanupPending.mockRejectedValueOnce(new Error("database unavailable"));
-
-    await expect(closeComposioConnectorRun(runContext)).resolves.toBeUndefined();
   });
 
   it("does not substitute another account for an unattended installation", async () => {

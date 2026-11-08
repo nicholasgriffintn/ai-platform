@@ -202,6 +202,63 @@
         "react-hooks/rules-of-hooks": "off",
         "typescript/consistent-type-imports": "off"
       }
+    },
+    {
+      "files": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.test.mjs",
+        "**/__tests__/**",
+        "**/__test__/**"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "better-sqlite3",
+                "message": "Unit tests must not run a database."
+              },
+              {
+                "name": "node:sqlite",
+                "message": "Unit tests must not run a database."
+              },
+              {
+                "name": "miniflare",
+                "message": "Unit tests must not start a Workers runtime."
+              },
+              {
+                "name": "wrangler",
+                "message": "Unit tests must not start a Workers runtime."
+              },
+              {
+                "name": "hono",
+                "message": "Do not test routes.",
+                "allowTypeImports": true
+              },
+              {
+                "name": "node:http",
+                "message": "Unit tests must not open servers or network connections."
+              },
+              {
+                "name": "node:https",
+                "message": "Unit tests must not open servers or network connections."
+              }
+            ],
+            "patterns": [
+              {
+                "group": ["@cloudflare/vitest-pool-workers*"],
+                "message": "Unit tests must not start a Workers runtime."
+              },
+              {
+                "group": ["**/routes", "**/api/routes"],
+                "message": "Do not test routes."
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 }

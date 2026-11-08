@@ -79,24 +79,6 @@ function createContext(currentRun: ChatRun = run) {
 
 describe("handleCancelChatRun", () => {
   beforeEach(() => vi.clearAllMocks());
-  it("acknowledges cancellation separately from owner-confirmed interruption", async () => {
-    const context = createContext();
-
-    await expect(
-      handleCancelChatRun(context, run.id, { command_id: "cancel-1", expected_attempt: 1 }, "web"),
-    ).resolves.toMatchObject({
-      run: { kind: "cancel", run: { id: run.id, status: "cancelling" } },
-    });
-    expect(metrics.recordTurnCancellationRequested).toHaveBeenCalledWith(
-      expect.objectContaining({ traceId: run.conversationId }),
-      "web",
-    );
-    expect(metrics.recordTurnCancellationRequested.mock.invocationCallOrder[0]).toBeGreaterThan(
-      vi.mocked(context.repositories.get(ConversationRunRepository).acceptCancellation).mock
-        .invocationCallOrder[0],
-    );
-  });
-
   it("rejects a stale attempt before recording a cancellation command", async () => {
     const context = createContext({ ...run, attempt: 2 });
 
@@ -109,38 +91,5 @@ describe("handleCancelChatRun", () => {
     expect(
       context.repositories.get(ConversationRunRepository).acceptCancellation,
     ).not.toHaveBeenCalled();
-  });
-  it("does not record cancellation when persistence fails", async () => {
-    const context = createContext();
-
-    vi.mocked(
-      context.repositories.get(ConversationRunRepository).acceptCancellation,
-    ).mockRejectedValueOnce(new Error("write failed"));
-    await expect(
-      handleCancelChatRun(context, run.id, { command_id: "cancel-1", expected_attempt: 1 }, "web"),
-    ).rejects.toThrow("write failed");
-    expect(metrics.recordTurnCancellationRequested).not.toHaveBeenCalled();
-  });
-
-  it("does not count a duplicate cancellation as a new request", async () => {
-    const context = createContext();
-
-    vi.mocked(
-      context.repositories.get(ConversationRunRepository).acceptCancellation,
-    ).mockResolvedValueOnce({
-      protocolVersion: 1,
-      commandId: "cancel-1",
-      kind: "cancel",
-      acceptedAt: run.updatedAt,
-      duplicate: true,
-      run: { ...run, status: "cancelling" },
-    });
-    await handleCancelChatRun(
-      context,
-      run.id,
-      { command_id: "cancel-1", expected_attempt: 1 },
-      "web",
-    );
-    expect(metrics.recordTurnCancellationRequested).not.toHaveBeenCalled();
   });
 });

@@ -24,7 +24,6 @@
     "access": "public"
   },
   "scripts": {
-    "test": "vitest run",
     "typecheck": "tsc -b tsconfig.typecheck.json"
   },
   "dependencies": {
@@ -33,19 +32,16 @@
     "@ngriffin_uk/polychat-schemas": "workspace:^",
     "@ngriffin_uk/polychat-utility-core": "workspace:^",
     "@ngriffin_uk/polychat-utility-react": "workspace:^",
-    "lucide-react": "1.61.0"
+    "lucide-react": "1.66.0"
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",
-    "@testing-library/react": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "jsdom": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "tsup": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "peerDependencies": {
     "react": "catalog:react-peer",

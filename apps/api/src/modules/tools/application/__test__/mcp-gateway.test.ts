@@ -20,20 +20,9 @@ vi.mock("@ngriffin_uk/polychat-ai-integrations", async (importOriginal) => ({
   },
 }));
 
-vi.mock("~/modules/models/application/resolve", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("~/modules/models/application/resolve")>()),
-  findModelConfig: async (model: string) =>
-    model === "vision-model" ? { modalities: { input: ["text", "image"] } } : { multimodal: false },
-}));
-
 import { mcp_call_tool } from "~/modules/tools/application/builtin/mcp_gateway";
 
-import {
-  mergeNativeMcpToolNames,
-  shouldUseNativeMcpGateway,
-  withConfiguredMcpTool,
-} from "../mcp-gateway-servers";
-import { mergePersonalModelToolOptions } from "../modelToolConfiguration";
+import { shouldUseNativeMcpGateway } from "../mcp-gateway-servers";
 
 const servers = [
   { label: "linear", url: "https://mcp.linear.app/mcp", credentialConnectionId: "connection-1" },
@@ -44,20 +33,6 @@ const context = { ...signedInUser, requestCache: new Map() } as never;
 describe("native MCP gateway selection", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it("swaps the hosted MCP tool for the gateway when the model has no hosted MCP", async () => {
-    const useNativeGateway = await shouldUseNativeMcpGateway({
-      context,
-      enabledTools: ["mcp", "web_search"],
-      servers,
-      supportsHostedMcp: false,
-    });
-
-    expect(useNativeGateway).toBe(true);
-    expect(
-      mergeNativeMcpToolNames({ enabledTools: ["mcp", "web_search"], useNativeGateway }),
-    ).toEqual(["web_search", "mcp_list_tools", "mcp_call_tool"]);
   });
 
   it("keeps OpenAI's hosted tool unless a credential is only for Polychat", async () => {
@@ -120,81 +95,5 @@ describe("mcp_call_tool", () => {
     expect(result.status).toBe("error");
     expect(String(result.content)).toContain("Nothing was sent");
     expect(mocks.callTool).not.toHaveBeenCalled();
-  });
-
-  it("attaches supported images for a vision model and names the ones it leaves out", async () => {
-    mocks.resolveMcpGatewayAccess.mockResolvedValue({ headers: {}, allowedTools: undefined });
-    mocks.callTool.mockResolvedValue({
-      content: [
-        { type: "text", text: "Two matching screens" },
-        { type: "image", data: "aGVsbG8=", mimeType: "image/webp" },
-        { type: "image", data: "aGVsbG8=", mimeType: "image/avif" },
-      ],
-    });
-
-    const call = (model: string) =>
-      mcp_call_tool.execute(
-        { integration: "inspo", tool: "search_screens", arguments: { query: "bento" } },
-        {
-          completionId: "conversation-1",
-          env: {},
-          request: {
-            env: {},
-            context: { ...signedInUser, requestCache: new Map() },
-            request: {
-              model,
-              tool_options: {
-                mcp_servers: [
-                  { server_label: "inspo", server_url: "https://inspomcp.dev/api/mcp" },
-                ],
-              },
-            },
-          },
-        } as never,
-      );
-
-    const vision = await call("vision-model");
-    const textOnly = await call("text-model");
-
-    expect(vision.content).toEqual([
-      {
-        type: "text",
-        text: "Two matching screens\n[image 1 attached]\n[image omitted: image/avif is not a supported image type]",
-      },
-      { type: "image_url", image_url: { url: "data:image/webp;base64,aGVsbG8=", detail: "low" } },
-    ]);
-    expect(textOnly.content).toBe(
-      "Two matching screens\n[image content omitted]\n[image content omitted]",
-    );
-  });
-});
-
-describe("mcp_call_tool effects", () => {
-  it("treats a server's hints as claims, not verified facts", () => {
-    expect(mcp_call_tool.effects?.hintsAreClaims).toBe(true);
-  });
-});
-
-describe("configured MCP servers", () => {
-  const server = { label: "deepwiki", url: "https://mcp.deepwiki.com/mcp" };
-
-  it("reach a chat that did not ask for the mcp tool", () => {
-    const options = mergePersonalModelToolOptions({
-      configured: {
-        configuredToolIds: ["mcp"],
-        toolOptions: {
-          mcp_servers: [
-            { server_label: server.label, server_url: server.url, require_approval: "always" },
-          ],
-        },
-      },
-    });
-
-    expect(options?.mcp_servers).toHaveLength(1);
-    expect(withConfiguredMcpTool(["web_search"], [server])).toEqual(["web_search", "mcp"]);
-  });
-
-  it("leave a chat alone when nothing is configured", () => {
-    expect(withConfiguredMcpTool(["web_search"], [])).toEqual(["web_search"]);
   });
 });

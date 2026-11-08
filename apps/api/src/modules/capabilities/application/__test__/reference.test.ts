@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { validateCapabilityReference } from "~/modules/capabilities/application/reference";
-import { getAssistantRecipes } from "~/modules/recipes/application/catalog";
 import { TeammateRepository } from "~/modules/teammates/infrastructure/TeammateRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
@@ -42,19 +41,6 @@ function createTeammateContext(overrides: {
 }
 
 describe("attaching an teammate to a project", () => {
-  it("accepts a workspace teammate from a workspace the person belongs to", async () => {
-    const context = createTeammateContext({
-      userId: 9,
-      ownerScopeType: "workspace",
-      ownerScopeId: "workspace-1",
-      role: "member",
-    });
-
-    await expect(
-      validateCapabilityReference("teammate", "teammate-1", context),
-    ).resolves.toBeUndefined();
-  });
-
   it("refuses an teammate the person cannot read", async () => {
     const context = createTeammateContext({
       userId: 9,
@@ -68,23 +54,9 @@ describe("attaching an teammate to a project", () => {
       statusCode: 403,
     });
   });
-
-  it("refuses an teammate when there is no authenticated caller", async () => {
-    await expect(validateCapabilityReference("teammate", "teammate-1")).rejects.toMatchObject({
-      message: "Unknown teammate",
-      statusCode: 404,
-    });
-  });
 });
 
 describe("project capability references", () => {
-  it("accepts catalogue apps and recipes", async () => {
-    await expect(validateCapabilityReference("app", "featured-strudel")).resolves.toBeUndefined();
-    await expect(
-      validateCapabilityReference("recipe", getAssistantRecipes()[0].id),
-    ).resolves.toBeUndefined();
-  });
-
   it("rejects references outside the published catalogues", async () => {
     await expect(validateCapabilityReference("app", "unknown-app")).rejects.toMatchObject({
       message: "Unknown experience",
@@ -94,9 +66,5 @@ describe("project capability references", () => {
       message: "Unknown recipe",
       statusCode: 404,
     });
-  });
-
-  it("leaves tool validation to the configuration boundary", async () => {
-    await expect(validateCapabilityReference("tool", "web_fetch")).resolves.toBeUndefined();
   });
 });

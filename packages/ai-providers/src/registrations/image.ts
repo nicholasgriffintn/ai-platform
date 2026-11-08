@@ -1,24 +1,15 @@
 import type { ImageProvider } from "../capabilities/image/index.js";
-import {
-  ReplicateImageProvider,
-  WorkersAiImageProvider,
-} from "../capabilities/image/providers/index.js";
+import { ModelImageProvider } from "../capabilities/image/providers/index.js";
 import type { AiProviderRegistration, AiProviderRegistry, ProviderRuntime } from "../runtime.js";
+import { chatProviders } from "./chat.js";
 
 function imageProviders(runtime: ProviderRuntime): AiProviderRegistration<ImageProvider>[] {
-  return [
-    {
-      name: "workers-ai",
-      aliases: ["workers"],
-      create: () => new WorkersAiImageProvider(runtime),
-      metadata: { vendor: "Cloudflare", categories: ["image"] },
-    },
-    {
-      name: "replicate",
-      create: () => new ReplicateImageProvider(runtime),
-      metadata: { vendor: "Replicate", categories: ["image"] },
-    },
-  ];
+  return chatProviders(runtime).map((chat) => ({
+    name: chat.name,
+    aliases: chat.aliases,
+    create: () => new ModelImageProvider(runtime, chat.name),
+    metadata: { vendor: chat.metadata?.vendor, categories: ["image"] },
+  }));
 }
 
 export function registerImageProviders(

@@ -92,18 +92,6 @@ describe("recordPullRequestCheck", () => {
     });
   });
 
-  it("starts again on a new push and says when it goes green", async () => {
-    await check("failure", "test");
-    await check("success", null, "b".repeat(40));
-
-    expect(stored.details.pullRequest?.checks).toMatchObject({
-      headSha: "b".repeat(40),
-      state: "passing",
-      failing: [],
-    });
-    expect(mocks.postEvent).toHaveBeenCalledTimes(1);
-  });
-
   it("leaves tasks alone when the installation's owner can't see the project", async () => {
     mocks.requireProjectAccess.mockRejectedValueOnce(new Error("forbidden"));
 

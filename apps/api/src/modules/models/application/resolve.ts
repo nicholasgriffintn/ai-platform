@@ -31,6 +31,7 @@ import {
   getModelDisplayName,
   getSystemModelLineup,
   speechProviderSchema,
+  modelAcceptsImageInput,
   modelHasInputModalities,
   resolveLineupCandidates,
   type ModelConfigItem,
@@ -49,7 +50,7 @@ import {
   parseProviderQuotaState,
 } from "~/modules/user/domain/provider-quota";
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
-import type { IEnv, IUser, ResearchProviderName, SearchProviderName } from "~/types";
+import type { IEnv, IRequest, IUser, ResearchProviderName, SearchProviderName } from "~/types";
 
 import { loadSystemModelLayers, type SystemModelScope } from "./scope";
 import { findSourcedModel, findSourcedModelByMatchingModel, listSourcedModels } from "./sources";
@@ -202,6 +203,18 @@ export async function findModelConfig(
     (await getModelConfig(model, env, provider, userId)) ||
     (await getModelConfigByMatchingModel(model, env, provider, userId)) ||
     null
+  );
+}
+
+export async function requestModelReadsImages(request: IRequest): Promise<boolean> {
+  const model = request.request?.model;
+
+  if (typeof model !== "string" || !model) {
+    return false;
+  }
+
+  return modelAcceptsImageInput(
+    await findModelConfig(model, request.env, request.request?.provider, request.user?.id),
   );
 }
 

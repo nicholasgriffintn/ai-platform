@@ -35,9 +35,6 @@
       "path": "packages/ai-experiments/tsconfig.json"
     },
     {
-      "path": "packages/ai-experiments/tsconfig.typecheck.json"
-    },
-    {
       "path": "packages/ai-functions/tsconfig.json"
     },
     {
@@ -65,9 +62,6 @@
       "path": "packages/ai-prompts/tsconfig.json"
     },
     {
-      "path": "packages/ai-prompts/tsconfig.typecheck.json"
-    },
-    {
       "path": "packages/ai-providers/tsconfig.json"
     },
     {
@@ -77,13 +71,7 @@
       "path": "packages/ai-sandbox/tsconfig.json"
     },
     {
-      "path": "packages/ai-sandbox/tsconfig.typecheck.json"
-    },
-    {
       "path": "packages/ai-skills/tsconfig.json"
-    },
-    {
-      "path": "packages/ai-skills/tsconfig.typecheck.json"
     },
     {
       "path": "packages/ai-telemetry/tsconfig.json"
@@ -93,9 +81,6 @@
     },
     {
       "path": "packages/ai-workflows/tsconfig.json"
-    },
-    {
-      "path": "packages/ai-workflows/tsconfig.typecheck.json"
     },
     {
       "path": "packages/cli/tsconfig.json"
@@ -113,9 +98,6 @@
       "path": "packages/component-capabilities/tsconfig.json"
     },
     {
-      "path": "packages/component-capabilities/tsconfig.typecheck.json"
-    },
-    {
       "path": "packages/component-content/tsconfig.json"
     },
     {
@@ -131,19 +113,10 @@
       "path": "packages/component-experiences/tsconfig.json"
     },
     {
-      "path": "packages/component-experiences/tsconfig.typecheck.json"
-    },
-    {
       "path": "packages/component-models/tsconfig.json"
     },
     {
-      "path": "packages/component-models/tsconfig.typecheck.json"
-    },
-    {
       "path": "packages/component-navigation/tsconfig.json"
-    },
-    {
-      "path": "packages/component-navigation/tsconfig.typecheck.json"
     },
     {
       "path": "packages/component-shell/tsconfig.json"
@@ -155,25 +128,13 @@
       "path": "packages/component-sites/tsconfig.json"
     },
     {
-      "path": "packages/component-sites/tsconfig.typecheck.json"
-    },
-    {
       "path": "packages/component-ui/tsconfig.json"
-    },
-    {
-      "path": "packages/component-ui/tsconfig.typecheck.json"
     },
     {
       "path": "packages/component-workspaces/tsconfig.json"
     },
     {
-      "path": "packages/component-workspaces/tsconfig.typecheck.json"
-    },
-    {
       "path": "packages/library-agent-loop/tsconfig.json"
-    },
-    {
-      "path": "packages/library-agent-loop/tsconfig.typecheck.json"
     },
     {
       "path": "packages/library-benchmarks/tsconfig.json"
@@ -197,19 +158,10 @@
       "path": "packages/library-composio/tsconfig.json"
     },
     {
-      "path": "packages/library-composio/tsconfig.typecheck.json"
-    },
-    {
       "path": "packages/library-flags/tsconfig.json"
     },
     {
-      "path": "packages/library-flags/tsconfig.typecheck.json"
-    },
-    {
       "path": "packages/library-goals/tsconfig.json"
-    },
-    {
-      "path": "packages/library-goals/tsconfig.typecheck.json"
     },
     {
       "path": "packages/library-interactions/tsconfig.json"
@@ -236,9 +188,6 @@
       "path": "packages/library-polis/tsconfig.json"
     },
     {
-      "path": "packages/library-polis/tsconfig.typecheck.json"
-    },
-    {
       "path": "packages/library-prompts-catalogue/tsconfig.json"
     },
     {
@@ -255,9 +204,6 @@
     },
     {
       "path": "packages/library-registry/tsconfig.json"
-    },
-    {
-      "path": "packages/library-registry/tsconfig.typecheck.json"
     },
     {
       "path": "packages/library-sandbox/tsconfig.json"
@@ -281,13 +227,7 @@
       "path": "packages/library-surface/tsconfig.json"
     },
     {
-      "path": "packages/library-surface/tsconfig.typecheck.json"
-    },
-    {
       "path": "packages/library-tasks/tsconfig.json"
-    },
-    {
-      "path": "packages/library-tasks/tsconfig.typecheck.json"
     },
     {
       "path": "packages/library-tools/tsconfig.json"
@@ -299,9 +239,6 @@
       "path": "packages/schemas/tsconfig.json"
     },
     {
-      "path": "packages/schemas/tsconfig.typecheck.json"
-    },
-    {
       "path": "packages/utility-core/tsconfig.json"
     },
     {
@@ -309,9 +246,6 @@
     },
     {
       "path": "packages/utility-react/tsconfig.json"
-    },
-    {
-      "path": "packages/utility-react/tsconfig.typecheck.json"
     },
     {
       "path": "packages/utility-server/tsconfig.json"

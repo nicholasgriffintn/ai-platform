@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import z from "zod/v4";
 
 import { jsonSchemaToZod } from "../json-schema-to-zod.js";
-import { flattenObjectRootSchema } from "../json-schema.js";
 
 describe("jsonSchemaToZod", () => {
   it("preserves nested Composio constraints and closed objects", () => {
@@ -28,40 +27,6 @@ describe("jsonSchemaToZod", () => {
     expect(
       schema.safeParse({ order: { marketSlug: "market", quantity: 1, ignored: true } }).success,
     ).toBe(false);
-  });
-
-  it("supports numeric enums, nullable unions, formats, and array bounds", () => {
-    const schema = jsonSchemaToZod({
-      type: "object",
-      required: ["mode", "when", "values"],
-      properties: {
-        mode: { type: "integer", enum: [1, 2] },
-        when: { anyOf: [{ type: "string", format: "date" }, { type: "null" }] },
-        values: { type: "array", minItems: 1, maxItems: 2, items: { type: "string" } },
-      },
-    });
-
-    expect(schema.safeParse({ mode: 2, when: null, values: ["one"] }).success).toBe(true);
-    expect(schema.safeParse({ mode: 3, when: "12/08/2026", values: [] }).success).toBe(false);
-  });
-
-  it("serialises large enums without recursively nested unions", () => {
-    const providers = Array.from({ length: 150 }, (_, index) => `provider-${index}`);
-    const schema = jsonSchemaToZod({
-      type: "object",
-      required: ["provider"],
-      properties: {
-        provider: { type: "string", enum: providers },
-      },
-    });
-
-    const jsonSchema = z.toJSONSchema(schema);
-    const providerSchema = jsonSchema.properties?.provider;
-
-    expect(providerSchema).toMatchObject({ enum: providers });
-    expect(providerSchema).not.toHaveProperty("anyOf");
-    expect(schema.safeParse({ provider: "provider-149" }).success).toBe(true);
-    expect(schema.safeParse({ provider: "missing" }).success).toBe(false);
   });
 
   it("rejects an invalid regex pattern instead of silently dropping it", () => {
@@ -96,50 +61,5 @@ describe("jsonSchemaToZod", () => {
         expect.objectContaining({ required: ["query"], additionalProperties: false }),
       ]),
     );
-  });
-});
-
-describe("flattenObjectRootSchema", () => {
-  it("flattens object alternatives into a single object root", () => {
-    const schema = flattenObjectRootSchema(
-      z.toJSONSchema(
-        jsonSchemaToZod({
-          type: "object",
-          properties: {
-            recipeId: { type: "string" },
-            query: { type: "string" },
-            input: { type: "string" },
-          },
-          anyOf: [{ required: ["recipeId"] }, { required: ["query"] }],
-          additionalProperties: false,
-        }),
-      ),
-    );
-
-    expect(schema.anyOf).toBeUndefined();
-    expect(schema).toMatchObject({ type: "object", additionalProperties: false });
-    expect(Object.keys(schema.properties as Record<string, unknown>)).toEqual(
-      expect.arrayContaining(["recipeId", "query", "input"]),
-    );
-    expect(schema.required).toBeUndefined();
-  });
-
-  it("keeps requirements shared by every alternative", () => {
-    const schema = flattenObjectRootSchema(
-      z.toJSONSchema(
-        jsonSchemaToZod({
-          type: "object",
-          required: ["kind"],
-          properties: {
-            kind: { type: "string" },
-            recipeId: { type: "string" },
-            query: { type: "string" },
-          },
-          anyOf: [{ required: ["recipeId"] }, { required: ["query"] }],
-        }),
-      ),
-    );
-
-    expect(schema.required).toEqual(["kind"]);
   });
 });

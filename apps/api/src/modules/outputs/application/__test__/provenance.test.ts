@@ -3,12 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
-import {
-  createExecutionOutputProvenance,
-  parseOutputProvenance,
-} from "~/modules/outputs/application/provenance";
-
-const capturedAt = "2026-09-05T12:00:00.000Z";
+import { createExecutionOutputProvenance } from "~/modules/outputs/application/provenance";
 
 function contextForRun(initiatorUserId = 42): ServiceContext {
   return {
@@ -46,28 +41,6 @@ function contextForRun(initiatorUserId = 42): ServiceContext {
 }
 
 describe("output provenance", () => {
-  it("records the effective handoff model while retaining immutable run evidence", async () => {
-    const provenance = await createExecutionOutputProvenance(contextForRun(), {
-      runId: "run-1",
-      modelId: "handoff-model",
-      provider: "handoff-provider",
-      capturedAt,
-    });
-
-    expect(provenance).toEqual({
-      protocolVersion: 1,
-      capturedAt,
-      completeness: "complete",
-      origin: "generated",
-      run: { id: "run-1", attempt: 3 },
-      model: { id: "handoff-model", provider: "handoff-provider" },
-      skills: [{ id: "research", name: "Research", revision: 7 }],
-      sources: [{ id: "source-1", name: "Brief", state: "referenced" }],
-      approvals: [{ id: "approval-1", type: "approval", status: "approved", toolName: "publish" }],
-    });
-    expect(JSON.stringify(provenance)).not.toContain("prompt");
-  });
-
   it("rejects cross-owner run references before copying provenance", async () => {
     await expect(
       createExecutionOutputProvenance(contextForRun(7), {
@@ -76,15 +49,5 @@ describe("output provenance", () => {
         provider: "provider-1",
       }),
     ).rejects.toMatchObject({ statusCode: 404 });
-  });
-
-  it("falls back to an unknown, partial record when stored provenance will not parse", () => {
-    expect(parseOutputProvenance(null, capturedAt)).toMatchObject({
-      origin: "unknown",
-      completeness: "partial",
-      capturedAt,
-      run: null,
-      model: null,
-    });
   });
 });

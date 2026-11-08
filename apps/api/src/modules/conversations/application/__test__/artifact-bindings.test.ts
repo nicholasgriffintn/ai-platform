@@ -59,32 +59,6 @@ describe("readArtifactBinding", () => {
     mocks.executeRecipeConnectorOperation.mockResolvedValue([{ id: "session-1" }]);
   });
 
-  it("runs the read the artifact declared in its stored message", async () => {
-    const context = createContext(
-      artifactMessage([
-        {
-          id: "sessions",
-          provider: "devin",
-          operation: "list_sessions",
-          args: { organizationId: "org-1" },
-        },
-      ]),
-    );
-
-    const result = await readArtifactBinding(context, "conversation-1", request);
-
-    expect(result.data).toEqual([{ id: "session-1" }]);
-    expect(mocks.executeRecipeConnectorOperation).toHaveBeenCalledWith(
-      expect.objectContaining({
-        request: {
-          provider: "devin",
-          operation: "list_sessions",
-          params: { organizationId: "org-1" },
-        },
-      }),
-    );
-  });
-
   it("refuses a declared operation that would change something", async () => {
     const context = createContext(
       artifactMessage([

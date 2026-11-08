@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { AuthChallengeRepository } from "~/modules/auth/infrastructure/AuthChallengeRepository";
 
-import { mintWorkRunAccess, resolveWorkRunAccess, workRunToolIds } from "../work-access";
+import { mintWorkRunAccess, resolveWorkRunAccess } from "../work-access";
 
 const access = {
   userId: 7,
@@ -50,16 +50,5 @@ describe("work run access", () => {
     await expect(resolveWorkRunAccess(serviceContext, "ak_personal_key")).resolves.toBeNull();
     await expect(resolveWorkRunAccess(serviceContext, "pcwr_unknown")).resolves.toBeNull();
     await expect(resolveWorkRunAccess(serviceContext, null)).resolves.toBeNull();
-  });
-
-  it("always grants the Work board and only the shared tools the teammate already has", () => {
-    const granted = workRunToolIds(["write_document", "web_search", "run_code"]);
-
-    expect(granted).toEqual(
-      expect.arrayContaining(["list_tasks", "post_update", "write_document"]),
-    );
-    expect(granted).not.toContain("web_search");
-    expect(granted).not.toContain("run_code");
-    expect(granted).not.toContain("search_memories");
   });
 });

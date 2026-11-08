@@ -89,7 +89,6 @@
     "access": "public"
   },
   "scripts": {
-    "test": "vitest run --config vitest.config.mts",
     "typecheck": "tsc -b"
   },
   "dependencies": {

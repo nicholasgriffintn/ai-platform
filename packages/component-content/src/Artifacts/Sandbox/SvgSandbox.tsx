@@ -1,5 +1,7 @@
+import { buildSandboxDocument, SVG_SANDBOX_TEMPLATE } from "@ngriffin_uk/polychat-utility-core";
+
 import type { ArtifactProps } from "../artifact";
-import { buildSandboxDocument, SandboxIframe, SVG_SANDBOX_TEMPLATE } from "./shared";
+import { SandboxIframe } from "./shared";
 
 export function SvgSandbox({
   code,

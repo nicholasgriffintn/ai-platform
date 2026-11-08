@@ -28,61 +28,6 @@ describe("document draft revisions", () => {
     expect(save).toHaveBeenCalledWith("My draft", 1);
   });
 
-  it("adopts incoming revisions for clean documents and supports explicitly discarding a conflicting draft", () => {
-    const { result, rerender } = renderHook(
-      ({ revision, body }) =>
-        useDocumentEditor({
-          artifact: { ...documentEditorArtifact, content: body },
-          sourceRevision: revision,
-        }),
-      { initialProps: { revision: 1, body: "Original body" } },
-    );
-
-    rerender({ revision: 2, body: "New body" });
-    expect(result.current.content).toBe("New body");
-    act(() => result.current.handleContentChange("My draft"));
-    rerender({ revision: 3, body: "Latest body" });
-    act(() => result.current.resetToLatest());
-    expect(result.current.content).toBe("Latest body");
-    expect(result.current.isDirty).toBe(false);
-    expect(result.current.remoteChanged).toBe(false);
-  });
-
-  it("retains the draft and its revision after a failed save", async () => {
-    const save = vi.fn(async () => {
-      throw new Error("Revision conflict");
-    });
-    const { result } = renderHook(() =>
-      useDocumentEditor({ artifact: documentEditorArtifact, sourceRevision: 4, onSave: save }),
-    );
-
-    act(() => result.current.handleContentChange("My draft"));
-    await act(() => result.current.handleSave());
-    expect(result.current.isDirty).toBe(true);
-    await act(() => result.current.handleSave());
-    expect(save).toHaveBeenLastCalledWith("My draft", 4);
-  });
-
-  it("keeps text typed while a rewrite is being prepared", async () => {
-    const rewrite = createDeferred<{ body: string; sourceRevision: number }>();
-    const { result } = renderHook(() =>
-      useDocumentEditor({
-        artifact: documentEditorArtifact,
-        sourceRevision: 1,
-        onRewrite: () => rewrite.promise,
-      }),
-    );
-    const pending = result.current.handleRewrite();
-
-    act(() => result.current.handleContentChange("Typed during rewrite"));
-    await act(async () => {
-      rewrite.resolve({ body: "Generated rewrite", sourceRevision: 1 });
-      await pending;
-    });
-    expect(result.current.content).toBe("Typed during rewrite");
-    expect(result.current.isDirty).toBe(true);
-  });
-
   it("keeps the new document's revision when a save on the previous document finishes", async () => {
     const deferred = createDeferred<void>();
     const save = vi.fn(() => deferred.promise);

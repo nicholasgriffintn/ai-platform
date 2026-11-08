@@ -115,6 +115,9 @@ export const listFunctionTools = (
 export const resolveToolRepeatLimit = (functionName: string): number | undefined =>
   getFunctionToolCatalogue().repeatLimit(functionName);
 
+export const resolveToolTurnLimit = (functionName: string): number | undefined =>
+  getFunctionToolCatalogue().turnLimit(functionName);
+
 export const expandFunctionToolNames = (toolNames: readonly string[]): string[] =>
   getFunctionToolCatalogue().expandCompanions(toolNames);
 

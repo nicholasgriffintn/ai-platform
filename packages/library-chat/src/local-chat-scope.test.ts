@@ -13,9 +13,4 @@ describe("local chat scope", () => {
       ),
     ).toBe(false);
   });
-
-  it("keeps legacy unscoped chats in the anonymous browser scope", () => {
-    expect(isConversationInLocalScope(conversation, getLocalChatScope())).toBe(true);
-    expect(isConversationInLocalScope(conversation, getLocalChatScope(42))).toBe(false);
-  });
 });

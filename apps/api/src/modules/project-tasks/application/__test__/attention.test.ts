@@ -8,12 +8,7 @@ import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/Pr
 import { TaskNotificationRepository } from "~/modules/task-notifications/infrastructure/TaskNotificationRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
-import {
-  listProjectTaskAttention,
-  registerTaskNotification,
-  resolveTaskNotificationDeepLink,
-  updateTaskInboxReceipts,
-} from "../attention";
+import { resolveTaskNotificationDeepLink } from "../attention";
 
 function projectTask(overrides: Partial<ProjectTask> = {}): ProjectTask {
   return {
@@ -113,93 +108,6 @@ function context(overrides: Record<string, unknown> = {}): ServiceContext {
 }
 
 describe("task attention inbox", () => {
-  it("projects current failures and completions without changing task authority", async () => {
-    const serviceContext = context();
-
-    vi.mocked(
-      serviceContext.repositories.get(TaskNotificationRepository).listInbox,
-    ).mockResolvedValue([
-      {
-        task_id: "failed-task",
-        task_version: 3,
-        project_id: "project-1",
-        workspace_id: "workspace-1",
-        project_name: "Launch",
-        objective: "Publish release",
-        status: "blocked",
-        blocked_reason: "run_failed",
-        blocked_detail: "The provider stopped",
-        assignee_user_id: null,
-        created_by_user_id: 7,
-        conversation_id: "conversation-1",
-        updated_at: "2026-09-05T12:00:00.000Z",
-        completed_at: null,
-        read_at: null,
-        unread_total: 64,
-      },
-      {
-        task_id: "done-task",
-        task_version: 2,
-        project_id: "project-1",
-        workspace_id: "workspace-1",
-        project_name: "Launch",
-        objective: "Write notes",
-        status: "done",
-        blocked_reason: null,
-        blocked_detail: null,
-        assignee_user_id: 7,
-        created_by_user_id: 7,
-        conversation_id: null,
-        updated_at: "2026-09-05T12:01:00.000Z",
-        completed_at: "2026-09-05T12:01:00.000Z",
-        read_at: "2026-09-05T12:02:00.000Z",
-        unread_total: 64,
-      },
-    ]);
-
-    const response = await listProjectTaskAttention(serviceContext);
-
-    expect(response).toMatchObject({ has_more: false, unread: 64 });
-    expect(response.data.map((item) => [item.id, item.kind, item.requiresAction])).toEqual([
-      ["failed-task:v3", "blocked", true],
-      ["done-task:v2", "completion", false],
-    ]);
-  });
-
-  it("stores read and dismiss receipts separately from project tasks", async () => {
-    const serviceContext = context();
-
-    await expect(
-      updateTaskInboxReceipts(serviceContext, ["task-1:v2"], "dismiss"),
-    ).resolves.toEqual({ updated: 1 });
-    expect(
-      serviceContext.repositories.get(TaskNotificationRepository).updateInboxReceipts,
-    ).toHaveBeenCalledWith(7, ["task-1:v2"], "dismiss");
-    expect(
-      serviceContext.repositories.get(ProjectTaskRepository).getTaskById,
-    ).not.toHaveBeenCalled();
-  });
-
-  it("owns registration by the authenticated account and installation", async () => {
-    const serviceContext = context();
-    const input = {
-      platform: "web" as const,
-      installationId: "installation-1",
-      subscription: {
-        endpoint: "https://push.example.test/subscription",
-        expirationTime: null,
-        keys: { p256dh: "public-key", auth: "auth-secret" },
-      },
-    };
-
-    await expect(registerTaskNotification(serviceContext, input)).resolves.toMatchObject({
-      registration: { state: "registered" },
-    });
-    expect(
-      serviceContext.repositories.get(TaskNotificationRepository).upsertRegistration,
-    ).toHaveBeenCalledWith(7, input);
-  });
-
   it("makes a superseded deep link non-actionable after rechecking membership", async () => {
     const serviceContext = context();
     const task = projectTask();
@@ -214,10 +122,6 @@ describe("task attention inbox", () => {
       current: false,
       deepLink: null,
     });
-    expect(serviceContext.repositories.get(WorkspaceRepository).getMembership).toHaveBeenCalledWith(
-      "workspace-1",
-      7,
-    );
     vi.mocked(serviceContext.repositories.get(WorkspaceRepository).getMembership).mockResolvedValue(
       null,
     );

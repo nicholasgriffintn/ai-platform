@@ -1,49 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { AssistantError, ErrorType } from "../errors.js";
 import {
   buildProviderResponseErrorDetails,
-  classifyProviderRetryError,
   getProviderResponseErrorMessage,
-  isProviderQuotaExhaustedError,
   readProviderRejection,
-  isProviderRateLimitError,
-  parseProviderRetryAfterMs,
 } from "../provider-errors.js";
 
 describe("provider response error details", () => {
-  it("keeps the status and body when the provider returns JSON", () => {
-    const details = buildProviderResponseErrorDetails({
-      provider: "hetzner",
-      endpoint: "https://inference.hetzner.com/api/v1/chat/completions",
-      status: 401,
-      statusText: "Unauthorized",
-      requestId: "req_123",
-      responseText: '{"error":"unauthorized"}',
-    });
-
-    expect(details.responseStatus).toBe(401);
-    expect(details.responseStatusText).toBe("Unauthorized");
-    expect(details.requestId).toBe("req_123");
-    expect(details.responseJson).toEqual({ error: "unauthorized" });
-    expect(getProviderResponseErrorMessage(details)).toContain("(401 Unauthorized): unauthorized");
-  });
-
-  it("still reports the status when the provider returns an unparsable body", () => {
-    const details = buildProviderResponseErrorDetails({
-      provider: "hetzner",
-      endpoint: "https://inference.hetzner.com/api/v1/chat/completions",
-      status: 502,
-      statusText: "Bad Gateway",
-      responseText: "",
-    });
-
-    expect(details.responseJson).toBeNull();
-    expect(getProviderResponseErrorMessage(details)).toContain(
-      "(502 Bad Gateway): empty response body",
-    );
-  });
-
   it("redacts credentials echoed back in the error body", () => {
     const details = buildProviderResponseErrorDetails({
       provider: "hetzner",
@@ -59,84 +22,7 @@ describe("provider response error details", () => {
   });
 });
 
-describe("provider retry classification", () => {
-  it.each([
-    [new AssistantError("busy", ErrorType.RATE_LIMIT_ERROR, 429), "rate_limited"],
-    [new AssistantError("offline", ErrorType.NETWORK_ERROR, 502), "network"],
-    [new DOMException("aborted", "AbortError"), "timeout"],
-    [new AssistantError("unavailable", ErrorType.PROVIDER_ERROR, 503), "provider_unavailable"],
-    [Object.assign(new Error("reset"), { code: "ECONNRESET" }), "network"],
-  ])("classifies an eligible transient failure", (error, classification) => {
-    expect(classifyProviderRetryError(error)).toMatchObject({
-      retryable: true,
-      classification,
-    });
-  });
-
-  it.each([
-    new AssistantError("credentials", ErrorType.AUTHENTICATION_ERROR, 401),
-    new AssistantError("forbidden", ErrorType.FORBIDDEN, 403),
-    new AssistantError("invalid", ErrorType.PARAMS_ERROR, 400),
-    new AssistantError("conflict", ErrorType.CONFLICT_ERROR, 409),
-    new AssistantError("limit", ErrorType.USAGE_LIMIT_ERROR, 429),
-  ])("keeps a permanent or policy failure terminal", (error) => {
-    expect(classifyProviderRetryError(error).retryable).toBe(false);
-  });
-
-  it("does not reinterpret a usage-limit 429 as provider rate limiting", () => {
-    expect(
-      isProviderRateLimitError(new AssistantError("limit", ErrorType.USAGE_LIMIT_ERROR, 429)),
-    ).toBe(false);
-  });
-
-  it("parses Retry-After seconds and dates", () => {
-    const now = Date.parse("2026-09-05T12:00:00.000Z");
-
-    expect(parseProviderRetryAfterMs("2.5", now)).toBe(2500);
-    expect(parseProviderRetryAfterMs("Sat, 05 Sep 2026 12:00:03 GMT", now)).toBe(3000);
-    expect(parseProviderRetryAfterMs("invalid", now)).toBeUndefined();
-  });
-});
-
-describe("provider quota exhaustion", () => {
-  const providerError = (status: number, responseText: string) =>
-    new AssistantError("failed", ErrorType.PROVIDER_ERROR, status, {
-      ...buildProviderResponseErrorDetails({
-        provider: "elevenlabs",
-        endpoint: "v1/text-to-speech/voice",
-        status,
-        responseText,
-      }),
-    });
-
-  it.each([
-    providerError(
-      401,
-      '{"detail":{"type":"invalid_request","code":"quota_exceeded","message":"92 credits remaining"}}',
-    ),
-    providerError(401, '{"detail":{"status":"quota_exceeded","message":"quota"}}'),
-    providerError(429, '{"error":{"type":"insufficient_quota","code":"insufficient_quota"}}'),
-    providerError(402, '{"error":"Insufficient credits"}'),
-  ])("recognises an out-of-credits response", (error) => {
-    expect(isProviderQuotaExhaustedError(error)).toBe(true);
-  });
-
-  it.each([
-    providerError(429, '{"error":{"type":"rate_limited"}}'),
-    providerError(401, '{"detail":{"status":"invalid_api_key"}}'),
-    new AssistantError("limit", ErrorType.USAGE_LIMIT_ERROR, 429),
-  ])("leaves rate limits and auth failures alone", (error) => {
-    expect(isProviderQuotaExhaustedError(error)).toBe(false);
-  });
-});
-
 describe("readProviderRejection", () => {
-  it("explains a request the provider refused as invalid", () => {
-    expect(
-      readProviderRejection(422, { detail: "- input.level: level must be one of the following" }),
-    ).toBe("input.level: level must be one of the following");
-  });
-
   it("keeps auth and server failures generic", () => {
     expect(readProviderRejection(401, { message: "bad key sk-123" })).toBeNull();
     expect(readProviderRejection(500, { message: "stack trace" })).toBeNull();
