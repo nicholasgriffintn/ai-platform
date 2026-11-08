@@ -1163,7 +1163,7 @@ async function mockExternalRequest(request) {
   }
 
   if (prompt.includes("Trigger an error")) {
-    return Response.json({ error: { message: "Deterministic provider failure" } }, { status: 503 });
+    return Response.json({ error: { message: "Deterministic provider failure" } }, { status: 400 });
   }
 
   const taskResponse = resolveProjectTaskModelResponse(body);
