@@ -215,7 +215,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
@@ -630,7 +630,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -847,6 +847,7 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "Qwen/Qwen3.6-27B",
       "overrides": {
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -965,7 +966,7 @@
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "contextWindow": 1000000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -1034,7 +1035,7 @@
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
         "contextWindow": 524288,
         "maxTokens": 1048576,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0012,
@@ -1145,7 +1146,7 @@
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 131072,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0015,
@@ -1355,7 +1356,7 @@
       "model": "minimax/minimax-m1-80k",
       "matchingModel": "MiniMaxAI/MiniMax-M1-80k",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.00055,
         "costPer1kOutputTokens": 0.0022

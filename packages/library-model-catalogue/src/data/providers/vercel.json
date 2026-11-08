@@ -1313,7 +1313,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "knowledgeCutoffDate": "March 2025",
         "lastUpdated": "December 17, 2025",
         "costPer1kInputTokens": 0.0005,
@@ -1871,7 +1871,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
@@ -3094,7 +3094,7 @@
           "vision",
           "document"
         ],
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Qwen3 VL 235B A22B Instruct is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 23, 2025",
@@ -3919,7 +3919,7 @@
           ]
         },
         "contextComplexity": 5,
-        "speed": 4,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Grok 4.20 Non-Reasoning is no longer offered by Vercel AI Gateway.",
         "releaseDate": "March 10, 2026",
@@ -5302,7 +5302,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -5946,7 +5946,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -6067,7 +6067,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
@@ -6271,7 +6271,7 @@
           ]
         },
         "contextComplexity": 5,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0012,
@@ -7069,7 +7069,7 @@
           ]
         },
         "contextComplexity": 5,
-        "speed": 4,
+        "speed": 3,
         "releaseDate": "March 9, 2026",
         "lastUpdated": "March 9, 2026",
         "costPer1kInputTokens": 0.00125,
@@ -8594,8 +8594,7 @@
       "matchingModel": "inclusionai/ling-3.1-flash",
       "overrides": {
         "maxTokens": 32768,
-        "contextComplexity": 4,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "September 29, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0009,
@@ -8618,7 +8617,7 @@
       "model": "ling/ling-3-1-flash-free",
       "matchingModel": "inclusionai/ling-3.1-flash-free",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Ling 3.1 Flash (Free) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 29, 2026",
@@ -9158,7 +9157,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425
@@ -9229,6 +9228,7 @@
       "model": "kimi-k3/kimi-k3-1-pro",
       "matchingModel": "moonshotai/kimi-k3.1-pro",
       "overrides": {
+        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "contextWindow": 1000000,
         "maxTokens": 262144,
         "modalities": {
@@ -9249,7 +9249,15 @@
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "moonshotai/kimi-k3.1-pro-highspeed": {
@@ -9355,7 +9363,7 @@
       "matchingModel": "openai/gpt-6.1-terra",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
@@ -9366,7 +9374,7 @@
       "model": "gpt-terra/gpt-6-1-terra-fast",
       "matchingModel": "openai/gpt-6.1-terra-fast",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
@@ -9486,6 +9494,12 @@
       "model": "gpt-image/gpt-image-2-6-flare",
       "matchingModel": "openai/gpt-image-2.6-flare",
       "overrides": {
+        "strengths": [
+          "image",
+          "creative",
+          "vision",
+          "document"
+        ],
         "lastUpdated": "November 4, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,
@@ -9496,6 +9510,12 @@
       "model": "gpt-image/gpt-image-2-6-sunburst",
       "matchingModel": "openai/gpt-image-2.6-sunburst",
       "overrides": {
+        "strengths": [
+          "image",
+          "creative",
+          "vision",
+          "document"
+        ],
         "lastUpdated": "November 4, 2026",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.03,

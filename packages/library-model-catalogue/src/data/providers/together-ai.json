@@ -504,7 +504,7 @@
           "coding",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Kimi K2.7 Code was removed from Together AI serverless on 27 August 2026.",
         "releaseDate": "June 14, 2026",
@@ -596,7 +596,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -716,7 +716,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425,
@@ -768,7 +768,6 @@
       "model": "kimi-k3/kimi-k3-1-pro",
       "matchingModel": "moonshotai/Kimi-K3.1-Pro",
       "overrides": {
-        "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
         "maxTokens": 131072,
         "modalities": {
           "input": [

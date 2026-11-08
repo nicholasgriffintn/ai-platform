@@ -317,7 +317,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.000863555,
         "costPer1kOutputTokens": 0.004317775,
@@ -338,7 +338,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003762,

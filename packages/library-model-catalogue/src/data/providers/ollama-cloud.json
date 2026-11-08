@@ -195,7 +195,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "kimi-k2.5 is no longer offered by Ollama Cloud.",
         "lastUpdated": "January 27, 2026",
@@ -246,7 +246,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -258,7 +258,7 @@
       "matchingModel": "kimi-k3",
       "overrides": {
         "name": "kimi-k3",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -495,7 +495,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425,
@@ -552,13 +552,21 @@
       "model": "kimi-k3/kimi-k3-1-pro",
       "matchingModel": "kimi-k3.1-pro",
       "overrides": {
-        "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
-        "maxTokens": 1048576,
+        "maxTokens": 131072,
+        "speed": 2,
         "lastUpdated": "October 23, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "supportsResponseFormat": true,
-        "supportsTemperature": false
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }

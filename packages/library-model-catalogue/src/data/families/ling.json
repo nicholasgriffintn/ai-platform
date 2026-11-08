@@ -939,6 +939,7 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "September 29, 2026",
         "supportsResponseFormat": false,

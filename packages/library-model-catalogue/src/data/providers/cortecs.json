@@ -583,7 +583,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Kimi K2.5 is no longer offered by Cortecs.",
         "releaseDate": "January 2026",
@@ -1545,7 +1545,7 @@
       "matchingModel": "gpt-5.1",
       "overrides": {
         "name": "GPT 5.1",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.01096,
@@ -2218,7 +2218,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.000656,
         "costPer1kOutputTokens": 0.0033,
@@ -2251,7 +2251,7 @@
       "matchingModel": "kimi-k3",
       "overrides": {
         "maxTokens": 1048576,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.014999,
@@ -2512,7 +2512,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
@@ -2924,7 +2924,7 @@
       "model": "gpt-terra/gpt-6-1-terra",
       "matchingModel": "gpt-6.1-terra",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001176,
         "costPer1kOutputTokens": 0.005882,
@@ -2943,12 +2943,20 @@
       "model": "kimi-k3/kimi-k3-1-pro",
       "matchingModel": "kimi-k3.1-pro",
       "overrides": {
-        "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
         "maxTokens": 500000,
+        "speed": 2,
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002041,
         "costPer1kOutputTokens": 0.010205,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }
