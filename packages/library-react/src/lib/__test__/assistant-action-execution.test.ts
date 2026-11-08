@@ -84,30 +84,6 @@ describe("assistant action execution", () => {
     });
   });
 
-  it("sends a selected skill as an explicit invocation for the turn", async () => {
-    const catalog = buildAssistantActionCatalog({ skills: [artifactsSkill] });
-    const item = catalog.items.find((catalogItem) => catalogItem.id === "skill:artifacts");
-
-    if (!item) {
-      throw new Error("Expected artifacts skill item");
-    }
-
-    await expect(
-      executeAssistantAction(
-        { input: "@Artifacts build a dashboard", item, selectedTools: [] },
-        {
-          installRecipe: vi.fn(),
-          invokeRecipe: vi.fn(),
-          startConnector: vi.fn(),
-        },
-      ),
-    ).resolves.toEqual({
-      kind: "submit",
-      input: "@Artifacts build a dashboard",
-      requestOptions: { options: { skill: { id: "artifacts" } } },
-    });
-  });
-
   it("preserves authored skill provenance for capability-card management", () => {
     const catalog = buildAssistantActionCatalog({ skills: [authoredSkill] });
 

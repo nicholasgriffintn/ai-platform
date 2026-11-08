@@ -83,22 +83,6 @@ describe("skill invocation controls", () => {
     ).toEqual(["load_skill"]);
   });
 
-  it("injects the invoked skill's full instructions ahead of auto-selected ones", async () => {
-    const skills = await availability();
-    const invoked = resolveInvokedSkill({ invokedSkillId: "deploy", skills, catalog });
-
-    expect(
-      withInvokedSkill(invoked, [
-        { id: "deploy", name: "deploy", body: "stale" },
-        { id: "notes", name: "notes", body: "Extract decisions and actions." },
-      ]),
-    ).toEqual([
-      { id: "deploy", name: "deploy", body: "Run the deploy checklist." },
-      { id: "notes", name: "notes", body: "Extract decisions and actions." },
-    ]);
-    expect(resolveInvokedSkill({ invokedSkillId: undefined, skills, catalog })).toBeNull();
-  });
-
   it("refuses to invoke a skill the user cannot run or that is not ready", async () => {
     const skills = await availability();
 

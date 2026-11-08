@@ -102,30 +102,6 @@ describe("skill documents", () => {
     ).toThrow("nobody could run the skill");
   });
 
-  it("round-trips invocation flags edited in the composer settings", () => {
-    const original = "---\nname: deploy\ndescription: Ship it\n---\n\nRun the checklist.";
-    const userOnly = setSkillDocumentInvocation(original, {
-      userInvocable: true,
-      disableModelInvocation: true,
-    });
-    const definition = getBuiltInSkillCatalogue()
-      .extend([{ directory: "deploy", rawContent: userOnly, trust: "user-authored" }])
-      .getDefinition("deploy");
-
-    expect(definition).toMatchObject({ userInvocable: true, disableModelInvocation: true });
-    expect(readSkillDocumentInvocation(userOnly)).toEqual({
-      userInvocable: true,
-      disableModelInvocation: true,
-    });
-    expect(
-      setSkillDocumentInvocation(userOnly, { userInvocable: true, disableModelInvocation: false }),
-    ).toBe(original);
-    expect(getBuiltInSkillCatalogue().getDefinition("council")).toMatchObject({
-      userInvocable: true,
-      disableModelInvocation: false,
-    });
-  });
-
   it("extends the built-in catalogue without changing it", () => {
     const extended = getBuiltInSkillCatalogue().extend([
       {

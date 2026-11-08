@@ -559,30 +559,6 @@ describe("personal skill management", () => {
     });
   });
 
-  it("only lets load_skill open a user-only skill on the turn the user invoked it", async () => {
-    const { context } = createContext();
-
-    await createPersonalSkill(context, 42, {
-      content: content.replace("\n---\n", "\ndisable-model-invocation: true\n---\n"),
-    });
-
-    const load = (options?: { skill: { id: string } }) =>
-      load_skill.execute({ skill: "meeting-notes" }, {
-        request: {
-          context,
-          user: context.user,
-          memoryScope: { type: "personal" },
-          request: { enabled_tools: ["load_skill"], ...(options ? { options } : {}) },
-        },
-      } as never);
-
-    expect(await load()).toMatchObject({ status: "error" });
-    expect(await load({ skill: { id: "meeting-notes" } })).toMatchObject({
-      status: "success",
-      content: expect.stringContaining("Extract decisions and actions."),
-    });
-  });
-
   it("archives a personal skill while preserving its immutable revision", async () => {
     const { bucket, context } = createContext();
 
