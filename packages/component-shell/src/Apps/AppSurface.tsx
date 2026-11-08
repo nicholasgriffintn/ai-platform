@@ -3,37 +3,22 @@ import {
   LoadingRegion,
   Skeleton,
 } from "@ngriffin_uk/polychat-component-ui";
+import type { AppSurfaceDefinition } from "@ngriffin_uk/polychat-schemas";
 import type { ReactNode } from "react";
 
 import { PageShell } from "../Shell/PageShell.js";
 
-export type AppSurfacePresentation =
-  | { layout: "contained"; loading: "content" }
-  | { layout: "workspace"; loading: "editor" | "studio" };
-
-export const CONTAINED_APP_PRESENTATION: AppSurfacePresentation = {
+export const CONTAINED_APP_PRESENTATION: AppSurfaceDefinition = {
   layout: "contained",
   loading: "content",
 };
-
-export function getAppSurfacePresentation(appId: string, subpath: string): AppSurfacePresentation {
-  if (appId === "sites" || appId === "polis") {
-    return { layout: "workspace", loading: "studio" };
-  }
-
-  if (appId === "notes" && subpath.split("/").some(Boolean)) {
-    return { layout: "workspace", loading: "editor" };
-  }
-
-  return CONTAINED_APP_PRESENTATION;
-}
 
 export function AppSurface({
   children,
   presentation,
 }: {
   children: ReactNode;
-  presentation: AppSurfacePresentation;
+  presentation: AppSurfaceDefinition;
 }) {
   if (presentation.layout === "contained") {
     return <PageShell.Content className="max-w-6xl">{children}</PageShell.Content>;
@@ -47,7 +32,7 @@ export function AppSurfaceLoading({
   presentation,
 }: {
   label?: string;
-  presentation: AppSurfacePresentation;
+  presentation: AppSurfaceDefinition;
 }) {
   if (presentation.loading === "content") {
     return <ContentLoadingSkeleton label={label} />;

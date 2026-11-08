@@ -16,12 +16,7 @@ import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { AppChromeProvider } from "./AppChrome.js";
 import { AppRuntime } from "./AppRuntime.js";
-import {
-  AppSurface,
-  AppSurfaceLoading,
-  CONTAINED_APP_PRESENTATION,
-  getAppSurfacePresentation,
-} from "./AppSurface.js";
+import { AppSurface, AppSurfaceLoading, CONTAINED_APP_PRESENTATION } from "./AppSurface.js";
 
 export function AppRoute({
   appId,
@@ -48,7 +43,7 @@ export function AppRoute({
   const title = titleOverride ?? definition?.name;
   const backLink = getAppBackLink(surface, appId, subpath, title);
   const basePath = getAppPath(surface, appId);
-  const presentation = getAppSurfacePresentation(appId, subpath);
+  const presentation = definition?.surface ?? CONTAINED_APP_PRESENTATION;
   const needsSignIn = !isAuthenticationLoading && !isAuthenticated;
   const needsPro = !isAuthenticationLoading && isAuthenticated && !isPro;
   const isLoading = isCatalogLoading || isAuthenticationLoading || Boolean(project?.isLoading);
@@ -64,8 +59,8 @@ export function AppRoute({
       <AppRuntime
         basePath={basePath}
         fallback={<AppSurfaceLoading presentation={presentation} />}
+        entry={definition?.entry}
         projectId={surface.projectId}
-        runtime={definition?.runtime ?? "notes"}
         subpath={subpath}
       />
     </AppChromeProvider>
