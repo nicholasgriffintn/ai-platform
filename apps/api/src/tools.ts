@@ -69,6 +69,7 @@ import { generate_podcast } from "~/modules/sources/application/tools/generate_p
 import { get_note } from "~/modules/sources/application/tools/get_note";
 import { process_media } from "~/modules/sources/application/tools/process_media";
 import { run_prediction } from "~/modules/sources/application/tools/run_prediction";
+import { find_related_stories, read_story } from "~/modules/stories/application/tools/stories";
 import { call_api } from "~/modules/tools/application/builtin/api_call";
 import { calculate } from "~/modules/tools/application/builtin/calculate";
 import { get_current_time } from "~/modules/tools/application/builtin/current_time";
@@ -178,6 +179,8 @@ registerTools([
   read_discover_context,
   compose_discover_edition,
   read_discover_day,
+  read_story,
+  find_related_stories,
   search_places,
   update_discover_day,
   prepare_wind_down,

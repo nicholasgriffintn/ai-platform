@@ -4,6 +4,7 @@ export default [
   layout("components/Core/ChatModeLayout.tsx", [
     index("pages/home.tsx"),
     route("/discover/stories/:story_id", "pages/discover-story.tsx"),
+    route("/discover/entities/:entity_id", "pages/discover-entity.tsx"),
     route("/chat", "pages/chat/layout.tsx", [
       route("attention", "pages/chat/attention.tsx"),
       route("files/*", "pages/chat/files.tsx"),

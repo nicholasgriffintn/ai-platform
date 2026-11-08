@@ -3,7 +3,7 @@ import { STORIES_JOB_TASK_TYPE } from "@ngriffin_uk/polychat-schemas";
 import { SCHEDULES } from "~/config/schedules";
 import { defineSchedule, type AppWorkflows } from "~/modules/queue/application/workflows";
 
-import { startStoryBackfillWhenEmpty } from "../backfill";
+import { runStoriesMaintenance } from "../maintenance";
 import { storiesJob } from "./stories-job";
 
 export function registerStoriesQueue(workflows: AppWorkflows): void {
@@ -13,7 +13,7 @@ export function registerStoriesQueue(workflows: AppWorkflows): void {
     defineSchedule({
       name: "stories-maintenance",
       run: async ({ env }) => {
-        await startStoryBackfillWhenEmpty(env);
+        await runStoriesMaintenance(env);
       },
     }),
   );

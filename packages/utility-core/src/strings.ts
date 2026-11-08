@@ -368,3 +368,7 @@ export function initialsOf(name: string): string {
       .join("") || "?"
   );
 }
+
+export function formatCount(count: number, noun: string): string {
+  return `${count} ${noun}${count === 1 ? "" : "s"}`;
+}

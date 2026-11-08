@@ -28,7 +28,9 @@ import {
 import { StoryVectorIndex } from "~/modules/stories/infrastructure/StoryVectorIndex";
 import type { IEnv } from "~/types";
 
+import { headlineEntityIds } from "./graph";
 import { queueStoryRefresh } from "./intake";
+import { linkStory } from "./link";
 import { storyRefreshState } from "./read-models";
 
 const EMBED_BATCH = 20;
@@ -235,6 +237,11 @@ export async function ingestStoryArticles(
       publishedAt,
     });
     await recentre(index, story, vector, opened);
+
+    if (opened) {
+      await linkStory(env, story, await headlineEntityIds(signals.names), vector);
+    }
+
     batch.push({ storyId, publishedAt, vector, signals });
     outcome.added += 1;
     outcome[opened ? "opened" : "attached"] += 1;

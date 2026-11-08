@@ -1,17 +1,10 @@
 import type { StoryPage } from "@ngriffin_uk/polychat-schemas";
-import { formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
-import type { ReactNode } from "react";
+import { formatCount, formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
 
 import { DiscoverHref } from "../Edition/DiscoverHref.js";
-
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="flex flex-col gap-2">
-      <h2 className="polychat-eyebrow">{title}</h2>
-      {children}
-    </section>
-  );
-}
+import { RelatedStories, StoryEntityChips } from "./StoryConnections.js";
+import { StoryQuotes } from "./StoryQuotes.js";
+import { StorySection } from "./StorySection.js";
 
 function Bullets({ items }: { items: readonly string[] }) {
   return (
@@ -23,12 +16,8 @@ function Bullets({ items }: { items: readonly string[] }) {
   );
 }
 
-function plural(count: number, noun: string): string {
-  return `${count} ${noun}${count === 1 ? "" : "s"}`;
-}
-
 export function StoryBody({ page }: { page: StoryPage }) {
-  const { story, version, articles } = page;
+  const { story, version, articles, quotes, entities, before } = page;
 
   return (
     <article className="flex flex-col gap-6">
@@ -37,11 +26,11 @@ export function StoryBody({ page }: { page: StoryPage }) {
           {story.title}
         </h1>
         <p className="text-sm text-muted-foreground">
-          {plural(story.outletCount, "outlet")} · {plural(story.articleCount, "article")} · Updated{" "}
-          {formatRelativeTime(story.lastArticleAt)}
+          {formatCount(story.outletCount, "outlet")} · {formatCount(story.articleCount, "article")}{" "}
+          · Updated {formatRelativeTime(story.lastArticleAt)}
         </p>
       </header>
-      <Section title="Overview">
+      <StorySection title="Overview">
         {version ? (
           <Bullets items={version.overview} />
         ) : (
@@ -49,9 +38,14 @@ export function StoryBody({ page }: { page: StoryPage }) {
             Poly is still gathering coverage of this story.
           </p>
         )}
-      </Section>
+      </StorySection>
+      {quotes.length ? (
+        <StorySection title="Quotes">
+          <StoryQuotes quotes={quotes} />
+        </StorySection>
+      ) : null}
       {version?.outlets.length ? (
-        <Section title="How each outlet tells it">
+        <StorySection title="How each outlet tells it">
           <ul className="flex flex-col gap-2 text-[0.95rem] leading-relaxed text-foreground">
             {version.outlets.map((outlet) => (
               <li key={outlet.source}>
@@ -60,24 +54,34 @@ export function StoryBody({ page }: { page: StoryPage }) {
               </li>
             ))}
           </ul>
-        </Section>
+        </StorySection>
       ) : null}
       {version?.agreed.length ? (
-        <Section title="What they agree on">
+        <StorySection title="What they agree on">
           <Bullets items={version.agreed} />
-        </Section>
+        </StorySection>
       ) : null}
       {version?.disputed.length ? (
-        <Section title="Where they differ">
+        <StorySection title="Where they differ">
           <Bullets items={version.disputed} />
-        </Section>
+        </StorySection>
       ) : null}
       {version?.gaps.length ? (
-        <Section title="What's missing">
+        <StorySection title="What's missing">
           <Bullets items={version.gaps} />
-        </Section>
+        </StorySection>
       ) : null}
-      <Section title="Articles">
+      {entities.length ? (
+        <StorySection title="People and organisations">
+          <StoryEntityChips entities={entities} />
+        </StorySection>
+      ) : null}
+      {before.length ? (
+        <StorySection title="Before this">
+          <RelatedStories stories={before} />
+        </StorySection>
+      ) : null}
+      <StorySection title="Articles">
         <ul className="flex flex-col border-t border-border">
           {articles.map((article) => (
             <li key={article.id} className="flex flex-col gap-0.5 border-b border-border py-3">
@@ -96,7 +100,7 @@ export function StoryBody({ page }: { page: StoryPage }) {
             </li>
           ))}
         </ul>
-      </Section>
+      </StorySection>
     </article>
   );
 }
