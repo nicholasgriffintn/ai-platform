@@ -35,7 +35,9 @@ export function RemoteMcpApp({
   );
   const onMessage = useCallback(
     (text: string) => {
-      setChatInput(text);
+      const { chatInput } = useChatStore.getState();
+
+      setChatInput(chatInput.trim() ? `${chatInput.trimEnd()}\n\n${text}` : text);
       void navigate(getPlacePaths("chat").conversations);
     },
     [navigate, setChatInput],

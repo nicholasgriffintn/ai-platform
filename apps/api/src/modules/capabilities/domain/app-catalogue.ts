@@ -7,6 +7,7 @@ import type {
   ProjectExperienceDefinition,
   ProjectExperienceRuntime,
 } from "@ngriffin_uk/polychat-schemas";
+import { hashSeed, slugify } from "@ngriffin_uk/polychat-utility-core";
 
 /**
  * One entry per rich experience. Entries with a `capabilityId` are also published as apps a
@@ -252,7 +253,7 @@ const REMOTE_APP_SURFACES: Record<AppSurfaceDefinition["layout"], AppSurfaceDefi
 };
 
 const remoteAppId = (server: string, tool: string): string =>
-  `mcp-${server}-${tool}`.toLowerCase().replace(/[^a-z0-9-]+/g, "-");
+  `mcp-${slugify(server, 32)}-${slugify(tool, 40)}-${hashSeed(`${server}\n${tool}`).toString(36)}`;
 
 export const getRemoteExperienceCatalog = (
   sources: readonly RemoteAppSource[],

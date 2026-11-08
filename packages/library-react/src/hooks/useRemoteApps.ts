@@ -29,7 +29,6 @@ export function useRemoteAppView(entry: RemoteAppEntry) {
   return useQuery({
     queryKey: ["remoteAppView", entry.server, entry.tool] as const,
     queryFn: () => openMcpAppEntry({ integration: entry.server, tool: entry.tool }),
-    staleTime: Infinity,
     refetchOnWindowFocus: false,
     retry: false,
   });
