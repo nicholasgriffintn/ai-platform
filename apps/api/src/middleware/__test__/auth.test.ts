@@ -202,6 +202,8 @@ describe("Auth Middleware", () => {
         user: mockUser,
       });
       expect((await authenticate("PUT", "/pashi/link")).user).toEqual(mockUser);
+      expect((await authenticate("POST", "/decisions")).user).toEqual(mockUser);
+      expect((await authenticate("POST", "/decisions/council")).user).toBeNull();
       expect((await authenticate("GET", "/chat/completions")).user).toBeNull();
       expect((await authenticate("POST", "/responses")).user).toBeNull();
       expect((await authenticate("GET", "/conversations")).user).toBeNull();

@@ -9,7 +9,11 @@ const SCOPED_ROUTES: Record<LimitedScope, Array<{ method?: string; path: RegExp 
     { method: "GET", path: /^\/sources\/[^/]+\/cover$/ },
     { method: "GET", path: /^\/auth\/me$/ },
   ],
-  pashi: [{ method: "POST", path: /^\/chat\/completions$/ }, { path: /^\/pashi\/link$/ }],
+  pashi: [
+    { method: "POST", path: /^\/chat\/completions$/ },
+    { method: "POST", path: /^\/decisions$/ },
+    { path: /^\/pashi\/link$/ },
+  ],
 };
 
 function routeAllows(scope: LimitedScope, method: string, path: string): boolean {
