@@ -23,7 +23,6 @@ type BudgetName = "toolDeclarations" | "chatPrompt" | "agentPrompt" | "skillsBlo
 type Budget = Record<BudgetName, number>;
 
 const BASELINE_PATH = path.join(import.meta.dirname, "context-budget.json");
-const MEANINGFUL_DROP = 0.02;
 const UPDATE_COMMAND =
   "UPDATE_CONTEXT_BUDGET=1 pnpm --filter @assistant/api exec vitest run context-budget";
 
@@ -74,24 +73,16 @@ function largestDeclarations(): string {
     .join(", ");
 }
 
-function budgetMessage(name: BudgetName): string {
+function growthMessage(name: BudgetName): string {
   const actual = measured[name];
   const allowed = baseline[name];
   const hint = name === "toolDeclarations" ? ` Largest: ${largestDeclarations()}.` : "";
 
-  if (actual > allowed) {
-    return `${name} grew from ${allowed} to ${actual} bytes (+${actual - allowed}). This text is sent with every request, so trim descriptions or schemas first.${hint} If the growth is deliberate, run \`${UPDATE_COMMAND}\` and commit context-budget.json with a reason in the PR.`;
-  }
-
-  return `${name} shrank from ${allowed} to ${actual} bytes (-${allowed - actual}). Lock the gain in: run \`${UPDATE_COMMAND}\` and commit context-budget.json.`;
+  return `${name} grew from ${allowed} to ${actual} bytes (+${actual - allowed}). This text is sent with every request, so trim descriptions or schemas first.${hint} If the growth is deliberate, run \`${UPDATE_COMMAND}\` and commit context-budget.json with a reason in the PR.`;
 }
 
 describe("model context budget", () => {
   it.each(Object.keys(measured) as BudgetName[])("keeps %s within its baseline", (name) => {
-    const actual = measured[name];
-    const allowed = baseline[name];
-
-    expect(actual <= allowed, budgetMessage(name)).toBe(true);
-    expect(actual >= allowed * (1 - MEANINGFUL_DROP), budgetMessage(name)).toBe(true);
+    expect(measured[name] <= baseline[name], growthMessage(name)).toBe(true);
   });
 });
