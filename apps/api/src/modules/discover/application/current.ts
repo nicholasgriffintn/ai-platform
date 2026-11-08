@@ -6,11 +6,13 @@ import {
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { mergeDiscoverLiveItems } from "~/modules/discover/domain/live";
 import { selectDiscoverNewsCategories } from "~/modules/discover/domain/news-categories";
+import { listStoryIntakeArticles } from "~/modules/discover/domain/story-intake";
 import { DiscoverSeenRepository } from "~/modules/discover/infrastructure/DiscoverSeenRepository";
 import { requirePolyContext } from "~/modules/poly/application/poly-context";
 import { isPolyContextPaused } from "~/modules/poly/domain/pause";
 import { TaskService } from "~/modules/queue/application/TaskService";
 import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
+import { queueStoryIntake } from "~/modules/stories/application/intake";
 
 import { readDiscoverDayProfile } from "./day-profile";
 import { collectDiscoverLiveCandidates } from "./live-candidates";
@@ -108,6 +110,15 @@ export async function refreshDiscoverCurrent(
     context.env.CACHE,
   );
   const candidates = await collectDiscoverLiveCandidates(context, profile, settings, news, now);
+  const intake = listStoryIntakeArticles(
+    candidates.map((candidate) => candidate.card),
+    news,
+  );
+
+  if (intake.length > 0) {
+    await queueStoryIntake(context.env, intake);
+  }
+
   const dismissed = await context.repositories.get(DiscoverSeenRepository).dismissed(
     context.requireUser().id,
     candidates.map((candidate) => candidate.id),

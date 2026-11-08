@@ -409,6 +409,36 @@ export class SourceRepository extends BaseRepository {
     return collection;
   }
 
+  async listPersonalPagesByExternalUri(
+    metadataKey: string,
+    externalUris: readonly string[],
+  ): Promise<SourceRecord[]> {
+    return this.selectInChunks(externalUris, (chunk) =>
+      this.runQuery<SourceRecord>(
+        `SELECT ${sourceResourceColumns} FROM resource
+         WHERE resource_type = 'source' AND external_uri IN (${chunk.map(() => "?").join(", ")})
+           AND kind = 'url' AND project_id IS NULL AND connection_id IS NULL
+           AND json_type(metadata, ?) = 'object'
+         ORDER BY updated_at DESC`,
+        [...chunk, `$.${metadataKey}`],
+      ),
+    );
+  }
+
+  async listPersonalPagesWithMetadata(
+    metadataKey: string,
+    page: { after?: string; limit: number },
+  ): Promise<SourceRecord[]> {
+    return this.runQuery<SourceRecord>(
+      `SELECT ${sourceResourceColumns} FROM resource
+       WHERE resource_type = 'source' AND kind = 'url' AND project_id IS NULL
+         AND connection_id IS NULL AND external_uri IS NOT NULL
+         AND json_type(metadata, ?) = 'object' AND id > ?
+       ORDER BY id LIMIT ?`,
+      [`$.${metadataKey}`, page.after ?? "", page.limit],
+    );
+  }
+
   async listCollectionSources(collectionId: string): Promise<SourceRecord[]> {
     return this.runQuery<SourceRecord>(
       `SELECT s.* FROM ${sourceResourceSql} s

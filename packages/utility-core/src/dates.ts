@@ -82,6 +82,10 @@ export function formatRelativeTime(dateString: string, now = new Date()): string
   return "just now";
 }
 
+export function isoToEpochSeconds(value: string): number {
+  return Math.floor(Date.parse(value) / 1000);
+}
+
 export function epochSecondsToIso(value: unknown): string | null {
   const seconds =
     typeof value === "number" ? value : typeof value === "string" ? Number(value) : Number.NaN;

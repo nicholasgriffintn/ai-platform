@@ -28,6 +28,7 @@ import {
 } from "./model-registry.js";
 import { NOTEBOOK_JOB_TASK_TYPE } from "./notebooks.js";
 import { listSchema } from "./platform/list.js";
+import { STORIES_JOB_TASK_TYPE } from "./stories.js";
 
 export const SANDBOX_RUN_DISPATCH_TASK_TYPE = "sandbox_run_dispatch";
 export const PROJECT_TASK_RUN_TASK_TYPE = "project_task_run";
@@ -104,6 +105,7 @@ export const TASK_TYPES = [
   WORK_TEAMMATE_WAKE_TASK_TYPE,
   NOTEBOOK_JOB_TASK_TYPE,
   DISCOVER_JOB_TASK_TYPE,
+  STORIES_JOB_TASK_TYPE,
 ] as const;
 
 export const WORK_WAKE_REASONS = [

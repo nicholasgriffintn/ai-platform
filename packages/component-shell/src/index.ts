@@ -30,6 +30,7 @@ export * from "./Content/customResponseViews.js";
 export * from "./Conversations/ConversationGroupsDialog.js";
 export * from "./Conversations/ConversationItemActions.js";
 export * from "./Conversations/ConversationPage.js";
+export * from "./Discover/Story/DiscoverStoryPage.js";
 export * from "./Home/DiscoverHomePage.js";
 export * from "./Media/MediaDock.js";
 export * from "./Delegations/DelegatePanel.js";

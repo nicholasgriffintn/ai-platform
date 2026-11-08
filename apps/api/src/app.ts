@@ -58,6 +58,7 @@ import search from "~/modules/search/api/routes";
 import sites from "~/modules/sites/api/routes";
 import skills from "~/modules/skills/api/routes";
 import sources from "~/modules/sources/api/routes";
+import stories from "~/modules/stories/api/routes";
 import billing from "~/modules/subscription/api/routes";
 import sync from "~/modules/sync/api/routes";
 import teammates from "~/modules/teammates/api";
@@ -121,6 +122,7 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/skills", skills);
   app.route("/sources", sources);
   app.route("/discover", discover);
+  app.route("/stories", stories);
   app.route("/notebooks", notebooks);
   app.route("/realtime", realtime);
   app.route("/sync", sync);

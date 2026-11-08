@@ -10,4 +10,5 @@ export const SCHEDULES = {
   RECIPE_EXECUTION: "*/15 * * * *", // Poll recipe schedules every 15 minutes
   WORK_RHYTHM: "*/15 * * * *",
   WATCHING_INDEX: "0 3 * * *",
+  STORIES_MAINTENANCE: "0 4 * * *",
 } as const;
