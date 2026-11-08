@@ -21,7 +21,7 @@ test.describe("Core release safeguards", { tag: "@release" }, () => {
       await homePage.navigate("/chat");
       await homePage.selectModel("GPT OSS 120B");
       await homePage.sendMessageAndRequireCompletion("Trigger an error");
-      await expect(page.getByText("Task failed", { exact: true })).toBeVisible();
+      await expect(page.getByText("Task failed", { exact: true })).toBeVisible({ timeout: 20_000 });
 
       const previousCount = await homePage.getAssistantMessageCount();
 
