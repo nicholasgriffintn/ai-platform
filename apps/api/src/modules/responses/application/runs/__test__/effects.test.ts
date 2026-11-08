@@ -133,7 +133,7 @@ describe("drainRunEffects", () => {
       attempt_count: 1,
       last_error: "D1 unavailable",
     });
-    expect(first.nextAvailableAt).toBe(at(5_000).toISOString());
+    expect(first.nextDrainAt).toBe(at(5_000).toISOString());
 
     await drainRunEffects({
       env,
@@ -208,6 +208,32 @@ describe("drainRunEffects", () => {
     expect(execute).not.toHaveBeenCalled();
     expect(effect("cancel_cleanup").status).toBe("running");
     expect(effect("approval_respond").status).toBe("pending");
+  });
+});
+
+describe("drainRunEffects after a crash", () => {
+  it("waits for a live drain lease to expire instead of re-arming at once", async () => {
+    seedRun("run-1", "cancelled");
+    seedRun("run-2", "cancelled");
+    await enqueue("cancel_cleanup", "run-1");
+    await enqueue("release_follow_up", "run-2");
+    setEffect("cancel_cleanup", {
+      status: "running",
+      lease_owner: "crashed-drain",
+      lease_expires_at: at(30_000).toISOString(),
+    });
+    const execute = vi.fn(async () => undefined);
+
+    const result = await drainRunEffects({
+      env,
+      conversationId: "conversation-1",
+      liveOwnerToken: null,
+      now: () => T0,
+      execute,
+    });
+
+    expect(execute).not.toHaveBeenCalled();
+    expect(result.nextDrainAt).toBe(at(30_000).toISOString());
   });
 });
 

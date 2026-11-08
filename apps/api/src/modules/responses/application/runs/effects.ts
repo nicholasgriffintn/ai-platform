@@ -81,7 +81,7 @@ async function executeReplaySafeEffect(env: IEnv, effect: ConversationRunEffectR
 
 export interface RunEffectDrainResult {
   executed: number;
-  nextAvailableAt: string | null;
+  nextDrainAt: string | null;
 }
 
 export async function drainRunEffects(params: {
@@ -148,7 +148,7 @@ export async function drainRunEffects(params: {
     }
   }
 
-  return { executed, nextAvailableAt: await repository.nextAvailableAt(params.conversationId) };
+  return { executed, nextDrainAt: await repository.nextDrainAt(params.conversationId) };
 }
 
 export interface ProcessBoundEffectClaim {

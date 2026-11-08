@@ -137,15 +137,25 @@ function presentReplayedFollowUp(
   const parsed = queuedChatTaskDataSchema.safeParse(task.task_data);
   const queued = presentQueuedFollowUp(task);
 
-  if (
-    !parsed.success ||
-    !queued ||
-    task.user_id !== userId ||
-    parsed.data.conversationId !== conversationId ||
-    queuedInputDigest(parsed.data) !== queuedInputDigest(input)
-  ) {
+  if (!parsed.success || !queued || task.user_id !== userId) {
     throw new AssistantError(
-      "This idempotency key was already used for a different queued message",
+      "This idempotency key was already used for something else",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  if (parsed.data.conversationId !== conversationId) {
+    throw new AssistantError(
+      "This idempotency key was already used to queue a message in another conversation",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  if (queuedInputDigest(parsed.data) !== queuedInputDigest(input)) {
+    throw new AssistantError(
+      "This idempotency key was already used to queue a different message",
       ErrorType.CONFLICT_ERROR,
       409,
     );

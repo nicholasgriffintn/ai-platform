@@ -48,7 +48,7 @@ function createContext(options: {
       Array.from({ length: options.waiting ?? 0 }, (_, index) => queuedTask(`queued-${index}`)),
     ),
     createTask: vi.fn(async (params: { id: string }) => queuedTask(params.id)),
-    getTaskById: vi.fn(async (_id: string): Promise<ReturnType<typeof queuedTask> | null> => null),
+    getTaskById: vi.fn(async (_id: string): Promise<object | null> => null),
     releaseNextSuspendedTaskForConversation: vi.fn(async () => queuedTask("queued-0")),
   };
 
@@ -117,6 +117,36 @@ describe("queueFollowUp", () => {
 
     await expect(queueFollowUp(context, "conversation-1", keyed)).resolves.toEqual(first);
     expect(tasks.createTask).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns the original message when the retry arrives after it was sent", async () => {
+    const { context, tasks } = createContext({ latestStatus: "succeeded" });
+    const keyed = { ...input, idempotency_key: "queue-1" };
+    const first = await queueFollowUp(context, "conversation-1", keyed);
+
+    tasks.getTaskById.mockResolvedValueOnce({
+      ...queuedTask(first.id),
+      status: "completed",
+      task_data: { ...queuedTask(first.id).task_data, message: { ...input.message, id: "msg-1" } },
+    });
+
+    await expect(queueFollowUp(context, "conversation-1", keyed)).resolves.toEqual(first);
+    expect(tasks.createTask).toHaveBeenCalledTimes(1);
+    expect(mocks.dispatchTask).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects a repeated key for a different message", async () => {
+    const { context, tasks } = createContext({ latestStatus: "running" });
+
+    tasks.getTaskById.mockResolvedValueOnce(queuedTask("queued-1"));
+
+    await expect(
+      queueFollowUp(context, "conversation-1", {
+        message: { role: "user", content: "Something else" },
+        request: {},
+        idempotency_key: "queue-1",
+      }),
+    ).rejects.toThrow("a different message");
   });
 
   it("rejects a repeated key for another conversation", async () => {

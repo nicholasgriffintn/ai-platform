@@ -1,11 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 
+const agent = vi.hoisted(() => ({ alarm: vi.fn(async () => undefined) }));
+
 vi.mock("agents", () => ({
   Agent: class {
     constructor(
       public ctx: any,
       public env: any,
     ) {}
+
+    alarm() {
+      return agent.alarm();
+    }
   },
 }));
 
@@ -281,9 +287,9 @@ describe("ConversationCoordinator", () => {
 
   it("drains effects against the live lease owner and schedules the next retry", async () => {
     const coordinator = createCoordinator();
-    const nextAvailableAt = new Date(Date.now() + 60_000).toISOString();
+    const nextDrainAt = new Date(Date.now() + 60_000).toISOString();
 
-    effects.drainRunEffects.mockResolvedValueOnce({ executed: 1, nextAvailableAt });
+    effects.drainRunEffects.mockResolvedValueOnce({ executed: 1, nextDrainAt });
     await acquire(coordinator, "user_message", "owner-1");
 
     const response = await drain(coordinator);
@@ -292,17 +298,33 @@ describe("ConversationCoordinator", () => {
     expect(effects.drainRunEffects).toHaveBeenCalledWith(
       expect.objectContaining({ conversationId: "conversation-1", liveOwnerToken: "owner-1" }),
     );
-    expect(coordinator.scheduledAlarm()).toBe(Date.parse(nextAvailableAt));
+    expect(coordinator.scheduledAlarm()).toBe(Date.parse(nextDrainAt));
   });
 
   it("refuses to drain another conversation's effects", async () => {
     const coordinator = createCoordinator();
 
     effects.drainRunEffects.mockReset();
-    effects.drainRunEffects.mockResolvedValue({ executed: 0, nextAvailableAt: null });
+    effects.drainRunEffects.mockResolvedValue({ executed: 0, nextDrainAt: null });
     await drain(coordinator, "conversation-1");
 
     expect((await drain(coordinator, "conversation-2")).status).toBe(400);
     expect(effects.drainRunEffects).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the agent runtime's alarm work and then drains due effects", async () => {
+    const coordinator = createCoordinator();
+
+    effects.drainRunEffects.mockReset();
+    effects.drainRunEffects.mockResolvedValue({ executed: 0, nextDrainAt: null });
+    await drain(coordinator);
+    effects.drainRunEffects.mockClear();
+
+    await coordinator.alarm();
+
+    expect(agent.alarm).toHaveBeenCalledTimes(1);
+    expect(effects.drainRunEffects).toHaveBeenCalledWith(
+      expect.objectContaining({ conversationId: "conversation-1" }),
+    );
   });
 });

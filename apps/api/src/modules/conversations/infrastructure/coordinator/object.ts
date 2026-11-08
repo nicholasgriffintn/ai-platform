@@ -70,8 +70,8 @@ export class ConversationCoordinator extends Agent<IEnv> {
           liveOwnerToken: status.status === "running" ? (status.ownerToken ?? null) : null,
         });
 
-        if (result.nextAvailableAt) {
-          await this.scheduleEffectsAlarm(Date.parse(result.nextAvailableAt));
+        if (result.nextDrainAt) {
+          await this.scheduleEffectsAlarm(Date.parse(result.nextDrainAt));
         }
 
         return result;
@@ -99,10 +99,14 @@ export class ConversationCoordinator extends Agent<IEnv> {
   }
 
   async alarm(): Promise<void> {
-    const conversationId = await this.storage.get<string>(EFFECTS_CONVERSATION_KEY);
+    try {
+      await super.alarm();
+    } finally {
+      const conversationId = await this.storage.get<string>(EFFECTS_CONVERSATION_KEY);
 
-    if (conversationId) {
-      await this.drainEffects(conversationId);
+      if (conversationId) {
+        await this.drainEffects(conversationId);
+      }
     }
   }
 

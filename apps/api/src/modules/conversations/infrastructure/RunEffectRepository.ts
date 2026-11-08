@@ -138,15 +138,27 @@ export class RunEffectRepository extends BaseRepository<Pick<IEnv, "DB">> {
     );
   }
 
-  async nextAvailableAt(conversationId: string): Promise<string | null> {
-    const row = await this.runQuery<{ available_at: string | null }>(
-      `SELECT MIN(available_at) AS available_at FROM conversation_run_effect
-       WHERE conversation_id = ? AND status = 'pending' AND kind IN (${REPLAY_SAFE_SQL})`,
+  async nextDrainAt(conversationId: string): Promise<string | null> {
+    const row = await this.runQuery<{
+      next_pending: string | null;
+      lease_expires_at: string | null;
+    }>(
+      `SELECT
+         MIN(CASE WHEN status = 'pending' THEN available_at END) AS next_pending,
+         MAX(CASE WHEN status = 'running' THEN lease_expires_at END) AS lease_expires_at
+       FROM conversation_run_effect
+       WHERE conversation_id = ? AND status IN ('pending', 'running')
+         AND kind IN (${REPLAY_SAFE_SQL})`,
       [conversationId],
       true,
     );
+    const candidates = [row?.next_pending, row?.lease_expires_at].filter((value): value is string =>
+      Boolean(value),
+    );
 
-    return row?.available_at ?? null;
+    return candidates.length
+      ? candidates.reduce((latest, value) => (value > latest ? value : latest))
+      : null;
   }
 
   async claimProcessBound(params: {
