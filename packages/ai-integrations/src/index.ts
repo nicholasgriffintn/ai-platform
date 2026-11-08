@@ -18,6 +18,7 @@ export {
   PashiClientError,
   type PashiClientErrorCode,
   type PashiEnvironment,
+  resolvePashiOrigin,
 } from "./pashi/client.js";
 export {
   getPashiToolFields,

@@ -28,7 +28,9 @@ async function resolvePashiClient(context: ApiToolExecutionContext): Promise<Pas
       )
     : null;
 
-  return token ? new PashiClient({ apiKey: token, supportsFiles: true }) : getPashiClient(env);
+  return token
+    ? new PashiClient({ apiKey: token, origin: env.PASHI_URL, supportsFiles: true })
+    : getPashiClient(env);
 }
 
 function createPashiFileStore(context: ApiToolExecutionContext): PashiFileStore | undefined {

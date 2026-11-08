@@ -10,7 +10,7 @@ import {
   type PashiTool,
 } from "./contracts.js";
 
-const PASHI_ORIGIN = "https://pashi.app";
+const DEFAULT_PASHI_ORIGIN = "https://pashi.app";
 const PASHI_INFO_PATH = "/api/info";
 const PASHI_CONFIGURATION_ERROR_MESSAGE = "PASHI_API_KEY is required to access Pashi.";
 const DEFAULT_CATALOG_TTL_MS = 5 * 60 * 1000;
@@ -20,6 +20,13 @@ const CONVERSION_TIMEOUT_MS = 120_000;
 
 export interface PashiEnvironment {
   PASHI_API_KEY?: string;
+  PASHI_URL?: string;
+}
+
+export function resolvePashiOrigin(value?: string): string {
+  const configured = readEnvString(value);
+
+  return configured ? new URL(configured).origin : DEFAULT_PASHI_ORIGIN;
 }
 
 export type PashiClientErrorCode =
@@ -45,6 +52,7 @@ export class PashiClientError extends Error {
 
 interface PashiClientOptions {
   apiKey: string;
+  origin?: string;
   catalogTtlMs?: number;
   fetch?: typeof fetch;
   now?: () => number;
@@ -56,6 +64,7 @@ interface PashiClientOptions {
 export class PashiClient {
   readonly supportsFiles: boolean;
   private readonly apiKey: string;
+  private readonly origin: string;
   private readonly catalogTtlMs: number;
   private readonly fetch: typeof fetch;
   private readonly now: () => number;
@@ -72,6 +81,7 @@ export class PashiClient {
     }
 
     this.apiKey = apiKey;
+    this.origin = resolvePashiOrigin(options.origin);
     this.catalogTtlMs = options.catalogTtlMs ?? DEFAULT_CATALOG_TTL_MS;
     this.fetch = options.fetch ?? fetch;
     this.now = options.now ?? Date.now;
@@ -134,7 +144,7 @@ export class PashiClient {
     if (tool.toolType === "generator" && tool.result?.kind === "image") {
       return {
         data: {
-          imageUrl: buildPashiImageUrl(tool, operation.input, fields),
+          imageUrl: buildPashiImageUrl(this.origin, tool, operation.input, fields),
         },
         resultKind: "image",
         toolId: tool.id,
@@ -262,7 +272,7 @@ export class PashiClient {
     }
 
     for (const tool of parsed.data.tools) {
-      resolvePashiUrl(tool.endpoint);
+      resolvePashiUrl(this.origin, tool.endpoint);
     }
 
     return parsed.data;
@@ -292,7 +302,7 @@ export class PashiClient {
     init: Omit<RequestInit, "headers"> & { headers?: Record<string, string> },
     bounded: boolean,
   ): Promise<Response> {
-    const url = resolvePashiUrl(path);
+    const url = resolvePashiUrl(this.origin, path);
     const controller = new AbortController();
     const timeoutId = bounded ? setTimeout(() => controller.abort(), this.timeoutMs) : undefined;
 
@@ -354,7 +364,7 @@ function parseConversionJob(value: unknown) {
 
 const clientsByEnvironment = new WeakMap<
   PashiEnvironment,
-  { apiKey: string; client: PashiClient }
+  { apiKey: string; client: PashiClient; origin?: string }
 >();
 
 export function getPashiClient(env: PashiEnvironment): PashiClient {
@@ -366,21 +376,21 @@ export function getPashiClient(env: PashiEnvironment): PashiClient {
 
   const cached = clientsByEnvironment.get(env);
 
-  if (cached?.apiKey === apiKey) {
+  if (cached?.apiKey === apiKey && cached.origin === env.PASHI_URL) {
     return cached.client;
   }
 
-  const client = new PashiClient({ apiKey });
+  const client = new PashiClient({ apiKey, origin: env.PASHI_URL });
 
-  clientsByEnvironment.set(env, { apiKey, client });
+  clientsByEnvironment.set(env, { apiKey, client, origin: env.PASHI_URL });
 
   return client;
 }
 
-function resolvePashiUrl(path: string): string {
-  const url = new URL(path, PASHI_ORIGIN);
+function resolvePashiUrl(origin: string, path: string): string {
+  const url = new URL(path, origin);
 
-  if (url.origin !== PASHI_ORIGIN || !url.pathname.startsWith("/api/")) {
+  if (url.origin !== origin || !url.pathname.startsWith("/api/")) {
     throw new PashiClientError("invalid_catalog", "Pashi returned an unsafe API endpoint.");
   }
 
@@ -443,11 +453,12 @@ function validateOperation(tool: PashiTool, operation: PashiOperation): Record<s
 }
 
 function buildPashiImageUrl(
+  origin: string,
   tool: PashiTool,
   input: string | undefined,
   fields: Record<string, string>,
 ): string {
-  const url = new URL(resolvePashiUrl(tool.endpoint));
+  const url = new URL(resolvePashiUrl(origin, tool.endpoint));
 
   url.searchParams.set("generate", "1");
   if (input) {
