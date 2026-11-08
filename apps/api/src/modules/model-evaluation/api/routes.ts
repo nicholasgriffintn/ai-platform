@@ -23,6 +23,7 @@ import { Hono } from "hono";
 import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
+import { requireAdmin } from "~/middleware/adminMiddleware";
 import {
   createGrader,
   deleteGrader,
@@ -59,6 +60,8 @@ addRoute(app, "post", "/tool-use-evals/samples", {
   tags,
   summary:
     "Sample one tool-use eval case with the real tool catalogue and system prompt, and canned tool results",
+  description: "Admins only.",
+  middleware: [requireAdmin],
   bodySchema: toolUseEvalSampleRequestSchema,
   responses: { 200: { description: "Sample", schema: toolUseEvalSampleSchema } },
   handler: ({ serviceContext, body }) => sampleToolUseCase(serviceContext, body),

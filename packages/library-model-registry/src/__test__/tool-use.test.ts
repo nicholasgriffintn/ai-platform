@@ -47,22 +47,19 @@ describe("tool argument matching", () => {
 });
 
 describe("trajectory grading", () => {
-  it("orders first occurrences, so starting the work before loading its skill fails", () => {
-    const order = [{ tool: "load_skill" }, { tool: "research" }];
+  it("matches order as a subsequence, so an earlier repeat of a later step does not break it", () => {
+    const order = [{ tool: "read" }, { tool: "search" }];
 
     expect(
       gradeToolUse(
         { order },
-        {
-          calls: [call("research"), call("load_skill"), call("research")],
-          texts: [],
-          finalText: "",
-        },
+        { calls: [call("search"), call("read"), call("search")], texts: [], finalText: "" },
       ).passed,
-    ).toBe(false);
+    ).toBe(true);
     expect(
-      gradeToolUse({ order }, { calls: [call("load_skill")], texts: [], finalText: "" }).failures,
-    ).toEqual([{ check: "order", detail: "research was out of order" }]);
+      gradeToolUse({ order }, { calls: [call("search"), call("read")], texts: [], finalText: "" })
+        .failures,
+    ).toEqual([{ check: "order", detail: "search was out of order" }]);
   });
 
   it("requires calls in order without demanding adjacency", () => {

@@ -158,13 +158,15 @@ function findOrderBreak(
   let previous = -1;
 
   for (const pattern of order) {
-    const first = calls.findIndex((call) => matchesCallPattern(pattern, call));
+    const next = calls.findIndex(
+      (call, index) => index > previous && matchesCallPattern(pattern, call),
+    );
 
-    if (first <= previous) {
+    if (next === -1) {
       return pattern;
     }
 
-    previous = first;
+    previous = next;
   }
 
   return null;
