@@ -26,6 +26,22 @@ describe("ResponseView", () => {
     expect(container.querySelector('[data-responsetype="error"]')).toBeInTheDocument();
   });
 
+  it("keeps a tool's next hint for the model out of the rendered result", () => {
+    render(
+      <ResponseView
+        result={{
+          status: "error",
+          content: "Missing prompt",
+          data: { error: "Missing prompt", toolResultNext: "Do not repeat this call unchanged." },
+        }}
+        responseType="json"
+      />,
+    );
+
+    expect(screen.getAllByText("Missing prompt").length).toBeGreaterThan(1);
+    expect(screen.queryByText(/Do not repeat this call/)).not.toBeInTheDocument();
+  });
+
   it("renders a resolved council selection as a compact summary", () => {
     render(
       <CouncilMemberPickerView

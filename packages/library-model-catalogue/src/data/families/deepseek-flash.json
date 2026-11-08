@@ -133,6 +133,23 @@
         }
       }
     },
+    "deepseek-v4-1-flash-1017-ultra-fast": {
+      "defaults": {
+        "name": "DeepSeek V4.1 Flash 1017 Ultra-fast",
+        "description": "October 17 update of DeepSeek V4.1 Flash with improved reasoning, coding, agentic tasks, and visual understanding",
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
+        "releaseDate": "October 17, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "deepseek-v4-1-flash-eu": {
       "defaults": {
         "name": "DeepSeek V4.1 Flash (EU)",

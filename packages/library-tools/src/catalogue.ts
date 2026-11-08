@@ -7,6 +7,7 @@ export interface ToolCatalogue<TTool extends ToolDescriptor<any, any, any>> {
   resolve(name: string): TTool;
   find(name: string): TTool | undefined;
   repeatLimit(name: string): number | undefined;
+  turnLimit(name: string): number | undefined;
   expandCompanions(names: readonly string[]): string[];
 }
 
@@ -53,6 +54,7 @@ export function createToolCatalogue<
       return tool;
     },
     repeatLimit: (name) => entries.get(name)?.maxIdenticalCalls,
+    turnLimit: (name) => entries.get(name)?.maxCallsPerTurn,
     expandCompanions: (names) => {
       const expanded = new Set<string>();
 

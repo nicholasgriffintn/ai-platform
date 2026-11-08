@@ -9,6 +9,7 @@ export interface ToolResult {
   name?: string;
   content?: string | Record<string, unknown> | unknown[];
   data?: unknown;
+  next?: string;
   [key: string]: unknown;
 }
 
@@ -56,6 +57,7 @@ export interface ToolDefinition<
   permissions?: string[];
   normaliseInput?: (input: unknown) => unknown;
   maxIdenticalCalls?: number;
+  maxCallsPerTurn?: number;
   companionTools?: readonly string[];
   requiredEnv?: readonly string[];
   system?: boolean;

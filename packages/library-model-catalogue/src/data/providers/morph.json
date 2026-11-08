@@ -198,7 +198,7 @@
       "matchingModel": "morph-kimik3",
       "overrides": {
         "maxTokens": 1048576,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.014,
@@ -232,6 +232,36 @@
             "high"
           ],
           "defaultEffort": "none"
+        }
+      }
+    },
+    "morph-kimik31": {
+      "model": "kimi-k3/kimi-k3-1-pro",
+      "matchingModel": "morph-kimik31",
+      "overrides": {
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 2,
+        "lastUpdated": "October 23, 2026",
+        "costPer1kInputTokens": 0.0025,
+        "costPer1kOutputTokens": 0.014,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
         }
       }
     }

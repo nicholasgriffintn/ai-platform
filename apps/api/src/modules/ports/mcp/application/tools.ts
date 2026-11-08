@@ -5,6 +5,7 @@ import {
   type ToolEffects,
 } from "@ngriffin_uk/polychat-library-tools";
 import {
+  appendToolResultNext,
   isTerminalResponseStatus,
   JSON_RPC_ERRORS,
   type PlatformResponse,
@@ -173,11 +174,12 @@ function functionResultText(result: unknown): string {
     return "Done.";
   }
 
-  if (typeof result.content === "string" && result.content) {
-    return result.content;
-  }
+  const text =
+    typeof result.content === "string" && result.content
+      ? result.content
+      : JSON.stringify(result.data ?? result);
 
-  return JSON.stringify(result.data ?? result);
+  return appendToolResultNext(text, typeof result.next === "string" ? result.next : undefined);
 }
 
 async function runRegistryTool(

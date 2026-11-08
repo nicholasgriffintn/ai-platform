@@ -30,8 +30,8 @@
         ],
         "speed": 5,
         "lastUpdated": "August 5, 2025",
-        "costPer1kInputTokens": 0.000011,
-        "costPer1kOutputTokens": 0.000042,
+        "costPer1kInputTokens": 0.000023,
+        "costPer1kOutputTokens": 0.000086,
         "supportsAttachments": false
       }
     },
@@ -1238,7 +1238,7 @@
             "text"
           ]
         },
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "December 17, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
@@ -1829,16 +1829,16 @@
       "model": "kimi-k2/kimi-k2-5",
       "matchingModel": "moonshotai/kimi-k2.5",
       "overrides": {
-        "maxTokens": 235929,
+        "maxTokens": 65536,
         "strengths": [
           "vision",
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "January 27, 2026",
-        "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.0025
+        "costPer1kInputTokens": 0.000532,
+        "costPer1kOutputTokens": 0.003325
       }
     },
     "nousresearch/deephermes-3-llama-3-8b-preview": {
@@ -2059,7 +2059,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -3220,8 +3220,8 @@
         "name": "MoonshotAI Kimi Latest",
         "releaseDate": "April 27, 2026",
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.0001634,
-        "costPer1kOutputTokens": 0.0101489,
+        "costPer1kInputTokens": 0.0001567,
+        "costPer1kOutputTokens": 0.0101398,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -3977,8 +3977,8 @@
         "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.0009483,
-        "costPer1kOutputTokens": 0.0018966,
+        "costPer1kInputTokens": 0.00043413,
+        "costPer1kOutputTokens": 0.00086826,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -4368,7 +4368,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0004,
@@ -4385,7 +4385,7 @@
       "matchingModel": "google/gemma-4-31b-it:free",
       "overrides": {
         "isFree": true,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -4670,10 +4670,10 @@
       "matchingModel": "meta-llama/llama-3.2-3b-instruct",
       "overrides": {
         "contextWindow": 131072,
-        "maxTokens": 72000,
+        "maxTokens": 117964,
         "lastUpdated": "September 25, 2024",
-        "costPer1kInputTokens": 0.0000509,
-        "costPer1kOutputTokens": 0.000335,
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.00033,
         "supportsToolCalls": false,
         "supportsAttachments": false
       }
@@ -6182,7 +6182,7 @@
       "matchingModel": "qwen/qwen3-vl-235b-a22b-instruct",
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.00021,
         "costPer1kOutputTokens": 0.0019
@@ -6406,6 +6406,7 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "qwen/qwen3.6-27b",
       "overrides": {
+        "maxTokens": 81920,
         "modalities": {
           "input": [
             "text",
@@ -6424,8 +6425,8 @@
         ],
         "speed": 3,
         "lastUpdated": "April 22, 2026",
-        "costPer1kInputTokens": 0.00045,
-        "costPer1kOutputTokens": 0.0027
+        "costPer1kInputTokens": 0.00032,
+        "costPer1kOutputTokens": 0.0032
       }
     },
     "qwen/qwen3.6-35b-a3b": {
@@ -7220,7 +7221,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0035
@@ -7671,7 +7672,7 @@
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "maxTokens": 943718,
-        "speed": 2,
+        "speed": 3,
         "isFeatured": false,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.000192,
@@ -7752,7 +7753,7 @@
       "model": "gemini-flash/gemini-3-6-flash",
       "matchingModel": "google/gemini-3.6-flash",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
@@ -7854,7 +7855,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0012,
@@ -7877,7 +7878,7 @@
       "matchingModel": "~deepseek/deepseek-v4-flash-latest",
       "overrides": {
         "lastUpdated": "August 1, 2026",
-        "costPer1kInputTokens": 0.000059,
+        "costPer1kInputTokens": 0.0000434,
         "costPer1kOutputTokens": 0.0003,
         "supportsAttachments": false
       }
@@ -8290,7 +8291,7 @@
       "matchingModel": "thinkingmachines/inkling-small:free",
       "overrides": {
         "isFree": true,
-        "speed": 4,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Inkling Small (free) is no longer offered by OpenRouter.",
         "lastUpdated": "July 30, 2026",
@@ -8487,8 +8488,8 @@
         ],
         "speed": 3,
         "lastUpdated": "August 26, 2026",
-        "costPer1kInputTokens": 0.0000386,
-        "costPer1kOutputTokens": 0.0000793
+        "costPer1kInputTokens": 0.0000335,
+        "costPer1kOutputTokens": 0.000083
       }
     },
     "ibm-granite/granite-4.2-8b": {
@@ -8496,7 +8497,7 @@
       "matchingModel": "ibm-granite/granite-4.2-8b",
       "overrides": {
         "maxTokens": 117964,
-        "speed": 3,
+        "speed": 4,
         "releaseDate": "August 25, 2026",
         "lastUpdated": "August 25, 2026",
         "costPer1kInputTokens": 0.00006,
@@ -8509,8 +8510,8 @@
       "matchingModel": "~z-ai/glm-flash-latest",
       "overrides": {
         "lastUpdated": "August 27, 2026",
-        "costPer1kInputTokens": 0.0000386,
-        "costPer1kOutputTokens": 0.0000793
+        "costPer1kInputTokens": 0.0000335,
+        "costPer1kOutputTokens": 0.000083
       }
     },
     "anthropic/claude-fable-5.1": {
@@ -9392,7 +9393,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "contextComplexity": 5,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "September 29, 2026",
         "costPer1kInputTokens": 0.000045,
         "costPer1kOutputTokens": 0.000135,
@@ -9677,7 +9678,7 @@
           "video",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425
@@ -9722,6 +9723,7 @@
       "model": "kimi-k3/kimi-k3-1-pro",
       "matchingModel": "moonshotai/kimi-k3.1-pro",
       "overrides": {
+        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "maxTokens": 943718,
         "speed": 2,
         "lastUpdated": "October 23, 2026",
@@ -9754,6 +9756,7 @@
             "text"
           ]
         },
+        "contextComplexity": 5,
         "speed": 5,
         "releaseDate": "October 15, 2026",
         "lastUpdated": "October 15, 2026",
@@ -9873,7 +9876,7 @@
       "model": "gpt-terra/gpt-6-1-terra",
       "matchingModel": "openai/gpt-6.1-terra",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,

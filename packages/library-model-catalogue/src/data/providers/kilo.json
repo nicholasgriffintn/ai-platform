@@ -217,8 +217,8 @@
       "matchingModel": "~deepseek/deepseek-v4-flash-latest",
       "overrides": {
         "lastUpdated": "August 1, 2026",
-        "costPer1kInputTokens": 0.00005764,
-        "costPer1kOutputTokens": 0.00017292,
+        "costPer1kInputTokens": 0.0000434,
+        "costPer1kOutputTokens": 0.0003,
         "supportsAttachments": false
       }
     },
@@ -247,8 +247,8 @@
       "matchingModel": "~moonshotai/kimi-latest",
       "overrides": {
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.0001539,
-        "costPer1kOutputTokens": 0.0101489
+        "costPer1kInputTokens": 0.0001567,
+        "costPer1kOutputTokens": 0.0101398
       }
     },
     "~openai/gpt-astra-latest": {
@@ -335,8 +335,8 @@
       "matchingModel": "~z-ai/glm-flash-latest",
       "overrides": {
         "lastUpdated": "August 27, 2026",
-        "costPer1kInputTokens": 0.0000285,
-        "costPer1kOutputTokens": 0.0000793
+        "costPer1kInputTokens": 0.0000335,
+        "costPer1kOutputTokens": 0.000083
       }
     },
     "~z-ai/glm-latest": {
@@ -1223,7 +1223,7 @@
       "matchingModel": "google/gemini-3-flash-preview",
       "overrides": {
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "December 17, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.0015,
@@ -1563,7 +1563,7 @@
       "matchingModel": "google/gemini-3.6-flash",
       "overrides": {
         "description": "Gemini 3.6 Flash is a high-efficiency model from Google for coding, agentic workflows, and web and app development. It is designed to produce polished outputs with fewer unnecessary edits and...",
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.000375,
         "costPer1kOutputTokens": 0.001875,
@@ -1685,8 +1685,8 @@
           ]
         },
         "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.000023,
-        "costPer1kOutputTokens": 0.000068,
+        "costPer1kInputTokens": 0.000028,
+        "costPer1kOutputTokens": 0.000083,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1779,7 +1779,7 @@
       "model": "granite/ibm-granite-4-2-8b",
       "matchingModel": "ibm-granite/granite-4.2-8b",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "August 25, 2026",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00015,
@@ -1860,7 +1860,7 @@
       "model": "ling/inclusionai-ling-3-1-flash",
       "matchingModel": "inclusionai/ling-3.1-flash",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "September 29, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0009,
@@ -2026,7 +2026,7 @@
       }
     },
     "meta-llama/llama-3.2-3b-instruct": {
-      "model": "llama/meta-llama-3-2-3b-instruct-retires-nov-20",
+      "model": "llama/meta-llama-3-2-3b-instruct",
       "matchingModel": "meta-llama/llama-3.2-3b-instruct",
       "overrides": {
         "lastUpdated": "September 25, 2024",
@@ -2653,13 +2653,14 @@
       "matchingModel": "moonshotai/kimi-k2.5",
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
-        "maxTokens": 235929,
+        "contextWindow": 256000,
+        "maxTokens": 65536,
         "strengths": [
           "vision",
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
@@ -2717,7 +2718,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0035,
@@ -2752,7 +2753,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -3278,7 +3279,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -3794,8 +3795,8 @@
         "maxTokens": 65536,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
-        "costPer1kInputTokens": 0.000012,
-        "costPer1kOutputTokens": 0.000044,
+        "costPer1kInputTokens": 0.000021,
+        "costPer1kOutputTokens": 0.000079,
         "supportsAttachments": false
       }
     },
@@ -4442,7 +4443,7 @@
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 131072,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.00021,
         "costPer1kOutputTokens": 0.0019
@@ -4684,6 +4685,7 @@
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "qwen/qwen3.6-27b",
       "overrides": {
+        "maxTokens": 81920,
         "modalities": {
           "input": [
             "text",
@@ -5444,7 +5446,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0012,
@@ -6015,8 +6017,7 @@
       "matchingModel": "z-ai/glm-5.3-flash",
       "overrides": {
         "description": "GLM-5.3-Flash is a native multimodal model from Z.ai. It is suited for efficient coding and long-horizon agent tasks. Its hybrid sparse and linear attention architecture maintains accurate long-context behavior while...",
-        "contextWindow": 1048575,
-        "maxTokens": 943717,
+        "contextWindow": 1048576,
         "modalities": {
           "input": [
             "text",
@@ -6251,7 +6252,7 @@
           "video",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425
@@ -6430,7 +6431,7 @@
       "model": "gpt-terra/openai-gpt-6-1-terra",
       "matchingModel": "openai/gpt-6.1-terra",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,

@@ -64,7 +64,7 @@ import { WorkersProvider } from "../capabilities/chat/providers/workers.js";
 import { ZaiProvider } from "../capabilities/chat/providers/zai.js";
 import type { AiProviderRegistration, AiProviderRegistry, ProviderRuntime } from "../runtime.js";
 
-function chatProviders(runtime: ProviderRuntime): AiProviderRegistration<AIProvider>[] {
+export function chatProviders(runtime: ProviderRuntime): AiProviderRegistration<AIProvider>[] {
   return [
     {
       name: "anthropic",

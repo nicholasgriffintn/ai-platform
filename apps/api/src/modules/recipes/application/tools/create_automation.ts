@@ -11,6 +11,9 @@ import type { ApiToolDefinition } from "~/types/functions";
 
 import { create_automation as createAutomationDescriptor } from "./definitions/create_automation";
 
+export const CREATE_AUTOMATION_NEXT =
+  "It runs on its own schedule; do not trigger it now unless the user asks.";
+
 export const create_automation: ApiToolDefinition = {
   ...createAutomationDescriptor,
   execute: async (args: CreateAutomationInput, toolContext) => {
@@ -71,6 +74,7 @@ export const create_automation: ApiToolDefinition = {
       status: "success",
       name: AUTOMATION_CREATE_TOOL_NAME,
       content: `Set up ${installed.recipe.title} to run ${schedule}.${blocked} You can pause or change it in Scheduled.`,
+      next: CREATE_AUTOMATION_NEXT,
       data: {
         recipeId: installed.recipe.id,
         installationId: installed.installation?.id,

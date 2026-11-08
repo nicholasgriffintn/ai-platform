@@ -1325,7 +1325,7 @@
           "video",
           "creative"
         ],
-        "reliability": 3,
+        "reliability": 2,
         "releaseDate": "May 30, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false,
@@ -1339,7 +1339,7 @@
             {
               "key": "image_to_videoElo",
               "label": "Image-to-video arena",
-              "value": 1050,
+              "value": 1049,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 17

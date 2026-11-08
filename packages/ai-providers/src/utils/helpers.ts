@@ -1,3 +1,4 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 
@@ -97,10 +98,36 @@ type AssetResponseShape = {
   url?: unknown;
   output?: unknown;
   attachments?: unknown;
+  response?: unknown;
   data?: {
     attachments?: unknown;
   };
 };
+
+const GENERATED_CONTENT_URL_KEYS = ["image_url", "video_url", "audio_url"] as const;
+
+function findGeneratedContentUrl(content: unknown): string | undefined {
+  if (!Array.isArray(content)) {
+    return undefined;
+  }
+
+  for (const part of content) {
+    if (!isRecord(part)) {
+      continue;
+    }
+
+    for (const key of GENERATED_CONTENT_URL_KEYS) {
+      const value = part[key];
+      const url = isRecord(value) ? value.url : undefined;
+
+      if (typeof url === "string" && url) {
+        return url;
+      }
+    }
+  }
+
+  return undefined;
+}
 
 export function extractGeneratedAsset(response: AssetResponseShape): AssetReference {
   const attachments = response?.data?.attachments ?? response?.attachments;
@@ -116,6 +143,12 @@ export function extractGeneratedAsset(response: AssetResponseShape): AssetRefere
         key: asset.key,
       };
     }
+  }
+
+  const contentUrl = findGeneratedContentUrl(response?.response);
+
+  if (contentUrl) {
+    return { url: contentUrl };
   }
 
   if (typeof response?.url === "string") {

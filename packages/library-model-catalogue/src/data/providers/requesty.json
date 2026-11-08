@@ -375,7 +375,7 @@
       "model": "gemini/gemini-3-flash",
       "matchingModel": "google/gemini-3-flash-preview",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "December 17, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003
@@ -718,7 +718,7 @@
       "model": "gpt/gpt-5-1",
       "matchingModel": "openai/gpt-5.1",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -1434,7 +1434,7 @@
       "matchingModel": "gemini-3.6-flash",
       "overrides": {
         "maxTokens": 65535,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.007,
@@ -1539,7 +1539,7 @@
       "model": "gpt/gpt-5-1-eu",
       "matchingModel": "gpt-5.1@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.011
@@ -1661,7 +1661,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -1682,7 +1682,7 @@
       "model": "kimi-k3/kimi-k3-eu",
       "matchingModel": "kimi-k3@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -2665,7 +2665,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -2687,7 +2687,7 @@
       "model": "kimi-k2/kimi-k2-7-code-eu",
       "matchingModel": "kimi-k2.7-code@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0045,
@@ -4286,7 +4286,7 @@
       "model": "kimi-k2/kimi-k2-5-eu",
       "matchingModel": "kimi-k2.5@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.00072,
         "costPer1kOutputTokens": 0.0036,
@@ -4425,7 +4425,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425,
@@ -4456,7 +4456,6 @@
       "model": "kimi-k3/kimi-k3-1-pro",
       "matchingModel": "kimi-k3.1-pro",
       "overrides": {
-        "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
         "maxTokens": 1048576,
         "speed": 2,
         "lastUpdated": "October 23, 2026",
@@ -4509,7 +4508,7 @@
       "model": "gpt-terra/gpt-6-1-terra",
       "matchingModel": "gpt-6.1-terra",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
@@ -4530,7 +4529,7 @@
       "model": "gpt-terra/gpt-6-1-terra-eu",
       "matchingModel": "gpt-6.1-terra@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.006,
