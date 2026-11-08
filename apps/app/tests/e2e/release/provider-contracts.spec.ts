@@ -60,7 +60,7 @@ test.describe("Provider release contracts", { tag: "@release" }, () => {
 
   test("OpenAI audio input", async ({ homePage }) => {
     await homePage.navigate("/chat");
-    await homePage.selectModel("GPT Audio Mini");
+    await homePage.selectModel("GPT Audio 1.5");
     await homePage.uploadFile({
       name: "release-audio.wav",
       mimeType: "audio/wav",
