@@ -1,12 +1,14 @@
-import type {
-  AppEntry,
-  AppIosDecision,
-  AppScope,
-  AppSurfaceDefinition,
-  AppTheme,
-  ProjectExperienceDefinition,
-  ProjectExperienceRuntime,
+import {
+  normaliseMcpServerLabel,
+  type AppEntry,
+  type AppIosDecision,
+  type AppScope,
+  type AppSurfaceDefinition,
+  type AppTheme,
+  type ProjectExperienceDefinition,
+  type ProjectExperienceRuntime,
 } from "@ngriffin_uk/polychat-schemas";
+import { hashSeed, slugify } from "@ngriffin_uk/polychat-utility-core";
 
 /**
  * One entry per rich experience. Entries with a `capabilityId` are also published as apps a
@@ -235,3 +237,68 @@ export const getProjectExperienceCatalog = (): ProjectExperienceDefinition[] =>
         : { kind: "capability_kind" as const, capabilityKind: "app" as const },
     }),
   );
+
+export interface RemoteAppSource {
+  server: string;
+  tool: string;
+  resourceUri: string;
+  name: string;
+  description?: string;
+  category?: string;
+  layout: AppSurfaceDefinition["layout"];
+}
+
+const REMOTE_APP_SURFACES: Record<AppSurfaceDefinition["layout"], AppSurfaceDefinition> = {
+  contained: CONTAINED,
+  workspace: { layout: "workspace", loading: "editor" },
+};
+
+const REMOTE_APP_ID_PATTERN = /^mcp-[a-z0-9-]{1,80}-[0-9a-z]{1,7}$/;
+
+export const remoteAppId = (server: string, tool: string): string => {
+  const serverKey = normaliseMcpServerLabel(server).toLowerCase();
+
+  return `mcp-${slugify(serverKey, 32)}-${slugify(tool, 40)}-${hashSeed(`${serverKey}\n${tool}`).toString(36)}`;
+};
+
+export const isRemoteAppId = (value: string): boolean => REMOTE_APP_ID_PATTERN.test(value);
+
+export const getRemoteExperienceCatalog = (
+  sources: readonly RemoteAppSource[],
+): ProjectExperienceDefinition[] => {
+  const seen = new Set<string>();
+
+  return sources.flatMap((source) => {
+    const id = remoteAppId(source.server, source.tool);
+
+    if (seen.has(id)) {
+      return [];
+    }
+
+    seen.add(id);
+
+    return [
+      {
+        id,
+        entry: {
+          kind: "remote" as const,
+          server: source.server,
+          tool: source.tool,
+          resource: source.resourceUri,
+        },
+        surface: REMOTE_APP_SURFACES[source.layout],
+        name: source.name,
+        description: source.description ?? `An app from ${source.server}.`,
+        when: `You want ${source.name} from ${source.server} on its own page.`,
+        uses: `Your connection to ${source.server}. It can only read through that connection.`,
+        produces: "Whatever the app shows you. Anything that changes something is asked in a chat.",
+        ios: "web-only" as const,
+        scope: "personal" as const,
+        scopeReason: "Apps from your MCP servers use your own connection.",
+        category: source.category ?? "Connected",
+        tags: ["mcp"],
+        requirement: { kind: "capability_kind" as const, capabilityKind: "app" as const },
+      },
+    ];
+  });
+};

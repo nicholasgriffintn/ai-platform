@@ -1,6 +1,6 @@
 # ADR 0100: App views are content, never authority
 
-Status: Implemented for MCP tools rendered in conversations, the Polychat MCP server and teammate A2A endpoints.
+Status: Implemented for MCP tools rendered in conversations, MCP Apps opened as full-page apps, the Polychat MCP server and teammate A2A endpoints.
 
 ## Problem
 
@@ -15,6 +15,8 @@ An app view is rendered content. Its HTML runs in a frame with `allow-scripts al
 - A call from a view runs only if the integration marks the tool read-only; anything else is refused with a note to ask in the conversation, where the usual effect classes, autonomy dial and approvals apply.
 - Links open in a new window, and a message from the view becomes a draft in the composer, never a sent turn.
 - The resource is fetched and attached by the API when the tool result is produced, so the view never fetches it itself and the client never speaks to the integration directly.
+
+A connected server can also offer a view as an app of its own page. The tool behind it must be read-only, take no required arguments and carry the `app.polychat/app` marker. Opening the app runs that tool and fetches its resource in the API, as for a tool result, and the page renders it in the same frame under the same policy and bridge. The page has no composer, so a message from the view opens a new chat with the text as a draft.
 
 The MCP server is a port onto the tool registry and Responses: it lists the tools the key owner can run in Polychat plus one tool per teammate, and runs them under the owner's authority with the `channel` trigger and assistant autonomy. A write without a standing approval or a never-standing effect is refused to the remote host and asks in Polychat instead of running because a remote host said so.
 

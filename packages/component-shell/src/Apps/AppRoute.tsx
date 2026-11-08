@@ -2,6 +2,7 @@ import { BackLink, ButtonLink, EmptyState } from "@ngriffin_uk/polychat-componen
 import { isAuthenticationError, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   useCapabilityCatalog,
+  useRemoteApps,
   type AppProjectScope,
   type CapabilitySurface,
   getAppBackLink,
@@ -39,17 +40,33 @@ export function AppRoute({
     isLoading: isCatalogLoading,
     error: catalogError,
   } = useCapabilityCatalog(surface.projectId);
-  const definition = catalog?.experiences.find((item) => item.id === appId);
+  const bundledDefinition = catalog?.experiences.find((item) => item.id === appId);
+  const looksUpRemoteApp = !project && Boolean(catalog) && !bundledDefinition;
+  const {
+    data: remoteApps,
+    isLoading: isRemoteAppLoading,
+    error: remoteAppError,
+  } = useRemoteApps({ enabled: looksUpRemoteApp });
+  const remoteDefinition = bundledDefinition
+    ? undefined
+    : remoteApps?.find((item) => item.id === appId);
+  const definition = bundledDefinition ?? remoteDefinition;
   const title = titleOverride ?? definition?.name;
   const backLink = getAppBackLink(surface, appId, subpath, title);
   const basePath = getAppPath(surface, appId);
   const presentation = definition?.surface ?? CONTAINED_APP_PRESENTATION;
   const needsSignIn = !isAuthenticationLoading && !isAuthenticated;
   const needsPro = !isAuthenticationLoading && isAuthenticated && !isPro;
-  const isLoading = isCatalogLoading || isAuthenticationLoading || Boolean(project?.isLoading);
-  const pageError = project?.error ?? catalogError;
-  const isEnabled =
-    !project || (definition ? isExperienceEnabled(definition, project.capabilities ?? []) : false);
+  const isLoading =
+    isCatalogLoading ||
+    isAuthenticationLoading ||
+    Boolean(project?.isLoading) ||
+    (looksUpRemoteApp && isRemoteAppLoading);
+  const pageError = project?.error ?? catalogError ?? (looksUpRemoteApp ? remoteAppError : null);
+  const isEnabled = remoteDefinition
+    ? remoteDefinition.enabled
+    : !project ||
+      (definition ? isExperienceEnabled(definition, project.capabilities ?? []) : false);
   const chrome = useMemo(
     () => ({ backHref: backLink?.to, backLabel: backLink?.label }),
     [backLink?.to, backLink?.label],
@@ -59,7 +76,7 @@ export function AppRoute({
       <AppRuntime
         basePath={basePath}
         fallback={<AppSurfaceLoading presentation={presentation} />}
-        entry={definition?.entry}
+        app={definition}
         projectId={surface.projectId}
         subpath={subpath}
       />
@@ -91,8 +108,12 @@ export function AppRoute({
     ) : !isEnabled ? (
       <EmptyState
         icon={<Puzzle size={24} className="text-muted-foreground" />}
-        title="App not enabled"
-        message={`Add ${title} to the project before opening it.`}
+        title={remoteDefinition ? "App turned off" : "App not enabled"}
+        message={
+          remoteDefinition
+            ? `Turn ${title} on in Plugins to open it.`
+            : `Add ${title} to the project before opening it.`
+        }
         action={
           <ButtonLink variant="primary" href={getPluginsPath(surface)}>
             Open plugins

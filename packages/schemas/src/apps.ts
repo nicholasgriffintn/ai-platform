@@ -433,6 +433,20 @@ export const projectExperienceDefinitionSchema = z.object({
   requirement: projectExperienceRequirementSchema,
 });
 
+export const remoteAppSchema = projectExperienceDefinitionSchema.extend({
+  enabled: z.boolean().describe("Whether the person has left this app turned on."),
+});
+
+export const remoteAppListResponseSchema = z.object({
+  apps: z.array(remoteAppSchema),
+});
+
+export const remoteAppParamsSchema = z.object({ app_id: z.string().min(1).max(160) });
+
+export const remoteAppSettingsSchema = z.object({ enabled: z.boolean() });
+
+export const remoteAppSettingsResponseSchema = remoteAppSettingsSchema.extend({ id: z.string() });
+
 export const modelToolIdSchema = z.enum([
   "code_execution",
   "file_search",
@@ -570,6 +584,10 @@ export type AppSurfaceDefinition = z.infer<typeof appSurfaceSchema>;
 export type AppEntry = z.infer<typeof appEntrySchema>;
 export type ProjectExperienceRequirement = z.infer<typeof projectExperienceRequirementSchema>;
 export type ProjectExperienceDefinition = z.infer<typeof projectExperienceDefinitionSchema>;
+export type RemoteApp = z.infer<typeof remoteAppSchema>;
+export type RemoteAppListResponse = z.infer<typeof remoteAppListResponseSchema>;
+export type RemoteAppSettings = z.infer<typeof remoteAppSettingsSchema>;
+export type RemoteAppSettingsResponse = z.infer<typeof remoteAppSettingsResponseSchema>;
 export type ModelToolId = z.infer<typeof modelToolIdSchema>;
 export type ModelToolCapability = z.infer<typeof modelToolCapabilitySchema>;
 export type ModelToolDefinition = z.infer<typeof modelToolDefinitionSchema>;

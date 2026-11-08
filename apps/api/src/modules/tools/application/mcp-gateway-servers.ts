@@ -4,12 +4,14 @@ import {
   type McpClient,
   type McpResourceContent,
   type McpTool,
+  type McpToolCallResult,
 } from "@ngriffin_uk/polychat-ai-integrations";
 import {
   MCP_APP_MAX_HTML_BYTES,
   MCP_APP_MIME_TYPE,
   mcpAppUiMetaSchema,
   normaliseMcpServerLabel,
+  type McpAppCallToolResult,
   type McpAppUiMeta,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -18,6 +20,11 @@ import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
+import {
+  PASHI_MCP_LABEL,
+  PASHI_MCP_URL,
+  readPashiLinkToken,
+} from "~/modules/pashi-link/application/link";
 
 import { listMcpConnections, resolveMcpGatewayAccess } from "./mcp-connections";
 import { resolveModelToolConfigurations } from "./modelToolConfiguration";
@@ -32,6 +39,7 @@ const configuredServerSchema = z.object({
 export interface McpGatewayServer {
   label: string;
   url: string;
+  linkedAccount?: "pashi";
   credentialConnectionId?: string;
   allowedTools?: string[];
 }
@@ -89,6 +97,22 @@ export function findMcpGatewayServer(
   return server;
 }
 
+async function resolvePashiLinkAccess(
+  context: ServiceContext,
+): Promise<{ headers: Record<string, string>; allowedTools: null }> {
+  const token = await readPashiLinkToken(context, context.requireUser().id);
+
+  if (!token) {
+    throw new AssistantError(
+      "Pashi is not linked to this account. Link it from the sign-in page on pashi.app.",
+      ErrorType.AUTHENTICATION_ERROR,
+      401,
+    );
+  }
+
+  return { headers: { Authorization: `Bearer ${token}` }, allowedTools: null };
+}
+
 export function openMcpGatewaySession(
   context: ServiceContext,
   server: McpGatewayServer,
@@ -97,13 +121,16 @@ export function openMcpGatewaySession(
     context.requestCache,
     `mcp-gateway:${server.label}:${server.url}`,
     async () => {
-      const access = server.credentialConnectionId
-        ? await resolveMcpGatewayAccess(context, {
-            connectionId: server.credentialConnectionId,
-            url: server.url,
-            allowedTools: server.allowedTools,
-          })
-        : { headers: {}, allowedTools: server.allowedTools ?? null };
+      const access =
+        server.linkedAccount === "pashi"
+          ? await resolvePashiLinkAccess(context)
+          : server.credentialConnectionId
+            ? await resolveMcpGatewayAccess(context, {
+                connectionId: server.credentialConnectionId,
+                url: server.url,
+                allowedTools: server.allowedTools,
+              })
+            : { headers: {}, allowedTools: server.allowedTools ?? null };
 
       return {
         server,
@@ -175,6 +202,16 @@ export function readMcpGatewayAppResource(
   );
 }
 
+export function toMcpAppCallToolResult(result: McpToolCallResult): McpAppCallToolResult {
+  return {
+    content: result.content,
+    ...(result.structuredContent !== undefined
+      ? { structuredContent: result.structuredContent }
+      : {}),
+    ...(result.isError !== undefined ? { isError: result.isError } : {}),
+  };
+}
+
 export async function resolveUserMcpGatewayServers(
   context: ServiceContext,
 ): Promise<McpGatewayServer[]> {
@@ -182,7 +219,7 @@ export async function resolveUserMcpGatewayServers(
     .get(CapabilityConfigurationRepository)
     .list({ type: "user", id: context.requireUser().id }, "tool");
 
-  return readMcpGatewayServers(
+  const servers = readMcpGatewayServers(
     resolveModelToolConfigurations(
       configurations.map((configuration) => ({
         toolId: configuration.capabilityId,
@@ -190,6 +227,25 @@ export async function resolveUserMcpGatewayServers(
       })),
     ).toolOptions?.mcp_servers,
   );
+  const hasPashiServer = servers.some(
+    (server) =>
+      server.url === PASHI_MCP_URL ||
+      normaliseMcpServerLabel(server.label).toLowerCase() === PASHI_MCP_LABEL.toLowerCase(),
+  );
+
+  if (!(await readPashiLinkToken(context, context.requireUser().id))) {
+    return servers;
+  }
+
+  const linked = servers.map((server) =>
+    server.url === PASHI_MCP_URL && !server.credentialConnectionId
+      ? { ...server, linkedAccount: "pashi" as const }
+      : server,
+  );
+
+  return hasPashiServer
+    ? linked
+    : [...linked, { label: PASHI_MCP_LABEL, url: PASHI_MCP_URL, linkedAccount: "pashi" }];
 }
 
 const HOSTED_MCP_TOOL_ID = "mcp";

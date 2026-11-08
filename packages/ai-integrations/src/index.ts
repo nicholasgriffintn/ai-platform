@@ -173,10 +173,12 @@ export {
 } from "./knowledge-descriptors.js";
 export {
   readMcpAppUiMeta,
+  readMcpToolAppEntry,
   readMcpToolUiResourceUri,
   type McpClient,
   type McpResourceContent,
   type McpTool,
+  type McpToolAppEntry,
   type McpToolCallResult,
 } from "./mcp/contracts.js";
 export { McpRequestError, type McpFailureCode } from "./mcp/errors.js";
