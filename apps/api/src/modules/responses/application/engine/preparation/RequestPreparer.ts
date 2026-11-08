@@ -4,6 +4,7 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import {
   getPermissionModeUnavailableReason,
+  readInvokedSkillId,
   resolveEffectivePermissionMode,
   type ChatHostedToolSettings,
   type ConversationType,
@@ -73,6 +74,10 @@ import {
   listSkillAvailability,
   mergeSkillLoadToolName,
   mergeSkillSuggestedToolNames,
+  readStoredInvokedSkillId,
+  resolveInvokedSkill,
+  withInvokedSkill,
+  withInvokedSkillOption,
 } from "~/modules/skills/application";
 import { resolveTurnGuide, withTurnGuide } from "~/modules/skills/application/guides";
 import {
@@ -452,12 +457,13 @@ export class RequestPreparer {
       scope.options.conversation_history_write_mode !== "append" &&
       !isApprovalResolution;
     let toolIntentRequest = messageWithContext;
+    const resolutionHistory =
+      completionId && scope.options.options?.toolInteraction
+        ? await conversationManager.get(completionId)
+        : null;
 
-    if (completionId && isApprovalResolution) {
-      toolIntentRequest = resolveToolIntentRequest(
-        await conversationManager.get(completionId),
-        messageWithContext,
-      );
+    if (resolutionHistory && isApprovalResolution) {
+      toolIntentRequest = resolveToolIntentRequest(resolutionHistory, messageWithContext);
     }
 
     const finalMessage = isApprovalResolution
@@ -518,6 +524,23 @@ export class RequestPreparer {
           }),
           scopedSkillCatalog?.listDefinitions(),
         );
+
+    const requestedSkillId = readInvokedSkillId(scope.options.options);
+    const invokedSkill = requestedSkillId
+      ? resolveInvokedSkill({
+          invokedSkillId: requestedSkillId,
+          skills,
+          catalog: scopedSkillCatalog,
+        })
+      : resolveInvokedSkill({
+          invokedSkillId: resolutionHistory
+            ? readStoredInvokedSkillId(resolutionHistory)
+            : undefined,
+          skills,
+          catalog: scopedSkillCatalog,
+          strict: false,
+        });
+    const invokedSkillId = invokedSkill?.id;
 
     const perMessageSkillsPromise = hasFixedToolScope
       ? Promise.resolve([])
@@ -615,7 +638,7 @@ export class RequestPreparer {
     ];
     const skillTools = hasFixedToolScope
       ? enabledTools
-      : mergeSkillLoadToolName({ enabledTools: enabledTools ?? [], skills });
+      : mergeSkillLoadToolName({ enabledTools: enabledTools ?? [], skills, invokedSkillId });
     let preparedTools = mergeEnabledMemoryToolNames({
       enabledTools: skillTools,
       policy: memoryPolicy,
@@ -635,6 +658,7 @@ export class RequestPreparer {
             enabledTools: goalTools,
             skills,
             deferSuggestedTools: enabledTools !== undefined,
+            invokedSkillId,
           }),
           ...subjectProjection.tools,
           ...notebookProjection.tools,
@@ -679,7 +703,10 @@ export class RequestPreparer {
       poly: scope.options.poly,
       agenda: polyAgenda,
       activeGoal,
-      skills: withTurnGuide(resolveTurnGuide(scope.options), perMessageSkills),
+      skills: withInvokedSkill(
+        invokedSkill,
+        withTurnGuide(resolveTurnGuide(scope.options), perMessageSkills),
+      ),
     });
     const messages = buildProviderContext({
       activeMessages,
@@ -710,7 +737,7 @@ export class RequestPreparer {
       settingsDisabledTools,
       activeGoal,
       toolOptions,
-      requestOptions: scope.options.options,
+      requestOptions: withInvokedSkillOption(scope.options.options, invokedSkillId),
       memoryScope: scope.memoryScope,
       notebook: notebookProjection.scope,
       connectedConnectorProviders,

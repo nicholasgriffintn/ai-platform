@@ -176,8 +176,12 @@ export function useComposerCommandActions({
       return [];
     }
 
+    const composerItems = actionCatalog.items.filter(
+      (item) => item.kind !== "skill" || item.metadata?.skillUserInvocable !== false,
+    );
+
     if (!allowedAssistantActionCapabilities) {
-      return actionCatalog.items;
+      return composerItems;
     }
 
     const allowedCapabilityIdsByKind = new Map<ProjectCapabilityKind, Set<string>>(
@@ -191,7 +195,7 @@ export function useComposerCommandActions({
       ]),
     );
 
-    return actionCatalog.items.filter((item) => {
+    return composerItems.filter((item) => {
       const capabilityKind = PROJECT_CAPABILITY_KIND_BY_ACTION_KIND[item.kind];
 
       return (
@@ -572,10 +576,10 @@ export function useComposerCommandActions({
       ...actionVerbCommands,
       ...modeCommands,
       modelCommand,
-      ...skillCommands,
       ...goalCommands,
       ...compactionCommands,
       ...settingCommands,
+      ...skillCommands,
     ];
     const seen = new Set<string>();
 

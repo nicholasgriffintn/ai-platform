@@ -59,7 +59,9 @@ export const assistantActionItemMetadataSchema = z.object({
   installationId: z.string().optional(),
   provider: recipeConnectorProviderSchema.optional(),
   recipeId: z.string().optional(),
+  skillId: z.string().optional(),
   skillSource: skillSourceSchema.optional(),
+  skillUserInvocable: z.boolean().optional(),
   toolId: z.string().optional(),
   toolRunnable: z.boolean().optional(),
 });
@@ -606,7 +608,9 @@ export function createSkillAssistantActionItem(skill: SkillSummary): AssistantAc
     capability: createSkillCapabilityDescriptor(skill),
     metadata: {
       category: skill.category,
+      skillId: skill.id,
       skillSource: skill.source,
+      skillUserInvocable: skill.userInvocable,
     },
   };
 }

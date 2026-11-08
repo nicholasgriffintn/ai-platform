@@ -40,6 +40,8 @@ export interface SkillDescriptor {
   compatibility?: string;
   license?: string;
   allowedTools?: string;
+  userInvocable?: boolean;
+  disableModelInvocation?: boolean;
   metadata?: Record<string, string>;
 }
 
@@ -57,6 +59,8 @@ export interface SkillDefinition {
   tags: string[];
   alwaysOn: boolean;
   activation?: SkillActivation;
+  userInvocable: boolean;
+  disableModelInvocation: boolean;
   requirement: {
     modelCapabilities: string[];
     tools: string[];
@@ -164,6 +168,8 @@ export function toSkillDefinition(
     tags: readMetadataList(descriptor, METADATA_KEYS.tags),
     alwaysOn: options.allowAlwaysOn === true && readAlwaysOn(descriptor),
     ...(readActivation(descriptor) ? { activation: readActivation(descriptor) } : {}),
+    userInvocable: descriptor.userInvocable ?? true,
+    disableModelInvocation: descriptor.disableModelInvocation ?? false,
     requirement: {
       modelCapabilities: [
         ...new Set([
@@ -187,6 +193,8 @@ export function toSkillSummary(skill: SkillDefinition): SkillSummary {
     tags: skill.tags,
     alwaysOn: skill.alwaysOn,
     ...(skill.activation ? { activation: skill.activation } : {}),
+    userInvocable: skill.userInvocable,
+    disableModelInvocation: skill.disableModelInvocation,
     requirement: skill.requirement,
     source: skill.source,
   };

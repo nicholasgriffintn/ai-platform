@@ -104,6 +104,12 @@ function toDescriptor(document: ReturnType<typeof parseSkillDocument>): SkillDes
     ...(frontmatter.compatibility ? { compatibility: frontmatter.compatibility } : {}),
     ...(frontmatter.license ? { license: frontmatter.license } : {}),
     ...(frontmatter["allowed-tools"] ? { allowedTools: frontmatter["allowed-tools"] } : {}),
+    ...(frontmatter["user-invocable"] !== undefined
+      ? { userInvocable: frontmatter["user-invocable"] }
+      : {}),
+    ...(frontmatter["disable-model-invocation"] !== undefined
+      ? { disableModelInvocation: frontmatter["disable-model-invocation"] }
+      : {}),
     ...(frontmatter.metadata ? { metadata: frontmatter.metadata } : {}),
   };
 }

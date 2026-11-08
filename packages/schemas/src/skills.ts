@@ -58,6 +58,8 @@ export const skillSummarySchema = z.object({
   tags: z.array(z.string()).default([]),
   alwaysOn: z.boolean().default(false),
   activation: skillActivationSchema.optional(),
+  userInvocable: z.boolean().default(true),
+  disableModelInvocation: z.boolean().default(false),
   requirement: skillRequirementSchema,
   source: skillSourceSchema.optional(),
 });
@@ -134,6 +136,14 @@ export const saveSkillInputSchema = z.object({
     .describe(
       "Apply these instructions to every message they clearly help with, without loading them first. Only for short instructions of at most 2 KB, such as a writing style or a standing preference.",
     ),
+  userInvocable: z
+    .boolean()
+    .optional()
+    .describe("Offer the skill as a /command in the composer. Defaults to true."),
+  disableModelInvocation: z
+    .boolean()
+    .optional()
+    .describe("True if only the user may start it, e.g. a workflow with side effects."),
 });
 
 export type SaveSkillInput = z.infer<typeof saveSkillInputSchema>;
@@ -235,6 +245,65 @@ export const loadSkillInputSchema = z.object({
     .optional()
     .describe("Optional relative resource path from the skill to load instead of SKILL.md."),
 });
+
+export const SKILL_USER_INVOCABLE_KEY = "user-invocable";
+export const SKILL_DISABLE_MODEL_INVOCATION_KEY = "disable-model-invocation";
+
+export interface SkillInvocationFlags {
+  userInvocable: boolean;
+  disableModelInvocation: boolean;
+}
+
+const SKILL_FRONTMATTER_PATTERN = /^(---\r?\n)([\s\S]*?)(\r?\n---(?:\r?\n|$))/;
+
+function readFrontmatterBoolean(frontmatter: string, key: string): boolean | undefined {
+  const match = frontmatter.match(new RegExp(`^${key}\\s*:\\s*(true|false)\\s*$`, "im"));
+
+  return match?.[1] ? match[1].toLowerCase() === "true" : undefined;
+}
+
+export function readSkillDocumentInvocation(content: string): SkillInvocationFlags {
+  const frontmatter = content.match(SKILL_FRONTMATTER_PATTERN)?.[2] ?? "";
+
+  return {
+    userInvocable: readFrontmatterBoolean(frontmatter, SKILL_USER_INVOCABLE_KEY) ?? true,
+    disableModelInvocation:
+      readFrontmatterBoolean(frontmatter, SKILL_DISABLE_MODEL_INVOCATION_KEY) ?? false,
+  };
+}
+
+export function setSkillDocumentInvocation(content: string, flags: SkillInvocationFlags): string {
+  const match = content.match(SKILL_FRONTMATTER_PATTERN);
+
+  if (!match) {
+    return content;
+  }
+
+  const [whole, open = "", frontmatter = "", close = ""] = match;
+  const newline = open.endsWith("\r\n") ? "\r\n" : "\n";
+  const keyPattern = new RegExp(
+    `^(?:${SKILL_USER_INVOCABLE_KEY}|${SKILL_DISABLE_MODEL_INVOCATION_KEY})\\s*:`,
+    "i",
+  );
+  const lines = frontmatter.split(/\r?\n/u).filter((line) => !keyPattern.test(line));
+
+  if (!flags.userInvocable) {
+    lines.push(`${SKILL_USER_INVOCABLE_KEY}: false`);
+  }
+
+  if (flags.disableModelInvocation) {
+    lines.push(`${SKILL_DISABLE_MODEL_INVOCATION_KEY}: true`);
+  }
+
+  return `${open}${lines.join(newline)}${close}${content.slice(whole.length)}`;
+}
+
+export function canModelInvokeSkill(
+  skill: Pick<SkillSummary, "id" | "disableModelInvocation">,
+  invokedSkillId?: string,
+): boolean {
+  return !skill.disableModelInvocation || skill.id === invokedSkillId;
+}
 
 export type SkillCategory = z.infer<typeof skillCategorySchema>;
 export type SkillRequirement = z.infer<typeof skillRequirementSchema>;

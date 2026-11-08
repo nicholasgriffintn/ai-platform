@@ -12,6 +12,7 @@ import { CheckCircle2, RotateCcw, Save, Upload } from "lucide-react";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
+import { SkillInvocationControls } from "./SkillInvocationControls.js";
 import { useSkillEditorController } from "./useSkillEditorController.js";
 
 export interface SkillEditorPageProps {
@@ -96,6 +97,12 @@ export function SkillEditorPage({
           value={controller.content}
           disabled={!controller.canManage || controller.isSaving}
           onChange={(event) => controller.setContent(event.target.value)}
+        />
+
+        <SkillInvocationControls
+          content={controller.content}
+          disabled={!controller.canManage || controller.isSaving}
+          onChange={controller.setContent}
         />
 
         <FormInput

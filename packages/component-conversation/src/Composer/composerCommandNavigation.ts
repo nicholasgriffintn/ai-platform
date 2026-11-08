@@ -1,6 +1,6 @@
 import {
   matchesComposerCommand,
-  matchesComposerSlashCommand,
+  rankComposerSlashCommands,
 } from "@ngriffin_uk/polychat-library-chat/composer-commands";
 import type { ComposerCommandAction } from "@ngriffin_uk/polychat-utility-react";
 
@@ -17,7 +17,7 @@ export function getComposerCommandMenuState(
 
   if (separatorIndex === -1) {
     return {
-      commands: commands.filter((command) => matchesComposerSlashCommand(query, command.command)),
+      commands: rankComposerSlashCommands(query, commands),
       parent: null,
     };
   }
