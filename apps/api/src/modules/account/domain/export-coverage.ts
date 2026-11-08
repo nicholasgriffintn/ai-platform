@@ -79,6 +79,7 @@ export const ACCOUNT_EXPORT_LEFT_OUT = [
       "activity_record",
       "conversation_run",
       "conversation_run_command",
+      "conversation_run_effect",
       "conversation_run_event",
       "delegation",
       "delivery",
