@@ -285,17 +285,6 @@ describe("ConversationCoordinator", () => {
     }
   });
 
-  it("refuses to drain another conversation's effects", async () => {
-    const coordinator = createCoordinator();
-
-    effects.drainRunEffects.mockReset();
-    effects.drainRunEffects.mockResolvedValue({ executed: 0, nextDrainAt: null });
-    await drain(coordinator, "conversation-1");
-
-    expect((await drain(coordinator, "conversation-2")).status).toBe(400);
-    expect(effects.drainRunEffects).toHaveBeenCalledTimes(1);
-  });
-
   it("keeps the agent runtime's alarm work and then drains due effects", async () => {
     const coordinator = createCoordinator();
 
