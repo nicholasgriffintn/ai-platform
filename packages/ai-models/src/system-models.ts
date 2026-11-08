@@ -10,6 +10,7 @@ import {
   type ModelConfig,
   type ModelConfigItem,
   type ModelLineupCandidate,
+  type ModelModality,
   type ResolvedLineupCandidate,
   type SystemModelActiveSource,
   type SystemModelChoice,
@@ -21,6 +22,10 @@ import {
 
 import { getExecutableModelsForAccount } from "./policy.js";
 import type { AccountPlan } from "./types.js";
+
+function hasStrengths(model: ModelConfigItem, strengths: readonly ModelModality[] = []): boolean {
+  return strengths.every((strength) => model.strengths?.includes(strength));
+}
 
 export function meetsSystemModelRequirement(
   requirement: SystemModelRequirement,
@@ -35,13 +40,14 @@ export function meetsSystemModelRequirement(
       return (
         isLineupEligibleModel(model) &&
         modelHasInputModalities(model, requirement.inputs ?? []) &&
+        hasStrengths(model, requirement.strengths) &&
         (!requirement.providers || requirement.providers.includes(model.provider))
       );
     case "output":
       return (
         modelHasOutputModality(model, requirement.output) &&
         modelHasInputModalities(model, requirement.inputs ?? []) &&
-        (requirement.strengths ?? []).every((strength) => model.strengths?.includes(strength)) &&
+        hasStrengths(model, requirement.strengths) &&
         (!requirement.providers || requirement.providers.includes(model.provider))
       );
     case "capability":

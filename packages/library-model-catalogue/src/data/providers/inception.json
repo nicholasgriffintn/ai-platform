@@ -57,7 +57,9 @@
         "lastUpdated": "March 30, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00075,
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "supportsFim": true,
+        "supportsNextEdit": true
       },
       "unset": [
         "strengths"

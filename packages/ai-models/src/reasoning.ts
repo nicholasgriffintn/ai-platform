@@ -12,6 +12,7 @@ const PROVIDER_REASONING_EFFORTS = new Set<ReasoningEffortLevel>([
   "xhigh",
   "max",
 ]);
+const LOWEST_REASONING_EFFORTS: readonly ReasoningEffortLevel[] = ["none", "minimal", "low"];
 const NON_THINKING_REASONING_EFFORTS = new Set<ReasoningEffortLevel>([
   "none",
   "simulated-thinking",
@@ -45,6 +46,12 @@ export function isConfiguredReasoningEffort(
   }
 
   return modelConfig?.reasoningConfig?.supportedEffortLevels?.includes(reasoningEffort) ?? false;
+}
+
+export function resolveLowestReasoningEffort(
+  modelConfig: ModelConfigItem | undefined,
+): ReasoningEffortLevel | undefined {
+  return LOWEST_REASONING_EFFORTS.find((level) => isConfiguredReasoningEffort(modelConfig, level));
 }
 
 export function hasProviderReasoningOptions(modelConfig: ModelConfigItem | undefined): boolean {

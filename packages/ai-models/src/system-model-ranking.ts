@@ -78,7 +78,13 @@ export function rankSystemRoleModels(
     }));
 
   if (ranking.metric === "cost") {
-    return candidates.sort(compareCost);
+    const { prefers } = ranking;
+    const preferred = (candidate: RankedSystemModel) =>
+      prefers && candidate.config[prefers] ? 1 : 0;
+
+    return candidates.sort(
+      (left, right) => preferred(right) - preferred(left) || compareCost(left, right),
+    );
   }
 
   const scores = candidates.flatMap((candidate) =>

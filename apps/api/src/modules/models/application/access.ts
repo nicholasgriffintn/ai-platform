@@ -2,6 +2,7 @@ import {
   getModels,
   getExecutableModelsForAccount,
   getModelCredentialAuthority,
+  isSystemRoleModel,
   resolveTierAlternateModel,
   resolveTierModel,
 } from "@ngriffin_uk/polychat-ai-models";
@@ -11,6 +12,7 @@ import {
   type ModelModality,
   type ModelTier,
   type ReasoningEffort,
+  type SystemModelRole,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -29,11 +31,7 @@ function normaliseExplicitModels(requestedModels?: string[]): string[] {
   return explicitModels?.length ? [...new Set(explicitModels)] : [];
 }
 
-type ExecutableModelCapability =
-  | "supportsApplyEdit"
-  | "supportsFim"
-  | "supportsNextEdit"
-  | "supportsTokenCounting";
+type ExecutableModelCapability = "supportsApplyEdit" | "supportsNextEdit" | "supportsTokenCounting";
 
 interface ResolveExecutableModelRequest {
   env: IEnv;
@@ -41,6 +39,7 @@ interface ResolveExecutableModelRequest {
   model: string;
   provider?: string;
   capability?: ExecutableModelCapability;
+  role?: SystemModelRole;
 }
 
 function resolveExecutableModelFromCatalogue(
@@ -71,6 +70,7 @@ export async function resolveExecutableModelForRequest({
   model,
   provider,
   capability,
+  role,
 }: ResolveExecutableModelRequest): Promise<{
   id: string;
   config: ModelConfigItem;
@@ -90,7 +90,11 @@ export async function resolveExecutableModelForRequest({
   );
   const resolved = resolveExecutableModelFromCatalogue(executableModels, model, provider);
 
-  if (!resolved || (capability && !resolved.config[capability])) {
+  if (
+    !resolved ||
+    (capability && !resolved.config[capability]) ||
+    (role && !isSystemRoleModel(role, resolved.config))
+  ) {
     throw new AssistantError(
       `Model not found or user does not have access: ${model}`,
       user ? ErrorType.AUTHORISATION_ERROR : ErrorType.AUTHENTICATION_ERROR,

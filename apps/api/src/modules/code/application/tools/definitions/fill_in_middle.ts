@@ -6,7 +6,7 @@ export const fill_in_middle_completion: FunctionToolDescriptor = {
   name: "fill_in_middle_completion",
   system: true,
   description:
-    "Generate a fill-in-the-middle completion for code or text by providing the prefix (prompt) and optional suffix. Works across all FIM-capable models.",
+    "Generate a fill-in-the-middle completion for code or text by providing the prefix (prompt) and optional suffix. Works across FIM-capable and coding models.",
   type: "premium",
   permissions: ["network"],
   effects: { effectClass: "read" },
@@ -26,7 +26,7 @@ export const fill_in_middle_completion: FunctionToolDescriptor = {
         return {
           type: "string",
           description:
-            "Optional FIM-capable model identifier (defaults to the top recommended model).",
+            "Optional FIM-capable or coding model identifier (defaults to the top recommended model).",
         };
       })(),
       max_tokens: {

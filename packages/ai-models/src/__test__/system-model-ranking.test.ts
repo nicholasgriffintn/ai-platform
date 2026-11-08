@@ -54,3 +54,27 @@ describe("rankSystemRoleModels", () => {
     expect(ids(rankSystemRoleModels(models, "titling", "quality"))[0]).toBe("unscored");
   });
 });
+
+describe("code completion models", () => {
+  const coding = (cost: number, overrides: Partial<ModelConfigItem> = {}) =>
+    chat(undefined, cost, { strengths: ["coding"], ...overrides });
+
+  it("offers coding models and keeps native FIM models ahead of cheaper prompted ones", () => {
+    const ranked = rankSystemRoleModels(
+      {
+        prompted: coding(0.0001),
+        native: chat(undefined, 0.01, { supportsFim: true }),
+        general: chat(undefined, 0.00001, { strengths: ["chat"] }),
+        pricier: coding(0.001),
+      },
+      "fim",
+      "value",
+    );
+
+    expect(ids(ranked)).toEqual(["native", "prompted", "pricier"]);
+  });
+
+  it("leaves next edit to models with the native capability", () => {
+    expect(rankSystemRoleModels({ prompted: coding(0.0001) }, "nextEdit", "value")).toEqual([]);
+  });
+});
