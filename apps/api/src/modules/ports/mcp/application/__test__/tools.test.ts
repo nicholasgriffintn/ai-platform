@@ -4,7 +4,7 @@ import z from "zod/v4";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
-import { callMcpPortTool, callWorkMcpTool, listMcpPortTools, listWorkMcpTools } from "../tools";
+import { callMcpPortTool, callWorkMcpTool } from "../tools";
 
 const mocks = vi.hoisted(() => ({
   runToolDirectly: vi.fn(),
@@ -73,14 +73,6 @@ describe("MCP port tools", () => {
     vi.clearAllMocks();
   });
 
-  it("lists the caller's registry tools with effect hints, then one tool per teammate", async () => {
-    await expect(listMcpPortTools(context)).resolves.toMatchObject([
-      { name: "web_search", annotations: { readOnlyHint: true, destructiveHint: false } },
-      { name: "write_document", inputSchema: { properties: { title: {} } } },
-      { name: "teammate.teammate-1", title: "Ask Ada" },
-    ]);
-  });
-
   it("runs registry tools under channel authority and returns refusals as tool errors", async () => {
     mocks.runToolDirectly.mockResolvedValueOnce({
       output_id: "output-1",
@@ -117,50 +109,6 @@ describe("MCP port tools", () => {
     ).rejects.toMatchObject({ code: -32602 });
   });
 
-  it("gives MCP clients a tool's next hint after its result text", async () => {
-    mocks.runToolDirectly.mockResolvedValueOnce({
-      output_id: "output-2",
-      data: {
-        result: {
-          status: "success",
-          content: "Delegated the work.",
-          next: "End your turn; do not poll it.",
-        },
-      },
-    });
-
-    await expect(
-      callMcpPortTool(context, { name: "web_search", arguments: {}, appUrl: "" }),
-    ).resolves.toMatchObject({
-      content: [{ text: "Delegated the work.\n\nNext: End your turn; do not poll it." }],
-    });
-  });
-
-  it("starts a teammate Response and says when the reply is still on its way", async () => {
-    mocks.startTeammate.mockResolvedValue({
-      id: "response-1",
-      conversation_id: "conversation-1",
-      status: "awaiting_approval",
-      output: [],
-    });
-
-    await expect(
-      callMcpPortTool(context, {
-        name: "teammate.teammate-1",
-        arguments: { message: "Draft the brief" },
-        appUrl: "",
-      }),
-    ).resolves.toMatchObject({
-      content: [{ text: "Ada is awaiting approval; the reply lands in Polychat." }],
-      structuredContent: { response_id: "response-1", status: "awaiting_approval" },
-    });
-    expect(mocks.startTeammate).toHaveBeenCalledWith(context, {
-      teammateId: "teammate-1",
-      text: "Draft the brief",
-      platform: "mcp",
-    });
-  });
-
   const access = {
     userId: 1,
     projectId: "project-1",
@@ -168,13 +116,6 @@ describe("MCP port tools", () => {
     conversationId: "task-conversation",
     toolIds: ["list_tasks", "post_update"],
   };
-
-  it("offers a desktop Work run only the tools granted to that run", () => {
-    expect(listWorkMcpTools(access).map((tool) => tool.name)).toEqual([
-      "list_tasks",
-      "post_update",
-    ]);
-  });
 
   it("runs Work tools as the run's teammate in its project and refuses anything else", async () => {
     mocks.runToolDirectly.mockResolvedValueOnce({

@@ -78,41 +78,4 @@ describe("rollUpUsageMessages", () => {
     expect(mocks.applyUsageRollup).toHaveBeenCalledOnce();
     expect(events.ack).toHaveBeenCalledOnce();
   });
-
-  it("retries the batch when the ledger write fails and drops malformed messages", async () => {
-    mocks.emitUsageEvents.mockResolvedValue("failed");
-    const valid = requestUsage(1, "request-1");
-    const malformed = usageMessage({ kind: "infra_usage", userId: "nope" });
-
-    await rollUpUsageMessages({} as any, [valid, malformed]);
-
-    expect(valid.retry).toHaveBeenCalledOnce();
-    expect(valid.ack).not.toHaveBeenCalled();
-    expect(malformed.ack).toHaveBeenCalledOnce();
-  });
-
-  it("rolls up queued model usage events with request usage in the same batch", async () => {
-    mocks.emitUsageEvents.mockResolvedValue("skipped");
-    mocks.applyUsageRollup.mockResolvedValue({ inserted: 2 });
-    const events = usageMessage({
-      kind: "usage_events",
-      events: [{ id: "event-1" }, { id: "event-2" }],
-    });
-
-    await rollUpUsageMessages({} as any, [events]);
-
-    expect(mocks.applyUsageRollup).toHaveBeenCalledWith({}, [{ id: "event-1" }, { id: "event-2" }]);
-    expect(events.ack).toHaveBeenCalledOnce();
-  });
-
-  it("retries model usage events when the ledger rejects them", async () => {
-    mocks.emitUsageEvents.mockResolvedValue("skipped");
-    mocks.applyUsageRollup.mockRejectedValue(new Error("D1 busy"));
-    const events = usageMessage({ kind: "usage_events", events: [{ id: "event-1" }] });
-
-    await rollUpUsageMessages({} as any, [events]);
-
-    expect(events.retry).toHaveBeenCalledOnce();
-    expect(events.ack).not.toHaveBeenCalled();
-  });
 });

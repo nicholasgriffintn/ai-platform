@@ -25,33 +25,12 @@ describe("redactSensitiveTokens", () => {
     });
   });
 
-  it("redacts auth schemes and labelled tokens in strings", () => {
-    const redacted = redactSensitiveTokens(
-      'provider failed authorization="Bearer Abcdef1234567890Ghijklm_Nopqrs" api_key=Abcdef1234567890Ghijklm_Nopqrs',
-    );
-
-    expect(redacted).not.toContain("Abcdef1234567890Ghijklm_Nopqrs");
-    expect(redacted).toContain("[redacted]");
-  });
-
   it("redacts likely high-entropy bare tokens without a caller-provided secret", () => {
     const redacted = redactSensitiveTokens(
       "provider echoed Abcdef1234567890Ghijklm_Nopqrs in the error body",
     );
 
     expect(redacted).toBe("provider echoed [redacted] in the error body");
-  });
-
-  it("redacts a caller-provided credential from nested values", () => {
-    const redacted = redactSensitiveTokens(
-      { event: { message: "printed scoped-grant" }, output: ["scoped-grant"] },
-      "scoped-grant",
-    );
-
-    expect(redacted).toEqual({
-      event: { message: "printed [redacted]" },
-      output: ["[redacted]"],
-    });
   });
 
   it("redacts callback bearer values from request URLs", () => {

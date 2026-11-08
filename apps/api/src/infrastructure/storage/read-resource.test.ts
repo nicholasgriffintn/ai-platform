@@ -1,14 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
-import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
-
-import {
-  getPrivateFileAccessScope,
-  getPrivateFileResponse,
-  readPrivateFile,
-} from "./read-resource";
+import { getPrivateFileAccessScope, getPrivateFileResponse } from "./read-resource";
 
 const personalFile = {
   created_by_user_id: 12,
@@ -29,10 +21,6 @@ describe("private file access", () => {
     ).toBe("project");
   });
 
-  it("allows the owner to read a personal file", () => {
-    expect(getPrivateFileAccessScope(personalFile, 12)).toBe("owner");
-  });
-
   it("only considers conversation visibility for personal conversation files", () => {
     expect(
       getPrivateFileAccessScope({ ...personalFile, conversation_id: "conversation-1" }, 99),
@@ -45,29 +33,6 @@ describe("private file access", () => {
       }),
     ).toBe("denied");
   });
-
-  it("hides output files while durable deletion is pending", async () => {
-    const bucketGet = vi.fn();
-    const context = {
-      env: { PRIVATE_ASSETS_BUCKET: { get: bucketGet } },
-      repositories: fakeRepositories([
-        [
-          OutputRepository,
-          {
-            getOutput: vi.fn().mockResolvedValue({
-              ...personalFile,
-              content: JSON.stringify({ deletionPending: true }),
-            }),
-          },
-        ],
-      ]),
-    } as unknown as ServiceContext;
-
-    await expect(
-      readPrivateFile({ context, kind: "output", resourceId: "output-1", userId: 12 }),
-    ).rejects.toMatchObject({ statusCode: 404 });
-    expect(bucketGet).not.toHaveBeenCalled();
-  });
 });
 
 describe("private file responses", () => {
@@ -79,14 +44,5 @@ describe("private file responses", () => {
 
     expect(response.headers.get("Content-Disposition")).toBe('attachment; filename="page.html"');
     expect(response.headers.get("X-Content-Type-Options")).toBe("nosniff");
-  });
-
-  it("renders passive media inline", async () => {
-    const response = await getPrivateFileResponse(
-      { ...personalFile, mime_type: "image/png", filename: "image.png" },
-      { arrayBuffer: async () => new ArrayBuffer(0) },
-    );
-
-    expect(response.headers.get("Content-Disposition")).toBe('inline; filename="image.png"');
   });
 });

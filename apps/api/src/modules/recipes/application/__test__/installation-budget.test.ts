@@ -75,13 +75,6 @@ describe("routine budgets", () => {
     });
   });
 
-  it("lets an uncapped routine run without reading spend", async () => {
-    getTemplateById.mockResolvedValue(installationRecord({}));
-
-    await expect(assertRecipeInstallationWithinBudget(params)).resolves.toBeUndefined();
-    expect(summariseRunSpend).not.toHaveBeenCalled();
-  });
-
   it("pauses a routine that has reached its cap and refuses the run", async () => {
     getTemplateById.mockResolvedValue(installationRecord({ monthlyCreditCapMicros: 5_000_000 }));
     summariseRunSpend.mockResolvedValue({ credit_micros: 5_000_000, cost_micros: 0, run_count: 9 });

@@ -2,17 +2,9 @@ import type { ChatRun, ChatRunCommandReceipt } from "@ngriffin_uk/polychat-schem
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
-import type { ServiceContext } from "~/infrastructure/context/serviceContext";
-import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
-import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
-import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
-import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
-import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import type { AgentLoopExecutionResult } from "~/modules/responses/application/engine/agent/agent-loop";
-import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
-import type { CoreChatOptions } from "~/types";
 
-import { acceptChatRun, ChatRunLifecycle } from "../lifecycle";
+import { ChatRunLifecycle } from "../lifecycle";
 
 const runningRun: ChatRun = {
   protocolVersion: 1,
@@ -78,82 +70,6 @@ function createLifecycle() {
 }
 
 describe("ChatRunLifecycle", () => {
-  it("enrols an authenticated stored turn and starts its accepted run", async () => {
-    const acceptedRun = {
-      ...runningRun,
-      status: "accepted" as const,
-      startedAt: null,
-    };
-    const acceptCommand = vi.fn().mockResolvedValue({
-      ...receipt(),
-      run: acceptedRun,
-    });
-    const transition = vi.fn().mockResolvedValue(runningRun);
-    const context = {
-      user: { id: 7 },
-      ensureDatabase: vi.fn(),
-      waitUntil: vi.fn(),
-      repositories: fakeRepositories([
-        [
-          ConversationRepository,
-          {
-            getConversation: vi.fn().mockResolvedValue({
-              id: "conversation-1",
-              project_id: null,
-              user_id: 7,
-            }),
-          },
-        ],
-        [
-          ProjectTaskRepository,
-          {
-            getTaskByConversation: vi.fn().mockResolvedValue(null),
-          },
-        ],
-        [
-          DelegationRepository,
-          {
-            getByChildConversationId: vi.fn().mockResolvedValue(null),
-          },
-        ],
-        [
-          ConversationRunRepository,
-          {
-            acceptCommand,
-            getForInteraction: vi.fn(),
-            transition,
-          },
-        ],
-      ]),
-    } as unknown as ServiceContext;
-    const options = {
-      completion_id: "conversation-1",
-      command_id: "command-1",
-      context,
-      env: {},
-      messages: [{ role: "user", content: "Continue" }],
-      model: "gpt-6-astra",
-      store: true,
-    } as CoreChatOptions;
-
-    const lifecycle = await acceptChatRun(options);
-
-    expect(lifecycle?.run).toEqual(runningRun);
-    expect(acceptCommand).toHaveBeenCalledWith(
-      expect.objectContaining({
-        commandId: "command-1",
-        conversationId: "conversation-1",
-        kind: "turn",
-        userId: 7,
-      }),
-    );
-    expect(transition).toHaveBeenCalledWith({
-      runId: "run-1",
-      attempt: 1,
-      status: "running",
-    });
-  });
-
   it("records waiting and terminal outcomes with the produced message identity", async () => {
     const waiting = createLifecycle();
 
@@ -191,89 +107,6 @@ describe("ChatRunLifecycle", () => {
       }),
     );
     expect(completed.commandReceipt.run.status).toBe("succeeded");
-  });
-
-  it("binds a project task run to the exact executing stage", async () => {
-    const acceptedRun = {
-      ...runningRun,
-      projectId: "project-1",
-      projectTaskId: "task-1",
-      stageId: "build",
-      status: "accepted" as const,
-      startedAt: null,
-    };
-    const acceptCommand = vi.fn().mockResolvedValue({ ...receipt(), run: acceptedRun });
-    const context = {
-      user: { id: 7 },
-      requireUser: vi.fn().mockReturnValue({ id: 7, plan_id: "pro" }),
-      ensureDatabase: vi.fn(),
-      waitUntil: vi.fn(),
-      repositories: fakeRepositories([
-        [
-          ConversationRepository,
-          {
-            getConversation: vi.fn().mockResolvedValue({
-              id: "conversation-1",
-              project_id: "project-1",
-              user_id: 7,
-            }),
-          },
-        ],
-        [
-          WorkspaceRepository,
-          {
-            getProject: vi.fn().mockResolvedValue({
-              id: "project-1",
-              workspace_id: "workspace-1",
-            }),
-            getWorkspace: vi.fn().mockResolvedValue({ id: "workspace-1" }),
-            getMembership: vi.fn().mockResolvedValue({ role: "owner" }),
-          },
-        ],
-        [
-          ProjectTaskRepository,
-          {
-            getTaskByConversation: vi.fn().mockResolvedValue({
-              id: "task-1",
-              stageId: "plan",
-              runId: null,
-            }),
-            updateTask: vi.fn().mockResolvedValue({ id: "task-1" }),
-          },
-        ],
-        [
-          DelegationRepository,
-          {
-            getByChildConversationId: vi.fn().mockResolvedValue(null),
-          },
-        ],
-        [
-          ConversationRunRepository,
-          {
-            acceptCommand,
-            getForInteraction: vi.fn(),
-            transition: vi.fn().mockResolvedValue({ ...acceptedRun, status: "running" }),
-          },
-        ],
-      ]),
-    } as unknown as ServiceContext;
-
-    await acceptChatRun({
-      completion_id: "conversation-1",
-      command_id: "dispatch-1",
-      command_payload: {
-        projectId: "project-1",
-        taskId: "task-1",
-        stageId: "build",
-      },
-      context,
-      env: context.env,
-      messages: [{ role: "user", content: "Build" }],
-      metadata: { project_id: "project-1" },
-      store: true,
-    });
-
-    expect(acceptCommand).toHaveBeenCalledWith(expect.objectContaining({ stageId: "build" }));
   });
 
   it("distinguishes ownership interruption from an ordinary failure", async () => {

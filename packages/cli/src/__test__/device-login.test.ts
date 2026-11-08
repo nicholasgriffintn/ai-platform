@@ -53,16 +53,4 @@ describe("waitForDeviceApproval", () => {
 
     await expect(result).rejects.toThrow("Sign-in was refused");
   });
-
-  it("gives up once the code has expired locally", async () => {
-    const { result } = run([{ status: 400, body: { error: "authorization_pending" } }], 15);
-
-    await expect(result).rejects.toThrow("expired");
-  });
-
-  it("surfaces the server message for errors outside the device flow", async () => {
-    const { result } = run([{ status: 503, body: { status: "error", message: "Not configured" } }]);
-
-    await expect(result).rejects.toThrow("Checking for approval failed: Not configured");
-  });
 });

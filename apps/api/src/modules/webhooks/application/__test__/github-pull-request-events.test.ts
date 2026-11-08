@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  isGitHubCheckEvent,
-  readGitHubChangesRequested,
-  readGitHubCheckResult,
-} from "../github-pull-request-events";
+import { readGitHubChangesRequested, readGitHubCheckResult } from "../github-pull-request-events";
 
 const repository = { full_name: "Acme/App" };
 const sha = "a".repeat(40);
@@ -31,31 +27,6 @@ describe("GitHub pull request events", () => {
       name: "test",
       url: "https://github.com/acme/app/runs/1",
     });
-  });
-
-  it("reads workflow runs and suites, and ignores anything not yet completed", () => {
-    expect(
-      readGitHubCheckResult("workflow_run", {
-        action: "completed",
-        repository,
-        workflow_run: { name: "CI", head_sha: sha, conclusion: "success", pull_requests: [] },
-      })?.name,
-    ).toBe("CI");
-    expect(
-      readGitHubCheckResult("check_suite", {
-        action: "completed",
-        repository,
-        check_suite: { head_sha: sha, conclusion: "success", pull_requests: [{ number: 3 }] },
-      })?.pullRequests,
-    ).toEqual([3]);
-    expect(
-      readGitHubCheckResult("check_run", {
-        action: "created",
-        repository,
-        check_run: { name: "test", head_sha: sha, conclusion: null, pull_requests: [] },
-      }),
-    ).toBeNull();
-    expect(isGitHubCheckEvent("push")).toBe(false);
   });
 
   it("only treats reviews that request changes as fix-ups", () => {

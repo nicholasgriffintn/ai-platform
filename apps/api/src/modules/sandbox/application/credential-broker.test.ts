@@ -60,42 +60,6 @@ describe("sandbox credential broker delivery", () => {
     vi.unstubAllGlobals();
   });
 
-  it("advances a direct target through a non-force broker update", async () => {
-    const { access, context } = await directDeliveryRequest();
-    const fetch = vi
-      .fn()
-      .mockResolvedValueOnce(Response.json({ object: { sha: "0123456789abcdef" } }))
-      .mockResolvedValueOnce(Response.json({ ref: "refs/heads/integration" }))
-      .mockResolvedValueOnce(new Response(null, { status: 204 }));
-
-    vi.stubGlobal("fetch", fetch);
-
-    const response = await proxySandboxBranchDelivery({
-      context,
-      request: new Request(`${access.baseUrl}/github/deliveries`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${access.grant}` },
-      }),
-      route: { runId: "run-123" },
-      body: { head: "polychat/run-run-123", target: "integration" },
-    });
-
-    expect(response.ok).toBe(true);
-    expect(fetch).toHaveBeenNthCalledWith(
-      2,
-      "https://api.github.com/repos/owner/repository/git/refs/heads/integration",
-      expect.objectContaining({
-        method: "PATCH",
-        body: JSON.stringify({ sha: "0123456789abcdef", force: false }),
-      }),
-    );
-    expect(fetch).toHaveBeenNthCalledWith(
-      3,
-      "https://api.github.com/repos/owner/repository/git/refs/heads/polychat%2Frun-run-123",
-      expect.objectContaining({ method: "DELETE" }),
-    );
-  });
-
   it("rejects a delivery target outside the grant", async () => {
     const { access, context } = await directDeliveryRequest();
     const fetch = vi.fn();

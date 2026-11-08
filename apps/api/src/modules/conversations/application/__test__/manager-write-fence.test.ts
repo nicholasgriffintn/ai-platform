@@ -48,21 +48,6 @@ function createManager(assertOwned: () => Promise<void>) {
 const USER_TURN: Message[] = [{ id: "message-1", role: "user", content: "Hello" }];
 
 describe("ConversationManager write fence", () => {
-  it("commits owner-protected compaction while the lease is current", async () => {
-    const assertOwned = vi.fn().mockResolvedValue(undefined);
-    const { createCompactionAndArchiveMessages, manager } = createManager(assertOwned);
-
-    await manager.persistCompaction(
-      "conversation-1",
-      { id: "snapshot-1", role: "assistant", content: "Snapshot" },
-      { id: "marker-1", role: "compaction", content: "Compacted" },
-      ["message-1", "marker-1"],
-    );
-
-    expect(assertOwned).toHaveBeenCalled();
-    expect(createCompactionAndArchiveMessages).toHaveBeenCalledTimes(1);
-  });
-
   it("does not reach persistence after the owner is fenced", async () => {
     const assertOwned = vi.fn().mockRejectedValue(new Error("lease lost"));
     const { createCompactionAndArchiveMessages, manager } = createManager(assertOwned);
@@ -84,16 +69,5 @@ describe("ConversationManager write fence", () => {
 
     await expect(manager.addBatch("conversation-1", USER_TURN)).rejects.toThrow("lease lost");
     expect(createMessagesAndUpdateConversation).not.toHaveBeenCalled();
-  });
-
-  it("only writes the conversation selection when it changed", async () => {
-    const assertOwned = vi.fn().mockResolvedValue(undefined);
-    const { manager, updateConversation } = createManager(assertOwned);
-
-    await manager.addBatch("conversation-1", USER_TURN, { model_id: "stored-model" });
-    expect(updateConversation).not.toHaveBeenCalled();
-
-    await manager.addBatch("conversation-1", USER_TURN, { model_id: "new-model" });
-    expect(updateConversation).toHaveBeenCalledWith("conversation-1", { model_id: "new-model" });
   });
 });

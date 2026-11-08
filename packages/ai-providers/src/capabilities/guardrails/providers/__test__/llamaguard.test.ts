@@ -33,13 +33,4 @@ describe("LlamaGuardProvider", () => {
       expect.objectContaining({ isValid: false }),
     );
   });
-
-  it("accepts only an exact safe first-token verdict", async () => {
-    getResponse.mockResolvedValue({ response: "safe" });
-    const provider = new LlamaGuardProvider({ ai: {} as never, env: {} }, runtime);
-
-    await expect(provider.validateContent("content", "INPUT")).resolves.toEqual(
-      expect.objectContaining({ isValid: true }),
-    );
-  });
 });

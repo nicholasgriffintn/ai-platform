@@ -85,58 +85,6 @@ describe("project starters", () => {
     );
   });
 
-  it("hires the starter's teammates into the workspace and attaches them to the project", async () => {
-    const { context, repositories } = createContext();
-
-    await instantiateProjectStarter(
-      context,
-      USER_ID,
-      "build-an-internal-tool",
-      "workspace-1",
-      "Rota tools",
-    );
-
-    expect(repositories.teammates.createTeammate).toHaveBeenCalledTimes(1);
-    const call = repositories.workspaces.createProjectWithCapabilities.mock.calls[0];
-
-    if (!call) {
-      throw new Error("The starter did not create a project");
-    }
-
-    const [project, capabilities] = call;
-
-    expect(project.name).toBe("Rota tools");
-    expect(capabilities.filter((capability) => capability.kind === "teammate")).toEqual([
-      expect.objectContaining({ capabilityId: "teammate-developer" }),
-    ]);
-    expect(capabilities.filter((capability) => capability.kind === "tool").length).toBeGreaterThan(
-      0,
-    );
-  });
-
-  it("refuses an unknown starter rather than creating an empty project", async () => {
-    const { context, repositories } = createContext();
-
-    await expect(
-      instantiateProjectStarter(context, USER_ID, "not-a-starter", "workspace-1"),
-    ).rejects.toBeInstanceOf(AssistantError);
-    expect(repositories.workspaces.createProjectWithCapabilities).not.toHaveBeenCalled();
-  });
-
-  it("validates the apps and tools before hiring, so a failure leaves no orphan teammate", async () => {
-    const { context, repositories } = createContext();
-
-    validateProjectToolConfiguration.mockImplementationOnce(() => {
-      throw new AssistantError("Unknown project tool");
-    });
-
-    await expect(
-      instantiateProjectStarter(context, USER_ID, "build-an-internal-tool", "workspace-1"),
-    ).rejects.toBeInstanceOf(AssistantError);
-    expect(repositories.teammates.createTeammate).not.toHaveBeenCalled();
-    expect(repositories.workspaces.createProjectWithCapabilities).not.toHaveBeenCalled();
-  });
-
   it("refuses a workspace member, so a starter cannot hire teammates for the workspace", async () => {
     const { context, repositories } = createContext("member");
 

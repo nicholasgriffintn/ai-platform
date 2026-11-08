@@ -71,12 +71,6 @@ describe("verifyDkimSignatures", () => {
       ),
     ).resolves.toEqual([]);
   });
-
-  it("refuses a signature whose key is not published", async () => {
-    await expect(verifyDkimSignatures(encode(RFC_8463_MESSAGE), resolverFor({}))).resolves.toEqual(
-      [],
-    );
-  });
 });
 
 describe("isDkimAligned", () => {

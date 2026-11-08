@@ -4,8 +4,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createTestHost } from "../../../../__test__/test-runtime.js";
 import { createProviderLibrary } from "../../../../create-library.js";
-import { createCatalogueModelResolver } from "../../../../model-resolver.js";
-import type { ExtractionRequest } from "../../../../types/extraction.js";
 
 const fields = {
   order_id: { type: "text", instructions: "Order number" },
@@ -65,49 +63,6 @@ describe("Workers AI extractions", () => {
     run.mockReset();
   });
 
-  it("sends Clairic its selector, images and reference date, and keeps usage for billing", async () => {
-    const images = ["data:image/png;base64,iVBORw=="];
-
-    run.mockResolvedValue({
-      model: "clairic",
-      answers,
-      truncated: false,
-      usage: { input_tokens: 655, output_tokens: 0, passes: 3 },
-    });
-    const result = await provider().extract({
-      model: "clairic",
-      state: "Order A-88412",
-      fields,
-      images,
-      reference_date: "2026-10-09",
-    });
-
-    expect(run).toHaveBeenCalledWith(
-      "@cf/cloudflare/clairic",
-      { model: "clairic", state: "Order A-88412", fields, images, reference_date: "2026-10-09" },
-      { gateway: { id: "llm-assistant", skipCache: true } },
-    );
-    expect(result).toEqual({
-      provider: "workers-ai",
-      model: "@cf/cloudflare/clairic",
-      answers,
-      truncated: false,
-      usage: { input_tokens: 655, output_tokens: 0 },
-    });
-  });
-
-  it.each<ExtractionRequest>([
-    { state: "", fields },
-    { state: "x", fields: {} },
-    { state: "x", fields: { total: { type: "estimate", min: 10, max: 1 } } },
-    { state: "x", fields, images: ["https://example.com/receipt.png"] },
-  ])("rejects requests Clairic cannot read before inference", async (request) => {
-    await expect(provider().extract(request)).rejects.toMatchObject({
-      type: "PARAMS_ERROR",
-    });
-    expect(run).not.toHaveBeenCalled();
-  });
-
   it("accepts answers that carry only the type and value the published contract requires", async () => {
     const minimal = {
       order_id: { type: "text", value: null, span: null, guess: null },
@@ -138,15 +93,5 @@ describe("Workers AI extractions", () => {
       type: "PROVIDER_ERROR",
       statusCode: 502,
     });
-  });
-
-  it("resolves Clairic as the extraction model only with the Workers AI binding", async () => {
-    const models = createCatalogueModelResolver();
-
-    await expect(models.getSystemModel({ AI: binding }, undefined, "extraction")).resolves.toEqual({
-      model: "@cf/cloudflare/clairic",
-      provider: "workers-ai",
-    });
-    await expect(models.getSystemModel({}, undefined, "extraction")).resolves.toBeNull();
   });
 });

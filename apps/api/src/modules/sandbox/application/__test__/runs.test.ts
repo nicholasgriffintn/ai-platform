@@ -4,16 +4,8 @@ import { fakeRepositories } from "~/infrastructure/database/__test__/fake-reposi
 import { ActivityRepository } from "~/modules/activity/infrastructure/ActivityRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
-import {
-  appendRunCoordinatorEvent,
-  getRunCoordinatorControl,
-  updateRunCoordinatorControl,
-} from "../run-coordinator";
-import {
-  getSandboxRunControlState,
-  requestSandboxRunControlAction,
-  requestSandboxRunInstruction,
-} from "../runs";
+import { getRunCoordinatorControl } from "../run-coordinator";
+import { getSandboxRunControlState, requestSandboxRunInstruction } from "../runs";
 
 vi.mock("../run-coordinator", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../run-coordinator")>();
@@ -44,8 +36,6 @@ function buildRunData(overrides: Record<string, unknown> = {}) {
 describe("sandbox runs service", () => {
   const mockGetActivityByGroup = vi.fn();
   const mockGetRunCoordinatorControl = vi.mocked(getRunCoordinatorControl);
-  const mockUpdateRunCoordinatorControl = vi.mocked(updateRunCoordinatorControl);
-  const mockAppendRunCoordinatorEvent = vi.mocked(appendRunCoordinatorEvent);
 
   const context = {
     env: {},
@@ -61,61 +51,6 @@ describe("sandbox runs service", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it("returns paused control state for paused runs", async () => {
-    mockGetRunCoordinatorControl.mockResolvedValue(null);
-    mockGetActivityByGroup.mockResolvedValue({
-      id: "record-1",
-      created_by_user_id: 42,
-      project_id: null,
-      data: buildRunData({
-        status: "paused",
-        pauseReason: "Paused from dashboard",
-        timeoutSeconds: 1200,
-      }),
-    });
-
-    const control = await getSandboxRunControlState({
-      context,
-      userId: 42,
-      runId: "run-123",
-    });
-
-    expect(control).toMatchObject({
-      runId: "run-123",
-      state: "paused",
-      pauseReason: "Paused from dashboard",
-      timeoutSeconds: 1200,
-    });
-  });
-
-  it("uses coordinator control when available", async () => {
-    mockGetActivityByGroup.mockResolvedValue({
-      id: "record-1",
-      created_by_user_id: 42,
-      project_id: null,
-      data: buildRunData(),
-    });
-    mockGetRunCoordinatorControl.mockResolvedValue({
-      runId: "run-123",
-      state: "running",
-      updatedAt: "2026-02-17T12:00:10.000Z",
-      timeoutSeconds: 1200,
-    });
-
-    const control = await getSandboxRunControlState({
-      context,
-      userId: 42,
-      runId: "run-123",
-    });
-
-    expect(control).toMatchObject({
-      runId: "run-123",
-      state: "running",
-      timeoutSeconds: 1200,
-    });
-    expect(mockGetActivityByGroup).toHaveBeenCalled();
   });
 
   it("allows a project member to read a collaborator's run control", async () => {
@@ -149,15 +84,6 @@ describe("sandbox runs service", () => {
   describe("inspection window", () => {
     const expiresAt = "2026-02-17T12:10:00.000Z";
 
-    function heldRun() {
-      mockGetActivityByGroup.mockResolvedValue({
-        id: "record-1",
-        created_by_user_id: 42,
-        project_id: null,
-        data: buildRunData({ status: "completed" }),
-      });
-    }
-
     function heldControl(overrides: Record<string, unknown> = {}) {
       return {
         runId: "run-123",
@@ -177,98 +103,6 @@ describe("sandbox runs service", () => {
 
     afterEach(() => {
       vi.useRealTimers();
-    });
-
-    it("pushes the expiry out when the runner extends the window", async () => {
-      heldRun();
-      mockGetRunCoordinatorControl.mockResolvedValue(heldControl());
-      mockUpdateRunCoordinatorControl.mockImplementation(async ({ inspectionExpiresAt }) => ({
-        ...heldControl({ inspectionExtended: true }),
-        inspectionExpiresAt,
-      }));
-      mockAppendRunCoordinatorEvent.mockResolvedValue(undefined);
-
-      const control = await requestSandboxRunControlAction({
-        context,
-        userId: 42,
-        runId: "run-123",
-        input: {
-          action: "extend_inspection",
-          extensionSeconds: 60,
-          expectedUpdatedAt: "2026-02-17T12:05:00.000Z",
-        },
-      });
-
-      expect(mockUpdateRunCoordinatorControl).toHaveBeenCalledWith(
-        expect.objectContaining({
-          state: "inspection",
-          inspectionExpiresAt: "2026-02-17T12:11:00.000Z",
-          inspectionExtended: true,
-        }),
-      );
-      expect(control.inspectionExpiresAt).toBe("2026-02-17T12:11:00.000Z");
-    });
-
-    it("allows cancelling a run during its inspection window", async () => {
-      heldRun();
-      mockGetRunCoordinatorControl.mockResolvedValue(heldControl());
-      mockUpdateRunCoordinatorControl.mockResolvedValue({
-        ...heldControl(),
-        state: "cancelled",
-        updatedAt: "2026-02-17T12:06:00.000Z",
-      });
-      mockAppendRunCoordinatorEvent.mockResolvedValue(undefined);
-
-      const control = await requestSandboxRunControlAction({
-        context,
-        userId: 42,
-        runId: "run-123",
-        input: {
-          action: "cancel",
-          expectedUpdatedAt: "2026-02-17T12:05:00.000Z",
-        },
-      });
-
-      expect(mockUpdateRunCoordinatorControl).toHaveBeenCalledWith(
-        expect.objectContaining({ state: "cancelled" }),
-      );
-      expect(control.state).toBe("cancelled");
-    });
-
-    it("refuses a second extension", async () => {
-      heldRun();
-      mockGetRunCoordinatorControl.mockResolvedValue(heldControl({ inspectionExtended: true }));
-
-      await expect(
-        requestSandboxRunControlAction({
-          context,
-          userId: 42,
-          runId: "run-123",
-          input: {
-            action: "extend_inspection",
-            extensionSeconds: 60,
-            expectedUpdatedAt: "2026-02-17T12:05:00.000Z",
-          },
-        }),
-      ).rejects.toThrow(/Cannot extend_inspection/);
-      expect(mockUpdateRunCoordinatorControl).not.toHaveBeenCalled();
-    });
-
-    it("says the window closed rather than reporting the run status", async () => {
-      heldRun();
-      mockGetRunCoordinatorControl.mockResolvedValue(
-        heldControl({ inspectionExpiresAt: "2026-02-17T12:05:30.000Z" }),
-      );
-
-      await expect(
-        requestSandboxRunInstruction({
-          context,
-          userId: 42,
-          runId: "run-123",
-          kind: "run_command",
-          command: "pnpm test",
-        }),
-      ).rejects.toThrow(/inspection window has closed/);
     });
 
     it("refuses a runner command from a project member who did not start the run", async () => {

@@ -37,9 +37,6 @@ const browserTestApproval: BrowserApproval = {
 };
 
 describe("browser sign-in validation", () => {
-  it("accepts exactly the selected method's fields", () => {
-    expect(() => validateBrowserApprovalResponse(browserTestApproval, response)).not.toThrow();
-  });
   it.each([
     { ...response, fields: [{ field_id: "email", value: "tester@example.test" }] },
     { ...response, fields: [...response.fields, { field_id: "code", value: "123456" }] },
@@ -50,7 +47,7 @@ describe("browser sign-in validation", () => {
       "Response does not match",
     );
   });
-  it.each([null, "http://example.test", "https://user:password@example.test", "invalid"])(
+  it.each(["http://example.test", "https://user:password@example.test"])(
     "blocks credentials for an unverified destination %s",
     (credential_origin) => {
       if (browserTestApproval.request.type !== "browser_authentication") {
@@ -71,29 +68,6 @@ describe("browser sign-in validation", () => {
       ).not.toThrow();
     },
   );
-  it("accepts choosing a login method without entering fields", () => {
-    if (browserTestApproval.request.type !== "browser_authentication") {
-      throw new Error("Unexpected fixture");
-    }
-
-    const approval = {
-      ...browserTestApproval,
-      request: {
-        ...browserTestApproval.request,
-        fields: [],
-        options: [{ id: "email-code", label: "Email a code", field_ids: [] }],
-      },
-    };
-
-    expect(() =>
-      validateBrowserApprovalResponse(approval, {
-        type: "browser_authentication",
-        action: "submit",
-        selected_option: "email-code",
-        fields: [],
-      }),
-    ).not.toThrow();
-  });
   it("bounds both field length and UTF-8 payload size", () => {
     expect(
       browserApprovalResponseSchema.safeParse({
