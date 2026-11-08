@@ -117,7 +117,7 @@ export class HomePage extends BasePage {
     return conversationId;
   }
 
-  async selectModel(modelName: string) {
+  async searchModels(modelName: string) {
     await this.clickElement(this.modelSelector);
     const modelsButton = this.page.getByRole("button", { name: "Models", exact: true });
     const search = this.page.getByRole("textbox", { name: "Search models" });
@@ -127,6 +127,10 @@ export class HomePage extends BasePage {
     }
 
     await this.fillInput(search, modelName);
+  }
+
+  async selectModel(modelName: string) {
+    await this.searchModels(modelName);
     const options = this.page.locator('[role="option"]:not([aria-disabled="true"])');
     const candidate = options.filter({ hasText: modelName }).first();
 

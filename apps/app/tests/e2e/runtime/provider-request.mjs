@@ -71,7 +71,7 @@ export function validateReleaseProviderRequest(url, body) {
     },
     {
       marker: "Release provider contract: OpenAI Audio",
-      applies: () => body.model === "gpt-audio-mini",
+      applies: () => body.model === "gpt-audio-1.5",
       valid: () =>
         url.pathname.endsWith("/chat/completions") &&
         Array.isArray(body.messages) &&
