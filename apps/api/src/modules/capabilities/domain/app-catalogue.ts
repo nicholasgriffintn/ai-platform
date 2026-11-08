@@ -1,6 +1,8 @@
 import type {
+  AppEntry,
   AppIosDecision,
   AppScope,
+  AppSurfaceDefinition,
   AppTheme,
   ProjectExperienceDefinition,
   ProjectExperienceRuntime,
@@ -12,7 +14,8 @@ import type {
  */
 export interface ExperienceDefinition {
   id: string;
-  runtime: ProjectExperienceRuntime;
+  entry: AppEntry;
+  surface: AppSurfaceDefinition;
   name: string;
   description: string;
   when: string;
@@ -29,10 +32,16 @@ export interface ExperienceDefinition {
   capabilityId?: string;
 }
 
+const CONTAINED: AppSurfaceDefinition = { layout: "contained", loading: "content" };
+const WORKSPACE_STUDIO: AppSurfaceDefinition = { layout: "workspace", loading: "studio" };
+
+const bundled = (runtime: ProjectExperienceRuntime): AppEntry => ({ kind: "bundled", runtime });
+
 export const EXPERIENCES: ExperienceDefinition[] = [
   {
     id: "strudel",
-    runtime: "strudel",
+    entry: bundled("strudel"),
+    surface: CONTAINED,
     capabilityId: "featured-strudel",
     name: "Strudel Music Patterns",
     category: "Creative",
@@ -49,7 +58,8 @@ export const EXPERIENCES: ExperienceDefinition[] = [
   },
   {
     id: "sites",
-    runtime: "sites",
+    entry: bundled("sites"),
+    surface: WORKSPACE_STUDIO,
     capabilityId: "featured-sites",
     name: "Sites",
     category: "Creative",
@@ -67,7 +77,8 @@ export const EXPERIENCES: ExperienceDefinition[] = [
   },
   {
     id: "verbatim",
-    runtime: "verbatim",
+    entry: bundled("verbatim"),
+    surface: CONTAINED,
     capabilityId: "featured-verbatim",
     name: "Verbatim",
     category: "Decisions",
@@ -85,7 +96,8 @@ export const EXPERIENCES: ExperienceDefinition[] = [
   },
   {
     id: "charades",
-    runtime: "charades",
+    entry: bundled("charades"),
+    surface: CONTAINED,
     capabilityId: "featured-charades",
     name: "Charades",
     category: "Decisions",
@@ -103,7 +115,8 @@ export const EXPERIENCES: ExperienceDefinition[] = [
   },
   {
     id: "photo-sorter",
-    runtime: "photo-sorter",
+    entry: bundled("photo-sorter"),
+    surface: CONTAINED,
     capabilityId: "featured-photo-sorter",
     name: "Photo Sorter",
     category: "Decisions",
@@ -121,7 +134,8 @@ export const EXPERIENCES: ExperienceDefinition[] = [
   },
   {
     id: "twenty-questions",
-    runtime: "twenty-questions",
+    entry: bundled("twenty-questions"),
+    surface: CONTAINED,
     capabilityId: "featured-twenty-questions",
     name: "Twenty Questions",
     category: "Decisions",
@@ -139,7 +153,8 @@ export const EXPERIENCES: ExperienceDefinition[] = [
   },
   {
     id: "polis",
-    runtime: "polis",
+    entry: bundled("polis"),
+    surface: WORKSPACE_STUDIO,
     capabilityId: "featured-polis",
     name: "Polis",
     category: "Decisions",
@@ -157,7 +172,8 @@ export const EXPERIENCES: ExperienceDefinition[] = [
   },
   {
     id: "benchmarks",
-    runtime: "benchmarks",
+    entry: bundled("benchmarks"),
+    surface: CONTAINED,
     capabilityId: "featured-benchmarks",
     name: "Benchmarks",
     category: "Models",
@@ -181,7 +197,8 @@ export const getProjectExperienceCatalog = (): ProjectExperienceDefinition[] =>
   EXPERIENCES.map(
     ({
       id,
-      runtime,
+      entry,
+      surface,
       name,
       description,
       when,
@@ -198,7 +215,8 @@ export const getProjectExperienceCatalog = (): ProjectExperienceDefinition[] =>
       capabilityId,
     }) => ({
       id,
-      runtime,
+      entry,
+      surface,
       name,
       description,
       when,

@@ -1,5 +1,6 @@
 import { EmptyState } from "@ngriffin_uk/polychat-component-ui";
-import { lazy, Suspense, type ReactNode } from "react";
+import type { AppEntry, ProjectExperienceRuntime } from "@ngriffin_uk/polychat-schemas";
+import { lazy, Suspense, type ComponentType, type ReactNode } from "react";
 
 const StrudelApp = lazy(async () => {
   const module = await import("./StrudelApp.js");
@@ -42,48 +43,38 @@ const SitesApp = lazy(async () => {
   return { default: module.SitesApp };
 });
 
-function ExperienceContent({ basePath, projectId, runtime, subpath }: AppRuntimeProps) {
-  if (runtime === "strudel") {
-    return <StrudelApp basePath={basePath} projectId={projectId} subpath={subpath} />;
-  }
-
-  if (runtime === "sites") {
-    return <SitesApp basePath={basePath} projectId={projectId} subpath={subpath} />;
-  }
-
-  if (runtime === "verbatim") {
-    return <VerbatimApp projectId={projectId} />;
-  }
-
-  if (runtime === "charades") {
-    return <CharadesApp />;
-  }
-
-  if (runtime === "photo-sorter") {
-    return <PhotoSorterApp />;
-  }
-
-  if (runtime === "polis") {
-    return <PolisApp projectId={projectId} />;
-  }
-
-  if (runtime === "benchmarks") {
-    return <BenchmarksApp basePath={basePath} subpath={subpath} />;
-  }
-
-  if (runtime === "twenty-questions") {
-    return <TwentyQuestionsApp projectId={projectId} />;
-  }
-
-  return <EmptyState title="Experience unavailable" message="This experience is not supported." />;
+interface BundledAppProps {
+  basePath: string;
+  projectId?: string;
+  subpath: string;
 }
 
-interface AppRuntimeProps {
-  basePath: string;
+const BUNDLED_APPS: Record<ProjectExperienceRuntime, ComponentType<BundledAppProps>> = {
+  benchmarks: BenchmarksApp,
+  charades: CharadesApp,
+  "photo-sorter": PhotoSorterApp,
+  polis: PolisApp,
+  sites: SitesApp,
+  strudel: StrudelApp,
+  "twenty-questions": TwentyQuestionsApp,
+  verbatim: VerbatimApp,
+};
+
+interface AppRuntimeProps extends BundledAppProps {
+  entry: AppEntry | undefined;
   fallback?: ReactNode;
-  projectId?: string;
-  runtime: string;
-  subpath: string;
+}
+
+function ExperienceContent({ entry, ...props }: Omit<AppRuntimeProps, "fallback">) {
+  const App = entry?.kind === "bundled" ? BUNDLED_APPS[entry.runtime] : undefined;
+
+  if (!App) {
+    return (
+      <EmptyState title="Experience unavailable" message="This experience is not supported." />
+    );
+  }
+
+  return <App {...props} />;
 }
 
 export function AppRuntime(props: AppRuntimeProps) {

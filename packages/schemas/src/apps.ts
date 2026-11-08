@@ -371,6 +371,21 @@ export const projectExperienceRuntimeSchema = z.enum([
   "verbatim",
 ]);
 
+export const appSurfaceSchema = z.discriminatedUnion("layout", [
+  z.object({ layout: z.literal("contained"), loading: z.literal("content") }),
+  z.object({ layout: z.literal("workspace"), loading: z.enum(["editor", "studio"]) }),
+]);
+
+export const appEntrySchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("bundled"), runtime: projectExperienceRuntimeSchema }),
+  z.object({
+    kind: z.literal("remote"),
+    server: z.string().min(1).describe("The connected MCP server's label."),
+    tool: z.string().min(1).describe("The read-only tool that opens the app."),
+    resource: z.string().startsWith("ui://").describe("The ui:// resource the tool renders."),
+  }),
+]);
+
 export const projectExperienceRequirementSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("capability"),
@@ -397,7 +412,8 @@ export type AppScope = z.infer<typeof appScopeSchema>;
 
 export const projectExperienceDefinitionSchema = z.object({
   id: z.string(),
-  runtime: projectExperienceRuntimeSchema,
+  entry: appEntrySchema,
+  surface: appSurfaceSchema,
   name: z.string(),
   description: z.string(),
   when: z.string().describe("When someone should reach for this app."),
@@ -550,6 +566,8 @@ export type ToolResponseSchemaType = z.infer<typeof toolResponseSchema>;
 export type RenderableTool = z.infer<typeof renderableToolSchema>;
 export type CapabilityCatalogItem = z.infer<typeof appInfoSchema>;
 export type ProjectExperienceRuntime = z.infer<typeof projectExperienceRuntimeSchema>;
+export type AppSurfaceDefinition = z.infer<typeof appSurfaceSchema>;
+export type AppEntry = z.infer<typeof appEntrySchema>;
 export type ProjectExperienceRequirement = z.infer<typeof projectExperienceRequirementSchema>;
 export type ProjectExperienceDefinition = z.infer<typeof projectExperienceDefinitionSchema>;
 export type ModelToolId = z.infer<typeof modelToolIdSchema>;
