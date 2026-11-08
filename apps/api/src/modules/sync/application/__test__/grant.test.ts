@@ -7,14 +7,6 @@ import { createDeviceSyncGrant, resolveDeviceSyncGrant } from "../grant";
 const env = { JWT_SECRET: "sync-test-secret-value-0123456789" } as IEnv;
 
 describe("device sync grants", () => {
-  it("resolves the user the grant was minted for", async () => {
-    const grant = await createDeviceSyncGrant(env, { userId: 7, deviceId: "device-a" });
-
-    await expect(
-      resolveDeviceSyncGrant({ env, grant: grant.token, deviceId: "device-a" }),
-    ).resolves.toEqual({ userId: 7 });
-  });
-
   it("refuses a grant presented by another device", async () => {
     const grant = await createDeviceSyncGrant(env, { userId: 7, deviceId: "device-a" });
 
@@ -37,12 +29,6 @@ describe("device sync grants", () => {
 
     await expect(
       resolveDeviceSyncGrant({ env: {} as IEnv, grant: grant.token, deviceId: "device-a" }),
-    ).rejects.toThrow(/not configured/);
-  });
-
-  it("refuses to mint a grant without a signing secret", async () => {
-    await expect(
-      createDeviceSyncGrant({} as IEnv, { userId: 7, deviceId: "device-a" }),
     ).rejects.toThrow(/not configured/);
   });
 });

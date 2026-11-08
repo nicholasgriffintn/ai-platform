@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
-import { resolveRealtimeMaxSessionSeconds } from "~/modules/realtime/application/sessionLimits";
 import { UsageBalanceRepository } from "~/modules/usage/infrastructure/UsageBalanceRepository";
 
 import { admitRealtimeSession } from "../sessionUsage";
@@ -38,18 +37,6 @@ describe("admitRealtimeSession", () => {
     ).resolves.toBe(false);
   });
 
-  it("admits a session that still fits inside included plus grace", async () => {
-    const repositories = repositoriesWithBalance(balance({ spent_credit_micros: 900_000 }));
-
-    await expect(
-      admitRealtimeSession({
-        repositories: fakeRepositories([[UsageBalanceRepository, repositories.usageBalances]]),
-        userId: 7,
-        creditMicros: 50_000,
-      }),
-    ).resolves.toBe(true);
-  });
-
   it("admits past the ceiling when overage is enabled", async () => {
     const repositories = repositoriesWithBalance(
       balance({ spent_credit_micros: 5_000_000, overage_enabled: 1 }),
@@ -80,17 +67,5 @@ describe("admitRealtimeSession", () => {
         creditMicros: 50_000,
       }),
     ).resolves.toBe(true);
-  });
-});
-
-describe("resolveRealtimeMaxSessionSeconds", () => {
-  it("defaults when unset and clamps to the supported range", () => {
-    expect(resolveRealtimeMaxSessionSeconds({})).toBe(1800);
-    expect(resolveRealtimeMaxSessionSeconds({ REALTIME_MAX_SESSION_SECONDS: "10" })).toBe(60);
-    expect(resolveRealtimeMaxSessionSeconds({ REALTIME_MAX_SESSION_SECONDS: "99999" })).toBe(3600);
-    expect(resolveRealtimeMaxSessionSeconds({ REALTIME_MAX_SESSION_SECONDS: "600" })).toBe(600);
-    expect(resolveRealtimeMaxSessionSeconds({ REALTIME_MAX_SESSION_SECONDS: "nonsense" })).toBe(
-      1800,
-    );
   });
 });

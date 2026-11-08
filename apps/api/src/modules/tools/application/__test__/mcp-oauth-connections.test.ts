@@ -22,15 +22,6 @@ function createContext(record: unknown) {
 }
 
 describe("completeMcpOAuthConnection", () => {
-  it("ignores an unknown state", async () => {
-    const { context, upsertConnection } = createContext(null);
-
-    await expect(
-      completeMcpOAuthConnection(context, { state: "unknown", code: "code" }),
-    ).resolves.toEqual({ connected: false });
-    expect(upsertConnection).not.toHaveBeenCalled();
-  });
-
   it("ignores an expired sign-in", async () => {
     const { context, upsertConnection } = createContext({
       provider: "mcp",

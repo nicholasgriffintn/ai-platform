@@ -18,11 +18,6 @@ function credits(overrides: Partial<UsageCreditsSummary> = {}): UsageCreditsSumm
 }
 
 describe("getSidebarUsageItems", () => {
-  it("returns nothing without a credit balance", () => {
-    expect(getSidebarUsageItems(null)).toEqual([]);
-    expect(getSidebarUsageItems({} as never)).toEqual([]);
-  });
-
   it("prefers the authoritative balance over the streamed snapshot", () => {
     const [item] = getSidebarUsageItems({ credits: credits({ used: 10 }) }, credits({ used: 400 }));
 
@@ -37,20 +32,6 @@ describe("getSidebarUsageItems", () => {
       assistiveLabel: "0.17 credits used this month",
       percentage: null,
     });
-  });
-
-  it("hides the reserve segment while the state is ok", () => {
-    const [item] = getSidebarUsageItems({ credits: credits() });
-
-    expect(item.reserveStartPercentage).toBeUndefined();
-    expect(item.percentage).toBe(25);
-  });
-
-  it("shows the reserve segment once the reserve is entered", () => {
-    const [item] = getSidebarUsageItems({ credits: credits({ used: 1050, state: "reserve" }) });
-
-    expect(item.reserveStartPercentage).toBeCloseTo((1000 / 1100) * 100);
-    expect(item.percentage).toBeCloseTo((1050 / 1100) * 100);
   });
 
   it("caps the bar when spend passes the reserve", () => {

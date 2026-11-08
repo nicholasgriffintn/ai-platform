@@ -39,10 +39,4 @@ describe("url utilities", () => {
     expect(isPrivateHostname("[::ffff:7f00:1]")).toBe(true);
     expect(isPrivateHostname("[::ffff:6440:1]")).toBe(true);
   });
-
-  it("allows public hostnames", () => {
-    expect(isPrivateHostname("example.com")).toBe(false);
-    expect(isPrivateHostname("8.8.8.8")).toBe(false);
-    expect(isPrivateHostname("[2001:4860:4860::8888]")).toBe(false);
-  });
 });

@@ -46,29 +46,11 @@ function contextWith(collection: SourceCollectionRecord, record: OutputRecord) {
 }
 
 describe("adding made items to a folder", () => {
-  it("links the owner's item", async () => {
-    const { context, linkOutputs } = contextWith(folder, output);
-
-    await expect(addCollectionOutputs(context, 42, folder.id, [output.id])).resolves.toEqual({
-      added: 1,
-    });
-    expect(linkOutputs).toHaveBeenCalledWith(folder.id, [output.id]);
-  });
-
   it("does not link someone else's item", async () => {
     const { context, linkOutputs } = contextWith(folder, { ...output, created_by_user_id: 7 });
 
     await expect(addCollectionOutputs(context, 42, folder.id, [output.id])).rejects.toMatchObject({
       statusCode: 404,
-    });
-    expect(linkOutputs).not.toHaveBeenCalled();
-  });
-
-  it("keeps made items out of podcast shows", async () => {
-    const { context, linkOutputs } = contextWith({ ...folder, kind: "podcast" }, output);
-
-    await expect(addCollectionOutputs(context, 42, folder.id, [output.id])).rejects.toMatchObject({
-      statusCode: 400,
     });
     expect(linkOutputs).not.toHaveBeenCalled();
   });

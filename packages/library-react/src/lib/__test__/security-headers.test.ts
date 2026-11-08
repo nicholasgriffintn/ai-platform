@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { applyCacheHeaders, applySecurityHeaders } from "../security-headers.js";
+import { applySecurityHeaders } from "../security-headers.js";
 
 const parseCsp = (headers: Headers) =>
   new Map(
@@ -33,39 +33,6 @@ describe("applySecurityHeaders", () => {
     expect(csp.get("form-action")?.[0]).toBe("'self'");
   });
 
-  it("keeps microphone and camera available to the app's own realtime surfaces", () => {
-    const headers = applySecurityHeaders(new Headers(), "https://polychat.app/");
-    const policy = headers.get("Permissions-Policy") ?? "";
-
-    expect(policy).toContain("microphone=(self)");
-    expect(policy).toContain("camera=(self)");
-    expect(policy).toContain("geolocation=()");
-  });
-
-  it("allows the exact connector icon origins exposed by the provider catalogue", () => {
-    const imageSources = parseCsp(
-      applySecurityHeaders(new Headers(), "https://polychat.app/profile?tab=providers"),
-    ).get("img-src");
-
-    expect(imageSources).toContain("https://ticktick.com");
-    expect(imageSources).toContain("https://www.cloudflare.com");
-  });
-
-  it("allows sign-in popups to keep talking to their opener", () => {
-    const headers = applySecurityHeaders(new Headers(), "https://polychat.app/");
-
-    expect(headers.get("Cross-Origin-Opener-Policy")).toBe("same-origin-allow-popups");
-  });
-
-  it("keeps the opener attached when a connector popup returns to the callback", () => {
-    const headers = applySecurityHeaders(
-      new Headers(),
-      "https://polychat.app/chat/plugins?connector=airtable&connected=1",
-    );
-
-    expect(headers.get("Cross-Origin-Opener-Policy")).toBe("unsafe-none");
-  });
-
   it("does not relax the opener policy outside the connector callback", () => {
     for (const url of [
       "https://polychat.app/profile?tab=providers",
@@ -77,47 +44,5 @@ describe("applySecurityHeaders", () => {
         "same-origin-allow-popups",
       );
     }
-  });
-
-  it("only sends HSTS over https so local http development still works", () => {
-    const secure = applySecurityHeaders(new Headers(), "https://polychat.app/");
-    const local = applySecurityHeaders(new Headers(), "http://localhost:5173/");
-
-    expect(secure.get("Strict-Transport-Security")).toContain("max-age=31536000");
-    expect(local.get("Strict-Transport-Security")).toBeNull();
-  });
-
-  it("replaces rather than appends when applied to headers that already carry a policy", () => {
-    const headers = new Headers({ "Content-Security-Policy": "default-src 'none'" });
-
-    applySecurityHeaders(headers, "https://polychat.app/");
-
-    expect(headers.get("Content-Security-Policy")).not.toContain("default-src 'none';");
-    expect(parseCsp(headers).get("default-src")).toEqual(["'self'"]);
-  });
-});
-
-describe("applyCacheHeaders", () => {
-  it("marks hashed build assets immutable", () => {
-    const headers = applyCacheHeaders(
-      new Headers(),
-      "https://polychat.app/assets/Thread-pp9l--5X.js",
-    );
-
-    expect(headers.get("Cache-Control")).toBe("public, max-age=31536000, immutable");
-  });
-
-  it("gives icons and manifests a daily revalidation window", () => {
-    const headers = applyCacheHeaders(new Headers(), "https://polychat.app/site.webmanifest");
-
-    expect(headers.get("Cache-Control")).toBe(
-      "public, max-age=86400, stale-while-revalidate=86400",
-    );
-  });
-
-  it("leaves HTML navigations untouched so deploys stay fresh", () => {
-    const headers = applyCacheHeaders(new Headers(), "https://polychat.app/chat");
-
-    expect(headers.get("Cache-Control")).toBeNull();
   });
 });

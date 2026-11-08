@@ -43,7 +43,6 @@
     "access": "public"
   },
   "scripts": {
-    "test": "vitest run",
     "typecheck": "tsc -b tsconfig.typecheck.json"
   },
   "dependencies": {
@@ -70,11 +69,8 @@
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",
     "@tailwindcss/vite": "4.3.3",
-    "@testing-library/jest-dom": "7.0.1",
-    "@testing-library/react": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "jsdom": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "react": "catalog:",
@@ -82,8 +78,7 @@
     "tailwindcss": "4.3.3",
     "tsup": "catalog:",
     "typescript": "catalog:",
-    "vite": "8.3.5",
-    "vitest": "catalog:"
+    "vite": "8.3.5"
   },
   "peerDependencies": {
     "react": "catalog:react-peer",

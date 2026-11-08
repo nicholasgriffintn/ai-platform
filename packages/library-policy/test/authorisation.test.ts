@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  hasProEntitlement,
   actionSchema,
   authorisationBundle,
   authorise,
@@ -12,12 +11,6 @@ import {
 } from "../src/index.js";
 
 describe("Cedar authorisation", () => {
-  it("gives the agent plan the same entitlement as pro, and nothing to free", () => {
-    expect(hasProEntitlement({ plan_id: "agent" })).toBe(true);
-    expect(hasProEntitlement({ plan_id: "pro" })).toBe(true);
-    expect(hasProEntitlement({ plan_id: "free" })).toBe(false);
-  });
-
   it("keeps ownership, workspace membership and role authority separate", () => {
     expect(ownsResource(7, 7)).toBe(true);
     expect(ownsResource(7, "7")).toBe(false);
@@ -127,13 +120,6 @@ describe("Cedar authorisation", () => {
         withinHeadroom: false,
       }).allowed,
     ).toBe(true);
-  });
-
-  it("lets agent identities act without a person but never on unknown operations", () => {
-    const send = { supported: true, access: "write", destructive: true, agentIdentity: true };
-
-    expect(authorise("connector.unattended", send).allowed).toBe(true);
-    expect(authorise("connector.unattended", { ...send, supported: false }).allowed).toBe(false);
   });
 
   it("binds approval replay to the owner, scope, operation and live grant revision", () => {

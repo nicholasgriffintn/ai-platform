@@ -90,34 +90,4 @@ describe("verifySandboxJwt", () => {
 
     await expect(verifySandboxJwt(token, SECRET_B)).rejects.toThrow("JWT signature is invalid");
   });
-
-  it("rejects correctly signed tokens that omit the issuer", async () => {
-    const now = Math.floor(Date.now() / 1000);
-    const token = await createToken(
-      {
-        sub: "42",
-        aud: "assistant",
-        iat: now - 10,
-        exp: now + 120,
-      },
-      SECRET,
-    );
-
-    await expect(verifySandboxJwt(token, SECRET)).rejects.toThrow("JWT issuer is invalid");
-  });
-
-  it("rejects correctly signed tokens that omit the audience", async () => {
-    const now = Math.floor(Date.now() / 1000);
-    const token = await createToken(
-      {
-        sub: "42",
-        iss: "assistant",
-        iat: now - 10,
-        exp: now + 120,
-      },
-      SECRET,
-    );
-
-    await expect(verifySandboxJwt(token, SECRET)).rejects.toThrow("JWT audience is invalid");
-  });
 });

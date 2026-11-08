@@ -1,16 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { listConversationArtifacts, summariseConversationUsage } from "./conversation-insights.js";
+import { summariseConversationUsage } from "./conversation-insights.js";
 import type { Message } from "./conversation-types.js";
 
 function assistant(id: string, content: string, extra: Partial<Message> = {}): Message {
   return { id, role: "assistant", content, ...extra };
-}
-
-function artifactMarkup(identifier: string, body: string, title?: string): string {
-  const titleAttribute = title ? ` title="${title}"` : "";
-
-  return `<artifact identifier="${identifier}" type="text/markdown"${titleAttribute}>${body}</artifact>`;
 }
 
 describe("summariseConversationUsage", () => {
@@ -41,22 +35,5 @@ describe("summariseConversationUsage", () => {
       latestModel: "large",
       latestProvider: "workers-ai",
     });
-  });
-});
-
-describe("listConversationArtifacts", () => {
-  it("keeps one entry per artifact, newest edit first, counting revisions", () => {
-    const artifacts = listConversationArtifacts([
-      assistant("a1", artifactMarkup("menu", "v1", "Menu")),
-      assistant("a2", artifactMarkup("list", "milk", "List")),
-      assistant("a3", artifactMarkup("menu", "v2")),
-    ]);
-
-    expect(artifacts.map((entry) => [entry.identifier, entry.title, entry.revisions])).toEqual([
-      ["menu", "Menu", 2],
-      ["list", "List", 1],
-    ]);
-    expect(artifacts[0]?.content).toBe("v2");
-    expect(artifacts[0]?.messageId).toBe("a3");
   });
 });

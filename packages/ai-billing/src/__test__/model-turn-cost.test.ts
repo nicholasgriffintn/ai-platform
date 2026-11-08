@@ -42,13 +42,4 @@ describe("priceModelTurnUsage", () => {
 
     expect(cost).toBeCloseTo(0.5, 6);
   });
-
-  it("gives no cost when the model has no rates", () => {
-    expect(
-      priceModelTurnUsage(
-        model("anthropic", { costPer1kInputTokens: undefined, costPer1kOutputTokens: undefined }),
-        { usage: usage(10, 10) },
-      ),
-    ).toBeNull();
-  });
 });

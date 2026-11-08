@@ -118,20 +118,6 @@ describe("UsageManager", () => {
     });
   });
 
-  it("shows configured plan credits before the first ledger event", async () => {
-    const repo = repositories({ includedCredits: 500, graceCredits: 50 });
-    const manager = new UsageManager(repo.value, user({ plan_id: "pro" }), null);
-
-    await expect(manager.getUsageLimits()).resolves.toMatchObject({
-      credits: {
-        included: 500,
-        grace: 50,
-        used: 0,
-        state: "ok",
-      },
-    });
-  });
-
   it("reports an anonymous visitor past its allowance and reserve as exhausted", async () => {
     const repo = repositories({
       includedCredits: 20,

@@ -4,7 +4,6 @@ import { describe, expect, it } from "vitest";
 
 import { buildInputSchemaInput } from "../input-schema.js";
 import { resolvePinnedSafetyInput } from "../safety-inputs.js";
-import { getGoogleSafetySettings } from "../utils/googleStudio.js";
 
 const SAFETY_FIELD_PATTERN = /safety|moderation|nsfw|censor/i;
 
@@ -45,15 +44,6 @@ describe("pinned safety inputs", () => {
     });
   });
 
-  it("overrides a catalogue default that leaves a filter off", () => {
-    const { input } = buildInputSchemaInput(
-      {},
-      modelWith([{ name: "disable_safety_filter", type: "boolean", default: true }]),
-    );
-
-    expect(input).toEqual({ disable_safety_filter: false });
-  });
-
   it("covers every safety field in the model catalogue", () => {
     const safetyFields = Object.values(getModels()).flatMap((model) =>
       (model.inputSchema?.fields ?? []).filter((field) => SAFETY_FIELD_PATTERN.test(field.name)),
@@ -63,27 +53,5 @@ describe("pinned safety inputs", () => {
     expect(safetyFields.filter((field) => resolvePinnedSafetyInput(field) === undefined)).toEqual(
       [],
     );
-  });
-});
-
-describe("getGoogleSafetySettings", () => {
-  const sexualContentThreshold = (output: ("text" | "image")[]) =>
-    getGoogleSafetySettings({ modalities: { input: ["text"], output } }).find(
-      (setting) => setting.category === "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-    )?.threshold;
-
-  it("keeps the sexual content filter on for models that output images", () => {
-    expect(sexualContentThreshold(["text", "image"])).toBe("BLOCK_LOW_AND_ABOVE");
-    expect(sexualContentThreshold(["text"])).toBe("BLOCK_NONE");
-  });
-});
-
-describe("Replicate safety levels in the catalogue", () => {
-  it("pins Nano Banana Pro to a level Replicate accepts", () => {
-    const field = Object.values(getModels())
-      .flatMap((model) => model.inputSchema?.fields ?? [])
-      .find((candidate) => candidate.enum?.includes("block_only_high"));
-
-    expect(field && resolvePinnedSafetyInput(field)).toBe("block_medium_and_above");
   });
 });

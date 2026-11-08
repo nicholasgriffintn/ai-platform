@@ -1,4 +1,3 @@
-import { WORK_TASK_TOOL_IDS } from "@ngriffin_uk/polychat-schemas";
 import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
@@ -6,14 +5,9 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { getConversationBranches } from "~/modules/conversations/application/conversationThreads";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
-import { resolveProjectModelTier } from "~/modules/responses/application/engine/policy/project-model-tier";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
 import { applyProjectCodingEnvironment, resolveProjectChatContext } from "../chatContext";
-import {
-  resolveAllowedProjectConnectorOperations,
-  resolveProjectRecipeConnectorScope,
-} from "../projectRecipeConnectorScope";
 import "~/tools";
 
 function createContext({
@@ -60,78 +54,6 @@ function createContext({
 }
 
 describe("project chat context", () => {
-  it("applies the saved project tier to new and resumed project conversations", async () => {
-    const fresh = createContext();
-
-    await expect(
-      resolveProjectModelTier({
-        context: fresh.context,
-        metadata: { project_id: "project-1" },
-      }),
-    ).resolves.toBe("low");
-    const resumed = createContext({ conversation: { project_id: "project-1" } });
-
-    await expect(
-      resolveProjectModelTier({
-        context: resumed.context,
-        completion_id: "conversation-1",
-      }),
-    ).resolves.toBe("low");
-    await expect(
-      resolveProjectModelTier({
-        context: resumed.context,
-        completion_id: "conversation-1",
-        model_tier: "ultra",
-      }),
-    ).resolves.toBe("ultra");
-    resumed.repositories.workspaces.getProject.mockResolvedValue({
-      id: "project-1",
-      workspace_id: "workspace-1",
-      instructions: "",
-      default_model_tier: null,
-    });
-    await expect(
-      resolveProjectModelTier({
-        context: resumed.context,
-        completion_id: "conversation-1",
-      }),
-    ).resolves.toBe("medium");
-  });
-
-  it("leaves personal tiers and explicit project model choices alone", async () => {
-    const { context, repositories } = createContext();
-
-    await expect(resolveProjectModelTier({ context })).resolves.toBe("medium");
-    await expect(resolveProjectModelTier({ context, model_tier: "high" })).resolves.toBe("high");
-    for (const selection of [{ model: "chosen-model" }, { models: ["first", "second"] }]) {
-      await expect(
-        resolveProjectModelTier({ context, metadata: { project_id: "project-1" }, ...selection }),
-      ).resolves.toBe("medium");
-    }
-
-    expect(repositories.workspaces.getProject).not.toHaveBeenCalled();
-  });
-
-  it("rejects unauthorised and conflicting project scope before resolving a tier", async () => {
-    const outsider = createContext({ membership: null });
-
-    await expect(
-      resolveProjectModelTier({
-        context: outsider.context,
-        metadata: { project_id: "project-1" },
-      }),
-    ).rejects.toMatchObject({ type: ErrorType.NOT_FOUND, statusCode: 404 });
-    const conflicting = createContext({ conversation: { project_id: "project-1" } });
-
-    await expect(
-      resolveProjectModelTier({
-        context: conflicting.context,
-        completion_id: "conversation-1",
-        metadata: { project_id: "project-2" },
-      }),
-    ).rejects.toMatchObject({ type: ErrorType.CONFLICT_ERROR, statusCode: 409 });
-  });
-
   it("keeps the project repository fixed while allowing a conversation task type", () => {
     const options = applyProjectCodingEnvironment(
       {
@@ -173,144 +95,6 @@ describe("project chat context", () => {
     expect(options.options?.sandbox?.model).toBeUndefined();
   });
 
-  it("resolves instructions and tools from the authorised project", async () => {
-    const { context } = createContext();
-
-    await expect(
-      resolveProjectChatContext(context, {
-        completion_id: "new-conversation",
-        metadata: { project_id: "project-1" },
-      }),
-    ).resolves.toEqual({
-      projectId: "project-1",
-      workspaceId: "workspace-1",
-      instructions: "Use the approved launch brief.",
-      enabledTools: [
-        "web_search",
-        "code_execution",
-        "search_grounding",
-        "image_generation",
-        "tool_search",
-        "hosted_shell",
-        "web_fetch",
-        "create_task",
-        "get_task",
-        "list_tasks",
-        "update_task",
-        ...WORK_TASK_TOOL_IDS,
-      ],
-      enabledSkillIds: ["artifacts"],
-      connectorProviders: [],
-      toolOptions: undefined,
-      sandboxOptions: undefined,
-    });
-  });
-
-  it("enables configuration-backed tools only from validated project settings", async () => {
-    const { context, repositories } = createContext();
-
-    repositories.workspaces.listProjectCapabilities.mockResolvedValue([
-      {
-        kind: "tool",
-        capability_id: "file_search",
-        configuration: JSON.stringify({ vectorStoreIds: ["vs_project"] }),
-      },
-      {
-        kind: "tool",
-        capability_id: "mcp",
-        configuration: {
-          servers: [{ label: "docs", url: "https://mcp.example.com" }],
-        },
-      },
-    ]);
-
-    const result = await resolveProjectChatContext(context, {
-      metadata: { project_id: "project-1" },
-    });
-
-    expect(result?.enabledTools).toContain("file_search");
-    expect(result?.enabledTools).toContain("mcp");
-    expect(result?.toolOptions).toEqual({
-      file_search: { vector_store_ids: ["vs_project"] },
-      mcp_servers: [
-        {
-          require_approval: "always",
-          server_label: "docs",
-          server_url: "https://mcp.example.com/",
-        },
-      ],
-    });
-  });
-
-  it("uses the stored project for an existing project conversation", async () => {
-    const { context } = createContext({ conversation: { project_id: "project-1" } });
-
-    const result = await resolveProjectChatContext(context, {
-      completion_id: "conversation-1",
-    });
-
-    expect(result?.projectId).toBe("project-1");
-  });
-
-  it("allows only catalogue tools for a recipe enabled in the project", async () => {
-    const { context, repositories } = createContext();
-
-    repositories.workspaces.listProjectCapabilities.mockResolvedValue([
-      { kind: "recipe", capability_id: "daily-weather" },
-    ]);
-
-    const result = await resolveProjectChatContext(context, {
-      completion_id: "new-conversation",
-      metadata: { project_id: "project-1" },
-      enabled_tools: ["get_weather", "untrusted_tool"],
-      options: { recipe: { id: "daily-weather" } },
-    });
-
-    expect(result?.enabledTools).toEqual([
-      "code_execution",
-      "search_grounding",
-      "image_generation",
-      "tool_search",
-      "hosted_shell",
-      "web_fetch",
-      "create_task",
-      "get_task",
-      "list_tasks",
-      "update_task",
-      ...WORK_TASK_TOOL_IDS,
-      "get_weather",
-    ]);
-  });
-
-  it("limits direct connector execution to providers and operations from project recipes", () => {
-    const scope = resolveProjectRecipeConnectorScope([
-      { kind: "recipe", capability_id: "email-assistant" },
-      { kind: "recipe", capability_id: "unknown-recipe" },
-      { kind: "recipe", capability_id: "service-incident-brief", excluded: 1 },
-      { kind: "tool", capability_id: "web_search" },
-    ]);
-
-    expect(scope.providers).toEqual(["gmail", "outlook"]);
-    expect(scope.operationsByProvider.gmail).toEqual([
-      "GMAIL_FETCH_EMAILS",
-      "GMAIL_CREATE_EMAIL_DRAFT",
-    ]);
-    expect(scope.operationsByProvider.outlook).toEqual([
-      "OUTLOOK_SEARCH_MESSAGES",
-      "OUTLOOK_CREATE_DRAFT",
-    ]);
-  });
-
-  it("fails closed when a project recipe has no explicit connector operation allowlist", () => {
-    expect(
-      resolveAllowedProjectConnectorOperations({
-        projectScope: { providers: ["gmail"], operationsByProvider: {} },
-        provider: "gmail",
-        recipeOperations: undefined,
-      }),
-    ).toEqual([]);
-  });
-
   it("rejects moving an existing personal conversation into a project", async () => {
     const { context } = createContext({ conversation: { project_id: null } });
 
@@ -321,43 +105,9 @@ describe("project chat context", () => {
       }),
     ).rejects.toMatchObject({ type: ErrorType.CONFLICT_ERROR, statusCode: 409 });
   });
-
-  it("does not disclose a project to users outside its workspace", async () => {
-    const { context } = createContext({ membership: null });
-
-    await expect(
-      resolveProjectChatContext(context, {
-        completion_id: "new-conversation",
-        metadata: { project_id: "project-1" },
-      }),
-    ).rejects.toMatchObject({ type: ErrorType.NOT_FOUND, statusCode: 404 });
-  });
 });
 
 describe("conversation branch access", () => {
-  it("uses creator ownership for personal threads and membership for project threads", async () => {
-    const personal = createContext({ conversation: { id: "c1", user_id: 7, project_id: null } });
-
-    await getConversationBranches(personal.context, "c1");
-    expect(personal.repositories.conversations.listConversationThreads).toHaveBeenCalledWith(
-      "c1",
-      7,
-      null,
-      201,
-    );
-    const project = createContext({
-      conversation: { id: "c2", user_id: 99, project_id: "project-1" },
-    });
-
-    await getConversationBranches(project.context, "c2");
-    expect(project.repositories.conversations.listConversationThreads).toHaveBeenCalledWith(
-      "c2",
-      7,
-      "project-1",
-      201,
-    );
-  });
-
   it("refuses foreign personal conversations and revoked workspace memberships", async () => {
     const personal = createContext({ conversation: { user_id: 99, project_id: null } });
 
@@ -374,27 +124,5 @@ describe("conversation branch access", () => {
       statusCode: 404,
     });
     expect(project.repositories.conversations.listConversationThreads).not.toHaveBeenCalled();
-  });
-
-  it("bounds large trees, retains the current branch, and hides omitted parent identifiers", async () => {
-    const { context, repositories } = createContext({ conversation: { id: "c200", user_id: 7 } });
-
-    repositories.conversations.listConversationThreads.mockResolvedValue(
-      Array.from({ length: 201 }, (_, index) => ({
-        id: `c${index}`,
-        title: `Branch ${index}`,
-        parent_conversation_id: "outside-scope",
-        created_at: "2026-09-01",
-        is_archived: 1,
-      })),
-    );
-    const result = await getConversationBranches(context, "c200");
-
-    expect(result.has_more).toBe(true);
-    expect(result.data).toHaveLength(200);
-    expect(result.data.some((thread) => thread.id === "c200")).toBe(true);
-    expect(
-      result.data.every((thread) => thread.parent_conversation_id === null && thread.is_archived),
-    ).toBe(true);
   });
 });

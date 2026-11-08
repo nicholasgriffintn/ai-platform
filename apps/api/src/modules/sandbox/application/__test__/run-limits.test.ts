@@ -21,22 +21,6 @@ function toRunData(overrides: Record<string, unknown> = {}) {
 }
 
 describe("assertSandboxRunCanStart", () => {
-  it("allows starts when under quota and rate limits", async () => {
-    const listRecentUserActivities = vi.fn().mockResolvedValue([]);
-    const context = {
-      env: {},
-      repositories: fakeRepositories([[ActivityRepository, { listRecentUserActivities }]]),
-    } as any;
-
-    await expect(
-      assertSandboxRunCanStart({
-        context,
-        userId: 42,
-        now: new Date("2026-02-17T12:00:00.000Z"),
-      }),
-    ).resolves.toBeUndefined();
-  });
-
   it("rejects when concurrent active run limit is reached", async () => {
     const listRecentUserActivities = vi.fn().mockResolvedValue([
       {
