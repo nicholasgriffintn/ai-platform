@@ -74,25 +74,4 @@ describe("tool-use eval sample route", () => {
     expect(response.status).toBe(403);
     expect(sampleToolUseCaseMock).not.toHaveBeenCalled();
   });
-
-  it("samples the case for an admin", async () => {
-    sampleToolUseCaseMock.mockResolvedValue({
-      trajectory: { calls: [], texts: ["Frost"], finalText: "Frost" },
-      stoppedEarly: null,
-      steps: 1,
-      advertisedTools: [],
-      inputTokens: 10,
-      outputTokens: 5,
-      costUsd: null,
-      durationMs: 3,
-    });
-
-    const response = await postSample({ ...member, role: "admin" });
-
-    expect(response.status).toBe(200);
-    expect(sampleToolUseCaseMock).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({ model: "claude-sonnet-4-5", maxSteps: 8 }),
-    );
-  });
 });

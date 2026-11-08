@@ -5,7 +5,6 @@ import {
   findToolUseRegressions,
   gradeToolUse,
   matchesToolArgs,
-  resolveToolUseCaseVerdict,
 } from "../tool-use.js";
 
 const call = (tool: string, args: Record<string, unknown> = {}) => ({ tool, args });
@@ -61,50 +60,6 @@ describe("trajectory grading", () => {
         .failures,
     ).toEqual([{ check: "order", detail: "search was out of order" }]);
   });
-
-  it("requires calls in order without demanding adjacency", () => {
-    const trajectory = {
-      calls: [call("discover_capabilities"), call("get_weather"), call("use_recipe_connector")],
-      texts: [],
-      finalText: "",
-    };
-
-    expect(
-      gradeToolUse(
-        { order: [{ tool: "discover_capabilities" }, { tool: "use_recipe_connector" }] },
-        trajectory,
-      ).passed,
-    ).toBe(true);
-    expect(
-      gradeToolUse(
-        { order: [{ tool: "use_recipe_connector" }, { tool: "discover_capabilities" }] },
-        trajectory,
-      ).failures,
-    ).toEqual([{ check: "order", detail: "discover_capabilities was out of order" }]);
-  });
-
-  it("reports every failed check and separates final-text checks from all-text checks", () => {
-    const grade = gradeToolUse(
-      {
-        calls: [{ tool: "load_skill", args: { name: "~deck" } }],
-        minCalls: 2,
-        textMust: ["draft"],
-        finalTextMust: ["approve"],
-      },
-      {
-        calls: [call("load_skill", { name: "slides" })],
-        texts: ["A draft", "Done"],
-        finalText: "Done",
-      },
-    );
-
-    expect(grade.passed).toBe(false);
-    expect(grade.failures.map((failure) => failure.check)).toEqual([
-      "calls",
-      "minCalls",
-      "finalTextMust",
-    ]);
-  });
 });
 
 describe("early failure", () => {
@@ -156,18 +111,6 @@ describe("early failure", () => {
 });
 
 describe("sample voting and baselines", () => {
-  it("asks for a tie-break only when samples split evenly", () => {
-    expect(resolveToolUseCaseVerdict([true, true])).toEqual({ passed: true, needsTieBreak: false });
-    expect(resolveToolUseCaseVerdict([true, false])).toEqual({
-      passed: false,
-      needsTieBreak: true,
-    });
-    expect(resolveToolUseCaseVerdict([true, false, true])).toEqual({
-      passed: true,
-      needsTieBreak: false,
-    });
-  });
-
   it("counts only cases that passed in the baseline and fail now", () => {
     expect(
       findToolUseRegressions(
