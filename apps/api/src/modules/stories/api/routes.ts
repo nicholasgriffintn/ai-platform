@@ -1,4 +1,6 @@
 import {
+  entityPageSchema,
+  entityParamsSchema,
   errorResponseSchema,
   storyPageSchema,
   storyParamsSchema,
@@ -6,15 +8,29 @@ import {
 import { Hono } from "hono";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
-import { readStoryPage } from "~/modules/stories/application/read-models";
+import { readEntityPage, readStoryPage } from "~/modules/stories/application/read-models";
 
 const app = new Hono();
+
+addRoute(app, "get", "/entities/:entity_id", {
+  tags: ["stories"],
+  summary: "Read a person, organisation, place or product",
+  description: "The stories that involve an entity over time, and quotes attributed to it.",
+  auth: true,
+  paramSchema: entityParamsSchema,
+  responses: {
+    200: { description: "The entity", schema: entityPageSchema },
+    404: { description: "No such entity", schema: errorResponseSchema },
+  },
+  handler: async ({ serviceContext, params }) =>
+    readEntityPage(serviceContext.env, params.entity_id),
+});
 
 addRoute(app, "get", "/:story_id", {
   tags: ["stories"],
   summary: "Read a story",
   description:
-    "A shared story: its latest overview, each outlet's angle and the articles it joins.",
+    "A shared story: its latest overview, each outlet's angle, verified quotes, who is involved, earlier stories it continues and the articles it joins.",
   auth: true,
   paramSchema: storyParamsSchema,
   responses: {

@@ -64,6 +64,32 @@ export class StoryRepository extends BaseRepository {
     return this.runQuery<StoryRecord>("SELECT * FROM story WHERE id = ?", [storyId], true);
   }
 
+  async listByIds(ids: readonly string[]): Promise<StoryRecord[]> {
+    return this.selectInChunks(ids, (chunk) =>
+      this.runQuery<StoryRecord>(
+        `SELECT * FROM story WHERE id IN (${chunk.map(() => "?").join(", ")})`,
+        chunk,
+      ),
+    );
+  }
+
+  async setLeadEntities(storyId: string, entityIds: readonly string[]): Promise<void> {
+    await this.executeRun("UPDATE story SET lead_entity_ids = ? WHERE id = ?", [
+      JSON.stringify(entityIds),
+      storyId,
+    ]);
+  }
+
+  async closeQuiet(quietSince: string, closedAt: string): Promise<number> {
+    const result = await this.executeRun(
+      `UPDATE story SET status = 'closed', closed_at = ?
+       WHERE status = 'open' AND last_article_at < ?`,
+      [closedAt, quietSince],
+    );
+
+    return result.meta.changes ?? 0;
+  }
+
   async open(story: NewStory): Promise<void> {
     await this.executeRun(
       `INSERT INTO story (id, slug, title, status, opened_at, last_article_at, primary_topic_key)

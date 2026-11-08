@@ -27,6 +27,7 @@ import { generateStoryObject } from "~/modules/stories/infrastructure/StoryModel
 import { StoryRepository } from "~/modules/stories/infrastructure/StoryRepository";
 import type { IEnv } from "~/types";
 
+import { recordStoryGraph } from "./graph";
 import { storyRefreshState } from "./read-models";
 
 const logger = getLogger({ prefix: "stories/refresh" });
@@ -55,12 +56,18 @@ async function readArticleBodies(
       const text = (await readKnowledgeText({ env }, page)).trim();
 
       if (text) {
-        bodies.set(key, truncateForModel(text, STORY_BODY_CHARACTERS));
+        bodies.set(key, text);
       }
     }
   }
 
-  return bodies;
+  return new Map(
+    facts.flatMap((fact) => {
+      const body = bodies.get(comparableHttpUrl(fact.url) ?? fact.url);
+
+      return body ? [[fact.id, body] as const] : [];
+    }),
+  );
 }
 
 export async function refreshStory(
@@ -101,8 +108,10 @@ export async function refreshStory(
       facts.map((fact) => ({
         source: fact.outlet_name,
         title: fact.headline,
-        content:
-          bodies.get(comparableHttpUrl(fact.url) ?? fact.url) || fact.standfirst || fact.headline,
+        content: truncateForModel(
+          bodies.get(fact.id) || fact.standfirst || fact.headline,
+          STORY_BODY_CHARACTERS,
+        ),
       })),
     ),
   });
@@ -124,5 +133,13 @@ export async function refreshStory(
     outletCount: story.outlet_count,
   });
 
-  return written ? "written" : "unchanged";
+  if (!written) {
+    return "unchanged";
+  }
+
+  const graph = await recordStoryGraph(env, story, draft.object, facts, bodies, now);
+
+  logger.info("Wrote a story version", { story_id: storyId, version: story.version + 1, ...graph });
+
+  return "written";
 }
