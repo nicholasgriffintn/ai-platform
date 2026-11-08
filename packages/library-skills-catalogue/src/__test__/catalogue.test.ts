@@ -1,6 +1,10 @@
 import { readdir } from "node:fs/promises";
 
-import { polyPlaceSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  polyPlaceSchema,
+  readSkillDocumentInvocation,
+  setSkillDocumentInvocation,
+} from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -91,6 +95,30 @@ describe("skill documents", () => {
     expect(
       parseUserSkillDocument("---\nname: test\ndescription: A test\n---\nBody").frontmatter.name,
     ).toBe("test");
+  });
+
+  it("round-trips invocation flags edited in the composer settings", () => {
+    const original = "---\nname: deploy\ndescription: Ship it\n---\n\nRun the checklist.";
+    const userOnly = setSkillDocumentInvocation(original, {
+      userInvocable: true,
+      disableModelInvocation: true,
+    });
+    const definition = getBuiltInSkillCatalogue()
+      .extend([{ directory: "deploy", rawContent: userOnly, trust: "user-authored" }])
+      .getDefinition("deploy");
+
+    expect(definition).toMatchObject({ userInvocable: true, disableModelInvocation: true });
+    expect(readSkillDocumentInvocation(userOnly)).toEqual({
+      userInvocable: true,
+      disableModelInvocation: true,
+    });
+    expect(
+      setSkillDocumentInvocation(userOnly, { userInvocable: true, disableModelInvocation: false }),
+    ).toBe(original);
+    expect(getBuiltInSkillCatalogue().getDefinition("council")).toMatchObject({
+      userInvocable: true,
+      disableModelInvocation: false,
+    });
   });
 
   it("extends the built-in catalogue without changing it", () => {

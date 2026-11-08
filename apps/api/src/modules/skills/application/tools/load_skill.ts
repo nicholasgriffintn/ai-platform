@@ -1,7 +1,8 @@
-import { SKILL_LOAD_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
+import { readInvokedSkillId, SKILL_LOAD_TOOL_NAME } from "@ngriffin_uk/polychat-schemas";
 
 import {
   getSkillResource,
+  listModelInvocableSkills,
   loadSkill,
   resolveRequestSkillState,
 } from "~/modules/skills/application";
@@ -32,7 +33,10 @@ export const load_skill: ApiToolDefinition = {
     const loaded = catalog?.loadRuntime(skillId) ?? null;
     const requested = loaded?.content ?? (catalog ? null : await loadSkill(skillId));
     const readyIds = new Set(
-      available.filter((skill) => skill.state === "ready").map((skill) => skill.id),
+      listModelInvocableSkills(
+        available,
+        readInvokedSkillId(toolContext.request.request?.options),
+      ).map((skill) => skill.id),
     );
 
     if (

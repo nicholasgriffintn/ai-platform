@@ -5,6 +5,7 @@ import {
   findComposerInlineTokenRanges,
   getComposerDirectiveQuery,
   matchesComposerCommand,
+  rankComposerSlashCommands,
   removeComposerDirective,
   replaceComposerDirectiveWithCursor,
 } from "./composer-commands.js";
@@ -214,5 +215,32 @@ describe("composer command parsing", () => {
     expect(matchesComposerCommand("team", ["Sandbox", "sandbox", "Run repository tasks"])).toBe(
       false,
     );
+  });
+
+  it("ranks slash commands by exact, prefix, word, substring, then description match", () => {
+    const commands = [
+      { command: "summarise", description: "Condense a long thread" },
+      { command: "web-research", description: "Search the web" },
+      { command: "deep-research", description: "Research with sources" },
+      { command: "researcher", description: "A persona" },
+      { command: "research", description: "Plain research" },
+      { command: "agent", label: "Agent", description: "Hand research to a teammate" },
+    ];
+
+    expect(rankComposerSlashCommands("research", commands).map((item) => item.command)).toEqual([
+      "research",
+      "researcher",
+      "web-research",
+      "deep-research",
+      "agent",
+    ]);
+    expect(rankComposerSlashCommands("arch", commands).map((item) => item.command)).toEqual([
+      "web-research",
+      "deep-research",
+      "researcher",
+      "research",
+      "agent",
+    ]);
+    expect(rankComposerSlashCommands("", commands)).toHaveLength(commands.length);
   });
 });

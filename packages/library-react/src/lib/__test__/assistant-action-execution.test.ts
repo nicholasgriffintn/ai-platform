@@ -42,6 +42,8 @@ const artifactsSkill = {
   category: "Output",
   tags: [],
   alwaysOn: false,
+  userInvocable: true,
+  disableModelInvocation: false,
   requirement: { modelCapabilities: ["supportsToolCalls"], tools: [], suggestedTools: [] },
 } satisfies SkillSummary;
 
@@ -82,7 +84,7 @@ describe("assistant action execution", () => {
     });
   });
 
-  it("keeps a selected skill on the existing tool-toggle launch seam", async () => {
+  it("sends a selected skill as an explicit invocation for the turn", async () => {
     const catalog = buildAssistantActionCatalog({ skills: [artifactsSkill] });
     const item = catalog.items.find((catalogItem) => catalogItem.id === "skill:artifacts");
 
@@ -102,7 +104,7 @@ describe("assistant action execution", () => {
     ).resolves.toEqual({
       kind: "submit",
       input: "@Artifacts build a dashboard",
-      selectedTools: ["load_skill"],
+      requestOptions: { options: { skill: { id: "artifacts" } } },
     });
   });
 

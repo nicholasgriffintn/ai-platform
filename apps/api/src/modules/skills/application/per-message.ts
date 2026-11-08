@@ -5,7 +5,7 @@ import {
   MAX_PER_MESSAGE_SKILL_BODY_BYTES,
   type SkillCatalog,
 } from "@ngriffin_uk/polychat-library-skills-catalogue";
-import type { SkillAvailability } from "@ngriffin_uk/polychat-schemas";
+import { canModelInvokeSkill, type SkillAvailability } from "@ngriffin_uk/polychat-schemas";
 import { truncateForModel } from "@ngriffin_uk/polychat-utility-core";
 import { redactSensitiveTokens } from "@ngriffin_uk/polychat-utility-server/redaction";
 
@@ -70,7 +70,10 @@ export function listPerMessageSkillCandidates(
   const encoder = new TextEncoder();
 
   return skills
-    .filter((skill) => skill.state === "ready" && skill.activation === "per-message")
+    .filter(
+      (skill) =>
+        skill.state === "ready" && skill.activation === "per-message" && canModelInvokeSkill(skill),
+    )
     .flatMap((skill) => {
       const body = source.loadRuntime(skill.id)?.content.body.trim();
 

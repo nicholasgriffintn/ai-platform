@@ -22,6 +22,8 @@ export const agentSkillFrontmatterSchema = z
     compatibility: z.string().trim().min(1).max(500).optional(),
     metadata: z.record(z.string(), z.string()).optional(),
     "allowed-tools": z.string().trim().min(1).optional(),
+    "user-invocable": z.boolean().optional(),
+    "disable-model-invocation": z.boolean().optional(),
   })
   .strict();
 
@@ -37,6 +39,8 @@ export interface SkillDocumentInput {
   description: string;
   instructions: string;
   activation?: "per-message";
+  userInvocable?: boolean;
+  disableModelInvocation?: boolean;
 }
 
 export class SkillDocumentError extends Error {
@@ -50,8 +54,12 @@ export function buildSkillDocument(input: SkillDocumentInput): string {
   const description = input.description.trim().replace(/\s+/gu, " ");
 
   const metadata = input.activation ? `metadata:\n  activation: ${input.activation}\n` : "";
+  const userInvocable = input.userInvocable === false ? "user-invocable: false\n" : "";
+  const disableModelInvocation = input.disableModelInvocation
+    ? "disable-model-invocation: true\n"
+    : "";
 
-  return `---\nname: ${input.name}\ndescription: ${JSON.stringify(description)}\n${metadata}---\n\n${input.instructions.trim()}\n`;
+  return `---\nname: ${input.name}\ndescription: ${JSON.stringify(description)}\n${userInvocable}${disableModelInvocation}${metadata}---\n\n${input.instructions.trim()}\n`;
 }
 
 export function validateSkillResourcePath(path: string): string | null {

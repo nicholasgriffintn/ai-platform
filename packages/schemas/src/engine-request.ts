@@ -19,6 +19,7 @@ import { polyRequestSchema } from "./poly.js";
 import { permissionModeSchema } from "./providers.js";
 import { reasoningEffortSchema, reasoningSettingsSchema } from "./reasoning.js";
 import { sandboxRequestOptionsSchema } from "./sandbox.js";
+import { skillIdSchema } from "./skills.js";
 import { toolIdsSchema, toolSelectionModeSchema } from "./tools.js";
 
 const recordSchema = z.record(z.string(), z.unknown());
@@ -307,6 +308,12 @@ export const connectorChatRequestOptionsSchema = z
   })
   .strict();
 
+export const skillChatRequestOptionsSchema = z
+  .object({
+    id: skillIdSchema.describe("Skill the user explicitly invoked from the composer."),
+  })
+  .strict();
+
 export const toolInteractionResolutionSchema = z
   .object({
     toolName: z.string().min(1).describe("Tool whose pending interaction this user turn resolves."),
@@ -326,6 +333,11 @@ export const chatRequestOptionsSchema = z
     connector: connectorChatRequestOptionsSchema
       .optional()
       .describe("The exact connector selected for this chat turn."),
+    skill: skillChatRequestOptionsSchema
+      .optional()
+      .describe(
+        "The skill the user explicitly invoked for this chat turn. Its full instructions are applied to the turn.",
+      ),
     agent: teammateCompletionOptionsSchema
       .optional()
       .describe("Settings for agent mode, which enables multi-step reasoning and tool usage."),
@@ -671,6 +683,18 @@ const recipeChatRequestOptionsEnvelopeSchema = z
     recipe: recipeChatRequestOptionsSchema.optional(),
   })
   .passthrough();
+
+const skillChatRequestOptionsEnvelopeSchema = z
+  .object({
+    skill: skillChatRequestOptionsSchema.optional(),
+  })
+  .passthrough();
+
+export function readInvokedSkillId(options: unknown): string | undefined {
+  const parsed = skillChatRequestOptionsEnvelopeSchema.safeParse(options);
+
+  return parsed.success ? parsed.data.skill?.id : undefined;
+}
 
 export function readRecipeChatRequestOptions(
   options: unknown,

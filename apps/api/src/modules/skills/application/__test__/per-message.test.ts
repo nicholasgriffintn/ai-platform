@@ -21,6 +21,8 @@ function availability(id: string, activation?: "per-message"): SkillAvailability
     category: "Other",
     tags: [],
     alwaysOn: false,
+    userInvocable: true,
+    disableModelInvocation: false,
     ...(activation ? { activation } : {}),
     requirement: { modelCapabilities: [], tools: [], suggestedTools: [] },
     state: "ready",

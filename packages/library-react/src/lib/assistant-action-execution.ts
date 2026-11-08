@@ -162,6 +162,18 @@ export async function executeAssistantAction(
     return createSubmitResult(action.input, {});
   }
 
+  if (item.kind === "skill") {
+    const skillId = item.metadata?.skillId;
+
+    if (!skillId) {
+      return createUnsupportedActionResult(action.input, item);
+    }
+
+    return createSubmitResult(action.input, {
+      requestOptions: { options: { skill: { id: skillId } } },
+    });
+  }
+
   const launch = readLaunch(item);
 
   if (!launch) {

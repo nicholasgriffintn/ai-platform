@@ -31,6 +31,7 @@ export {
   mergeSkillLoadToolName,
   mergeSkillSuggestedToolNames,
 } from "./suggested-tools";
+export { listModelInvocableSkills, resolveInvokedSkill, withInvokedSkill } from "./invocation";
 export { createTeachingSkillDraft } from "./teaching";
 export { listScopedSkillSummaries } from "./listing";
 export {
