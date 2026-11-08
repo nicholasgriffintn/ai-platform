@@ -1,4 +1,5 @@
 import type { ViewportPreview } from "./render";
+import type { StoredPreviewScreenshot } from "./screenshots";
 
 const OVERFLOW_TOLERANCE_PX = 4;
 
@@ -47,9 +48,10 @@ function describeViewport(preview: ViewportPreview): string {
 
 export function summarisePreview(
   previews: readonly ViewportPreview[],
-  screenshotsAttached: boolean,
+  screenshots: readonly StoredPreviewScreenshot[] | null,
 ): string {
   const rendered = previews.some((preview) => preview.status === "rendered");
+  const screenshotsAttached = screenshots?.some(({ status }) => status === "attached") ?? false;
   const problems = listProblems(previews);
   const lines = [
     "Preview of the draft under the artifact sandbox rules.",
@@ -62,8 +64,14 @@ export function summarisePreview(
     lines.push("No console errors, page errors, blocked requests or sideways scrolling.");
   }
 
-  if (rendered && !screenshotsAttached) {
+  if (rendered && screenshots === null) {
     lines.push("Screenshots are not attached because the current model cannot read images.");
+  }
+
+  for (const screenshot of screenshots ?? []) {
+    if (screenshot.status === "omitted") {
+      lines.push(`The ${screenshot.viewport} screenshot is not attached: ${screenshot.reason}.`);
+    }
   }
 
   lines.push(

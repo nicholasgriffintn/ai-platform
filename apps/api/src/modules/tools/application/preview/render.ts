@@ -24,6 +24,8 @@ export type ViewportPreview =
     }
   | { viewport: PreviewViewport; status: "unavailable"; reason: string };
 
+const MAX_SCREENSHOT_HEIGHT = 2000;
+
 const BLOCKED_RESOURCE_TYPES = [
   "xhr",
   "fetch",
@@ -66,7 +68,10 @@ async function renderViewport(params: {
         body: {
           html: buildPreviewDocument({ html: params.html, css: params.css, reportId }),
           viewport: params.viewport.size,
-          screenshotOptions: { fullPage: true },
+          screenshotOptions: {
+            clip: { x: 0, y: 0, width: params.viewport.size.width, height: MAX_SCREENSHOT_HEIGHT },
+            captureBeyondViewport: true,
+          },
           gotoOptions: { waitUntil: "networkidle0", timeout: 15_000 },
           rejectResourceTypes: BLOCKED_RESOURCE_TYPES,
         },
@@ -92,7 +97,7 @@ async function renderViewport(params: {
     return {
       viewport,
       status: "rendered",
-      screenshot: `data:image/png;base64,${snapshot.data.screenshot}`,
+      screenshot: snapshot.data.screenshot,
       report: redactSensitiveTokens(report),
     };
   } catch (error) {

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { buildPreviewDocument, readPreviewReport, type PreviewReport } from "../capture";
 import type { ViewportPreview } from "../render";
+import { selectPreviewScreenshots, type StoredPreviewScreenshot } from "../screenshots";
 import { summarisePreview } from "../summary";
 
 const REPORT_ID = "polychat-preview-test";
@@ -24,8 +25,16 @@ function report(overrides: Partial<PreviewReport> = {}): PreviewReport {
   };
 }
 
-function rendered(viewport: "desktop" | "mobile", value: PreviewReport): ViewportPreview {
-  return { viewport, status: "rendered", screenshot: "data:image/png;base64,AA==", report: value };
+const ATTACHED: StoredPreviewScreenshot[] = [
+  { viewport: "desktop", status: "attached", url: "/outputs/shot/content" },
+];
+
+function rendered(
+  viewport: "desktop" | "mobile",
+  value: PreviewReport,
+  screenshot = "AAAA",
+): ViewportPreview {
+  return { viewport, status: "rendered", screenshot, report: value };
 }
 
 describe("buildPreviewDocument", () => {
@@ -106,7 +115,7 @@ describe("summarisePreview", () => {
           }),
         ),
       ],
-      true,
+      ATTACHED,
     );
 
     expect(summary).toContain(
@@ -123,13 +132,13 @@ describe("summarisePreview", () => {
   it("tells the model to present a clean draft and to check screenshots only when attached", () => {
     const previews = [rendered("desktop", report())];
 
-    expect(summarisePreview(previews, true)).toContain(
+    expect(summarisePreview(previews, ATTACHED)).toContain(
       "Next: check the screenshots for layout problems, then present the artifact.",
     );
-    expect(summarisePreview(previews, false)).toContain(
+    expect(summarisePreview(previews, null)).toContain(
       "Screenshots are not attached because the current model cannot read images.",
     );
-    expect(summarisePreview(previews, false)).toContain("Next: present the artifact.");
+    expect(summarisePreview(previews, null)).toContain("Next: present the artifact.");
   });
 
   it("tells the model not to retry when no viewport rendered", () => {
@@ -141,10 +150,39 @@ describe("summarisePreview", () => {
           reason: "Browser rendering is not configured",
         },
       ],
-      true,
+      ATTACHED,
     );
 
     expect(summary).toContain("desktop: not rendered. Browser rendering is not configured");
     expect(summary).toContain("Next: present the artifact without a preview; do not retry.");
+  });
+});
+
+describe("selectPreviewScreenshots", () => {
+  it("keeps screenshots under the byte cap and drops larger ones to a text note", () => {
+    const small = rendered("desktop", report());
+    const large = rendered("mobile", report(), "A".repeat(4_000));
+    const selected = selectPreviewScreenshots(
+      [small, large, { viewport: "desktop", status: "unavailable", reason: "x" }],
+      2_048,
+    );
+
+    expect(selected).toEqual([
+      { viewport: "desktop", status: "kept", base64: "AAAA", byteSize: 3 },
+      { viewport: "mobile", status: "omitted", reason: "the image is 3 KB, over the 2 KB limit" },
+    ]);
+  });
+
+  it("falls back to the text report when every screenshot is over the cap", () => {
+    const previews = [rendered("desktop", report({ contentHeight: 9_000 }))];
+    const [omitted] = selectPreviewScreenshots(previews, 1);
+    const summary = summarisePreview(previews, omitted?.status === "omitted" ? [omitted] : []);
+
+    expect(summary).toContain("desktop: rendered at 1280px wide; content is 1280×9000px.");
+    expect(summary).toContain(
+      "The desktop screenshot is not attached: the image is 1 KB, over the 0 KB limit.",
+    );
+    expect(summary).toContain("Next: present the artifact.");
+    expect(summary).not.toContain("check the screenshots");
   });
 });
