@@ -118,27 +118,29 @@ describe("summarisePreview", () => {
       ATTACHED,
     );
 
-    expect(summary).toContain(
+    expect(summary.text).toContain(
       "- [desktop, mobile] page error: ReferenceError: chart is not defined",
     );
-    expect(summary).toContain("- [mobile] console warn: Deprecated API");
-    expect(summary).toContain(
+    expect(summary.text).toContain("- [mobile] console warn: Deprecated API");
+    expect(summary.text).toContain(
       "- [mobile] request blocked by the artifact sandbox (script-src-elem): https://cdn.example.com/x.js",
     );
-    expect(summary).toContain("- [mobile] content is 640px wide in a 390px viewport");
-    expect(summary).toContain("Next: fix these problems, then present the artifact.");
+    expect(summary.text).toContain("- [mobile] content is 640px wide in a 390px viewport");
+    expect(summary.next).toBe(
+      "Fix these problems, then present the artifact. Preview again only if the fix changes the layout.",
+    );
   });
 
   it("tells the model to present a clean draft and to check screenshots only when attached", () => {
     const previews = [rendered("desktop", report())];
 
-    expect(summarisePreview(previews, ATTACHED)).toContain(
-      "Next: check the screenshots for layout problems, then present the artifact.",
+    expect(summarisePreview(previews, ATTACHED).next).toBe(
+      "Check the screenshots for layout problems, then present the artifact.",
     );
-    expect(summarisePreview(previews, null)).toContain(
+    expect(summarisePreview(previews, null).text).toContain(
       "Screenshots are not attached because the current model cannot read images.",
     );
-    expect(summarisePreview(previews, null)).toContain("Next: present the artifact.");
+    expect(summarisePreview(previews, null).next).toBe("Present the artifact.");
   });
 
   it("tells the model not to retry when no viewport rendered", () => {
@@ -153,8 +155,8 @@ describe("summarisePreview", () => {
       ATTACHED,
     );
 
-    expect(summary).toContain("desktop: not rendered. Browser rendering is not configured");
-    expect(summary).toContain("Next: present the artifact without a preview; do not retry.");
+    expect(summary.text).toContain("desktop: not rendered. Browser rendering is not configured");
+    expect(summary.next).toBe("Present the artifact without a preview; do not retry.");
   });
 });
 
@@ -178,11 +180,10 @@ describe("selectPreviewScreenshots", () => {
     const [omitted] = selectPreviewScreenshots(previews, 1);
     const summary = summarisePreview(previews, omitted?.status === "omitted" ? [omitted] : []);
 
-    expect(summary).toContain("desktop: rendered at 1280px wide; content is 1280×9000px.");
-    expect(summary).toContain(
+    expect(summary.text).toContain("desktop: rendered at 1280px wide; content is 1280×9000px.");
+    expect(summary.text).toContain(
       "The desktop screenshot is not attached: the image is 1 KB, over the 0 KB limit.",
     );
-    expect(summary).toContain("Next: present the artifact.");
-    expect(summary).not.toContain("check the screenshots");
+    expect(summary.next).toBe("Present the artifact.");
   });
 });

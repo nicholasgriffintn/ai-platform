@@ -117,6 +117,25 @@ describe("MCP port tools", () => {
     ).rejects.toMatchObject({ code: -32602 });
   });
 
+  it("gives MCP clients a tool's next hint after its result text", async () => {
+    mocks.runToolDirectly.mockResolvedValueOnce({
+      output_id: "output-2",
+      data: {
+        result: {
+          status: "success",
+          content: "Delegated the work.",
+          next: "End your turn; do not poll it.",
+        },
+      },
+    });
+
+    await expect(
+      callMcpPortTool(context, { name: "web_search", arguments: {}, appUrl: "" }),
+    ).resolves.toMatchObject({
+      content: [{ text: "Delegated the work.\n\nNext: End your turn; do not poll it." }],
+    });
+  });
+
   it("starts a teammate Response and says when the reply is still on its way", async () => {
     mocks.startTeammate.mockResolvedValue({
       id: "response-1",

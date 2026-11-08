@@ -5,6 +5,12 @@ import { DEFAULT_MAX_IDENTICAL_TOOL_CALLS } from "~/config/chat";
 
 export type ToolCallLedger = Map<string, number>;
 
+export const REPEATED_TOOL_CALL_NEXT =
+  "Use the earlier result, call a different tool, or answer the user now.";
+
+export const TOOL_TURN_LIMIT_NEXT =
+  "Work from the results you already have, or answer the user now.";
+
 export function createToolCallLedger(): ToolCallLedger {
   return new Map();
 }
@@ -63,7 +69,7 @@ export function checkToolCallRepeat(
 export function buildRepeatedToolCallMessage(functionName: string, attempts: number): string {
   const occurrences = attempts === 1 ? "once" : `${attempts} times`;
 
-  return `"${functionName}" has already run ${occurrences} in this response with these exact arguments, so running it again returns nothing new. Its result is already in this conversation: use that, call a different tool, or answer the user now.`;
+  return `"${functionName}" has already run ${occurrences} in this response with these exact arguments, so running it again returns nothing new. Its result is already in this conversation.`;
 }
 
 export function checkToolCallTurnBudget(
@@ -90,5 +96,5 @@ export function checkToolCallTurnBudget(
 export function buildToolTurnLimitMessage(functionName: string, limit: number): string {
   const allowance = limit === 1 ? "once" : `${limit} times`;
 
-  return `"${functionName}" can run ${allowance} per response and that allowance is used up. Work from the results you already have and answer the user now.`;
+  return `"${functionName}" can run ${allowance} per response and that allowance is used up.`;
 }

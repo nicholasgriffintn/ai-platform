@@ -749,7 +749,7 @@
           "vision",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Qwen3 VL 235B A22B Instruct is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
@@ -1293,7 +1293,7 @@
         "strengths": [
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "releaseDate": "October 26, 2026",
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.00095,

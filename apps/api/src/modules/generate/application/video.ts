@@ -29,7 +29,11 @@ export interface VideoResponse {
   name: string;
   content: string;
   data: any;
+  next?: string;
 }
+
+export const VIDEO_IN_PROGRESS_NEXT =
+  "The video finishes in the background and appears here; tell the user it is on its way and do not call create_video again.";
 
 export async function generateVideo({
   completion_id,
@@ -120,6 +124,7 @@ export async function generateVideo({
       status: "success",
       name: "create_video",
       content: isAsync ? "Video generation in progress" : "Video generated successfully",
+      ...(isAsync ? { next: VIDEO_IN_PROGRESS_NEXT } : {}),
       data: videoData,
     };
   } catch (error) {

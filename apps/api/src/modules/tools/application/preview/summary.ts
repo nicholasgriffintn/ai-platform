@@ -49,7 +49,7 @@ function describeViewport(preview: ViewportPreview): string {
 export function summarisePreview(
   previews: readonly ViewportPreview[],
   screenshots: readonly StoredPreviewScreenshot[] | null,
-): string {
+): { text: string; next: string } {
   const rendered = previews.some((preview) => preview.status === "rendered");
   const screenshotsAttached = screenshots?.some(({ status }) => status === "attached") ?? false;
   const problems = listProblems(previews);
@@ -74,13 +74,12 @@ export function summarisePreview(
     }
   }
 
-  lines.push(
-    !rendered
-      ? "Next: present the artifact without a preview; do not retry."
+  return {
+    text: lines.join("\n"),
+    next: !rendered
+      ? "Present the artifact without a preview; do not retry."
       : problems.length > 0
-        ? "Next: fix these problems, then present the artifact. Preview again only if the fix changes the layout."
-        : `Next: ${screenshotsAttached ? "check the screenshots for layout problems, then " : ""}present the artifact.`,
-  );
-
-  return lines.join("\n");
+        ? "Fix these problems, then present the artifact. Preview again only if the fix changes the layout."
+        : `${screenshotsAttached ? "Check the screenshots for layout problems, then present" : "Present"} the artifact.`,
+  };
 }

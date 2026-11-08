@@ -1,3 +1,4 @@
+import { omitToolResultNext } from "@ngriffin_uk/polychat-schemas";
 import { hasUrlExtension, isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 
 interface ResolveResponseDataOptions {
@@ -34,11 +35,13 @@ export function resolveResponseData(
   result: Record<string, unknown>,
   { hasAppSchema, responseType }: ResolveResponseDataOptions,
 ) {
-  const resultData = result.data || result;
+  const rawData = result.data || result;
 
-  if (!isRecord(resultData)) {
-    return resultData;
+  if (!isRecord(rawData)) {
+    return rawData;
   }
+
+  const resultData = omitToolResultNext(rawData);
 
   if (hasAppSchema && resultData.result) {
     return resultData.result;

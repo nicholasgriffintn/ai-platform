@@ -43,7 +43,8 @@ export const preview_html: ApiToolDefinition = {
     return {
       status: previews.some((preview) => preview.status === "rendered") ? "success" : "error",
       name: previewHtmlDescriptor.name,
-      content: images.length > 0 ? [{ type: "text", text: summary }, ...images] : summary,
+      content: images.length > 0 ? [{ type: "text", text: summary.text }, ...images] : summary.text,
+      next: summary.next,
       data: {
         previews: previews.map((preview) =>
           preview.status === "rendered"

@@ -31,7 +31,7 @@
           "search",
           "research"
         ],
-        "speed": 4,
+        "speed": 5,
         "multimodal": true,
         "isFeatured": false,
         "lastUpdated": "December 17, 2025",
@@ -774,7 +774,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.0004,
@@ -969,7 +969,7 @@
           "research",
           "coding"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,

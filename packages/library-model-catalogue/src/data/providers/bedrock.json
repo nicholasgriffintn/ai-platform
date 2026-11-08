@@ -971,7 +971,7 @@
       "model": "ministral/ministral-3-8b",
       "matchingModel": "mistral.ministral-3-8b-instruct",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "December 2, 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00015
@@ -1028,7 +1028,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 6, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003
@@ -1109,7 +1109,7 @@
       "overrides": {
         "name": "Qwen/Qwen3-VL-235B-A22B-Instruct",
         "maxTokens": 262000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 25, 2025",
         "costPer1kInputTokens": 0.00053,
         "costPer1kOutputTokens": 0.00266
@@ -2257,7 +2257,7 @@
       "model": "kimi-k3/kimi-k3-global",
       "matchingModel": "global.moonshotai.kimi-k3",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -2290,7 +2290,7 @@
       "model": "kimi-k3/kimi-k3-us",
       "matchingModel": "us.moonshotai.kimi-k3",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.0033,
         "costPer1kOutputTokens": 0.0165,
@@ -2579,7 +2579,7 @@
       "model": "gpt-terra/gpt-6-1-terra-global",
       "matchingModel": "global.openai.gpt-6.1-terra",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,
@@ -2590,7 +2590,7 @@
       "model": "gpt-terra/gpt-6-1-terra-us",
       "matchingModel": "us.openai.gpt-6.1-terra",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0055,
