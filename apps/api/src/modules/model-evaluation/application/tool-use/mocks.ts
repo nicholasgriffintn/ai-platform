@@ -1,5 +1,5 @@
 import { matchesToolArgs } from "@ngriffin_uk/polychat-library-model-registry/tool-use";
-import type { ToolUseEvalCall, ToolUseEvalCase } from "@ngriffin_uk/polychat-schemas";
+import type { ToolUseEvalCall, ToolUseEvalSpec } from "@ngriffin_uk/polychat-schemas";
 import { parseAIResponseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { ai } from "~/infrastructure/ai";
@@ -23,14 +23,14 @@ const ENVIRONMENT_SYSTEM_PROMPT = [
 ].join(" ");
 
 function buildEnvironmentPrompt(params: {
-  evalCase: ToolUseEvalCase;
+  spec: ToolUseEvalSpec;
   tool: string;
   description: string | undefined;
   args: Record<string, unknown>;
 }): string {
   return JSON.stringify({
-    facts: params.evalCase.setup.facts,
-    world: params.evalCase.setup.world ?? {},
+    facts: params.spec.setup.facts,
+    world: params.spec.setup.world ?? {},
     tool: { name: params.tool, description: params.description ?? "" },
     arguments: params.args,
   });
@@ -39,7 +39,7 @@ function buildEnvironmentPrompt(params: {
 async function playEnvironment(params: {
   env: IEnv;
   user: IUser;
-  evalCase: ToolUseEvalCase;
+  spec: ToolUseEvalSpec;
   tool: string;
   description: string | undefined;
   args: Record<string, unknown>;
@@ -62,12 +62,12 @@ async function playEnvironment(params: {
 export async function resolveMockedToolResult(params: {
   env: IEnv;
   user: IUser;
-  evalCase: ToolUseEvalCase;
+  spec: ToolUseEvalSpec;
   tool: string;
   description: string | undefined;
   args: Record<string, unknown>;
 }): Promise<MockedToolResult> {
-  const canned = (params.evalCase.setup.mocks[params.tool] ?? []).find(
+  const canned = (params.spec.setup.mocks[params.tool] ?? []).find(
     (mock) => !mock.args || matchesToolArgs(mock.args, params.args),
   );
 
@@ -75,7 +75,7 @@ export async function resolveMockedToolResult(params: {
     return { result: canned.result, mocked: "canned" };
   }
 
-  if (params.evalCase.setup.facts) {
+  if (params.spec.setup.facts) {
     return { result: await playEnvironment(params), mocked: "environment" };
   }
 

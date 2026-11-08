@@ -1,6 +1,7 @@
 import type {
   ConnectionCapabilities,
   EvalCase,
+  EvalSuiteKind,
   GraderConfig,
   PolicyRule,
   MODEL_PROVIDER_IDS,
@@ -159,6 +160,7 @@ type ModelEvalSuiteInsert = Pick<ModelEvalSuiteRecord, "id" | "workspace_id" | "
     Pick<
       ModelEvalSuiteRecord,
       | "project_id"
+      | "suite_kind"
       | "description"
       | "system_prompt"
       | "grader_ids"
@@ -174,6 +176,7 @@ export const modelEvalSuite = {
   workspace_id: sql<string>`${modelConfiguration.workspace_id}`,
   project_id: sql<string | null>`${modelConfiguration.project_id}`,
   name: sql<string>`${modelConfiguration.name}`,
+  suite_kind: storageScalarField<EvalSuiteKind | null>(modelConfiguration.data, "suite_kind"),
   description: storageScalarField<string | null>(modelConfiguration.data, "description"),
   system_prompt: storageScalarField<string | null>(modelConfiguration.data, "system_prompt"),
   cases: storageJsonField<EvalCase[]>(modelConfiguration.data, "cases"),
@@ -196,6 +199,7 @@ export function modelEvalSuiteValues(input: ModelEvalSuiteInsert) {
     updated_at: input.updated_at ?? sql`(CURRENT_TIMESTAMP)`,
     scope_key: input.id,
     data: storageJsonObject({
+      suite_kind: input.suite_kind ?? "answer",
       description: input.description ?? null,
       system_prompt: input.system_prompt ?? null,
       cases: input.cases,

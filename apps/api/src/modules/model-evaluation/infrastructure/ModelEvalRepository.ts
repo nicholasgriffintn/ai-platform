@@ -1,4 +1,4 @@
-import type { EvalCase, ScoreSummary } from "@ngriffin_uk/polychat-schemas";
+import type { EvalCase, EvalSuiteKind, ScoreSummary } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
 import { and, desc, eq, inArray, isNull, ne, or } from "drizzle-orm";
 
@@ -25,6 +25,7 @@ export class ModelEvalRepository extends BaseRepository<Pick<IEnv, "DB">> {
     workspaceId: string;
     projectId: string | null;
     name: string;
+    kind: EvalSuiteKind;
     description: string | null;
     systemPrompt: string | null;
     cases: EvalCase[];
@@ -40,6 +41,7 @@ export class ModelEvalRepository extends BaseRepository<Pick<IEnv, "DB">> {
           workspace_id: input.workspaceId,
           project_id: input.projectId,
           name: input.name,
+          suite_kind: input.kind,
           description: input.description,
           system_prompt: input.systemPrompt,
           cases: input.cases,

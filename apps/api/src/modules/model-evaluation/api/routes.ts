@@ -14,16 +14,15 @@ import {
   registryRunParamsSchema,
   registrySuiteParamsSchema,
   registryWorkspaceParamsSchema,
+  regradeEvalRunRequestSchema,
+  regradeEvalRunResponseSchema,
   routineSuccessListResponseSchema,
   startEvalRunsRequestSchema,
-  toolUseEvalSampleRequestSchema,
-  toolUseEvalSampleSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
-import { requireAdmin } from "~/middleware/adminMiddleware";
 import {
   createGrader,
   deleteGrader,
@@ -40,7 +39,7 @@ import {
   readEvalCaseResults,
   startEvalRuns,
 } from "~/modules/model-evaluation/application/suites";
-import { sampleToolUseCase } from "~/modules/model-evaluation/application/tool-use/sampler";
+import { regradeEvalRun } from "~/modules/model-evaluation/application/tool-use/regrade";
 
 const app = new Hono();
 const tags = ["model-evaluation"];
@@ -53,18 +52,6 @@ addRoute(app, "get", "/routines/success", {
   summary: "List how often your routines finished with evidence over the last four weeks",
   responses: { 200: { description: "Routine success", schema: routineSuccessListResponseSchema } },
   handler: ({ serviceContext }) => listRoutineSuccess(serviceContext),
-});
-
-addRoute(app, "post", "/tool-use-evals/samples", {
-  auth: true,
-  tags,
-  summary:
-    "Sample one tool-use eval case with the real tool catalogue and system prompt, and canned tool results",
-  description: "Admins only.",
-  middleware: [requireAdmin],
-  bodySchema: toolUseEvalSampleRequestSchema,
-  responses: { 200: { description: "Sample", schema: toolUseEvalSampleSchema } },
-  handler: ({ serviceContext, body }) => sampleToolUseCase(serviceContext, body),
 });
 
 addRoute(app, "get", `${base}/graders`, {
@@ -182,6 +169,19 @@ addRoute(app, "get", `${base}/eval_runs/:run_id/results`, {
   responses: { 200: { description: "Case results", schema: evalCaseResultsResponseSchema } },
   handler: ({ serviceContext, params }) =>
     readEvalCaseResults(serviceContext, params.workspace_id, params.run_id),
+});
+
+addRoute(app, "post", `${base}/eval_runs/:run_id/regrade`, {
+  auth: true,
+  tags,
+  summary: "Regrade a tool-use run against its suite's current expectations",
+  description:
+    "Re-scores the stored samples without calling the model again. Pass a baseline run of the same suite to list the cases that passed there and fail now.",
+  paramSchema: registryRunParamsSchema,
+  bodySchema: regradeEvalRunRequestSchema,
+  responses: { 200: { description: "Regraded run", schema: regradeEvalRunResponseSchema } },
+  handler: ({ serviceContext, params, body }) =>
+    regradeEvalRun(serviceContext, params.workspace_id, params.run_id, body),
 });
 
 export default app;

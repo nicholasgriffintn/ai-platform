@@ -6,7 +6,7 @@ import { isToolDeclaration } from "@ngriffin_uk/polychat-library-tools";
 import type {
   RecipeConnectorProvider,
   SkillAvailability,
-  ToolUseEvalCase,
+  ToolUseEvalSpec,
 } from "@ngriffin_uk/polychat-schemas";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -26,6 +26,17 @@ import {
   resolveSettingsDisabledToolNames,
   withoutSettingsDisabledTools,
 } from "~/modules/tools/application/availability";
+
+export interface ToolUseTestCase {
+  id: string;
+  prompt: string;
+  spec: ToolUseEvalSpec;
+}
+
+export interface ToolUseTarget {
+  model: string;
+  provider: string;
+}
 
 export interface ToolUseEnvironment {
   systemPrompt: string;
@@ -59,13 +70,13 @@ async function listCaseSkills(params: {
 
 export async function prepareToolUseEnvironment(params: {
   context: ServiceContext;
-  evalCase: ToolUseEvalCase;
-  model: string;
-  provider?: string;
+  testCase: ToolUseTestCase;
+  target: ToolUseTarget;
 }): Promise<ToolUseEnvironment> {
-  const { context, evalCase, model, provider } = params;
+  const { context, testCase } = params;
+  const { model, provider } = params.target;
   const { env } = context;
-  const request = evalCase.setup.request;
+  const request = testCase.spec.setup.request;
   const user = context.requireUser();
   const modelConfig = await getModelConfigByMatchingModel(model, env, provider, user.id);
   const settingsDisabledTools = resolveSettingsDisabledToolNames({
@@ -103,8 +114,8 @@ export async function prepareToolUseEnvironment(params: {
   );
   const systemPrompt = await getSystemPrompt({
     request: {
-      completion_id: `tool-use-eval:${evalCase.id}`,
-      input: evalCase.prompt,
+      completion_id: `tool-use-eval:${testCase.id}`,
+      input: testCase.prompt,
       model,
       provider,
       date: new Date().toISOString().split("T")[0],

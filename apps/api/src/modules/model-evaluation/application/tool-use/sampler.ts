@@ -4,10 +4,8 @@ import {
 } from "@ngriffin_uk/polychat-library-chat/response-stats";
 import { findMonotoneFailure } from "@ngriffin_uk/polychat-library-model-registry/tool-use";
 import type {
-  ToolUseEvalCase,
   ToolUseEvalHistoryMessage,
   ToolUseEvalSample,
-  ToolUseEvalSampleRequest,
   ToolUseEvalTrajectory,
 } from "@ngriffin_uk/polychat-schemas";
 import { generateId } from "@ngriffin_uk/polychat-utility-core";
@@ -18,10 +16,14 @@ import { getModelConfigByMatchingModel } from "~/modules/models/application/reso
 import { createAgentProviderIO } from "~/modules/responses/application/engine/agent/provider-io";
 import type { Message } from "~/types";
 
-import { prepareToolUseEnvironment } from "./environment";
+import { prepareToolUseEnvironment, type ToolUseTarget, type ToolUseTestCase } from "./environment";
 import { resolveMockedToolResult } from "./mocks";
 
 const providerIO = createAgentProviderIO();
+
+const MAX_STEPS = 8;
+
+export type ToolUseSampleRun = Omit<ToolUseEvalSample, "passed" | "failures">;
 
 function toolResultMessage(call: { id: string; tool: string; result: unknown }): Message {
   return {
@@ -61,22 +63,19 @@ function addUsage(totals: { inputTokens: number; outputTokens: number }, usage: 
   totals.outputTokens += counts?.outputTokens ?? 0;
 }
 
-export async function sampleToolUseCase(
-  context: ServiceContext,
-  request: ToolUseEvalSampleRequest,
-): Promise<ToolUseEvalSample> {
+export async function sampleToolUseCase(params: {
+  context: ServiceContext;
+  testCase: ToolUseTestCase;
+  target: ToolUseTarget;
+}): Promise<ToolUseSampleRun> {
+  const { context, testCase, target } = params;
   const started = Date.now();
   const scope = { env: context.env, user: context.requireUser() };
-  const evalCase: ToolUseEvalCase = request.case;
-  const environment = await prepareToolUseEnvironment({
-    context,
-    evalCase,
-    model: request.model,
-    provider: request.provider,
-  });
+  const { spec } = testCase;
+  const environment = await prepareToolUseEnvironment({ context, testCase, target });
   const messages: Message[] = [
-    ...historyMessages(evalCase.setup.history),
-    { role: "user", content: evalCase.prompt },
+    ...historyMessages(spec.setup.history),
+    { role: "user", content: testCase.prompt },
   ];
   const trajectory: ToolUseEvalTrajectory = { calls: [], texts: [], finalText: "" };
   const usage = { inputTokens: 0, outputTokens: 0 };
@@ -84,14 +83,14 @@ export async function sampleToolUseCase(
   let steps = 0;
   let finished = false;
 
-  while (steps < request.maxSteps && !finished && !stoppedEarly) {
+  while (steps < MAX_STEPS && !finished && !stoppedEarly) {
     steps += 1;
 
     const completion = await ai.complete({
       env: scope.env,
       user: scope.user,
-      model: request.model,
-      provider: request.provider,
+      model: target.model,
+      provider: target.provider,
       system: environment.systemPrompt,
       messages,
       available_functions: environment.functions,
@@ -121,7 +120,7 @@ export async function sampleToolUseCase(
       const mocked = await resolveMockedToolResult({
         env: scope.env,
         user: scope.user,
-        evalCase,
+        spec,
         tool: toolCall.name,
         description: environment.descriptions.get(toolCall.name),
         args: toolCall.arguments,
@@ -139,15 +138,15 @@ export async function sampleToolUseCase(
       );
     }
 
-    const failure = findMonotoneFailure(evalCase.expect, trajectory);
+    const failure = findMonotoneFailure(spec.expect, trajectory);
 
     stoppedEarly = failure ? `${failure.check}: ${failure.detail}` : null;
   }
 
   const modelConfig = await getModelConfigByMatchingModel(
-    request.model,
+    target.model,
     scope.env,
-    request.provider,
+    target.provider,
     scope.user.id,
   );
 

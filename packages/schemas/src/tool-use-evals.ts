@@ -8,6 +8,10 @@ import { toolSelectionModeSchema } from "./tools.js";
 
 export const TOOL_USE_EVAL_CASE_KINDS = ["bad", "guard", "control"] as const;
 
+export const TOOL_USE_EVAL_METRIC = "tool_use";
+
+export const TOOL_USE_STARTER_SUITE = "tool_use_starter";
+
 export const toolUseEvalArgsPatternSchema = z
   .record(z.string(), z.unknown())
   .describe(
@@ -70,18 +74,16 @@ export const toolUseEvalExpectationSchema = z.object({
   finalTextMust: z.array(z.string()).optional(),
 });
 
-export const toolUseEvalCaseSchema = z.object({
-  id: z.string().min(1).max(96),
+export const toolUseEvalSpecSchema = z.object({
   kind: z.enum(TOOL_USE_EVAL_CASE_KINDS),
-  experience: z.string().min(1),
-  rule: z.string().min(1),
-  source: z.string().min(1),
+  experience: z.string().min(1).max(1000),
+  rule: z.string().min(1).max(2000),
+  source: z.string().min(1).max(1000),
   setup: toolUseEvalSetupSchema.default({
     request: { toolSelection: "managed", connectedApps: [] },
     history: [],
     mocks: {},
   }),
-  prompt: z.string().min(1),
   expect: toolUseEvalExpectationSchema,
 });
 
@@ -99,13 +101,6 @@ export const toolUseEvalTrajectorySchema = z.object({
   finalText: z.string(),
 });
 
-export const toolUseEvalSampleRequestSchema = z.object({
-  case: toolUseEvalCaseSchema,
-  model: z.string().min(1),
-  provider: z.string().min(1).optional(),
-  maxSteps: z.number().int().min(1).max(16).default(8),
-});
-
 export const toolUseEvalSampleSchema = z.object({
   trajectory: toolUseEvalTrajectorySchema,
   stoppedEarly: z.string().nullable(),
@@ -115,6 +110,13 @@ export const toolUseEvalSampleSchema = z.object({
   outputTokens: z.number().nonnegative(),
   costUsd: z.number().nonnegative().nullable(),
   durationMs: z.number().nonnegative(),
+  passed: z.boolean(),
+  failures: z.array(z.object({ check: z.string(), detail: z.string() })),
+});
+
+export const toolUseEvalCaseResultSchema = z.object({
+  passed: z.boolean(),
+  samples: z.array(toolUseEvalSampleSchema),
 });
 
 export type ToolUseEvalArgsPattern = z.infer<typeof toolUseEvalArgsPatternSchema>;
@@ -123,8 +125,8 @@ export type ToolUseEvalHistoryMessage = z.infer<typeof toolUseEvalHistoryMessage
 export type ToolUseEvalMock = z.infer<typeof toolUseEvalMockSchema>;
 export type ToolUseEvalRequest = z.infer<typeof toolUseEvalRequestSchema>;
 export type ToolUseEvalExpectation = z.infer<typeof toolUseEvalExpectationSchema>;
-export type ToolUseEvalCase = z.infer<typeof toolUseEvalCaseSchema>;
+export type ToolUseEvalSpec = z.infer<typeof toolUseEvalSpecSchema>;
 export type ToolUseEvalCall = z.infer<typeof toolUseEvalCallSchema>;
 export type ToolUseEvalTrajectory = z.infer<typeof toolUseEvalTrajectorySchema>;
-export type ToolUseEvalSampleRequest = z.infer<typeof toolUseEvalSampleRequestSchema>;
 export type ToolUseEvalSample = z.infer<typeof toolUseEvalSampleSchema>;
+export type ToolUseEvalCaseResult = z.infer<typeof toolUseEvalCaseResultSchema>;
