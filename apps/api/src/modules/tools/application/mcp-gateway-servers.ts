@@ -4,12 +4,14 @@ import {
   type McpClient,
   type McpResourceContent,
   type McpTool,
+  type McpToolCallResult,
 } from "@ngriffin_uk/polychat-ai-integrations";
 import {
   MCP_APP_MAX_HTML_BYTES,
   MCP_APP_MIME_TYPE,
   mcpAppUiMetaSchema,
   normaliseMcpServerLabel,
+  type McpAppCallToolResult,
   type McpAppUiMeta,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
@@ -173,6 +175,16 @@ export function readMcpGatewayAppResource(
       return { uri, html, ui: ui.success ? ui.data : {} };
     },
   );
+}
+
+export function toMcpAppCallToolResult(result: McpToolCallResult): McpAppCallToolResult {
+  return {
+    content: result.content,
+    ...(result.structuredContent !== undefined
+      ? { structuredContent: result.structuredContent }
+      : {}),
+    ...(result.isError !== undefined ? { isError: result.isError } : {}),
+  };
 }
 
 export async function resolveUserMcpGatewayServers(

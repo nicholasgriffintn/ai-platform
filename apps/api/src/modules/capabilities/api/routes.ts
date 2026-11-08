@@ -1,17 +1,22 @@
 import {
   capabilityCatalogResponseSchema,
   publicCapabilityCatalogueResponseSchema,
+  remoteAppListResponseSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
-import { getProjectExperienceCatalog } from "~/modules/capabilities/domain/app-catalogue";
+import {
+  getProjectExperienceCatalog,
+  getRemoteExperienceCatalog,
+} from "~/modules/capabilities/domain/app-catalogue";
 import { MODEL_TOOL_DEFINITIONS } from "~/modules/capabilities/domain/model-tools";
 import { listRecipeCatalogueSummaries } from "~/modules/recipes/application";
 import { listScopedSkillSummaries } from "~/modules/skills/application";
 import { listScopedTeammateSummaries } from "~/modules/teammates/application";
+import { listMcpAppEntries } from "~/modules/tools/application/mcp-app-entries";
 import { listCatalogueTools } from "~/modules/tools/application/toolsOperations";
 
 const app = new Hono();
@@ -66,6 +71,20 @@ addRoute(app, "get", "/catalogue", {
     recipes: listRecipeCatalogueSummaries(),
   }),
   cache: { maxAge: 1800, staleWhileRevalidate: 3600 },
+});
+
+addRoute(app, "get", "/remote_apps", {
+  tags: ["capabilities"],
+  summary: "List apps from connected MCP servers",
+  description:
+    "Returns the MCP Apps the caller's connected MCP servers offer as standalone apps. A server that cannot be reached is left out.",
+  auth: true,
+  responses: {
+    200: { description: "Remote apps", schema: remoteAppListResponseSchema },
+  },
+  handler: async ({ serviceContext }) => ({
+    apps: getRemoteExperienceCatalog(await listMcpAppEntries(serviceContext)),
+  }),
 });
 
 export default app;

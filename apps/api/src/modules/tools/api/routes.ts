@@ -14,6 +14,8 @@ import {
   mcpConnectionListSchema,
   mcpAppCallToolResultSchema,
   mcpAppToolCallRequestSchema,
+  mcpAppEntryOpenRequestSchema,
+  mcpAppViewSchema,
   mcpClientMetadataDocumentSchema,
   mcpOAuthCallbackQuerySchema,
   mcpOAuthStartInputSchema,
@@ -27,6 +29,7 @@ import { defineResource } from "~/infrastructure/http/resource";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { runToolDirectly } from "~/modules/tools/application/direct-run";
 import { callMcpAppTool } from "~/modules/tools/application/mcp-app-calls";
+import { openMcpAppEntry } from "~/modules/tools/application/mcp-app-entries";
 import {
   createMcpConnection,
   deleteMcpConnection,
@@ -111,6 +114,16 @@ defineResource(app, { idParam: "tool_id", tags: ["tools"] }, (tools) => {
     bodySchema: mcpAppToolCallRequestSchema,
     responses: { 200: { description: "The tool result", schema: mcpAppCallToolResultSchema } },
     handler: ({ serviceContext, body }) => callMcpAppTool(serviceContext, body),
+  });
+
+  tools.collection("mcp_app_views", "view_id").create({
+    auth: true,
+    summary: "Open an MCP App on its own page",
+    description:
+      "Runs the read-only tool a connected MCP server marks as an app entry point and returns its view, fetched here so the page never speaks to the server itself.",
+    bodySchema: mcpAppEntryOpenRequestSchema,
+    responses: { 200: { description: "The app view", schema: mcpAppViewSchema } },
+    handler: ({ serviceContext, body }) => openMcpAppEntry(serviceContext, body),
   });
 
   tools.singleton("configuration").update({

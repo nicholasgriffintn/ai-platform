@@ -9,6 +9,7 @@ import {
   listMcpGatewayTools,
   openMcpGatewaySession,
   resolveUserMcpGatewayServers,
+  toMcpAppCallToolResult,
 } from "./mcp-gateway-servers";
 
 export async function callMcpAppTool(
@@ -46,13 +47,5 @@ export async function callMcpAppTool(
     );
   }
 
-  const result = await session.client.callTool(request.tool, request.arguments);
-
-  return {
-    content: result.content,
-    ...(result.structuredContent !== undefined
-      ? { structuredContent: result.structuredContent }
-      : {}),
-    ...(result.isError !== undefined ? { isError: result.isError } : {}),
-  };
+  return toMcpAppCallToolResult(await session.client.callTool(request.tool, request.arguments));
 }

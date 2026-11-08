@@ -183,12 +183,27 @@ export const mcpAppToolCallRequestSchema = z.object({
   arguments: z.record(z.string(), z.unknown()).default({}),
 });
 
+export const mcpAppEntryOpenRequestSchema = mcpAppToolCallRequestSchema.pick({
+  integration: true,
+  tool: true,
+});
+
+export const MCP_APP_ENTRY_META_KEY = "app.polychat/app";
+
+export const mcpAppEntryMetaSchema = z.object({
+  name: z.string().trim().min(1).max(80).optional(),
+  description: z.string().trim().min(1).max(400).optional(),
+  category: z.string().trim().min(1).max(40).optional(),
+  layout: z.enum(["contained", "workspace"]).optional(),
+});
+
 export type McpAppCsp = z.infer<typeof mcpAppCspSchema>;
 export type McpAppPermissions = z.infer<typeof mcpAppPermissionsSchema>;
 export type McpAppUiMeta = z.infer<typeof mcpAppUiMetaSchema>;
 export type McpAppCallToolResult = z.infer<typeof mcpAppCallToolResultSchema>;
 export type McpAppView = z.infer<typeof mcpAppViewSchema>;
 export type McpAppToolCallRequest = z.infer<typeof mcpAppToolCallRequestSchema>;
+export type McpAppEntryOpenRequest = z.infer<typeof mcpAppEntryOpenRequestSchema>;
 
 export function normaliseMcpServerLabel(value: string): string {
   return value

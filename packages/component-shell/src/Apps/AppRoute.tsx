@@ -2,6 +2,7 @@ import { BackLink, ButtonLink, EmptyState } from "@ngriffin_uk/polychat-componen
 import { isAuthenticationError, useChatStore } from "@ngriffin_uk/polychat-library-client";
 import {
   useCapabilityCatalog,
+  useRemoteApps,
   type AppProjectScope,
   type CapabilitySurface,
   getAppBackLink,
@@ -39,15 +40,26 @@ export function AppRoute({
     isLoading: isCatalogLoading,
     error: catalogError,
   } = useCapabilityCatalog(surface.projectId);
-  const definition = catalog?.experiences.find((item) => item.id === appId);
+  const bundledDefinition = catalog?.experiences.find((item) => item.id === appId);
+  const looksUpRemoteApp = !project && Boolean(catalog) && !bundledDefinition;
+  const {
+    data: remoteApps,
+    isLoading: isRemoteAppLoading,
+    error: remoteAppError,
+  } = useRemoteApps({ enabled: looksUpRemoteApp });
+  const definition = bundledDefinition ?? remoteApps?.find((item) => item.id === appId);
   const title = titleOverride ?? definition?.name;
   const backLink = getAppBackLink(surface, appId, subpath, title);
   const basePath = getAppPath(surface, appId);
   const presentation = definition?.surface ?? CONTAINED_APP_PRESENTATION;
   const needsSignIn = !isAuthenticationLoading && !isAuthenticated;
   const needsPro = !isAuthenticationLoading && isAuthenticated && !isPro;
-  const isLoading = isCatalogLoading || isAuthenticationLoading || Boolean(project?.isLoading);
-  const pageError = project?.error ?? catalogError;
+  const isLoading =
+    isCatalogLoading ||
+    isAuthenticationLoading ||
+    Boolean(project?.isLoading) ||
+    (looksUpRemoteApp && isRemoteAppLoading);
+  const pageError = project?.error ?? catalogError ?? (looksUpRemoteApp ? remoteAppError : null);
   const isEnabled =
     !project || (definition ? isExperienceEnabled(definition, project.capabilities ?? []) : false);
   const chrome = useMemo(
@@ -59,7 +71,7 @@ export function AppRoute({
       <AppRuntime
         basePath={basePath}
         fallback={<AppSurfaceLoading presentation={presentation} />}
-        entry={definition?.entry}
+        app={definition}
         projectId={surface.projectId}
         subpath={subpath}
       />

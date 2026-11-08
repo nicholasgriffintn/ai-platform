@@ -65,7 +65,10 @@ export interface McpAppHostCallbacks {
   resize: (size: { width?: number; height?: number }) => void;
 }
 
+export type McpAppDisplayMode = "inline" | "fullscreen";
+
 export interface McpAppHostBridgeInput {
+  displayMode?: McpAppDisplayMode;
   toolName: string;
   toolArguments: Record<string, unknown>;
   toolResult: McpAppCallToolResult;
@@ -80,6 +83,7 @@ export interface McpAppHostBridge {
 
 export function createMcpAppHostBridge(input: McpAppHostBridgeInput): McpAppHostBridge {
   const { callbacks } = input;
+  const displayMode = input.displayMode ?? "inline";
   let initialised = false;
 
   const respond = (id: JsonRpcRequest["id"], result: unknown) => {
@@ -106,8 +110,8 @@ export function createMcpAppHostBridge(input: McpAppHostBridgeInput): McpAppHost
         hostCapabilities: { openLinks: {}, message: {} },
         hostContext: {
           theme: input.theme,
-          displayMode: "inline",
-          availableDisplayModes: ["inline"],
+          displayMode,
+          availableDisplayModes: [displayMode],
           toolInfo: { name: input.toolName },
         },
       }),
@@ -142,7 +146,7 @@ export function createMcpAppHostBridge(input: McpAppHostBridgeInput): McpAppHost
       callbacks.sendMessage(text);
       respond(id, {});
     },
-    "ui/request-display-mode": ({ id }) => respond(id, { mode: "inline" }),
+    "ui/request-display-mode": ({ id }) => respond(id, { mode: displayMode }),
     "ui/update-model-context": ({ id }) => respond(id, {}),
     "ui/notifications/size-changed": ({ params }) => {
       const { width, height } = readParams(params);

@@ -27,6 +27,7 @@ import {
   openMcpGatewaySession,
   readMcpGatewayAppResource,
   readMcpGatewayServers,
+  toMcpAppCallToolResult,
   type McpGatewaySession,
 } from "~/modules/tools/application/mcp-gateway-servers";
 import type { IRequest, MessageContent } from "~/types";
@@ -133,13 +134,7 @@ async function readToolApp(
       html: resource.html,
       ui: resource.ui,
       arguments: toolArguments,
-      result: {
-        content: result.content,
-        ...(result.structuredContent !== undefined
-          ? { structuredContent: result.structuredContent }
-          : {}),
-        ...(result.isError !== undefined ? { isError: result.isError } : {}),
-      },
+      result: toMcpAppCallToolResult(result),
     };
   } catch (error) {
     logger.warn(`The ${toolName} app could not be loaded from ${session.server.label}`, {

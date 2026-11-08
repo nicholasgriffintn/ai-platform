@@ -19,10 +19,12 @@ export function PluginsLibrary({
   scope,
   projectName,
   navigation,
+  children,
 }: {
   scope: CapabilityLibraryScope;
   projectName?: string;
   navigation?: ReactNode;
+  children?: ReactNode;
 }) {
   const controller = usePluginsController();
 
@@ -70,6 +72,7 @@ export function PluginsLibrary({
           : "The apps, skills, tools and integrations Polychat can use on your behalf."
       }
     >
+      {children}
       <ConnectorSetupDialogs controller={controller.connectorSetup} />
       <ConnectorDetailsModal
         connector={controller.selectedConnector}

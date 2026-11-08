@@ -1,3 +1,4 @@
+import { MCP_APP_ENTRY_META_KEY, mcpAppEntryMetaSchema } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
@@ -66,6 +67,46 @@ export function readMcpToolUiResourceUri(tool: Pick<McpTool, "_meta">): string |
   const uri = typeof nested === "string" ? nested : typeof flat === "string" ? flat : undefined;
 
   return uri?.startsWith(UI_RESOURCE_SCHEME) ? uri : undefined;
+}
+
+export interface McpToolAppEntry {
+  tool: string;
+  resourceUri: string;
+  name: string;
+  description?: string;
+  category?: string;
+  layout: "contained" | "workspace";
+}
+
+function hasRequiredInputs(tool: Pick<McpTool, "inputSchema">): boolean {
+  const required = tool.inputSchema?.required;
+
+  return Array.isArray(required) && required.length > 0;
+}
+
+export function readMcpToolAppEntry(tool: McpTool): McpToolAppEntry | undefined {
+  const resourceUri = readMcpToolUiResourceUri(tool);
+  const meta = mcpAppEntryMetaSchema.safeParse(tool._meta?.[MCP_APP_ENTRY_META_KEY]);
+
+  if (
+    !resourceUri ||
+    !meta.success ||
+    tool.annotations?.readOnlyHint !== true ||
+    hasRequiredInputs(tool)
+  ) {
+    return undefined;
+  }
+
+  const description = meta.data.description ?? tool.description;
+
+  return {
+    tool: tool.name,
+    resourceUri,
+    name: meta.data.name ?? tool.title ?? tool.annotations.title ?? tool.name,
+    ...(description ? { description } : {}),
+    ...(meta.data.category ? { category: meta.data.category } : {}),
+    layout: meta.data.layout ?? "workspace",
+  };
 }
 
 export function readMcpAppUiMeta(content: Pick<McpResourceContent, "_meta">): unknown {

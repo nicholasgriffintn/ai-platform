@@ -4,6 +4,7 @@ import {
   createMcpAppHostBridge,
   MCP_APP_SANDBOX,
   teardownRequest,
+  type McpAppDisplayMode,
 } from "@ngriffin_uk/polychat-library-chat/mcp-apps";
 import type {
   McpAppCallToolResult,
@@ -17,12 +18,20 @@ const MAX_HEIGHT = 1200;
 
 export interface McpAppViewProps {
   app: McpAppViewData;
+  displayMode?: McpAppDisplayMode;
   theme: "light" | "dark";
   callTool: (tool: string, args: Record<string, unknown>) => Promise<McpAppCallToolResult>;
   onMessage?: (text: string) => void;
 }
 
-export function McpAppView({ app, theme, callTool, onMessage }: McpAppViewProps) {
+export function McpAppView({
+  app,
+  displayMode = "inline",
+  theme,
+  callTool,
+  onMessage,
+}: McpAppViewProps) {
+  const fills = displayMode === "fullscreen";
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [height, setHeight] = useState(DEFAULT_HEIGHT);
   const document = useMemo(() => buildMcpAppDocument(app.html, app.ui.csp), [app.html, app.ui.csp]);
@@ -35,6 +44,7 @@ export function McpAppView({ app, theme, callTool, onMessage }: McpAppViewProps)
     }
 
     const bridge = createMcpAppHostBridge({
+      displayMode,
       toolName: app.tool,
       toolArguments: app.arguments,
       toolResult: app.result,
@@ -63,7 +73,7 @@ export function McpAppView({ app, theme, callTool, onMessage }: McpAppViewProps)
       window.removeEventListener("message", listener);
       frame.contentWindow?.postMessage(teardownRequest("unmounted"), "*");
     };
-  }, [app.tool, app.arguments, app.result, callTool, onMessage, theme]);
+  }, [app.tool, app.arguments, app.result, callTool, displayMode, onMessage, theme]);
 
   return (
     <iframe
@@ -78,7 +88,7 @@ export function McpAppView({ app, theme, callTool, onMessage }: McpAppViewProps)
           ? "w-full bg-transparent"
           : "w-full rounded-lg border border-border bg-surface"
       }
-      style={{ height }}
+      style={{ height: fills ? "100%" : height }}
     />
   );
 }

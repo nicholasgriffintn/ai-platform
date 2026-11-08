@@ -433,6 +433,10 @@ export const projectExperienceDefinitionSchema = z.object({
   requirement: projectExperienceRequirementSchema,
 });
 
+export const remoteAppListResponseSchema = z.object({
+  apps: z.array(projectExperienceDefinitionSchema),
+});
+
 export const modelToolIdSchema = z.enum([
   "code_execution",
   "file_search",
@@ -570,6 +574,7 @@ export type AppSurfaceDefinition = z.infer<typeof appSurfaceSchema>;
 export type AppEntry = z.infer<typeof appEntrySchema>;
 export type ProjectExperienceRequirement = z.infer<typeof projectExperienceRequirementSchema>;
 export type ProjectExperienceDefinition = z.infer<typeof projectExperienceDefinitionSchema>;
+export type RemoteAppListResponse = z.infer<typeof remoteAppListResponseSchema>;
 export type ModelToolId = z.infer<typeof modelToolIdSchema>;
 export type ModelToolCapability = z.infer<typeof modelToolCapabilitySchema>;
 export type ModelToolDefinition = z.infer<typeof modelToolDefinitionSchema>;

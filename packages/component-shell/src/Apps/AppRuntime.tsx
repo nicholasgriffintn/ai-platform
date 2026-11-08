@@ -1,6 +1,11 @@
 import { EmptyState } from "@ngriffin_uk/polychat-component-ui";
-import type { AppEntry, ProjectExperienceRuntime } from "@ngriffin_uk/polychat-schemas";
+import type {
+  ProjectExperienceDefinition,
+  ProjectExperienceRuntime,
+} from "@ngriffin_uk/polychat-schemas";
 import { lazy, Suspense, type ComponentType, type ReactNode } from "react";
+
+import { RemoteMcpApp } from "./RemoteMcpApp.js";
 
 const StrudelApp = lazy(async () => {
   const module = await import("./StrudelApp.js");
@@ -61,11 +66,17 @@ const BUNDLED_APPS: Record<ProjectExperienceRuntime, ComponentType<BundledAppPro
 };
 
 interface AppRuntimeProps extends BundledAppProps {
-  entry: AppEntry | undefined;
+  app: ProjectExperienceDefinition | undefined;
   fallback?: ReactNode;
 }
 
-function ExperienceContent({ entry, ...props }: Omit<AppRuntimeProps, "fallback">) {
+function ExperienceContent({ app, fallback, ...props }: AppRuntimeProps) {
+  const entry = app?.entry;
+
+  if (app && entry?.kind === "remote") {
+    return <RemoteMcpApp app={app} entry={entry} fallback={fallback} />;
+  }
+
   const App = entry?.kind === "bundled" ? BUNDLED_APPS[entry.runtime] : undefined;
 
   if (!App) {
@@ -78,11 +89,9 @@ function ExperienceContent({ entry, ...props }: Omit<AppRuntimeProps, "fallback"
 }
 
 export function AppRuntime(props: AppRuntimeProps) {
-  const { fallback, ...contentProps } = props;
-
   return (
-    <Suspense fallback={fallback}>
-      <ExperienceContent {...contentProps} />
+    <Suspense fallback={props.fallback}>
+      <ExperienceContent {...props} />
     </Suspense>
   );
 }

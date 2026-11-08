@@ -20,6 +20,7 @@ export * from "./hooks/useDesktopDownloads.js";
 export * from "./hooks/useDeviceAuthorisation.js";
 export * from "./hooks/useCanAccessProFeatures.js";
 export * from "./hooks/useCapabilityCatalog.js";
+export * from "./hooks/useRemoteApps.js";
 export * from "./hooks/useChatSuggestionContext.js";
 export * from "./hooks/useComposerPrefill.js";
 export * from "./hooks/useConnectorSetup.js";
