@@ -2,7 +2,34 @@ import { parsePublicHttpUrl, UnsafeUrlError } from "@ngriffin_uk/polychat-utilit
 
 import { McpRequestError } from "./errors.js";
 
-export function parseMcpServerUrl(input: string, operation = "connect"): URL {
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
+function parseLoopbackUrl(input: string): URL | undefined {
+  if (!URL.canParse(input)) {
+    return undefined;
+  }
+
+  const url = new URL(input);
+
+  return LOOPBACK_HOSTS.has(url.hostname) &&
+    (url.protocol === "http:" || url.protocol === "https:") &&
+    !url.username &&
+    !url.password
+    ? url
+    : undefined;
+}
+
+export function parseMcpServerUrl(
+  input: string,
+  operation = "connect",
+  options: { allowLoopback?: boolean } = {},
+): URL {
+  const loopback = options.allowLoopback ? parseLoopbackUrl(input) : undefined;
+
+  if (loopback) {
+    return loopback;
+  }
+
   try {
     const url = parsePublicHttpUrl(input);
 

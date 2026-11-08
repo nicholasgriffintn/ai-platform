@@ -80,6 +80,19 @@ describe("McpHttpClient", () => {
   it("refuses private or plain HTTP servers before sending anything", () => {
     expect(() => new McpHttpClient({ url: "http://mcp.example.com" })).toThrow("public HTTPS");
     expect(() => new McpHttpClient({ url: "https://169.254.169.254/mcp" })).toThrow("public HTTPS");
+    expect(() => new McpHttpClient({ url: "http://localhost:5180/mcp" })).toThrow("public HTTPS");
+  });
+
+  it("reaches a loopback server only when the caller allows it", () => {
+    expect(
+      () => new McpHttpClient({ url: "http://localhost:5180/mcp", allowLoopback: true }),
+    ).not.toThrow();
+    expect(
+      () => new McpHttpClient({ url: "http://169.254.169.254/mcp", allowLoopback: true }),
+    ).toThrow("public HTTPS");
+    expect(
+      () => new McpHttpClient({ url: "http://user:pass@localhost:5180/mcp", allowLoopback: true }),
+    ).toThrow("public HTTPS");
   });
 });
 

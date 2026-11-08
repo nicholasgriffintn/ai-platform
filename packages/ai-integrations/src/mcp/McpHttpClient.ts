@@ -29,6 +29,7 @@ const HEADER_MISMATCH_CODE = -32020;
 
 export interface McpHttpClientOptions {
   url: string;
+  allowLoopback?: boolean;
   headers?: Readonly<Record<string, string>>;
   fetch?: typeof globalThis.fetch;
   timeoutMs?: number;
@@ -49,7 +50,9 @@ export class McpHttpClient implements McpClient {
   private connection: Promise<Client> | undefined;
 
   constructor(options: McpHttpClientOptions) {
-    this.url = parseMcpServerUrl(options.url);
+    this.url = parseMcpServerUrl(options.url, "connect", {
+      allowLoopback: options.allowLoopback,
+    });
     this.headers = options.headers ?? {};
     this.fetchImpl = options.fetch ?? globalThis.fetch.bind(globalThis);
     this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
