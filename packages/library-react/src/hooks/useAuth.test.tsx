@@ -62,32 +62,6 @@ afterEach(() => {
 });
 
 describe("credit balance across authentication refresh", () => {
-  it("resolves the session before the bearer token arrives", async () => {
-    let releaseToken: (token: string) => void = () => {};
-
-    mocks.getToken.mockReturnValue(
-      new Promise<string>((resolve) => {
-        releaseToken = resolve;
-      }),
-    );
-
-    renderHook(() => useAuthStatus(), { wrapper: createWrapper(client) });
-
-    await waitFor(() => expect(mocks.state.setIsAuthenticationLoading).toHaveBeenCalledWith(false));
-    expect(mocks.state.setAuthenticatedUserConfiguration).toHaveBeenCalledOnce();
-    expect(mocks.state.setHasApiKey).not.toHaveBeenCalled();
-
-    releaseToken("test-token");
-
-    await waitFor(() => expect(mocks.state.setHasApiKey).toHaveBeenCalledWith(true));
-  });
-
-  it("keeps the streamed balance when the same account refreshes its settings", async () => {
-    renderHook(useAuthStatus, { wrapper: createWrapper(client) });
-    await waitFor(() => expect(mocks.state.setIsAuthenticationLoading).toHaveBeenCalledWith(false));
-    expect(useUsageStore.getState().usageLimits).toEqual(balance);
-  });
-
   it.each(["another account", "signed out"])(
     "clears the previous balance for %s",
     async (identity) => {

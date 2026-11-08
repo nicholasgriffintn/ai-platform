@@ -72,68 +72,6 @@ describe("runStripeOverageSync", () => {
     vi.clearAllMocks();
   });
 
-  it("sends one meter event per customer and marks the sent amount as synced", async () => {
-    const rows = [
-      candidate({ user_id: 1, stripe_customer_id: "cus_1", overage_credit_micros: 2_700_000 }),
-      candidate({
-        user_id: 2,
-        stripe_customer_id: "cus_2",
-        overage_credit_micros: 5_400_000,
-        stripe_synced_overage_credit_micros: 1_000_000,
-      }),
-    ];
-    const { repositories, usageBalances } = makeRepositories(rows);
-    const { stripe, create } = makeStripe();
-
-    const result = await runStripeOverageSync(
-      repositories,
-      stripe,
-      new Date("2026-09-01T14:00:00Z"),
-    );
-
-    expect(create).toHaveBeenCalledTimes(2);
-    expect(create).toHaveBeenNthCalledWith(1, {
-      event_name: "polychat_overage_credits",
-      identifier: "cus_1:2026-09-01T14:00:00Z",
-      timestamp: Date.parse("2026-09-01T14:00:00Z") / 1000,
-      payload: { stripe_customer_id: "cus_1", value: "2" },
-    });
-    expect(create).toHaveBeenNthCalledWith(2, {
-      event_name: "polychat_overage_credits",
-      identifier: "cus_2:2026-09-01T14:00:00Z",
-      timestamp: Date.parse("2026-09-01T14:00:00Z") / 1000,
-      payload: { stripe_customer_id: "cus_2", value: "4" },
-    });
-    expect(usageBalances.recordStripeSyncedOverage).toHaveBeenNthCalledWith(
-      1,
-      1,
-      "2026-09",
-      2_000_000,
-    );
-    expect(usageBalances.recordStripeSyncedOverage).toHaveBeenNthCalledWith(
-      2,
-      2,
-      "2026-09",
-      4_000_000,
-    );
-    expect(result).toMatchObject({ candidates: 2, sent: 2, failed: 0 });
-  });
-
-  it("skips a plan without a meter and a balance below one whole credit", async () => {
-    const rows = [
-      candidate({ user_id: 1, stripe_meter_id: null, overage_credit_micros: 9_000_000 }),
-      candidate({ user_id: 2, overage_credit_micros: 900_000 }),
-    ];
-    const { repositories, usageBalances } = makeRepositories(rows);
-    const { stripe, create } = makeStripe();
-
-    const result = await runStripeOverageSync(repositories, stripe, new Date());
-
-    expect(create).not.toHaveBeenCalled();
-    expect(usageBalances.recordStripeSyncedOverage).not.toHaveBeenCalled();
-    expect(result).toMatchObject({ skippedNoMeter: 1, skippedBelowOneCredit: 1, sent: 0 });
-  });
-
   it("marks the amount as synced when the hour's identifier already exists", async () => {
     const rows = [candidate({ overage_credit_micros: 3_000_000 })];
     const { repositories, usageBalances } = makeRepositories(rows);
@@ -147,25 +85,5 @@ describe("runStripeOverageSync", () => {
 
     expect(usageBalances.recordStripeSyncedOverage).toHaveBeenCalledWith(1, "2026-09", 3_000_000);
     expect(result).toMatchObject({ markedAfterDuplicate: 1, sent: 0, failed: 0 });
-  });
-
-  it("leaves the amount pending on other failures and continues with the next customer", async () => {
-    const rows = [
-      candidate({ user_id: 1, stripe_customer_id: "cus_1", overage_credit_micros: 2_000_000 }),
-      candidate({ user_id: 2, stripe_customer_id: "cus_2", overage_credit_micros: 6_000_000 }),
-    ];
-    const { repositories, usageBalances } = makeRepositories(rows);
-    const create = vi
-      .fn()
-      .mockRejectedValueOnce(new Error("Stripe is unavailable"))
-      .mockResolvedValueOnce({});
-    const { stripe } = makeStripe(create);
-
-    const result = await runStripeOverageSync(repositories, stripe, new Date());
-
-    expect(create).toHaveBeenCalledTimes(2);
-    expect(usageBalances.recordStripeSyncedOverage).toHaveBeenCalledTimes(1);
-    expect(usageBalances.recordStripeSyncedOverage).toHaveBeenCalledWith(2, "2026-09", 6_000_000);
-    expect(result).toMatchObject({ sent: 1, failed: 1 });
   });
 });

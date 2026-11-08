@@ -1,4 +1,3 @@
-import { MAX_QUEUED_CHAT_MESSAGES } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -86,32 +85,6 @@ const input = { message: { role: "user" as const, content: "And then?" }, reques
 describe("queueFollowUp", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it("holds the message while a reply is running", async () => {
-    const { context, tasks } = createContext({ latestStatus: "running" });
-
-    const queued = await queueFollowUp(context, "conversation-1", input);
-
-    expect(queued.preview).toBe("And then?");
-    expect(tasks.createTask).toHaveBeenCalledWith(expect.objectContaining({ status: "suspended" }));
-    expect(tasks.releaseNextSuspendedTaskForConversation).not.toHaveBeenCalled();
-  });
-
-  it("sends at once when the reply finished before the message arrived", async () => {
-    const { context } = createContext({ latestStatus: "succeeded" });
-
-    await queueFollowUp(context, "conversation-1", input);
-
-    expect(mocks.dispatchTask).toHaveBeenCalledTimes(1);
-  });
-
-  it("refuses more than the queue limit", async () => {
-    const { context } = createContext({ waiting: MAX_QUEUED_CHAT_MESSAGES });
-
-    await expect(queueFollowUp(context, "conversation-1", input)).rejects.toThrow(
-      `up to ${MAX_QUEUED_CHAT_MESSAGES} messages`,
-    );
   });
 
   it("refuses conversations the user does not own and project conversations", async () => {

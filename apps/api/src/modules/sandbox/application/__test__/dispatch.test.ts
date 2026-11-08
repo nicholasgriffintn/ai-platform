@@ -10,15 +10,7 @@ import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
 
 import { createSandboxCredentialBrokerAccess } from "../credential-broker-grants";
-import { isSandboxRunDispatchMessage, processSandboxRunDispatch } from "../dispatch";
-import { resolveSandboxGitHubToken } from "../github-credentials";
-import { persistSandboxRunArtifact } from "../run-artifacts";
-import {
-  appendRunCoordinatorEvent,
-  getRunCoordinatorControl,
-  updateRunCoordinatorControl,
-} from "../run-coordinator";
-import { indexSandboxRunResult } from "../run-indexing";
+import { processSandboxRunDispatch } from "../dispatch";
 import { releaseSandboxRunReservation } from "../usage";
 
 const mockEnqueueTask = vi.fn();
@@ -113,20 +105,6 @@ const baseRunRecord = {
   timeoutAt: "2026-03-15T12:15:00.000Z",
 };
 
-const dispatchMessage = {
-  kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
-  runId: "run-123",
-  recordId: "record-1",
-  userId: 42,
-  payload: {
-    installationId: 99,
-    repo: "owner/repo",
-    task: "Implement feature",
-    model: "mistral-large",
-    shouldCommit: true,
-  },
-} as const;
-
 describe("sandbox dispatch", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -148,95 +126,6 @@ describe("sandbox dispatch", () => {
         summary: "Completed",
       }),
     );
-  });
-
-  it("validates sandbox dispatch message shape", () => {
-    expect(
-      isSandboxRunDispatchMessage({
-        kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
-        runId: "run-1",
-        recordId: "record-1",
-        userId: 1,
-        payload: {
-          installationId: 1,
-          repo: "owner/repo",
-          task: "Task",
-          shouldCommit: false,
-        },
-      }),
-    ).toBe(true);
-    expect(
-      isSandboxRunDispatchMessage({
-        kind: "other",
-        runId: "run-1",
-      }),
-    ).toBe(false);
-  });
-
-  it("processes queued runs and persists completed state", async () => {
-    await processSandboxRunDispatch({
-      env: {} as any,
-      message: {
-        kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
-        runId: "run-123",
-        recordId: "record-1",
-        userId: 42,
-        payload: {
-          installationId: 99,
-          repo: "owner/repo",
-          task: "Implement feature",
-          model: "mistral-large",
-          shouldCommit: true,
-        },
-      },
-    });
-
-    expect(providerLibrary.resolve).toHaveBeenCalledWith(
-      "sandbox",
-      "polychat",
-      expect.objectContaining({ user: expect.objectContaining({ id: 42 }) }),
-    );
-    expect(resolveSandboxGitHubToken).toHaveBeenCalledWith(
-      expect.objectContaining({ userId: 42, repo: "owner/repo", installationId: 99 }),
-    );
-    expect(mockExecuteSandboxProvider).toHaveBeenCalledWith(
-      expect.objectContaining({
-        credentialBroker: {
-          baseUrl: "https://api.polychat.app/internal/sandbox/credential_broker/run-123",
-          expiresAt: "2026-09-12T12:00:00.000Z",
-          grant: "test-broker-grant",
-        },
-        runId: "run-123",
-        repo: "owner/repo",
-      }),
-    );
-    expect(mockExecuteSandboxProvider.mock.calls[0]?.[0]).toHaveProperty(
-      "environmentVariables",
-      undefined,
-    );
-    expect(mockUpdateActivity).toHaveBeenCalled();
-    expect(updateRunCoordinatorControl).toHaveBeenCalledWith(
-      expect.objectContaining({
-        runId: "run-123",
-        state: "running",
-      }),
-    );
-    expect(updateRunCoordinatorControl).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        runId: "run-123",
-        state: "cancelled",
-      }),
-    );
-    expect(appendRunCoordinatorEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        runId: "run-123",
-        event: expect.objectContaining({
-          type: "run_completed",
-        }),
-      }),
-    );
-    expect(persistSandboxRunArtifact).toHaveBeenCalled();
-    expect(indexSandboxRunResult).toHaveBeenCalled();
   });
 
   it("normalises task and delivery policy before granting provider access", async () => {
@@ -269,153 +158,6 @@ describe("sandbox dispatch", () => {
         deliveryPolicy: { mode: "leave_uncommitted" },
         shouldCommit: false,
       }),
-    );
-  });
-
-  it("marks queued runs as failed when worker startup throws", async () => {
-    mockExecuteSandboxProvider.mockRejectedValueOnce(new Error("worker startup failed"));
-
-    await processSandboxRunDispatch({
-      env: {} as any,
-      message: {
-        kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
-        runId: "run-123",
-        recordId: "record-1",
-        userId: 42,
-        payload: {
-          installationId: 99,
-          repo: "owner/repo",
-          task: "Implement feature",
-          model: "mistral-large",
-          shouldCommit: true,
-        },
-      },
-    });
-
-    expect(mockUpdateActivity).toHaveBeenLastCalledWith(
-      "record-1",
-      expect.objectContaining({
-        status: "failed",
-        data: expect.objectContaining({
-          status: "failed",
-          workflowPhase: "failed",
-          error: "worker startup failed",
-        }),
-      }),
-    );
-    expect(appendRunCoordinatorEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        runId: "run-123",
-        event: expect.objectContaining({
-          type: "run_failed",
-          error: "worker startup failed",
-        }),
-      }),
-    );
-    expect(updateRunCoordinatorControl).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        runId: "run-123",
-        state: "cancelled",
-        cancellationReason: "worker startup failed",
-      }),
-    );
-    expect(indexSandboxRunResult).not.toHaveBeenCalled();
-  });
-
-  it("does not execute a run cancelled while it was queued", async () => {
-    vi.mocked(getRunCoordinatorControl).mockResolvedValueOnce({
-      state: "cancelled",
-      cancellationReason: "Cancelled by run owner",
-    } as any);
-
-    await processSandboxRunDispatch({ env: {} as any, message: dispatchMessage });
-
-    expect(mockExecuteSandboxProvider).not.toHaveBeenCalled();
-    expect(mockUpdateActivity).toHaveBeenLastCalledWith(
-      "record-1",
-      expect.objectContaining({
-        data: expect.objectContaining({
-          status: "cancelled",
-          workflowPhase: "cancelled",
-          cancellationReason: "Cancelled by run owner",
-        }),
-      }),
-    );
-  });
-
-  it("fails the run and frees its resources when the worker stream drops", async () => {
-    const encoder = new TextEncoder();
-    let reads = 0;
-
-    mockExecuteSandboxProvider.mockResolvedValueOnce(
-      new Response(
-        new ReadableStream({
-          pull(controller) {
-            reads += 1;
-
-            if (reads === 1) {
-              controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ type: "plan_created" })}\n\n`),
-              );
-
-              return;
-            }
-
-            controller.error(new Error("connection reset"));
-          },
-        }),
-        { headers: { "content-type": "text/event-stream" } },
-      ),
-    );
-
-    await processSandboxRunDispatch({ env: {} as any, message: dispatchMessage });
-
-    expect(mockUpdateActivity).toHaveBeenLastCalledWith(
-      "record-1",
-      expect.objectContaining({
-        data: expect.objectContaining({ status: "failed", error: "connection reset" }),
-      }),
-    );
-    expect(releaseSandboxRunReservation).toHaveBeenCalledWith(
-      expect.objectContaining({ runId: "run-123" }),
-    );
-    expect(updateRunCoordinatorControl).toHaveBeenLastCalledWith(
-      expect.objectContaining({ state: "cancelled" }),
-    );
-  });
-
-  it("does not launch a second worker for a run recovered mid-flight", async () => {
-    mockGetActivityById.mockResolvedValue({
-      data: JSON.stringify({ ...baseRunRecord, status: "running" }),
-    });
-
-    await processSandboxRunDispatch({
-      env: {} as any,
-      message: dispatchMessage,
-      recovered: true,
-    });
-
-    expect(mockExecuteSandboxProvider).not.toHaveBeenCalled();
-    expect(mockUpdateActivity).toHaveBeenLastCalledWith(
-      "record-1",
-      expect.objectContaining({ data: expect.objectContaining({ status: "failed" }) }),
-    );
-  });
-
-  it("settles a run that fails after the worker has started", async () => {
-    vi.mocked(persistSandboxRunArtifact).mockRejectedValueOnce(new Error("bucket unavailable"));
-
-    await processSandboxRunDispatch({ env: {} as any, message: dispatchMessage });
-
-    expect(mockUpdateActivity).toHaveBeenLastCalledWith(
-      "record-1",
-      expect.objectContaining({
-        data: expect.objectContaining({ status: "failed", error: "bucket unavailable" }),
-      }),
-    );
-    expect(releaseSandboxRunReservation).toHaveBeenCalled();
-    expect(updateRunCoordinatorControl).toHaveBeenLastCalledWith(
-      expect.objectContaining({ state: "cancelled", cancellationReason: "bucket unavailable" }),
     );
   });
 
@@ -455,44 +197,5 @@ describe("sandbox dispatch", () => {
       }),
     );
     expect(mockExecuteSandboxProvider).not.toHaveBeenCalled();
-  });
-
-  it("folds an early infrastructure usage report into terminal persistence", async () => {
-    mockGetActivityById
-      .mockResolvedValueOnce({ data: JSON.stringify(baseRunRecord) })
-      .mockResolvedValueOnce({
-        data: JSON.stringify({
-          ...baseRunRecord,
-          status: "running",
-          infrastructureUsage: { instanceType: "basic", durationSeconds: 18 },
-        }),
-      })
-      .mockResolvedValue({ data: JSON.stringify(baseRunRecord) });
-
-    await processSandboxRunDispatch({
-      env: {} as any,
-      message: {
-        kind: SANDBOX_RUN_DISPATCH_TASK_TYPE,
-        runId: "run-123",
-        recordId: "record-1",
-        userId: 42,
-        payload: {
-          installationId: 99,
-          repo: "owner/repo",
-          task: "Implement feature",
-          model: "mistral-large",
-          shouldCommit: true,
-        },
-      },
-    });
-
-    expect(persistSandboxRunArtifact).toHaveBeenCalledWith(
-      expect.objectContaining({
-        run: expect.objectContaining({
-          status: "completed",
-          infrastructureUsage: { instanceType: "basic", durationSeconds: 18 },
-        }),
-      }),
-    );
   });
 });

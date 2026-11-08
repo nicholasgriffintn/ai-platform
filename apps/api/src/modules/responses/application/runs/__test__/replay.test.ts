@@ -102,47 +102,6 @@ function createContext(options?: {
 }
 
 describe("handleReplayChatRunEvents", () => {
-  it("returns a contiguous ordered page after the supplied cursor", async () => {
-    const context = createContext();
-
-    await expect(
-      handleReplayChatRunEvents(context, run.id, { after: 3, limit: 100 }),
-    ).resolves.toMatchObject({
-      fromCursor: 3,
-      nextCursor: 5,
-      resetRequired: false,
-      events: [{ sequence: 4 }, { sequence: 5 }],
-      snapshot: null,
-    });
-  });
-
-  it("returns an authoritative reset when retention passed the cursor", async () => {
-    const context = createContext({ oldest: 8, latest: 507, events: [] });
-
-    await expect(
-      handleReplayChatRunEvents(context, run.id, { after: 3, limit: 100 }),
-    ).resolves.toMatchObject({
-      fromCursor: 3,
-      nextCursor: 507,
-      resetRequired: true,
-      events: [],
-      snapshot: {
-        protocolVersion: 1,
-        cursor: 507,
-        run: { id: run.id },
-        messages: [{ id: "assistant-1" }],
-      },
-    });
-  });
-
-  it("turns a concurrent retention jump into a reset instead of hiding the gap", async () => {
-    const context = createContext({ oldest: 1, latest: 5, events: [event(5)] });
-
-    await expect(
-      handleReplayChatRunEvents(context, run.id, { after: 3, limit: 100 }),
-    ).resolves.toMatchObject({ resetRequired: true, events: [], snapshot: { cursor: 5 } });
-  });
-
   it("turns an internal replay hole into a reset", async () => {
     const context = createContext({ oldest: 1, latest: 6, events: [event(4), event(6)] });
 

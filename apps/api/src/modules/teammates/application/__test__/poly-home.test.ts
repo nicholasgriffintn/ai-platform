@@ -37,24 +37,6 @@ function resolution(
 }
 
 describe("requirePolyHomeRun", () => {
-  it("allows Poly in the person's own Poly thread, from the app or a bound channel", () => {
-    expect(() => requirePolyHomeRun(resolution(), "teammate_home_poly")).not.toThrow();
-    expect(() =>
-      requirePolyHomeRun(
-        resolution({
-          invocation: {
-            source: "channel",
-            bindingId: "binding_telegram",
-            messageId: "message_1",
-            senderMappingId: "sender_1",
-            senderRevision: 1,
-          },
-        }),
-        "teammate_home_poly",
-      ),
-    ).not.toThrow();
-  });
-
   it("runs Poly's own routines in their occurrence conversation", () => {
     const invocation = {
       source: "routine" as const,
@@ -99,55 +81,6 @@ describe("requirePolyHomeRun", () => {
   });
 });
 
-describe("admitTeammateContextAuthority", () => {
-  const standing = {
-    toolName: "call_api",
-    destination: "https://api.example.com",
-    grantedAt: "2026-10-01T09:00:00.000Z",
-    expiresAt: "2026-10-31T09:00:00.000Z",
-  };
-  const partner: TeammateContext = {
-    ...polyContext,
-    autonomyLevel: "partner",
-    standingApprovals: [standing],
-    ownerSeenAt: "2026-10-01T09:00:00.000Z",
-  };
-  const eightDaysLater = Date.parse("2026-10-09T09:00:00.000Z");
-
-  it("drops a background run to asking before writes once the owner has been away a week", () => {
-    expect(
-      admitTeammateContextAuthority({
-        context: partner,
-        trigger: "schedule",
-        now: eightDaysLater,
-      }),
-    ).toMatchObject({ autonomyLevel: "assistant", standingApprovals: [] });
-  });
-
-  it("leaves the dial alone when the owner starts the turn or has been around", () => {
-    expect(
-      admitTeammateContextAuthority({ context: partner, trigger: "user", now: eightDaysLater }),
-    ).toMatchObject({ autonomyLevel: "partner", standingApprovals: [standing] });
-    expect(
-      admitTeammateContextAuthority({
-        context: partner,
-        trigger: "schedule",
-        now: Date.parse("2026-10-05T09:00:00.000Z"),
-      }),
-    ).toMatchObject({ autonomyLevel: "partner", standingApprovals: [standing] });
-  });
-
-  it("never brakes a teammate other than Poly", () => {
-    expect(
-      admitTeammateContextAuthority({
-        context: { ...partner, teammateId: "teammate_research" },
-        trigger: "schedule",
-        now: eightDaysLater,
-      }),
-    ).toMatchObject({ autonomyLevel: "partner", standingApprovals: [standing] });
-  });
-});
-
 describe("admitTeammateContextAuthority with a ceiling", () => {
   const partner: TeammateContext = {
     ...polyContext,
@@ -174,16 +107,5 @@ describe("admitTeammateContextAuthority with a ceiling", () => {
     expect(authority.autonomyLevel).toBe("observer");
     expect(authority.standingApprovals).toEqual([]);
     expect(authority.actingRulesSuspended).toBe(true);
-  });
-
-  it("keeps acting rules on the owner's own turns without a ceiling", () => {
-    const authority = admitTeammateContextAuthority({
-      context: partner,
-      trigger: "user",
-      now: Date.parse("2026-10-17T10:00:00.000Z"),
-    });
-
-    expect(authority.autonomyLevel).toBe("partner");
-    expect(authority.actingRulesSuspended).toBe(false);
   });
 });

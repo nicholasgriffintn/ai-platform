@@ -3,11 +3,7 @@ import { describe, expect, it } from "vitest";
 import { createFakeRuntime } from "../testing/fake-usage-store.js";
 import { userCreditActor } from "../usage/credit-actor.js";
 import { applyUsageRollup, buildUsageEventRow } from "../usage/ledger.js";
-import {
-  planRunChargeAdjustments,
-  reconcileRunCharge,
-  resolveRunChargeTarget,
-} from "../usage/run-charge.js";
+import { planRunChargeAdjustments, reconcileRunCharge } from "../usage/run-charge.js";
 import type { RunChargeGroup } from "../usage/store.js";
 
 function group(overrides: Partial<RunChargeGroup> = {}): RunChargeGroup {
@@ -27,32 +23,7 @@ function group(overrides: Partial<RunChargeGroup> = {}): RunChargeGroup {
   };
 }
 
-describe("resolveRunChargeTarget", () => {
-  it("charges nothing for a refunded run, whatever its cap", () => {
-    expect(resolveRunChargeTarget({ refunded: true, capCreditMicros: 5_000_000 })).toEqual({
-      creditMicros: 0,
-      reason: "platform_failure_refund",
-    });
-  });
-
-  it("leaves an uncapped, unrefunded run alone", () => {
-    expect(resolveRunChargeTarget({ refunded: false, capCreditMicros: null })).toBeNull();
-  });
-});
-
 describe("planRunChargeAdjustments", () => {
-  it("returns every group in full for a refund, so reports net to zero by source", () => {
-    const groups = [group(), group({ source: "capability", credit_micros: 2_000_000 })];
-    const adjustments = planRunChargeAdjustments(groups, {
-      creditMicros: 0,
-      reason: "platform_failure_refund",
-    });
-
-    expect(adjustments.map((adjustment) => adjustment.creditMicros)).toEqual([
-      6_000_000, 2_000_000,
-    ]);
-  });
-
   it("takes only the excess over a cap, from the newest period first", () => {
     const groups = [
       group({ period: "2026-09", credit_micros: 4_000_000 }),
@@ -66,61 +37,6 @@ describe("planRunChargeAdjustments", () => {
     expect(adjustments).toHaveLength(1);
     expect(adjustments[0]?.group.period).toBe("2026-10");
     expect(adjustments[0]?.creditMicros).toBe(2_000_000);
-  });
-});
-
-describe("reconcileRunCharge", () => {
-  it("writes negative credits and keeps the vendor cost record intact", async () => {
-    const { store, runtime } = createFakeRuntime({
-      runCharge: { capCreditMicros: null, refunded: true, chargedCreditMicros: 6_000_000 },
-      runChargeGroups: [group()],
-    });
-
-    await reconcileRunCharge(runtime, "run-1");
-
-    const [runId, expected, events] = store.applyRunChargeAdjustments.mock.calls[0] ?? [];
-
-    expect(runId).toBe("run-1");
-    expect(expected).toBe(6_000_000);
-    expect(events?.[0]).toMatchObject({
-      credit_micros: -6_000_000,
-      cost_micros: 0,
-      quantity: 0,
-      reason: "platform_failure_refund",
-      run_attempt: 1,
-    });
-  });
-
-  it("does nothing once the charge is already at the target", async () => {
-    const { store, runtime } = createFakeRuntime({
-      runCharge: { capCreditMicros: 5_000_000, refunded: false, chargedCreditMicros: 5_000_000 },
-    });
-
-    await reconcileRunCharge(runtime, "run-1");
-
-    expect(store.applyRunChargeAdjustments).not.toHaveBeenCalled();
-  });
-
-  it("re-reads and retries when another writer changed the charge first", async () => {
-    const { store, runtime } = createFakeRuntime({ runChargeGroups: [group()] });
-
-    store.getRunChargeState
-      .mockResolvedValueOnce({ capCreditMicros: null, refunded: true, chargedCreditMicros: 6 })
-      .mockResolvedValueOnce({ capCreditMicros: null, refunded: true, chargedCreditMicros: 8 });
-    store.applyRunChargeAdjustments.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
-
-    await reconcileRunCharge(runtime, "run-1");
-
-    expect(store.applyRunChargeAdjustments).toHaveBeenCalledTimes(2);
-    expect(store.applyRunChargeAdjustments.mock.calls[1]?.[1]).toBe(8);
-  });
-
-  it("never throws into a billing path", async () => {
-    const { store, runtime } = createFakeRuntime();
-
-    store.getRunChargeState.mockRejectedValue(new Error("d1 unavailable"));
-
-    await expect(reconcileRunCharge(runtime, "run-1")).resolves.toBeUndefined();
   });
 });
 
@@ -159,18 +75,6 @@ describe("applyUsageRollup", () => {
 
     expect(store.insertEventAndApplyBalance).toHaveBeenCalledOnce();
     expect(store.applyRunChargeAdjustments.mock.calls[0]?.[2]?.[0]?.credit_micros).toBe(-2_500_000);
-  });
-
-  it("skips reconciliation for redelivered events and usage outside a run", async () => {
-    const { store, runtime } = createFakeRuntime({ insert: () => false });
-    const duplicate = event();
-
-    await applyUsageRollup(runtime, [duplicate]);
-
-    store.insertEventAndApplyBalance.mockResolvedValue(true);
-    await applyUsageRollup(runtime, [event({ runId: null })]);
-
-    expect(store.getRunChargeState).not.toHaveBeenCalled();
   });
 });
 

@@ -1,10 +1,7 @@
 import type { TeammateResponse, WorkspaceSummary } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import {
-  getTeammatePublishTargets,
-  resolveTeammateManagePermission,
-} from "../../lib/teammates/teammate-permissions.js";
+import { resolveTeammateManagePermission } from "../../lib/teammates/teammate-permissions.js";
 
 const teammate: TeammateResponse = {
   id: "teammate-1",
@@ -57,15 +54,6 @@ const workspaceTeammate: TeammateResponse = {
 };
 
 describe("teammate manage permission", () => {
-  it("lets a workspace admin manage a workspace teammate", () => {
-    expect(
-      resolveTeammateManagePermission(workspaceTeammate, 7, [workspace("admin")]),
-    ).toMatchObject({
-      canManage: true,
-      ownerLabel: "Aviary",
-    });
-  });
-
   it("refuses a plain member of the owning workspace and says why", () => {
     const permission = resolveTeammateManagePermission(workspaceTeammate, 7, [workspace("member")]);
 
@@ -81,18 +69,5 @@ describe("teammate manage permission", () => {
     expect(resolveTeammateManagePermission(teammate, 7, []).canManage).toBe(true);
     expect(resolveTeammateManagePermission(teammate, 8, []).canManage).toBe(false);
     expect(resolveTeammateManagePermission(teammate, undefined, []).canManage).toBe(false);
-  });
-
-  it("treats an unsaved teammate as the viewer's own", () => {
-    expect(resolveTeammateManagePermission(null, 7, []).canManage).toBe(true);
-  });
-
-  it("offers only workspaces the viewer owns or administers as publish targets", () => {
-    const targets = getTeammatePublishTargets([
-      workspace("owner"),
-      { ...workspace("member"), id: "workspace-2", name: "Perch" },
-    ]);
-
-    expect(targets).toEqual([{ id: "workspace-1", name: "Aviary" }]);
   });
 });

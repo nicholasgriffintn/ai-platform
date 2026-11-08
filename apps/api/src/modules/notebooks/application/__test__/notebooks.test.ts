@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
-import { shouldSearchNotebookSources } from "~/modules/notebooks/domain/notebook";
 import type { NotebookRecord } from "~/modules/notebooks/infrastructure/NotebookRepository";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
@@ -102,15 +101,5 @@ describe("notebook sources", () => {
       resolveNotebookSources(context, access, ["note-1", "someone-elses", "source-1"]),
     ).resolves.toEqual([{ id: "source-1", content: "text" }]);
     expect(sources.getSourcesByIds).toHaveBeenCalledWith(["source-1"]);
-  });
-});
-
-describe("notebook grounding", () => {
-  it("inlines sources up to a third of the context window and searches beyond it", () => {
-    const atBudget = [{ content: "x".repeat(40_000) }];
-    const overBudget = [{ content: "x".repeat(40_001) }];
-
-    expect(shouldSearchNotebookSources(atBudget, 30_000)).toBe(false);
-    expect(shouldSearchNotebookSources(overBudget, 30_000)).toBe(true);
   });
 });

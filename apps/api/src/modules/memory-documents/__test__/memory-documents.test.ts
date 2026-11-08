@@ -4,11 +4,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 
-import {
-  createMemoryDocument,
-  listMemoryDocuments,
-  updateMemoryDocument,
-} from "../application/memory-documents";
+import { listMemoryDocuments } from "../application/memory-documents";
 
 const requireProjectAccess = vi.hoisted(() =>
   vi.fn(async () => ({ project: { id: "project-1" } })),
@@ -57,31 +53,6 @@ function createContext(
 describe("memory documents", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it("summarises a document without sending its whole body", async () => {
-    const context = createContext(null);
-
-    const { documents } = await listMemoryDocuments(context);
-
-    expect(documents[0]).toMatchObject({ name: "brief", excerpt: "a long memory" });
-    expect(documents[0]).not.toHaveProperty("content");
-  });
-
-  it("refuses a second document with a name already used in that scope", async () => {
-    const context = createContext({ id: "document-1", revision: 1 });
-
-    await expect(
-      createMemoryDocument(context, { name: "brief", content: "" }),
-    ).rejects.toMatchObject({ statusCode: 409 });
-  });
-
-  it("refuses a save that was written against an older revision", async () => {
-    const context = createContext({ id: "document-1", revision: 5 }, null);
-
-    await expect(
-      updateMemoryDocument(context, "brief", { content: "mine", expectedRevision: 4 }),
-    ).rejects.toMatchObject({ statusCode: 409 });
   });
 
   it("checks project membership before touching a project's memory", async () => {

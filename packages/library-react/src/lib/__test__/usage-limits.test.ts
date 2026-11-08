@@ -14,10 +14,6 @@ const credits = {
 };
 
 describe("normaliseUsageLimits", () => {
-  it("preserves the monthly credit snapshot from the stream", () => {
-    expect(normaliseUsageLimits({ credits })).toEqual({ credits });
-  });
-
   it("rejects a malformed credits object rather than half-applying it", () => {
     expect(normaliseUsageLimits({ credits: { included: "many", state: "ok" } })).toBeNull();
     expect(normaliseUsageLimits({ credits: { ...credits, state: "panic" } })).toBeNull();

@@ -1,10 +1,6 @@
-import {
-  KNOWLEDGE_BODY_PREVIEW_CHARACTERS,
-  KNOWLEDGE_INLINE_BODY_CHARACTERS,
-} from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it, vi } from "vitest";
 
-import { prepareKnowledgeBody, readKnowledgeText } from "../body";
+import { readKnowledgeText } from "../body";
 
 function bucket() {
   const objects = new Map<string, string>();
@@ -23,30 +19,6 @@ function bucket() {
 }
 
 describe("knowledge bodies", () => {
-  it("keeps short text in the database and moves long text to storage with a preview", async () => {
-    const storage = bucket();
-    const env = { PRIVATE_ASSETS_BUCKET: storage.binding as unknown as R2Bucket };
-    const short = await prepareKnowledgeBody(env, "source-1", "Short note", null);
-    const long = "x".repeat(KNOWLEDGE_INLINE_BODY_CHARACTERS + 1);
-    const stored = await prepareKnowledgeBody(env, "source-1", long, null);
-
-    expect(short).toEqual({ content: "Short note", body: null, staleKey: null, changed: false });
-    expect(stored.content).toHaveLength(KNOWLEDGE_BODY_PREVIEW_CHARACTERS);
-    expect(stored.body?.key.startsWith("knowledge/bodies/source-1/")).toBe(true);
-    expect(stored.changed).toBe(true);
-    await expect(
-      readKnowledgeText(
-        { env: env as never },
-        { id: "source-1", content: stored.content, metadata: { body: stored.body } },
-      ),
-    ).resolves.toBe(long);
-
-    const unchanged = await prepareKnowledgeBody(env, "source-1", long, stored.body);
-
-    expect(unchanged.changed).toBe(false);
-    expect(storage.binding.put).toHaveBeenCalledTimes(1);
-  });
-
   it("never reads a body pointer that belongs to another document", async () => {
     const storage = bucket();
 

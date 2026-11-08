@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
+import { cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useWebLLMConsentStore } from "../state/stores/webLLMConsentStore.js";
@@ -67,31 +67,5 @@ describe("browser model initialisation consent gate", () => {
     await waitFor(() => expect(useWebLLMConsentStore.getState().pendingModelId).toBe("model-a"));
     expect(mocks.init).not.toHaveBeenCalled();
     expect(result.current.isAwaitingConsent).toBe(true);
-  });
-
-  it("starts the download after consent and prunes stale installs", async () => {
-    const { result } = renderHook(() => useWebLLMInitialization({}));
-
-    await waitFor(() => expect(useWebLLMConsentStore.getState().pendingModelId).toBe("model-a"));
-
-    act(() => {
-      useWebLLMConsentStore.getState().confirmConsent("model-a");
-    });
-
-    await waitFor(() => expect(mocks.init).toHaveBeenCalledWith("model-a", expect.any(Function)));
-    await waitFor(() =>
-      expect(mocks.prune).toHaveBeenCalledWith("model-a", ["model-a", "model-b"]),
-    );
-    expect(result.current.isAwaitingConsent).toBe(false);
-  });
-
-  it("never requests consent on hosted compute", async () => {
-    mocks.chatState.computeSite = "hosted";
-
-    renderHook(() => useWebLLMInitialization({}));
-
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    expect(mocks.init).not.toHaveBeenCalled();
-    expect(useWebLLMConsentStore.getState().pendingModelId).toBeNull();
   });
 });

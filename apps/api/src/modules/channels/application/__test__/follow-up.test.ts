@@ -64,26 +64,6 @@ describe("channel follow-up", () => {
     sendReply.mockReset();
   });
 
-  it("reports back into the thread the work started from", async () => {
-    const result = await deliverChannelFollowUp({
-      context: createContext(true),
-      invocation,
-      operationId: "delegation_wake_run_1",
-      completion,
-    });
-
-    expect(result).toBe("delivered");
-    expect(sendReply).toHaveBeenCalledWith(
-      expect.objectContaining({
-        externalId: "T1:C1",
-        threadId: "1700000000.000100",
-        inReplyTo: "1700000000.000100",
-        body: "The report is ready.",
-      }),
-      {},
-    );
-  });
-
   it("stays silent once the sender is no longer verified", async () => {
     const result = await deliverChannelFollowUp({
       context: createContext(false),

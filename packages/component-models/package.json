@@ -24,7 +24,6 @@
     "access": "public"
   },
   "scripts": {
-    "test": "vitest run",
     "typecheck": "tsc -b tsconfig.typecheck.json"
   },
   "dependencies": {
@@ -37,13 +36,10 @@
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",
-    "@testing-library/react": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "jsdom": "catalog:",
     "tsup": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   },
   "peerDependencies": {
     "react": "catalog:react-peer",

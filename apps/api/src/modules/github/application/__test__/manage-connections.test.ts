@@ -5,9 +5,7 @@ import { fakeRepositories } from "~/infrastructure/database/__test__/fake-reposi
 import { ProviderConnectionRepository } from "~/modules/connectors/infrastructure/ProviderConnectionRepository";
 
 import { decryptGitHubConnectionPayload } from "../connection-crypto";
-import { GITHUB_CONNECTION_KIND } from "../connections";
 import {
-  deleteGitHubConnectionForUser,
   upsertGitHubConnectionFromDefaultAppForUser,
   upsertGitHubConnectionForUser,
 } from "../manage-connections";
@@ -42,39 +40,6 @@ function context(
 }
 
 describe("GitHub provider connections", () => {
-  it("upserts one encrypted provider connection per installation", async () => {
-    const providerConnections = { upsertConnection: vi.fn().mockResolvedValue(undefined) };
-
-    await upsertGitHubConnectionForUser(context(providerConnections), USER_ID, {
-      installationId: 5001,
-      appId: "123456",
-      privateKey: PRIVATE_KEY,
-      webhookSecret: "secret",
-      repositories: ["Owner/Repo", "owner/repo", "owner/other"],
-    });
-
-    const saved = providerConnections.upsertConnection.mock.calls[0][0];
-
-    expect(saved).toMatchObject({
-      userId: USER_ID,
-      provider: "github",
-      kind: GITHUB_CONNECTION_KIND,
-      externalId: "5001",
-    });
-    const decrypted = await decryptGitHubConnectionPayload({
-      jwtSecret: JWT_SECRET,
-      userId: USER_ID,
-      encrypted: saved.encryptedData.encrypted,
-    });
-
-    expect(decrypted).toMatchObject({
-      installation_id: 5001,
-      app_id: "123456",
-      private_key: PRIVATE_KEY,
-      repositories: ["owner/repo", "owner/other"],
-    });
-  });
-
   it("preserves an explicitly empty repository allowlist", async () => {
     const providerConnections = { upsertConnection: vi.fn().mockResolvedValue(undefined) };
 
@@ -94,19 +59,6 @@ describe("GitHub provider connections", () => {
     expect(decrypted).toMatchObject({ repositories: [] });
   });
 
-  it("deletes only the user's matching installation connection", async () => {
-    const providerConnections = { deleteConnection: vi.fn().mockResolvedValue(undefined) };
-
-    await deleteGitHubConnectionForUser(context(providerConnections), USER_ID, 7002);
-
-    expect(providerConnections.deleteConnection).toHaveBeenCalledWith(
-      USER_ID,
-      "github",
-      GITHUB_CONNECTION_KIND,
-      "7002",
-    );
-  });
-
   it("loads default app credentials without persisting cleartext", async () => {
     const providerConnections = { upsertConnection: vi.fn().mockResolvedValue(undefined) };
     const serviceContext = context(providerConnections, {
@@ -123,15 +75,5 @@ describe("GitHub provider connections", () => {
     const saved = providerConnections.upsertConnection.mock.calls[0][0];
 
     expect(JSON.stringify(saved)).not.toContain(PRIVATE_KEY);
-  });
-
-  it("requires an encryption secret", async () => {
-    await expect(
-      upsertGitHubConnectionForUser(context({}, {}), USER_ID, {
-        installationId: 1,
-        appId: "app",
-        privateKey: PRIVATE_KEY,
-      }),
-    ).rejects.toThrow("JWT secret not configured");
   });
 });

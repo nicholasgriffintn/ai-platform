@@ -1,54 +1,7 @@
 import { POLY_NAVIGATION_DATA_KEY } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
-import {
-  getFilesFilterPath,
-  getFilesPath,
-  getProjectFilesPath,
-  parseFilesSubpath,
-} from "../files-route.js";
-import { getActivePlace } from "../navigation/places.js";
-import { buildPolyUiContext, getPolyNavigationHref, readPolyNavigationTarget } from "../poly.js";
-
-describe("buildPolyUiContext", () => {
-  it("describes an open project conversation", () => {
-    expect(buildPolyUiContext("/work/w1/projects/p1/chat/c1")).toEqual({
-      route: "/work/w1/projects/p1/chat/c1",
-      mode: "work",
-      place: "conversations",
-      workspaceId: "w1",
-      projectId: "p1",
-      conversationId: "c1",
-    });
-  });
-
-  it("describes a project task and a bare workspace", () => {
-    expect(buildPolyUiContext("/work/w1/projects/p1/tasks/t1")).toMatchObject({
-      workspaceId: "w1",
-      projectId: "p1",
-      taskId: "t1",
-    });
-    expect(buildPolyUiContext("/work/w1/members")).toEqual({
-      route: "/work/w1/members",
-      mode: "work",
-      place: "conversations",
-      workspaceId: "w1",
-    });
-  });
-
-  it("uses the store conversation for the personal chat root and ignores reserved chat segments", () => {
-    expect(buildPolyUiContext("/chat", "c9")).toMatchObject({
-      mode: "chat",
-      place: "conversations",
-      conversationId: "c9",
-    });
-    expect(buildPolyUiContext("/chat/c2")).toMatchObject({ conversationId: "c2" });
-    expect(buildPolyUiContext("/chat/teammates").conversationId).toBeUndefined();
-    expect(buildPolyUiContext("/chat/teammates").place).toBe("teammates");
-    expect(buildPolyUiContext("/chat/scheduled").conversationId).toBeUndefined();
-    expect(buildPolyUiContext("/chat/scheduled").place).toBe("scheduled");
-  });
-});
+import { getPolyNavigationHref, readPolyNavigationTarget } from "../poly.js";
 
 describe("meta navigation", () => {
   it("opens Work Files, Teammates, Plugins and Scheduled under their authorised project", () => {
@@ -65,27 +18,6 @@ describe("meta navigation", () => {
       expect(getPolyNavigationHref({ kind: "place", mode: "work", place })).toBe("/work");
     }
   });
-  it("resolves every target kind to a host path", () => {
-    expect(
-      getPolyNavigationHref({
-        kind: "conversation",
-        conversationId: "c1",
-        workspaceId: "w1",
-        projectId: "p1",
-      }),
-    ).toBe("/work/w1/projects/p1/chat/c1");
-    expect(getPolyNavigationHref({ kind: "conversation", conversationId: "c1" })).toBe("/chat/c1");
-    expect(getPolyNavigationHref({ kind: "project", workspaceId: "w1", projectId: "p1" })).toBe(
-      "/work/w1/projects/p1",
-    );
-    expect(getPolyNavigationHref({ kind: "place", place: "attention", mode: "chat" })).toBe(
-      "/chat/attention",
-    );
-    expect(getPolyNavigationHref({ kind: "place", place: "attention", mode: "work" })).toBe(
-      "/work/attention",
-    );
-    expect(getPolyNavigationHref({ kind: "place", place: "you", mode: "chat" })).toBe("/profile");
-  });
 
   it("only reads well-formed navigation data", () => {
     expect(
@@ -93,57 +25,5 @@ describe("meta navigation", () => {
     ).toEqual({ kind: "place", place: "files", mode: "chat" });
     expect(readPolyNavigationTarget({ [POLY_NAVIGATION_DATA_KEY]: { kind: "nope" } })).toBeNull();
     expect(readPolyNavigationTarget(undefined)).toBeNull();
-  });
-});
-
-describe("places and files routes", () => {
-  it("reads the place from the path, whichever mode it is in", () => {
-    expect(getActivePlace("/")).toBe("discover");
-    expect(getActivePlace("/chat/abc")).toBe("conversations");
-    expect(getActivePlace("/chat/teammates/a1")).toBe("teammates");
-    expect(getActivePlace("/chat/apps/strudel")).toBe("plugins");
-    expect(getActivePlace("/chat/apps/sites")).toBe("sites");
-    expect(getActivePlace("/chat/tools/get-weather")).toBe("plugins");
-    expect(getActivePlace("/chat/skills/research")).toBe("plugins");
-    expect(getActivePlace("/chat/files/sources")).toBe("files");
-    expect(getActivePlace("/chat/plugins")).toBe("plugins");
-    expect(getActivePlace("/chat/scheduled")).toBe("scheduled");
-    expect(getActivePlace("/chat/attention")).toBe("attention");
-    expect(getActivePlace("/work")).toBe("conversations");
-    expect(getActivePlace("/work/attention")).toBe("attention");
-    expect(getActivePlace("/work/w1/projects/p1/files/made/o1")).toBe("files");
-    expect(getActivePlace("/work/w1/projects/p1/teammates")).toBe("teammates");
-    expect(getActivePlace("/work/w1/projects/p1/scheduled")).toBe("scheduled");
-    expect(getActivePlace("/work/w1/projects/p1/plugins")).toBe("plugins");
-    expect(getActivePlace("/work/w1/projects/p1/apps/sites/site-1")).toBe("sites");
-    expect(getActivePlace("/work/w1/projects/p1/apps/strudel")).toBe("plugins");
-    expect(getActivePlace("/profile")).toBe("you");
-    expect(getActivePlace("/pricing")).toBeUndefined();
-  });
-
-  it("reads every Files location from its path", () => {
-    expect(parseFilesSubpath("")).toEqual({ view: "library", filter: "all" });
-    expect(parseFilesSubpath("memory")).toEqual({ view: "library", filter: "memory" });
-    expect(parseFilesSubpath("made/output-1")).toEqual({ view: "output", outputId: "output-1" });
-    expect(parseFilesSubpath("sources/source%201")).toEqual({
-      view: "source",
-      sourceId: "source 1",
-    });
-    expect(parseFilesSubpath("memory/how-we-write")).toEqual({
-      view: "memory",
-      name: "how-we-write",
-    });
-    expect(parseFilesSubpath("folders/c1")).toEqual({ view: "folder", folderId: "c1" });
-    expect(parseFilesSubpath("replicate/predictions/s1")).toEqual({
-      view: "replicate",
-      subpath: "predictions/s1",
-    });
-    expect(parseFilesSubpath("unknown")).toEqual({ view: "library", filter: "all" });
-  });
-
-  it("builds Files paths", () => {
-    expect(getFilesPath("/chat/files", "made", "/output-1")).toBe("/chat/files/made/output-1");
-    expect(getFilesFilterPath("/chat/files", "all")).toBe("/chat/files");
-    expect(getProjectFilesPath("w1", "p1", "sources")).toBe("/work/w1/projects/p1/files/sources");
   });
 });

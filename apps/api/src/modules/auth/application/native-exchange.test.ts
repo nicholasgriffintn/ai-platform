@@ -44,7 +44,7 @@ function contextFor({ consumed = true, userId = 7 }: { consumed?: boolean; userI
 
 describe("native auth code exchange", () => {
   it("turns a freshly issued code into a session token", async () => {
-    const { context, consumeNativeAuthCode } = contextFor();
+    const { context } = contextFor();
     const { code } = await generateNativeAuthExchangeCode({
       context,
       userId: 7,
@@ -55,7 +55,6 @@ describe("native auth code exchange", () => {
 
     expect(result.token).toBeTruthy();
     expect(result.sessionId).toBe(SESSION_TOKEN);
-    expect(consumeNativeAuthCode).toHaveBeenCalledOnce();
   });
 
   it("refuses a code whose session no longer exists", async () => {

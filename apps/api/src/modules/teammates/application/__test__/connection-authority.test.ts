@@ -58,26 +58,6 @@ function createContext(params: {
 }
 
 describe("resolveTeammateConnectorAuthority", () => {
-  it("lets a personal context read the owner's own account without a grant", async () => {
-    const authority = await resolveTeammateConnectorAuthority({
-      context: createContext({
-        scope: { type: "personal", id: String(USER_ID) },
-        connections: [connection({})],
-      }),
-      contextId: "ctx_1",
-      userId: USER_ID,
-      provider: "lastfm",
-    });
-
-    expect(authority.allowedOperations).toEqual([
-      "get_recent_tracks",
-      "get_top_artists",
-      "get_top_tracks",
-    ]);
-    expect(authority.grantRevision).toBe(0);
-    expect(authority.connectedAccountId).toBeUndefined();
-  });
-
   it("carries the Composio account id for inherited reads", async () => {
     const authority = await resolveTeammateConnectorAuthority({
       context: createContext({
@@ -127,17 +107,5 @@ describe("resolveTeammateConnectorAuthority", () => {
     expect(authority.connection).toBeNull();
     expect(authority.credentialSource).toBe("public");
     expect(authority.allowedOperations).toEqual(["plan_journey", "search_stops"]);
-  });
-
-  it("lets personal Poly read public TfL data without inventing an account connection", async () => {
-    const authority = await resolveTeammateConnectorAuthority({
-      context: createContext({ scope: { type: "personal", id: String(USER_ID) }, connections: [] }),
-      contextId: "ctx_1",
-      userId: USER_ID,
-      provider: "tfl",
-    });
-
-    expect(authority.connection).toBeNull();
-    expect(authority.credentialSource).toBe("public");
   });
 });

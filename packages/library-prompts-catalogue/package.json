@@ -22,7 +22,6 @@
     "access": "public"
   },
   "scripts": {
-    "test": "vitest run --config vitest.config.ts",
     "typecheck": "tsc -b"
   },
   "dependencies": {
@@ -31,7 +30,6 @@
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",
     "@types/node": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   }
 }

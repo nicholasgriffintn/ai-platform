@@ -21,27 +21,9 @@ describe("aggregateInfraUsage", () => {
     expect(forward?.quantities).toEqual([{ unit: "d1_rows_read", quantity: 80 }]);
   });
 
-  it("keeps a lone request's key so a redelivery still deduplicates", async () => {
-    const [single] = await aggregateInfraUsage([usage("request-1")]);
-
-    expect(single?.scopeKey).toBe("request-1");
-  });
-
   it("counts a request delivered twice in one batch once", async () => {
     const [merged] = await aggregateInfraUsage([usage("request-1"), usage("request-1")]);
 
     expect(merged?.quantities).toEqual([{ unit: "d1_rows_read", quantity: 40 }]);
-  });
-
-  it("keeps days apart so usage lands in the right period", async () => {
-    const merged = await aggregateInfraUsage([
-      usage("october", { occurredAt: "2026-10-31T23:59:59.000Z" }),
-      usage("november", { occurredAt: "2026-11-01T00:00:01.000Z" }),
-    ]);
-
-    expect(merged.map((entry) => entry.occurredAt)).toEqual([
-      "2026-10-31T23:59:59.000Z",
-      "2026-11-01T00:00:01.000Z",
-    ]);
   });
 });

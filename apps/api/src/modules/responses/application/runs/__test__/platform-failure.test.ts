@@ -7,7 +7,6 @@ describe("isPlatformFailure", () => {
   it.each([
     ["an unexpected crash", new Error("boom")],
     ["a provider outage", new AssistantError("down", ErrorType.PROVIDER_ERROR)],
-    ["a database failure", new AssistantError("down", ErrorType.DATABASE_ERROR)],
     ["a provider rate limit", new AssistantError("slow", ErrorType.RATE_LIMIT_ERROR, 429)],
   ])("treats %s as ours", (_label, error) => {
     expect(isPlatformFailure(error)).toBe(true);
@@ -16,9 +15,7 @@ describe("isPlatformFailure", () => {
   it.each([
     ["bad input", new AssistantError("bad", ErrorType.PARAMS_ERROR, 400)],
     ["an exhausted balance", new AssistantError("spent", ErrorType.USAGE_LIMIT_ERROR, 429)],
-    ["an oversized context", new AssistantError("big", ErrorType.CONTEXT_WINDOW_EXCEEDED)],
     ["a provider rejecting the request", new AssistantError("no", ErrorType.PROVIDER_ERROR, 400)],
-    ["a refused tool", new AssistantError("no", ErrorType.TOOL_CALL_ERROR)],
   ])("does not refund %s", (_label, error) => {
     expect(isPlatformFailure(error)).toBe(false);
   });

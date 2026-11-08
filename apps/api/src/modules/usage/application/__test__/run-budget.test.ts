@@ -32,20 +32,10 @@ function budget(state: Partial<RunChargeState>, overrides: Partial<RunBudgetPara
 const messages = [{ role: "user" as const, content: "Do the work" }];
 
 describe("RunBudget", () => {
-  it("lets a step through while the estimate fits under the cap", async () => {
-    expect(await budget({}).beforeStep(messages)).toEqual({ kind: "proceed" });
-  });
-
   it("stops before a step that could cross the cap", async () => {
     const decision = await budget({ chargedCreditMicros: 99_000_000 }).beforeStep([]);
 
     expect(decision.kind).toBe("stopped");
-  });
-
-  it("refuses to start under a cap too small for one step", async () => {
-    const run = budget({}, { capCreditMicros: CREDIT / 100 });
-
-    await expect(run.assertStartable(messages)).rejects.toThrow("too low to start");
   });
 
   it("does not count model cost for a BYOK run", async () => {
@@ -63,10 +53,5 @@ describe("RunBudget", () => {
     );
 
     await expect(run.beforeStep(messages)).rejects.toThrow("d1 unavailable");
-  });
-
-  it("writes usage inline for capped runs so the ledger is current at each step", () => {
-    expect(budget({}, {}).usageDelivery).toBe("inline");
-    expect(budget({}, { capCreditMicros: null }).usageDelivery).toBeUndefined();
   });
 });

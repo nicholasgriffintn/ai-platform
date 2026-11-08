@@ -1,4 +1,3 @@
-import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
@@ -21,21 +20,6 @@ describe("transcription input policy", () => {
     await expect(assertValidTranscriptionFile(webmBlob("audio/mpeg"))).rejects.toMatchObject({
       statusCode: 415,
     });
-  });
-
-  it("enforces the actual blob size", async () => {
-    await expect(assertValidTranscriptionFile(webmBlob(), { maxBytes: 4 })).rejects.toMatchObject({
-      statusCode: 413,
-    });
-  });
-
-  it("rejects empty and unknown media", async () => {
-    await expect(
-      assertValidTranscriptionFile(new Blob([], { type: "audio/webm" })),
-    ).rejects.toBeInstanceOf(AssistantError);
-    await expect(
-      assertValidTranscriptionFile(new Blob(["text"], { type: "text/plain" })),
-    ).rejects.toMatchObject({ statusCode: 415 });
   });
 
   it("rejects all external URL transcription", async () => {

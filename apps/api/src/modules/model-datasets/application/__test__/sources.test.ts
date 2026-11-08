@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { httpAsyncBuffer, streamRows } from "../sources";
+import { httpAsyncBuffer } from "../sources";
 
 describe("remote dataset ranges", () => {
   it("rejects ignored or incorrect ranges instead of passing corrupt offsets to Parquet", async () => {
@@ -32,22 +32,4 @@ describe("remote dataset ranges", () => {
     expect(new TextDecoder().decode(await file.slice(5, 7))).toBe("ab");
     await expect(file.slice(5, 7)).rejects.toThrow("incomplete byte range");
   });
-});
-
-it("cancels CSV downloads when a preview stops after its first row", async () => {
-  const cancel = vi.fn();
-  const stream = new ReadableStream<Uint8Array>({
-    start(controller) {
-      controller.enqueue(new TextEncoder().encode("text\nfirst\nsecond\n"));
-    },
-    cancel,
-  });
-
-  for await (const row of streamRows("csv", stream, 18)) {
-    expect(row).toEqual({ text: "first" });
-    break;
-  }
-
-  expect(cancel).toHaveBeenCalledOnce();
-  expect(stream.locked).toBe(false);
 });

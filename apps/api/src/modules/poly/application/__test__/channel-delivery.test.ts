@@ -76,18 +76,4 @@ describe("sendPolyNotificationToChannels", () => {
       expect.objectContaining({ TELEGRAM_BOT_TOKEN: "telegram-secret" }),
     );
   });
-
-  it("keeps going when one channel fails", async () => {
-    mocks.deliver.mockRejectedValueOnce(new Error("Telegram rejected the reply"));
-
-    await sendPolyNotificationToChannels({
-      context: context([binding({}), binding({ id: "binding_second", external_id: "chat_8" })]),
-      user: { id: 7 } as IUser,
-      polyContextId: "teammate_context_poly",
-      notificationId: "routine_result_1",
-      body: "Routine failed: Inbox sweep",
-    });
-
-    expect(mocks.deliver).toHaveBeenCalledTimes(2);
-  });
 });

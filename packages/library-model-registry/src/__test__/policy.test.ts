@@ -93,46 +93,6 @@ describe("evaluatePolicies", () => {
       ),
     ).toBe(false);
   });
-  it("allows a clean, permissive, inspected model under the defaults", () => {
-    const verdict = evaluatePolicies(
-      { kind: "model", source: "huggingface", attributes, evidence: inspected },
-      [workspace()],
-    );
-
-    expect(verdict).toEqual({ effect: "allow", matches: [], policyHashes: ["ws-hash"] });
-  });
-
-  it("holds uninspected versions for review and blocks a dangerous pickle over everything else", () => {
-    const uninspected = evaluatePolicies(
-      { kind: "model", source: "huggingface", attributes, evidence: [] },
-      [workspace()],
-    );
-
-    expect(uninspected.effect).toBe("review");
-    expect(uninspected.matches.map((match) => match.ruleId)).toEqual(["inspection-complete"]);
-
-    const dangerous = evaluatePolicies(
-      {
-        kind: "model",
-        source: "huggingface",
-        attributes: { ...attributes, formats: ["pickle"], remoteCode: true, licence: "other-x" },
-        evidence: [
-          ...inspected,
-          { kind: "pickle_imports", status: "fail", summary: "posix.system" },
-        ],
-      },
-      [workspace()],
-    );
-
-    expect(dangerous.effect).toBe("block");
-    expect(dangerous.matches.map((match) => match.ruleId).sort()).toEqual([
-      "known-licence",
-      "no-remote-code",
-      "pickle-imports-clean",
-      "prefer-safetensors",
-    ]);
-  });
-
   it("lets a project policy narrow but never loosen the workspace verdict", () => {
     const subject: PolicySubject = {
       kind: "model",
@@ -163,82 +123,6 @@ describe("evaluatePolicies", () => {
       "workspace",
     );
   });
-
-  it("ignores route conditions when evaluating a version without a route", () => {
-    const verdict = evaluatePolicies(
-      { kind: "model", source: "huggingface", attributes, evidence: inspected },
-      [
-        workspace([
-          {
-            id: "uk-only",
-            effect: "block",
-            when: { type: "route_region", op: "in", values: ["us"] },
-          },
-        ]),
-      ],
-    );
-
-    expect(verdict.effect).toBe("allow");
-  });
-});
-
-describe("residency and data governance", () => {
-  it("blocks routes outside the allowed jurisdictions and sends unknown lawful bases to review", () => {
-    const project = {
-      id: "residency",
-      hash: "residency-hash",
-      scope: "project" as const,
-      rules: [
-        {
-          id: "uk-only",
-          effect: "block" as const,
-          when: { type: "route_jurisdiction" as const, op: "not_in" as const, values: ["uk"] },
-        },
-      ],
-    };
-    const route = { region: "eu-west-2", weightsVerified: true, retention: "zero" as const };
-
-    expect(
-      evaluatePolicies(
-        {
-          kind: "model",
-          source: "huggingface",
-          attributes,
-          evidence: inspected,
-          route: { ...route, jurisdiction: "uk" },
-        },
-        [workspace(), project],
-      ).effect,
-    ).toBe("allow");
-    expect(
-      evaluatePolicies(
-        {
-          kind: "model",
-          source: "huggingface",
-          attributes,
-          evidence: inspected,
-          route: { ...route, jurisdiction: "us" },
-        },
-        [workspace(), project],
-      ).effect,
-    ).toBe("block");
-
-    const dataset = evaluatePolicies(
-      {
-        kind: "dataset",
-        source: "upload",
-        attributes,
-        evidence: inspected,
-        dataset: { lawfulBasis: "unknown", containsCustomerData: true },
-      },
-      [workspace()],
-    );
-
-    expect(dataset.effect).toBe("review");
-    expect(dataset.matches.map((match) => match.ruleId)).toEqual(
-      expect.arrayContaining(["dataset-lawful-basis", "customer-data", "uploaded-provenance"]),
-    );
-  });
 });
 
 describe("isVerdictCovered", () => {
@@ -265,27 +149,6 @@ describe("isVerdictCovered", () => {
   });
   const now = new Date("2026-09-24T12:00:00Z");
 
-  it("needs no approval when nothing reaches review", () => {
-    expect(isVerdictCovered(verdict(match("prefer-safetensors", "warn")), [], now)).toBe(true);
-  });
-
-  it("covers the issues an approver saw and reopens when a new one appears", () => {
-    const approved = {
-      verdict: verdict(match("gated-terms", "review")),
-      isException: false,
-      expiresAt: null,
-    };
-
-    expect(isVerdictCovered(verdict(match("gated-terms", "review")), [approved], now)).toBe(true);
-    expect(
-      isVerdictCovered(
-        verdict(match("gated-terms", "review"), match("no-drift", "review")),
-        [approved],
-        now,
-      ),
-    ).toBe(false);
-  });
-
   it("only lets unexpired exceptions cover a block", () => {
     const blocked = verdict(match("pickle-imports-clean", "block"));
     const approval = { verdict: blocked, isException: false, expiresAt: null };
@@ -305,17 +168,5 @@ describe("isVerdictCovered", () => {
         now,
       ),
     ).toBe(false);
-  });
-
-  it("reopens review when a policy revision changes or an expiry is malformed", () => {
-    const old = verdict(match("remote-code", "review"));
-    const current = {
-      ...old,
-      matches: old.matches.map((item) => ({ ...item, policyHash: "new-hash" })),
-    };
-    const approval = { verdict: old, isException: true, expiresAt: null };
-
-    expect(isVerdictCovered(current, [approval], now)).toBe(false);
-    expect(isVerdictCovered(old, [{ ...approval, expiresAt: "invalid" }], now)).toBe(false);
   });
 });

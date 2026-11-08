@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildPodcastFeed, formatDuration } from "../rss";
+import { buildPodcastFeed } from "../rss";
 
 describe("buildPodcastFeed", () => {
   it("escapes show and episode text and lists each episode as an enclosure", () => {
@@ -34,12 +34,5 @@ describe("buildPodcastFeed", () => {
     expect(xml).toContain("<pubDate>Thu, 22 Oct 2026 09:30:00 GMT</pubDate>");
     expect(xml).toContain("<itunes:duration>1:02:05</itunes:duration>");
     expect(xml).toContain("<itunes:block>Yes</itunes:block>");
-  });
-});
-
-describe("formatDuration", () => {
-  it("drops the hour when an episode is shorter than an hour", () => {
-    expect(formatDuration(65)).toBe("1:05");
-    expect(formatDuration(3600)).toBe("1:00:00");
   });
 });

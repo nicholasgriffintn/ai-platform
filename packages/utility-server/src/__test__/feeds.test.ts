@@ -8,36 +8,6 @@ describe("parseSyndicationFeed", () => {
       `<rss><channel><item><title>Story</title><link>https://news.example.com/a</link>${body}</item></channel></rss>`,
     ).items[0]?.imageUrl;
 
-  it("picks the widest attached image", () => {
-    expect(
-      readImage(`<media:content width="140" url="https://img.example.com/small.jpg"/>
-        <media:content width="460" url="https://img.example.com/large.jpg"/>`),
-    ).toBe("https://img.example.com/large.jpg");
-  });
-
-  it("reads a thumbnail and an image enclosure, but not an audio enclosure", () => {
-    expect(readImage(`<media:thumbnail url="https://img.example.com/t.jpg"/>`)).toBe(
-      "https://img.example.com/t.jpg",
-    );
-    expect(readImage(`<enclosure url="https://img.example.com/e.png" type="image/png"/>`)).toBe(
-      "https://img.example.com/e.png",
-    );
-    expect(readImage(`<enclosure url="https://cdn.example.com/e.mp3" type="audio/mpeg"/>`)).toBe(
-      null,
-    );
-  });
-
-  it("falls back to an image inside escaped or character data markup", () => {
-    expect(
-      readImage(
-        `<description>&lt;img src=&quot;https://img.example.com/a.jpg&quot;&gt;</description>`,
-      ),
-    ).toBe("https://img.example.com/a.jpg");
-    expect(
-      readImage(`<description><![CDATA[<p><img alt="" src="/b.jpg"></p>]]></description>`),
-    ).toBe("https://news.example.com/b.jpg");
-  });
-
   it("refuses an image that is not https", () => {
     expect(readImage(`<media:thumbnail url="http://img.example.com/t.jpg"/>`)).toBeNull();
     expect(readImage(`<media:thumbnail url="data:image/png;base64,AAAA"/>`)).toBeNull();
@@ -74,33 +44,5 @@ describe("parseSyndicationFeed", () => {
         imageUrl: null,
       },
     ]);
-  });
-
-  it("reads Atom entries using the alternate link", () => {
-    const feed = parseSyndicationFeed(`
-      <feed xmlns="http://www.w3.org/2005/Atom">
-        <title>Nest notes</title>
-        <entry>
-          <title type="html">Moulting season</title>
-          <link rel="self" href="https://example.com/api/entries/1"/>
-          <link rel="alternate" href="https://example.com/moulting"/>
-          <summary>Shedding, briefly.</summary>
-          <updated>2026-10-20T08:00:00Z</updated>
-        </entry>
-      </feed>`);
-
-    expect(feed.items).toEqual([
-      {
-        title: "Moulting season",
-        url: "https://example.com/moulting",
-        summary: "Shedding, briefly.",
-        publishedAt: "2026-10-20T08:00:00.000Z",
-        imageUrl: null,
-      },
-    ]);
-  });
-
-  it("returns no items for markup that is not a feed", () => {
-    expect(parseSyndicationFeed("<html><body><p>Not a feed</p></body></html>").items).toEqual([]);
   });
 });

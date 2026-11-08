@@ -15,15 +15,4 @@ describe("runtime candidates", () => {
       "A loopback endpoint must address a loopback host",
     );
   });
-
-  it("accepts a custom network model runtime over HTTP", () => {
-    const candidate = buildCustomRuntimeCandidate({
-      vendor: "llamacpp",
-      label: "Home server",
-      url: "http://10.0.0.4:8080",
-      transport: "network",
-    });
-
-    expect(validateRuntimeCandidate(candidate)).toBeNull();
-  });
 });

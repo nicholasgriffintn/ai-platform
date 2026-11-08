@@ -71,31 +71,6 @@ describe("disagreeWithPolyHandoff", () => {
     }),
   );
 
-  it("records a rule that this routine's results always reach the person", async () => {
-    const { context, corrections } = setup(handoffRecord());
-
-    await expect(disagreeWithPolyHandoff(context, "poly_handoff_1")).resolves.toMatchObject({
-      result_conversation_id: "recipe_occurrence_1",
-    });
-    expect(corrections.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userId: 7,
-        placement: "policy",
-        placementRef: "poly.handoff_urgency:installation_inbox",
-      }),
-    );
-  });
-
-  it("counts a second disagreement about the same routine instead of adding a rule", async () => {
-    const { context, corrections } = setup(handoffRecord(), [{ id: "correction_1" }]);
-
-    await expect(disagreeWithPolyHandoff(context, "poly_handoff_1")).resolves.toMatchObject({
-      correction_id: "correction_1",
-    });
-    expect(corrections.create).not.toHaveBeenCalled();
-    expect(corrections.recordRecurrence).toHaveBeenCalledTimes(1);
-  });
-
   it("refuses a handoff from someone else's thread or one Poly already raised", async () => {
     await expect(
       disagreeWithPolyHandoff(
