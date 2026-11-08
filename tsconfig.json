@@ -128,9 +128,6 @@
       "path": "packages/component-sites/tsconfig.json"
     },
     {
-      "path": "packages/component-sites/tsconfig.typecheck.json"
-    },
-    {
       "path": "packages/component-ui/tsconfig.json"
     },
     {
