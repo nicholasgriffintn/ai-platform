@@ -70,25 +70,25 @@ export const call_api: FunctionToolDescriptor = {
       headers: {
         type: "object",
         description:
-          'Optional non-secret headers to include in the request (example: {"Accept":"application/json"}). Use auth for API keys and tokens.',
+          'Optional non-secret headers (example: {"Accept":"application/json"}). Use auth for secrets.',
       },
       auth: {
         type: "object",
         description:
-          "Send a secret the user provided through request_secret. The reference only works for the origin the user approved and is spent once that origin responds; a request that fails before any response leaves it usable. Redirects are not followed. Never put raw secrets in headers.",
+          "Send a request_secret secret as a header, only to its approved origin. Redirects are not followed.",
         properties: {
           secret_ref: {
             type: "string",
-            description: "The secret-ref:<hex> reference from the user's reply.",
+            description: "secret-ref:<hex> from the user's reply.",
           },
           header: {
             type: "string",
-            description: "Header that carries the secret (defaults to Authorization).",
+            description: "Defaults to Authorization.",
           },
           scheme: {
             type: "string",
             enum: ["bearer", "raw"],
-            description: "bearer sends 'Bearer <secret>'; raw sends the secret as is.",
+            description: "bearer prefixes 'Bearer '.",
           },
         },
         required: ["secret_ref"],

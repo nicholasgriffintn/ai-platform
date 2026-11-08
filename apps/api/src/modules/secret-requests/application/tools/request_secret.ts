@@ -15,7 +15,7 @@ export const request_secret: ApiToolDefinition = {
   name: REQUEST_SECRET_TOOL_NAME,
   capabilityHint: "ask the user for an API key or token privately",
   description:
-    "Ask the user for an API key, token or webhook secret through a private input that keeps the value out of the conversation. Never ask for secrets in chat. Give a short label, why it is needed and the https origin it will be sent to, such as https://api.example.com. The user's reply contains a one-use secret-ref:<hex> reference that expires after 24 hours. Pass it to call_api as auth.secret_ref; it only works in this conversation and only for the destination given here.",
+    "Ask the user privately for an API key, token or webhook secret; never ask in chat. The reply holds a one-use secret-ref for call_api auth.secret_ref, valid for 24 hours in this conversation and only for the destination origin.",
   type: "normal",
   maxIdenticalCalls: 1,
   permissions: ["human"],
