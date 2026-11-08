@@ -1,3 +1,5 @@
+import { normaliseVector } from "@ngriffin_uk/polychat-utility-core";
+
 import { countWatchedEpisodes, type ShelfEntry } from "./shelf";
 import type { TitleSummary, ViewingStatus } from "./titles";
 
@@ -16,16 +18,6 @@ export interface TasteVector {
   id: string;
   values: readonly number[];
   weight: number;
-}
-
-function dot(left: readonly number[], right: readonly number[]): number {
-  return left.reduce((sum, value, index) => sum + value * (right[index] ?? 0), 0);
-}
-
-function normalise(vector: readonly number[]): number[] {
-  const size = Math.sqrt(dot(vector, vector));
-
-  return size > 0 ? vector.map((value) => value / size) : [...vector];
 }
 
 export function tasteWeight(entry: Pick<ShelfEntry, "status" | "rating">): number {
@@ -117,5 +109,5 @@ export function blendTaste(vectors: readonly TasteVector[]): number[] {
     });
   }
 
-  return normalise(blended);
+  return normaliseVector(blended);
 }

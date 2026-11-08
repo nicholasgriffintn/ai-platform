@@ -30,6 +30,7 @@ export * from "./hooks/useConversationOrganisation.js";
 export * from "./hooks/useDiscover.js";
 export * from "./hooks/useDiscoverDay.js";
 export * from "./hooks/useDiscoverExposure.js";
+export * from "./hooks/useStory.js";
 export * from "./hooks/useWebPushRegistration.js";
 export * from "./lib/poly/launch.js";
 export * from "./hooks/useNotebooks.js";

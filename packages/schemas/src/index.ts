@@ -159,6 +159,7 @@ export * from "./discover.js";
 export * from "./discover-day.js";
 export * from "./discover-episodes.js";
 export * from "./discover-wind-down.js";
+export * from "./stories.js";
 export * from "./ocr.js";
 export * from "./jobs.js";
 export * from "./json-rpc.js";
