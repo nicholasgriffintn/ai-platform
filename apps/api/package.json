@@ -22,6 +22,7 @@
     "deploy": "pnpm build && pnpm typecheck && wrangler deploy src/index.ts --name=assistant",
     "dev": "WRANGLER_BUILD_CONDITIONS=polychat-source,workerd,worker,browser wrangler dev src/index.ts",
     "dev:pass": "WRANGLER_BUILD_CONDITIONS=polychat-source,workerd,worker,browser CLOUDFLARE_INCLUDE_PROCESS_ENV=true pass-cli run --env-file .dev.vars -- wrangler dev src/index.ts --env-file .dev.vars",
+    "evals:tool-use": "node ./scripts/tool-use-evals.mjs",
     "start": "wrangler dev src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",

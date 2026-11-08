@@ -16,6 +16,8 @@ import {
   registryWorkspaceParamsSchema,
   routineSuccessListResponseSchema,
   startEvalRunsRequestSchema,
+  toolUseEvalSampleRequestSchema,
+  toolUseEvalSampleSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
@@ -37,6 +39,7 @@ import {
   readEvalCaseResults,
   startEvalRuns,
 } from "~/modules/model-evaluation/application/suites";
+import { sampleToolUseCase } from "~/modules/model-evaluation/application/tool-use/sampler";
 
 const app = new Hono();
 const tags = ["model-evaluation"];
@@ -49,6 +52,16 @@ addRoute(app, "get", "/routines/success", {
   summary: "List how often your routines finished with evidence over the last four weeks",
   responses: { 200: { description: "Routine success", schema: routineSuccessListResponseSchema } },
   handler: ({ serviceContext }) => listRoutineSuccess(serviceContext),
+});
+
+addRoute(app, "post", "/tool-use-evals/samples", {
+  auth: true,
+  tags,
+  summary:
+    "Sample one tool-use eval case with the real tool catalogue and system prompt, and canned tool results",
+  bodySchema: toolUseEvalSampleRequestSchema,
+  responses: { 200: { description: "Sample", schema: toolUseEvalSampleSchema } },
+  handler: ({ serviceContext, body }) => sampleToolUseCase(serviceContext, body),
 });
 
 addRoute(app, "get", `${base}/graders`, {
