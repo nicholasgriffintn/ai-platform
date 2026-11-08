@@ -3,6 +3,7 @@ import {
   pickDecisionMedia,
   type DecisionRequest,
   type DecisionResponse,
+  type DeviceCredentialScope,
 } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -13,6 +14,7 @@ export interface DecideOptions {
   env: IEnv;
   user: IUser;
   request: DecisionRequest;
+  credentialScope?: DeviceCredentialScope;
   completionId?: string;
   conversationId?: string;
 }
@@ -21,9 +23,18 @@ export async function decide({
   env,
   user,
   request,
+  credentialScope,
   completionId,
   conversationId,
 }: DecideOptions): Promise<DecisionResponse> {
+  if (credentialScope === "pashi" && (request.model || request.provider)) {
+    throw new AssistantError(
+      "This key can only use the default decision model.",
+      ErrorType.FORBIDDEN,
+      403,
+    );
+  }
+
   const media = pickDecisionMedia(request);
   const target = await ai.resolveDecisionTarget({
     env,

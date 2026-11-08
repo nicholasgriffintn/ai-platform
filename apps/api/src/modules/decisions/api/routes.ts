@@ -21,8 +21,13 @@ addRoute(app, "post", "/", {
     200: { description: "Typed answers with probabilities", schema: decisionResponseSchema },
     400: { description: "Bad request or validation error", schema: errorResponseSchema },
   },
-  handler: ({ body, serviceContext, user }) =>
-    decide({ env: serviceContext.env, user, request: body }),
+  handler: ({ body, serviceContext, user, raw }) =>
+    decide({
+      env: serviceContext.env,
+      user,
+      request: body,
+      credentialScope: raw.get("credentialScope"),
+    }),
 });
 
 export default app;
