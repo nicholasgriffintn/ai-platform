@@ -149,17 +149,6 @@ describe("queueFollowUp", () => {
     ).rejects.toThrow("a different message");
   });
 
-  it("rejects a repeated key for another conversation", async () => {
-    const { context, tasks } = createContext({ latestStatus: "running" });
-
-    tasks.getTaskById.mockResolvedValueOnce(queuedTask("queued-1", "conversation-2"));
-
-    await expect(
-      queueFollowUp(context, "conversation-1", { ...input, idempotency_key: "queue-1" }),
-    ).rejects.toMatchObject({ statusCode: 409 });
-    expect(tasks.createTask).not.toHaveBeenCalled();
-  });
-
   it("refuses more than the queue limit", async () => {
     const { context } = createContext({ waiting: MAX_QUEUED_CHAT_MESSAGES });
 

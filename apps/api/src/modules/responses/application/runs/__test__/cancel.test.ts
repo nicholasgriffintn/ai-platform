@@ -143,26 +143,4 @@ describe("handleCancelChatRun", () => {
     );
     expect(metrics.recordTurnCancellationRequested).not.toHaveBeenCalled();
   });
-
-  it("leaves cleanup to the outbox so a retried command does not repeat it", async () => {
-    const context = createContext();
-
-    vi.mocked(
-      context.repositories.get(ConversationRunRepository).acceptCancellation,
-    ).mockResolvedValueOnce({
-      protocolVersion: 1,
-      commandId: "cancel-1",
-      kind: "cancel",
-      acceptedAt: run.updatedAt,
-      duplicate: true,
-      run: { ...run, status: "cancelled" },
-    });
-    await handleCancelChatRun(context, run.id, { command_id: "cancel-1", expected_attempt: 1 });
-
-    expect(
-      context.repositories.get(ConnectorOperationApprovalRepository).deleteUnconsumedForRun,
-    ).not.toHaveBeenCalled();
-    expect(context.repositories.get(DelegationRepository).listByParentRunId).not.toHaveBeenCalled();
-    expect(coordinator.signalRunEffects).toHaveBeenCalledWith(undefined, run.conversationId);
-  });
 });

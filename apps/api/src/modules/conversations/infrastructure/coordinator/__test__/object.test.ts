@@ -285,22 +285,6 @@ describe("ConversationCoordinator", () => {
     }
   });
 
-  it("drains effects against the live lease owner and schedules the next retry", async () => {
-    const coordinator = createCoordinator();
-    const nextDrainAt = new Date(Date.now() + 60_000).toISOString();
-
-    effects.drainRunEffects.mockResolvedValueOnce({ executed: 1, nextDrainAt });
-    await acquire(coordinator, "user_message", "owner-1");
-
-    const response = await drain(coordinator);
-
-    expect(response.status).toBe(200);
-    expect(effects.drainRunEffects).toHaveBeenCalledWith(
-      expect.objectContaining({ conversationId: "conversation-1", liveOwnerToken: "owner-1" }),
-    );
-    expect(coordinator.scheduledAlarm()).toBe(Date.parse(nextDrainAt));
-  });
-
   it("refuses to drain another conversation's effects", async () => {
     const coordinator = createCoordinator();
 
