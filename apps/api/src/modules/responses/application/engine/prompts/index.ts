@@ -23,6 +23,7 @@ import { getModelConfigByMatchingModel } from "~/modules/models/application/reso
 import { toAssistantModelMetadata } from "~/modules/responses/application/engine/prompts/model-metadata";
 import { getInboundChannelProfile } from "~/modules/responses/domain/channels";
 import { resolveMemoryPolicy } from "~/modules/responses/domain/memory";
+import { listModelInvocableSkills } from "~/modules/skills/application/invocation";
 import type { AssistantPersona, ChatRequestOptions, IBody, IUser, IUserSettings } from "~/types";
 
 const logger = getLogger({ prefix: "services/chat/prompts" });
@@ -156,9 +157,10 @@ export async function getSystemPrompt(options: SystemPromptOptions): Promise<str
         supportsToolCalls,
         simulatedThinking,
         isCoding: modelConfig?.promptTemplate === "coding",
-        skills: (skills ?? [])
-          .filter((skill) => skill.state === "ready")
-          .map((skill) => ({ id: skill.id, description: skill.description })),
+        skills: listModelInvocableSkills(skills).map((skill) => ({
+          id: skill.id,
+          description: skill.description,
+        })),
         capabilityMap,
         memoryPolicy,
         persona,

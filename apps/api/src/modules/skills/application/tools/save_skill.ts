@@ -41,12 +41,24 @@ export const save_skill: ApiToolDefinition = {
       );
     }
 
+    if (args.disableModelInvocation && (args.applyAutomatically || args.userInvocable === false)) {
+      throw new AssistantError(
+        args.applyAutomatically
+          ? "A skill applied automatically cannot also be limited to the user invoking it"
+          : "A skill must be usable by the user, the assistant, or both",
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+
     const projectId = resolveRequestProjectId(request);
     const content = buildSkillDocument({
       name: args.name,
       description: args.description,
       instructions: args.instructions,
       ...(args.applyAutomatically ? { activation: "per-message" as const } : {}),
+      ...(args.userInvocable === false ? { userInvocable: false } : {}),
+      ...(args.disableModelInvocation ? { disableModelInvocation: true } : {}),
     });
     const skill = projectId
       ? await publishProjectSkill(context, user.id, projectId, { content })
@@ -58,7 +70,9 @@ export const save_skill: ApiToolDefinition = {
       name: SKILL_SAVE_TOOL_NAME,
       content: args.applyAutomatically
         ? `Saved ${skill.name} to ${scope}. It will be applied to messages it clearly helps with; edit it in Teammates and tools.`
-        : `Saved ${skill.name} to ${scope}. Load it by name next time, or edit it in Teammates and tools.`,
+        : args.disableModelInvocation
+          ? `Saved ${skill.name} to ${scope}. Only the user can run it, with /${skill.name} in the composer; edit it in Teammates and tools.`
+          : `Saved ${skill.name} to ${scope}. Load it by name next time, or edit it in Teammates and tools.`,
       data: { name: skill.name, scope: projectId ? "project" : "personal", projectId },
     } satisfies IFunctionResponse;
   },

@@ -194,12 +194,94 @@ export function matchesComposerCommand(query: string, values: Array<string | und
   return values.some((value) => value?.toLowerCase().includes(normalizedQuery));
 }
 
-export function matchesComposerSlashCommand(query: string, command: string): boolean {
+export interface ComposerSlashCommandCandidate {
+  command: string;
+  label?: string;
+  description?: string;
+}
+
+const SlashCommandMatchTier = {
+  Exact: 0,
+  Prefix: 1,
+  WordBoundary: 2,
+  Substring: 3,
+  Description: 4,
+} as const;
+
+type SlashCommandMatchTier = (typeof SlashCommandMatchTier)[keyof typeof SlashCommandMatchTier];
+
+function startsAtWordBoundary(value: string, query: string): boolean {
+  let index = value.indexOf(query);
+
+  while (index !== -1) {
+    if (index === 0 || !/[a-z0-9]/u.test(value[index - 1] ?? "")) {
+      return true;
+    }
+
+    index = value.indexOf(query, index + 1);
+  }
+
+  return false;
+}
+
+function getNameMatchTier(name: string, query: string): SlashCommandMatchTier | null {
+  if (name === query) {
+    return SlashCommandMatchTier.Exact;
+  }
+
+  if (name.startsWith(query)) {
+    return SlashCommandMatchTier.Prefix;
+  }
+
+  if (startsAtWordBoundary(name, query)) {
+    return SlashCommandMatchTier.WordBoundary;
+  }
+
+  return name.includes(query) ? SlashCommandMatchTier.Substring : null;
+}
+
+function getSlashCommandMatchTier(
+  query: string,
+  candidate: ComposerSlashCommandCandidate,
+): SlashCommandMatchTier | null {
+  const nameTier = [candidate.command, candidate.label].reduce<SlashCommandMatchTier | null>(
+    (best, name) => {
+      const tier = name ? getNameMatchTier(name.trim().toLowerCase(), query) : null;
+
+      return tier !== null && (best === null || tier < best) ? tier : best;
+    },
+    null,
+  );
+
+  if (nameTier !== null) {
+    return nameTier;
+  }
+
+  return candidate.description?.toLowerCase().includes(query)
+    ? SlashCommandMatchTier.Description
+    : null;
+}
+
+export function rankComposerSlashCommands<T extends ComposerSlashCommandCandidate>(
+  query: string,
+  commands: readonly T[],
+): T[] {
   const normalizedQuery = query.trim().toLowerCase();
 
   if (!normalizedQuery) {
-    return true;
+    return [...commands];
   }
 
-  return command.trim().toLowerCase().startsWith(normalizedQuery);
+  return commands
+    .map((command, index) => ({
+      command,
+      index,
+      tier: getSlashCommandMatchTier(normalizedQuery, command),
+    }))
+    .filter(
+      (entry): entry is { command: T; index: number; tier: SlashCommandMatchTier } =>
+        entry.tier !== null,
+    )
+    .sort((left, right) => left.tier - right.tier || left.index - right.index)
+    .map((entry) => entry.command);
 }
