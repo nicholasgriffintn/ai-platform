@@ -7,16 +7,15 @@ test.describe("Release smoke", { tag: "@release" }, () => {
   test.describe("signed out", () => {
     test.use({ persona: "logged-out" });
 
-    test("answers in Chat", async ({ homePage, page }) => {
+    test("asks to sign in before chatting", async ({ homePage, page }) => {
       await homePage.navigate("/chat");
-      await homePage.selectModel(TEXT_MODEL);
-      const completion = homePage.sendMessageAndRequireCompletion(
-        "Check the signed-out release path",
-      );
+      await homePage.searchModels(TEXT_MODEL);
+      await expect(page.getByText("Sign in before using this model.").first()).toBeVisible();
+      await page.keyboard.press("Escape");
 
-      await homePage.confirmAdultAge();
-      await completion;
-      await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
+      await homePage.sendMessage("Check the signed-out release path");
+      await expect(page.getByText("Sign in to Polychat").first()).toBeVisible();
+      await expect(page.getByText("E2E response:")).toHaveCount(0);
       await captureVisualSnapshots(
         page,
         "smoke-logged-out-chat-boundary",
@@ -38,11 +37,13 @@ test.describe("Release smoke", { tag: "@release" }, () => {
   test.describe("Free account", () => {
     test.use({ persona: "free" });
 
-    test("answers in Chat and gates shared Work", async ({ homePage, page, workPage }) => {
+    test("gates hosted models and shared Work", async ({ homePage, page, workPage }) => {
       await homePage.navigate("/chat");
-      await homePage.selectModel(TEXT_MODEL);
-      await homePage.sendMessageAndRequireCompletion("Check the Free release path");
-      await expect(homePage.getLatestAssistantMessage()).toContainText("E2E response:");
+      await homePage.searchModels(TEXT_MODEL);
+      await expect(
+        page.getByText("This model requires Pro or your own provider credentials.").first(),
+      ).toBeVisible();
+      await page.keyboard.press("Escape");
 
       await workPage.open();
       await expect(page.getByRole("heading", { name: "Unlock shared workspaces." })).toBeVisible();
