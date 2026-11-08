@@ -1,25 +1,28 @@
-import { Button, WorkbenchCard } from "@ngriffin_uk/polychat-component-ui";
-import { useDiscoverCoverage, useSource } from "@ngriffin_uk/polychat-library-react";
-import {
-  DISCOVER_COVERAGE_MIN_ARTICLES,
-  readDiscoverCoverage,
-  type DiscoverCoverage,
-} from "@ngriffin_uk/polychat-schemas";
-import { getErrorMessage } from "@ngriffin_uk/polychat-utility-core";
+import { buttonClassName, WorkbenchCard } from "@ngriffin_uk/polychat-component-ui";
+import { getStoryPath, useStory } from "@ngriffin_uk/polychat-library-react";
+import type { StoryPage } from "@ngriffin_uk/polychat-schemas";
+import { formatCount } from "@ngriffin_uk/polychat-utility-core";
 import { Newspaper } from "lucide-react";
+import { Link } from "react-router";
 
 import { AnalysisList, AnalysisSection, AnalysisTags } from "../../Knowledge/Analysis.js";
 
-function CoverageDetail({ coverage }: { coverage: DiscoverCoverage }) {
+function CoverageDetail({ page }: { page: StoryPage }) {
+  const { story, version } = page;
+
+  if (!version) {
+    return <p>Poly is still gathering coverage of this story.</p>;
+  }
+
   return (
     <div className="flex flex-col gap-2.5">
-      <AnalysisTags tags={[`${coverage.sourceIds.length} articles`]} />
-      <p className="text-[0.8125rem] leading-relaxed text-foreground">{coverage.overview}</p>
-      <AnalysisList heading="What they agree on" items={coverage.agreed} />
-      {coverage.outlets.length > 0 && (
-        <AnalysisSection heading="Each outlet's angle" count={coverage.outlets.length}>
+      <AnalysisTags tags={[formatCount(story.outletCount, "outlet")]} />
+      <AnalysisList heading="Overview" items={version.overview} />
+      <AnalysisList heading="What they agree on" items={version.agreed} />
+      {version.outlets.length > 0 && (
+        <AnalysisSection heading="Each outlet's angle" count={version.outlets.length}>
           <ul className="flex flex-col gap-1.5">
-            {coverage.outlets.map((outlet) => (
+            {version.outlets.map((outlet) => (
               <li key={outlet.source}>
                 <span className="font-medium">{outlet.source}:</span> {outlet.angle}
               </li>
@@ -27,59 +30,30 @@ function CoverageDetail({ coverage }: { coverage: DiscoverCoverage }) {
           </ul>
         </AnalysisSection>
       )}
-      <AnalysisList heading="Where they differ" items={coverage.disputed} />
-      <AnalysisList heading="What's missing" items={coverage.gaps} />
+      <AnalysisList heading="Where they differ" items={version.disputed} />
+      <AnalysisList heading="What's missing" items={version.gaps} />
     </div>
   );
 }
 
-function SavedCoverage({ sourceId }: { sourceId: string }) {
-  const source = useSource(sourceId).data;
-  const coverage = source ? readDiscoverCoverage(source.metadata) : null;
+export function DiscoverCoverageCard({ storyId }: { storyId: string }) {
+  const story = useStory(storyId);
 
-  return coverage ? <CoverageDetail coverage={coverage} /> : <p>Reading the comparison back.</p>;
-}
-
-export function DiscoverCoverageCard({
-  editionId,
-  cardId,
-  coverageSourceId,
-  articleCount,
-}: {
-  editionId: string;
-  cardId: string;
-  coverageSourceId: string | undefined;
-  articleCount: number;
-}) {
-  const compare = useDiscoverCoverage(editionId, cardId);
-  const sourceId = coverageSourceId ?? compare.data?.id;
-
-  if (!sourceId && articleCount < DISCOVER_COVERAGE_MIN_ARTICLES) {
+  if (story.isError) {
     return null;
   }
 
   return (
     <WorkbenchCard title="Coverage" icon={Newspaper}>
-      {sourceId ? (
-        <SavedCoverage sourceId={sourceId} />
-      ) : (
-        <div className="flex flex-col items-start gap-2">
-          <p>{articleCount} articles on this today. See where the outlets agree and differ.</p>
-          <Button
-            variant="outline"
-            size="xs"
-            isLoading={compare.isPending}
-            onClick={() => compare.mutate()}
-          >
-            Compare the coverage
-          </Button>
-          {compare.error ? (
-            <p className="text-failure">
-              {getErrorMessage(compare.error, "Poly couldn't compare the coverage")}
-            </p>
-          ) : null}
-        </div>
-      )}
+      <div className="flex flex-col items-start gap-3">
+        {story.data ? <CoverageDetail page={story.data} /> : <p>Reading the story.</p>}
+        <Link
+          to={getStoryPath(storyId)}
+          className={buttonClassName({ variant: "outline", size: "xs" })}
+        >
+          Full story
+        </Link>
+      </div>
     </WorkbenchCard>
   );
 }

@@ -1,3 +1,5 @@
+import { getStoryPath, STORY_PATH_PREFIX } from "@ngriffin_uk/polychat-schemas";
+
 export type ProductMode = "chat" | "work";
 
 export type ProductPlace =
@@ -21,11 +23,7 @@ export const PET_SETTINGS_PATH = `${PROFILE_PATH}?tab=pets`;
 
 export const DISCOVER_PATH = "/";
 
-export const STORY_PATH_PREFIX = "/discover/stories";
-
-export function getStoryPath(storyId: string): string {
-  return `${STORY_PATH_PREFIX}/${encodeURIComponent(storyId)}`;
-}
+export { getStoryPath, STORY_PATH_PREFIX };
 
 export const ENTITY_PATH_PREFIX = "/discover/entities";
 

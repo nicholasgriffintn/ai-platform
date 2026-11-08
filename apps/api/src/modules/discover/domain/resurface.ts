@@ -1,3 +1,4 @@
+import { getStoryPath, type StorySummary } from "@ngriffin_uk/polychat-schemas";
 import { DAY_MS, parseTimestamp } from "@ngriffin_uk/polychat-utility-core";
 
 import type { DiscoverFeedbackEntry } from "./feedback";
@@ -46,6 +47,28 @@ export function missedFlashcards(sets: readonly StudySetProgress[]): ResurfaceCa
         ]
       : [],
   );
+}
+
+export function storiesBehind(
+  pairs: ReadonlyArray<{ story: StorySummary; before: StorySummary }>,
+): ResurfaceCandidate[] {
+  const seen = new Set<string>();
+
+  return pairs.flatMap(({ story, before }) => {
+    if (seen.has(before.id)) {
+      return [];
+    }
+
+    seen.add(before.id);
+
+    return [
+      {
+        title: before.title,
+        detail: `Then and now: the earlier story behind "${story.title}"`,
+        href: getStoryPath(before.id),
+      },
+    ];
+  });
 }
 
 export function collectResurfacing(

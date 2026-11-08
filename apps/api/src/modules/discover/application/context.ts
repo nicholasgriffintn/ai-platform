@@ -41,10 +41,12 @@ import { selectCurrentResearch } from "~/modules/discover/domain/research";
 import { findDiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
 import { condenseSignalLines } from "~/modules/discover/domain/signal-document";
 import { selectRecentChatTitles } from "~/modules/discover/domain/signals";
+import { listEditionStoryIds } from "~/modules/discover/domain/story-cards";
 import { collectParkedSince, describeRunningStory } from "~/modules/discover/domain/wind-down";
 import { describeMemoryDocument } from "~/modules/memory-documents/domain/details";
 import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastructure/MemoryDocumentRepository";
 import { loadPolyAgenda } from "~/modules/poly/application/read-agenda";
+import { listStoriesByUrl } from "~/modules/stories/application/read-models";
 
 import { readDiscoverDayProfile } from "./day-profile";
 import { listRecentDiscoverEditions } from "./editions";
@@ -186,6 +188,7 @@ export async function readDiscoverEditionBasis(
       userId: basis.user.id,
       follows: basis.follows,
       feedback: basis.feedbackEntries,
+      storyIds: listEditionStoryIds(basis.recentEditions),
       now: now.getTime(),
     }),
   ]);
@@ -262,11 +265,16 @@ export async function buildDiscoverContextSnapshot(
       userId,
       follows: basis.follows,
       feedback: basis.feedbackEntries,
+      storyIds: listEditionStoryIds(basis.recentEditions),
       now: now.getTime(),
     }),
     readDiscoverHealthSummary(context, userId, basis.zoned.date),
     listRecentWindDowns(context, userId),
   ]);
+  const stories = await listStoriesByUrl(
+    context.env,
+    documents.research.flatMap((research) => research.results.map((result) => result.url)),
+  );
 
   return {
     date: basis.zoned.date,
@@ -292,6 +300,7 @@ export async function buildDiscoverContextSnapshot(
     health,
     signals: documents.signals,
     research: documents.research,
+    stories,
     parked: collectParkedSince(windDowns, basis.recentEditions[0]?.generatedAt ?? null),
     story: describeRunningStory(windDowns),
   };

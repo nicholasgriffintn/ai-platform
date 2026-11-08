@@ -41,9 +41,13 @@ import {
 } from "~/modules/discover/domain/research";
 import { findDiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
 import { keepUsedDiscoverDocuments } from "~/modules/discover/domain/signal-selection";
-import { foldIntoStoryCard } from "~/modules/discover/domain/story-intake";
+import {
+  findStoryByUrl,
+  foldIntoStoryCard,
+  withCardStory,
+} from "~/modules/discover/domain/story-cards";
 import { DiscoverSeenRepository } from "~/modules/discover/infrastructure/DiscoverSeenRepository";
-import { listStoryIdsByUrl } from "~/modules/stories/application/read-models";
+import { listStoriesByUrl } from "~/modules/stories/application/read-models";
 
 import { listDiscoverArticleSources } from "./articles";
 import { listRecentDiscoverEditions } from "./editions";
@@ -187,7 +191,7 @@ export async function collectDiscoverLiveCandidates(
     saved,
     work,
   });
-  const storyIds = await listStoryIdsByUrl(
+  const stories = await listStoriesByUrl(
     context.env,
     chosen.flatMap(({ card }) => (card.kind === "read" ? [card.url] : [])),
   );
@@ -201,8 +205,8 @@ export async function collectDiscoverLiveCandidates(
     }
 
     seen.add(key);
-    const storyId = card.kind === "read" ? storyIds.get(card.url) : undefined;
-    const lead = storyId === undefined ? undefined : storyLeads.get(storyId);
+    const story = card.kind === "read" ? findStoryByUrl(card.url, stories) : undefined;
+    const lead = story === undefined ? undefined : storyLeads.get(story.id);
     const leadCandidate = lead === undefined ? undefined : candidates[lead];
 
     if (lead !== undefined && leadCandidate?.card.kind === "read" && card.kind === "read") {
@@ -217,7 +221,7 @@ export async function collectDiscoverLiveCandidates(
         ? new Date(source.publishedAt).toISOString()
         : null;
     const filed = attachDiscoverArticles([card], articleSources)[0] ?? card;
-    const attached = storyId && filed.kind === "read" ? { ...filed, storyId } : filed;
+    const attached = story && filed.kind === "read" ? withCardStory(filed, story) : filed;
 
     const observedAt =
       source?.observedAt ??
@@ -238,8 +242,8 @@ export async function collectDiscoverLiveCandidates(
       observedAt,
     });
 
-    if (storyId) {
-      storyLeads.set(storyId, candidates.length - 1);
+    if (story) {
+      storyLeads.set(story.id, candidates.length - 1);
     }
   }
 

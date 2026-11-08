@@ -12,7 +12,6 @@ import {
   startDiscoverWindDown,
   unfollowDiscoverTopic,
   refreshDiscover,
-  requestDiscoverCoverage,
   requestDiscoverEpisode,
   recordDiscoverEpisodeProgress,
   requestDiscoverFraming,
@@ -211,18 +210,6 @@ export function useDiscoverFraming(editionId: string, cardId: string) {
     mutationFn: () => requestDiscoverFraming(editionId, cardId),
     onSuccess: (source: Source) =>
       queryClient.setQueryData(SOURCE_QUERY_KEYS.detail(source.id), source),
-  });
-}
-
-export function useDiscoverCoverage(editionId: string, cardId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: () => requestDiscoverCoverage(editionId, cardId),
-    onSuccess: (source: Source) => {
-      queryClient.setQueryData(SOURCE_QUERY_KEYS.detail(source.id), source);
-      void queryClient.invalidateQueries({ queryKey: DISCOVER_QUERY_KEY });
-    },
   });
 }
 

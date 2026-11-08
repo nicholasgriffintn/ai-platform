@@ -1,6 +1,5 @@
 import type { ChatSuggestion } from "@ngriffin_uk/polychat-library-react";
 import { discoverSourceOutlet, type DiscoverCard } from "@ngriffin_uk/polychat-schemas";
-import { normaliseComparableText } from "@ngriffin_uk/polychat-utility-core";
 
 import type { DiscoverMedia } from "./media/media-status.js";
 
@@ -82,15 +81,6 @@ export function discoverCardLink(card: DiscoverCard): DiscoverCardLink | null {
 
 export function hasDiscoverTopic(card: DiscoverCard): boolean {
   return "topic" in card;
-}
-
-export function countTopicArticles(cards: readonly DiscoverCard[], topic: string): number {
-  const key = normaliseComparableText(topic);
-
-  return cards.filter(
-    (card) =>
-      card.kind === "read" && Boolean(card.sourceId) && normaliseComparableText(card.topic) === key,
-  ).length;
 }
 
 export function cardTopic(card: DiscoverCard): string {

@@ -1,7 +1,11 @@
 import { buttonClassName, Pet } from "@ngriffin_uk/polychat-component-ui";
 import { getStoryPath } from "@ngriffin_uk/polychat-library-react";
 import type { DiscoverCard } from "@ngriffin_uk/polychat-schemas";
-import { isHttpUrl, normaliseComparableText } from "@ngriffin_uk/polychat-utility-core";
+import {
+  formatCount,
+  isHttpUrl,
+  normaliseComparableText,
+} from "@ngriffin_uk/polychat-utility-core";
 import { ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
@@ -9,7 +13,6 @@ import { Link } from "react-router";
 import { SourceListenById } from "../../../Files/Viewer/SourceListen.js";
 import {
   cardTopic,
-  countTopicArticles,
   discoverCardBody,
   discoverCardEyebrow,
   discoverCardHeadline,
@@ -193,7 +196,9 @@ export function DiscoverCardBlock({
             to={getStoryPath(card.storyId)}
             className={buttonClassName({ variant: "secondary", size: "sm" })}
           >
-            Full story
+            {card.outletCount && card.outletCount > 1
+              ? `Full story · ${formatCount(card.outletCount, "outlet")}`
+              : "Full story"}
           </Link>
         ) : null}
         <DiscoverFollowButton card={card} feedback={feedback} />
@@ -220,14 +225,9 @@ export function DiscoverCardBlock({
           <DiscoverFramingCard editionId={editionId} cardId={card.id} sourceId={sourceId} />
         </div>
       ) : null}
-      {card.kind === "topic" ? (
+      {card.kind === "topic" && card.storyId ? (
         <div data-stagger>
-          <DiscoverCoverageCard
-            editionId={editionId}
-            cardId={card.id}
-            coverageSourceId={card.coverageSourceId}
-            articleCount={countTopicArticles(cards, card.topic)}
-          />
+          <DiscoverCoverageCard storyId={card.storyId} />
         </div>
       ) : null}
       {related.length > 0 ? (
