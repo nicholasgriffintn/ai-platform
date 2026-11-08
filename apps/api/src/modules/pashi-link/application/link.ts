@@ -1,3 +1,4 @@
+import { resolvePashiOrigin } from "@ngriffin_uk/polychat-ai-integrations";
 import { hasProEntitlement } from "@ngriffin_uk/polychat-library-policy";
 import type { PashiLinkSaveResult, PashiLinkStatus } from "@ngriffin_uk/polychat-schemas";
 
@@ -12,7 +13,9 @@ import type { IUser } from "~/types";
 const PASHI_CONNECTOR = "pashi";
 
 export const PASHI_MCP_LABEL = "Pashi";
-export const PASHI_MCP_URL = "https://pashi.app/mcp";
+export function pashiMcpUrl(env: { PASHI_URL?: string }) {
+  return `${resolvePashiOrigin(env.PASHI_URL)}/mcp`;
+}
 
 export function readPashiLinkToken(context: ServiceContext, userId: number) {
   return readRecipeConnectorToken(context, userId, PASHI_CONNECTOR);

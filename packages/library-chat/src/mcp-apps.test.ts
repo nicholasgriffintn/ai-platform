@@ -50,6 +50,14 @@ describe("MCP app host bridge", () => {
     expect(posted.at(-1)).toMatchObject({ id: 9, error: { code: -32601 } });
   });
 
+  it("lets views show local files through object URLs without allowing blob scripts", () => {
+    const policy = buildMcpAppCsp(undefined);
+
+    expect(policy).toContain("img-src 'self' data: blob:;");
+    expect(policy).toContain("media-src 'self' data: blob:;");
+    expect(policy).toContain("script-src 'self' 'unsafe-inline';");
+  });
+
   it("ignores declared sources that would widen or rewrite the policy", () => {
     const policy = buildMcpAppCsp({
       connectDomains: ["*", "'unsafe-eval'", "https://x.test; script-src *", "https://*.ok.test"],

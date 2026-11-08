@@ -22,7 +22,7 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { CapabilityConfigurationRepository } from "~/modules/capabilities/infrastructure/CapabilityConfigurationRepository";
 import {
   PASHI_MCP_LABEL,
-  PASHI_MCP_URL,
+  pashiMcpUrl,
   readPashiLinkToken,
 } from "~/modules/pashi-link/application/link";
 
@@ -227,9 +227,10 @@ export async function resolveUserMcpGatewayServers(
       })),
     ).toolOptions?.mcp_servers,
   );
+  const pashiUrl = pashiMcpUrl(context.env);
   const hasPashiServer = servers.some(
     (server) =>
-      server.url === PASHI_MCP_URL ||
+      server.url === pashiUrl ||
       normaliseMcpServerLabel(server.label).toLowerCase() === PASHI_MCP_LABEL.toLowerCase(),
   );
 
@@ -238,14 +239,14 @@ export async function resolveUserMcpGatewayServers(
   }
 
   const linked = servers.map((server) =>
-    server.url === PASHI_MCP_URL && !server.credentialConnectionId
+    server.url === pashiUrl && !server.credentialConnectionId
       ? { ...server, linkedAccount: "pashi" as const }
       : server,
   );
 
   return hasPashiServer
     ? linked
-    : [...linked, { label: PASHI_MCP_LABEL, url: PASHI_MCP_URL, linkedAccount: "pashi" }];
+    : [...linked, { label: PASHI_MCP_LABEL, url: pashiUrl, linkedAccount: "pashi" }];
 }
 
 const HOSTED_MCP_TOOL_ID = "mcp";
