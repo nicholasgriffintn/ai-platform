@@ -504,7 +504,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "releaseDate": "November 14, 2025",
         "lastUpdated": "November 14, 2025",
         "costPer1kInputTokens": 0.00125,
@@ -793,7 +793,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
@@ -1461,7 +1461,7 @@
           "tool_use"
         ],
         "contextComplexity": 3,
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "April 8, 2026",
         "lastUpdated": "April 8, 2026",
@@ -1814,7 +1814,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -2072,7 +2072,7 @@
       "model": "gpt-terra/gpt-6-1-terra",
       "matchingModel": "gpt-6.1-terra",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005,

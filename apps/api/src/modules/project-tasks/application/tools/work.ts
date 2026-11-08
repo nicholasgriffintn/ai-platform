@@ -64,12 +64,17 @@ import {
 
 const MINUTES_PER_HOUR = 60;
 
+export const ASSIGN_TASK_NEXT =
+  "The owner takes it from here; do not start the work yourself or check on it in this turn.";
+export const REQUEST_REVIEW_NEXT =
+  "The reviewer is notified; do not wait for their decision in this turn.";
+
 function workTool(
   descriptor: Omit<ApiToolDefinition, "execute">,
   run: (
     args: Record<string, unknown>,
     scope: WorkToolScope,
-  ) => Promise<{ content: string; data: Record<string, unknown> }>,
+  ) => Promise<{ content: string; data: Record<string, unknown>; next?: string }>,
 ): ApiToolDefinition {
   return {
     ...descriptor,
@@ -95,7 +100,7 @@ export const assign_task = workTool(assignTaskDescriptor, async (args, scope) =>
     scope.caller,
   );
 
-  return { content: `Assigned: ${describeTask(task)}`, data: { task } };
+  return { content: `Assigned: ${describeTask(task)}`, data: { task }, next: ASSIGN_TASK_NEXT };
 });
 
 export const post_update = workTool(postUpdateDescriptor, async (args, scope) => {
@@ -135,7 +140,11 @@ export const request_review = workTool(requestReviewDescriptor, async (args, sco
     scope.caller,
   );
 
-  return { content: `Sent for review: ${describeTask(task)}`, data: { task } };
+  return {
+    content: `Sent for review: ${describeTask(task)}`,
+    data: { task },
+    next: REQUEST_REVIEW_NEXT,
+  };
 });
 
 export const review_task = workTool(reviewTaskDescriptor, async (args, scope) => {

@@ -809,7 +809,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "isFeatured": false,
         "deprecated": true,
         "deprecationMessage": "Kimi K2.7 Code shuts down on 20 November 2026. Use GLM 5.3 instead.",

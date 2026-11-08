@@ -1,3 +1,4 @@
+import { DEVICE_SYNC_ACTIVITY_LEASE_TTL_MS } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { IEnv } from "~/types";
@@ -249,5 +250,111 @@ describe("UserSyncCoordinator", () => {
     await vi.advanceTimersByTimeAsync(100);
 
     expect(messagesOfType(sockets[0], "event")).toHaveLength(0);
+  });
+
+  describe("activity leases", () => {
+    const heartbeatEvent = {
+      topic: "user:1",
+      type: "machine.changed",
+      data: {},
+      watchedScope: "user:1",
+    };
+
+    async function subscribeAndLease(
+      coordinator: InstanceType<typeof UserSyncCoordinator>,
+      socket: FakeSocket,
+      scopes: string[],
+    ) {
+      await coordinator.webSocketMessage(
+        socket as unknown as WebSocket,
+        JSON.stringify({ type: "subscribe", topics: [{ topic: "user:1", lastSeq: 0 }] }),
+      );
+      await coordinator.webSocketMessage(
+        socket as unknown as WebSocket,
+        JSON.stringify({ type: "activity", scopes }),
+      );
+    }
+
+    it("drops a watched-only event when nobody holds a lease for its scope", async () => {
+      const { coordinator, sockets } = createCoordinator();
+
+      await connect(coordinator, "device-a");
+      await coordinator.webSocketMessage(
+        sockets[0] as unknown as WebSocket,
+        JSON.stringify({ type: "subscribe", topics: [{ topic: "user:1", lastSeq: 0 }] }),
+      );
+
+      const response = await publish(coordinator, [heartbeatEvent]);
+
+      expect(await response.json()).toEqual({ sequences: [null] });
+      expect(messagesOfType(sockets[0], "event")).toHaveLength(0);
+    });
+
+    it("delivers a watched-only event while a device holds a lease for its scope", async () => {
+      const { coordinator, sockets } = createCoordinator();
+
+      await connect(coordinator, "device-a");
+      await subscribeAndLease(coordinator, sockets[0], ["user:1"]);
+      await publish(coordinator, [heartbeatEvent]);
+
+      expect(messagesOfType(sockets[0], "pong")).toHaveLength(1);
+      expect(messagesOfType(sockets[0], "event")).toHaveLength(1);
+    });
+
+    it("ignores a lease on a topic the device has not subscribed to", async () => {
+      const { coordinator, sockets } = createCoordinator();
+
+      await connect(coordinator, "device-a");
+      await subscribeAndLease(coordinator, sockets[0], ["user:1"]);
+      await publish(coordinator, [{ ...heartbeatEvent, watchedScope: "conversation:x" }]);
+
+      expect(messagesOfType(sockets[0], "event")).toHaveLength(0);
+    });
+
+    it("stops gating events through once the lease expires or is released", async () => {
+      const { coordinator, sockets } = createCoordinator();
+
+      await connect(coordinator, "device-a");
+      await subscribeAndLease(coordinator, sockets[0], ["user:1"]);
+      await vi.advanceTimersByTimeAsync(DEVICE_SYNC_ACTIVITY_LEASE_TTL_MS);
+      await publish(coordinator, [heartbeatEvent]);
+
+      expect(messagesOfType(sockets[0], "event")).toHaveLength(0);
+
+      await coordinator.webSocketMessage(
+        sockets[0] as unknown as WebSocket,
+        JSON.stringify({ type: "activity", scopes: ["user:1"] }),
+      );
+      await publish(coordinator, [heartbeatEvent]);
+
+      expect(messagesOfType(sockets[0], "event")).toHaveLength(1);
+
+      await coordinator.webSocketMessage(
+        sockets[0] as unknown as WebSocket,
+        JSON.stringify({ type: "activity", scopes: [] }),
+      );
+      await publish(coordinator, [heartbeatEvent]);
+
+      expect(messagesOfType(sockets[0], "event")).toHaveLength(1);
+    });
+
+    it("keeps delivering and retaining events without a watched scope when nobody is watching", async () => {
+      const { coordinator, sockets } = createCoordinator();
+
+      await connect(coordinator, "device-a");
+      await publish(coordinator, [
+        heartbeatEvent,
+        { topic: "user:1", type: "project_task.changed", data: {} },
+      ]);
+      await coordinator.webSocketMessage(
+        sockets[0] as unknown as WebSocket,
+        JSON.stringify({ type: "subscribe", topics: [{ topic: "user:1", lastSeq: 0 }] }),
+      );
+
+      const events = messagesOfType(sockets[0], "event");
+
+      expect(events).toHaveLength(1);
+      expect((events[0].event as { type: string }).type).toBe("project_task.changed");
+    });
   });
 });
