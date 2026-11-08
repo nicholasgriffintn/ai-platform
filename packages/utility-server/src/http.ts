@@ -14,6 +14,13 @@ export class UnsafeUrlError extends Error {
   }
 }
 
+export class TooManyRedirectsError extends Error {
+  constructor(url: string) {
+    super(`Too many redirects while fetching ${url}`);
+    this.name = "TooManyRedirectsError";
+  }
+}
+
 export function isPublicHttpUrl(url: URL): boolean {
   return (
     (url.protocol === "http:" || url.protocol === "https:") && !isPrivateHostname(url.hostname)
@@ -63,7 +70,7 @@ export async function fetchFollowingSafeRedirects(
     }
 
     if (redirectCount >= maxRedirects) {
-      throw new Error(`Too many redirects while fetching ${initialUrl.toString()}`);
+      throw new TooManyRedirectsError(initialUrl.toString());
     }
 
     redirectCount += 1;

@@ -1,6 +1,10 @@
 import { expect, it } from "vitest";
 
-import { createSandboxOutputRedactor } from "../redaction.js";
+import {
+  createSandboxOutputRedactor,
+  redactSandboxValue,
+  secretRedactionVariants,
+} from "../redaction.js";
 
 it("redacts credentials split across arbitrary chunks and line boundaries", () => {
   const secret = "private\ncredential-private";
@@ -34,4 +38,23 @@ it("redacts a complete secret whose suffix is also its prefix", () => {
   const redactor = createSandboxOutputRedactor(["abca"]);
 
   expect(redactor.push("abca") + redactor.flush()).toBe("[redacted credential]");
+});
+
+it("redacts a secret and its base64 and URL-encoded forms anywhere in a structured value", () => {
+  const secret = "sk_live/private+value=1 key";
+  const output = JSON.stringify(
+    redactSandboxValue(
+      {
+        headers: { "x-echo": secret },
+        body: [
+          { token: btoa(secret), callback: `https://x.test/?k=${encodeURIComponent(secret)}` },
+        ],
+      },
+      secretRedactionVariants(secret),
+    ),
+  );
+
+  for (const form of [secret, btoa(secret), encodeURIComponent(secret)]) {
+    expect(output).not.toContain(form);
+  }
 });

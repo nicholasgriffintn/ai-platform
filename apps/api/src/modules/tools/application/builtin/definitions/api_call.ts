@@ -75,7 +75,7 @@ export const call_api: FunctionToolDescriptor = {
       auth: {
         type: "object",
         description:
-          "Send a secret the user provided through request_secret. The reference is used once, only for the destination the user approved, and redirects are not followed. Never put raw secrets in headers.",
+          "Send a secret the user provided through request_secret. The reference only works for the origin the user approved and is spent once that origin responds; a request that fails before any response leaves it usable. Redirects are not followed. Never put raw secrets in headers.",
         properties: {
           secret_ref: {
             type: "string",

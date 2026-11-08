@@ -34,9 +34,8 @@ export function SecretRequestForm({
       <p className="font-medium">Provide {request.label}</p>
       <p className="text-muted-foreground">{request.purpose}</p>
       <p className="text-xs text-muted-foreground">
-        {request.destination
-          ? `It can only be sent to ${request.destination}.`
-          : "No destination was given, so it can be sent to any public website."}
+        It can only be sent to{" "}
+        <span className="font-medium text-foreground">{request.destination}</span>.
       </p>
       <label className="block space-y-1">
         <span>{request.label}</span>

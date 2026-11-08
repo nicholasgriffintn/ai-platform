@@ -15,7 +15,7 @@ export const request_secret: ApiToolDefinition = {
   name: REQUEST_SECRET_TOOL_NAME,
   capabilityHint: "ask the user for an API key or token privately",
   description:
-    "Ask the user for an API key, token or webhook secret through a private input that keeps the value out of the conversation. Never ask for secrets in chat. Give a short label, why it is needed and, when known, the https URL it will be sent to. The user's reply contains a one-use secret-ref:<hex> reference that expires after 24 hours. Pass it to call_api as auth.secret_ref; it only works in this conversation and only for the destination given here.",
+    "Ask the user for an API key, token or webhook secret through a private input that keeps the value out of the conversation. Never ask for secrets in chat. Give a short label, why it is needed and the https origin it will be sent to, such as https://api.example.com. The user's reply contains a one-use secret-ref:<hex> reference that expires after 24 hours. Pass it to call_api as auth.secret_ref; it only works in this conversation and only for the destination given here.",
   type: "normal",
   maxIdenticalCalls: 1,
   permissions: ["human"],
@@ -26,7 +26,7 @@ export const request_secret: ApiToolDefinition = {
   intentEvidence: (input: RequestSecretInput) => ({
     operation: REQUEST_SECRET_TOOL_NAME,
     label: input.label,
-    ...(input.destination ? { destination: normaliseHttpOrigin(input.destination) } : {}),
+    destination: new URL(input.destination).origin,
   }),
   inputSchema: requestSecretInputSchema,
   execute: async (args: RequestSecretInput, context) => {
@@ -37,13 +37,12 @@ export const request_secret: ApiToolDefinition = {
       );
     }
 
-    const destination = args.destination ? normaliseHttpOrigin(args.destination) : null;
     const data: SecretRequestViewData = {
       renderer: SECRET_REQUEST_RENDERER,
       interactionId: context.toolCallId,
       label: args.label,
       purpose: args.purpose,
-      destination,
+      destination: new URL(args.destination).origin,
       humanInTheLoop: pendingTakeover({
         interactionId: context.toolCallId,
         toolName: REQUEST_SECRET_TOOL_NAME,

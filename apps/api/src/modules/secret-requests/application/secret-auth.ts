@@ -1,3 +1,4 @@
+import { secretRedactionVariants } from "@ngriffin_uk/polychat-library-sandbox";
 import { secretHeaderAuthSchema } from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
@@ -5,14 +6,19 @@ import type { ApiToolExecutionContext } from "~/types/functions";
 
 import { redeemSecretReference, resolveConversationSecretBinding } from "./secret-references";
 
+export interface AppliedSecretHeader {
+  secrets: string[];
+  release: () => Promise<void>;
+}
+
 export async function applySecretHeader(params: {
   context: ApiToolExecutionContext;
   auth: unknown;
   url: URL;
   headers: Record<string, string>;
-}): Promise<string[]> {
+}): Promise<AppliedSecretHeader> {
   if (params.auth === undefined || params.auth === null) {
-    return [];
+    return { secrets: [], release: async () => undefined };
   }
 
   const auth = secretHeaderAuthSchema.safeParse(params.auth);
@@ -56,5 +62,5 @@ export async function applySecretHeader(params: {
   params.headers[auth.data.header] =
     auth.data.scheme === "bearer" ? `Bearer ${redeemed.value}` : redeemed.value;
 
-  return [redeemed.value];
+  return { secrets: secretRedactionVariants(redeemed.value), release: redeemed.release };
 }

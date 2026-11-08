@@ -2,6 +2,7 @@ import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { redactSandboxValue } from "@ngriffin_uk/polychat-library-sandbox";
 import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import {
+  TooManyRedirectsError,
   UnsafeUrlError,
   fetchFollowingSafeRedirects,
   headersToRecord,
@@ -12,7 +13,10 @@ import { coerceStringRecord, isPlainObject } from "@ngriffin_uk/polychat-utility
 import { appendQueryParams, isPrivateHostname } from "@ngriffin_uk/polychat-utility-server/urls";
 
 import { isAbortError } from "~/infrastructure/abort";
-import { applySecretHeader } from "~/modules/secret-requests/application/secret-auth";
+import {
+  type AppliedSecretHeader,
+  applySecretHeader,
+} from "~/modules/secret-requests/application/secret-auth";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { call_api as call_apiDescriptor } from "./definitions/api_call";
@@ -147,10 +151,10 @@ export const call_api: ApiToolDefinition = {
       }
     }
 
-    let secrets: string[];
+    let secretHeader: AppliedSecretHeader;
 
     try {
-      secrets = await applySecretHeader({ context, auth: args?.auth, url, headers });
+      secretHeader = await applySecretHeader({ context, auth: args?.auth, url, headers });
     } catch (error) {
       return {
         status: "error",
@@ -182,9 +186,25 @@ export const call_api: ApiToolDefinition = {
       response = await fetchFollowingSafeRedirects(
         url,
         fetchOptions,
-        secrets.length > 0 ? 0 : undefined,
+        secretHeader.secrets.length > 0 ? 0 : undefined,
       );
     } catch (error) {
+      const responded = error instanceof TooManyRedirectsError;
+
+      if (!responded) {
+        await secretHeader.release();
+      }
+
+      if (responded && secretHeader.secrets.length > 0) {
+        return {
+          status: "error",
+          name: "call_api",
+          content:
+            "The API redirected. Secrets are not sent across redirects, so ask for a new secret and call the final URL directly.",
+          data: { url: url.toString(), method },
+        };
+      }
+
       if (error instanceof UnsafeUrlError) {
         return {
           status: "error",
@@ -242,7 +262,7 @@ export const call_api: ApiToolDefinition = {
       status: response.ok ? "success" : "error",
       name: "call_api",
       content: statusMessage,
-      data: secrets.length > 0 ? redactSandboxValue(data, secrets) : data,
+      data: secretHeader.secrets.length > 0 ? redactSandboxValue(data, secretHeader.secrets) : data,
     };
   },
 };

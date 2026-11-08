@@ -148,7 +148,7 @@ export const authenticationToken = sqliteTable(
   "authentication_token",
   {
     purpose: text({
-      enum: ["oauth_state", "challenge", "native_exchange", "channel_pairing"],
+      enum: ["oauth_state", "challenge", "native_exchange", "channel_pairing", "secret_reference"],
     }).notNull(),
     token_hash: text().notNull(),
     provider: text(),
@@ -187,6 +187,7 @@ export const authenticationToken = sqliteTable(
       OR (${table.purpose} = 'challenge' AND ${table.provider} IS NOT NULL AND ${table.kind} IS NOT NULL AND ${table.payload} IS NOT NULL AND ${table.oauth_data} IS NULL AND ${table.session_id} IS NULL AND ${table.binding_id} IS NULL AND ${table.user_id} IS NULL AND ${table.consumed_at} IS NULL)
       OR (${table.purpose} = 'native_exchange' AND ${table.session_id} IS NOT NULL AND ${table.user_id} IS NOT NULL AND ${table.consumed_at} IS NOT NULL AND ${table.binding_id} IS NULL AND ${table.provider} IS NULL AND ${table.kind} IS NULL AND ${table.payload} IS NULL AND ${table.oauth_data} IS NULL)
       OR (${table.purpose} = 'channel_pairing' AND ${table.binding_id} IS NOT NULL AND ${table.user_id} IS NOT NULL AND ${table.session_id} IS NULL AND ${table.provider} IS NULL AND ${table.kind} IS NULL AND ${table.payload} IS NULL AND ${table.oauth_data} IS NULL AND ${table.consumed_at} IS NULL)
+      OR (${table.purpose} = 'secret_reference' AND ${table.user_id} IS NOT NULL AND ${table.payload} IS NOT NULL AND ${table.session_id} IS NULL AND ${table.binding_id} IS NULL AND ${table.provider} IS NULL AND ${table.kind} IS NULL AND ${table.oauth_data} IS NULL AND ${table.consumed_at} IS NULL)
     `,
     ),
   }),
@@ -340,34 +341,6 @@ export const outputReview = sqliteTable(
 );
 
 export type OutputReviewRow = typeof outputReview.$inferSelect;
-
-export const secretReference = sqliteTable(
-  "secret_reference",
-  {
-    id: text().primaryKey(),
-    reference_hash: text().notNull(),
-    salt: text().notNull(),
-    user_id: integer()
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-    project_id: text(),
-    conversation_id: text().notNull(),
-    interaction_id: text().notNull(),
-    label: text().notNull(),
-    destination: text(),
-    sealed_value: text().notNull(),
-    created_at: text().notNull(),
-    expires_at: text().notNull(),
-  },
-  (table) => ({
-    hashIdx: uniqueIndex("secret_reference_hash_idx").on(table.reference_hash),
-    interactionIdx: uniqueIndex("secret_reference_interaction_idx").on(
-      table.conversation_id,
-      table.interaction_id,
-    ),
-    userExpiresIdx: index("secret_reference_user_expires_idx").on(table.user_id, table.expires_at),
-  }),
-);
 
 export const routineOutcome = sqliteTable(
   "routine_outcome",

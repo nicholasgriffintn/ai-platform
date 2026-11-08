@@ -28,7 +28,7 @@ export const requestSecretInputSchema = z
   .object({
     label: z.string().trim().min(1).max(120),
     purpose: z.string().trim().min(1).max(500),
-    destination: secretDestinationSchema.optional(),
+    destination: secretDestinationSchema,
   })
   .strict();
 
@@ -58,7 +58,7 @@ export const secretRequestViewDataSchema = z.object({
   interactionId: identifier,
   label: z.string().min(1).max(120),
   purpose: z.string().min(1).max(500),
-  destination: z.string().nullable(),
+  destination: secretDestinationSchema,
   humanInTheLoop: takeoverHumanInTheLoopSchema.optional(),
 });
 
@@ -73,7 +73,7 @@ export const secretRequestSubmissionSchema = z.object({
   object: z.literal("secret_reference"),
   reference: secretReferenceSchema,
   label: z.string(),
-  destination: z.string().nullable(),
+  destination: z.string(),
   expires_at: z.string(),
 });
 

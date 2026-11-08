@@ -1,4 +1,5 @@
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { bufferToBase64, stringToBase64Url } from "@ngriffin_uk/polychat-utility-server/base64";
 
 export function redactSandboxOutput(value: string, secrets: readonly string[] = []): string {
   return secrets
@@ -12,6 +13,25 @@ export function redactSandboxOutput(value: string, secrets: readonly string[] = 
       "$1[redacted]",
     )
     .replace(/:\/\/([^/@:\s]+):([^/@\s]+)@/g, "://[redacted]@");
+}
+
+export function secretRedactionVariants(secret: string): string[] {
+  if (!secret) {
+    return [];
+  }
+
+  const base64 = bufferToBase64(new TextEncoder().encode(secret));
+
+  return [
+    ...new Set([
+      secret,
+      base64,
+      base64.replace(/=+$/, ""),
+      stringToBase64Url(secret),
+      encodeURIComponent(secret),
+      encodeURIComponent(secret).replace(/%20/g, "+"),
+    ]),
+  ];
 }
 
 export function redactSandboxValue(value: unknown, secrets: readonly string[] = []): unknown {
