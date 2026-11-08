@@ -80,7 +80,7 @@
     "hyparquet": "1.32.0",
     "isbot": "5.2.2",
     "postal-mime": "4.2.0",
-    "stripe": "23.0.1",
+    "stripe": "23.1.0",
     "zod": "catalog:"
   },
   "devDependencies": {
