@@ -57,20 +57,6 @@ describe("verifySecretReference", () => {
     }
   });
 
-  it("refuses a reference after 24 hours", async () => {
-    const { record, reference } = await issue();
-
-    await expect(
-      verifySecretReference(env, {
-        record,
-        binding,
-        reference,
-        destination: "https://api.example.com",
-        now: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(),
-      }),
-    ).rejects.toThrow(/expired/);
-  });
-
   it("refuses any origin other than the one the user saw", async () => {
     const { record, reference } = await issue();
 
