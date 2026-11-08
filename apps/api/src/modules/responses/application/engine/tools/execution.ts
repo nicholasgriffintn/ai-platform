@@ -20,6 +20,7 @@ import {
 import {
   buildRepeatedToolCallMessage,
   checkToolCallRepeat,
+  REPEATED_TOOL_CALL_NEXT,
   type ToolCallLedger,
 } from "~/modules/responses/application/engine/tools/call-ledger";
 import { canActivateOnDemand } from "~/modules/responses/application/engine/tools/capability-activation";
@@ -30,6 +31,7 @@ import {
 import {
   formatToolErrorResponse,
   formatToolResponse,
+  resolveToolErrorNext,
 } from "~/modules/responses/application/engine/tools/tool-responses";
 import { resolveEnabledFunctionToolNames } from "~/modules/tools/application/availability";
 import {
@@ -231,6 +233,7 @@ export const handleToolCalls = async (
           permissionResult.reason ??
             `Tool "${functionName}" is not permitted in ${permissionResult.mode} mode`,
           "PERMISSION_DENIED",
+          resolveToolErrorNext("PERMISSION_DENIED"),
         );
 
         await recordToolResult({
@@ -266,6 +269,7 @@ export const handleToolCalls = async (
             functionName,
             buildRepeatedToolCallMessage(functionName, repeat.attempts),
             "REPEATED_TOOL_CALL",
+            REPEATED_TOOL_CALL_NEXT,
           );
 
           await recordToolResult({
@@ -424,6 +428,7 @@ export const handleToolCalls = async (
                 toolResultName,
                 toolResult.content || "",
                 toolResult.data,
+                toolResult.next,
               );
 
               await recordToolResult({
@@ -466,6 +471,7 @@ export const handleToolCalls = async (
             ? buildUnknownToolCorrection(functionName)
             : functionError.message || "Function execution failed",
           errorType,
+          unknownTool ? undefined : resolveToolErrorNext(errorType),
         );
 
         const errorMessage: Message = {
@@ -519,7 +525,12 @@ export const handleToolCalls = async (
         continue;
       }
 
-      const formattedResponse = formatToolResponse(functionName, result.content || "", result.data);
+      const formattedResponse = formatToolResponse(
+        functionName,
+        result.content || "",
+        result.data,
+        result.next,
+      );
 
       const message: Message = {
         role: "tool",
@@ -551,12 +562,14 @@ export const handleToolCalls = async (
         status: functionError.status,
       });
 
+      const unknownTool = isUnknownToolError(functionError);
       const formattedError = formatToolErrorResponse(
         functionName,
-        isUnknownToolError(functionError)
+        unknownTool
           ? buildUnknownToolCorrection(functionName)
           : functionError.message || "Unknown error occurred",
         errorType,
+        unknownTool ? undefined : resolveToolErrorNext(errorType),
       );
       const recoverable = isRecoverableToolCallError({
         errorType,
@@ -569,7 +582,7 @@ export const handleToolCalls = async (
         name: toolCall.name || functionName,
         content: formattedError.content,
         status: "error",
-        data: isUnknownToolError(functionError)
+        data: unknownTool
           ? {
               ...formattedError.data,
               errorCode: "UNKNOWN_TOOL",
