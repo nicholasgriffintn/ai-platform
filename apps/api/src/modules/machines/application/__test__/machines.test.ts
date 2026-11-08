@@ -1,5 +1,5 @@
 import type { MachineHeartbeat } from "@ngriffin_uk/polychat-schemas";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
@@ -8,6 +8,21 @@ import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepo
 import { UserSettingsRepository } from "~/modules/user/infrastructure/UserSettingsRepository";
 
 import { heartbeatMachine, listMachines } from "../index";
+
+const { publishMachineEvent, publishMachineHeartbeat, releaseMachineWaitingTasks } = vi.hoisted(
+  () => ({
+    publishMachineEvent: vi.fn(),
+    publishMachineHeartbeat: vi.fn(),
+    releaseMachineWaitingTasks: vi.fn().mockResolvedValue(undefined),
+  }),
+);
+
+vi.mock("~/modules/sync/application/conversation-events", () => ({
+  publishMachineEvent,
+  publishMachineHeartbeat,
+}));
+
+vi.mock("~/modules/project-tasks/application/runner", () => ({ releaseMachineWaitingTasks }));
 
 const heartbeat: MachineHeartbeat = {
   machineId: "machine-1",
@@ -54,6 +69,10 @@ function context(
 }
 
 describe("machine advertisement", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("stores and returns an online account machine without connection details", async () => {
     const upsert = vi.fn().mockResolvedValue(undefined);
     const listForUser = vi.fn().mockResolvedValue([storedMachine("2026-09-07T09:00:00.000Z")]);
@@ -72,6 +91,32 @@ describe("machine advertisement", () => {
       online: true,
     });
     expect(result).not.toHaveProperty("url");
+  });
+
+  it("publishes routine heartbeats only while someone is watching", async () => {
+    const serviceContext = context(
+      { advertise_machines: true },
+      { listForUser: vi.fn().mockResolvedValue([storedMachine("2026-09-07T09:00:00.000Z")]) },
+    );
+
+    await heartbeatMachine(serviceContext, heartbeat, 42, Date.parse("2026-09-07T09:02:00.000Z"));
+
+    expect(publishMachineHeartbeat).toHaveBeenCalledWith(serviceContext, 42, "machine-1");
+    expect(publishMachineEvent).not.toHaveBeenCalled();
+    expect(releaseMachineWaitingTasks).not.toHaveBeenCalled();
+  });
+
+  it("publishes durably and releases waiting work when a machine comes online", async () => {
+    const serviceContext = context(
+      { advertise_machines: true },
+      { listForUser: vi.fn().mockResolvedValue([storedMachine("2026-09-07T08:50:00.000Z")]) },
+    );
+
+    await heartbeatMachine(serviceContext, heartbeat, 42, Date.parse("2026-09-07T09:00:00.000Z"));
+
+    expect(publishMachineEvent).toHaveBeenCalledWith(serviceContext, 42, "machine-1");
+    expect(publishMachineHeartbeat).not.toHaveBeenCalled();
+    expect(releaseMachineWaitingTasks).toHaveBeenCalledWith(serviceContext, 42);
   });
 
   it("removes existing machines when advertising is disabled", async () => {

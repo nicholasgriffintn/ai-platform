@@ -162,6 +162,21 @@ export function publishMachineEvent(
   );
 }
 
+export function publishMachineHeartbeat(
+  publisher: SyncPublisher,
+  userId: number,
+  machineId: string,
+): void {
+  const watchedScope = syncTopic("user", userId);
+
+  publishSync(
+    publisher,
+    fanOut([userId], syncTopic("machine", machineId), "machine.changed", { machineId }).map(
+      (publication) => ({ ...publication, watchedScope }),
+    ),
+  );
+}
+
 export async function publishDelegationChanged(
   publisher: SyncPublisher,
   delegation: Pick<Delegation, "id" | "state" | "parentConversationId" | "childConversationId">,
