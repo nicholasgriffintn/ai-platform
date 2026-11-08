@@ -139,15 +139,11 @@ export const saveSkillInputSchema = z.object({
   userInvocable: z
     .boolean()
     .optional()
-    .describe(
-      "Whether the user can run this skill as a slash command from the composer. Defaults to true.",
-    ),
+    .describe("Offer the skill as a /command in the composer. Defaults to true."),
   disableModelInvocation: z
     .boolean()
     .optional()
-    .describe(
-      "Set to true when only the user should trigger this skill, for example a workflow with side effects. The assistant will not see or load it unless the user invokes it.",
-    ),
+    .describe("True if only the user may start it, e.g. a workflow with side effects."),
 });
 
 export type SaveSkillInput = z.infer<typeof saveSkillInputSchema>;
