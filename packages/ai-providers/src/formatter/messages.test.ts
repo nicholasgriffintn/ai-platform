@@ -367,7 +367,7 @@ describe("tool result images", () => {
       name: "delegate",
       tool_call_id: "call_1",
       content: "Delegated the work.",
-      data: { delegationId: "d1", next: "End your turn; do not poll it." },
+      data: { delegationId: "d1", toolResultNext: "End your turn; do not poll it." },
     };
     const expected =
       '[Tool Response: delegate] Delegated the work.\n\nNext: End your turn; do not poll it.\n\nData: {"delegationId":"d1"}';
@@ -381,6 +381,12 @@ describe("tool result images", () => {
 
     expect(output).toMatchObject({ output: expected });
     expect(anthropicBlock?.content).toBe(expected);
+
+    for (const provider of ["openai", "google-ai-studio", "bedrock"]) {
+      const [formatted] = MessageFormatter.formatMessages([hinted], { provider });
+
+      expect(formatted?.content).toBe(expected);
+    }
   });
 });
 

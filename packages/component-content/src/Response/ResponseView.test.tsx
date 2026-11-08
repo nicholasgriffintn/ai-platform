@@ -32,7 +32,7 @@ describe("ResponseView", () => {
         result={{
           status: "error",
           content: "Missing prompt",
-          data: { error: "Missing prompt", next: "Do not repeat this call unchanged." },
+          data: { error: "Missing prompt", toolResultNext: "Do not repeat this call unchanged." },
         }}
         responseType="json"
       />,

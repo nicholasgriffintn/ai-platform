@@ -1,3 +1,4 @@
+import { TOOL_RESULT_NEXT_DATA_KEY } from "@ngriffin_uk/polychat-schemas";
 import { ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import {
@@ -56,7 +57,7 @@ export const formatToolResponse = (
       ...data,
       ...(responseType ? { responseType } : {}),
       ...(renderer ? { renderer } : {}),
-      ...(next ? { next } : {}),
+      ...(next ? { [TOOL_RESULT_NEXT_DATA_KEY]: next } : {}),
       icon,
       formattedName,
       name: data?.name ?? toolName,
@@ -78,7 +79,7 @@ export const formatToolErrorResponse = (
     data: {
       error: errorMessage,
       errorType,
-      ...(next ? { next } : {}),
+      ...(next ? { [TOOL_RESULT_NEXT_DATA_KEY]: next } : {}),
       icon: "alert-triangle",
       formattedName: formatFunctionName(toolName),
       name: toolName,

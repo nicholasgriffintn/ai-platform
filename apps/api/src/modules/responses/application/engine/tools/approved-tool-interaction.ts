@@ -1,5 +1,9 @@
 import { mergeHumanInTheLoop } from "@ngriffin_uk/polychat-library-interactions";
-import { STANDING_APPROVAL_OPTION, type ChatRun } from "@ngriffin_uk/polychat-schemas";
+import {
+  STANDING_APPROVAL_OPTION,
+  TOOL_RESULT_NEXT_DATA_KEY,
+  type ChatRun,
+} from "@ngriffin_uk/polychat-schemas";
 import { canonicalJson, isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
@@ -355,7 +359,7 @@ function settledToolResult(approval: PreparedApproval, executed: Message | undef
     status: "success",
     data:
       resolution === "rejected"
-        ? { ...resolutionData, next: APPROVAL_DECLINED_NEXT }
+        ? { ...resolutionData, [TOOL_RESULT_NEXT_DATA_KEY]: APPROVAL_DECLINED_NEXT }
         : resolutionData,
   };
 

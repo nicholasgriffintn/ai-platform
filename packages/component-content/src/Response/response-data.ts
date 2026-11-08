@@ -1,3 +1,4 @@
+import { omitToolResultNext } from "@ngriffin_uk/polychat-schemas";
 import { hasUrlExtension, isRecord, readOptionalString } from "@ngriffin_uk/polychat-utility-core";
 
 interface ResolveResponseDataOptions {
@@ -30,18 +31,6 @@ export interface TableResponseData {
 const AUDIO_EXTENSIONS = new Set(["mp3", "wav", "ogg", "m4a", "aac", "flac"]);
 const IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
 
-function withoutModelHint(data: Record<string, unknown>): Record<string, unknown> {
-  if (!("next" in data)) {
-    return data;
-  }
-
-  const visible = { ...data };
-
-  delete visible.next;
-
-  return visible;
-}
-
 export function resolveResponseData(
   result: Record<string, unknown>,
   { hasAppSchema, responseType }: ResolveResponseDataOptions,
@@ -52,7 +41,7 @@ export function resolveResponseData(
     return rawData;
   }
 
-  const resultData = withoutModelHint(rawData);
+  const resultData = omitToolResultNext(rawData);
 
   if (hasAppSchema && resultData.result) {
     return resultData.result;
