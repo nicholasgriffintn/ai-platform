@@ -42,6 +42,7 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "generate_podcast",
     "grade_writing",
     "build_site",
+    "preview_html",
     "create_image",
     "create_music",
     "create_qr_code",

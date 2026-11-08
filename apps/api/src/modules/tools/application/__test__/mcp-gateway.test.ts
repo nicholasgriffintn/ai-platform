@@ -22,8 +22,8 @@ vi.mock("@ngriffin_uk/polychat-ai-integrations", async (importOriginal) => ({
 
 vi.mock("~/modules/models/application/resolve", async (importOriginal) => ({
   ...(await importOriginal<typeof import("~/modules/models/application/resolve")>()),
-  findModelConfig: async (model: string) =>
-    model === "vision-model" ? { modalities: { input: ["text", "image"] } } : { multimodal: false },
+  requestModelReadsImages: async (request: { request?: { model?: string } }) =>
+    request.request?.model === "vision-model",
 }));
 
 import { mcp_call_tool } from "~/modules/tools/application/builtin/mcp_gateway";
