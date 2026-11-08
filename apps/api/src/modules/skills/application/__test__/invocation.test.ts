@@ -1,8 +1,18 @@
 import { buildSkillDocument, SkillCatalog } from "@ngriffin_uk/polychat-library-skills-catalogue";
+import { readInvokedSkillId } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
+import { buildUserMessageData } from "~/modules/responses/domain/mode-metadata";
+import type { Message } from "~/types";
+
 import { listSkillAvailability } from "../availability";
-import { listModelInvocableSkills, resolveInvokedSkill, withInvokedSkill } from "../invocation";
+import {
+  listModelInvocableSkills,
+  readStoredInvokedSkillId,
+  resolveInvokedSkill,
+  withInvokedSkill,
+  withInvokedSkillOption,
+} from "../invocation";
 import { listPerMessageSkillCandidates } from "../per-message";
 import { getSkillSuggestedToolNames, mergeSkillLoadToolName } from "../suggested-tools";
 
@@ -105,5 +115,42 @@ describe("skill invocation controls", () => {
     expect(() => resolveInvokedSkill({ invokedSkillId: "missing", skills, catalog })).toThrow(
       "cannot be used",
     );
+  });
+
+  it("keeps the user's invocation through an approval resume of the same run", async () => {
+    const skills = await availability();
+    const approvalReply = {
+      toolInteraction: {
+        toolName: "run_deploy",
+        response: { interactionId: "call-1", resolution: "approved" },
+      },
+    };
+    const history: Message[] = [
+      {
+        role: "user",
+        content: "/deploy ship it",
+        data: buildUserMessageData({ skill: { id: "deploy" } }),
+      },
+      { role: "user", content: "Attachments", data: { attachments: [] } },
+      { role: "assistant", content: "", status: "pending" },
+      { role: "user", content: "", data: buildUserMessageData(approvalReply) },
+    ];
+    const resumed = resolveInvokedSkill({
+      invokedSkillId: readStoredInvokedSkillId(history),
+      skills,
+      catalog,
+      strict: false,
+    });
+    const resumeOptions = withInvokedSkillOption(approvalReply, resumed?.id);
+
+    expect(resumed?.body).toBe("Run the deploy checklist.");
+    expect(readInvokedSkillId(resumeOptions)).toBe("deploy");
+    expect(resumeOptions).toMatchObject(approvalReply);
+    expect(
+      readStoredInvokedSkillId([...history, { role: "user", content: "Something else" }]),
+    ).toBeUndefined();
+    expect(
+      resolveInvokedSkill({ invokedSkillId: "house-style", skills, catalog, strict: false }),
+    ).toBeNull();
   });
 });

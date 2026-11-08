@@ -25,7 +25,15 @@ export const agentSkillFrontmatterSchema = z
     "user-invocable": z.boolean().optional(),
     "disable-model-invocation": z.boolean().optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (frontmatter) =>
+      !(frontmatter["user-invocable"] === false && frontmatter["disable-model-invocation"]),
+    {
+      path: ["disable-model-invocation"],
+      message: "cannot be true when user-invocable is false, or nobody could run the skill",
+    },
+  );
 
 export type AgentSkillFrontmatter = z.infer<typeof agentSkillFrontmatterSchema>;
 

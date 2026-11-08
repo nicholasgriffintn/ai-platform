@@ -74,8 +74,10 @@ import {
   listSkillAvailability,
   mergeSkillLoadToolName,
   mergeSkillSuggestedToolNames,
+  readStoredInvokedSkillId,
   resolveInvokedSkill,
   withInvokedSkill,
+  withInvokedSkillOption,
 } from "~/modules/skills/application";
 import { resolveTurnGuide, withTurnGuide } from "~/modules/skills/application/guides";
 import {
@@ -455,12 +457,13 @@ export class RequestPreparer {
       scope.options.conversation_history_write_mode !== "append" &&
       !isApprovalResolution;
     let toolIntentRequest = messageWithContext;
+    const resolutionHistory =
+      completionId && scope.options.options?.toolInteraction
+        ? await conversationManager.get(completionId)
+        : null;
 
-    if (completionId && isApprovalResolution) {
-      toolIntentRequest = resolveToolIntentRequest(
-        await conversationManager.get(completionId),
-        messageWithContext,
-      );
+    if (resolutionHistory && isApprovalResolution) {
+      toolIntentRequest = resolveToolIntentRequest(resolutionHistory, messageWithContext);
     }
 
     const finalMessage = isApprovalResolution
@@ -522,12 +525,22 @@ export class RequestPreparer {
           scopedSkillCatalog?.listDefinitions(),
         );
 
-    const invokedSkillId = readInvokedSkillId(scope.options.options);
-    const invokedSkill = resolveInvokedSkill({
-      invokedSkillId,
-      skills,
-      catalog: scopedSkillCatalog,
-    });
+    const requestedSkillId = readInvokedSkillId(scope.options.options);
+    const invokedSkill = requestedSkillId
+      ? resolveInvokedSkill({
+          invokedSkillId: requestedSkillId,
+          skills,
+          catalog: scopedSkillCatalog,
+        })
+      : resolveInvokedSkill({
+          invokedSkillId: resolutionHistory
+            ? readStoredInvokedSkillId(resolutionHistory)
+            : undefined,
+          skills,
+          catalog: scopedSkillCatalog,
+          strict: false,
+        });
+    const invokedSkillId = invokedSkill?.id;
 
     const perMessageSkillsPromise = hasFixedToolScope
       ? Promise.resolve([])
@@ -724,7 +737,7 @@ export class RequestPreparer {
       settingsDisabledTools,
       activeGoal,
       toolOptions,
-      requestOptions: scope.options.options,
+      requestOptions: withInvokedSkillOption(scope.options.options, invokedSkillId),
       memoryScope: scope.memoryScope,
       notebook: notebookProjection.scope,
       connectedConnectorProviders,

@@ -95,6 +95,11 @@ describe("skill documents", () => {
     expect(
       parseUserSkillDocument("---\nname: test\ndescription: A test\n---\nBody").frontmatter.name,
     ).toBe("test");
+    expect(() =>
+      parseUserSkillDocument(
+        "---\nname: test\ndescription: A test\nuser-invocable: false\ndisable-model-invocation: true\n---\nBody",
+      ),
+    ).toThrow("nobody could run the skill");
   });
 
   it("round-trips invocation flags edited in the composer settings", () => {

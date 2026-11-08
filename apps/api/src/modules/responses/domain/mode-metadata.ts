@@ -33,12 +33,14 @@ export function buildUserMessageData(
   const codingTaskType = options?.sandbox?.enabled ? options.sandbox.taskType : undefined;
   const toolInteraction = options?.toolInteraction;
   const toolInteractions = options?.toolInteractions;
+  const invokedSkill = options?.skill;
 
-  if (!conversationMode && !codingTaskType && !toolInteraction) {
+  if (!conversationMode && !codingTaskType && !toolInteraction && !invokedSkill) {
     return undefined;
   }
 
   return {
+    ...(invokedSkill ? { invokedSkill: { id: invokedSkill.id } } : {}),
     ...(conversationMode ? { conversationMode } : {}),
     ...(codingTaskType ? { codingTaskType } : {}),
     ...(toolInteraction ? { toolInteraction } : {}),
