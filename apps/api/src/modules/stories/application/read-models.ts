@@ -10,6 +10,7 @@ import {
   type StorySummary,
   type StoryVersion,
 } from "@ngriffin_uk/polychat-schemas";
+import { comparableHttpUrl } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import {
   parseJsonArrayColumn,
@@ -42,6 +43,7 @@ import type { IEnv } from "~/types";
 const STORY_PAGE_ARTICLE_LIMIT = 60;
 const STORY_PAGE_QUOTE_LIMIT = 12;
 const STORY_PAGE_EDGE_LIMIT = 8;
+const STORY_BEHIND_LIMIT = 2;
 const ENTITY_PAGE_STORY_LIMIT = 40;
 const ENTITY_PAGE_QUOTE_LIMIT = 20;
 const outletAngleSchema = z.object({ source: z.string(), angle: z.string() });
@@ -238,11 +240,56 @@ export async function findRelatedStories(
   });
 }
 
-export async function listStoryIdsByUrl(
+export async function listStoriesByUrl(
   env: IEnv,
   urls: readonly string[],
-): Promise<Map<string, string>> {
-  const facts = await new ArticleFactRepository(env).listByUrls(urls);
+): Promise<Map<string, StorySummary>> {
+  const facts = await new ArticleFactRepository(env).listByUrls([...new Set(urls)]);
+  const stories = new Map(
+    (
+      await new StoryRepository(env).listByIds([...new Set(facts.map((fact) => fact.story_id))])
+    ).map((story) => [story.id, presentStorySummary(story)]),
+  );
 
-  return new Map(facts.map((fact) => [fact.url, fact.story_id]));
+  return new Map(
+    facts.flatMap((fact) => {
+      const story = stories.get(fact.story_id);
+      const url = comparableHttpUrl(fact.url);
+
+      return story && url ? [[url, story] as const] : [];
+    }),
+  );
+}
+
+export async function listStoriesBehind(
+  env: IEnv,
+  storyIds: readonly string[],
+): Promise<Array<{ story: StorySummary; before: RelatedStory }>> {
+  const unique = [...new Set(storyIds)];
+  const [current, edges] = await Promise.all([
+    new StoryRepository(env).listByIds(unique),
+    Promise.all(
+      unique.map((storyId) => new StoryEdgeRepository(env).listFrom(storyId, STORY_BEHIND_LIMIT)),
+    ),
+  ]);
+  const older = new Map(
+    (await new StoryRepository(env).listByIds(edges.flat().map((edge) => edge.to_story_id))).map(
+      (story) => [story.id, story],
+    ),
+  );
+  const stories = new Map(current.map((story) => [story.id, story]));
+
+  return edges.flat().flatMap((edge) => {
+    const story = stories.get(edge.from_story_id);
+    const before = older.get(edge.to_story_id);
+
+    return story && before && (edge.kind === "continues" || edge.kind === "background")
+      ? [
+          {
+            story: presentStorySummary(story),
+            before: { ...presentStorySummary(before), kind: edge.kind, score: edge.score },
+          },
+        ]
+      : [];
+  });
 }

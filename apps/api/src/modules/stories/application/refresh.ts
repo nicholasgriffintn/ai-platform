@@ -10,9 +10,9 @@ import {
   truncateForModel,
 } from "@ngriffin_uk/polychat-utility-core";
 
-import { buildDiscoverCoverageMaterial } from "~/modules/discover/domain/coverage";
 import { readKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
+import { buildStoryMaterial } from "~/modules/stories/domain/material";
 import {
   DISCOVER_STORY_DAILY_VERSION_CAP,
   needsStoryVersion,
@@ -103,7 +103,7 @@ export async function refreshStory(
   const draft = await generateStoryObject(env, {
     schema: storyVersionDraftSchema,
     system: getPromptText("stories/version"),
-    material: buildDiscoverCoverageMaterial(
+    material: buildStoryMaterial(
       story.title,
       facts.map((fact) => ({
         source: fact.outlet_name,

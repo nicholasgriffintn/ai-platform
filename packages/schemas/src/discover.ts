@@ -38,7 +38,6 @@ export const DISCOVER_RESEARCH_METADATA_KEY = "discoverResearch";
 export const DISCOVER_INTERESTS_METADATA_KEY = "discoverInterests";
 export const DISCOVER_ARTICLE_METADATA_KEY = "discoverArticle";
 export const DISCOVER_COVERAGE_METADATA_KEY = "discoverCoverage";
-export const DISCOVER_COVERAGE_MIN_ARTICLES = 2;
 export const DISCOVER_BRIEFING_METADATA_KEY = "discoverBriefing";
 export const DISCOVER_FRESH_HOURS = 10;
 export const DISCOVER_RESEARCH_DAYS_KEPT = 7;
@@ -238,6 +237,11 @@ export const discoverCardSchema = z.discriminatedUnion("kind", [
   topicCardDraftSchema.extend({
     ...cardIdentity,
     coverId: discoverCoverIdSchema.optional(),
+    storyId: z
+      .string()
+      .min(1)
+      .optional()
+      .describe("The shared story most of this topic's articles belong to, when there is one."),
     coverageSourceId: z
       .string()
       .min(1)
@@ -252,6 +256,12 @@ export const discoverCardSchema = z.discriminatedUnion("kind", [
       .optional()
       .describe("The filed copy of the page in the Discover notebook, when it was read."),
     storyId: z.string().min(1).optional().describe("The shared story this article belongs to."),
+    outletCount: z
+      .number()
+      .int()
+      .min(1)
+      .optional()
+      .describe("How many outlets have covered the story so far."),
     imageUrl: externalHttpUrlSchema.optional(),
     discussionUrl: externalHttpUrlSchema.optional(),
     alsoIn: z
@@ -594,19 +604,6 @@ export const discoverCoverageDraftSchema = z
   })
   .strict();
 
-export const discoverCoverageSchema = discoverCoverageDraftSchema.extend({
-  sourceIds: z.array(z.string().min(1)),
-  generatedAt: z.string().min(1),
-});
-
-export function readDiscoverCoverage(
-  metadata: Record<string, unknown> | null | undefined,
-): DiscoverCoverage | null {
-  const parsed = discoverCoverageSchema.safeParse(metadata?.[DISCOVER_COVERAGE_METADATA_KEY]);
-
-  return parsed.success ? parsed.data : null;
-}
-
 export const discoverBriefingDraftSchema = z
   .object({
     overview: text().describe(
@@ -763,8 +760,6 @@ export type DiscoverBriefKind = z.infer<typeof discoverBriefKindSchema>;
 export type DiscoverBriefLine = z.infer<typeof discoverBriefLineSchema>;
 export type DiscoverCardDraft = z.infer<typeof discoverCardDraftSchema>;
 export type DiscoverCard = z.infer<typeof discoverCardSchema>;
-export type DiscoverCoverageDraft = z.infer<typeof discoverCoverageDraftSchema>;
-export type DiscoverCoverage = z.infer<typeof discoverCoverageSchema>;
 export type DiscoverCardKind = DiscoverCard["kind"];
 export type ComposeDiscoverEditionInput = z.infer<typeof composeDiscoverEditionInputSchema>;
 export type ReadDiscoverContextInput = z.infer<typeof readDiscoverContextInputSchema>;

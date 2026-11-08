@@ -116,10 +116,6 @@ export function requestDiscoverFraming(editionId: string, cardId: string): Promi
   return requestJson(cardPath(editionId, cardId, "framing"), "POST", {});
 }
 
-export function requestDiscoverCoverage(editionId: string, cardId: string): Promise<Source> {
-  return requestJson(cardPath(editionId, cardId, "coverage"), "POST", {});
-}
-
 function episodePath(episodeId: string, suffix = ""): string {
   return `/discover/episodes/${encodeURIComponent(episodeId)}${suffix}`;
 }

@@ -11,10 +11,12 @@ import {
   collectResurfacing,
   missedFlashcards,
   savedToRevisit,
+  storiesBehind,
   type ResurfaceCandidate,
   type StudySetProgress,
 } from "~/modules/discover/domain/resurface";
 import { OutputRepository } from "~/modules/outputs/infrastructure/OutputRepository";
+import { listStoriesBehind } from "~/modules/stories/application/read-models";
 
 async function loadStudySets(
   context: ServiceContext,
@@ -53,10 +55,18 @@ export async function loadResurfaceCandidates(
     userId: number;
     follows: readonly DiscoverFollow[];
     feedback: readonly DiscoverFeedbackEntry[];
+    storyIds: readonly string[];
     now: number;
   },
 ): Promise<ResurfaceCandidate[]> {
-  const studySets = await loadStudySets(context, input.userId, input.follows);
+  const [studySets, behind] = await Promise.all([
+    loadStudySets(context, input.userId, input.follows),
+    listStoriesBehind(context.env, input.storyIds),
+  ]);
 
-  return collectResurfacing(missedFlashcards(studySets), savedToRevisit(input.feedback, input.now));
+  return collectResurfacing(
+    storiesBehind(behind),
+    missedFlashcards(studySets),
+    savedToRevisit(input.feedback, input.now),
+  );
 }

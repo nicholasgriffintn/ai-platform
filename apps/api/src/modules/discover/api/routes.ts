@@ -47,7 +47,6 @@ import { Hono } from "hono";
 
 import { defineResource, defineSingleton } from "~/infrastructure/http/resource";
 import { addRoute } from "~/infrastructure/http/routeBuilder";
-import { compareDiscoverCoverage } from "~/modules/discover/application/coverage";
 import { readDiscoverCover } from "~/modules/discover/application/covers";
 import { queueDiscoverCurrent } from "~/modules/discover/application/current";
 import { configureDiscoverDay } from "~/modules/discover/application/day-settings";
@@ -267,23 +266,6 @@ addRoute(app, "post", "/editions/:edition_id/cards/:card_id/framing", {
   },
   handler: async ({ serviceContext, params }) =>
     frameDiscoverArticle(serviceContext, params.edition_id, params.card_id),
-});
-
-addRoute(app, "post", "/editions/:edition_id/cards/:card_id/coverage", {
-  tags: ["discover"],
-  summary: "Compare how outlets covered a topic",
-  description:
-    "Compares the topic's articles in the edition: what they agree on, each outlet's angle, where they differ and what they leave out. Filed in the Discover notebook and reused.",
-  auth: true,
-  paramSchema: discoverCardParamsSchema,
-  responses: {
-    200: { description: "The comparison", schema: sourceSchema },
-    402: { description: "This month's Discover budget is spent", schema: errorResponseSchema },
-    404: { description: "Not one of your topic cards", schema: errorResponseSchema },
-    409: { description: "Fewer than two articles on the topic", schema: errorResponseSchema },
-  },
-  handler: async ({ serviceContext, params }) =>
-    compareDiscoverCoverage(serviceContext, params.edition_id, params.card_id),
 });
 
 addRoute(app, "post", "/editions/:edition_id/cards/:card_id/story", {

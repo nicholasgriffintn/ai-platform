@@ -1,4 +1,8 @@
-import type { DiscoverHealthSummary, DiscoverDayContext } from "@ngriffin_uk/polychat-schemas";
+import type {
+  DiscoverHealthSummary,
+  DiscoverDayContext,
+  StorySummary,
+} from "@ngriffin_uk/polychat-schemas";
 import {
   formatHoursAndMinutes,
   markdownBullets,
@@ -9,6 +13,7 @@ import {
 import type { DiscoverFeedbackSummary } from "./feedback";
 import type { DiscoverResearchResult } from "./research";
 import type { ResurfaceCandidate } from "./resurface";
+import { findStoryByUrl, type DiscoverStoriesByUrl } from "./story-cards";
 
 export interface DiscoverSignalContext {
   title: string;
@@ -42,8 +47,63 @@ export interface DiscoverContextSnapshot {
   health: DiscoverHealthSummary | null;
   signals: readonly DiscoverSignalContext[];
   research: readonly DiscoverResearchContext[];
+  stories: DiscoverStoriesByUrl;
   parked: readonly string[];
   story: { topic: string; part: number; summary: string | null } | null;
+}
+
+function describeResearchResult(result: DiscoverResearchResult): string {
+  return `${result.title} (${result.url})${
+    result.source ? ` [${result.source}${result.date ? `, ${result.date}` : ""}]` : ""
+  }${result.snippet ? `: ${result.snippet}` : ""}`;
+}
+
+function describeResearchStories(
+  results: readonly DiscoverResearchResult[],
+  stories: DiscoverStoriesByUrl,
+): string[] {
+  const grouped = new Map<string, { story: StorySummary; results: DiscoverResearchResult[] }>();
+  const lines: Array<string | { storyId: string }> = [];
+
+  for (const result of results) {
+    const story = findStoryByUrl(result.url, stories);
+
+    if (!story) {
+      lines.push(describeResearchResult(result));
+      continue;
+    }
+
+    const group = grouped.get(story.id);
+
+    if (group) {
+      group.results.push(result);
+      continue;
+    }
+
+    grouped.set(story.id, { story, results: [result] });
+    lines.push({ storyId: story.id });
+  }
+
+  return lines.flatMap((line) => {
+    if (typeof line === "string") {
+      return [line];
+    }
+
+    const group = grouped.get(line.storyId);
+    const [lead, ...others] = group?.results ?? [];
+
+    if (!group || !lead) {
+      return [];
+    }
+
+    const outlets = others.flatMap((result) => (result.source ? [result.source] : []));
+
+    return [
+      `Story "${group.story.title}" (story ${group.story.id}, ${group.story.outletCount} ${
+        group.story.outletCount === 1 ? "outlet" : "outlets"
+      }): ${describeResearchResult(lead)}${outlets.length > 0 ? `. Also in ${outlets.join(", ")}` : ""}`,
+    ];
+  });
 }
 
 function minutesLine(label: string, minutes: number | null): string[] {
@@ -151,15 +211,8 @@ export function describeDiscoverContext(snapshot: DiscoverContextSnapshot): stri
       ),
     ...snapshot.research.map((research) =>
       markdownSection(
-        `In the news for ${research.topic} (${research.date}), so cite only these pages for read cards on it. Pick the one or two best: the rest are added to the feed under your cards`,
-        markdownBullets(
-          research.results.map(
-            (result) =>
-              `${result.title} (${result.url})${
-                result.source ? ` [${result.source}${result.date ? `, ${result.date}` : ""}]` : ""
-              }${result.snippet ? `: ${result.snippet}` : ""}`,
-          ),
-        ),
+        `In the news for ${research.topic} (${research.date}), so cite only these pages for read cards on it. Pages from different outlets on the same event are grouped under one story: pick one page per story, and the one or two best stories, since the rest are added to the feed under your cards`,
+        markdownBullets(describeResearchStories(research.results, snapshot.stories)),
         "Nothing fresh was found; use a topic card instead of a read card.",
       ),
     ),

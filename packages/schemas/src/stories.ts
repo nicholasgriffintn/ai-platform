@@ -6,6 +6,11 @@ import { externalHttpUrlSchema } from "./navigation.js";
 export const STORIES_JOB_TASK_TYPE = "stories_job";
 export const STORY_QUOTE_MAX_WORDS = 40;
 export const STORY_INTAKE_LIMIT = 80;
+export const STORY_PATH_PREFIX = "/discover/stories";
+
+export function getStoryPath(storyId: string): string {
+  return `${STORY_PATH_PREFIX}/${encodeURIComponent(storyId)}`;
+}
 
 function text() {
   return z.string().trim().min(1);

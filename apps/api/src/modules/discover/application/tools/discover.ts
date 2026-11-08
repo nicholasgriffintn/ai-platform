@@ -17,7 +17,9 @@ import {
   selectCurrentResearch,
 } from "~/modules/discover/domain/research";
 import { keepUsedDiscoverDocuments } from "~/modules/discover/domain/signal-selection";
+import { foldDiscoverStoryCards } from "~/modules/discover/domain/story-cards";
 import { isSundayEdition } from "~/modules/discover/domain/week";
+import { listStoriesByUrl } from "~/modules/stories/application/read-models";
 import type { IFunctionResponse } from "~/types";
 import type { ApiToolDefinition } from "~/types/functions";
 
@@ -106,10 +108,18 @@ export const compose_discover_edition: ApiToolDefinition = {
       }),
       createId: generateId,
     });
+    const stories = await listStoriesByUrl(
+      context.env,
+      edition.cards.flatMap((card) => (card.kind === "read" ? [card.url] : [])),
+    );
+    const cards = foldDiscoverStoryCards(
+      attachDiscoverArticles(edition.cards, articleSources),
+      stories,
+    );
     const editionTime = basis.edition;
     const saved = await saveDiscoverEdition(context, user.id, {
       ...edition,
-      cards: attachDiscoverArticles(edition.cards, articleSources),
+      cards,
       edition: editionTime,
       runId: context.executionRunId,
       signals: {
@@ -132,23 +142,25 @@ export const compose_discover_edition: ApiToolDefinition = {
     const episode = morning && basis.watchedLatestEpisode && basis.preferences.episode !== "off";
 
     await queueDiscoverEditionWork(context, saved, {
-      covers: edition.cards.some((card) => card.kind === "topic"),
+      covers: cards.some((card) => card.kind === "topic"),
       research: episode ? ["episode"] : [],
-      links: basis.follows.length > 0 && edition.cards.some((card) => card.kind === "read"),
+      links: basis.follows.length > 0 && cards.some((card) => card.kind === "read"),
       yourWeek: morning && basis.preferences.listen && isSundayEdition(edition.date),
       tidy: edition.date,
     });
     await queueDiscoverCurrent(context);
 
-    const dropped = args.cards.length - edition.cards.length;
+    const dropped = Math.max(0, args.cards.length - cards.length);
 
     return {
       status: "success",
       name: DISCOVER_COMPOSE_TOOL_NAME,
-      content: `Saved the Discover edition for ${edition.date} with ${edition.cards.length} cards${
-        dropped > 0 ? `, leaving out ${dropped} on hidden topics or already shown` : ""
+      content: `Saved the Discover edition for ${edition.date} with ${cards.length} cards${
+        dropped > 0
+          ? `, leaving out ${dropped} on hidden topics, already shown or folded into one story`
+          : ""
       }.`,
-      data: { editionId: saved.id, date: edition.date, cards: edition.cards.length },
+      data: { editionId: saved.id, date: edition.date, cards: cards.length },
     } satisfies IFunctionResponse;
   },
 };

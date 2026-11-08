@@ -119,6 +119,7 @@ interface DiscoverStoryIndexEntry {
   headline: string;
   terms: ReadonlySet<string>;
   outlet: string | null;
+  storyId: string | null;
 }
 
 function indexDiscoverStory(id: string, card: DiscoverCard): DiscoverStoryIndexEntry {
@@ -129,6 +130,7 @@ function indexDiscoverStory(id: string, card: DiscoverCard): DiscoverStoryIndexE
     headline: comparableHeadline(title),
     terms: headlineTerms(title),
     outlet: "source" in card ? discoverSourceOutlet(card.source) : null,
+    storyId: card.kind === "read" ? (card.storyId ?? null) : null,
   };
 }
 
@@ -139,8 +141,9 @@ function findRepeatedDiscoverStory(
   return stories.find(
     (story) =>
       story.id !== candidate.id &&
-      ((candidate.headline.length >= DISCOVER_HEADLINE_MIN_LENGTH &&
-        story.headline === candidate.headline) ||
+      ((story.storyId !== null && story.storyId === candidate.storyId) ||
+        (candidate.headline.length >= DISCOVER_HEADLINE_MIN_LENGTH &&
+          story.headline === candidate.headline) ||
         (story.outlet !== null &&
           candidate.outlet !== null &&
           story.outlet !== candidate.outlet &&

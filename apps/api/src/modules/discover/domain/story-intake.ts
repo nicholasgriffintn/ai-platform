@@ -1,5 +1,4 @@
 import {
-  DISCOVER_ALSO_IN_LIMIT,
   storyIntakeArticleSchema,
   type DiscoverCard,
   type StoryIntakeArticle,
@@ -46,20 +45,4 @@ export function listStoryIntakeArticles(
 
     return parsed.success ? [parsed.data] : [];
   });
-}
-
-type ReadCard = Extract<DiscoverCard, { kind: "read" }>;
-
-export function foldIntoStoryCard(lead: ReadCard, card: ReadCard): ReadCard {
-  const alsoIn = lead.alsoIn ?? [];
-
-  if (
-    alsoIn.length >= DISCOVER_ALSO_IN_LIMIT ||
-    card.source === lead.source ||
-    alsoIn.some((entry) => entry.url === card.url)
-  ) {
-    return lead;
-  }
-
-  return { ...lead, alsoIn: [...alsoIn, { source: card.source.slice(0, 80), url: card.url }] };
 }

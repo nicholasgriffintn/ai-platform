@@ -1,7 +1,7 @@
 import { Favicon } from "@ngriffin_uk/polychat-component-content";
 import { cn, Pet } from "@ngriffin_uk/polychat-component-ui";
 import type { DiscoverCard } from "@ngriffin_uk/polychat-schemas";
-import { readUrlHost } from "@ngriffin_uk/polychat-utility-core";
+import { formatCount, readUrlHost } from "@ngriffin_uk/polychat-utility-core";
 import { CalendarDays, ChevronRight, Headphones, History, Mail, Play, Repeat } from "lucide-react";
 import { memo } from "react";
 
@@ -86,7 +86,11 @@ function cardText(card: DiscoverRowCard): { kicker: string; title: string; detai
       return {
         kicker: [
           describeReadSource(card.source, card.url),
-          card.alsoIn?.length ? `+${card.alsoIn.length} more` : "",
+          card.outletCount && card.outletCount > 1
+            ? formatCount(card.outletCount, "outlet")
+            : card.alsoIn?.length
+              ? `+${card.alsoIn.length} more`
+              : "",
         ]
           .filter(Boolean)
           .join(" · "),
