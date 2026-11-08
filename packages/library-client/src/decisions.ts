@@ -8,11 +8,6 @@ import type {
   PolisRecording,
   PolisScenarioDraft,
   PolisShare,
-  TwentyQuestionsAnswer,
-  TwentyQuestionsAskRequest,
-  TwentyQuestionsCategory,
-  TwentyQuestionsGame,
-  TwentyQuestionsReveal,
   VerbatimStreamEvent,
 } from "@ngriffin_uk/polychat-schemas";
 import { readServerSentEvents } from "@ngriffin_uk/polychat-utility-core";
@@ -67,20 +62,6 @@ export const verbatimService = {
     }
 
     await readServerSentEvents<VerbatimStreamEvent>(response.body, { onEvent });
-  },
-};
-
-const TWENTY_QUESTIONS_PATH = "/experiences/twenty_questions";
-
-export const twentyQuestionsService = {
-  start(category: TwentyQuestionsCategory, projectId?: string): Promise<TwentyQuestionsGame> {
-    return postJson(withProjectScope(TWENTY_QUESTIONS_PATH, projectId), { category });
-  },
-  ask(request: TwentyQuestionsAskRequest, projectId?: string): Promise<TwentyQuestionsAnswer> {
-    return postJson(withProjectScope(`${TWENTY_QUESTIONS_PATH}/ask`, projectId), request);
-  },
-  reveal(token: string, projectId?: string): Promise<TwentyQuestionsReveal> {
-    return postJson(withProjectScope(`${TWENTY_QUESTIONS_PATH}/reveal`, projectId), { token });
   },
 };
 

@@ -17,21 +17,6 @@ const VerbatimApp = lazy(async () => {
 
   return { default: module.VerbatimApp };
 });
-const CharadesApp = lazy(async () => {
-  const module = await import("./Charades/CharadesApp.js");
-
-  return { default: module.CharadesApp };
-});
-const PhotoSorterApp = lazy(async () => {
-  const module = await import("./PhotoSorter/PhotoSorterApp.js");
-
-  return { default: module.PhotoSorterApp };
-});
-const TwentyQuestionsApp = lazy(async () => {
-  const module = await import("./TwentyQuestions/TwentyQuestionsApp.js");
-
-  return { default: module.TwentyQuestionsApp };
-});
 const PolisApp = lazy(async () => {
   const module = await import("./Polis/PolisApp.js");
 
@@ -56,12 +41,9 @@ interface BundledAppProps {
 
 const BUNDLED_APPS: Record<ProjectExperienceRuntime, ComponentType<BundledAppProps>> = {
   benchmarks: BenchmarksApp,
-  charades: CharadesApp,
-  "photo-sorter": PhotoSorterApp,
   polis: PolisApp,
   sites: SitesApp,
   strudel: StrudelApp,
-  "twenty-questions": TwentyQuestionsApp,
   verbatim: VerbatimApp,
 };
 

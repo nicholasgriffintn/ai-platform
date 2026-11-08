@@ -19,8 +19,6 @@ import { wellbeingRecipes } from "./catalog/wellbeing";
 import { workspaceRecipes } from "./catalog/workspace";
 export {
   IMAGE_TOOL,
-  PASHI_DISCOVERY_TOOL,
-  PASHI_EXECUTION_TOOL,
   QR_TOOL,
   RECIPE_CONNECTOR_TOOL,
   RECIPE_LOOKUP_TOOL,

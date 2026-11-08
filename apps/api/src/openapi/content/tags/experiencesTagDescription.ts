@@ -6,7 +6,6 @@ export const experiencesTagDescription = md`
 Single-purpose apps that sit beside Chat. Which ones a person or project has enabled comes from \`/capabilities\`.
 
 - \`/experiences/strudel\` generates, saves and rates Strudel patterns.
-- \`/experiences/twenty_questions\` plays against a sealed secret with calibrated yes probabilities.
 - \`/experiences/verbatim/segments\` transcribes live audio, then verifies every word against it.
 - \`/experiences/polis\` judges how kinds of residents react and turns plain English into town laws and scenarios.
 `;

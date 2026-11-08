@@ -12,32 +12,7 @@ export {
   type GitHubAppEnvironment,
 } from "./github-app.js";
 export { normaliseConnectorOperationFailure } from "./outcomes.js";
-export {
-  getPashiClient,
-  PashiClient,
-  PashiClientError,
-  type PashiClientErrorCode,
-  type PashiEnvironment,
-  resolvePashiOrigin,
-} from "./pashi/client.js";
-export {
-  getPashiToolFields,
-  getPashiToolUnavailableReason,
-  isPashiToolExecutable,
-  searchPashiTools,
-  toPashiToolSummary,
-  type PashiToolSummary,
-} from "./pashi/catalogue.js";
-export {
-  pashiInfoSchema,
-  type PashiField,
-  type PashiInfo,
-  type PashiOperation,
-  type PashiFile,
-  type PashiOperationResult,
-  type PashiTool,
-  type PashiToolType,
-} from "./pashi/contracts.js";
+export { resolvePashiOrigin } from "./pashi/origin.js";
 export {
   connectorOperationRequiresApproval,
   getConnectorOperationConfig,

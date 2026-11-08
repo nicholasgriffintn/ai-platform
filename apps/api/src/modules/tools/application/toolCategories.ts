@@ -93,8 +93,6 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "decide",
     "discover_capabilities",
     "extract_values",
-    "run_pashi_tools",
-    "search_pashi_tools",
   ],
   Collaboration: [
     "ask_user",

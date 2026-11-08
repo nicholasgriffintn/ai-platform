@@ -82,7 +82,6 @@ export type IEnv = {
   EXA_API_KEY?: string;
   TYPESAFE_API_KEY?: string;
   TYPESAFE_BASE_URL?: string;
-  PASHI_API_KEY?: string;
   PASHI_URL?: string;
   BEDROCK_AWS_ACCESS_KEY?: string;
   BEDROCK_AWS_SECRET_KEY?: string;
