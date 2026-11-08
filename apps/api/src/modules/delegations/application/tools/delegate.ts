@@ -52,6 +52,11 @@ import type { ApiToolDefinition } from "~/types/functions";
 
 import { delegate as delegateDescriptor, type DelegateInput } from "./definitions/delegate";
 
+export const DELEGATE_WAKES_NEXT =
+  "Its report wakes this conversation, so end your turn once nothing else is left; do not wait on it or poll it.";
+export const DELEGATE_POSTS_NEXT =
+  "Its report is posted here when it settles; continue other work or end your turn, and do not poll it.";
+
 export const delegate: ApiToolDefinition = {
   ...delegateDescriptor,
   execute: async (args: DelegateInput, toolContext): Promise<IFunctionResponse> => {
@@ -418,6 +423,7 @@ export const delegate: ApiToolDefinition = {
       status: "success",
       name: "delegate",
       content: `Delegated the work to ${teammate.name ?? "a teammate"}. It will report back when it settles.`,
+      next: args.wait_for === "none" ? DELEGATE_POSTS_NEXT : DELEGATE_WAKES_NEXT,
       data: {
         delegationId,
         childConversationId,

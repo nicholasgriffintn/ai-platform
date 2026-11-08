@@ -52,12 +52,17 @@ export function useDeviceSync(): void {
       },
     });
 
+    const syncActivity = () => socket.setActive(document.visibilityState === "visible");
+
     socketRef.current = socket;
     setActiveSyncSocket(socket);
     socket.start();
     socket.subscribe([buildDeviceSyncTopic("user", userId)]);
+    syncActivity();
+    document.addEventListener("visibilitychange", syncActivity);
 
     return () => {
+      document.removeEventListener("visibilitychange", syncActivity);
       socket.stop();
       queue.dispose();
       setActiveSyncSocket(undefined);

@@ -1,4 +1,5 @@
 import {
+  DEVICE_SYNC_MAX_TOPICS_PER_CONNECTION,
   deviceSyncServerMessageSchema,
   type DeviceSyncClientMessage,
   type DeviceSyncEvent,
@@ -43,6 +44,7 @@ export class DeviceSyncSocket {
   private cursors = new Map<string, number>();
   private topics = new Set<string>();
   private focusedTopic: string | null = null;
+  private active = false;
   private stopped = true;
   private status: SyncStatus = "idle";
 
@@ -58,6 +60,19 @@ export class DeviceSyncSocket {
   private send(message: DeviceSyncClientMessage): void {
     if (this.socket?.readyState === WebSocket.OPEN) {
       this.socket.send(JSON.stringify(message));
+    }
+  }
+
+  private activityMessage(): DeviceSyncClientMessage {
+    return {
+      type: "activity",
+      scopes: this.active ? [...this.topics].slice(0, DEVICE_SYNC_MAX_TOPICS_PER_CONNECTION) : [],
+    };
+  }
+
+  private renewActivity(): void {
+    if (this.active) {
+      this.send(this.activityMessage());
     }
   }
 
@@ -77,6 +92,8 @@ export class DeviceSyncSocket {
     if (this.focusedTopic) {
       this.send({ type: "focus", topic: this.focusedTopic });
     }
+
+    this.renewActivity();
   }
 
   private handle(message: DeviceSyncServerMessage): void {
@@ -207,7 +224,7 @@ export class DeviceSyncSocket {
           return;
         }
 
-        this.send({ type: "ping" });
+        this.send(this.active ? this.activityMessage() : { type: "ping" });
       }, PING_INTERVAL_MS);
     });
 
@@ -288,6 +305,7 @@ export class DeviceSyncSocket {
         type: "subscribe",
         topics: added.map((topic) => ({ topic, lastSeq: this.cursors.get(topic) })),
       });
+      this.renewActivity();
     }
   }
 
@@ -304,7 +322,17 @@ export class DeviceSyncSocket {
 
     if (removed.length > 0) {
       this.send({ type: "unsubscribe", topics: removed });
+      this.renewActivity();
     }
+  }
+
+  public setActive(active: boolean): void {
+    if (this.active === active) {
+      return;
+    }
+
+    this.active = active;
+    this.send(this.activityMessage());
   }
 
   public focus(topic: string | null): void {

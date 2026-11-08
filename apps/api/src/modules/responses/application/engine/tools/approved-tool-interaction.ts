@@ -1,11 +1,16 @@
 import { mergeHumanInTheLoop } from "@ngriffin_uk/polychat-library-interactions";
-import { STANDING_APPROVAL_OPTION, type ChatRun } from "@ngriffin_uk/polychat-schemas";
+import {
+  STANDING_APPROVAL_OPTION,
+  TOOL_RESULT_NEXT_DATA_KEY,
+  type ChatRun,
+} from "@ngriffin_uk/polychat-schemas";
 import { canonicalJson, isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import type { ConversationManager } from "~/modules/conversations/application/manager";
 import { buildMessageParts } from "~/modules/responses/application/engine/messages/parts";
+import { APPROVAL_DECLINED_NEXT } from "~/modules/responses/application/engine/tools/approval";
 import { handleToolCalls } from "~/modules/responses/application/engine/tools/execution";
 import type { ProcessBoundEffectClaim } from "~/modules/responses/application/runs/effects";
 import { ToolCallType } from "~/types";
@@ -330,7 +335,7 @@ async function executeApprovedTools(
 }
 
 function settledToolResult(approval: PreparedApproval, executed: Message | undefined): Message {
-  const { pending, toolCall, toolName, resolutionData } = approval;
+  const { pending, toolCall, toolName, resolution, resolutionData } = approval;
 
   if (executed) {
     return {
@@ -353,7 +358,10 @@ function settledToolResult(approval: PreparedApproval, executed: Message | undef
         ? `The user selected: ${approval.option}`
         : "The user rejected the proposed action.",
     status: "success",
-    data: resolutionData,
+    data:
+      resolution === "rejected"
+        ? { ...resolutionData, [TOOL_RESULT_NEXT_DATA_KEY]: APPROVAL_DECLINED_NEXT }
+        : resolutionData,
   };
 
   return { ...responseMessage, parts: buildMessageParts(responseMessage) };

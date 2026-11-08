@@ -493,7 +493,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "deprecated": true,
         "deprecationMessage": "Gemini 3 Flash was retired on 31 July 2026. Use Gemini 3.8 Flash instead.",
         "replacementModel": "gemini-3.8-flash",
@@ -888,7 +888,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -1077,7 +1077,7 @@
       "model": "gpt-terra/gpt-6-1-terra",
       "matchingModel": "gpt-6.1-terra",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005

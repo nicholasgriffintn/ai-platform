@@ -764,7 +764,7 @@
           "search",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "deprecated": true,
         "deprecationMessage": "GPT-5.1 shuts down on 1 April 2027. Use GPT-6 Sol instead.",
         "replacementModel": "gpt-6-sol",
@@ -2225,7 +2225,7 @@
       "model": "gpt-terra/gpt-6-1-terra",
       "matchingModel": "gpt-6.1-terra",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.005

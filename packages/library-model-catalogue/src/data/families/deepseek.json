@@ -123,7 +123,7 @@
         "openWeights": false,
         "description": "This model always redirects to the latest model in the DeepSeek V4 Flash family.",
         "contextWindow": 1048576,
-        "maxTokens": 131072,
+        "maxTokens": 943718,
         "releaseDate": "August 1, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {

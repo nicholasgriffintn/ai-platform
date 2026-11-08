@@ -6,6 +6,9 @@ import { hasEarnedStandingOffer } from "~/modules/poly/domain/earned-trust";
 import { formatToolErrorResponse } from "~/modules/responses/application/engine/tools/tool-responses";
 import type { Message, Platform } from "~/types";
 
+export const APPROVAL_DECLINED_NEXT =
+  "Do not make this call again; continue without it or ask the user what they want instead.";
+
 export function createPendingToolApprovalMessage(params: {
   toolName: string;
   toolCallId: string;
