@@ -5,6 +5,7 @@ export type IFunctionResponse = {
   name?: string;
   content?: string | MessageContent[];
   data?: any;
+  next?: string;
   role?: ChatRole;
   citations?: string[] | null;
   log_id?: string;

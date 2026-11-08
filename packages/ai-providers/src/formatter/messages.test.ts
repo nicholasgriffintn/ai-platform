@@ -360,6 +360,28 @@ describe("tool result images", () => {
     expect(output).toMatchObject({ call_id: "call_1" });
     expect(JSON.stringify(output)).toContain("https://example.com/d1");
   });
+
+  it("gives the model a tool's next hint as its own line rather than inside its data", () => {
+    const hinted: Message = {
+      role: "tool",
+      name: "delegate",
+      tool_call_id: "call_1",
+      content: "Delegated the work.",
+      data: { delegationId: "d1", next: "End your turn; do not poll it." },
+    };
+    const expected =
+      '[Tool Response: delegate] Delegated the work.\n\nNext: End your turn; do not poll it.\n\nData: {"delegationId":"d1"}';
+    const [output] = MessageFormatter.formatOpenAIResponsesInput([hinted]);
+    const [, anthropicResult] = MessageFormatter.formatMessages([hinted], {
+      provider: "anthropic",
+    });
+    const anthropicBlock = Array.isArray(anthropicResult?.content)
+      ? anthropicResult.content[0]
+      : undefined;
+
+    expect(output).toMatchObject({ output: expected });
+    expect(anthropicBlock?.content).toBe(expected);
+  });
 });
 
 describe("stringifyMessageContent", () => {

@@ -14,6 +14,9 @@ import type { ApiToolDefinition } from "~/types/functions";
 
 import { trigger_recipe as trigger_recipeDescriptor } from "./definitions/trigger_recipe";
 
+export const TRIGGER_RECIPE_BLOCKED_NEXT =
+  "Do not trigger it again until the user has set up what it needs.";
+
 export const trigger_recipe: ApiToolDefinition = {
   ...trigger_recipeDescriptor,
   execute: async (args, context) => {
@@ -114,13 +117,13 @@ export const trigger_recipe: ApiToolDefinition = {
       };
     }
 
+    const blocked = invocation.status === "blocked" || invocation.status === "not_installed";
+
     return {
-      status:
-        invocation.status === "blocked" || invocation.status === "not_installed"
-          ? "error"
-          : "success",
+      status: blocked ? "error" : "success",
       name: "trigger_recipe",
       content: invocation.conversationStarter,
+      ...(blocked ? { next: TRIGGER_RECIPE_BLOCKED_NEXT } : {}),
       data: invocation,
     };
   },

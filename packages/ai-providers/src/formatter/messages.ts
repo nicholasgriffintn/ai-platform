@@ -90,17 +90,19 @@ export class MessageFormatter {
   }
 
   private static formatToolResultText(message: Message, content: unknown): string {
+    const { next, ...data } = message.data ?? {};
+    const hint = typeof next === "string" ? next.trim() : "";
     let stringifiedData = "";
 
-    if (message.data) {
+    if (message.data && (!hint || Object.keys(data).length > 0)) {
       try {
-        stringifiedData = JSON.stringify(message.data);
+        stringifiedData = JSON.stringify(hint ? data : message.data);
       } catch {}
     }
 
     return `[Tool Response: ${message.name || "unknown"}] ${
       typeof content === "string" ? content : JSON.stringify(content)
-    }${stringifiedData ? `\n\nData: ${stringifiedData}` : ""}`;
+    }${hint ? `\n\nNext: ${hint}` : ""}${stringifiedData ? `\n\nData: ${stringifiedData}` : ""}`;
   }
 
   static formatOpenAIResponsesInput(messages: Message[]): OpenAIResponsesInputItem[] {

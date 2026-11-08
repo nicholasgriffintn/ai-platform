@@ -131,6 +131,7 @@ export interface MessageDataPayload extends Record<string, any> {
   codingTaskType?: string;
   asyncInvocation?: AsyncInvocationData;
   error?: string;
+  next?: string;
 }
 
 export interface Message {

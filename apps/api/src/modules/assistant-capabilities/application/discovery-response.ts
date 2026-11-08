@@ -21,16 +21,30 @@ function formatCapability(item: CapabilityDiscoveryItem): string {
   return `- ${item.name} (${STATE_LABELS[item.state]}) — ${item.reason}${nextStep}`;
 }
 
+export const DISCOVERY_READY_NEXT =
+  "Follow a ready capability's exact Next instruction now; do not invent another tool name.";
+export const DISCOVERY_UNAVAILABLE_NEXT =
+  "Explain the supplied reason to the user; do not invent another tool name.";
+export const DISCOVERY_SETUP_NEXT =
+  "Wait for the user to complete a setup action shown here, then retry; do not invent another tool name.";
+export const DISCOVERY_UNKNOWN_NEXT =
+  "Ask the user to retry the request; do not infer availability or invent a tool name.";
+export const DISCOVERY_NO_MATCH_NEXT =
+  "Explain that no matching capability was found; do not invent a tool name.";
+
 function createModelInstructions(
   result: CapabilityDiscoveryResult,
   requiresSetup: boolean,
-): string {
+): { content: string; next: string } {
   if (result.items.length === 0) {
     if (result.readiness?.state === "unknown") {
-      return `${result.readiness.reason} Ask the user to retry the request; do not infer availability or invent a tool name.`;
+      return { content: result.readiness.reason, next: DISCOVERY_UNKNOWN_NEXT };
     }
 
-    return `No capabilities matched “${result.query}”. Explain that no matching capability was found and do not invent a tool name.`;
+    return {
+      content: `No capabilities matched “${result.query}”.`,
+      next: DISCOVERY_NO_MATCH_NEXT,
+    };
   }
 
   const readyCount = result.items.filter((item) => item.invocation.availableNow).length;
@@ -38,11 +52,15 @@ function createModelInstructions(
   const heading = requiresSetup
     ? `Found ${result.items.length} matching ${matchLabel} for “${result.query}”, but none are ready yet.`
     : `Found ${result.items.length} matching ${matchLabel} for “${result.query}”; ${readyCount} ${readyCount === 1 ? "is" : "are"} ready.`;
-  const instruction = requiresSetup
-    ? "Complete one of the setup actions shown here, then retry the request. Until then, wait for the user and do not invent another tool name."
-    : "Continue now with a ready capability by following its exact Next instruction. If none are ready, explain the supplied reason. Do not invent another tool name.";
 
-  return [heading, instruction, "", ...result.items.map(formatCapability)].join("\n");
+  return {
+    content: [heading, "", ...result.items.map(formatCapability)].join("\n"),
+    next: requiresSetup
+      ? DISCOVERY_SETUP_NEXT
+      : readyCount > 0
+        ? DISCOVERY_READY_NEXT
+        : DISCOVERY_UNAVAILABLE_NEXT,
+  };
 }
 
 export function createCapabilityDiscoveryResponse(
@@ -53,10 +71,13 @@ export function createCapabilityDiscoveryResponse(
     !hasReadyCapability && result.items.some((item) => item.state === "setup_required");
   const needsUserAction = requiresSetup || result.readiness?.state === "unknown";
 
+  const instructions = createModelInstructions(result, needsUserAction);
+
   return {
     name: CAPABILITY_DISCOVERY_TOOL_NAME,
     status: needsUserAction ? "pending" : "success",
-    content: createModelInstructions(result, needsUserAction),
+    content: instructions.content,
+    next: instructions.next,
     data: {
       formattedName: "Capability discovery",
       renderer: "capability_discovery",

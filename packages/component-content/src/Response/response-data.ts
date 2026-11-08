@@ -30,15 +30,29 @@ export interface TableResponseData {
 const AUDIO_EXTENSIONS = new Set(["mp3", "wav", "ogg", "m4a", "aac", "flac"]);
 const IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
 
+function withoutModelHint(data: Record<string, unknown>): Record<string, unknown> {
+  if (!("next" in data)) {
+    return data;
+  }
+
+  const visible = { ...data };
+
+  delete visible.next;
+
+  return visible;
+}
+
 export function resolveResponseData(
   result: Record<string, unknown>,
   { hasAppSchema, responseType }: ResolveResponseDataOptions,
 ) {
-  const resultData = result.data || result;
+  const rawData = result.data || result;
 
-  if (!isRecord(resultData)) {
-    return resultData;
+  if (!isRecord(rawData)) {
+    return rawData;
   }
+
+  const resultData = withoutModelHint(rawData);
 
   if (hasAppSchema && resultData.result) {
     return resultData.result;

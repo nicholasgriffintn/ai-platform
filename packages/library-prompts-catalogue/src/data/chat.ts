@@ -369,8 +369,7 @@ export const chatPromptEntries = [
     description:
       "Instructions that accompany the <available_skills> list, telling the model to load skills on demand.",
     text: `Skills carry specialised instructions for specific kinds of work. Only names and descriptions are disclosed here; load the full SKILL.md when one applies.
-When a request matches one, call {{skillLoadTool}} with that skill's name and follow what it returns. Load it before starting the work, not after. Never guess at a skill's contents, and never name a skill that is not listed here.
-Load each skill and each of its resources once. What {{skillLoadTool}} returns stays in effect for the rest of the conversation, so repeating a load returns nothing new: do the work instead.`,
+When a request matches one, call {{skillLoadTool}} with that skill's name and follow what it returns. Load it before starting the work, not after. Never guess at a skill's contents, and never name a skill that is not listed here.`,
     variables: [
       {
         name: "skillLoadTool",
