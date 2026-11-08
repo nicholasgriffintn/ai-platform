@@ -1,11 +1,12 @@
-import type {
-  AppEntry,
-  AppIosDecision,
-  AppScope,
-  AppSurfaceDefinition,
-  AppTheme,
-  ProjectExperienceDefinition,
-  ProjectExperienceRuntime,
+import {
+  normaliseMcpServerLabel,
+  type AppEntry,
+  type AppIosDecision,
+  type AppScope,
+  type AppSurfaceDefinition,
+  type AppTheme,
+  type ProjectExperienceDefinition,
+  type ProjectExperienceRuntime,
 } from "@ngriffin_uk/polychat-schemas";
 import { hashSeed, slugify } from "@ngriffin_uk/polychat-utility-core";
 
@@ -252,8 +253,15 @@ const REMOTE_APP_SURFACES: Record<AppSurfaceDefinition["layout"], AppSurfaceDefi
   workspace: { layout: "workspace", loading: "editor" },
 };
 
-const remoteAppId = (server: string, tool: string): string =>
-  `mcp-${slugify(server, 32)}-${slugify(tool, 40)}-${hashSeed(`${server}\n${tool}`).toString(36)}`;
+const REMOTE_APP_ID_PATTERN = /^mcp-[a-z0-9-]{1,80}-[0-9a-z]{1,7}$/;
+
+export const remoteAppId = (server: string, tool: string): string => {
+  const serverKey = normaliseMcpServerLabel(server).toLowerCase();
+
+  return `mcp-${slugify(serverKey, 32)}-${slugify(tool, 40)}-${hashSeed(`${serverKey}\n${tool}`).toString(36)}`;
+};
+
+export const isRemoteAppId = (value: string): boolean => REMOTE_APP_ID_PATTERN.test(value);
 
 export const getRemoteExperienceCatalog = (
   sources: readonly RemoteAppSource[],

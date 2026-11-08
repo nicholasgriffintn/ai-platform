@@ -1,10 +1,11 @@
 import {
   fetchRemoteApps,
   openMcpAppEntry,
+  setRemoteAppEnabled,
   useChatStore,
 } from "@ngriffin_uk/polychat-library-client";
-import type { AppEntry } from "@ngriffin_uk/polychat-schemas";
-import { useQuery } from "@tanstack/react-query";
+import type { AppEntry, RemoteAppListResponse } from "@ngriffin_uk/polychat-schemas";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const REMOTE_APPS_QUERY_KEY = ["remoteApps"] as const;
 
@@ -31,5 +32,21 @@ export function useRemoteAppView(entry: RemoteAppEntry) {
     queryFn: () => openMcpAppEntry({ integration: entry.server, tool: entry.tool }),
     refetchOnWindowFocus: false,
     retry: false,
+  });
+}
+
+export function useSetRemoteAppEnabled() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ appId, enabled }: { appId: string; enabled: boolean }) =>
+      setRemoteAppEnabled(appId, enabled),
+    onSuccess: ({ id, enabled }) => {
+      queryClient.setQueryData<RemoteAppListResponse>(REMOTE_APPS_QUERY_KEY, (current) =>
+        current
+          ? { apps: current.apps.map((app) => (app.id === id ? { ...app, enabled } : app)) }
+          : current,
+      );
+    },
   });
 }

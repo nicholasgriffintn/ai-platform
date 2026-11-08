@@ -47,7 +47,10 @@ export function AppRoute({
     isLoading: isRemoteAppLoading,
     error: remoteAppError,
   } = useRemoteApps({ enabled: looksUpRemoteApp });
-  const definition = bundledDefinition ?? remoteApps?.find((item) => item.id === appId);
+  const remoteDefinition = bundledDefinition
+    ? undefined
+    : remoteApps?.find((item) => item.id === appId);
+  const definition = bundledDefinition ?? remoteDefinition;
   const title = titleOverride ?? definition?.name;
   const backLink = getAppBackLink(surface, appId, subpath, title);
   const basePath = getAppPath(surface, appId);
@@ -60,8 +63,10 @@ export function AppRoute({
     Boolean(project?.isLoading) ||
     (looksUpRemoteApp && isRemoteAppLoading);
   const pageError = project?.error ?? catalogError ?? (looksUpRemoteApp ? remoteAppError : null);
-  const isEnabled =
-    !project || (definition ? isExperienceEnabled(definition, project.capabilities ?? []) : false);
+  const isEnabled = remoteDefinition
+    ? remoteDefinition.enabled
+    : !project ||
+      (definition ? isExperienceEnabled(definition, project.capabilities ?? []) : false);
   const chrome = useMemo(
     () => ({ backHref: backLink?.to, backLabel: backLink?.label }),
     [backLink?.to, backLink?.label],
@@ -103,8 +108,12 @@ export function AppRoute({
     ) : !isEnabled ? (
       <EmptyState
         icon={<Puzzle size={24} className="text-muted-foreground" />}
-        title="App not enabled"
-        message={`Add ${title} to the project before opening it.`}
+        title={remoteDefinition ? "App turned off" : "App not enabled"}
+        message={
+          remoteDefinition
+            ? `Turn ${title} on in Plugins to open it.`
+            : `Add ${title} to the project before opening it.`
+        }
         action={
           <ButtonLink variant="primary" href={getPluginsPath(surface)}>
             Open plugins

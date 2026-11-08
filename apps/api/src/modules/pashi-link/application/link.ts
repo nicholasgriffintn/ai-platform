@@ -11,6 +11,9 @@ import type { IUser } from "~/types";
 
 const PASHI_CONNECTOR = "pashi";
 
+export const PASHI_MCP_LABEL = "Pashi";
+export const PASHI_MCP_URL = "https://pashi.app/mcp";
+
 export function readPashiLinkToken(context: ServiceContext, userId: number) {
   return readRecipeConnectorToken(context, userId, PASHI_CONNECTOR);
 }
