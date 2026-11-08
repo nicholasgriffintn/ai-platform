@@ -9,6 +9,7 @@ export interface ToolResult {
   name?: string;
   content?: string | Record<string, unknown> | unknown[];
   data?: unknown;
+  next?: string;
   [key: string]: unknown;
 }
 

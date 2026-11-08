@@ -74,7 +74,7 @@
       "matchingModel": "gemini-3-flash-preview",
       "overrides": {
         "status": "beta",
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "December 17, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,

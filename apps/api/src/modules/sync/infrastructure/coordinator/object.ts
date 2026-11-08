@@ -12,6 +12,11 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { Agent } from "agents";
 
 import { TopicEventBus } from "~/infrastructure/durable-objects/event-bus";
+import {
+  isScopeWatched,
+  renewActivityLease,
+  type ActivityLease,
+} from "~/modules/sync/domain/activity-leases";
 import type { IEnv } from "~/types";
 
 interface ConnectionState {
@@ -20,6 +25,7 @@ interface ConnectionState {
   topics: string[];
   focusedTopic: string | null;
   connectedAt: string;
+  activity?: ActivityLease | null;
 }
 
 type EventPayload = Omit<DeviceSyncEvent, "seq" | "at" | "topic">;
@@ -71,6 +77,14 @@ export class UserSyncCoordinator extends Agent<IEnv> {
     }
 
     return result;
+  }
+
+  private isWatched(scope: string, now: number): boolean {
+    return isScopeWatched(
+      this.ctx.getWebSockets().map((socket) => this.readState(socket)?.activity),
+      scope,
+      now,
+    );
   }
 
   private presenceFor(topic: string): DeviceSyncPresenceEntry[] {
@@ -181,6 +195,16 @@ export class UserSyncCoordinator extends Agent<IEnv> {
       return;
     }
 
+    if (message.type === "activity") {
+      this.writeState(socket, {
+        ...state,
+        activity: renewActivityLease(message.scopes, state.topics, Date.now()),
+      });
+      this.send(socket, { type: "pong" });
+
+      return;
+    }
+
     if (message.type === "subscribe") {
       this.attachTopics(socket, state, message.topics);
 
@@ -268,23 +292,30 @@ export class UserSyncCoordinator extends Agent<IEnv> {
         return Response.json({ error: "Invalid sync event batch" }, { status: 400 });
       }
 
-      const sequences = parsed.data.events.map(({ topic, type, data, originDeviceId }) => {
-        const appended = this.events.append(topic, {
-          v: DEVICE_SYNC_PROTOCOL_VERSION,
-          type,
-          data,
-          originDeviceId: originDeviceId ?? null,
-        });
+      const now = Date.now();
+      const sequences = parsed.data.events.map(
+        ({ topic, type, data, originDeviceId, watchedScope }) => {
+          if (watchedScope && !this.isWatched(watchedScope, now)) {
+            return null;
+          }
 
-        this.deliver({
-          ...appended.event.payload,
-          topic,
-          seq: appended.event.seq,
-          at: appended.event.at,
-        });
+          const appended = this.events.append(topic, {
+            v: DEVICE_SYNC_PROTOCOL_VERSION,
+            type,
+            data,
+            originDeviceId: originDeviceId ?? null,
+          });
 
-        return appended.event.seq;
-      });
+          this.deliver({
+            ...appended.event.payload,
+            topic,
+            seq: appended.event.seq,
+            at: appended.event.at,
+          });
+
+          return appended.event.seq;
+        },
+      );
 
       return Response.json({ sequences });
     }

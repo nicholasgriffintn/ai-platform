@@ -263,7 +263,7 @@
       "model": "kimi/kimi-k2-5",
       "matchingModel": "accounts/fireworks/models/kimi-k2p5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
@@ -550,7 +550,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "accounts/fireworks/models/kimi-k3",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -913,7 +913,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.00425,
@@ -937,6 +937,47 @@
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.00021,
         "costPer1kOutputTokens": 0.00084,
+        "supportsAttachments": true
+      }
+    },
+    "accounts/fireworks/models/kimi-k3p1-pro": {
+      "model": "kimi-k3/kimi-k3-1-pro",
+      "matchingModel": "accounts/fireworks/models/kimi-k3p1-pro",
+      "overrides": {
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 2,
+        "lastUpdated": "October 23, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "accounts/fireworks/routers/deepseek-v4p1-flash-1017-ultrafast": {
+      "model": "deepseek-flash/deepseek-v4-1-flash-1017-ultra-fast",
+      "matchingModel": "accounts/fireworks/routers/deepseek-v4p1-flash-1017-ultrafast",
+      "overrides": {
+        "lastUpdated": "October 17, 2026",
+        "costPer1kInputTokens": 0.0024,
+        "costPer1kOutputTokens": 0.0096,
         "supportsAttachments": true
       }
     }

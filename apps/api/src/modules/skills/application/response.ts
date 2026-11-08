@@ -22,6 +22,11 @@ export {
   toSkillResourceSummary,
 } from "@ngriffin_uk/polychat-ai-skills";
 
+export const SKILL_INSTRUCTIONS_NEXT =
+  "Follow these instructions now; they stay in effect, so do not load this skill again.";
+export const SKILL_RESOURCE_NEXT =
+  "Use this resource now; it stays in this conversation, so do not load it again.";
+
 export function createSkillInstructionsResponse(
   skill: SkillContent,
   resources: SkillResourceSummary[],
@@ -32,6 +37,7 @@ export function createSkillInstructionsResponse(
     status: "success",
     name: SKILL_LOAD_TOOL_NAME,
     content: formatSkillContent(skill),
+    next: SKILL_INSTRUCTIONS_NEXT,
     data: {
       responseType: ToolResponseType.HIDDEN,
       skill: skill.name,
@@ -52,6 +58,7 @@ export function createSkillResourceResponse(
     status: "success",
     name: SKILL_LOAD_TOOL_NAME,
     content: formatSkillResource(skillName, resource),
+    next: SKILL_RESOURCE_NEXT,
     data: {
       responseType: ToolResponseType.HIDDEN,
       skill: skillName,

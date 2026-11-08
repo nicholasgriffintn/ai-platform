@@ -101,6 +101,7 @@ export * from "./channels.js";
 export * from "./documents.js";
 export * from "./chat-mode.js";
 export * from "./capability-discovery.js";
+export * from "./tool-result-next.js";
 export * from "./skills.js";
 export * from "./skill-guides.js";
 export * from "./corrections.js";

@@ -16,6 +16,9 @@ import {
 
 const DEFAULT_POLL_INTERVAL_MS = 5000;
 
+export const RESEARCH_IN_PROGRESS_NEXT =
+  "The report replaces this result when it finishes; tell the user it is under way and do not start the same research again.";
+
 const researchArgsSchema = z.object({
   input: z.string().trim().min(1, "Provide a research brief in input"),
   depth: z.enum(RESEARCH_DEPTHS).default("standard"),
@@ -105,6 +108,7 @@ export const research: ApiToolDefinition = {
     return {
       name: "research",
       status: "in_progress",
+      next: RESEARCH_IN_PROGRESS_NEXT,
       content: ownSources
         ? `Research task started.\n\n${describeOwnSources(ownSources)}`
         : "Research task started",

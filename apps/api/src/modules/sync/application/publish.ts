@@ -32,6 +32,7 @@ export interface SyncPublication {
   type: DeviceSyncEventType;
   data?: Record<string, unknown>;
   originDeviceId?: string | null;
+  watchedScope?: string;
 }
 
 interface SyncEnvelope {
@@ -39,6 +40,7 @@ interface SyncEnvelope {
   type: DeviceSyncEventType;
   data: Record<string, unknown>;
   originDeviceId: string | null;
+  watchedScope?: string;
 }
 
 export function syncTopic(kind: DeviceSyncTopicKind, id: string | number): string {
@@ -57,6 +59,7 @@ function groupByRecipient(
       type: publication.type,
       data: publication.data ?? {},
       originDeviceId: publication.originDeviceId ?? originDeviceId,
+      watchedScope: publication.watchedScope,
     };
 
     for (const userId of new Set(publication.audience)) {

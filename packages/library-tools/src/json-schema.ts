@@ -1,29 +1,11 @@
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import { canonicalJson, isRecord } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
+
+import { compactAdvertisedJsonSchema } from "./advertised-json-schema.js";
 
 const SUBSCHEMA_MAPS = ["properties", "$defs", "definitions"];
 const SUBSCHEMA_LISTS = ["anyOf", "oneOf", "allOf", "prefixItems"];
 const SUBSCHEMA_VALUES = ["items", "additionalProperties", "not"];
-
-function isEmptyRecord(value: unknown): boolean {
-  return isRecord(value) && Object.keys(value).length === 0;
-}
-
-function pruneEmptyAdditionalProperties(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map(pruneEmptyAdditionalProperties);
-  }
-
-  if (!isRecord(value)) {
-    return value;
-  }
-
-  return Object.fromEntries(
-    Object.entries(value)
-      .filter(([key, entry]) => key !== "additionalProperties" || !isEmptyRecord(entry))
-      .map(([key, entry]) => [key, pruneEmptyAdditionalProperties(entry)]),
-  );
-}
 
 function subschemas(schema: Record<string, unknown>): unknown[] {
   return [
@@ -101,10 +83,22 @@ export function toStructuredOutputSchema(schema: Record<string, unknown>): {
 }
 
 export function toToolInputJsonSchema(inputSchema: z.ZodType): Record<string, unknown> {
-  const { $schema: _schema, ...schema } = z.toJSONSchema(inputSchema, { io: "input" });
-  const pruned = pruneEmptyAdditionalProperties(flattenObjectRootSchema(schema));
+  const schema = compactAdvertisedJsonSchema(z.toJSONSchema(inputSchema, { io: "input" }));
 
-  return isRecord(pruned) ? pruned : {};
+  return compactAdvertisedJsonSchema(flattenObjectRootSchema(schema));
+}
+
+function mergePropertyAlternative(existing: unknown, value: unknown): unknown {
+  if (canonicalJson(existing) === canonicalJson(value)) {
+    return existing;
+  }
+
+  const alternatives =
+    isRecord(existing) && Object.keys(existing).length === 1 && Array.isArray(existing.anyOf)
+      ? existing.anyOf
+      : [existing];
+
+  return { anyOf: [...alternatives, value] };
 }
 
 export function flattenObjectRootSchema(schema: Record<string, unknown>): Record<string, unknown> {
@@ -132,16 +126,7 @@ export function flattenObjectRootSchema(schema: Record<string, unknown>): Record
 
         properties.set(
           key,
-          existing === undefined
-            ? value
-            : {
-                anyOf: [
-                  ...(isRecord(existing) && Array.isArray(existing.anyOf)
-                    ? existing.anyOf
-                    : [existing]),
-                  value,
-                ],
-              },
+          existing === undefined ? value : mergePropertyAlternative(existing, value),
         );
       }
     }

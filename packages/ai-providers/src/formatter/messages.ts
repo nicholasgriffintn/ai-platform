@@ -1,6 +1,9 @@
 import {
+  appendToolResultNext,
   chatMessageSelectionSchema,
   HOSTED_MCP_APPROVAL_TOOL_NAME,
+  omitToolResultNext,
+  readToolResultNext,
 } from "@ngriffin_uk/polychat-schemas";
 import { escapeHtml, isRecord } from "@ngriffin_uk/polychat-utility-core";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
@@ -90,17 +93,27 @@ export class MessageFormatter {
   }
 
   private static formatToolResultText(message: Message, content: unknown): string {
+    const next = readToolResultNext(message.data);
     let stringifiedData = "";
 
     if (message.data) {
-      try {
-        stringifiedData = JSON.stringify(message.data);
-      } catch {}
+      const data = omitToolResultNext(message.data);
+
+      if (!next || Object.keys(data).length > 0) {
+        try {
+          stringifiedData = JSON.stringify(data);
+        } catch {}
+      }
     }
 
-    return `[Tool Response: ${message.name || "unknown"}] ${
-      typeof content === "string" ? content : JSON.stringify(content)
-    }${stringifiedData ? `\n\nData: ${stringifiedData}` : ""}`;
+    const text = appendToolResultNext(
+      `[Tool Response: ${message.name || "unknown"}] ${
+        typeof content === "string" ? content : JSON.stringify(content)
+      }`,
+      next,
+    );
+
+    return stringifiedData ? `${text}\n\nData: ${stringifiedData}` : text;
   }
 
   static formatOpenAIResponsesInput(messages: Message[]): OpenAIResponsesInputItem[] {

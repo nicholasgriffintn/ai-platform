@@ -80,6 +80,7 @@ final class DeviceSyncClient: ObservableObject {
             send(.subscribe([DeviceSyncSubscription(topic: topic, lastSeq: cursors[topic])]))
         }
         send(.focus(topic))
+        renewActivity()
     }
 
     private func connect() {
@@ -169,6 +170,11 @@ final class DeviceSyncClient: ObservableObject {
         if let focusedTopic {
             send(.focus(focusedTopic))
         }
+        renewActivity()
+    }
+
+    private func renewActivity() {
+        send(.activity(Array(topics.prefix(32))))
     }
 
     private func startPinging() {
@@ -176,7 +182,7 @@ final class DeviceSyncClient: ObservableObject {
         pingTask = Task { [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(25))
-                self?.send(.ping)
+                self?.renewActivity()
             }
         }
     }
