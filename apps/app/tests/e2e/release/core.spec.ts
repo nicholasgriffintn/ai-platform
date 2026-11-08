@@ -1,8 +1,8 @@
 import { expect, test } from "../fixtures/polychat-test";
 
 test.describe("Core release safeguards", { tag: "@release" }, () => {
-  test.describe("Free credit ceiling", () => {
-    test.use({ persona: "free", billing: { spentCredits: 200 } });
+  test.describe("Pro credit ceiling", () => {
+    test.use({ persona: "pro", billing: { spentCredits: 5000, overageEnabled: false } });
 
     test("refuses a chat turn after credits are spent", async ({ homePage, page }) => {
       await homePage.navigate("/chat");
