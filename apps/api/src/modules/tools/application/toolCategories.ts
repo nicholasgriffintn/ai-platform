@@ -90,6 +90,7 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "desktop_search_files",
     "desktop_write_file",
     "call_api",
+    "request_secret",
     "decide",
     "discover_capabilities",
     "extract_values",

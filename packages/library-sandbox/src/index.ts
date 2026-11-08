@@ -26,6 +26,8 @@ export {
   redactSandboxError,
   redactSandboxOutput,
   redactSandboxResult,
+  redactSandboxValue,
+  secretRedactionVariants,
 } from "./redaction.js";
 export { signGrant, verifyGrant, type SignedGrantClaims } from "./signed-grant.js";
 export { errorResponse, readBearerToken, readJsonRecord } from "./http.js";

@@ -148,7 +148,7 @@ export const authenticationToken = sqliteTable(
   "authentication_token",
   {
     purpose: text({
-      enum: ["oauth_state", "challenge", "native_exchange", "channel_pairing"],
+      enum: ["oauth_state", "challenge", "native_exchange", "channel_pairing", "secret_reference"],
     }).notNull(),
     token_hash: text().notNull(),
     provider: text(),
@@ -187,6 +187,7 @@ export const authenticationToken = sqliteTable(
       OR (${table.purpose} = 'challenge' AND ${table.provider} IS NOT NULL AND ${table.kind} IS NOT NULL AND ${table.payload} IS NOT NULL AND ${table.oauth_data} IS NULL AND ${table.session_id} IS NULL AND ${table.binding_id} IS NULL AND ${table.user_id} IS NULL AND ${table.consumed_at} IS NULL)
       OR (${table.purpose} = 'native_exchange' AND ${table.session_id} IS NOT NULL AND ${table.user_id} IS NOT NULL AND ${table.consumed_at} IS NOT NULL AND ${table.binding_id} IS NULL AND ${table.provider} IS NULL AND ${table.kind} IS NULL AND ${table.payload} IS NULL AND ${table.oauth_data} IS NULL)
       OR (${table.purpose} = 'channel_pairing' AND ${table.binding_id} IS NOT NULL AND ${table.user_id} IS NOT NULL AND ${table.session_id} IS NULL AND ${table.provider} IS NULL AND ${table.kind} IS NULL AND ${table.payload} IS NULL AND ${table.oauth_data} IS NULL AND ${table.consumed_at} IS NULL)
+      OR (${table.purpose} = 'secret_reference' AND ${table.user_id} IS NOT NULL AND ${table.payload} IS NOT NULL AND ${table.session_id} IS NULL AND ${table.binding_id} IS NULL AND ${table.provider} IS NULL AND ${table.kind} IS NULL AND ${table.oauth_data} IS NULL AND ${table.consumed_at} IS NULL)
     `,
     ),
   }),

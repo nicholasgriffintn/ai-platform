@@ -5,6 +5,7 @@ import { DelegationTimelineView } from "../Delegations/DelegationTimelineView.js
 import { BrowserSessionView } from "./BrowserSessionView.js";
 import { CapabilityDiscoveryView } from "./CapabilityDiscoveryView.js";
 import { McpAppMessageView } from "./McpAppMessageView.js";
+import { SecretRequestView } from "./SecretRequestView.js";
 import { SiteMessageView } from "./SiteMessageView.js";
 
 export const responseViewRegistry: CustomResponseViewRegistry = {
@@ -18,6 +19,9 @@ export const responseViewRegistry: CustomResponseViewRegistry = {
   ),
   delegation_card: ({ data, onToolInteraction }) => (
     <DelegationTimelineView data={data} onToolInteraction={onToolInteraction} />
+  ),
+  secret_request: ({ data, onToolInteraction }) => (
+    <SecretRequestView data={data} onToolInteraction={onToolInteraction} />
   ),
   site_preview: ({ data, embedded }) => <SiteMessageView data={data} embedded={embedded} />,
 };

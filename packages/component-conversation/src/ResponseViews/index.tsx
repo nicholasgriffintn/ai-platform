@@ -26,6 +26,7 @@ import { SavedNoteView } from "./SavedNoteView.js";
 import { WorkOutputMessageView } from "./WorkOutputMessageView.js";
 
 export { BrowserAuthenticationForm } from "./BrowserAuthenticationForm.js";
+export { SecretRequestForm } from "./SecretRequestForm.js";
 
 export {
   ComputerTakeoverView,
