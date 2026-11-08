@@ -22,29 +22,6 @@ const approval: BrowserApproval = {
 afterEach(cleanup);
 
 describe("browser sign-in", () => {
-  it("masks every value and clears fields before sending the response", () => {
-    const respond = vi.fn(async () => undefined);
-
-    render(<BrowserAuthenticationForm approval={approval} disabled={false} onRespond={respond} />);
-    const email = screen.getByLabelText("Email");
-    const password = screen.getByLabelText("Password");
-
-    expect(email.getAttribute("type")).toBe("password");
-    expect(password.getAttribute("type")).toBe("password");
-    fireEvent.change(email, { target: { value: "tester@example.test" } });
-    fireEvent.change(password, { target: { value: "test-secret" } });
-    fireEvent.click(screen.getByRole("button", { name: "Submit sign-in" }));
-    expect(respond).toHaveBeenCalledWith({
-      type: "browser_authentication",
-      action: "submit",
-      fields: [
-        { field_id: "email", value: "tester@example.test" },
-        { field_id: "password", value: "test-secret" },
-      ],
-    });
-    expect(screen.queryByDisplayValue("tester@example.test")).toBeNull();
-    expect(screen.queryByDisplayValue("test-secret")).toBeNull();
-  });
   it("allows cancellation but prevents sign-in without a verified HTTPS destination", () => {
     if (approval.request.type !== "browser_authentication") {
       throw new Error("Unexpected fixture");

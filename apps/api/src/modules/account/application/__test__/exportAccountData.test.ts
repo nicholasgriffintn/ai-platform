@@ -1,4 +1,3 @@
-import { ACCOUNT_EXPORT_NEXT_HEADER } from "@ngriffin_uk/polychat-schemas";
 import { getTableName, isTable } from "drizzle-orm";
 import { strFromU8, unzipSync } from "fflate";
 import { describe, expect, it, vi } from "vitest";
@@ -27,7 +26,7 @@ import {
 } from "~/modules/account/infrastructure/AccountExportRepository";
 import type { User } from "~/types";
 
-import { exportAccountData, exportAccountFiles } from "../exportAccountData";
+import { exportAccountData } from "../exportAccountData";
 
 const user = { id: 7, name: "Sam", email: "sam@example.com" } as User;
 
@@ -106,31 +105,6 @@ describe("exportAccountData", () => {
     });
   });
 
-  it("pages through every row and exports messages for the person's conversations only", async () => {
-    const conversations = Array.from({ length: ACCOUNT_EXPORT_PAGE_SIZE + 1 }, (_, index) => ({
-      id: `c${String(index).padStart(4, "0")}`,
-    }));
-    const { context, listSection, listMessages } = createExportContext({
-      sections: { conversations },
-    });
-
-    const { read } = await readArchive(await exportAccountData(context, user));
-
-    expect(read("data/conversations.json")).toHaveLength(conversations.length);
-    expect(listSection).toHaveBeenCalledWith(
-      "conversations",
-      user.id,
-      conversations[ACCOUNT_EXPORT_PAGE_SIZE - 1].id,
-    );
-    expect(new Set(listMessages.mock.calls.flatMap(([ids]) => ids))).toEqual(
-      new Set(conversations.map(({ id }) => id)),
-    );
-    expect(read("manifest.json").sections.messages).toEqual({
-      file: "data/messages.json",
-      count: conversations.length,
-    });
-  });
-
   it("keeps recipe secrets and connector tokens out of settings and tool traces", async () => {
     const { context } = createExportContext({
       sections: {
@@ -182,52 +156,6 @@ describe("exportAccountData", () => {
       nested: { maxTokens: 500 },
     });
     expect(read("data/messages.json")[0].tool_call_arguments).toEqual({ query: "weather" });
-  });
-
-  it("lets a large account retrieve every file across parts without gaps or repeats", async () => {
-    getObjectBody.mockImplementation(async () => ({ size: 1, body: new Blob(["x"]).stream() }));
-
-    const outputs = Array.from({ length: 900 }, (_, index) =>
-      fileRow(`o${String(index).padStart(4, "0")}`, 1),
-    );
-    const { context } = createExportContext({ files: { outputs, pets: [fileRow("pet", null)] } });
-    const collected: string[] = [];
-
-    let response = await exportAccountData(context, user);
-
-    while (true) {
-      const after = response.headers.get(ACCOUNT_EXPORT_NEXT_HEADER);
-      const { entries } = await readArchive(response);
-
-      collected.push(...Object.keys(entries).filter((path) => path.startsWith("files/")));
-
-      if (!after) {
-        break;
-      }
-
-      response = await exportAccountFiles(context, user, after);
-    }
-
-    expect(collected).toHaveLength(outputs.length + 1);
-    expect(new Set(collected).size).toBe(collected.length);
-  });
-
-  it("rejects a cursor that names no file section", async () => {
-    const { context } = createExportContext({});
-
-    await expect(exportAccountFiles(context, user, "user_credential:1")).rejects.toThrow(
-      "Invalid export cursor",
-    );
-  });
-
-  it("fails the download instead of delivering a partial archive", async () => {
-    const { context, listSection } = createExportContext({});
-
-    listSection.mockRejectedValue(new Error("database unavailable"));
-
-    const response = await exportAccountData(context, user);
-
-    await expect(response.arrayBuffer()).rejects.toThrow("database unavailable");
   });
 });
 

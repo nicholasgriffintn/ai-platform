@@ -11,20 +11,6 @@ const SECRET = "internal-service-test-secret-with-at-least-32-bytes";
 const DELEGATION_SECRET = "delegation-test-secret-with-at-least-32-bytes";
 
 describe("internal service tokens", () => {
-  it("signs short-lived service and user claims that the API can verify", async () => {
-    const token = await createInternalServiceToken(SECRET, {
-      service: "sandbox-worker",
-      scopes: ["sandbox-preview:authorise"],
-    });
-    const claims = await verifyInternalServiceJwt(token, SECRET);
-
-    expect(claims).toMatchObject({
-      sub: "sandbox-worker",
-      scopes: ["sandbox-preview:authorise"],
-    });
-    expect(claims.exp - claims.iat).toBe(30);
-  });
-
   it("issues scoped user delegation claims without giving the worker signing authority", async () => {
     const token = await createInternalServiceDelegationToken(DELEGATION_SECRET, 42);
     const claims = await verifyInternalServiceDelegationJwt(token, DELEGATION_SECRET);

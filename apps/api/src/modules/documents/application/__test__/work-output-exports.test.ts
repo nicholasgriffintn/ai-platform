@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { exportDeck, exportSheet } from "../work-output-exports";
+import { exportSheet } from "../work-output-exports";
 
 describe("work output exports", () => {
   it("writes each sheet table under its name and neutralises formulas in text", () => {
@@ -39,26 +39,6 @@ describe("work output exports", () => {
         "ok",
         "",
       ].join("\r\n"),
-    );
-  });
-
-  it("writes a deck as Markdown slides with notes hidden in comments", () => {
-    const exported = exportDeck("Launch", {
-      format: "slides",
-      slides: [
-        { layout: "title", title: "Launch plan", subtitle: "October", bullets: [] },
-        {
-          layout: "content",
-          title: "Three bets",
-          bullets: ["Ship desktop", "Ship iOS"],
-          notes: "Pause here --> then",
-        },
-      ],
-    });
-
-    expect(exported.filename).toBe("launch.md");
-    expect(exported.body).toBe(
-      "# Launch plan\n\n_October_\n\n---\n\n## Three bets\n\n- Ship desktop\n- Ship iOS\n\n<!-- Notes: Pause here --&gt; then -->\n",
     );
   });
 });

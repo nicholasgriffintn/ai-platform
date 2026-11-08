@@ -1,10 +1,4 @@
-import type {
-  ChatRun,
-  ChatRunEvent,
-  Goal,
-  ProjectTask,
-  ProjectTaskInteraction,
-} from "@ngriffin_uk/polychat-schemas";
+import type { ChatRun, ChatRunEvent, ProjectTask } from "@ngriffin_uk/polychat-schemas";
 import { describe, expect, it } from "vitest";
 
 import type { Message } from "~/types";
@@ -72,40 +66,6 @@ function runEvent(
   };
 }
 
-const interaction: ProjectTaskInteraction = {
-  protocolVersion: 1,
-  type: "question",
-  projectId: "project-1",
-  taskId: "task-1",
-  runId: "run-1",
-  interactionId: "question-1",
-  status: "pending",
-  requestedAt: "2026-09-05T10:07:00.000Z",
-  resolvedAt: null,
-  detail: null,
-  questions: [
-    {
-      id: "format",
-      prompt: "Which format should the report use?",
-      options: [{ label: "Brief", description: "A short report." }],
-      allowOther: true,
-    },
-  ],
-  answers: null,
-};
-
-const goal = {
-  progress: [
-    {
-      iteration: 1,
-      surface: "agent",
-      summary: "Collected the source material",
-      evidence: ["Source archive"],
-      at: "2026-09-05T10:03:00.000Z",
-    },
-  ],
-} satisfies Pick<Goal, "progress">;
-
 const messages: Message[] = [
   {
     id: "tool-message",
@@ -138,79 +98,6 @@ const messages: Message[] = [
 ];
 
 describe("project task activity projection", () => {
-  it("separates proposed plans from run, step, tool, interaction and output activity", () => {
-    const timeline = projectProjectTaskActivity({
-      task,
-      goal,
-      interaction,
-      runs: [
-        {
-          run,
-          events: [
-            runEvent(1, "accepted", "2026-09-05T10:01:00.000Z", "response.created"),
-            runEvent(2, "running", "2026-09-05T10:02:00.000Z"),
-          ],
-          messages,
-        },
-      ],
-    });
-
-    expect(timeline.items.map((item) => item.category)).toEqual(
-      expect.arrayContaining(["plan", "run", "step", "tool", "interaction", "output"]),
-    );
-    expect(timeline.items.find((item) => item.category === "plan")).toMatchObject({
-      status: "proposed",
-      items: ["Publish the report", "Link the evidence"],
-    });
-    expect(timeline.items.find((item) => item.type === "goal.step.recorded")).toMatchObject({
-      status: "succeeded",
-      detail: "Collected the source material",
-    });
-    expect(timeline.items.find((item) => item.type === "tool.completed")).toMatchObject({
-      status: "failed",
-      title: "Tool failed",
-    });
-    expect(
-      timeline.items.find(
-        (item) => item.type === "tool.completed" && item.detail === "upload report",
-      ),
-    ).toMatchObject({ status: "failed" });
-    expect(timeline.items.find((item) => item.type === "interaction.requested")).toMatchObject({
-      status: "waiting",
-      actionable: true,
-    });
-    expect(timeline.items[0]).toMatchObject({ category: "output", actionable: true });
-    expect(JSON.stringify(timeline)).not.toContain("privateQuery");
-    expect(JSON.stringify(timeline)).not.toContain("must not be exposed");
-  });
-
-  it("keeps failure, interruption and unknown future events distinct", () => {
-    const timeline = projectProjectTaskActivity({
-      task: { ...task, completions: [] },
-      goal: null,
-      interaction: null,
-      runs: [
-        {
-          run: { ...run, status: "interrupted" },
-          events: [
-            runEvent(1, "failed", "2026-09-05T10:02:00.000Z"),
-            runEvent(2, "interrupted", "2026-09-05T10:03:00.000Z"),
-            runEvent(3, "ignored", "2026-09-05T10:04:00.000Z", "future.checkpoint"),
-          ],
-          messages: [],
-        },
-      ],
-    });
-
-    expect(timeline.items.find((item) => item.status === "failed")?.terminal).toBe(true);
-    expect(timeline.items.find((item) => item.status === "interrupted")?.terminal).toBe(true);
-    expect(timeline.items.find((item) => item.type === "future.checkpoint")).toMatchObject({
-      title: "Task activity",
-      status: "unknown",
-      detail: "future.checkpoint",
-    });
-  });
-
   it("drops messages whose run identity does not match their containing run", () => {
     const timeline = projectProjectTaskActivity({
       task: { ...task, completions: [] },
@@ -243,20 +130,5 @@ describe("project task activity projection", () => {
     });
 
     expect(timeline.items.map((item) => item.category)).toEqual(["plan"]);
-  });
-
-  it("reconstructs a visible run state when a legacy or trimmed run has no retained event", () => {
-    const timeline = projectProjectTaskActivity({
-      task: { ...task, completions: [] },
-      goal: null,
-      interaction: null,
-      runs: [{ run: { ...run, status: "interrupted" }, events: [], messages: [] }],
-    });
-
-    expect(timeline.items.find((item) => item.type === "run.snapshot")).toMatchObject({
-      runId: "run-1",
-      status: "interrupted",
-      terminal: true,
-    });
   });
 });

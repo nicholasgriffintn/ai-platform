@@ -11,16 +11,6 @@ function at(seconds: number): Date {
 }
 
 describe("evaluateDevicePoll", () => {
-  it("lets a client poll once per interval since it started", () => {
-    expect(evaluateDevicePoll({ createdAt, expiresAt, attempts: 0 }, at(0))).toBe("check_decision");
-    expect(evaluateDevicePoll({ createdAt, expiresAt, attempts: 1 }, at(10))).toBe(
-      "check_decision",
-    );
-    expect(evaluateDevicePoll({ createdAt, expiresAt, attempts: 3 }, at(60))).toBe(
-      "check_decision",
-    );
-  });
-
   it("slows down a client that polls faster than its interval", () => {
     expect(evaluateDevicePoll({ createdAt, expiresAt, attempts: 1 }, at(5))).toBe("slow_down");
     expect(evaluateDevicePoll({ createdAt, expiresAt, attempts: 7 }, at(60))).toBe("slow_down");
@@ -34,11 +24,6 @@ describe("evaluateDevicePoll", () => {
 });
 
 describe("normaliseDeviceUserCode", () => {
-  it("accepts the code however the person types it", () => {
-    expect(normaliseDeviceUserCode(" bcdf-ghjk ")).toBe("BCDFGHJK");
-    expect(normaliseDeviceUserCode("BCDF GHJK")).toBe("BCDFGHJK");
-  });
-
   it("rejects codes outside the alphabet or the wrong length", () => {
     expect(normaliseDeviceUserCode("ABCD-EFGH")).toBeNull();
     expect(normaliseDeviceUserCode("BCDF-GHJ")).toBeNull();

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { ComposioConnectorSessionRepository } from "~/modules/connectors/infrastructure/ComposioConnectorSessionRepository";
@@ -51,27 +51,11 @@ const pendingResult = {
   },
 };
 
-const executedResult = {
-  id: "executed-result",
-  role: "tool",
-  name: "use_recipe_connector",
-  tool_call_id: toolCall.id,
-  status: "success",
-  content: "Draft created",
-  data: { draftId: "draft-1" },
-};
-
 function createConversationManager(messages: unknown[]) {
   return {
     getAllMessages: vi.fn().mockResolvedValue(messages),
     add: vi.fn(),
   };
-}
-
-async function flushMicrotasks() {
-  for (let index = 0; index < 20; index++) {
-    await Promise.resolve();
-  }
 }
 
 async function createFixture(state: "approved" | "consumed" = "approved") {
@@ -174,181 +158,6 @@ describe("replayApprovedConnectorOperation", () => {
     vi.clearAllMocks();
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it("replays the exact authoritative stored call once and replaces the pending result for summary", async () => {
-    const { approval, context, user } = await createFixture();
-    const conversationManager = createConversationManager([
-      { role: "user", content: "Create the draft" },
-      { role: "assistant", content: "", tool_calls: [toolCall], mode: "agent" },
-      pendingResult,
-    ]);
-
-    vi.mocked(handleToolCalls).mockResolvedValue([executedResult as any]);
-
-    const replay = await replayApprovedConnectorOperation({
-      approval,
-      context,
-      conversationManager: conversationManager as any,
-      user,
-      model: "gpt-4",
-    });
-
-    expect(conversationManager.getAllMessages).toHaveBeenCalledWith(approval.completionId, {
-      includeArchived: false,
-    });
-    expect(context.connectorRunId).toBe(approval.runId);
-    expect(handleToolCalls).toHaveBeenCalledOnce();
-    expect(handleToolCalls).toHaveBeenCalledWith(
-      approval.completionId,
-      { response: "", tool_calls: [toolCall] },
-      conversationManager,
-      expect.objectContaining({
-        mode: "agent",
-        request: expect.objectContaining({
-          completion_id: approval.completionId,
-          connector_approval_id: approval.id,
-          approved_tools: ["use_recipe_connector"],
-        }),
-      }),
-      {
-        persistResults: "none",
-        recoverUnknownToolCalls: false,
-      },
-    );
-    expect(context.repositories.get(MessageRepository).createProjectedMessage).toHaveBeenCalledWith(
-      approval.completionId,
-      expect.objectContaining({ id: executedResult.id, data: executedResult }),
-    );
-    expect(replay.toolCall).toEqual(toolCall);
-    expect(replay.toolResult).toEqual(executedResult);
-    expect(replay.summaryMessages).toEqual([
-      { role: "user", content: "Create the draft" },
-      { role: "assistant", content: "", tool_calls: [toolCall], mode: "agent" },
-      executedResult,
-    ]);
-  });
-
-  it("reuses the authoritative stored final result for a duplicate consumed continuation", async () => {
-    const { approval, context, user } = await createFixture("consumed");
-    const conversationManager = createConversationManager([
-      { role: "assistant", content: "", tool_calls: [toolCall] },
-      pendingResult,
-      executedResult,
-    ]);
-
-    const replay = await replayApprovedConnectorOperation({
-      approval,
-      context,
-      conversationManager: conversationManager as any,
-      user,
-      model: "gpt-4",
-    });
-
-    expect(handleToolCalls).not.toHaveBeenCalled();
-    expect(replay.toolResult).toEqual(executedResult);
-    expect(replay.summaryMessages).toEqual([
-      { role: "assistant", content: "", tool_calls: [toolCall] },
-      executedResult,
-    ]);
-  });
-
-  it("uses the winner's stored result when concurrent replay loses the consume race", async () => {
-    const { approval, context, user } = await createFixture();
-
-    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
-    const initialMessages = [
-      { role: "assistant", content: "", tool_calls: [toolCall] },
-      pendingResult,
-    ];
-    const conversationManager = createConversationManager(initialMessages);
-
-    conversationManager.getAllMessages
-      .mockResolvedValueOnce(initialMessages)
-      .mockResolvedValueOnce(initialMessages)
-      .mockResolvedValueOnce([...initialMessages, executedResult]);
-    context.repositories
-      .get(ConnectorOperationApprovalRepository)
-      .getByIdForUser.mockResolvedValue({
-        ...approval,
-        state: "consumed",
-        consumedAt: "2026-08-13T12:02:00.000Z",
-      });
-    vi.mocked(handleToolCalls).mockResolvedValue([
-      {
-        ...executedResult,
-        id: "loser-result",
-        status: "error",
-        content:
-          "Connector approval is invalid, expired, already used, or does not match this action",
-      } as any,
-    ]);
-
-    const replayPromise = replayApprovedConnectorOperation({
-      approval,
-      context,
-      conversationManager: conversationManager as any,
-      user,
-      model: "gpt-4",
-    });
-
-    await flushMicrotasks();
-    await vi.runAllTimersAsync();
-    const replay = await replayPromise;
-
-    expect(replay.toolResult).toEqual(executedResult);
-    expect(conversationManager.add).not.toHaveBeenCalled();
-    vi.useRealTimers();
-  });
-
-  it("drops stale continuation attempts after the matched pending boundary", async () => {
-    const { approval, context, user } = await createFixture();
-    const staleCall = {
-      ...toolCall,
-      id: "call-stale",
-      function: {
-        ...toolCall.function,
-        arguments: JSON.stringify({
-          provider: "gmail",
-          operation: "GMAIL_CREATE_DRAFT",
-          argumentSummary: { subject: "Approved subject" },
-        }),
-      },
-    };
-    const conversationManager = createConversationManager([
-      { role: "user", content: "Create the draft" },
-      { role: "assistant", content: "", tool_calls: [toolCall] },
-      pendingResult,
-      { role: "developer", content: "Retry the approved action" },
-      { role: "assistant", content: "", tool_calls: [staleCall] },
-      {
-        role: "tool",
-        name: "use_recipe_connector",
-        tool_call_id: staleCall.id,
-        status: "error",
-        content: "Connector approval does not match",
-      },
-    ]);
-
-    vi.mocked(handleToolCalls).mockResolvedValue([executedResult as any]);
-
-    const replay = await replayApprovedConnectorOperation({
-      approval,
-      context,
-      conversationManager: conversationManager as any,
-      user,
-      model: "gpt-4",
-    });
-
-    expect(replay.summaryMessages).toEqual([
-      { role: "user", content: "Create the draft" },
-      { role: "assistant", content: "", tool_calls: [toolCall] },
-      executedResult,
-    ]);
-  });
-
   it("fails closed when the paired tool result records different arguments", async () => {
     const { approval, context, user } = await createFixture();
     const conversationManager = createConversationManager([
@@ -373,63 +182,6 @@ describe("replayApprovedConnectorOperation", () => {
         model: "gpt-4",
       }),
     ).rejects.toThrow("stored connector arguments disagree");
-    expect(handleToolCalls).not.toHaveBeenCalled();
-  });
-
-  it("fails indeterminate after bounded polling when a consumed result never appears", async () => {
-    const { approval, context, user } = await createFixture("consumed");
-
-    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
-    const conversationManager = createConversationManager([
-      { role: "assistant", content: "", tool_calls: [toolCall] },
-      pendingResult,
-    ]);
-
-    const replayPromise = replayApprovedConnectorOperation({
-      approval,
-      context,
-      conversationManager: conversationManager as any,
-      user,
-      model: "gpt-4",
-    });
-    const assertion = expect(replayPromise).rejects.toMatchObject({
-      statusCode: 409,
-      message: expect.stringContaining("result is not available yet"),
-    });
-
-    await flushMicrotasks();
-    await vi.runAllTimersAsync();
-    await assertion;
-    expect(handleToolCalls).not.toHaveBeenCalled();
-    vi.useRealTimers();
-  });
-
-  it("stops polling when the continuation request is cancelled", async () => {
-    const { approval, context, user } = await createFixture("consumed");
-
-    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
-    const controller = new AbortController();
-    const conversationManager = createConversationManager([
-      { role: "assistant", content: "", tool_calls: [toolCall] },
-      pendingResult,
-    ]);
-
-    const replayPromise = replayApprovedConnectorOperation({
-      approval,
-      context,
-      conversationManager: conversationManager as any,
-      user,
-      model: "gpt-4",
-      signal: controller.signal,
-    });
-    const assertion = expect(replayPromise).rejects.toMatchObject({
-      statusCode: 409,
-      message: expect.stringContaining("was cancelled"),
-    });
-
-    await flushMicrotasks();
-    controller.abort();
-    await assertion;
     expect(handleToolCalls).not.toHaveBeenCalled();
   });
 

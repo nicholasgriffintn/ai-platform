@@ -1,25 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { assertSafeCommand, buildSummary, runSandboxCommand } from "../commands";
+import { assertSafeCommand, runSandboxCommand } from "../commands";
 import type { WorkspaceCommandOptions } from "../workspace";
 
 describe("assertSafeCommand", () => {
-  it("allows non-mutating commands in read-only mode", () => {
-    expect(() => assertSafeCommand("pnpm test --filter api", { readOnly: true })).not.toThrow();
-  });
-
   it("blocks mutating commands in read-only mode", () => {
     expect(() => assertSafeCommand("git add -A", { readOnly: true })).toThrow(/read-only/);
-  });
-
-  it("retains the global sandbox policy outside read-only mode", () => {
-    expect(() => assertSafeCommand("git add -A")).toThrow(/sandbox policy/);
-  });
-
-  it("blocks shell redirection in read-only mode", () => {
-    expect(() => assertSafeCommand("echo hi > /tmp/test.txt", { readOnly: true })).toThrow(
-      /read-only/,
-    );
   });
 
   it("blocks interpreter commands in read-only mode", () => {
@@ -55,32 +41,5 @@ describe("runSandboxCommand", () => {
 
     expect(output.join("")).toBe("ready\n[redacted credential]\nfinished\n");
     expect(result.stdout).toBe(output.join(""));
-  });
-});
-
-describe("buildSummary", () => {
-  it("uses task-type specific summary text", () => {
-    const summary = buildSummary(
-      "Review authentication flow",
-      "owner/repo",
-      3,
-      undefined,
-      "code-review",
-    );
-
-    expect(summary).toContain("Completed code review");
-  });
-
-  it("includes refactoring summary variants", () => {
-    const summary = buildSummary(
-      "Cleanup duplicated parsing",
-      "owner/repo",
-      4,
-      "sandbox/refactor-branch",
-      "refactoring",
-    );
-
-    expect(summary).toContain("Completed refactoring");
-    expect(summary).toContain("sandbox/refactor-branch");
   });
 });

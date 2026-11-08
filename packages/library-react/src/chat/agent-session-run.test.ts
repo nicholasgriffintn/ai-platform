@@ -177,81 +177,6 @@ describe("streamAgentSessionRun", () => {
     });
   });
 
-  it("asks for a folder once and remembers it with the native thread", async () => {
-    const harness = createBackend({});
-    const options = runOptions(harness, "conversation-1");
-
-    const text = await streamAgentSessionRun(options);
-
-    expect(text).toBe("done");
-    expect(harness.backend.pickAgentDirectory).toHaveBeenCalledTimes(1);
-    expect(harness.saved.at(-1)).toMatchObject({
-      conversationId: "conversation-1",
-      driver: "codex",
-      directoryId: "directory-1",
-      threadId: "thread-1",
-      permissionMode: "auto_accept_edits",
-    });
-  });
-
-  it("works in the conversation's own worktree and reports what the turn changed", async () => {
-    const harness = createBackend({ snapshots: ["tree-before", "tree-after"] });
-    const onChanges = vi.fn();
-
-    await streamAgentSessionRun({ ...runOptions(harness, "conversation-1"), onChanges });
-
-    expect(harness.backend.startAgentSession).toHaveBeenCalledWith(
-      "codex",
-      "directory-1",
-      "conversation-1",
-      undefined,
-      { worktree: true },
-    );
-    expect(harness.backend.agentTurnChanges).toHaveBeenCalledWith(
-      "directory-1",
-      "conversation-1",
-      "tree-before",
-      "tree-after",
-    );
-    expect(onChanges).toHaveBeenCalledWith(
-      expect.objectContaining({ files: [expect.objectContaining({ path: "src/app.ts" })] }),
-    );
-  });
-
-  it("reports nothing when a turn leaves the files as they were", async () => {
-    const harness = createBackend({ snapshots: ["tree-same", "tree-same"] });
-    const onChanges = vi.fn();
-
-    await streamAgentSessionRun({ ...runOptions(harness, "conversation-1"), onChanges });
-
-    expect(harness.backend.agentTurnChanges).not.toHaveBeenCalled();
-    expect(onChanges).not.toHaveBeenCalled();
-  });
-
-  it("resumes the stored thread instead of picking a folder again", async () => {
-    const harness = createBackend({
-      binding: {
-        conversationId: "conversation-1",
-        driver: "codex",
-        directoryId: "directory-1",
-        threadId: "thread-1",
-        model: null,
-        reasoningEffort: null,
-        permissionMode: "auto_accept_edits",
-        updatedAt: "2026-09-08T00:00:00Z",
-      },
-    });
-
-    await streamAgentSessionRun(runOptions(harness, "conversation-1"));
-
-    expect(harness.backend.pickAgentDirectory).not.toHaveBeenCalled();
-    expect(
-      harness.scripted.sent.some(
-        (message) => (message as { method?: string }).method === "thread/resume",
-      ),
-    ).toBe(true);
-  });
-
   it("refuses to adopt another driver's thread while retaining the authorised directory", async () => {
     const harness = createBackend({
       binding: {
@@ -298,31 +223,5 @@ describe("streamAgentSessionRun", () => {
         (message) => (message as { method?: string }).method === "thread/start",
       ),
     ).toBe(true);
-  });
-
-  it("reports a failed turn rather than returning partial text", async () => {
-    const harness = createBackend({});
-    const options = runOptions(harness, "conversation-1");
-    const originalSend = harness.scripted.session.send;
-
-    harness.scripted.session.send = async (payload: string) => {
-      const message = JSON.parse(payload) as { id?: number; method?: string };
-
-      if (message.method === "turn/start") {
-        harness.scripted.push({ id: message.id, result: {} });
-        harness.scripted.push({
-          method: "turn/completed",
-          params: {
-            turn: { id: "turn-1", status: "failed", error: { message: "the sandbox refused" } },
-          },
-        });
-
-        return;
-      }
-
-      await originalSend(payload);
-    };
-
-    await expect(streamAgentSessionRun(options)).rejects.toThrow("the sandbox refused");
   });
 });

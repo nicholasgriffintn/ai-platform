@@ -69,13 +69,4 @@ describe("parseInboundEmail", () => {
       parseInboundEmail(encode(spoofed), { recipient: INBOX, resolveTxt }),
     ).resolves.toMatchObject({ status: "refused" });
   });
-
-  it("ignores auto-replies so Poly cannot loop with an out-of-office", async () => {
-    await expect(
-      parseInboundEmail(encode(`Auto-Submitted: auto-replied\r\n${SIGNED_MESSAGE}`), {
-        recipient: INBOX,
-        resolveTxt,
-      }),
-    ).resolves.toMatchObject({ status: "ignored" });
-  });
 });

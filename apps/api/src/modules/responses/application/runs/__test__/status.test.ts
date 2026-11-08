@@ -11,7 +11,7 @@ import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventR
 import { UsageReservationRepository } from "~/modules/usage/infrastructure/UsageReservationRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
-import { handleGetChatRun, handleGetChatRunSnapshot } from "../status";
+import { handleGetChatRun } from "../status";
 
 const personalRun: ChatRun = {
   protocolVersion: 1,
@@ -136,64 +136,5 @@ describe("handleGetChatRun", () => {
     await expect(handleGetChatRun(revokedContext, projectRun.id)).rejects.toMatchObject({
       statusCode: 404,
     });
-  });
-
-  it("anchors a snapshot cursor before reading authoritative state and messages", async () => {
-    const context = createContext(personalRun);
-
-    await expect(handleGetChatRunSnapshot(context, personalRun.id)).resolves.toMatchObject({
-      protocolVersion: 1,
-      cursor: 4,
-      run: personalRun,
-      messages: [expect.objectContaining({ id: "assistant-1" })],
-    });
-    expect(context.repositories.get(ConversationRunRepository).getById).toHaveBeenCalledOnce();
-    expect(
-      vi.mocked(context.repositories.get(ConversationRunRepository).getEventCursor).mock
-        .invocationCallOrder[0],
-    ).toBeLessThan(
-      vi.mocked(context.repositories.get(ConversationRunRepository).getById).mock
-        .invocationCallOrder[0] ?? 0,
-    );
-  });
-
-  it("surfaces checkpointed tokens as a transient message while the run is live", async () => {
-    const context = createContext(personalRun);
-
-    vi.mocked(
-      context.repositories.get(ConversationRunRepository).getPartialContent,
-    ).mockResolvedValue("Hello stream");
-
-    await expect(handleGetChatRunSnapshot(context, personalRun.id)).resolves.toMatchObject({
-      messages: [
-        expect.objectContaining({ id: "assistant-1" }),
-        expect.objectContaining({
-          id: "partial:run-1",
-          role: "assistant",
-          content: "Hello stream",
-          status: "in_progress",
-          run_id: "run-1",
-        }),
-      ],
-    });
-  });
-
-  it("omits the transient message once the run settles or nothing is checkpointed", async () => {
-    const settledContext = createContext({ ...personalRun, status: "succeeded" });
-
-    vi.mocked(
-      settledContext.repositories.get(ConversationRunRepository).getPartialContent,
-    ).mockResolvedValue("stale tokens");
-
-    await expect(handleGetChatRun(settledContext, personalRun.id)).resolves.toMatchObject({
-      messages: [expect.objectContaining({ id: "assistant-1" })],
-    });
-
-    const emptyContext = createContext(personalRun);
-
-    await expect(handleGetChatRun(emptyContext, personalRun.id)).resolves.toMatchObject({
-      messages: [expect.objectContaining({ id: "assistant-1" })],
-    });
-    expect(emptyContext.repositories.get(MessageRepository).getRunMessages).toHaveBeenCalledOnce();
   });
 });

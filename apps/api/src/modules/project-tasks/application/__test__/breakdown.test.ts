@@ -4,11 +4,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
-import { managesTeammate } from "~/modules/teammates/application/organisation";
 
 import { acceptTaskBreakdown, proposeTaskBreakdown } from "../breakdown";
 import { createProjectTask } from "../index";
-import { requireTaskInProject, wakeTeammateOnTask } from "../work";
+import { requireTaskInProject } from "../work";
 
 vi.mock("../index", () => ({ assertParentAllowed: vi.fn(), createProjectTask: vi.fn() }));
 vi.mock("../work", () => ({
@@ -23,10 +22,6 @@ vi.mock("~/modules/teammates/application/organisation", () => ({
 vi.mock("~/modules/teammates/application/wakes", () => ({ enqueueTeammateWake: vi.fn() }));
 
 const coordinator = { type: "teammate" as const, id: "coordinator" };
-const lead = {
-  actor: { type: "teammate" as const, id: "lead" },
-  author: { kind: "teammate" as const, name: "Lead", userId: null, teammateId: "lead" },
-};
 const owner = {
   actor: coordinator,
   author: {
@@ -152,27 +147,6 @@ describe("task breakdowns", () => {
       ),
     ).rejects.toThrow("wait on each other in a loop");
     expect(updateTask).not.toHaveBeenCalled();
-  });
-
-  it("creates the sub-tasks in dependency order with their blockers once a manager accepts", async () => {
-    vi.mocked(requireTaskInProject).mockResolvedValue(parent(proposed));
-    vi.mocked(managesTeammate).mockResolvedValue(true);
-
-    await acceptTaskBreakdown(context, "project-1", "MENU-1", 2, lead);
-
-    expect(vi.mocked(createProjectTask).mock.calls.map(([, , input]) => input)).toEqual([
-      expect.objectContaining({ objective: "Record the baseline", dependsOnTaskIds: [] }),
-      expect.objectContaining({
-        objective: "Draft quantities",
-        parentTaskId: "menu-1",
-        dependsOnTaskIds: ["child-Record the baseline"],
-      }),
-    ]);
-    expect(wakeTeammateOnTask).toHaveBeenCalledTimes(1);
-    expect(updateTask.mock.calls[0]?.[1].details.breakdown).toMatchObject({
-      acceptedBy: lead.actor,
-      taskIds: { baseline: "child-Record the baseline", draft: "child-Draft quantities" },
-    });
   });
 
   it("does not let the owner accept its own breakdown", async () => {

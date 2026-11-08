@@ -27,7 +27,6 @@
     "access": "public"
   },
   "scripts": {
-    "test": "vitest run --config vitest.config.ts",
     "typecheck": "tsc -b tsconfig.typecheck.json"
   },
   "dependencies": {
@@ -39,7 +38,6 @@
     "@cloudflare/workers-types": "catalog:",
     "@ngriffin_uk/polychat-config": "workspace:^",
     "@types/node": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   }
 }

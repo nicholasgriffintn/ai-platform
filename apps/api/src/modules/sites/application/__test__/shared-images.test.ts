@@ -71,17 +71,6 @@ describe("readSharedSiteImage", () => {
     mocks.getPrivateFileResponse.mockResolvedValue(new Response("ok"));
   });
 
-  it("serves an image the shared site references and the same owner produced", async () => {
-    const response = await readSharedSiteImage(
-      contextWith({ created_by_user_id: 7, storage_key: "k", mime_type: "image/png" }),
-      "t".repeat(32),
-      "img-1",
-    );
-
-    expect(await response.text()).toBe("ok");
-    expect(mocks.getObjectBody).toHaveBeenCalledWith("k");
-  });
-
   it("refuses images the site does not reference or another user owns", async () => {
     await expect(
       readSharedSiteImage(

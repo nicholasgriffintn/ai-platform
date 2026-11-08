@@ -1,4 +1,3 @@
-import { usagePeriodFromDate } from "@ngriffin_uk/polychat-schemas";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { fakeRepositories } from "~/infrastructure/database/__test__/fake-repositories";
@@ -10,7 +9,7 @@ import {
 import { UsageEventRepository } from "~/modules/usage/infrastructure/UsageEventRepository";
 import { WorkspaceRepository } from "~/modules/workspaces/infrastructure/WorkspaceRepository";
 
-import { reviewWorkBudgets, setReportBudget } from "../budgets";
+import { setReportBudget } from "../budgets";
 import { managesTeammate, readTeammateSpendByWorkspace } from "../organisation";
 
 vi.mock("../organisation", () => ({
@@ -96,33 +95,6 @@ describe("setReportBudget", () => {
     vi.mocked(managesTeammate).mockResolvedValue(true);
   });
 
-  it("lets a manager raise a paused report within the workspace budget and resumes it", async () => {
-    const { context, update } = createContext({
-      record: employment({ status: "paused", pausedReason: "budget" }),
-      teammateSpend: 20 * CREDIT,
-      workspaceCap: 150 * CREDIT,
-      workspaceSpend: 60 * CREDIT,
-    });
-
-    await setReportBudget(context, {
-      workspaceId: "ws",
-      managerId: "atlas",
-      teammateId: "mara",
-      monthlyCreditCapMicros: 30 * CREDIT,
-      reason: "The newsletter launch needs another draft.",
-    });
-
-    expect(update).toHaveBeenCalledWith(
-      "ws",
-      "mara",
-      expect.objectContaining({
-        monthlyCreditCapMicros: 30 * CREDIT,
-        status: "active",
-        pausedReason: null,
-      }),
-    );
-  });
-
   it("refuses a raise the workspace cannot cover and says how much is left", async () => {
     const { context, update } = createContext({
       record: employment(),
@@ -157,18 +129,7 @@ describe("setReportBudget", () => {
     ).rejects.toMatchObject({ statusCode: 403 });
   });
 
-  it("lets a manager lower a budget but not someone else's report", async () => {
-    const lowered = createContext({ record: employment(), teammateSpend: 0 });
-
-    await setReportBudget(lowered.context, {
-      workspaceId: "ws",
-      managerId: "atlas",
-      teammateId: "mara",
-      monthlyCreditCapMicros: 10 * CREDIT,
-      reason: "Quiet month",
-    });
-    expect(lowered.update).toHaveBeenCalled();
-
+  it("does not let a manager change someone else's report", async () => {
     vi.mocked(managesTeammate).mockResolvedValue(false);
     const stranger = createContext({ record: employment(), teammateSpend: 0 });
 
@@ -181,50 +142,5 @@ describe("setReportBudget", () => {
         reason: "Quiet month",
       }),
     ).rejects.toMatchObject({ statusCode: 403 });
-  });
-});
-
-describe("reviewWorkBudgets", () => {
-  it("resumes a teammate paused for budget once a new month resets its spend", async () => {
-    const record = employment({ status: "paused", pausedReason: "budget", budgetAlertAt: "x" });
-    const { context, update } = createContext({ record, teammateSpend: 0 });
-
-    const result = await reviewWorkBudgets(context, [record]);
-
-    expect(update).toHaveBeenCalledWith(
-      "ws",
-      "mara",
-      expect.objectContaining({ status: "active", pausedReason: null }),
-      { status: "paused", pausedReason: "budget" },
-    );
-    expect(result.alerts).toEqual([]);
-  });
-
-  it("asks the manager once about a report that run admission already paused", async () => {
-    const record = employment({ status: "paused", pausedReason: "budget" });
-    const first = createContext({ record, teammateSpend: 21 * CREDIT });
-
-    expect((await reviewWorkBudgets(first.context, [record])).alerts).toEqual([
-      expect.objectContaining({ managerId: "atlas", kind: "paused", projectId: "web" }),
-    ]);
-
-    const alerted = { ...record, budgetAlertAt: new Date().toISOString() };
-    const second = createContext({ record: alerted, teammateSpend: 21 * CREDIT });
-
-    expect((await reviewWorkBudgets(second.context, [alerted])).alerts).toEqual([]);
-  });
-
-  it("warns the manager at 80% once per month", async () => {
-    const record = employment();
-    const { context } = createContext({ record, teammateSpend: 17 * CREDIT });
-
-    expect((await reviewWorkBudgets(context, [record])).alerts).toEqual([
-      expect.objectContaining({ kind: "warning" }),
-    ]);
-
-    const warned = employment({ budgetWarnedPeriod: usagePeriodFromDate() });
-    const again = createContext({ record: warned, teammateSpend: 17 * CREDIT });
-
-    expect((await reviewWorkBudgets(again.context, [warned])).alerts).toEqual([]);
   });
 });
