@@ -205,7 +205,7 @@
           "video",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "December 17, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
@@ -349,7 +349,7 @@
       "matchingModel": "gpt-5.1",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00107,
         "costPer1kOutputTokens": 0.0085
@@ -606,7 +606,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
@@ -803,7 +803,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004,
@@ -909,7 +909,7 @@
       "model": "gemini-flash/gemini-3-6-flash",
       "matchingModel": "gemini-3.6-flash",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.0075,
@@ -962,7 +962,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,

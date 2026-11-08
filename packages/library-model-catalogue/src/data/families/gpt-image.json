@@ -115,7 +115,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1187,
+              "value": 1188,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11
@@ -194,9 +194,26 @@
             "image"
           ]
         },
+        "reliability": 4,
         "releaseDate": "November 4, 2026",
         "supportsResponseFormat": false,
-        "supportsTemperature": true
+        "supportsTemperature": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1228,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 12
+            }
+          ]
+        }
       }
     },
     "gpt-image-2-6-sunburst": {
@@ -212,9 +229,26 @@
             "image"
           ]
         },
+        "reliability": 5,
         "releaseDate": "November 4, 2026",
         "supportsResponseFormat": false,
-        "supportsTemperature": true
+        "supportsTemperature": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1259,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 15
+            }
+          ]
+        }
       }
     }
   }

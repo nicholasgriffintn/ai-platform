@@ -560,10 +560,32 @@
             "audio"
           ]
         },
+        "strengths": [
+          "audio",
+          "creative"
+        ],
+        "contextComplexity": 2,
+        "reliability": 5,
         "releaseDate": "September 23, 2026",
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1258,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 13
+            }
+          ]
+        }
       }
     },
     "gemini-3-8-flash-tts": {
@@ -580,10 +602,32 @@
             "audio"
           ]
         },
+        "strengths": [
+          "audio",
+          "creative"
+        ],
+        "contextComplexity": 2,
+        "reliability": 5,
         "releaseDate": "September 23, 2026",
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1282,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 13
+            }
+          ]
+        }
       }
     },
     "gemini-3-8-live": {
@@ -1093,6 +1137,15 @@
             "image"
           ]
         },
+        "strengths": [
+          "image",
+          "creative",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 4,
         "releaseDate": "October 6, 2026",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -1101,6 +1154,22 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1176,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 12
+            }
+          ]
         }
       }
     },
