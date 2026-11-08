@@ -41,7 +41,9 @@ import {
 } from "~/modules/discover/domain/research";
 import { findDiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
 import { keepUsedDiscoverDocuments } from "~/modules/discover/domain/signal-selection";
+import { foldIntoStoryCard } from "~/modules/discover/domain/story-intake";
 import { DiscoverSeenRepository } from "~/modules/discover/infrastructure/DiscoverSeenRepository";
+import { listStoryIdsByUrl } from "~/modules/stories/application/read-models";
 
 import { listDiscoverArticleSources } from "./articles";
 import { listRecentDiscoverEditions } from "./editions";
@@ -185,6 +187,11 @@ export async function collectDiscoverLiveCandidates(
     saved,
     work,
   });
+  const storyIds = await listStoryIdsByUrl(
+    context.env,
+    chosen.flatMap(({ card }) => (card.kind === "read" ? [card.url] : [])),
+  );
+  const storyLeads = new Map<string, number>();
 
   for (const { card, editionId } of ranked) {
     const key = discoverCardIdentity(card);
@@ -194,13 +201,23 @@ export async function collectDiscoverLiveCandidates(
     }
 
     seen.add(key);
+    const storyId = card.kind === "read" ? storyIds.get(card.url) : undefined;
+    const lead = storyId === undefined ? undefined : storyLeads.get(storyId);
+    const leadCandidate = lead === undefined ? undefined : candidates[lead];
+
+    if (lead !== undefined && leadCandidate?.card.kind === "read" && card.kind === "read") {
+      candidates[lead] = { ...leadCandidate, card: foldIntoStoryCard(leadCandidate.card, card) };
+      continue;
+    }
+
     const id = `discover_item_${(await sha256Hex(`${user.id}:${key}`)).slice(0, 32)}`;
     const source = metadata.get(key);
     const publishedAt =
       source?.publishedAt && Number.isFinite(Date.parse(source.publishedAt))
         ? new Date(source.publishedAt).toISOString()
         : null;
-    const attached = attachDiscoverArticles([card], articleSources)[0] ?? card;
+    const filed = attachDiscoverArticles([card], articleSources)[0] ?? card;
+    const attached = storyId && filed.kind === "read" ? { ...filed, storyId } : filed;
 
     const observedAt =
       source?.observedAt ??
@@ -220,6 +237,10 @@ export async function collectDiscoverLiveCandidates(
       publishedAt,
       observedAt,
     });
+
+    if (storyId) {
+      storyLeads.set(storyId, candidates.length - 1);
+    }
   }
 
   return candidates;

@@ -251,6 +251,7 @@ export const discoverCardSchema = z.discriminatedUnion("kind", [
       .min(1)
       .optional()
       .describe("The filed copy of the page in the Discover notebook, when it was read."),
+    storyId: z.string().min(1).optional().describe("The shared story this article belongs to."),
     imageUrl: externalHttpUrlSchema.optional(),
     discussionUrl: externalHttpUrlSchema.optional(),
     alsoIn: z

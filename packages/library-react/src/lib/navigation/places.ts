@@ -21,6 +21,18 @@ export const PET_SETTINGS_PATH = `${PROFILE_PATH}?tab=pets`;
 
 export const DISCOVER_PATH = "/";
 
+export const STORY_PATH_PREFIX = "/discover/stories";
+
+export function getStoryPath(storyId: string): string {
+  return `${STORY_PATH_PREFIX}/${encodeURIComponent(storyId)}`;
+}
+
+export const ENTITY_PATH_PREFIX = "/discover/entities";
+
+export function getStoryEntityPath(entityId: string): string {
+  return `${ENTITY_PATH_PREFIX}/${encodeURIComponent(entityId)}`;
+}
+
 export const TOUR_PATH = "/tour";
 
 export interface PlacePaths {
@@ -89,7 +101,11 @@ export function getActivePlace(pathname: string): ProductPlace | undefined {
     return "you";
   }
 
-  if (pathname === DISCOVER_PATH) {
+  if (
+    pathname === DISCOVER_PATH ||
+    pathname.startsWith(`${STORY_PATH_PREFIX}/`) ||
+    pathname.startsWith(`${ENTITY_PATH_PREFIX}/`)
+  ) {
     return "discover";
   }
 

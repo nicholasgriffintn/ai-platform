@@ -5,6 +5,7 @@ export * from "./analytics.js";
 export * from "./sentry.js";
 export * from "./agentApprovalStore.js";
 export * from "./discover.js";
+export * from "./stories.js";
 export * from "./flags.js";
 export * from "./model-choices.js";
 export * from "./age-gate.js";

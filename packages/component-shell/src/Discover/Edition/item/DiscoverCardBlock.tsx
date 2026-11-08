@@ -1,8 +1,10 @@
 import { buttonClassName, Pet } from "@ngriffin_uk/polychat-component-ui";
+import { getStoryPath } from "@ngriffin_uk/polychat-library-react";
 import type { DiscoverCard } from "@ngriffin_uk/polychat-schemas";
 import { isHttpUrl, normaliseComparableText } from "@ngriffin_uk/polychat-utility-core";
 import { ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
+import { Link } from "react-router";
 
 import { SourceListenById } from "../../../Files/Viewer/SourceListen.js";
 import {
@@ -185,6 +187,14 @@ export function DiscoverCardBlock({
             Read the discussion
             <ArrowUpRight size={14} aria-hidden />
           </DiscoverHref>
+        ) : null}
+        {card.kind === "read" && card.storyId ? (
+          <Link
+            to={getStoryPath(card.storyId)}
+            className={buttonClassName({ variant: "secondary", size: "sm" })}
+          >
+            Full story
+          </Link>
         ) : null}
         <DiscoverFollowButton card={card} feedback={feedback} />
       </div>

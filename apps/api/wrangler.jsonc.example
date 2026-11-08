@@ -78,6 +78,16 @@
       "binding": "WATCHING_VECTORS",
       "index_name": "polychat-film-and-tv",
       "remote": true
+    },
+    {
+      "binding": "DISCOVER_ARTICLE_VECTORS",
+      "index_name": "polychat-discover-articles",
+      "remote": true
+    },
+    {
+      "binding": "DISCOVER_STORY_VECTORS",
+      "index_name": "polychat-discover-stories",
+      "remote": true
     }
   ],
   "send_email": [

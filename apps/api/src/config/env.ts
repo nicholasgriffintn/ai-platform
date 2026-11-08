@@ -131,6 +131,8 @@ export type IEnv = {
   KINOCHECK_API_KEY?: string;
   TRAKT_CLIENT_ID?: string;
   WATCHING_VECTORS?: Vectorize;
+  DISCOVER_ARTICLE_VECTORS?: Vectorize;
+  DISCOVER_STORY_VECTORS?: Vectorize;
   PERPLEXITY_API_KEY?: string;
   BROWSER_RENDERING_API_KEY?: string;
   GITHUB_CLIENT_ID?: string;

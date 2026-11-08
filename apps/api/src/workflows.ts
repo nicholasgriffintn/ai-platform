@@ -27,6 +27,7 @@ import { registerRecipesQueue } from "~/modules/recipes/application/queue/regist
 import { registerResponsesQueue } from "~/modules/responses/application/queue/register";
 import { registerSandboxQueue } from "~/modules/sandbox/application/queue/register";
 import { registerSourcesQueue } from "~/modules/sources/application/queue/register";
+import { registerStoriesQueue } from "~/modules/stories/application/queue/register";
 import { registerSubscriptionQueue } from "~/modules/subscription/application/queue/register";
 import { registerTaskNotificationsQueue } from "~/modules/task-notifications/application/queue/register";
 import { registerTeammatesQueue } from "~/modules/teammates/application/queue/register";
@@ -43,6 +44,7 @@ registerSourcesQueue(workflows);
 registerKnowledgeQueue(workflows);
 registerNotebooksQueue(workflows);
 registerDiscoverQueue(workflows);
+registerStoriesQueue(workflows);
 registerQueueMaintenance(workflows);
 registerTaskNotificationsQueue(workflows);
 registerResponsesQueue(workflows);
