@@ -10,7 +10,6 @@ import {
   listModelInvocableSkills,
   readStoredInvokedSkillId,
   resolveInvokedSkill,
-  withInvokedSkill,
   withInvokedSkillOption,
 } from "../invocation";
 import { listPerMessageSkillCandidates } from "../per-message";
