@@ -65,3 +65,30 @@ export function buildRepeatedToolCallMessage(functionName: string, attempts: num
 
   return `"${functionName}" has already run ${occurrences} in this response with these exact arguments, so running it again returns nothing new. Its result is already in this conversation: use that, call a different tool, or answer the user now.`;
 }
+
+export function checkToolCallTurnBudget(
+  ledger: ToolCallLedger,
+  functionName: string,
+  limit: number | undefined,
+): { allowed: boolean; claim: () => void } {
+  const used = ledger.get(functionName) ?? 0;
+
+  if (limit !== undefined && used >= Math.max(1, limit)) {
+    return { allowed: false, claim: () => undefined };
+  }
+
+  return {
+    allowed: true,
+    claim: () => {
+      if (limit !== undefined) {
+        ledger.set(functionName, (ledger.get(functionName) ?? 0) + 1);
+      }
+    },
+  };
+}
+
+export function buildToolTurnLimitMessage(functionName: string, limit: number): string {
+  const allowance = limit === 1 ? "once" : `${limit} times`;
+
+  return `"${functionName}" can run ${allowance} per response and that allowance is used up. Work from the results you already have and answer the user now.`;
+}

@@ -56,6 +56,7 @@ export interface ToolDefinition<
   permissions?: string[];
   normaliseInput?: (input: unknown) => unknown;
   maxIdenticalCalls?: number;
+  maxCallsPerTurn?: number;
   companionTools?: readonly string[];
   requiredEnv?: readonly string[];
   system?: boolean;

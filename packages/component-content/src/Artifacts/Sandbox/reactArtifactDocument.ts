@@ -1,10 +1,4 @@
-export const ARTIFACT_SCRIPT_SOURCES = {
-  react: "https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js",
-  reactDom:
-    "https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js",
-  propTypes: "https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js",
-  recharts: "https://cdnjs.cloudflare.com/ajax/libs/recharts/2.15.0/Recharts.min.js",
-} as const;
+import { ARTIFACT_SCRIPT_SOURCES } from "@ngriffin_uk/polychat-utility-core";
 
 const BASE_STYLES = `
 body {

@@ -19,7 +19,9 @@ import {
 } from "~/modules/responses/application/engine/tools/artifact-markup";
 import {
   buildRepeatedToolCallMessage,
+  buildToolTurnLimitMessage,
   checkToolCallRepeat,
+  checkToolCallTurnBudget,
   type ToolCallLedger,
 } from "~/modules/responses/application/engine/tools/call-ledger";
 import { canActivateOnDemand } from "~/modules/responses/application/engine/tools/capability-activation";
@@ -36,6 +38,7 @@ import {
   getFunctionToolCatalogue,
   resolveFunctionTool,
   resolveToolRepeatLimit,
+  resolveToolTurnLimit,
   validateFunctionArgs,
 } from "~/modules/tools/application/catalogue";
 import {
@@ -160,6 +163,7 @@ export const handleToolCalls = async (
     const functionName = toolCall.function?.name || toolCall.name || "unknown";
     let recordToolCallAttempt: (() => void) | undefined;
     let recordDeterministicFailure: (() => void) | undefined;
+    let claimTurnBudget: (() => void) | undefined;
 
     logger.info(`Tool call: ${functionName}`);
 
@@ -257,23 +261,33 @@ export const handleToolCalls = async (
           toolCall.function?.arguments ?? toolCall.arguments,
           resolveToolRepeatLimit(functionName),
         );
+        const turnLimit = resolveToolTurnLimit(functionName);
+        const turnBudget = checkToolCallTurnBudget(options.callLedger, functionName, turnLimit);
+        const refusal = repeat.repeated
+          ? {
+              code: "REPEATED_TOOL_CALL",
+              message: buildRepeatedToolCallMessage(functionName, repeat.attempts),
+            }
+          : !turnBudget.allowed && turnLimit !== undefined
+            ? {
+                code: "TOOL_TURN_LIMIT",
+                message: buildToolTurnLimitMessage(functionName, turnLimit),
+              }
+            : null;
 
-        if (repeat.repeated) {
-          logger.warn(`Tool "${functionName}" repeated with identical arguments`, {
+        if (refusal) {
+          logger.warn(`Tool "${functionName}" refused by the call ledger`, {
+            code: refusal.code,
             attempts: repeat.attempts,
           });
-          const repeatError = formatToolErrorResponse(
-            functionName,
-            buildRepeatedToolCallMessage(functionName, repeat.attempts),
-            "REPEATED_TOOL_CALL",
-          );
+          const refusalError = formatToolErrorResponse(functionName, refusal.message, refusal.code);
 
           await recordToolResult({
             role: "tool",
             name: functionName,
-            content: repeatError.content,
+            content: refusalError.content,
             status: "error",
-            data: { ...repeatError.data, errorCode: "REPEATED_TOOL_CALL" },
+            data: { ...refusalError.data, errorCode: refusal.code },
             log_id: modelResponseLogId || "",
             id: generateId(),
             tool_call_id: toolCall.id,
@@ -287,6 +301,7 @@ export const handleToolCalls = async (
 
         recordToolCallAttempt = repeat.record;
         recordDeterministicFailure = repeat.recordDeterministicFailure;
+        claimTurnBudget = turnBudget.claim;
       }
 
       const rawArgs = toolCall.function?.arguments || toolCall.arguments || "{}";
@@ -401,6 +416,7 @@ export const handleToolCalls = async (
         }
       }
 
+      claimTurnBudget?.();
       await options?.onToolExecutionStart?.({
         id: toolCall.id,
         name: functionName,
