@@ -150,6 +150,7 @@ jobs:
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY_PATH: ${{ runner.temp }}/AuthKey.p8
+        shell: bash
         run: >
           pnpm --filter @assistant/desktop tauri build
           ${{ matrix.tauri-args }}
@@ -157,6 +158,7 @@ jobs:
 
       - name: Build the unsigned desktop bundle
         if: ${{ !inputs.signed }}
+        shell: bash
         run: >
           pnpm --filter @assistant/desktop tauri build
           ${{ matrix.tauri-args }}

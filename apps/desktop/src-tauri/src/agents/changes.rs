@@ -81,7 +81,9 @@ fn git_with(directory: &Path, args: &[&str], envs: &[(&str, &str)]) -> Result<St
         });
     }
 
-    Ok(String::from_utf8_lossy(&output.stdout).trim_end().to_string())
+    Ok(String::from_utf8_lossy(&output.stdout)
+        .trim_end()
+        .to_string())
 }
 
 fn git(directory: &Path, args: &[&str]) -> Result<String, String> {
@@ -109,7 +111,13 @@ pub fn is_object_id(value: &str) -> bool {
 pub fn conversation_slug(conversation_id: &str) -> Option<String> {
     let slug: String = conversation_id
         .chars()
-        .map(|c| if c.is_ascii_alphanumeric() || c == '-' { c } else { '-' })
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '-' {
+                c
+            } else {
+                '-'
+            }
+        })
         .collect::<String>()
         .trim_matches('-')
         .chars()
@@ -125,7 +133,13 @@ fn repository_key(repository: &Path) -> String {
         .and_then(|name| name.to_str())
         .unwrap_or("repository")
         .chars()
-        .map(|c| if c.is_ascii_alphanumeric() || c == '-' { c } else { '-' })
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '-' {
+                c
+            } else {
+                '-'
+            }
+        })
         .take(40)
         .collect();
     let hash = repository
@@ -143,9 +157,12 @@ pub fn worktree_path(root: &Path, repository: &Path, slug: &str) -> PathBuf {
 }
 
 fn branch_config(repository: &Path, branch: &str, key: &str) -> Option<String> {
-    git(repository, &["config", "--get", &format!("branch.{branch}.{key}")])
-        .ok()
-        .filter(|value| !value.is_empty())
+    git(
+        repository,
+        &["config", "--get", &format!("branch.{branch}.{key}")],
+    )
+    .ok()
+    .filter(|value| !value.is_empty())
 }
 
 fn read_worktree(repository: &Path, path: &Path, branch: &str) -> Result<WorktreeInfo, String> {
@@ -197,7 +214,12 @@ pub fn ensure_worktree(
 
     let branch_exists = git(
         repository,
-        &["rev-parse", "--verify", "--quiet", &format!("refs/heads/{branch}")],
+        &[
+            "rev-parse",
+            "--verify",
+            "--quiet",
+            &format!("refs/heads/{branch}"),
+        ],
     )
     .is_ok();
 
@@ -213,7 +235,11 @@ pub fn ensure_worktree(
         )?;
         git(
             repository,
-            &["config", &format!("branch.{branch}.polychatbase"), &base_commit],
+            &[
+                "config",
+                &format!("branch.{branch}.polychatbase"),
+                &base_commit,
+            ],
         )?;
 
         if let Some(base_branch) = base_branch.filter(|value| !value.is_empty()) {
@@ -232,15 +258,16 @@ pub fn ensure_worktree(
 }
 
 pub fn snapshot(directory: &Path) -> Result<String, String> {
-    let index = git(directory, &["rev-parse", "--path-format=absolute", "--git-path", "index"])?;
+    let index = git(
+        directory,
+        &["rev-parse", "--path-format=absolute", "--git-path", "index"],
+    )?;
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|duration| duration.as_nanos())
         .unwrap_or_default();
-    let scratch = std::env::temp_dir().join(format!(
-        "polychat-index-{}-{nanos}",
-        std::process::id()
-    ));
+    let scratch =
+        std::env::temp_dir().join(format!("polychat-index-{}-{nanos}", std::process::id()));
 
     if Path::new(&index).exists() {
         std::fs::copy(&index, &scratch)
@@ -350,7 +377,14 @@ pub fn diff(directory: &Path, from: &str, to: &str) -> Result<TurnChanges, Strin
 
     let (patch, truncated) = truncate_patch(git(
         directory,
-        &["diff", "--no-color", "--no-ext-diff", "--find-renames", from, to],
+        &[
+            "diff",
+            "--no-color",
+            "--no-ext-diff",
+            "--find-renames",
+            from,
+            to,
+        ],
     )?);
 
     Ok(TurnChanges {
@@ -390,10 +424,7 @@ pub fn github_repository(remote: &str) -> Option<String> {
     let owner = parts.next().filter(|part| !part.is_empty())?;
     let name = parts.next().filter(|part| !part.is_empty())?;
 
-    parts
-        .next()
-        .is_none()
-        .then(|| format!("{owner}/{name}"))
+    parts.next().is_none().then(|| format!("{owner}/{name}"))
 }
 
 pub fn branch_changes(repository: &Path, worktree: &WorktreeInfo) -> Result<BranchChanges, String> {
@@ -408,14 +439,23 @@ pub fn branch_changes(repository: &Path, worktree: &WorktreeInfo) -> Result<Bran
         .ok_or_else(|| "This conversation did not start from a branch.".to_string())?;
     let remote_base = format!("refs/remotes/origin/{base_branch}");
 
-    git(repository, &["rev-parse", "--verify", "--quiet", &remote_base])
-        .map_err(|_| format!("origin/{base_branch} is not available locally. Fetch it first."))?;
+    git(
+        repository,
+        &["rev-parse", "--verify", "--quiet", &remote_base],
+    )
+    .map_err(|_| format!("origin/{base_branch} is not available locally. Fetch it first."))?;
 
     let head_commit = git(directory, &["rev-parse", "HEAD"])?;
     let base_commit = git(directory, &["merge-base", "HEAD", &remote_base])?;
     let changed = git(
         directory,
-        &["diff", "--name-status", "--no-renames", &base_commit, &head_commit],
+        &[
+            "diff",
+            "--name-status",
+            "--no-renames",
+            &base_commit,
+            &head_commit,
+        ],
     )?;
     let entries = parse_name_status(&changed);
 
@@ -449,7 +489,10 @@ pub fn branch_changes(repository: &Path, worktree: &WorktreeInfo) -> Result<Bran
                 .to_string();
 
             if mode != "100644" && mode != "100755" {
-                return Err(format!("{} is a link or submodule, which can't be sent.", entry.path));
+                return Err(format!(
+                    "{} is a link or submodule, which can't be sent.",
+                    entry.path
+                ));
             }
 
             let content = git_bytes(directory, &["cat-file", "blob", &object])?;
