@@ -25,6 +25,7 @@ import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 
 import { BaseRepository } from "~/infrastructure/database/BaseRepository";
 import type { ConversationRunEventRow, ConversationRunRow } from "~/infrastructure/database/schema";
+import { buildEnqueueRunEffectStatement } from "~/modules/conversations/infrastructure/run-effect-statements";
 import {
   buildInsertRunEventStatement,
   buildInsertRetryRunEventStatement,
@@ -65,6 +66,7 @@ export interface AcceptRunCommandParams {
   delegationId?: string;
   resolvedConfiguration?: Record<string, unknown> | null;
   spendCapCreditMicros?: number | null;
+  executionOwnerToken?: string;
 }
 
 export interface AcceptRunCancellationParams {
@@ -662,10 +664,25 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
              WHERE id = ? AND attempt = ? AND status = 'running'
            )`,
       ).bind(params.runId, params.interactionId, params.runId, nextAttempt);
+      const approvalEffect =
+        current.status === "awaiting_approval" && params.executionOwnerToken
+          ? [
+              buildEnqueueRunEffectStatement(this.env.DB, {
+                kind: "approval_respond",
+                runId: params.runId,
+                runAttempt: nextAttempt,
+                now,
+                actorUserId: params.userId,
+                ownerToken: params.executionOwnerToken,
+                whenRunStatusIn: ["running"],
+              }),
+            ]
+          : [];
       const [commandResult, runResult] = await this.env.DB.batch([
         commandStatement,
         runStatement,
         consumeAnswerStatement,
+        ...approvalEffect,
         buildInsertRunEventStatement(this.env.DB, event, { ignoreSequenceConflict: true }),
         buildTrimRunEventsStatement(this.env.DB, params.runId),
       ]);
@@ -822,6 +839,22 @@ export class ConversationRunRepository extends BaseRepository<Pick<IEnv, "DB">> 
           params.runId,
           params.expectedAttempt,
         ),
+        buildEnqueueRunEffectStatement(this.env.DB, {
+          kind: "cancel_cleanup",
+          runId: params.runId,
+          runAttempt: params.expectedAttempt,
+          now,
+          actorUserId: params.userId,
+          whenRunStatusIn: ["cancelling", "cancelled"],
+        }),
+        buildEnqueueRunEffectStatement(this.env.DB, {
+          kind: "release_follow_up",
+          runId: params.runId,
+          runAttempt: params.expectedAttempt,
+          now,
+          actorUserId: params.userId,
+          whenRunStatusIn: ["cancelled"],
+        }),
         buildTrimRunEventsStatement(this.env.DB, params.runId),
       ];
 

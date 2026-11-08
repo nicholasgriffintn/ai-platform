@@ -1,15 +1,26 @@
+import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
   THREAD_LEASE_DURATION_MS,
+  threadEffectsDrainRequestSchema,
   threadLeaseAcquireRequestSchema,
   threadLeaseOwnerRequestSchema,
   type ThreadOperation,
 } from "@ngriffin_uk/polychat-schemas";
+import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 import { safeParseJson } from "@ngriffin_uk/polychat-utility-server/json";
 import { Agent } from "agents";
 
+import {
+  drainRunEffects,
+  type RunEffectDrainResult,
+} from "~/modules/responses/application/runs/effects";
 import type { IEnv } from "~/types";
 
+const logger = getLogger({ prefix: "services/conversations/coordinator/object" });
+
 const STATUS_KEY = "status";
+const EFFECTS_CONVERSATION_KEY = "effects_conversation_id";
+const EFFECTS_FAILURE_RETRY_MS = 5_000;
 
 interface StoredStatus {
   status: "idle" | "running";
@@ -35,8 +46,64 @@ const IDLE_STATUS: StoredStatus = {
 };
 
 export class ConversationCoordinator extends Agent<IEnv> {
+  private effectsDrain: Promise<unknown> = Promise.resolve();
+
   private get storage(): DurableObjectStorage {
     return this.ctx.storage;
+  }
+
+  private async scheduleEffectsAlarm(at: number): Promise<void> {
+    const scheduled = await this.storage.getAlarm();
+
+    if (scheduled === null || scheduled > at) {
+      await this.storage.setAlarm(Math.max(at, Date.now()));
+    }
+  }
+
+  private drainEffects(conversationId: string): Promise<RunEffectDrainResult> {
+    const drain = this.effectsDrain.then(async () => {
+      try {
+        const status = await this.getStatus();
+        const result = await drainRunEffects({
+          env: this.env,
+          conversationId,
+          liveOwnerToken: status.status === "running" ? (status.ownerToken ?? null) : null,
+        });
+
+        if (result.nextAvailableAt) {
+          await this.scheduleEffectsAlarm(Date.parse(result.nextAvailableAt));
+        }
+
+        return result;
+      } catch (error) {
+        await this.scheduleEffectsAlarm(Date.now() + EFFECTS_FAILURE_RETRY_MS);
+        throw error;
+      }
+    });
+
+    this.effectsDrain = drain.catch(() => undefined);
+
+    return drain;
+  }
+
+  private async bindEffectsConversation(conversationId: string): Promise<boolean> {
+    const bound = await this.storage.get<string>(EFFECTS_CONVERSATION_KEY);
+
+    if (bound) {
+      return bound === conversationId;
+    }
+
+    await this.storage.put(EFFECTS_CONVERSATION_KEY, conversationId);
+
+    return true;
+  }
+
+  async alarm(): Promise<void> {
+    const conversationId = await this.storage.get<string>(EFFECTS_CONVERSATION_KEY);
+
+    if (conversationId) {
+      await this.drainEffects(conversationId);
+    }
   }
 
   private async getStatus(): Promise<StoredStatus> {
@@ -69,6 +136,27 @@ export class ConversationCoordinator extends Agent<IEnv> {
 
     if (pathname === "/status" && request.method === "POST") {
       return Response.json(this.publicStatus(await this.getStatus()));
+    }
+
+    if (pathname === "/effects/drain" && request.method === "POST") {
+      const parsed = threadEffectsDrainRequestSchema.safeParse(
+        await request.json().catch(() => null),
+      );
+
+      if (!parsed.success || !(await this.bindEffectsConversation(parsed.data.conversationId))) {
+        return Response.json({ error: "Invalid effects drain request" }, { status: 400 });
+      }
+
+      try {
+        return Response.json(await this.drainEffects(parsed.data.conversationId));
+      } catch (error) {
+        logger.error("Run effects drain failed", {
+          conversationId: parsed.data.conversationId,
+          error: getErrorMessage(error),
+        });
+
+        return Response.json({ error: "Run effects drain failed" }, { status: 503 });
+      }
     }
 
     if (pathname === "/acquire" && request.method === "POST") {

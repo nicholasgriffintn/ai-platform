@@ -83,6 +83,29 @@ describe("ConversationRunRepository", () => {
     ).rejects.toMatchObject({ statusCode: 409 });
   });
 
+  it("rejects a command id reused on another conversation", async () => {
+    const { batch, first, repository } = createRepository();
+
+    first.mockResolvedValueOnce({
+      ...runRow,
+      command_id: "command-1",
+      command_kind: "turn",
+      input_digest: "digest-1",
+      accepted_at: "2026-09-05T01:00:00.000Z",
+    });
+
+    await expect(
+      repository.acceptCommand({
+        commandId: "command-1",
+        conversationId: "conversation-2",
+        digest: "digest-1",
+        kind: "turn",
+        userId: 42,
+      }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(batch).not.toHaveBeenCalled();
+  });
+
   it("only records a resume command while the expected waiting attempt still owns the run", async () => {
     const { batch, first, prepare, repository } = createRepository();
 
@@ -171,7 +194,7 @@ describe("ConversationRunRepository", () => {
   });
 
   it("accepts a cancellation command and fences it to the observed attempt", async () => {
-    const { batch, first, repository } = createRepository();
+    const { batch, bind, first, prepare, repository } = createRepository();
 
     first
       .mockResolvedValueOnce(null)
@@ -192,7 +215,15 @@ describe("ConversationRunRepository", () => {
 
     expect(receipt.kind).toBe("cancel");
     expect(receipt.run.status).toBe("cancelling");
-    expect(batch.mock.calls[0]?.[0]).toHaveLength(5);
+    expect(batch.mock.calls[0]?.[0]).toHaveLength(7);
+
+    const effectKinds = prepare.mock.calls.flatMap(([query], index) =>
+      String(query).includes("INSERT OR IGNORE INTO conversation_run_effect")
+        ? [bind.mock.calls[index]?.[1]]
+        : [],
+    );
+
+    expect(effectKinds).toEqual(["cancel_cleanup", "release_follow_up"]);
   });
 
   it("rejects a new cancellation command after the run has reached a terminal state", async () => {

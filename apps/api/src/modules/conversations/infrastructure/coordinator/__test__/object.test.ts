@@ -9,6 +9,10 @@ vi.mock("agents", () => ({
   },
 }));
 
+const effects = vi.hoisted(() => ({ drainRunEffects: vi.fn() }));
+
+vi.mock("~/modules/responses/application/runs/effects", () => effects);
+
 const { ConversationCoordinator } = await import("../object");
 
 /**
@@ -19,6 +23,7 @@ const { ConversationCoordinator } = await import("../object");
 function createCoordinator() {
   const data = new Map<string, unknown>();
   let lock = Promise.resolve();
+  let alarm: number | null = null;
 
   const ctx = {
     storage: {
@@ -30,6 +35,10 @@ function createCoordinator() {
       put: async (key: string, value: unknown) => {
         await Promise.resolve();
         data.set(key, value);
+      },
+      getAlarm: async () => alarm,
+      setAlarm: async (at: number) => {
+        alarm = at;
       },
     },
     blockConcurrencyWhile: <T>(task: () => Promise<T>): Promise<T> => {
@@ -44,7 +53,18 @@ function createCoordinator() {
     },
   };
 
-  return new ConversationCoordinator(ctx as never, {} as never);
+  return Object.assign(new ConversationCoordinator(ctx as never, {} as never), {
+    scheduledAlarm: () => alarm,
+  });
+}
+
+function drain(coordinator: any, conversationId = "conversation-1") {
+  return coordinator.fetch(
+    new Request("https://coordinator/effects/drain", {
+      method: "POST",
+      body: JSON.stringify({ conversationId }),
+    }),
+  );
 }
 
 function acquire(coordinator: any, kind: string, ownerToken = "owner-1") {
@@ -257,5 +277,32 @@ describe("ConversationCoordinator", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("drains effects against the live lease owner and schedules the next retry", async () => {
+    const coordinator = createCoordinator();
+    const nextAvailableAt = new Date(Date.now() + 60_000).toISOString();
+
+    effects.drainRunEffects.mockResolvedValueOnce({ executed: 1, nextAvailableAt });
+    await acquire(coordinator, "user_message", "owner-1");
+
+    const response = await drain(coordinator);
+
+    expect(response.status).toBe(200);
+    expect(effects.drainRunEffects).toHaveBeenCalledWith(
+      expect.objectContaining({ conversationId: "conversation-1", liveOwnerToken: "owner-1" }),
+    );
+    expect(coordinator.scheduledAlarm()).toBe(Date.parse(nextAvailableAt));
+  });
+
+  it("refuses to drain another conversation's effects", async () => {
+    const coordinator = createCoordinator();
+
+    effects.drainRunEffects.mockReset();
+    effects.drainRunEffects.mockResolvedValue({ executed: 0, nextAvailableAt: null });
+    await drain(coordinator, "conversation-1");
+
+    expect((await drain(coordinator, "conversation-2")).status).toBe(400);
+    expect(effects.drainRunEffects).toHaveBeenCalledTimes(1);
   });
 });

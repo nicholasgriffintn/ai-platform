@@ -25,12 +25,13 @@ import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 
 import { queueFollowUp, releaseQueuedFollowUpAfterRun } from "../follow-up-queue";
 
-function queuedTask(id: string) {
+function queuedTask(id: string, conversationId = "conversation-1") {
   return {
     id,
+    user_id: 7,
     created_at: "2026-10-08T10:00:00.000Z",
     task_data: {
-      conversationId: "conversation-1",
+      conversationId,
       message: { role: "user", content: "And then?" },
       request: {},
     },
@@ -47,6 +48,7 @@ function createContext(options: {
       Array.from({ length: options.waiting ?? 0 }, (_, index) => queuedTask(`queued-${index}`)),
     ),
     createTask: vi.fn(async (params: { id: string }) => queuedTask(params.id)),
+    getTaskById: vi.fn(async (_id: string): Promise<ReturnType<typeof queuedTask> | null> => null),
     releaseNextSuspendedTaskForConversation: vi.fn(async () => queuedTask("queued-0")),
   };
 
@@ -104,6 +106,28 @@ describe("queueFollowUp", () => {
     await queueFollowUp(context, "conversation-1", input);
 
     expect(mocks.dispatchTask).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns the message a repeated key already queued without queueing it again", async () => {
+    const { context, tasks } = createContext({ latestStatus: "running" });
+    const keyed = { ...input, idempotency_key: "queue-1" };
+    const first = await queueFollowUp(context, "conversation-1", keyed);
+
+    tasks.getTaskById.mockResolvedValueOnce(queuedTask(first.id));
+
+    await expect(queueFollowUp(context, "conversation-1", keyed)).resolves.toEqual(first);
+    expect(tasks.createTask).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects a repeated key for another conversation", async () => {
+    const { context, tasks } = createContext({ latestStatus: "running" });
+
+    tasks.getTaskById.mockResolvedValueOnce(queuedTask("queued-1", "conversation-2"));
+
+    await expect(
+      queueFollowUp(context, "conversation-1", { ...input, idempotency_key: "queue-1" }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(tasks.createTask).not.toHaveBeenCalled();
   });
 
   it("refuses more than the queue limit", async () => {

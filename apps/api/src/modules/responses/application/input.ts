@@ -101,6 +101,7 @@ export async function submitResponseInput({
     const queued = await queueFollowUp(context, run.conversationId, {
       message: queuedChatUserMessageSchema.parse(itemToMessage(stored)),
       request: {},
+      ...(request.idempotency_key ? { idempotency_key: request.idempotency_key } : {}),
     });
 
     return { object: "queued_item", queued };
