@@ -24,6 +24,8 @@ catalogs:
     react: ">=19"
     react-dom: ">=19"
 
+nodeOptions: --no-experimental-webstorage
+
 allowBuilds:
   "@google/genai": false
   "@mongodb-js/zstd": false

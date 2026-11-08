@@ -1,6 +1,6 @@
 # Local development
 
-Use Node.js 24 and the pnpm version pinned in the root `package.json`. Run commands from the repository root.
+Use Node.js 26 (pinned in `.node-version`) and the pnpm version pinned in the root `package.json`. Run commands from the repository root.
 
 1. Install dependencies with `pnpm install`.
 2. Create `apps/api/.dev.vars` from `apps/api/.dev.vars.example` if it does not already exist. Keep the tracked Wrangler manifest; do not replace it with the example manifest.

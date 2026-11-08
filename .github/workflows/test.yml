@@ -27,10 +27,10 @@ jobs:
       - uses: actions/checkout@v7
       - name: Install pnpm
         uses: pnpm/action-setup@v6
-      - name: Use Node.js 24.x
+      - name: Use Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 24.x
+          node-version-file: .node-version
           cache: "pnpm"
       - name: Restore the Vite+ task cache
         uses: ./.github/actions/vite-task-cache
@@ -53,10 +53,10 @@ jobs:
       - uses: actions/checkout@v7
       - name: Install pnpm
         uses: pnpm/action-setup@v6
-      - name: Use Node.js 24.x
+      - name: Use Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 24.x
+          node-version-file: .node-version
           cache: "pnpm"
       - name: Restore the Vite+ task cache
         uses: ./.github/actions/vite-task-cache
@@ -66,7 +66,7 @@ jobs:
         run: pnpm vitest run --shard=${{ matrix.shard }}/4
 
   test:
-    name: test (24.x)
+    name: test
     if: always()
     needs: [checks, unit]
     runs-on: ubuntu-latest
@@ -118,10 +118,10 @@ jobs:
       - uses: actions/checkout@v7
       - name: Install pnpm
         uses: pnpm/action-setup@v6
-      - name: Use Node.js 24.x
+      - name: Use Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 24.x
+          node-version-file: .node-version
           cache: "pnpm"
       - name: Restore the Vite+ task cache
         uses: ./.github/actions/vite-task-cache

@@ -22,7 +22,7 @@ Use the family description when a model has no narrower description. Keep provid
 
 ## Sync and reproduce
 
-Build the catalogue package before running the sync tooling in `packages/library-model-sync`. Run the existing Node 24 project toolchain from the repository root:
+Build the catalogue package before running the sync tooling in `packages/library-model-sync`. Run the existing Node 26 project toolchain from the repository root:
 
 ```sh
 pnpm exec vp run --filter=@ngriffin_uk/polychat-library-model-catalogue build

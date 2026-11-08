@@ -12,17 +12,14 @@ permissions:
 jobs:
   sync-models-dev:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [24.x]
     steps:
       - uses: actions/checkout@v7
       - name: Install pnpm
         uses: pnpm/action-setup@v6
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version-file: .node-version
           cache: "pnpm"
       - name: Restore the Vite+ task cache
         uses: ./.github/actions/vite-task-cache
