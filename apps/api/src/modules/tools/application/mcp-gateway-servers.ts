@@ -134,7 +134,11 @@ export function openMcpGatewaySession(
 
       return {
         server,
-        client: new McpHttpClient({ url: server.url, headers: access.headers }),
+        client: new McpHttpClient({
+          url: server.url,
+          headers: access.headers,
+          allowLoopback: server.linkedAccount === "pashi" && context.env.ENV === "development",
+        }),
         allowedTools: access.allowedTools ? new Set(access.allowedTools) : null,
       };
     },
