@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { defineResource } from "~/infrastructure/http/resource";
 import { allowRestrictedPaths } from "~/middleware/auth";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { defineConversationSecretRequests } from "~/modules/secret-requests/api/routes";
 
 import { defineConversationArtifactBindings } from "./artifact-bindings";
 import { defineConversationGoalAndDelegations } from "./goals-and-delegations";
@@ -33,6 +34,7 @@ defineResource(app, { idParam: "conversation_id", tags: ["conversations"] }, (co
   defineConversationGoalAndDelegations(conversations);
   defineSavedItems(conversations);
   defineConversationHandles(conversations);
+  defineConversationSecretRequests(conversations);
 });
 
 export default app;

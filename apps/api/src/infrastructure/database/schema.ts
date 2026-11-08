@@ -341,6 +341,34 @@ export const outputReview = sqliteTable(
 
 export type OutputReviewRow = typeof outputReview.$inferSelect;
 
+export const secretReference = sqliteTable(
+  "secret_reference",
+  {
+    id: text().primaryKey(),
+    reference_hash: text().notNull(),
+    salt: text().notNull(),
+    user_id: integer()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    project_id: text(),
+    conversation_id: text().notNull(),
+    interaction_id: text().notNull(),
+    label: text().notNull(),
+    destination: text(),
+    sealed_value: text().notNull(),
+    created_at: text().notNull(),
+    expires_at: text().notNull(),
+  },
+  (table) => ({
+    hashIdx: uniqueIndex("secret_reference_hash_idx").on(table.reference_hash),
+    interactionIdx: uniqueIndex("secret_reference_interaction_idx").on(
+      table.conversation_id,
+      table.interaction_id,
+    ),
+    userExpiresIdx: index("secret_reference_user_expires_idx").on(table.user_id, table.expires_at),
+  }),
+);
+
 export const routineOutcome = sqliteTable(
   "routine_outcome",
   {

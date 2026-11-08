@@ -46,6 +46,7 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   },
   request_approval: { renderer: "approval_request", icon: "alert-triangle" },
   ask_user: { renderer: "user_question", icon: "lightbulb" },
+  request_secret: { renderer: "secret_request", icon: "key" },
   create_image: { icon: "image" },
   capture_screenshot: { icon: "image" },
   create_video: { icon: "video" },

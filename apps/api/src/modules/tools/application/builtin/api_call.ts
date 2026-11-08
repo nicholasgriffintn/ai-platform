@@ -1,4 +1,6 @@
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
+import { redactSandboxValue } from "@ngriffin_uk/polychat-library-sandbox";
+import { AssistantError } from "@ngriffin_uk/polychat-utility-server/errors";
 import {
   UnsafeUrlError,
   fetchFollowingSafeRedirects,
@@ -10,6 +12,7 @@ import { coerceStringRecord, isPlainObject } from "@ngriffin_uk/polychat-utility
 import { appendQueryParams, isPrivateHostname } from "@ngriffin_uk/polychat-utility-server/urls";
 
 import { isAbortError } from "~/infrastructure/abort";
+import { applySecretHeader } from "~/modules/secret-requests/application/secret-auth";
 import type { ApiToolDefinition } from "~/types/functions";
 
 import { call_api as call_apiDescriptor } from "./definitions/api_call";
@@ -21,7 +24,7 @@ const MAX_TIMEOUT_MS = 60000;
 
 export const call_api: ApiToolDefinition = {
   ...call_apiDescriptor,
-  execute: async (args, _context) => {
+  execute: async (args, context) => {
     const urlInput = typeof args?.url === "string" ? args.url.trim() : "";
 
     if (!urlInput) {
@@ -144,6 +147,22 @@ export const call_api: ApiToolDefinition = {
       }
     }
 
+    let secrets: string[];
+
+    try {
+      secrets = await applySecretHeader({ context, auth: args?.auth, url, headers });
+    } catch (error) {
+      return {
+        status: "error",
+        name: "call_api",
+        content:
+          error instanceof AssistantError
+            ? error.message
+            : "The secret reference could not be used",
+        data: { url: url.toString(), method },
+      };
+    }
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -160,7 +179,11 @@ export const call_api: ApiToolDefinition = {
         fetchOptions.body = body;
       }
 
-      response = await fetchFollowingSafeRedirects(url, fetchOptions);
+      response = await fetchFollowingSafeRedirects(
+        url,
+        fetchOptions,
+        secrets.length > 0 ? 0 : undefined,
+      );
     } catch (error) {
       if (error instanceof UnsafeUrlError) {
         return {
@@ -204,20 +227,22 @@ export const call_api: ApiToolDefinition = {
           ? "API request completed"
           : `API request failed: ${response.status} ${response.statusText}`;
 
+    const data = {
+      url: url.toString(),
+      method,
+      ok: response.ok,
+      status: response.status,
+      statusText: response.statusText,
+      headers: headersToRecord(response.headers),
+      body: responseBody,
+      body_format: bodyFormat,
+    };
+
     return {
       status: response.ok ? "success" : "error",
       name: "call_api",
       content: statusMessage,
-      data: {
-        url: url.toString(),
-        method,
-        ok: response.ok,
-        status: response.status,
-        statusText: response.statusText,
-        headers: headersToRecord(response.headers),
-        body: responseBody,
-        body_format: bodyFormat,
-      },
+      data: secrets.length > 0 ? redactSandboxValue(data, secrets) : data,
     };
   },
 };

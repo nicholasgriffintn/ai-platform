@@ -91,6 +91,7 @@ export * from "./machine-runs.js";
 
 export { machineRunClient } from "./machine-run-service.js";
 export * from "./browser-sessions.js";
+export * from "./secret-requests.js";
 export * from "./environments.js";
 export * from "./channels.js";
 export * from "./document-collaboration.js";

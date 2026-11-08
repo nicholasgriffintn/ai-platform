@@ -33,6 +33,7 @@ export const ACCOUNT_EXPORT_LEFT_OUT = [
       "provider_connection",
       "provider_session",
       "scoped_configuration",
+      "secret_reference",
       "session",
       "user_credential",
       "webhook_endpoint",

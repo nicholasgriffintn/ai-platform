@@ -30,6 +30,7 @@ export const responseViewNames = [
   "saved_note",
   "second_opinion",
   "second_opinion_turn",
+  "secret_request",
   "site_preview",
   "user_question",
   "weather",

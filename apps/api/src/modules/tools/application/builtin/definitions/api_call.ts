@@ -4,7 +4,15 @@ import { normaliseHttpOrigin } from "@ngriffin_uk/polychat-utility-server/urls";
 
 import type { FunctionToolDescriptor } from "~/types/functions";
 
-function callApiEffectClass(input: { request_type?: string; method?: string }): ToolEffectClass {
+function callApiEffectClass(input: {
+  request_type?: string;
+  method?: string;
+  auth?: unknown;
+}): ToolEffectClass {
+  if (input.auth) {
+    return "credential";
+  }
+
   if (input.request_type === "graphql") {
     return "write";
   }
@@ -24,6 +32,7 @@ export const call_api: FunctionToolDescriptor = {
     "Calls a REST or GraphQL API and returns a structured response. Use this when you need to fetch data from external APIs.",
   type: "normal",
   permissions: ["network", "write"],
+  companionTools: ["request_secret"],
   effects: {
     effectClass: callApiEffectClass,
     destination: (input) => normaliseHttpOrigin(input.url) ?? undefined,
@@ -35,6 +44,7 @@ export const call_api: FunctionToolDescriptor = {
       operation: "call_api",
       requestType: input.request_type ?? "rest",
       method: input.method ?? "GET",
+      ...(input.auth ? { credential: "secret reference" } : {}),
       ...(destination ? { destination } : {}),
     };
   },
@@ -60,7 +70,28 @@ export const call_api: FunctionToolDescriptor = {
       headers: {
         type: "object",
         description:
-          'Optional headers to include in the request (example: {"Authorization":"Bearer <token>","Accept":"application/json"})',
+          'Optional non-secret headers to include in the request (example: {"Accept":"application/json"}). Use auth for API keys and tokens.',
+      },
+      auth: {
+        type: "object",
+        description:
+          "Send a secret the user provided through request_secret. The reference is used once, only for the destination the user approved, and redirects are not followed. Never put raw secrets in headers.",
+        properties: {
+          secret_ref: {
+            type: "string",
+            description: "The secret-ref:<hex> reference from the user's reply.",
+          },
+          header: {
+            type: "string",
+            description: "Header that carries the secret (defaults to Authorization).",
+          },
+          scheme: {
+            type: "string",
+            enum: ["bearer", "raw"],
+            description: "bearer sends 'Bearer <secret>'; raw sends the secret as is.",
+          },
+        },
+        required: ["secret_ref"],
       },
       query_params: {
         type: "object",

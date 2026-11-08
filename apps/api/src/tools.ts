@@ -61,6 +61,7 @@ import { trigger_recipe } from "~/modules/recipes/application/tools/trigger_reci
 import { use_recipe_connector } from "~/modules/recipes/application/tools/use_recipe_connector";
 import { research } from "~/modules/research/application/tools/research";
 import { run_sandbox_task } from "~/modules/sandbox/application/tools/sandbox";
+import { request_secret } from "~/modules/secret-requests/application/tools/request_secret";
 import { build_site } from "~/modules/sites/application/tools/build_site";
 import { load_skill } from "~/modules/skills/application/tools/load_skill";
 import { save_skill } from "~/modules/skills/application/tools/save_skill";
@@ -168,6 +169,7 @@ registerTools([
   get_on_this_day,
   request_approval,
   ask_user,
+  request_secret,
   run_sandbox_task,
   run_prediction,
   run_code,

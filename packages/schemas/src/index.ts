@@ -246,6 +246,7 @@ export * from "./agent-output.js";
 export * from "./ollama.js";
 
 export * from "./browser-sessions.js";
+export * from "./secret-requests.js";
 export * from "./computer-use.js";
 export * from "./openai-agent-sessions.js";
 export * from "./project-task-integrations.js";

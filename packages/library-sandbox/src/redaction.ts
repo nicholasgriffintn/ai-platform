@@ -1,3 +1,5 @@
+import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+
 export function redactSandboxOutput(value: string, secrets: readonly string[] = []): string {
   return secrets
     .filter((secret) => secret.length > 0)
@@ -10,6 +12,27 @@ export function redactSandboxOutput(value: string, secrets: readonly string[] = 
       "$1[redacted]",
     )
     .replace(/:\/\/([^/@:\s]+):([^/@\s]+)@/g, "://[redacted]@");
+}
+
+export function redactSandboxValue(value: unknown, secrets: readonly string[] = []): unknown {
+  if (typeof value === "string") {
+    return redactSandboxOutput(value, secrets);
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => redactSandboxValue(item, secrets));
+  }
+
+  if (isRecord(value)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [
+        redactSandboxOutput(key, secrets),
+        redactSandboxValue(item, secrets),
+      ]),
+    );
+  }
+
+  return value;
 }
 
 export function redactSandboxResult(
