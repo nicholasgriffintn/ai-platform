@@ -4,6 +4,7 @@ export const DEVICE_SYNC_PROTOCOL_VERSION = 1 as const;
 export const DEVICE_SYNC_EVENT_RETENTION_LIMIT = 500 as const;
 export const DEVICE_SYNC_GRANT_TTL_SECONDS = 60 as const;
 export const DEVICE_SYNC_MAX_TOPICS_PER_CONNECTION = 32 as const;
+export const DEVICE_SYNC_ACTIVITY_LEASE_TTL_MS = 45_000 as const;
 
 export const deviceSyncTopicKindSchema = z.enum([
   "user",
@@ -96,6 +97,7 @@ export const deviceSyncPublishSchema = z.object({
   type: deviceSyncEventTypeSchema,
   originDeviceId: z.string().min(1).nullable().optional(),
   data: z.record(z.string(), z.unknown()).default({}),
+  watchedScope: deviceSyncTopicSchema.optional(),
 });
 
 export type DeviceSyncPublish = z.infer<typeof deviceSyncPublishSchema>;
@@ -127,6 +129,10 @@ export const deviceSyncClientMessageSchema = z.discriminatedUnion("type", [
     topic: deviceSyncTopicSchema.nullable(),
   }),
   z.object({ type: z.literal("ping") }),
+  z.object({
+    type: z.literal("activity"),
+    scopes: z.array(deviceSyncTopicSchema).max(DEVICE_SYNC_MAX_TOPICS_PER_CONNECTION),
+  }),
 ]);
 
 export type DeviceSyncClientMessage = z.infer<typeof deviceSyncClientMessageSchema>;

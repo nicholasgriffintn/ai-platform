@@ -10,7 +10,10 @@ import { forgetDeviceActivity } from "~/modules/discover/application/device-docu
 import type { StoredMachine } from "~/modules/machines/infrastructure/MachineRepository";
 import { MachineRepository } from "~/modules/machines/infrastructure/MachineRepository";
 import { releaseMachineWaitingTasks } from "~/modules/project-tasks/application/runner";
-import { publishMachineEvent } from "~/modules/sync/application/conversation-events";
+import {
+  publishMachineEvent,
+  publishMachineHeartbeat,
+} from "~/modules/sync/application/conversation-events";
 import { getRequestUserSettings } from "~/modules/user/application/request-settings";
 
 function toMachineRecord(machine: StoredMachine, now: number): MachineRecord {
@@ -52,9 +55,11 @@ export async function heartbeatMachine(
   );
 
   await machines.upsert(id, heartbeat);
-  publishMachineEvent(context, id, heartbeat.machineId);
 
-  if (!previous || !isMachineOnline(previous, now)) {
+  if (previous && isMachineOnline(previous, now)) {
+    publishMachineHeartbeat(context, id, heartbeat.machineId);
+  } else {
+    publishMachineEvent(context, id, heartbeat.machineId);
     await releaseMachineWaitingTasks(context, id);
   }
 

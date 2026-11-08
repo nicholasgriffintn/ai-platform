@@ -71,9 +71,10 @@ enum DeviceSyncClientMessage: Encodable {
     case unsubscribe([String])
     case focus(String?)
     case ping
+    case activity([String])
 
     private enum CodingKeys: String, CodingKey {
-        case type, topics, topic
+        case type, topics, topic, scopes
     }
 
     func encode(to encoder: Encoder) throws {
@@ -90,6 +91,9 @@ enum DeviceSyncClientMessage: Encodable {
             try container.encode(topic, forKey: .topic)
         case .ping:
             try container.encode("ping", forKey: .type)
+        case .activity(let scopes):
+            try container.encode("activity", forKey: .type)
+            try container.encode(scopes, forKey: .scopes)
         }
     }
 }
