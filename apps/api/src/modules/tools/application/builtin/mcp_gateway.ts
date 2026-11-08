@@ -8,11 +8,7 @@ import {
 } from "@ngriffin_uk/polychat-ai-integrations";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import { requireToolEffects, type ToolEffectHints } from "@ngriffin_uk/polychat-library-tools";
-import {
-  MCP_APP_RENDERER,
-  modelAcceptsImageInput,
-  type McpAppView,
-} from "@ngriffin_uk/polychat-schemas";
+import { MCP_APP_RENDERER, type McpAppView } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
 import {
   AssistantError,
@@ -24,7 +20,7 @@ import {
   resolveServiceContext,
   type ServiceContext,
 } from "~/infrastructure/context/serviceContext";
-import { findModelConfig } from "~/modules/models/application/resolve";
+import { requestModelReadsImages } from "~/modules/models/application/resolve";
 import {
   findMcpGatewayServer,
   listMcpGatewayTools,
@@ -48,18 +44,6 @@ const MAX_LISTED_TOOLS = 40;
 const MAX_RESULT_CHARS = 16_000;
 const MAX_DESCRIPTION_CHARS = 480;
 const RESULT_IMAGE_OPTIONS = { maxImages: 6, maxImageBytes: 800 * 1024 };
-
-async function activeModelReadsImages(request: IRequest): Promise<boolean> {
-  const model = request.request?.model;
-
-  if (typeof model !== "string" || !model) {
-    return false;
-  }
-
-  return modelAcceptsImageInput(
-    await findModelConfig(model, request.env, request.request?.provider, request.user?.id),
-  );
-}
 
 function resultContent(result: FormattedMcpToolResult): string | MessageContent[] {
   const text = result.truncated ? `${result.text}\n[result truncated]` : result.text;
@@ -251,7 +235,7 @@ export const mcp_call_tool: ApiToolDefinition = {
       const result = formatMcpToolResult(
         callResult,
         MAX_RESULT_CHARS,
-        (await activeModelReadsImages(context.request)) ? RESULT_IMAGE_OPTIONS : undefined,
+        (await requestModelReadsImages(context.request)) ? RESULT_IMAGE_OPTIONS : undefined,
       );
       const app = result.isError
         ? null

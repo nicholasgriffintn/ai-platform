@@ -1,2 +1,1 @@
-export * from "./ReplicateImageProvider.js";
-export * from "./WorkersAiImageProvider.js";
+export * from "./ModelImageProvider.js";

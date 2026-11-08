@@ -5,6 +5,7 @@ import type {
   ContentExtractParams,
   ExtractedContentPayload,
 } from "~/modules/tools/application/retrieval/content-extract-port";
+import { callCloudflareBrowserRendering } from "~/modules/tools/infrastructure/browser-rendering";
 import type { IRequest } from "~/types";
 
 const CLOUDFLARE_TERMINAL_CRAWL_STATUSES = new Set([
@@ -87,40 +88,6 @@ function mapCloudflareResultToRawContent(format: CloudflareFormat, resultPayload
   }
 
   return formatCloudflareValue(payload.data ?? payload.json ?? resultPayload);
-}
-
-async function callCloudflareBrowserRendering({
-  accountId,
-  apiKey,
-  path,
-  body,
-}: {
-  accountId: string;
-  apiKey: string;
-  path: string;
-  body: Record<string, unknown>;
-}): Promise<unknown> {
-  const response = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${accountId}/browser-rendering/${path}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify(body),
-    },
-  );
-
-  if (!response.ok) {
-    throw new Error(await response.text());
-  }
-
-  const json = (await response.json()) as {
-    result?: unknown;
-  };
-
-  return json.result ?? json;
 }
 
 async function fetchCloudflareCrawlStatus({

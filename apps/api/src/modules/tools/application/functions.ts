@@ -49,6 +49,7 @@ const TOOL_PRESENTATIONS: Record<string, ToolPresentation> = {
   request_secret: { renderer: "secret_request", icon: "key" },
   create_image: { icon: "image" },
   capture_screenshot: { icon: "image" },
+  preview_html: { icon: "monitor" },
   create_video: { icon: "video" },
   create_music: { icon: "music" },
   create_speech: { icon: "speech" },

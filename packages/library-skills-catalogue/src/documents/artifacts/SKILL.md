@@ -7,6 +7,7 @@ metadata:
   polychat-display-name: Artifacts
   polychat-category: Output
   polychat-tags: "documents, code, html, svg, design"
+  polychat-suggests-tools: "preview_html"
 ---
 
 # Artifacts
@@ -71,6 +72,8 @@ Each FIND must copy text from the current version exactly and match it once, so 
 ## Sandbox limits
 
 Rendered artifacts — HTML, React, SVG — run in a locked-down iframe. Loading [the artifact types reference](references/types.md) before writing one is required: the constraints there are enforced, and a page that violates them fails silently rather than degrading. In short: no network at runtime, images and fonts must be inlined as data URIs, and the only external script origin is cdnjs.cloudflare.com.
+
+**Preview before presenting.** When `preview_html` is available, call it once with the draft after writing or materially changing an HTML or SVG artifact, fix what it reports, then emit the artifact.
 
 ## Craft
 
