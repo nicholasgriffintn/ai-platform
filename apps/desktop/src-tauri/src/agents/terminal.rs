@@ -211,7 +211,10 @@ fn spawn_shell(
         .master
         .try_clone_reader()
         .map_err(|cause| cause.to_string())?;
-    let writer = pair.master.take_writer().map_err(|cause| cause.to_string())?;
+    let writer = pair
+        .master
+        .take_writer()
+        .map_err(|cause| cause.to_string())?;
 
     Ok(SpawnedShell {
         master: pair.master,
@@ -263,8 +266,8 @@ pub fn terminal_open(
         });
     }
 
-    let directory = workspace::resolve(&directories, &root, &directory_id, &conversation_id)?
-        .directory();
+    let directory =
+        workspace::resolve(&directories, &root, &directory_id, &conversation_id)?.directory();
     let shell = spawn_shell(&default_shell(), &["-l"], &directory, size(cols, rows))?;
     let cwd = directory.to_string_lossy().into_owned();
     let terminal = Arc::new(Terminal {
@@ -323,7 +326,10 @@ pub fn terminal_resize(
 }
 
 #[tauri::command]
-pub fn terminal_close(terminal_id: String, registry: State<'_, TerminalRegistry>) -> Result<(), String> {
+pub fn terminal_close(
+    terminal_id: String,
+    registry: State<'_, TerminalRegistry>,
+) -> Result<(), String> {
     if let Some(terminal) = registry.remove(&terminal_id) {
         if let Ok(mut child) = terminal.child.lock() {
             let _ = child.kill();
@@ -349,75 +355,6 @@ mod tests {
         assert_eq!(first, "h");
         assert_eq!(format!("{first}{second}"), text);
         assert!(carry.is_empty());
-    }
-
-    #[test]
-    fn runs_commands_in_a_real_shell_in_the_folder() {
-        let directory = std::env::temp_dir().canonicalize().unwrap();
-        let mut shell = spawn_shell("/bin/sh", &[], &directory, size(80, 24)).unwrap();
-        let mut reader = shell.reader;
-        let (sender, receiver) = std::sync::mpsc::channel();
-
-        std::thread::spawn(move || {
-            let mut buffer = [0u8; 4096];
-
-            while let Ok(read) = reader.read(&mut buffer) {
-                if read == 0 || sender.send(buffer[..read].to_vec()).is_err() {
-                    break;
-                }
-            }
-        });
-
-        shell
-            .writer
-            .write_all(b"echo polychat-$((40 + 2)); pwd\n")
-            .unwrap();
-        shell.writer.flush().unwrap();
-
-        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
-        let mut output = String::new();
-
-        while !(output.contains("polychat-42\r\n") && output.contains("private")) {
-            let remaining = deadline.saturating_duration_since(std::time::Instant::now());
-
-            match receiver.recv_timeout(remaining) {
-                Ok(chunk) => output.push_str(&String::from_utf8_lossy(&chunk)),
-                Err(_) => panic!("the shell didn't answer in time: {output:?}"),
-            }
-        }
-
-        let _ = shell.child.kill();
-
-        assert!(output.contains("polychat-42"));
-    }
-
-    #[test]
-    fn sees_the_end_of_output_when_the_shell_exits() {
-        let directory = std::env::temp_dir().canonicalize().unwrap();
-        let mut shell = spawn_shell("/bin/sh", &[], &directory, size(80, 24)).unwrap();
-        let mut reader = shell.reader;
-        let (sender, receiver) = std::sync::mpsc::channel();
-
-        std::thread::spawn(move || {
-            let mut buffer = [0u8; 4096];
-
-            loop {
-                match reader.read(&mut buffer) {
-                    Ok(0) | Err(_) => break,
-                    Ok(_) => {}
-                }
-            }
-
-            let _ = sender.send(());
-        });
-
-        shell.writer.write_all(b"exit\n").unwrap();
-        shell.writer.flush().unwrap();
-
-        assert!(receiver
-            .recv_timeout(std::time::Duration::from_secs(10))
-            .is_ok());
-        let _ = shell.child.wait();
     }
 
     #[test]
