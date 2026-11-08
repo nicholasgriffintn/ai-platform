@@ -211,7 +211,10 @@ fn spawn_shell(
         .master
         .try_clone_reader()
         .map_err(|cause| cause.to_string())?;
-    let writer = pair.master.take_writer().map_err(|cause| cause.to_string())?;
+    let writer = pair
+        .master
+        .take_writer()
+        .map_err(|cause| cause.to_string())?;
 
     Ok(SpawnedShell {
         master: pair.master,
@@ -263,8 +266,8 @@ pub fn terminal_open(
         });
     }
 
-    let directory = workspace::resolve(&directories, &root, &directory_id, &conversation_id)?
-        .directory();
+    let directory =
+        workspace::resolve(&directories, &root, &directory_id, &conversation_id)?.directory();
     let shell = spawn_shell(&default_shell(), &["-l"], &directory, size(cols, rows))?;
     let cwd = directory.to_string_lossy().into_owned();
     let terminal = Arc::new(Terminal {
@@ -323,7 +326,10 @@ pub fn terminal_resize(
 }
 
 #[tauri::command]
-pub fn terminal_close(terminal_id: String, registry: State<'_, TerminalRegistry>) -> Result<(), String> {
+pub fn terminal_close(
+    terminal_id: String,
+    registry: State<'_, TerminalRegistry>,
+) -> Result<(), String> {
     if let Some(terminal) = registry.remove(&terminal_id) {
         if let Ok(mut child) = terminal.child.lock() {
             let _ = child.kill();
