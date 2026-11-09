@@ -1,5 +1,32 @@
 # @ngriffin_uk/polychat-library-skills-catalogue
 
+## 0.5.0
+
+### Minor Changes
+
+- 57459ac: Skills now work as slash commands. Type `/` in the composer to see your skills alongside the usual commands, and pick one to apply its full instructions to that message, whether or not the assistant would have chosen it. Search ranks exact names first, then names that start with or contain what you typed, then descriptions.
+
+  Skills can also say who may start them. Turn off **Slash command** to keep a skill out of the composer, or turn on **Only when invoked** so the assistant never picks it by itself, which suits workflows with side effects. Both switches sit under the skill document in the editor, and `SKILL.md` files can set them with the `user-invocable` and `disable-model-invocation` frontmatter fields. When saving a skill from a conversation, the assistant can set them too.
+
+### Patch Changes
+
+- b52cd0d: The assistant now checks HTML and SVG artifacts before showing them. It renders the draft once in an isolated browser under the same sandbox rules as the artifact viewer, sees desktop and mobile screenshots with any console errors, page errors, blocked requests or sideways scrolling, and fixes what it finds before presenting the artifact. Previews are limited to three per response and never load web addresses.
+- Updated dependencies [ce24694]
+- Updated dependencies [765754a]
+- Updated dependencies [73a3a85]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [074e50f]
+- Updated dependencies [074e50f]
+- Updated dependencies [1fcffa3]
+- Updated dependencies [301c306]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [b52cd0d]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [57459ac]
+  - @ngriffin_uk/polychat-schemas@1.18.0
+  - @ngriffin_uk/polychat-utility-core@0.12.0
+
 ## 0.4.7
 
 ### Patch Changes

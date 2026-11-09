@@ -1,5 +1,32 @@
 # @ngriffin_uk/polychat-library-tools
 
+## 0.5.0
+
+### Minor Changes
+
+- b52cd0d: The assistant now checks HTML and SVG artifacts before showing them. It renders the draft once in an isolated browser under the same sandbox rules as the artifact viewer, sees desktop and mobile screenshots with any console errors, page errors, blocked requests or sideways scrolling, and fixes what it finds before presenting the artifact. Previews are limited to three per response and never load web addresses.
+
+### Patch Changes
+
+- d4db04d: Tool definitions sent to models are about 7% smaller. `toToolInputJsonSchema` now drops JSON Schema noise from Zod output, such as safe-integer bounds, `false` and empty defaults, and duplicate union branches, and folds literal unions into a single `enum`. Inputs are still validated against the original Zod schema.
+- Updated dependencies [ce24694]
+- Updated dependencies [765754a]
+- Updated dependencies [73a3a85]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [074e50f]
+- Updated dependencies [074e50f]
+- Updated dependencies [1fcffa3]
+- Updated dependencies [301c306]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [b52cd0d]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [57459ac]
+  - @ngriffin_uk/polychat-schemas@1.18.0
+  - @ngriffin_uk/polychat-utility-core@0.12.0
+  - @ngriffin_uk/polychat-utility-server@0.9.0
+  - @ngriffin_uk/polychat-library-policy@0.6.0
+
 ## 0.4.7
 
 ### Patch Changes

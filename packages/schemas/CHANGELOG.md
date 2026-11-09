@@ -1,5 +1,39 @@
 # @ngriffin_uk/polychat-schemas
 
+## 1.18.0
+
+### Minor Changes
+
+- ce24694: Each app in the catalogue now says how it is laid out and how it runs. An app's `surface` sets whether it opens in the page or as a full workspace, and its `entry` says whether it ships with Polychat or comes from an MCP server you have connected. Every app opens exactly as before.
+- 765754a: Polis, Verbatim, Strudel, Charades, Photo Sorter and Twenty Questions now come from Pashi instead of being built into Polychat. If you have linked Pashi, they appear in your apps and open full-page, with nothing to do. If you have not, sign in to Polychat from pashi.app to link it and they come back. Shared Polis towns now open on pashi.app. In a chat, Poly writes, saves and lists Strudel patterns with Pashi's tools rather than a built-in one, and Pashi's generators and converters are reached the same way, so the Pashi Generator Toolkit recipe has been removed.
+- 73a3a85: Discover editions now show one card per story, like the live feed, with the number of outlets covering it. A topic whose articles mostly belong to one story shows that story's coverage straight away: what the outlets agree and differ on, how each tells it and what is missing. There is no longer a button to compare coverage, because the comparison is kept up to date as new outlets report. Discover can also bring back the earlier story behind something you read recently, as a "then and now" card.
+- f6cde2d: Stories now open inside Discover. Choosing a news card opens the whole story beside your feed: the overview, how it developed, each outlet's angle with who broke it, what outlets agree and differ on, quotes, the people and organisations involved, earlier stories it continues, and your own chats, notebooks and memories that mention them. Ask Poly about the story from the same panel. People and organisations open there too, with the outlets that mention them most and a Follow button. Links to a story, a person or the coverage view open Discover with that item showing.
+
+  A new "This week" card beside your reading leads with the most covered story, then names rising and fading, which topics each outlet covered this week against last week, and stories losing coverage. See all opens the full view with topic share by week and an outlet by topic attention map. Closing a story or card returns you to the same place in your feed.
+
+  Every news category you choose now feeds stories, not only the articles picked for your feed. Related articles join into fewer, fuller stories without broad names like a country pulling unrelated events together. Feed cards show one card per story with its outlet count and overview, and stories with one outlet but several articles get an overview too. Poly can compare how outlets covered a story and follow a person or organisation for you.
+
+- 074e50f: Discover now groups news into stories. When several outlets cover the same event, their articles join one story with a short overview, what the outlets agree and differ on, what is missing and how each outlet tells it. Open a news article in Discover and choose Full story to see it. The feed also shows one card per story, with the other outlets listed under it, instead of repeating the same event several times.
+- 074e50f: Stories in Discover now show quotes, people and what came before. Quotes appear with the speaker, their role and the outlet that carried them, and only when the words appear exactly in the article. People and organisations link to their own pages, which list every story they appear in and what they have said. Before this links a story to earlier coverage of the same subject, including older background. Stories close after five quiet days, and later coverage opens a new story linked to the old one. Poly can now read a story and find related stories when you ask about the news.
+- 1fcffa3: Chatting now needs an account. Polychat-hosted models are part of Pro, and free accounts chat with their own provider keys or on-device models. Voice and semantic search are part of Pro too, and free accounts keep keyword search.
+
+  Models you choose for background work now stay in charge: if they fail, the job fails rather than quietly switching to a platform model. Official benchmarks no longer run on a schedule.
+
+- 301c306: Apps from your MCP servers now open on their own page. When a server you have connected offers a view as an app, it appears in your apps beside Polychat's own and opens full-page, in the same sandbox as views in a chat. It can read through your connection, and anything that would change something is still asked in a chat. A message the app sends lands in a new chat as a draft for you to send. Each app has an on and off switch, and a linked Pashi account shows up as a server automatically.
+- f6cde2d: Apps from your MCP servers now sit in the Apps section of Plugins with Polychat's own apps, using the same card, icon, colour and category, plus a "from Pashi" line so you can see where each one comes from. Every app has an About panel that says when to use it, what it works from and what it leaves behind. You can turn any app on or off from its card or panel. Server apps open at a readable address such as `/chat/apps/pashi/charades`, and older links still work. Servers can describe their apps with a name, category, icon, colour and that same when, uses and produces copy. App views can now start their own background workers and audio worklets, so apps like Polis and Verbatim run inside Polychat, and a view that evaluates code at runtime can ask for that permission for itself.
+- 57459ac: Skills now work as slash commands. Type `/` in the composer to see your skills alongside the usual commands, and pick one to apply its full instructions to that message, whether or not the assistant would have chosen it. Search ranks exact names first, then names that start with or contain what you typed, then descriptions.
+
+  Skills can also say who may start them. Turn off **Slash command** to keep a skill out of the composer, or turn on **Only when invoked** so the assistant never picks it by itself, which suits workflows with side effects. Both switches sit under the skill document in the editor, and `SKILL.md` files can set them with the `user-invocable` and `disable-model-invocation` frontmatter fields. When saving a skill from a conversation, the assistant can set them too.
+
+### Patch Changes
+
+- 9d2d8c3: Refresh the model list against what providers actually serve. Retired and soon-to-retire models are no longer offered, and each one now explains when it goes and what to use instead. Claude Opus 4.5 is available again, and GPT Image 2.6, Gemini Omni 1.2 Flash, Nano Banana 2.1, Gemini 3.8 Flash TTS, Gemini 3.5 Transcribe and Kimi K3.1 Pro on more providers are now available. Free plans now use free models that OpenRouter still offers.
+- 9d2d8c3: Perplexity's Agent API is now available as a provider. Pick Perplexity Agent in the model picker to chat with Sonar and Perplexity-hosted models, plus Claude, GPT, Gemini and Grok models served through Perplexity, using your Perplexity API key.
+- Updated dependencies [f6cde2d]
+- Updated dependencies [074e50f]
+- Updated dependencies [b52cd0d]
+  - @ngriffin_uk/polychat-utility-core@0.12.0
+
 ## 1.17.0
 
 ### Minor Changes

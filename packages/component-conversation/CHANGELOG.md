@@ -1,5 +1,44 @@
 # @ngriffin_uk/polychat-component-conversation
 
+## 2.3.0
+
+### Minor Changes
+
+- 57459ac: Skills now work as slash commands. Type `/` in the composer to see your skills alongside the usual commands, and pick one to apply its full instructions to that message, whether or not the assistant would have chosen it. Search ranks exact names first, then names that start with or contain what you typed, then descriptions.
+
+  Skills can also say who may start them. Turn off **Slash command** to keep a skill out of the composer, or turn on **Only when invoked** so the assistant never picks it by itself, which suits workflows with side effects. Both switches sit under the skill document in the editor, and `SKILL.md` files can set them with the `user-invocable` and `disable-model-invocation` frontmatter fields. When saving a skill from a conversation, the assistant can set them too.
+
+### Patch Changes
+
+- 0618467: Discover now explains Polychat to anyone without an edition of their own. Signed-out visitors see a welcome with a sign-in button, and free accounts see how to add their own keys or move to Pro. The starter edition covers councils, Work, Sites and pets as well, with more ideas to try under For you. The composer now asks signed-out visitors to sign in instead of showing an error, and the bottom of the Discover feed no longer sits under the composer.
+- 9d2d8c3: The model picker now adapts to the space it has, so it stays readable in the chat panel on desktop, and each model shows where it runs and its data location on one line. Tips above the composer now clear as soon as you send a message.
+- Updated dependencies [ce24694]
+- Updated dependencies [765754a]
+- Updated dependencies [73a3a85]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [074e50f]
+- Updated dependencies [074e50f]
+- Updated dependencies [1fcffa3]
+- Updated dependencies [301c306]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [b52cd0d]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [57459ac]
+  - @ngriffin_uk/polychat-schemas@1.18.0
+  - @ngriffin_uk/polychat-library-client@0.16.0
+  - @ngriffin_uk/polychat-component-experiences@0.8.0
+  - @ngriffin_uk/polychat-library-react@0.17.0
+  - @ngriffin_uk/polychat-utility-core@0.12.0
+  - @ngriffin_uk/polychat-component-models@1.3.1
+  - @ngriffin_uk/polychat-component-content@1.3.9
+  - @ngriffin_uk/polychat-library-chat@1.5.0
+  - @ngriffin_uk/polychat-component-ui@0.7.5
+  - @ngriffin_uk/polychat-component-navigation@0.7.2
+  - @ngriffin_uk/polychat-library-realtime@0.4.3
+  - @ngriffin_uk/polychat-utility-react@0.7.5
+
 ## 2.2.7
 
 ### Patch Changes

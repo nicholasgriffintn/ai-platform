@@ -1,5 +1,41 @@
 # @ngriffin_uk/polychat-library-client
 
+## 0.16.0
+
+### Minor Changes
+
+- 765754a: Polis, Verbatim, Strudel, Charades, Photo Sorter and Twenty Questions now come from Pashi instead of being built into Polychat. If you have linked Pashi, they appear in your apps and open full-page, with nothing to do. If you have not, sign in to Polychat from pashi.app to link it and they come back. Shared Polis towns now open on pashi.app. In a chat, Poly writes, saves and lists Strudel patterns with Pashi's tools rather than a built-in one, and Pashi's generators and converters are reached the same way, so the Pashi Generator Toolkit recipe has been removed.
+- 73a3a85: Discover editions now show one card per story, like the live feed, with the number of outlets covering it. A topic whose articles mostly belong to one story shows that story's coverage straight away: what the outlets agree and differ on, how each tells it and what is missing. There is no longer a button to compare coverage, because the comparison is kept up to date as new outlets report. Discover can also bring back the earlier story behind something you read recently, as a "then and now" card.
+- f6cde2d: Stories now open inside Discover. Choosing a news card opens the whole story beside your feed: the overview, how it developed, each outlet's angle with who broke it, what outlets agree and differ on, quotes, the people and organisations involved, earlier stories it continues, and your own chats, notebooks and memories that mention them. Ask Poly about the story from the same panel. People and organisations open there too, with the outlets that mention them most and a Follow button. Links to a story, a person or the coverage view open Discover with that item showing.
+
+  A new "This week" card beside your reading leads with the most covered story, then names rising and fading, which topics each outlet covered this week against last week, and stories losing coverage. See all opens the full view with topic share by week and an outlet by topic attention map. Closing a story or card returns you to the same place in your feed.
+
+  Every news category you choose now feeds stories, not only the articles picked for your feed. Related articles join into fewer, fuller stories without broad names like a country pulling unrelated events together. Feed cards show one card per story with its outlet count and overview, and stories with one outlet but several articles get an overview too. Poly can compare how outlets covered a story and follow a person or organisation for you.
+
+- 074e50f: Discover now groups news into stories. When several outlets cover the same event, their articles join one story with a short overview, what the outlets agree and differ on, what is missing and how each outlet tells it. Open a news article in Discover and choose Full story to see it. The feed also shows one card per story, with the other outlets listed under it, instead of repeating the same event several times.
+- 074e50f: Stories in Discover now show quotes, people and what came before. Quotes appear with the speaker, their role and the outlet that carried them, and only when the words appear exactly in the article. People and organisations link to their own pages, which list every story they appear in and what they have said. Before this links a story to earlier coverage of the same subject, including older background. Stories close after five quiet days, and later coverage opens a new story linked to the old one. Poly can now read a story and find related stories when you ask about the news.
+- f6cde2d: Apps from your MCP servers now sit in the Apps section of Plugins with Polychat's own apps, using the same card, icon, colour and category, plus a "from Pashi" line so you can see where each one comes from. Every app has an About panel that says when to use it, what it works from and what it leaves behind. You can turn any app on or off from its card or panel. Server apps open at a readable address such as `/chat/apps/pashi/charades`, and older links still work. Servers can describe their apps with a name, category, icon, colour and that same when, uses and produces copy. App views can now start their own background workers and audio worklets, so apps like Polis and Verbatim run inside Polychat, and a view that evaluates code at runtime can ask for that permission for itself.
+
+### Patch Changes
+
+- Updated dependencies [ce24694]
+- Updated dependencies [765754a]
+- Updated dependencies [73a3a85]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [074e50f]
+- Updated dependencies [074e50f]
+- Updated dependencies [1fcffa3]
+- Updated dependencies [301c306]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [b52cd0d]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [57459ac]
+  - @ngriffin_uk/polychat-schemas@1.18.0
+  - @ngriffin_uk/polychat-utility-core@0.12.0
+  - @ngriffin_uk/polychat-library-chat@1.5.0
+  - @ngriffin_uk/polychat-library-realtime@0.4.3
+
 ## 0.15.1
 
 ### Patch Changes

@@ -1,5 +1,31 @@
 # @ngriffin_uk/polychat-component-experiences
 
+## 0.8.0
+
+### Minor Changes
+
+- 765754a: Polis, Verbatim, Strudel, Charades, Photo Sorter and Twenty Questions now come from Pashi instead of being built into Polychat. If you have linked Pashi, they appear in your apps and open full-page, with nothing to do. If you have not, sign in to Polychat from pashi.app to link it and they come back. Shared Polis towns now open on pashi.app. In a chat, Poly writes, saves and lists Strudel patterns with Pashi's tools rather than a built-in one, and Pashi's generators and converters are reached the same way, so the Pashi Generator Toolkit recipe has been removed.
+
+### Patch Changes
+
+- Updated dependencies [ce24694]
+- Updated dependencies [765754a]
+- Updated dependencies [73a3a85]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [074e50f]
+- Updated dependencies [074e50f]
+- Updated dependencies [1fcffa3]
+- Updated dependencies [301c306]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [b52cd0d]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [57459ac]
+  - @ngriffin_uk/polychat-schemas@1.18.0
+  - @ngriffin_uk/polychat-utility-core@0.12.0
+  - @ngriffin_uk/polychat-component-content@1.3.9
+  - @ngriffin_uk/polychat-component-ui@0.7.5
+
 ## 0.7.4
 
 ### Patch Changes

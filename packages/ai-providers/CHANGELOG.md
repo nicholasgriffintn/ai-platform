@@ -1,5 +1,37 @@
 # @ngriffin_uk/polychat-ai-providers
 
+## 0.11.0
+
+### Minor Changes
+
+- 9d2d8c3: Perplexity's Agent API is now available as a provider. Pick Perplexity Agent in the model picker to chat with Sonar and Perplexity-hosted models, plus Claude, GPT, Gemini and Grok models served through Perplexity, using your Perplexity API key.
+
+### Patch Changes
+
+- 9d2d8c3: Refresh the model list against what providers actually serve. Retired and soon-to-retire models are no longer offered, and each one now explains when it goes and what to use instead. Claude Opus 4.5 is available again, and GPT Image 2.6, Gemini Omni 1.2 Flash, Nano Banana 2.1, Gemini 3.8 Flash TTS, Gemini 3.5 Transcribe and Kimi K3.1 Pro on more providers are now available. Free plans now use free models that OpenRouter still offers.
+- b1f2dbc: Any picture model you choose for the Painter now draws covers, Discover artwork and images from tools, not only Workers AI and Replicate models. Choosing GPT Image, Gemini image, Grok Imagine or another provider's image model no longer leaves those pictures blank.
+- Updated dependencies [ce24694]
+- Updated dependencies [765754a]
+- Updated dependencies [d4db04d]
+- Updated dependencies [73a3a85]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [074e50f]
+- Updated dependencies [074e50f]
+- Updated dependencies [1fcffa3]
+- Updated dependencies [301c306]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [b52cd0d]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [57459ac]
+  - @ngriffin_uk/polychat-schemas@1.18.0
+  - @ngriffin_uk/polychat-library-tools@0.5.0
+  - @ngriffin_uk/polychat-utility-core@0.12.0
+  - @ngriffin_uk/polychat-utility-server@0.9.0
+  - @ngriffin_uk/polychat-ai-models@0.6.0
+  - @ngriffin_uk/polychat-ai-prompts@0.6.4
+  - @ngriffin_uk/polychat-ai-telemetry@0.4.5
+
 ## 0.10.0
 
 ### Minor Changes
