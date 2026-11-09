@@ -207,7 +207,7 @@
           "video",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "isFeatured": true,
         "lastUpdated": "May 19, 2026",
         "costPer1kInputTokens": 0.0015,

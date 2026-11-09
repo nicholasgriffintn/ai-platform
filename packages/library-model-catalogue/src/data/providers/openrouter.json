@@ -30,8 +30,8 @@
         ],
         "speed": 5,
         "lastUpdated": "August 5, 2025",
-        "costPer1kInputTokens": 0.000023,
-        "costPer1kOutputTokens": 0.000086,
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": false
       }
     },
@@ -161,7 +161,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "multimodal": true,
         "isFeatured": false,
         "lastUpdated": "August 7, 2025",
@@ -1346,7 +1346,7 @@
         "reliability": 1,
         "lastUpdated": "March 12, 2025",
         "costPer1kInputTokens": 0.00008,
-        "costPer1kOutputTokens": 0.00035,
+        "costPer1kOutputTokens": 0.00045,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1995,7 +1995,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "deprecated": true,
         "deprecationMessage": "GPT-5 Codex is no longer offered by OpenRouter.",
         "lastUpdated": "September 15, 2025",
@@ -2194,7 +2194,7 @@
       "overrides": {
         "name": "GPT-5.2-Codex",
         "description": "Code-specialist GPT for repository edits, reviews, and long-running software agents",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -3097,7 +3097,7 @@
         "name": "GLM 4.7 Flash",
         "description": "Budget GLM lane for fast coding help, routing, and everyday automation",
         "maxTokens": 117964,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.0000605,
         "costPer1kOutputTokens": 0.0004,
@@ -3220,8 +3220,8 @@
         "name": "MoonshotAI Kimi Latest",
         "releaseDate": "April 27, 2026",
         "lastUpdated": "April 27, 2026",
-        "costPer1kInputTokens": 0.0001567,
-        "costPer1kOutputTokens": 0.0101398,
+        "costPer1kInputTokens": 0.0001824,
+        "costPer1kOutputTokens": 0.0093388,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -3538,7 +3538,7 @@
       "model": "claude-sonnet/claude-sonnet-4-6",
       "matchingModel": "anthropic/claude-sonnet-4.6",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "isFeatured": false,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
@@ -3824,7 +3824,7 @@
       "matchingModel": "cohere/command-a",
       "overrides": {
         "maxTokens": 8192,
-        "speed": 2,
+        "speed": 1,
         "knowledgeCutoffDate": "August 31, 2024",
         "lastUpdated": "March 13, 2025",
         "costPer1kInputTokens": 0.0025,
@@ -3894,7 +3894,7 @@
         ],
         "contextComplexity": 3,
         "reliability": 1,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 28, 2026",
         "costPer1kInputTokens": 0.00032,
         "costPer1kOutputTokens": 0.00089,
@@ -3977,8 +3977,8 @@
         "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.00043413,
-        "costPer1kOutputTokens": 0.00086826,
+        "costPer1kInputTokens": 0.00095526,
+        "costPer1kOutputTokens": 0.00191052,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -4368,7 +4368,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0004,
@@ -4385,7 +4385,7 @@
       "matchingModel": "google/gemma-4-31b-it:free",
       "overrides": {
         "isFree": true,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -4457,6 +4457,8 @@
       "matchingModel": "inception/mercury-2",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Mercury 2 is no longer offered by OpenRouter.",
         "lastUpdated": "February 24, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00075,
@@ -4644,10 +4646,10 @@
       "model": "llama/llama-3-1-8b-instruct",
       "matchingModel": "meta-llama/llama-3.1-8b-instruct",
       "overrides": {
-        "maxTokens": 117964,
+        "maxTokens": 16384,
         "lastUpdated": "July 23, 2024",
-        "costPer1kInputTokens": 0.00005,
-        "costPer1kOutputTokens": 0.00008,
+        "costPer1kInputTokens": 0.00002,
+        "costPer1kOutputTokens": 0.00004,
         "supportsAttachments": false
       }
     },
@@ -6349,7 +6351,7 @@
       "overrides": {
         "name": "Qwen3.5 397B A17B",
         "description": "Large open Qwen multimodal MoE for visual agents and long technical tasks",
-        "maxTokens": 235929,
+        "maxTokens": 64000,
         "modalities": {
           "input": [
             "text",
@@ -6369,7 +6371,7 @@
         "speed": 3,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "February 15, 2026",
-        "costPer1kInputTokens": 0.0005,
+        "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0036
       }
     },
@@ -6935,7 +6937,7 @@
           "video",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "multimodal": true,
         "lastUpdated": "May 19, 2026",
         "costPer1kInputTokens": 0.0015,
@@ -7938,7 +7940,7 @@
         "contextWindow": 262144,
         "maxTokens": 32768,
         "isFree": true,
-        "speed": 3,
+        "speed": 4,
         "deprecated": true,
         "deprecationMessage": "Ling 3.0 Tiny (free) is no longer offered by OpenRouter.",
         "lastUpdated": "August 6, 2026",
@@ -8682,6 +8684,8 @@
       "matchingModel": "inception/mercury-2.5",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Mercury 2.5 is no longer offered by OpenRouter.",
         "lastUpdated": "September 8, 2026",
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00015,
@@ -9300,7 +9304,7 @@
         "strengths": [
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0002,
@@ -9648,6 +9652,8 @@
       "model": "mercury/mercury-3",
       "matchingModel": "inception/mercury-3",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Mercury 3 is no longer offered by OpenRouter.",
         "lastUpdated": "October 16, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.00035,
@@ -9725,6 +9731,16 @@
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "speed": 2,
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002,
@@ -9967,7 +9983,7 @@
         "name": "Ling 3.0 Tiny",
         "openWeights": true,
         "maxTokens": 250000,
-        "speed": 3,
+        "speed": 4,
         "releaseDate": "August 6, 2026",
         "lastUpdated": "August 6, 2026",
         "costPer1kInputTokens": 0.000015,

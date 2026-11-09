@@ -375,7 +375,6 @@
       "matchingModel": "perplexity/deepseek-v4-pro-0813",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 384000,
         "speed": 3,
         "lastUpdated": "August 22, 2026",
         "costPer1kInputTokens": 0.00132,

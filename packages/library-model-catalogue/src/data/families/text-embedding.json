@@ -19,9 +19,10 @@
     "text-embedding-005": {
       "defaults": {
         "name": "Text Embedding 005",
-        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "description": "Gecko-based text embedding model specialized in English and code tasks, producing up to 768-dimensional vectors",
+        "contextWindow": 2048,
         "maxTokens": 0,
-        "releaseDate": "August 1, 2024"
+        "releaseDate": "November 18, 2024"
       }
     },
     "text-embedding-3-large": {
@@ -51,9 +52,10 @@
     "text-multilingual-embedding-002": {
       "defaults": {
         "name": "Text Multilingual Embedding 002",
-        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "description": "Gecko-based multilingual text embedding model producing up to 768-dimensional vectors",
+        "contextWindow": 2048,
         "maxTokens": 0,
-        "releaseDate": "March 1, 2024"
+        "releaseDate": "May 14, 2024"
       }
     }
   }

@@ -420,7 +420,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -598,7 +598,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 17, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -645,7 +645,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "deprecated": true,
         "deprecationMessage": "GPT-5 Codex is no longer offered by Requesty.",
         "knowledgeCutoffDate": "October 1, 2024",
@@ -859,7 +859,7 @@
       "matchingModel": "openai/gpt-5.2-codex",
       "overrides": {
         "name": "GPT-5.2-Codex",
-        "speed": 2,
+        "speed": 3,
         "releaseDate": "January 14, 2026",
         "lastUpdated": "January 14, 2026",
         "costPer1kInputTokens": 0.00175,
@@ -1286,7 +1286,7 @@
       "overrides": {
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -1308,7 +1308,7 @@
       "overrides": {
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.0033,
         "costPer1kOutputTokens": 0.0165,
@@ -1423,7 +1423,7 @@
       "model": "gemini-flash/gemini-3-5-flash-eu",
       "matchingModel": "gemini-3.5-flash@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "May 19, 2026",
         "costPer1kInputTokens": 0.00165,
         "costPer1kOutputTokens": 0.0099
@@ -1603,7 +1603,7 @@
       "model": "gpt/gpt-5-eu",
       "matchingModel": "gpt-5@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.011,
@@ -1986,7 +1986,7 @@
           "video",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "May 19, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.009,
@@ -2775,7 +2775,7 @@
         "name": "ling-3.0-tiny",
         "description": "Ling-3.0-tiny is an efficient 7.9B parameter MoE model from inclusionAI with only 1.3B active parameters per token. Built for responsive agents, reliable instruction following and multi turn conversation, with a 256K context window, native function calling, prompt caching and switchable Thinking and Instant modes.",
         "maxTokens": 32768,
-        "speed": 3,
+        "speed": 4,
         "releaseDate": "August 5, 2026",
         "lastUpdated": "August 5, 2026",
         "costPer1kInputTokens": 0,
@@ -4457,6 +4457,16 @@
       "matchingModel": "kimi-k3.1-pro",
       "overrides": {
         "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "speed": 2,
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002,

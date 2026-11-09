@@ -55,7 +55,7 @@
           "instruction",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "isFeatured": false,
         "deprecated": true,
         "deprecationMessage": "Qwen3 Coder 480B A35B Instruct is no longer offered by DeepInfra. Use Qwen3 Coder 480B A35B Instruct Turbo instead.",
@@ -335,7 +335,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0004,
@@ -831,7 +831,7 @@
       "model": "deepseek/deepseek-v3",
       "matchingModel": "deepseek-ai/DeepSeek-V3",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "December 26, 2024",
         "costPer1kInputTokens": 0.00032,
         "costPer1kOutputTokens": 0.00089
@@ -1267,6 +1267,8 @@
       "overrides": {
         "openWeights": false,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Ling 3.1 Flash is no longer offered by DeepInfra.",
         "releaseDate": "November 7, 2026",
         "lastUpdated": "November 7, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -1296,48 +1298,40 @@
       }
     },
     "moonshotai/Kimi-K3.1-Pro": {
-      "model": "kimi/kimi-k3-1-pro",
+      "model": "kimi-k3/kimi-k3-1-pro",
       "matchingModel": "moonshotai/Kimi-K3.1-Pro",
       "overrides": {
+        "maxTokens": 943718,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 2,
-        "lastUpdated": "November 7, 2026",
+        "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
-        "supportsResponseFormat": false,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B": {
       "model": "nemotron/nemotron-3-super-120b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B",
       "overrides": {
-        "name": "Nemotron 3 Super 120B",
-        "openWeights": false,
-        "contextWindow": 262144,
-        "maxTokens": 262144,
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
         "speed": 4,
-        "releaseDate": "November 7, 2026",
         "lastUpdated": "November 7, 2026",
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.0004,
-        "supportsResponseFormat": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
+        "supportsResponseFormat": false
       }
     },
     "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B": {

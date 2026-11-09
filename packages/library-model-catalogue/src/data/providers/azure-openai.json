@@ -204,7 +204,7 @@
       "overrides": {
         "contextWindow": 131072,
         "maxTokens": 8192,
-        "speed": 2,
+        "speed": 1,
         "knowledgeCutoffDate": "June 1, 2024",
         "lastUpdated": "March 13, 2025",
         "costPer1kInputTokens": 0.0025,
@@ -361,7 +361,7 @@
       "matchingModel": "gpt-5",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -411,7 +411,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "September 15, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -655,7 +655,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 2,
+        "speed": 3,
         "releaseDate": "January 14, 2026",
         "lastUpdated": "January 14, 2026",
         "costPer1kInputTokens": 0.00175,
@@ -1226,7 +1226,7 @@
       "overrides": {
         "maxTokens": 64000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
