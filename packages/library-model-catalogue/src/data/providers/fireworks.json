@@ -310,7 +310,7 @@
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "contextWindow": 256000,
         "maxTokens": 32768,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 22, 2025",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0018
@@ -945,15 +945,6 @@
       "matchingModel": "accounts/fireworks/models/kimi-k3p1-pro",
       "overrides": {
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 2,
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002,

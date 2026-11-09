@@ -125,32 +125,6 @@
         }
       }
     },
-    "deepseek-r1-distill-qwen-32b": {
-      "defaults": {
-        "name": "DeepSeek R1 Distill Qwen 32B",
-        "description": "Classic open reasoning model for transparent math, coding, and deliberate problem solving",
-        "contextWindow": 80000,
-        "maxTokens": 80000,
-        "contextComplexity": 3,
-        "knowledgeCutoffDate": "July 2024",
-        "releaseDate": "January 20, 2025",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
     "deepseek-reasoner": {
       "defaults": {
         "name": "DeepSeek Reasoner",
@@ -202,6 +176,7 @@
         "name": "DeepSeek V4 Pro 0813",
         "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
         "contextWindow": 1048576,
+        "maxTokens": 384000,
         "strengths": [
           "tool_use",
           "coding"

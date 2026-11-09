@@ -480,8 +480,31 @@
     },
     "nemotron-3-super-120b": {
       "defaults": {
+        "name": "Nemotron 3 Super 120B",
+        "openWeights": false,
         "description": "Nemotron middle tier for collaborative agents and high-volume reasoning workloads",
-        "knowledgeCutoffDate": "June 2025"
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "knowledgeCutoffDate": "June 2025",
+        "releaseDate": "November 7, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "nemotron-3-super-120b-a12b": {

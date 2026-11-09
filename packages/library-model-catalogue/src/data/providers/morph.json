@@ -240,15 +240,6 @@
       "matchingModel": "morph-kimik31",
       "overrides": {
         "maxTokens": 1048576,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 2,
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.0025,

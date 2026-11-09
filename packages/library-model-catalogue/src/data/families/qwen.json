@@ -1768,31 +1768,6 @@
         }
       }
     },
-    "qwen3-30b-a3b-fp8": {
-      "defaults": {
-        "name": "Qwen3 30B A3B FP8",
-        "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
-        "contextWindow": 32768,
-        "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "April 28, 2025",
-        "supportsResponseFormat": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "qwen3-30b-a3b-free": {
       "defaults": {
         "name": "Qwen3 30B A3B (free)",
@@ -4049,46 +4024,6 @@
       "defaults": {
         "description": "Qwen3Guard-Gen-8B is a large-scale multilingual safety moderation model designed for high-accuracy prompt and response classification.",
         "supportsToolCalls": false
-      }
-    },
-    "qwq-32b": {
-      "defaults": {
-        "name": "QwQ 32B",
-        "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
-        "contextWindow": 24000,
-        "maxTokens": 24000,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "reasoning",
-          "math",
-          "analysis"
-        ],
-        "contextComplexity": 2,
-        "reliability": 1,
-        "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "March 5, 2025",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
       }
     },
     "qwq-32b-free": {

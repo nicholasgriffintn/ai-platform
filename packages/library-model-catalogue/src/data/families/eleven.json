@@ -59,7 +59,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1092,
+              "value": 1094,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10
@@ -82,7 +82,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1187,
+              "value": 1189,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10
@@ -105,7 +105,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1338,
+              "value": 1339,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 15
@@ -128,7 +128,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1332,
+              "value": 1335,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 16

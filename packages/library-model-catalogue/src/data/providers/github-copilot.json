@@ -535,7 +535,7 @@
       "matchingModel": "gpt-5.2-codex",
       "overrides": {
         "name": "GPT-5.2-Codex",
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "GPT-5.2-Codex was retired on 5 June 2026. Use GPT-6.1 Sol instead.",
         "replacementModel": "gpt-6.1-sol",
@@ -596,7 +596,7 @@
           ]
         },
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,

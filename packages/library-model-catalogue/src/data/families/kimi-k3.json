@@ -59,18 +59,7 @@
     "kimi-k3-1-pro": {
       "defaults": {
         "name": "Kimi K3.1 Pro",
-        "openWeights": false,
         "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "video",
@@ -91,7 +80,6 @@
     "kimi-k3-1-pro-highspeed": {
       "defaults": {
         "name": "Kimi K3.1 Pro Highspeed",
-        "openWeights": false,
         "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
         "maxTokens": 1048576,
         "modalities": {
@@ -280,7 +268,6 @@
     "moonshotai-kimi-k3-1-pro": {
       "defaults": {
         "name": "MoonshotAI: Kimi K3.1 Pro",
-        "openWeights": false,
         "description": "Kimi K3.1 Pro is Moonshot AI's flagship open-weight multimodal reasoning model and a post-trained successor to Kimi K3, with a 1M-token context window. It is built for long-horizon coding, 3D...",
         "maxTokens": 943718,
         "modalities": {

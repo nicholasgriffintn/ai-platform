@@ -161,7 +161,7 @@
       "model": "qwen/qwen3-coder-480b-a35b-instruct-fp8",
       "matchingModel": "Qwen/Qwen3-Coder-480B-A35B-Instruct-FP8",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "deprecated": true,
         "deprecationMessage": "Qwen3 Coder 480B A35B Instruct (FP8) is no longer offered by Chutes.",
         "lastUpdated": "August 1, 2025",
@@ -284,7 +284,7 @@
         "name": "DeepSeek V3",
         "maxTokens": 163840,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "deprecated": true,
         "deprecationMessage": "DeepSeek V3 is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
@@ -981,7 +981,7 @@
       "model": "glm/glm-4-7-flash",
       "matchingModel": "zai-org/GLM-4.7-Flash",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "deprecated": true,
         "deprecationMessage": "GLM 4.7 Flash is no longer offered by Chutes.",
         "lastUpdated": "January 27, 2026",

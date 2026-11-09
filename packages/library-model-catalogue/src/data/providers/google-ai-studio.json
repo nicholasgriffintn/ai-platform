@@ -774,7 +774,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0.00014,
         "costPer1kOutputTokens": 0.0004,
@@ -810,7 +810,7 @@
           "search",
           "research"
         ],
-        "speed": 3,
+        "speed": 4,
         "multimodal": true,
         "isFeatured": true,
         "lastUpdated": "May 19, 2026",

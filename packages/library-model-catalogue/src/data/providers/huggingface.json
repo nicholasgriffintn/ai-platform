@@ -76,7 +76,7 @@
           "reasoning",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 22, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.002
@@ -330,7 +330,7 @@
       "matchingModel": "zai-org/GLM-4.7-Flash",
       "overrides": {
         "maxTokens": 128000,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -1058,7 +1058,7 @@
       "overrides": {
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 64000,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "December 26, 2024",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0013

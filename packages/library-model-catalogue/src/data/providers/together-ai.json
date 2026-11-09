@@ -679,7 +679,6 @@
       "model": "deepseek-thinking/deepseek-v4-pro-0813",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro-0813",
       "overrides": {
-        "maxTokens": 384000,
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "August 22, 2026",
@@ -769,15 +768,6 @@
       "matchingModel": "moonshotai/Kimi-K3.1-Pro",
       "overrides": {
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 2,
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002,
