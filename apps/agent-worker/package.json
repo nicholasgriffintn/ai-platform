@@ -1,6 +1,6 @@
 {
   "name": "@assistant/agent-worker",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": true,
   "license": "Apache-2.0",
   "main": "src/index.ts",

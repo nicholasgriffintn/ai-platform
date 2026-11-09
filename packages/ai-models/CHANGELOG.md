@@ -1,5 +1,32 @@
 # @ngriffin_uk/polychat-ai-models
 
+## 0.6.0
+
+### Minor Changes
+
+- 1fcffa3: Chatting now needs an account. Polychat-hosted models are part of Pro, and free accounts chat with their own provider keys or on-device models. Voice and semantic search are part of Pro too, and free accounts keep keyword search.
+
+  Models you choose for background work now stay in charge: if they fail, the job fails rather than quietly switching to a platform model. Official benchmarks no longer run on a schedule.
+
+### Patch Changes
+
+- Updated dependencies [ce24694]
+- Updated dependencies [765754a]
+- Updated dependencies [73a3a85]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [074e50f]
+- Updated dependencies [074e50f]
+- Updated dependencies [1fcffa3]
+- Updated dependencies [301c306]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [57459ac]
+  - @ngriffin_uk/polychat-schemas@1.18.0
+  - @ngriffin_uk/polychat-utility-server@0.9.0
+  - @ngriffin_uk/polychat-library-policy@0.6.0
+  - @ngriffin_uk/polychat-library-model-catalogue@0.7.0
+
 ## 0.5.2
 
 ### Patch Changes

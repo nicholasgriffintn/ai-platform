@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-model-sync",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "description": "Keeps the Polychat model catalogue current from models.dev and the public provider model lists",
   "license": "Apache-2.0",

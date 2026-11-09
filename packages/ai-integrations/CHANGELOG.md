@@ -1,5 +1,32 @@
 # @ngriffin_uk/polychat-ai-integrations
 
+## 0.9.0
+
+### Minor Changes
+
+- 765754a: Polis, Verbatim, Strudel, Charades, Photo Sorter and Twenty Questions now come from Pashi instead of being built into Polychat. If you have linked Pashi, they appear in your apps and open full-page, with nothing to do. If you have not, sign in to Polychat from pashi.app to link it and they come back. Shared Polis towns now open on pashi.app. In a chat, Poly writes, saves and lists Strudel patterns with Pashi's tools rather than a built-in one, and Pashi's generators and converters are reached the same way, so the Pashi Generator Toolkit recipe has been removed.
+- f6cde2d: Apps from your MCP servers now sit in the Apps section of Plugins with Polychat's own apps, using the same card, icon, colour and category, plus a "from Pashi" line so you can see where each one comes from. Every app has an About panel that says when to use it, what it works from and what it leaves behind. You can turn any app on or off from its card or panel. Server apps open at a readable address such as `/chat/apps/pashi/charades`, and older links still work. Servers can describe their apps with a name, category, icon, colour and that same when, uses and produces copy. App views can now start their own background workers and audio worklets, so apps like Polis and Verbatim run inside Polychat, and a view that evaluates code at runtime can ask for that permission for itself.
+
+### Patch Changes
+
+- Updated dependencies [ce24694]
+- Updated dependencies [765754a]
+- Updated dependencies [73a3a85]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [074e50f]
+- Updated dependencies [074e50f]
+- Updated dependencies [1fcffa3]
+- Updated dependencies [301c306]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [b52cd0d]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [57459ac]
+  - @ngriffin_uk/polychat-schemas@1.18.0
+  - @ngriffin_uk/polychat-utility-core@0.12.0
+  - @ngriffin_uk/polychat-utility-server@0.9.0
+  - @ngriffin_uk/polychat-library-policy@0.6.0
+
 ## 0.8.0
 
 ### Minor Changes

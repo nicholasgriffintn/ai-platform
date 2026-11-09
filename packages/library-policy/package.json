@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-policy",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Cedar policy evaluation and shared authorisation contracts for Polychat runtimes",
   "license": "Apache-2.0",
   "files": [

@@ -1,6 +1,6 @@
 {
   "name": "@ngriffin_uk/polychat-library-model-catalogue",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "The Polychat model catalogue: families and provider offerings as data, and the schema that resolves them into model configs",
   "license": "Apache-2.0",
   "files": [

@@ -1,5 +1,30 @@
 # @ngriffin_uk/polychat-component-models
 
+## 1.3.1
+
+### Patch Changes
+
+- 9d2d8c3: The model picker now adapts to the space it has, so it stays readable in the chat panel on desktop, and each model shows where it runs and its data location on one line. Tips above the composer now clear as soon as you send a message.
+- 9d2d8c3: Perplexity's Agent API is now available as a provider. Pick Perplexity Agent in the model picker to chat with Sonar and Perplexity-hosted models, plus Claude, GPT, Gemini and Grok models served through Perplexity, using your Perplexity API key.
+- Updated dependencies [ce24694]
+- Updated dependencies [765754a]
+- Updated dependencies [73a3a85]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [074e50f]
+- Updated dependencies [074e50f]
+- Updated dependencies [1fcffa3]
+- Updated dependencies [301c306]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [b52cd0d]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [57459ac]
+  - @ngriffin_uk/polychat-schemas@1.18.0
+  - @ngriffin_uk/polychat-utility-core@0.12.0
+  - @ngriffin_uk/polychat-library-chat@1.5.0
+  - @ngriffin_uk/polychat-component-ui@0.7.5
+  - @ngriffin_uk/polychat-utility-react@0.7.5
+
 ## 1.3.0
 
 ### Minor Changes

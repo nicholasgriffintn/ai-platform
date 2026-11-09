@@ -1,5 +1,15 @@
 # @ngriffin_uk/polychat-ai-sandbox
 
+## 0.2.10
+
+### Patch Changes
+
+- Updated dependencies [f6cde2d]
+- Updated dependencies [074e50f]
+- Updated dependencies [b52cd0d]
+  - @ngriffin_uk/polychat-utility-core@0.12.0
+  - @ngriffin_uk/polychat-library-sandbox@0.3.10
+
 ## 0.2.9
 
 ### Patch Changes

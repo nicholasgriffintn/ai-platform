@@ -1,5 +1,54 @@
 # @assistant/app
 
+## 0.14.0
+
+### Minor Changes
+
+- f6cde2d: Stories now open inside Discover. Choosing a news card opens the whole story beside your feed: the overview, how it developed, each outlet's angle with who broke it, what outlets agree and differ on, quotes, the people and organisations involved, earlier stories it continues, and your own chats, notebooks and memories that mention them. Ask Poly about the story from the same panel. People and organisations open there too, with the outlets that mention them most and a Follow button. Links to a story, a person or the coverage view open Discover with that item showing.
+
+  A new "This week" card beside your reading leads with the most covered story, then names rising and fading, which topics each outlet covered this week against last week, and stories losing coverage. See all opens the full view with topic share by week and an outlet by topic attention map. Closing a story or card returns you to the same place in your feed.
+
+  Every news category you choose now feeds stories, not only the articles picked for your feed. Related articles join into fewer, fuller stories without broad names like a country pulling unrelated events together. Feed cards show one card per story with its outlet count and overview, and stories with one outlet but several articles get an overview too. Poly can compare how outlets covered a story and follow a person or organisation for you.
+
+- 074e50f: Discover now groups news into stories. When several outlets cover the same event, their articles join one story with a short overview, what the outlets agree and differ on, what is missing and how each outlet tells it. Open a news article in Discover and choose Full story to see it. The feed also shows one card per story, with the other outlets listed under it, instead of repeating the same event several times.
+- 074e50f: Stories in Discover now show quotes, people and what came before. Quotes appear with the speaker, their role and the outlet that carried them, and only when the words appear exactly in the article. People and organisations link to their own pages, which list every story they appear in and what they have said. Before this links a story to earlier coverage of the same subject, including older background. Stories close after five quiet days, and later coverage opens a new story linked to the old one. Poly can now read a story and find related stories when you ask about the news.
+
+### Patch Changes
+
+- Updated dependencies [ce24694]
+- Updated dependencies [765754a]
+- Updated dependencies [8f2d2f4]
+- Updated dependencies [73a3a85]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [074e50f]
+- Updated dependencies [074e50f]
+- Updated dependencies [0618467]
+- Updated dependencies [1fcffa3]
+- Updated dependencies [301c306]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [b52cd0d]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [57459ac]
+  - @ngriffin_uk/polychat-schemas@1.18.0
+  - @ngriffin_uk/polychat-component-shell@2.11.0
+  - @ngriffin_uk/polychat-library-client@0.16.0
+  - @ngriffin_uk/polychat-component-experiences@0.8.0
+  - @ngriffin_uk/polychat-library-react@0.17.0
+  - @ngriffin_uk/polychat-utility-core@0.12.0
+  - @ngriffin_uk/polychat-component-conversation@2.3.0
+  - @ngriffin_uk/polychat-component-models@1.3.1
+  - @ngriffin_uk/polychat-component-content@1.3.9
+  - @ngriffin_uk/polychat-component-capabilities@1.1.0
+  - @ngriffin_uk/polychat-library-chat@1.5.0
+  - @ngriffin_uk/polychat-component-account@1.2.1
+  - @ngriffin_uk/polychat-component-ui@0.7.5
+  - @ngriffin_uk/polychat-component-navigation@0.7.2
+  - @ngriffin_uk/polychat-component-workspaces@1.2.2
+  - @ngriffin_uk/polychat-library-realtime@0.4.3
+  - @ngriffin_uk/polychat-utility-react@0.7.5
+
 ## 0.13.1
 
 ### Patch Changes

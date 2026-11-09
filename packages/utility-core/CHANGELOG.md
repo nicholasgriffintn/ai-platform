@@ -1,5 +1,18 @@
 # @ngriffin_uk/polychat-utility-core
 
+## 0.12.0
+
+### Minor Changes
+
+- f6cde2d: Stories now open inside Discover. Choosing a news card opens the whole story beside your feed: the overview, how it developed, each outlet's angle with who broke it, what outlets agree and differ on, quotes, the people and organisations involved, earlier stories it continues, and your own chats, notebooks and memories that mention them. Ask Poly about the story from the same panel. People and organisations open there too, with the outlets that mention them most and a Follow button. Links to a story, a person or the coverage view open Discover with that item showing.
+
+  A new "This week" card beside your reading leads with the most covered story, then names rising and fading, which topics each outlet covered this week against last week, and stories losing coverage. See all opens the full view with topic share by week and an outlet by topic attention map. Closing a story or card returns you to the same place in your feed.
+
+  Every news category you choose now feeds stories, not only the articles picked for your feed. Related articles join into fewer, fuller stories without broad names like a country pulling unrelated events together. Feed cards show one card per story with its outlet count and overview, and stories with one outlet but several articles get an overview too. Poly can compare how outlets covered a story and follow a person or organisation for you.
+
+- 074e50f: Discover now groups news into stories. When several outlets cover the same event, their articles join one story with a short overview, what the outlets agree and differ on, what is missing and how each outlet tells it. Open a news article in Discover and choose Full story to see it. The feed also shows one card per story, with the other outlets listed under it, instead of repeating the same event several times.
+- b52cd0d: The assistant now checks HTML and SVG artifacts before showing them. It renders the draft once in an isolated browser under the same sandbox rules as the artifact viewer, sees desktop and mobile screenshots with any console errors, page errors, blocked requests or sideways scrolling, and fixes what it finds before presenting the artifact. Previews are limited to three per response and never load web addresses.
+
 ## 0.11.1
 
 ### Patch Changes

@@ -1,5 +1,30 @@
 # @ngriffin_uk/polychat-component-capabilities
 
+## 1.1.0
+
+### Minor Changes
+
+- f6cde2d: Apps from your MCP servers now sit in the Apps section of Plugins with Polychat's own apps, using the same card, icon, colour and category, plus a "from Pashi" line so you can see where each one comes from. Every app has an About panel that says when to use it, what it works from and what it leaves behind. You can turn any app on or off from its card or panel. Server apps open at a readable address such as `/chat/apps/pashi/charades`, and older links still work. Servers can describe their apps with a name, category, icon, colour and that same when, uses and produces copy. App views can now start their own background workers and audio worklets, so apps like Polis and Verbatim run inside Polychat, and a view that evaluates code at runtime can ask for that permission for itself.
+
+### Patch Changes
+
+- Updated dependencies [ce24694]
+- Updated dependencies [765754a]
+- Updated dependencies [73a3a85]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [074e50f]
+- Updated dependencies [074e50f]
+- Updated dependencies [1fcffa3]
+- Updated dependencies [301c306]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [b52cd0d]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [57459ac]
+  - @ngriffin_uk/polychat-schemas@1.18.0
+  - @ngriffin_uk/polychat-utility-core@0.12.0
+  - @ngriffin_uk/polychat-component-ui@0.7.5
+
 ## 1.0.8
 
 ### Patch Changes

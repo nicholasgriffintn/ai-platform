@@ -1,5 +1,28 @@
 # @ngriffin_uk/polychat-component-navigation
 
+## 0.7.2
+
+### Patch Changes
+
+- Updated dependencies [ce24694]
+- Updated dependencies [765754a]
+- Updated dependencies [73a3a85]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [074e50f]
+- Updated dependencies [074e50f]
+- Updated dependencies [1fcffa3]
+- Updated dependencies [301c306]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [9d2d8c3]
+- Updated dependencies [b52cd0d]
+- Updated dependencies [f6cde2d]
+- Updated dependencies [57459ac]
+  - @ngriffin_uk/polychat-schemas@1.18.0
+  - @ngriffin_uk/polychat-utility-core@0.12.0
+  - @ngriffin_uk/polychat-library-chat@1.5.0
+  - @ngriffin_uk/polychat-component-ui@0.7.5
+  - @ngriffin_uk/polychat-utility-react@0.7.5
+
 ## 0.7.1
 
 ### Patch Changes
