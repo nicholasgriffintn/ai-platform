@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   BookOpen,
   CalendarDays,
   Compass,
@@ -8,12 +9,18 @@ import {
   MessageCircleQuestion,
   MonitorPlay,
   MoonStar,
+  Newspaper,
   Play,
   Repeat,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 
-import type { DiscoverItem } from "./discover-items.js";
+import {
+  isDiscoverGraphItem,
+  type DiscoverGraphItem,
+  type DiscoverItem,
+} from "./discover-items.js";
 
 export interface DiscoverItemKind {
   label: string;
@@ -25,7 +32,22 @@ function ask(noun: string): string {
   return `Ask about this ${noun}`;
 }
 
+function graphItemKind(item: DiscoverGraphItem): DiscoverItemKind {
+  switch (item.type) {
+    case "story":
+      return { label: "Story", icon: Newspaper, placeholder: ask("story") };
+    case "entity":
+      return { label: "Person or organisation", icon: UserRound, placeholder: "Ask about them" };
+    case "angles":
+      return { label: "Angles", icon: BarChart3, placeholder: "Ask about this week's coverage" };
+  }
+}
+
 export function discoverItemKind(item: DiscoverItem): DiscoverItemKind {
+  if (isDiscoverGraphItem(item)) {
+    return graphItemKind(item);
+  }
+
   if (item.type === "media") {
     switch (item.media) {
       case "episode":

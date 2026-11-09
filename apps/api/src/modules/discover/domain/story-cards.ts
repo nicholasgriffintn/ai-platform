@@ -39,6 +39,75 @@ export function withCardStory(card: ReadCard, story: StorySummary): ReadCard {
   return { ...card, storyId: story.id, outletCount: story.outletCount };
 }
 
+export function refreshCardStory<TCard extends DiscoverCard>(
+  card: TCard,
+  stories: DiscoverStoriesByUrl,
+  overviews: ReadonlyMap<string, string> = new Map(),
+): TCard {
+  if (card.kind !== "read") {
+    return card;
+  }
+
+  const story = findStoryByUrl(card.url, stories);
+  const overview = story ? overviews.get(story.id) : undefined;
+
+  return story
+    ? {
+        ...card,
+        storyId: story.id,
+        outletCount: story.outletCount,
+        ...(overview ? { summary: overview } : {}),
+      }
+    : card;
+}
+
+function storyKey(card: DiscoverCard): string | null {
+  return card.kind === "read" && card.storyId ? card.storyId : null;
+}
+
+export function foldCardsByStory<TItem extends { card: DiscoverCard; publishedAt?: string | null }>(
+  items: readonly TItem[],
+): TItem[] {
+  const groups = new Map<string, TItem[]>();
+
+  for (const item of items) {
+    const key = storyKey(item.card);
+
+    if (key) {
+      groups.set(key, [...(groups.get(key) ?? []), item]);
+    }
+  }
+
+  return items.flatMap((item) => {
+    const key = storyKey(item.card);
+    const group = key ? groups.get(key) : undefined;
+
+    if (!key || !group) {
+      return [item];
+    }
+
+    if (group[0] !== item) {
+      return [];
+    }
+
+    const [lead, ...rest] = [...group].sort((left, right) =>
+      (right.publishedAt ?? "").localeCompare(left.publishedAt ?? ""),
+    );
+
+    if (!lead || lead.card.kind !== "read") {
+      return [item];
+    }
+
+    const card = rest.reduce(
+      (folded, other) =>
+        other.card.kind === "read" ? foldIntoStoryCard(folded, other.card) : folded,
+      lead.card,
+    );
+
+    return [{ ...lead, card }];
+  });
+}
+
 export function listEditionStoryIds(editions: readonly DiscoverEditionContent[]): string[] {
   return [
     ...new Set(

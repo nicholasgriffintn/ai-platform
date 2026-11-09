@@ -4,6 +4,7 @@ import {
   type EntityPage,
   type RelatedStory,
   type StoryArticle,
+  type StoryOutletCoverage,
   type StoryEntity,
   type StoryPage,
   type StoryQuote,
@@ -23,6 +24,10 @@ import {
   ArticleFactRepository,
   type ArticleFactRecord,
 } from "~/modules/stories/infrastructure/ArticleFactRepository";
+import {
+  CoverageRepository,
+  type StoryOutletRow,
+} from "~/modules/stories/infrastructure/CoverageRepository";
 import {
   EntityRepository,
   type EntityRecord,
@@ -46,6 +51,8 @@ const STORY_PAGE_EDGE_LIMIT = 8;
 const STORY_BEHIND_LIMIT = 2;
 const ENTITY_PAGE_STORY_LIMIT = 40;
 const ENTITY_PAGE_QUOTE_LIMIT = 20;
+const ENTITY_PAGE_OUTLET_LIMIT = 8;
+const STORY_HISTORY_LIMIT = 12;
 const outletAngleSchema = z.object({ source: z.string(), angle: z.string() });
 
 export function storyRefreshState(story: StoryRecord): StoryRefreshState {
@@ -82,6 +89,15 @@ export function presentStoryVersion(version: StoryVersionRecord): StoryVersion {
     disputed: parseJsonStringArray(version.disputed) ?? [],
     gaps: parseJsonStringArray(version.gaps) ?? [],
     outlets: parseJsonArrayColumn(version.outlet_angles, outletAngleSchema) ?? [],
+  };
+}
+
+function presentOutletCoverage(row: StoryOutletRow): StoryOutletCoverage {
+  return {
+    outlet: row.outlet_name,
+    articleCount: row.article_count,
+    leadCount: row.lead_count,
+    firstPublishedAt: row.first_published_at,
   };
 }
 
@@ -156,17 +172,21 @@ export async function requireStory(env: IEnv, storyId: string): Promise<StoryRec
 
 export async function readStoryPage(env: IEnv, storyId: string): Promise<StoryPage> {
   const story = await requireStory(env, storyId);
-  const [version, facts, quotes, entities, before] = await Promise.all([
-    new StoryRepository(env).latestVersion(storyId),
+  const [versions, facts, quotes, entities, before, coverage] = await Promise.all([
+    new StoryRepository(env).listVersions(storyId, STORY_HISTORY_LIMIT),
     new ArticleFactRepository(env).listForStory(storyId, STORY_PAGE_ARTICLE_LIMIT),
     new QuoteRepository(env).listForStory(storyId, STORY_PAGE_QUOTE_LIMIT),
     new EntityRepository(env).listForStory(storyId),
     listStoriesBefore(env, storyId),
+    new CoverageRepository(env).listStoryOutlets(storyId),
   ]);
+  const [latest, ...earlier] = versions.map(presentStoryVersion);
 
   return {
     story: presentStorySummary(story),
-    version: version ? presentStoryVersion(version) : null,
+    version: latest ?? null,
+    history: earlier.map(({ version, writtenAt, overview }) => ({ version, writtenAt, overview })),
+    coverage: coverage.map(presentOutletCoverage),
     articles: facts.flatMap((fact) => presentStoryArticle(fact) ?? []),
     quotes: quotes.flatMap((quote) => presentStoryQuote(quote) ?? []),
     entities,
@@ -182,9 +202,10 @@ export async function readEntityPage(env: IEnv, entityId: string): Promise<Entit
     throw new AssistantError("Entity not found", ErrorType.NOT_FOUND, 404);
   }
 
-  const [mentions, quotes] = await Promise.all([
+  const [mentions, quotes, outlets] = await Promise.all([
     entities.listStories(entityId, ENTITY_PAGE_STORY_LIMIT),
     new QuoteRepository(env).listForSpeaker(entityId, ENTITY_PAGE_QUOTE_LIMIT),
+    new CoverageRepository(env).listEntityOutlets(entityId, ENTITY_PAGE_OUTLET_LIMIT),
   ]);
   const stories = new Map(
     (await new StoryRepository(env).listByIds(mentions.map((mention) => mention.story_id))).map(
@@ -202,6 +223,7 @@ export async function readEntityPage(env: IEnv, entityId: string): Promise<Entit
       })
       .sort((left, right) => right.lastArticleAt.localeCompare(left.lastArticleAt)),
     quotes: quotes.flatMap((quote) => presentStoryQuote(quote) ?? []),
+    outlets: outlets.map(presentOutletCoverage),
   };
 }
 
@@ -292,4 +314,19 @@ export async function listStoriesBehind(
         ]
       : [];
   });
+}
+
+export async function listStoryOverviewLeads(
+  env: IEnv,
+  storyIds: readonly string[],
+): Promise<Map<string, string>> {
+  const versions = await new StoryRepository(env).listLatestVersions(storyIds);
+
+  return new Map(
+    versions.flatMap((version) => {
+      const lead = presentStoryVersion(version).overview[0];
+
+      return lead ? [[version.story_id, lead] as const] : [];
+    }),
+  );
 }

@@ -4,7 +4,7 @@ import type {
   McpAppToolCallRequest,
   McpAppView,
   RemoteAppListResponse,
-  RemoteAppSettingsResponse,
+  AppSettingsResponse,
 } from "@ngriffin_uk/polychat-schemas";
 
 import { apiService } from "./api-service.js";
@@ -54,11 +54,8 @@ export async function fetchRemoteApps(): Promise<RemoteAppListResponse> {
   return returnFetchedData<RemoteAppListResponse>(response);
 }
 
-export async function setRemoteAppEnabled(
-  appId: string,
-  enabled: boolean,
-): Promise<RemoteAppSettingsResponse> {
-  const response = await fetchApi(`/capabilities/remote_apps/${encodeURIComponent(appId)}`, {
+export async function setAppEnabled(appId: string, enabled: boolean): Promise<AppSettingsResponse> {
+  const response = await fetchApi(`/capabilities/apps/${encodeURIComponent(appId)}`, {
     method: "PUT",
     headers: await apiService.getHeaders(),
     body: { enabled },
@@ -68,5 +65,5 @@ export async function setRemoteAppEnabled(
     throw await createApiErrorFromResponse(response, "The app setting could not be saved");
   }
 
-  return returnFetchedData<RemoteAppSettingsResponse>(response);
+  return returnFetchedData<AppSettingsResponse>(response);
 }

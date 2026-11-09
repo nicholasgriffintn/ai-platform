@@ -12,13 +12,50 @@ import {
   weighDiscoverFeedTopic,
 } from "~/modules/discover/domain/feed-weights";
 import { collectCardSignals, summariseDiscoverFeedback } from "~/modules/discover/domain/feedback";
-import { listDiscoverFeedProviders, presentDiscoverFeed } from "~/modules/discover/domain/live";
+import {
+  listDiscoverFeedProviders,
+  presentDiscoverFeed,
+  type DiscoverLiveContent,
+} from "~/modules/discover/domain/live";
+import { foldCardsByStory, refreshCardStory } from "~/modules/discover/domain/story-cards";
 import { DiscoverSeenRepository } from "~/modules/discover/infrastructure/DiscoverSeenRepository";
+import {
+  listStoriesByUrl,
+  listStoryOverviewLeads,
+} from "~/modules/stories/application/read-models";
 
 import { readDiscoverDayProfile } from "./day-profile";
 import { listDiscoverFeedback } from "./feedback";
 import { readDiscoverLive, updateDiscoverLive, discoverLiveId } from "./live-store";
 import { readDiscoverSettings } from "./settings";
+
+export async function withCurrentStories(
+  context: ServiceContext,
+  content: DiscoverLiveContent,
+): Promise<DiscoverLiveContent> {
+  const stories = await listStoriesByUrl(
+    context.env,
+    content.items.flatMap((item) => (item.card.kind === "read" ? [item.card.url] : [])),
+  );
+
+  if (stories.size === 0) {
+    return content;
+  }
+
+  const overviews = await listStoryOverviewLeads(context.env, [
+    ...new Set([...stories.values()].map((story) => story.id)),
+  ]);
+
+  return {
+    ...content,
+    items: foldCardsByStory(
+      content.items.map((item) => ({
+        ...item,
+        card: refreshCardStory(item.card, stories, overviews),
+      })),
+    ),
+  };
+}
 
 export async function readDiscoverFeed(
   context: ServiceContext,
@@ -34,7 +71,7 @@ export async function readDiscoverFeed(
   ]);
   const preferences = summariseDiscoverFeedPreferences(feedback, exposure);
 
-  return presentDiscoverFeed(content, {
+  return presentDiscoverFeed(await withCurrentStories(context, content), {
     ...query,
     seen: exposure.seen,
     mutedTopics: [...profile.mutedTopics, ...summariseDiscoverFeedback(feedback).hiddenTopics],

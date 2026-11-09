@@ -12,12 +12,15 @@ import type {
   CatalogueItemKind,
   ProjectCapabilityKindGroup,
 } from "@ngriffin_uk/polychat-library-react";
-import { useMcpConnections } from "@ngriffin_uk/polychat-library-react";
+import { getAppPath, useMcpConnections } from "@ngriffin_uk/polychat-library-react";
 import type { AssistantActionItem } from "@ngriffin_uk/polychat-schemas";
 import { SearchX } from "lucide-react";
 import type { ReactNode } from "react";
+import { useNavigate } from "react-router";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
+import { AppDetailsDialog } from "../Apps/AppDetailsDialog.js";
+import { useAppDetails } from "../Apps/useAppDetails.js";
 import { PageShell } from "../Shell/PageShell.js";
 import { AddSkillDialog } from "./AddSkillDialog.js";
 import { AttachTeammateDialog } from "./AttachTeammateDialog.js";
@@ -65,6 +68,12 @@ export function CapabilityLibrary({
     skillDeletion: controller.skillDeletion,
     surface: controller.surface,
   });
+  const navigate = useNavigate();
+  const appDetails = useAppDetails(
+    controller.catalog.experiences,
+    !scope.requiresExplicitEnablement,
+  );
+  const selectedApp = appDetails.selected;
   const isLoading = controller.isLoadingScope || controller.catalog.isLoading;
   const managesTeammates = kinds.includes("teammate");
   const { filters } = controller;
@@ -77,7 +86,8 @@ export function CapabilityLibrary({
     controller.projectMutations?.add.error ??
     controller.projectMutations?.remove.error ??
     controller.skillDeletion.error ??
-    controller.personalSkills?.error;
+    controller.personalSkills?.error ??
+    appDetails.error;
   const pendingAddCapabilityId = controller.projectMutations?.add.isPending
     ? controller.projectMutations.add.variables?.capabilityId
     : undefined;
@@ -168,6 +178,7 @@ export function CapabilityLibrary({
             )}
             <CapabilityGroups
               appById={controller.catalog.appById}
+              appControls={appDetails}
               capabilities={controller.capabilities}
               currentUserId={controller.currentUserId}
               experiences={controller.catalog.experiences}
@@ -189,6 +200,19 @@ export function CapabilityLibrary({
         {children}
       </PageShell.Content>
 
+      <AppDetailsDialog
+        app={selectedApp}
+        toggle={selectedApp ? appDetails.toggleFor(selectedApp) : undefined}
+        onOpen={
+          selectedApp
+            ? () => {
+                appDetails.close();
+                void navigate(getAppPath(controller.surface, selectedApp.slug));
+              }
+            : undefined
+        }
+        onOpenChange={(open) => !open && appDetails.close()}
+      />
       <ToolConfigurationDialog
         configuration={controller.toolConfigurationDialog.configuration}
         isLoading={controller.toolConfigurationDialog.isLoading}

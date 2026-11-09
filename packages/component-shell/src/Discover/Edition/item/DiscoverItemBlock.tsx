@@ -9,7 +9,7 @@ import { DiscoverListenStage } from "../media/DiscoverListenStage.js";
 import { DiscoverWindDownStage } from "../media/DiscoverWindDownStage.js";
 import type { DiscoverMedia } from "../media/media-status.js";
 import type { DiscoverEditionController } from "../useDiscoverEditionController.js";
-import type { DiscoverItem } from "./discover-items.js";
+import type { DiscoverEditionItem } from "./discover-items.js";
 import { DiscoverCardBlock } from "./DiscoverCardBlock.js";
 import { DiscoverItemLead } from "./DiscoverItemLead.js";
 import type { DiscoverItemSummary } from "./useDiscoverItemSummary.js";
@@ -116,7 +116,7 @@ function MediaLead({ media, ...props }: LeadProps & { media: DiscoverMedia }) {
   }
 }
 
-export function DiscoverItemBlock({ item, ...props }: LeadProps & { item: DiscoverItem }) {
+export function DiscoverItemBlock({ item, ...props }: LeadProps & { item: DiscoverEditionItem }) {
   if (item.type === "media") {
     return <MediaLead {...props} media={item.media} />;
   }
@@ -132,6 +132,7 @@ export function DiscoverItemBlock({ item, ...props }: LeadProps & { item: Discov
         cards={edition.cards}
         feedback={controller.feedbackFor(card)}
         onSelect={controller.select}
+        onOpenStory={controller.openStory}
       />
     </DiscoverItemLead>
   );

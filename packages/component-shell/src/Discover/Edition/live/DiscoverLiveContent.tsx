@@ -2,6 +2,7 @@ import { LoadingSpinner } from "@ngriffin_uk/polychat-component-ui";
 import { useDiscoverExposure } from "@ngriffin_uk/polychat-library-react";
 import { useLoadMoreOnIntersect } from "@ngriffin_uk/polychat-utility-react";
 
+import { DiscoverAnglesSection } from "../../Tracker/DiscoverAnglesSection.js";
 import { DiscoverFeed } from "../DiscoverFeed.js";
 import { DiscoverMediaShelf } from "../DiscoverMediaShelf.js";
 import type { DiscoverEditionController } from "../useDiscoverEditionController.js";
@@ -42,7 +43,7 @@ export function DiscoverLiveContent({ controller }: { controller: DiscoverEditio
       <DiscoverFeed
         edition={edition}
         newCardIds={newCardIds}
-        selectedId={controller.selectedCard?.id ?? null}
+        selectedId={controller.selectedCardId}
         isTopicHidden={controller.isTopicHidden}
         isFollowing={(card) => Boolean(controller.followFor(card))}
         onSelect={controller.select}
@@ -50,6 +51,14 @@ export function DiscoverLiveContent({ controller }: { controller: DiscoverEditio
         failedStoryId={controller.failedStoryId}
         openStoryId={controller.openStoryId}
         onStartStory={controller.startStory}
+        angles={
+          <DiscoverAnglesSection
+            enabled={controller.isAuthenticated && !controller.isHouseEdition}
+            onOpenStory={controller.openStory}
+            onOpenEntity={controller.openEntity}
+            onOpenAngles={controller.openAngles}
+          />
+        }
         mediaCount={mediaEdition ? controller.mediaShelf.length : 0}
         media={
           mediaEdition ? (

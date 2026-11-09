@@ -22,6 +22,7 @@ import { createSessionCookie } from "~/modules/auth/application/sessions";
 import { credentialAuthenticates } from "~/modules/auth/domain/credential-scope";
 import { d1WritesAllowed } from "~/modules/infra/application/write-breaker";
 import { WORK_MCP_PATH } from "~/modules/ports/mcp/application/work-access";
+import { MCP_APP_FRAME_PATH } from "~/modules/tools/application/mcp-app-frame";
 import { AnonymousUserRepository } from "~/modules/user/infrastructure/AnonymousUserRepository";
 import { ApiKeyRepository } from "~/modules/user/infrastructure/ApiKeyRepository";
 import { UserRepository } from "~/modules/user/infrastructure/UserRepository";
@@ -66,7 +67,8 @@ export async function authMiddleware(context: Context, next: Next) {
     path.startsWith(DESKTOP_DISTRIBUTION_PREFIX) ||
     path.startsWith("/webhooks/") ||
     path.startsWith(`${SANDBOX_CREDENTIAL_BROKER_PATH_PREFIX}/`) ||
-    path === WORK_MCP_PATH
+    path === WORK_MCP_PATH ||
+    path === MCP_APP_FRAME_PATH
   ) {
     return next();
   }

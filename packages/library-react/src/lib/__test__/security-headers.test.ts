@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 
+import { MCP_APP_FRAME_DOCUMENT_URL } from "@ngriffin_uk/polychat-library-client";
 import { describe, expect, it } from "vitest";
 
 import { applySecurityHeaders } from "../security-headers.js";
@@ -23,6 +24,18 @@ describe("applySecurityHeaders", () => {
 
     expect(headers.get("X-Frame-Options")).toBe("DENY");
     expect(parseCsp(headers).get("frame-ancestors")).toEqual(["'none'"]);
+  });
+
+  it("frames app views from their own sandbox origin and lets them be granted the microphone", () => {
+    const headers = applySecurityHeaders(new Headers(), "https://polychat.app/chat");
+    const policy = headers.get("Permissions-Policy") ?? "";
+
+    expect(policy).toContain("microphone=*");
+    expect(policy).toContain("camera=*");
+    expect(policy).toContain("geolocation=()");
+    expect(parseCsp(headers).get("frame-src")).toContain(
+      new URL(MCP_APP_FRAME_DOCUMENT_URL).origin,
+    );
   });
 
   it("locks down directives an injected tag could otherwise abuse", () => {

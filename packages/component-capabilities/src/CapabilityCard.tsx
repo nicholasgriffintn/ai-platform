@@ -8,6 +8,7 @@ import type {
 import {
   Ellipsis,
   ExternalLink,
+  Info,
   MessageSquare,
   Pencil,
   Play,
@@ -34,8 +35,17 @@ export interface CapabilityCardProps {
   };
   tool?: ModelToolDefinition;
   skill?: SkillCardState;
+  personalApp?: PersonalAppCardState;
+  provenance?: string;
+  onShowDetails?: () => void;
   authoredCapability?: AuthoredCapabilityCardState;
   onOpen?: () => void;
+}
+
+export interface PersonalAppCardState {
+  enabled: boolean;
+  isPending: boolean;
+  onToggle: (enabled: boolean) => void;
 }
 
 export interface SkillCardState {
@@ -63,6 +73,9 @@ export function CapabilityCard({
   projectActions,
   tool,
   skill,
+  personalApp,
+  provenance,
+  onShowDetails,
   authoredCapability,
   onOpen,
 }: CapabilityCardProps) {
@@ -74,6 +87,8 @@ export function CapabilityCard({
   const isIncluded =
     !requiresExplicitEnablement || Boolean(isEnabled) || Boolean(tool) || isAlwaysOnSkill;
   const showSkillToggle = Boolean(skill) && !requiresExplicitEnablement && !isUnavailable;
+  const isTurnedOffApp =
+    Boolean(personalApp && !personalApp.enabled) && !requiresExplicitEnablement;
   const ownerActions = authoredCapability?.canManage ? authoredCapability : undefined;
   const detachAction =
     isEnabled && projectActions && canManage && (kind !== "tool" || !tool)
@@ -107,23 +122,27 @@ export function CapabilityCard({
     ? "Unavailable"
     : isAlwaysOnSkill
       ? "Always on"
-      : skill
-        ? skill.alwaysOn
-          ? "Always on"
-          : skill.enabled
-            ? "On"
-            : "Off"
-        : kind === "tool" && tool?.requiresConfiguration
-          ? isConfigured
-            ? "Configured"
-            : "Configuration required"
-          : !requiresExplicitEnablement
-            ? "Available"
-            : kind === "tool"
-              ? isEnabled
-                ? "Enabled"
-                : "Included"
-              : "Enabled";
+      : personalApp && !requiresExplicitEnablement
+        ? personalApp.enabled
+          ? "On"
+          : "Off"
+        : skill
+          ? skill.alwaysOn
+            ? "Always on"
+            : skill.enabled
+              ? "On"
+              : "Off"
+          : kind === "tool" && tool?.requiresConfiguration
+            ? isConfigured
+              ? "Configured"
+              : "Configuration required"
+            : !requiresExplicitEnablement
+              ? "Available"
+              : kind === "tool"
+                ? isEnabled
+                  ? "Enabled"
+                  : "Included"
+                : "Enabled";
 
   return (
     <Card className="justify-between p-5 shadow-none">
@@ -137,6 +156,7 @@ export function CapabilityCard({
           )}
         </div>
         <h4 className="font-semibold">{item.label}</h4>
+        {provenance && <p className="mt-0.5 text-xs text-muted-foreground">{provenance}</p>}
         <p className="mt-2 min-h-12 text-sm leading-6 text-muted-foreground">{description}</p>
       </div>
       {showSkillToggle && skill ? (
@@ -157,6 +177,18 @@ export function CapabilityCard({
             owner={ownerActions}
           />
         </div>
+      ) : isTurnedOffApp && personalApp ? (
+        <div className="flex gap-2">
+          <Button
+            className="flex-1"
+            variant="primary"
+            isLoading={personalApp.isPending}
+            onClick={() => personalApp.onToggle(true)}
+          >
+            Turn on
+          </Button>
+          <DetailsButton label={item.label} onShowDetails={onShowDetails} />
+        </div>
       ) : isIncluded ? (
         <div className="flex gap-2">
           {primaryAction && (
@@ -170,6 +202,7 @@ export function CapabilityCard({
               {primaryAction.label}
             </Button>
           )}
+          <DetailsButton label={item.label} onShowDetails={onShowDetails} />
           <CapabilityActionsMenu
             detach={detachAction}
             detachLabel={requiresExplicitEnablement ? "Remove from project" : "Remove"}
@@ -189,6 +222,18 @@ export function CapabilityCard({
         </Button>
       ) : null}
     </Card>
+  );
+}
+
+function DetailsButton({ label, onShowDetails }: { label: string; onShowDetails?: () => void }) {
+  if (!onShowDetails) {
+    return null;
+  }
+
+  return (
+    <Button variant="outline" aria-label={`About ${label}`} onClick={onShowDetails}>
+      <Info size={16} />
+    </Button>
   );
 }
 

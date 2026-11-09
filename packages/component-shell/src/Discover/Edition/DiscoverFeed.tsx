@@ -25,6 +25,7 @@ export interface DiscoverFeedProps {
   onStartStory: (card: DiscoverStoryCard) => void;
   media: ReactNode;
   mediaCount: number;
+  angles?: ReactNode;
   newCardIds?: ReadonlySet<string> | null;
 }
 
@@ -39,11 +40,13 @@ export function discoverRailTop(railHeight: number): string {
 }
 
 function DiscoverRail({
+  angles,
   comingUp,
   forYou,
   watching,
   ...cardProps
 }: CardProps & {
+  angles: ReactNode;
   comingUp: readonly DiscoverRowCard[];
   forYou: readonly DiscoverRowCard[];
   watching: readonly DiscoverRowCard[];
@@ -57,6 +60,7 @@ function DiscoverRail({
       className="sticky flex w-[clamp(18rem,26%,24rem)] shrink-0 flex-col gap-6"
       style={{ top: discoverRailTop(height) }}
     >
+      {angles}
       <RailGroup title="Coming up" cards={comingUp} {...cardProps} />
       <RailGroup title="For you" cards={forYou} {...cardProps} />
       <RailGroup title="Watching and listening" cards={watching} {...cardProps} />
@@ -113,12 +117,14 @@ export function DiscoverFeed({
   onStartStory,
   media,
   mediaCount,
+  angles = null,
   newCardIds = null,
 }: DiscoverFeedProps) {
   const { ref, width = 0 } = useElementSize<HTMLDivElement>();
   const { topics, stories, forYou, comingUp, reads, watching } = groupDiscoverCards(edition.cards);
   const railCards = [...comingUp, ...forYou, ...watching];
-  const railBeside = railCards.length > 0 && reads.length > 0 && width >= RAIL_MIN_FEED_PX;
+  const railBeside =
+    (railCards.length > 0 || angles !== null) && reads.length > 0 && width >= RAIL_MIN_FEED_PX;
   const posterCount = topics.length + stories.length;
   const shelfCount = mediaCount + posterCount;
   const selectCard = useStableCallback(onSelect);
@@ -163,9 +169,16 @@ export function DiscoverFeed({
       )}
       <div ref={ref} className="flex items-start gap-8">
         {railBeside && (
-          <DiscoverRail comingUp={comingUp} forYou={forYou} watching={watching} {...cardProps} />
+          <DiscoverRail
+            angles={angles}
+            comingUp={comingUp}
+            forYou={forYou}
+            watching={watching}
+            {...cardProps}
+          />
         )}
         <div className="flex min-w-0 flex-1 flex-col gap-10">
+          {!railBeside && angles}
           {railCards.length > 0 && !railBeside && (
             <DiscoverCardStrip title={reads.length > 0 ? "Also for you" : "For you"}>
               <RailCards cards={railCards} {...cardProps} />

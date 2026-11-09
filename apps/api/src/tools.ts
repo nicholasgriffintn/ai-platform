@@ -28,7 +28,6 @@ import { write_deck, write_sheet } from "~/modules/documents/application/tools/w
 import { write_document } from "~/modules/documents/application/tools/write_document";
 import { run_code } from "~/modules/evaluate/application/tools/run_code";
 import { audit_evidence } from "~/modules/evidence/application/tools/audit_evidence";
-import { generate_pattern } from "~/modules/experiences/application/tools/generate_pattern";
 import { extract_values } from "~/modules/extractions/application/tools/extract_values";
 import { create_image } from "~/modules/generate/application/tools/image";
 import { create_music } from "~/modules/generate/application/tools/music";
@@ -69,7 +68,12 @@ import { generate_podcast } from "~/modules/sources/application/tools/generate_p
 import { get_note } from "~/modules/sources/application/tools/get_note";
 import { process_media } from "~/modules/sources/application/tools/process_media";
 import { run_prediction } from "~/modules/sources/application/tools/run_prediction";
-import { find_related_stories, read_story } from "~/modules/stories/application/tools/stories";
+import {
+  compare_coverage,
+  find_related_stories,
+  follow_entity,
+  read_story,
+} from "~/modules/stories/application/tools/stories";
 import { call_api } from "~/modules/tools/application/builtin/api_call";
 import { calculate } from "~/modules/tools/application/builtin/calculate";
 import { get_current_time } from "~/modules/tools/application/builtin/current_time";
@@ -132,7 +136,6 @@ registerTools([
   generate_podcast,
   delegate,
   messageParent,
-  generate_pattern,
   get_note,
   extract_text_from_document,
   use_recipe_connector,
@@ -178,6 +181,8 @@ registerTools([
   read_discover_day,
   read_story,
   find_related_stories,
+  compare_coverage,
+  follow_entity,
   search_places,
   update_discover_day,
   prepare_wind_down,

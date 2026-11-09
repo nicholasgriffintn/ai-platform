@@ -41,6 +41,20 @@ export class ArticleFactRepository extends BaseRepository {
     );
   }
 
+  async listTextBetween(
+    since: string,
+    until: string,
+  ): Promise<Pick<ArticleFactRecord, "headline" | "standfirst">[]> {
+    return this.runQuery<Pick<ArticleFactRecord, "headline" | "standfirst">>(
+      "SELECT headline, standfirst FROM article_fact WHERE published_at >= ? AND published_at <= ?",
+      [since, until],
+    );
+  }
+
+  async listAllByPublished(): Promise<ArticleFactRecord[]> {
+    return this.runQuery<ArticleFactRecord>("SELECT * FROM article_fact ORDER BY published_at, id");
+  }
+
   async hasAny(): Promise<boolean> {
     return (
       (await this.runQuery<{ id: string }>("SELECT id FROM article_fact LIMIT 1", [], true)) !==

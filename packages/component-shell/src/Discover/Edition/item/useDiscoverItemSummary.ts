@@ -20,7 +20,7 @@ import { episodeHeading } from "../../Episode/EpisodePlayer.js";
 import { discoverCardEyebrow, discoverCardHeadline } from "../discover-card-drafts.js";
 import { discoverTopicGradient } from "../DiscoverTopicTile.js";
 import { NIGHT_GRADIENT, PERCH_GRADIENT, WEEK_GRADIENT } from "../media/discover-art.js";
-import type { DiscoverItem } from "./discover-items.js";
+import type { DiscoverEditionItem } from "./discover-items.js";
 
 export type DiscoverItemArt =
   | { type: "image"; background: string; image: string | null }
@@ -44,7 +44,7 @@ function sourceCover(source: Source | undefined): string | null {
 }
 
 function useSummaryFields(
-  item: DiscoverItem,
+  item: DiscoverEditionItem,
   edition: DiscoverEdition,
   windDownId: string | null,
 ): SummaryFields {
@@ -117,7 +117,7 @@ function useSummaryFields(
 }
 
 export function useDiscoverItemSummary(
-  item: DiscoverItem,
+  item: DiscoverEditionItem,
   edition: DiscoverEdition,
   windDownId: string | null,
 ): DiscoverItemSummary {

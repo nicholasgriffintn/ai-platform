@@ -49,6 +49,34 @@ export class EntityRepository extends BaseRepository {
     );
   }
 
+  async listNames(): Promise<Pick<EntityRecord, "id" | "name" | "kind">[]> {
+    return this.runQuery<Pick<EntityRecord, "id" | "name" | "kind">>(
+      "SELECT id, name, kind FROM entity",
+    );
+  }
+
+  async removeMany(ids: readonly string[]): Promise<void> {
+    await this.selectInChunks(ids, async (chunk) => {
+      await this.executeRun(
+        `DELETE FROM entity WHERE id IN (${chunk.map(() => "?").join(", ")})`,
+        chunk,
+      );
+
+      return [];
+    });
+  }
+
+  async setKind(ids: readonly string[], kind: EntityRecord["kind"]): Promise<void> {
+    await this.selectInChunks(ids, async (chunk) => {
+      await this.executeRun(
+        `UPDATE entity SET kind = ? WHERE id IN (${chunk.map(() => "?").join(", ")})`,
+        [kind, ...chunk],
+      );
+
+      return [];
+    });
+  }
+
   async listForStory(storyId: string): Promise<EntityMentionRecord[]> {
     return this.runQuery<EntityMentionRecord>(
       `SELECT entity.id, entity.name, entity.kind, entity_mention.role
@@ -82,7 +110,8 @@ export class EntityRepository extends BaseRepository {
         this.env.DB.prepare(
           `INSERT INTO entity (id, key, name, kind, aliases, first_seen_at, last_seen_at)
            VALUES (?, ?, ?, ?, ?, ?, ?)
-           ON CONFLICT (id) DO UPDATE SET aliases = excluded.aliases, last_seen_at = excluded.last_seen_at`,
+           ON CONFLICT (id) DO UPDATE SET aliases = excluded.aliases, kind = excluded.kind,
+             last_seen_at = excluded.last_seen_at`,
         ).bind(
           entity.id,
           entity.key,

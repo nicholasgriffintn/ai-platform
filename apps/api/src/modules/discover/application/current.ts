@@ -110,10 +110,7 @@ export async function refreshDiscoverCurrent(
     context.env.CACHE,
   );
   const candidates = await collectDiscoverLiveCandidates(context, profile, settings, news, now);
-  const intake = listStoryIntakeArticles(
-    candidates.map((candidate) => candidate.card),
-    news,
-  );
+  const intake = listStoryIntakeArticles(news);
 
   if (intake.length > 0) {
     await queueStoryIntake(context.env, intake);

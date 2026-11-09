@@ -22,12 +22,11 @@ export function useElementSize<T extends HTMLElement>() {
     }
 
     const updateSize = () => {
-      const rect = element.getBoundingClientRect();
+      const width = element.offsetWidth;
+      const height = element.offsetHeight;
 
       setSize((current) =>
-        current?.width === rect.width && current.height === rect.height
-          ? current
-          : { width: rect.width, height: rect.height },
+        current?.width === width && current.height === height ? current : { width, height },
       );
     };
 

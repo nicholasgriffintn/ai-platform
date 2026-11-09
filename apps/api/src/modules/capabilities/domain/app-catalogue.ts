@@ -1,14 +1,18 @@
 import {
   normaliseMcpServerLabel,
+  type AppCategory,
   type AppEntry,
+  type AppIconName,
   type AppIosDecision,
+  type AppLayout,
   type AppScope,
   type AppSurfaceDefinition,
   type AppTheme,
   type ProjectExperienceDefinition,
   type ProjectExperienceRuntime,
+  type RemoteApp,
 } from "@ngriffin_uk/polychat-schemas";
-import { hashSeed, slugify } from "@ngriffin_uk/polychat-utility-core";
+import { claimUniqueSlug, hashSeed, slugify } from "@ngriffin_uk/polychat-utility-core";
 
 /**
  * One entry per rich experience. Entries with a `capabilityId` are also published as apps a
@@ -26,8 +30,8 @@ export interface ExperienceDefinition {
   ios: AppIosDecision;
   scope?: AppScope;
   scopeReason?: string;
-  category: string;
-  icon?: string;
+  category: AppCategory;
+  icon?: AppIconName;
   theme?: AppTheme;
   tags?: string[];
   type?: "normal" | "premium" | "byok";
@@ -40,24 +44,6 @@ const WORKSPACE_STUDIO: AppSurfaceDefinition = { layout: "workspace", loading: "
 const bundled = (runtime: ProjectExperienceRuntime): AppEntry => ({ kind: "bundled", runtime });
 
 export const EXPERIENCES: ExperienceDefinition[] = [
-  {
-    id: "strudel",
-    entry: bundled("strudel"),
-    surface: CONTAINED,
-    capabilityId: "featured-strudel",
-    name: "Strudel Music Patterns",
-    category: "Creative",
-    when: "You want a playable music pattern rather than a rendered audio file.",
-    uses: "A description of the sound, or a pattern you already have.",
-    produces: "A Strudel pattern you can play, edit and hand back into a conversation.",
-    ios: "results-only",
-    description:
-      "Create and generate music patterns with AI using Strudel's powerful code-based music creation tool",
-    icon: "music",
-    theme: "indigo",
-    tags: ["music", "audio", "generation"],
-    type: "premium",
-  },
   {
     id: "sites",
     entry: bundled("sites"),
@@ -75,44 +61,6 @@ export const EXPERIENCES: ExperienceDefinition[] = [
     icon: "layout",
     theme: "sky",
     tags: ["sites", "react", "generation", "code"],
-    type: "premium",
-  },
-  {
-    id: "verbatim",
-    entry: bundled("verbatim"),
-    surface: CONTAINED,
-    capabilityId: "featured-verbatim",
-    name: "Verbatim",
-    category: "Decisions",
-    when: "You want a live transcript you can trust word for word, not one that fills the gaps with guesses.",
-    uses: "Your microphone. Each phrase is transcribed, then Clef Omni listens again and checks every word.",
-    produces:
-      "A live transcript with a probability on every word, fluency and verbatim checks, and words the audio never said struck out.",
-    ios: "web-only",
-    description:
-      "Live transcription that listens twice: every word is checked against the audio and anything it cannot hear is struck out",
-    icon: "audio-lines",
-    theme: "emerald",
-    tags: ["audio", "transcription", "decisions"],
-    type: "premium",
-  },
-  {
-    id: "polis",
-    entry: bundled("polis"),
-    surface: WORKSPACE_STUDIO,
-    capabilityId: "featured-polis",
-    name: "Polis",
-    category: "Decisions",
-    when: "You want to see what a town of tens of thousands does when you change the rules.",
-    uses: "A simulated town in your browser, with a decision model judging how each kind of resident reacts.",
-    produces:
-      "A living town to watch, laws written in plain English, town polls and side-by-side forks of what happens with and without a change.",
-    ios: "web-only",
-    description:
-      "Run a town of up to 50,000 people, pass laws in plain English, throw disasters at it and watch how everyone reacts",
-    icon: "landmark",
-    theme: "emerald",
-    tags: ["simulation", "game", "decisions"],
     type: "premium",
   },
   {
@@ -160,6 +108,7 @@ export const getProjectExperienceCatalog = (): ProjectExperienceDefinition[] =>
       capabilityId,
     }) => ({
       id,
+      slug: id,
       entry,
       surface,
       name,
@@ -187,31 +136,65 @@ export interface RemoteAppSource {
   resourceUri: string;
   name: string;
   description?: string;
-  category?: string;
-  layout: AppSurfaceDefinition["layout"];
+  category?: AppCategory;
+  icon?: string;
+  theme?: AppTheme;
+  when?: string;
+  uses?: string;
+  produces?: string;
+  layout: AppLayout;
 }
 
-const REMOTE_APP_SURFACES: Record<AppSurfaceDefinition["layout"], AppSurfaceDefinition> = {
+const REMOTE_APP_SURFACES: Record<AppLayout, AppSurfaceDefinition> = {
   contained: CONTAINED,
   workspace: { layout: "workspace", loading: "editor" },
 };
 
 const REMOTE_APP_ID_PATTERN = /^mcp-[a-z0-9-]{1,80}-[0-9a-z]{1,7}$/;
 
-export const remoteAppId = (server: string, tool: string): string => {
-  const serverKey = normaliseMcpServerLabel(server).toLowerCase();
+const serverKey = (server: string): string => normaliseMcpServerLabel(server).toLowerCase();
 
-  return `mcp-${slugify(serverKey, 32)}-${slugify(tool, 40)}-${hashSeed(`${serverKey}\n${tool}`).toString(36)}`;
+export const remoteAppId = (server: string, tool: string): string => {
+  const key = serverKey(server);
+
+  return `mcp-${slugify(key, 32)}-${slugify(tool, 40)}-${hashSeed(`${key}\n${tool}`).toString(36)}`;
 };
 
 export const isRemoteAppId = (value: string): boolean => REMOTE_APP_ID_PATTERN.test(value);
 
+const BUNDLED_APP_IDS = new Set(EXPERIENCES.map((experience) => experience.id));
+
+export const isKnownAppId = (value: string): boolean =>
+  BUNDLED_APP_IDS.has(value) || isRemoteAppId(value);
+
+const compareSources = (left: RemoteAppSource, right: RemoteAppSource): number =>
+  serverKey(left.server).localeCompare(serverKey(right.server)) ||
+  left.tool.localeCompare(right.tool);
+
+const assignServerSlugs = (sources: readonly RemoteAppSource[]): Map<string, string> => {
+  const taken = new Set(BUNDLED_APP_IDS);
+  const slugs = new Map<string, string>();
+
+  for (const source of sources) {
+    const key = serverKey(source.server);
+
+    if (!slugs.has(key)) {
+      slugs.set(key, claimUniqueSlug(slugify(key, 32) || "server", taken));
+    }
+  }
+
+  return slugs;
+};
+
 export const getRemoteExperienceCatalog = (
   sources: readonly RemoteAppSource[],
-): ProjectExperienceDefinition[] => {
+): Omit<RemoteApp, "enabled">[] => {
+  const ordered = [...sources].sort(compareSources);
+  const serverSlugs = assignServerSlugs(ordered);
+  const takenAppSlugs = new Map<string, Set<string>>();
   const seen = new Set<string>();
 
-  return sources.flatMap((source) => {
+  return ordered.flatMap((source) => {
     const id = remoteAppId(source.server, source.tool);
 
     if (seen.has(id)) {
@@ -220,9 +203,19 @@ export const getRemoteExperienceCatalog = (
 
     seen.add(id);
 
+    const serverSlug = serverSlugs.get(serverKey(source.server)) ?? "server";
+    const taken = takenAppSlugs.get(serverSlug) ?? new Set<string>();
+    const appSlug = claimUniqueSlug(
+      slugify(source.name, 40) || slugify(source.tool, 40) || "app",
+      taken,
+    );
+
+    takenAppSlugs.set(serverSlug, taken);
+
     return [
       {
         id,
+        slug: `${serverSlug}/${appSlug}`,
         entry: {
           kind: "remote" as const,
           server: source.server,
@@ -232,14 +225,21 @@ export const getRemoteExperienceCatalog = (
         surface: REMOTE_APP_SURFACES[source.layout],
         name: source.name,
         description: source.description ?? `An app from ${source.server}.`,
-        when: `You want ${source.name} from ${source.server} on its own page.`,
-        uses: `Your connection to ${source.server}. It can only read through that connection.`,
-        produces: "Whatever the app shows you. Anything that changes something is asked in a chat.",
+        when: source.when ?? `You want ${source.name} from ${source.server} on its own page.`,
+        uses:
+          source.uses ??
+          `Your connection to ${source.server}. It can only read through that connection.`,
+        produces:
+          source.produces ??
+          "Whatever the app shows you. Anything that changes something is asked in a chat.",
         ios: "web-only" as const,
         scope: "personal" as const,
         scopeReason: "Apps from your MCP servers use your own connection.",
-        category: source.category ?? "Connected",
+        icon: source.icon ?? "app",
+        theme: source.theme ?? "slate",
+        category: source.category ?? "Tools",
         tags: ["mcp"],
+        type: "premium" as const,
         requirement: { kind: "capability_kind" as const, capabilityKind: "app" as const },
       },
     ];

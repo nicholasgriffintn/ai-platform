@@ -22,7 +22,7 @@ describe("readMcpToolAppEntry", () => {
     });
   });
 
-  it("prefers the marker's own name, description, category and layout", () => {
+  it("reads the marker's presentation fields and accepts a lower-case category", () => {
     expect(
       readMcpToolAppEntry({
         ...entryTool,
@@ -31,17 +31,65 @@ describe("readMcpToolAppEntry", () => {
           "app.polychat/app": {
             name: "Pin board",
             description: "Pins.",
-            category: "Play",
-            layout: "contained",
+            category: "play",
+            icon: "puzzle",
+            theme: "rose",
+            when: "You want your pins.",
+            uses: "Your board.",
+            produces: "Nothing new.",
+            surface: "contained",
           },
         },
       }),
-    ).toMatchObject({
+    ).toEqual({
+      tool: "open_board",
+      resourceUri: "ui://board/view",
       name: "Pin board",
       description: "Pins.",
       category: "Play",
+      icon: "puzzle",
+      theme: "rose",
+      when: "You want your pins.",
+      uses: "Your board.",
+      produces: "Nothing new.",
       layout: "contained",
     });
+  });
+
+  it("drops invalid fields to their defaults instead of hiding the app", () => {
+    expect(
+      readMcpToolAppEntry({
+        ...entryTool,
+        _meta: {
+          ...entryTool._meta,
+          "app.polychat/app": {
+            category: "Games",
+            icon: "http://board.example/icon.png",
+            theme: "neon",
+            layout: "floating",
+            when: 42,
+          },
+        },
+      }),
+    ).toEqual({
+      tool: "open_board",
+      resourceUri: "ui://board/view",
+      name: "Board",
+      description: "A live board.",
+      layout: "workspace",
+    });
+  });
+
+  it("accepts an https icon URL and the legacy layout field", () => {
+    expect(
+      readMcpToolAppEntry({
+        ...entryTool,
+        _meta: {
+          ...entryTool._meta,
+          "app.polychat/app": { icon: "https://board.example/icon.png", layout: "contained" },
+        },
+      }),
+    ).toMatchObject({ icon: "https://board.example/icon.png", layout: "contained" });
   });
 
   it.each<[string, McpTool]>([
@@ -49,10 +97,6 @@ describe("readMcpToolAppEntry", () => {
     [
       "has a marker that is not an object",
       { ...entryTool, _meta: { ...entryTool._meta, "app.polychat/app": true } },
-    ],
-    [
-      "has an unknown layout",
-      { ...entryTool, _meta: { ...entryTool._meta, "app.polychat/app": { layout: "floating" } } },
     ],
     [
       "has no ui:// view",

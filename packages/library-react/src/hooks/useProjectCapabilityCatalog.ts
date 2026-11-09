@@ -5,17 +5,15 @@ import {
 } from "@ngriffin_uk/polychat-schemas";
 import { useMemo } from "react";
 
+import { getExperienceCapabilityId } from "../lib/app-addresses.js";
 import { useCapabilityCatalog } from "./useCapabilityCatalog.js";
 import { useAssistantRecipes } from "./useRecipes.js";
+import { useRemoteApps } from "./useRemoteApps.js";
 import { useTools } from "./useTools.js";
 
 function toEnableableApp(experience: ProjectExperienceDefinition) {
-  if (experience.requirement.kind !== "capability") {
-    return null;
-  }
-
   return {
-    id: experience.requirement.capabilityId,
+    id: getExperienceCapabilityId(experience),
     name: experience.name,
     description: experience.description,
     category: experience.category,
@@ -33,16 +31,19 @@ export function useProjectCapabilityCatalog(projectId?: string) {
   const recipesQuery = useAssistantRecipes();
   const toolsQuery = useTools({ projectId });
   const callableTools = useMemo(() => toolsQuery.data ?? [], [toolsQuery.data]);
-  const experiences = useMemo(
-    () => catalogQuery.data?.experiences ?? [],
-    [catalogQuery.data?.experiences],
+  const remoteAppsQuery = useRemoteApps({ enabled: !projectId });
+  const experiences = useMemo<ProjectExperienceDefinition[]>(
+    () => [
+      ...(catalogQuery.data?.experiences ?? []),
+      ...(projectId ? [] : (remoteAppsQuery.data ?? [])),
+    ],
+    [catalogQuery.data?.experiences, projectId, remoteAppsQuery.data],
   );
   const apps = useMemo(
     () =>
       experiences
         .filter((experience) => !projectId || experience.scope !== "personal")
-        .map(toEnableableApp)
-        .filter((app) => app !== null),
+        .map(toEnableableApp),
     [experiences, projectId],
   );
   const recipes = useMemo(() => recipesQuery.data?.recipes ?? [], [recipesQuery.data?.recipes]);

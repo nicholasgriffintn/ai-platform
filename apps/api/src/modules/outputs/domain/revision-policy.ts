@@ -9,7 +9,6 @@ const RESTORABLE_LOCAL_CONTENT = new Set([
   "notes:note",
   "documents:document",
   "document-writer:document",
-  "strudel:strudel_pattern",
 ]);
 
 export function getOutputRestoreCapability(

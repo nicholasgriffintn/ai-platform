@@ -235,6 +235,20 @@ export function slugify(value: string, maxLength?: number): string {
   return bounded.replace(/^-|-$/gu, "");
 }
 
+export function claimUniqueSlug(base: string, taken: Set<string>): string {
+  let candidate = base;
+  let suffix = 2;
+
+  while (taken.has(candidate)) {
+    candidate = `${base}-${suffix}`;
+    suffix += 1;
+  }
+
+  taken.add(candidate);
+
+  return candidate;
+}
+
 export function trimTrailingCharacters(value: string, characters: string): string {
   let end = value.length;
 

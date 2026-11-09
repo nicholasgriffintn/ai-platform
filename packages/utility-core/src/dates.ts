@@ -82,6 +82,16 @@ export function formatRelativeTime(dateString: string, now = new Date()): string
   return "just now";
 }
 
+export function formatRecentDay(dateString: string, now = new Date()): string {
+  const date = parseTimestamp(dateString);
+  const recent = now.getTime() - date.getTime() < 6 * DAY_MS;
+
+  return date.toLocaleDateString(
+    "en-GB",
+    recent ? { weekday: "long" } : { day: "numeric", month: "short" },
+  );
+}
+
 export function isoToEpochSeconds(value: string): number {
   return Math.floor(Date.parse(value) / 1000);
 }
@@ -263,6 +273,24 @@ export function shiftCalendarDate(calendarDate: string, days: number): string {
   return new Date(Date.UTC(year ?? 1970, (month ?? 1) - 1, (day ?? 1) + days))
     .toISOString()
     .slice(0, 10);
+}
+
+export function utcCalendarDate(at: Date): string {
+  return at.toISOString().slice(0, 10);
+}
+
+export function formatShortCalendarDate(calendarDate: string): string {
+  return new Date(`${calendarDate}T00:00:00Z`).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+  });
+}
+
+export function startOfIsoWeek(calendarDate: string): string {
+  const weekday = new Date(`${calendarDate}T00:00:00Z`).getUTCDay();
+
+  return shiftCalendarDate(calendarDate, -((weekday + 6) % 7));
 }
 
 export function isoWeekKey(calendarDate: string): string {

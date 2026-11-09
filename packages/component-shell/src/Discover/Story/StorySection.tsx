@@ -1,9 +1,20 @@
 import type { ReactNode } from "react";
 
-export function StorySection({ title, children }: { title: string; children: ReactNode }) {
+export function StorySection({
+  title,
+  action,
+  children,
+}: {
+  title: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="polychat-eyebrow">{title}</h2>
+    <section data-stagger aria-label={title} className="flex min-w-0 flex-col gap-3">
+      <div className="flex min-h-6 items-center gap-2">
+        <h3 className="polychat-eyebrow flex-1">{title}</h3>
+        {action}
+      </div>
       {children}
     </section>
   );

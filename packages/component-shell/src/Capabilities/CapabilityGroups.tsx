@@ -7,6 +7,7 @@ import {
 import {
   type CapabilitySurface,
   type EnabledCapability,
+  getAppProvenance,
   getCapabilityOpenPath,
   getProjectCapabilityKind,
   type ProjectCapabilityKindGroup,
@@ -23,11 +24,19 @@ import type { ReactNode } from "react";
 import { Fragment } from "react";
 import { useNavigate } from "react-router";
 
+import type { PersonalAppToggle } from "../Apps/useAppDetails.js";
 import { resolveCapabilityCardState } from "./capabilityCardState.js";
 import type { PersonalSkillControls } from "./useCapabilityLibraryController.js";
 
+export interface AppCardControls {
+  byCapabilityId: Map<string, ProjectExperienceDefinition>;
+  select: (capabilityId: string) => void;
+  toggleFor: (experience: ProjectExperienceDefinition) => PersonalAppToggle | undefined;
+}
+
 interface CapabilityGroupsProps {
   appById: Map<string, CapabilityCatalogItem>;
+  appControls: AppCardControls;
   capabilities: EnabledCapability[];
   currentUserId?: string | number;
   groups: ProjectCapabilityKindGroup[];
@@ -103,6 +112,7 @@ function resolveAuthoredCapability(
 
 export function CapabilityGroups({
   appById,
+  appControls,
   capabilities,
   currentUserId,
   groups,
@@ -168,6 +178,10 @@ export function CapabilityGroups({
                       toolConfigurationById.get(item.capability.id) ??
                       {};
                     const openPath = getCapabilityOpenPath(item, surface, experiences);
+                    const experience =
+                      itemKind === "app"
+                        ? appControls.byCapabilityId.get(item.capability.id)
+                        : undefined;
 
                     return (
                       <CapabilityCard
@@ -179,6 +193,11 @@ export function CapabilityGroups({
                         item={item}
                         kind={itemKind}
                         app={appById.get(item.capability.id)}
+                        personalApp={experience && appControls.toggleFor(experience)}
+                        provenance={experience && getAppProvenance(experience)}
+                        onShowDetails={
+                          experience ? () => appControls.select(item.capability.id) : undefined
+                        }
                         onOpen={openPath ? () => void navigate(openPath) : undefined}
                         onConfigure={
                           tool?.requiresConfiguration

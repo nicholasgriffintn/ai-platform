@@ -6,6 +6,7 @@ const MORPH_MS = 460;
 const MORPH_MAX_AGE_MS = 700;
 const OPEN_STAGGER = { delay: 160, step: 45, duration: 320 };
 const SWITCH_STAGGER = { delay: 0, step: 30, duration: 180 };
+const STAGGER_LIMIT = 6;
 const COMPOSER_RISE = { delay: 300, duration: 320 };
 
 export type DiscoverEntrance = "open" | "switch";
@@ -117,7 +118,7 @@ export function playDiscoverEntrance(
   root.querySelectorAll("[data-stagger], [data-welcome-starters]").forEach((element, index) => {
     element.animate(rise, {
       duration: timing.duration,
-      delay: offset + index * timing.step,
+      delay: offset + Math.min(index, STAGGER_LIMIT) * timing.step,
       easing: DISCOVER_EASE,
       fill: "backwards",
     });

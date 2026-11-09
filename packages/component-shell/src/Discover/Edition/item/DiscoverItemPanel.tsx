@@ -7,7 +7,13 @@ import { DiscoverIdlePane } from "../DiscoverStates.js";
 import type { DiscoverMedia } from "../media/media-status.js";
 import type { DiscoverEditionController } from "../useDiscoverEditionController.js";
 import { discoverItemKind } from "./discover-item-kind.js";
-import { discoverItemKey, type DiscoverItem } from "./discover-items.js";
+import {
+  discoverItemKey,
+  isDiscoverGraphItem,
+  type DiscoverEditionItem,
+  type DiscoverItem,
+} from "./discover-items.js";
+import { DiscoverGraphItemView } from "./DiscoverGraphItemView.js";
 import { DiscoverItemHeader } from "./DiscoverItemHeader.js";
 import { DiscoverItemView } from "./DiscoverItemView.js";
 
@@ -28,6 +34,20 @@ const MEDIA_LABELS: Record<DiscoverMedia, string> = {
   story: "tonight's story",
 };
 
+function StillPlaying({ media, onShow }: { media: DiscoverMedia; onShow: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onShow}
+      className="flex shrink-0 items-center gap-2 border-b border-border bg-surface px-5 py-2 text-left text-xs text-muted-foreground transition-colors hover:text-foreground"
+    >
+      <AudioLines size={14} className="text-active-work" aria-hidden />
+      Still playing {MEDIA_LABELS[media]}
+      <span className="ml-auto font-medium text-foreground">Back to it</span>
+    </button>
+  );
+}
+
 export function DiscoverItemPanel({
   controller,
   panelRef,
@@ -45,10 +65,12 @@ export function DiscoverItemPanel({
 }) {
   const { panelEdition: edition, mediaPlaying, media, closePanel } = controller;
   const mediaEdition = controller.mediaEdition;
-  const playingMedia = useMemo<DiscoverItem>(() => ({ type: "media", media }), [media]);
+  const playingMedia = useMemo<DiscoverEditionItem>(() => ({ type: "media", media }), [media]);
+  const overlaid = shown !== null && shown.type !== "media";
   const mediaItem =
-    shown?.type === "media" ? shown : shown?.type === "card" && mediaPlaying ? playingMedia : null;
+    shown?.type === "media" ? shown : overlaid && mediaPlaying ? playingMedia : null;
   const cardItem = shown?.type === "card" ? shown : null;
+  const graphItem = shown && isDiscoverGraphItem(shown) ? shown : null;
   const onEscape = useEffectEvent((event: KeyboardEvent) => {
     if (event.key === "Escape" && !event.defaultPrevented && !ownsEscapeKey(event.target)) {
       closePanel();
@@ -77,7 +99,7 @@ export function DiscoverItemPanel({
       )}
     >
       <div className="flex h-full min-h-0 w-full flex-col">
-        {!edition && shown ? (
+        {!edition && shown && !graphItem ? (
           <>
             <DiscoverItemHeader
               kind={discoverItemKind(shown)}
@@ -88,7 +110,7 @@ export function DiscoverItemPanel({
           </>
         ) : null}
         {mediaEdition && mediaItem ? (
-          <div className={cn("flex min-h-0 flex-1 flex-col", cardItem && "hidden")}>
+          <div className={cn("flex min-h-0 flex-1 flex-col", overlaid && "hidden")}>
             <DiscoverItemView
               key={discoverItemKey(mediaItem)}
               item={mediaItem}
@@ -100,21 +122,24 @@ export function DiscoverItemPanel({
         ) : null}
         {edition && cardItem ? (
           <div className="flex min-h-0 flex-1 flex-col">
-            {mediaPlaying ? (
-              <button
-                type="button"
-                onClick={controller.showMedia}
-                className="flex shrink-0 items-center gap-2 border-b border-border bg-surface px-5 py-2 text-left text-xs text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <AudioLines size={14} className="text-active-work" aria-hidden />
-                Still playing {MEDIA_LABELS[media]}
-                <span className="ml-auto font-medium text-foreground">Back to it</span>
-              </button>
-            ) : null}
+            {mediaPlaying ? <StillPlaying media={media} onShow={controller.showMedia} /> : null}
             <DiscoverItemView
               key={discoverItemKey(cardItem)}
               item={cardItem}
               edition={edition}
+              controller={controller}
+              playEntrance={playEntrance}
+            />
+          </div>
+        ) : null}
+        {graphItem ? (
+          <div className="flex min-h-0 flex-1 flex-col">
+            {mediaPlaying && mediaEdition ? (
+              <StillPlaying media={media} onShow={controller.showMedia} />
+            ) : null}
+            <DiscoverGraphItemView
+              key={discoverItemKey(graphItem)}
+              item={graphItem}
               controller={controller}
               playEntrance={playEntrance}
             />

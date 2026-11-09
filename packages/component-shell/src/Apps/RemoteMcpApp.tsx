@@ -1,7 +1,11 @@
 import { McpAppView } from "@ngriffin_uk/polychat-component-content";
 import { EmptyState, Link } from "@ngriffin_uk/polychat-component-ui";
 import { themeAppearance } from "@ngriffin_uk/polychat-library-chat";
-import { callMcpAppTool, useChatStore } from "@ngriffin_uk/polychat-library-client";
+import {
+  callMcpAppTool,
+  useChatStore,
+  MCP_APP_FRAME_DOCUMENT_URL,
+} from "@ngriffin_uk/polychat-library-client";
 import {
   getPlacePaths,
   useRemoteAppView,
@@ -59,6 +63,7 @@ export function RemoteMcpApp({
   const frame = (
     <McpAppView
       app={view}
+      frameDocumentUrl={MCP_APP_FRAME_DOCUMENT_URL}
       displayMode="fullscreen"
       theme={theme}
       callTool={callTool}

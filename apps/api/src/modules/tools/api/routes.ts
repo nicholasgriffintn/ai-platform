@@ -13,6 +13,7 @@ import {
   mcpConnectionSchema,
   mcpConnectionListSchema,
   mcpAppCallToolResultSchema,
+  mcpAppFrameQuerySchema,
   mcpAppToolCallRequestSchema,
   mcpClientMetadataDocumentSchema,
   mcpOAuthCallbackQuerySchema,
@@ -27,6 +28,11 @@ import { defineResource } from "~/infrastructure/http/resource";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
 import { runToolDirectly } from "~/modules/tools/application/direct-run";
 import { callMcpAppTool } from "~/modules/tools/application/mcp-app-calls";
+import {
+  isFramedRequest,
+  MCP_APP_FRAME_CLEARED_HEADERS,
+  renderMcpAppFrame,
+} from "~/modules/tools/application/mcp-app-frame";
 import {
   createMcpConnection,
   deleteMcpConnection,
@@ -111,6 +117,33 @@ defineResource(app, { idParam: "tool_id", tags: ["tools"] }, (tools) => {
     bodySchema: mcpAppToolCallRequestSchema,
     responses: { 200: { description: "The tool result", schema: mcpAppCallToolResultSchema } },
     handler: ({ serviceContext, body }) => callMcpAppTool(serviceContext, body),
+  });
+
+  tools.collection("mcp_app_frames", "frame_id").view("document", {
+    auth: false,
+    cache: "no-store",
+    summary: "The sandbox page an MCP app view runs in",
+    description:
+      "A fixed page on its own origin that receives an app view's HTML from Polychat and runs it under a policy built from the view's declared domains, so views never inherit Polychat's own page policy. It only renders inside a frame on Polychat.",
+    querySchema: mcpAppFrameQuerySchema,
+    responses: { 200: { description: "The sandbox page" }, 403: { description: "Not framed" } },
+    handler: async ({ query, raw, serviceContext }) => {
+      if (!isFramedRequest(raw.req.header("Sec-Fetch-Dest"))) {
+        return raw.text("This page only opens inside Polychat.", 403);
+      }
+
+      const frame = renderMcpAppFrame(serviceContext, query.csp);
+
+      for (const name of MCP_APP_FRAME_CLEARED_HEADERS) {
+        raw.header(name, undefined);
+      }
+
+      for (const [name, value] of Object.entries(frame.headers)) {
+        raw.header(name, value);
+      }
+
+      return raw.body(frame.body, 200);
+    },
   });
 
   tools.singleton("configuration").update({

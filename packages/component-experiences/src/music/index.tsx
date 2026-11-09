@@ -35,7 +35,3 @@ export function MusicTransportControls({
 
 export * from "./strudel";
 export * from "./StrudelPlayer";
-export * from "./examples";
-export * from "./StrudelStudio";
-export * from "./StrudelPatternForm";
-export * from "./StrudelPatternGrid";

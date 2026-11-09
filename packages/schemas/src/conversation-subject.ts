@@ -1,6 +1,12 @@
 import z from "zod/v4";
 
-export const CONVERSATION_SUBJECT_TYPES = ["output", "source", "memory", "discover_card"] as const;
+export const CONVERSATION_SUBJECT_TYPES = [
+  "output",
+  "source",
+  "memory",
+  "discover_card",
+  "story",
+] as const;
 
 export const conversationSubjectTypeSchema = z.enum(CONVERSATION_SUBJECT_TYPES);
 

@@ -20,6 +20,8 @@ import { MemoryDocumentRepository } from "~/modules/memory-documents/infrastruct
 import { formatOutput } from "~/modules/outputs/application";
 import { requireOutputAccess } from "~/modules/outputs/application/access";
 import { requireSourceAccess } from "~/modules/sources/application/sources";
+import { readStoryPage } from "~/modules/stories/application/read-models";
+import { renderStoryForModel } from "~/modules/stories/domain/render";
 import { requireProjectAccess } from "~/modules/workspaces/application/access";
 
 const SUBJECT_CONTEXT_SHARE = 3;
@@ -229,6 +231,22 @@ async function loadDiscoverCardSubject(
   return { subject, ...card, projectId: null, linkedSourceIds: [] };
 }
 
+async function loadStorySubject(
+  context: ServiceContext,
+  subject: ConversationSubject,
+): Promise<LoadedSubject> {
+  const page = await readStoryPage(context.env, subject.id);
+
+  return {
+    subject,
+    title: page.story.title,
+    revision: page.version?.version ?? 0,
+    projectId: null,
+    linkedSourceIds: [],
+    text: renderStoryForModel(page),
+  };
+}
+
 export async function requireSubject(
   context: ServiceContext,
   subject: ConversationSubject,
@@ -244,6 +262,8 @@ export async function requireSubject(
       return loadMemorySubject(context, user.id, subject);
     case "discover_card":
       return loadDiscoverCardSubject(context, user.id, subject);
+    case "story":
+      return loadStorySubject(context, subject);
   }
 }
 

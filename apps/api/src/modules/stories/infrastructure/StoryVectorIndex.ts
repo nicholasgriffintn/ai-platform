@@ -3,6 +3,9 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 
 import type { IEnv } from "~/types";
 
+import { DevStoryVectorStore } from "./DevStoryVectorStore";
+import { VectorizeStoryVectorStore, type StoryVectorStore } from "./StoryVectorStore";
+
 export const STORY_EMBEDDING_MODEL = "@cf/baai/bge-m3";
 
 export interface ArticleVectorMatch {
@@ -26,13 +29,25 @@ export interface ArticleVectorMetadata {
 export class StoryVectorIndex {
   private constructor(
     private readonly env: IEnv,
-    private readonly articles: Vectorize,
-    private readonly stories: Vectorize,
+    private readonly articles: StoryVectorStore,
+    private readonly stories: StoryVectorStore,
   ) {}
 
   static from(env: IEnv): StoryVectorIndex | null {
-    return env.DISCOVER_ARTICLE_VECTORS && env.DISCOVER_STORY_VECTORS
-      ? new StoryVectorIndex(env, env.DISCOVER_ARTICLE_VECTORS, env.DISCOVER_STORY_VECTORS)
+    if (env.DISCOVER_ARTICLE_VECTORS && env.DISCOVER_STORY_VECTORS) {
+      return new StoryVectorIndex(
+        env,
+        new VectorizeStoryVectorStore(env.DISCOVER_ARTICLE_VECTORS),
+        new VectorizeStoryVectorStore(env.DISCOVER_STORY_VECTORS),
+      );
+    }
+
+    return env.ENV === "development" && env.DB
+      ? new StoryVectorIndex(
+          env,
+          new DevStoryVectorStore(env, "articles"),
+          new DevStoryVectorStore(env, "stories"),
+        )
       : null;
   }
 
@@ -67,15 +82,11 @@ export class StoryVectorIndex {
   ): Promise<ArticleVectorMatch[]> {
     const since = isoToEpochSeconds(window.since);
     const until = isoToEpochSeconds(window.until);
-    const result = await this.articles.query([...vector], {
-      topK,
-      returnMetadata: "all",
-      filter: { publishedAt: { $gte: since, $lte: until } },
-    });
+    const matches = await this.articles.query(vector, topK, { since, until });
 
-    return result.matches.flatMap((match) => {
-      const publishedAt = match.metadata?.publishedAt;
-      const storyId = match.metadata?.storyId;
+    return matches.flatMap((match) => {
+      const publishedAt = match.metadata.publishedAt;
+      const storyId = match.metadata.storyId;
 
       return typeof publishedAt === "number" && publishedAt >= since && publishedAt <= until
         ? [
@@ -90,39 +101,31 @@ export class StoryVectorIndex {
   }
 
   async upsertArticle(id: string, vector: readonly number[], metadata: ArticleVectorMetadata) {
-    await this.articles.upsert([
-      {
-        id,
-        values: [...vector],
-        metadata: {
-          storyId: metadata.storyId,
-          outletId: metadata.outletId,
-          publishedAt: isoToEpochSeconds(metadata.publishedAt),
-          ...(metadata.topicKey ? { topicKey: metadata.topicKey } : {}),
-        },
-      },
-    ]);
+    await this.articles.upsert(id, vector, {
+      storyId: metadata.storyId,
+      outletId: metadata.outletId,
+      publishedAt: isoToEpochSeconds(metadata.publishedAt),
+      ...(metadata.topicKey ? { topicKey: metadata.topicKey } : {}),
+    });
   }
 
   async readStoryVector(storyId: string): Promise<number[] | null> {
-    const [vector] = await this.stories.getByIds([storyId]);
-
-    return vector ? Array.from(vector.values) : null;
+    return this.stories.get(storyId);
   }
 
   async upsertStory(storyId: string, vector: readonly number[], lastArticleAt: string) {
-    await this.stories.upsert([
-      {
-        id: storyId,
-        values: [...vector],
-        metadata: { lastArticleAt: isoToEpochSeconds(lastArticleAt) },
-      },
-    ]);
+    await this.stories.upsert(storyId, vector, {
+      lastArticleAt: isoToEpochSeconds(lastArticleAt),
+    });
+  }
+
+  async removeStory(storyId: string): Promise<void> {
+    await this.stories.remove(storyId);
   }
 
   async queryStories(vector: readonly number[], topK: number): Promise<StoryVectorMatch[]> {
-    const result = await this.stories.query([...vector], { topK });
+    const matches = await this.stories.query(vector, topK);
 
-    return result.matches.map((match) => ({ id: match.id, score: match.score }));
+    return matches.map((match) => ({ id: match.id, score: match.score }));
   }
 }

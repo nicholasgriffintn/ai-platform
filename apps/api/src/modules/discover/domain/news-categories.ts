@@ -164,6 +164,13 @@ export function isDiscoverNewsTopic(topic: string): boolean {
   return NEWS_TOPICS.has(discoverTopicKey(topic));
 }
 
+export function discoverNewsTopicLabel(topicKey: string): string {
+  return (
+    DISCOVER_NEWS_CATEGORIES.find((category) => discoverTopicKey(category.topic) === topicKey)
+      ?.label ?? topicKey
+  );
+}
+
 function newestFirst(items: readonly DiscoverNewsItem[], since: string): DiscoverNewsItem[] {
   return items
     .filter((item) => item.publishedAt >= since)

@@ -13,8 +13,9 @@ import type { IUser } from "~/types";
 const PASHI_CONNECTOR = "pashi";
 
 export const PASHI_MCP_LABEL = "Pashi";
-export function pashiMcpUrl(env: { PASHI_URL?: string }) {
-  return `${resolvePashiOrigin(env.PASHI_URL)}/mcp`;
+
+export function pashiMcpUrl(env: { PASHI_URL?: string; ENV?: string }) {
+  return `${resolvePashiOrigin(env.PASHI_URL, { allowLocal: env.ENV === "development" })}/mcp`;
 }
 
 export function readPashiLinkToken(context: ServiceContext, userId: number) {

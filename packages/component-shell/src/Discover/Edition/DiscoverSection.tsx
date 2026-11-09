@@ -36,7 +36,7 @@ function shelfStyle(width: number | undefined, count: number): ShelfStyle | unde
   return width ? { "--discover-poster": `${discoverPosterWidth(width, count)}px` } : undefined;
 }
 
-function DiscoverShelfHeading({ title, controls }: { title: string; controls: ReactNode }) {
+export function DiscoverShelfHeading({ title, controls }: { title: string; controls: ReactNode }) {
   return (
     <div className="flex h-7 items-center gap-2">
       <h3 className="polychat-eyebrow flex-1">{title}</h3>

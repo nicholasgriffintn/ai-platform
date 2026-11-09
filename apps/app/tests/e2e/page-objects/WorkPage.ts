@@ -690,65 +690,6 @@ export class WorkPage extends BasePage {
     await this.getCapabilityAddButton(recipeName).waitFor();
   }
 
-  async createUpdateAndDeleteStrudelPattern(name: string, description: string) {
-    await this.openProjectApp("Strudel Music Patterns");
-    await this.page.getByRole("link", { name: "New pattern", exact: true }).click();
-    await this.page.getByRole("button", { name: /Simple Drums/ }).click();
-    await this.page.getByLabel("Name", { exact: true }).fill(name);
-    await this.page.getByLabel("Description", { exact: true }).fill(description);
-    await this.page.getByLabel(/Tags/).fill("release, validation");
-    const createResponse = this.page.waitForResponse(
-      (response) =>
-        response.request().method() === "POST" && /\/apps\/strudel(?:\?|$)/.test(response.url()),
-    );
-
-    await this.page.getByRole("button", { name: "Save Pattern" }).click();
-    const created = await createResponse;
-
-    if (!created.ok()) {
-      throw new Error(
-        `Strudel pattern creation failed with ${created.status()}: ${await created.text()}`,
-      );
-    }
-
-    await this.page.getByLabel("Name", { exact: true }).waitFor();
-
-    await this.page.getByLabel("Description", { exact: true }).fill(`${description} Updated.`);
-    const updateResponse = this.page.waitForResponse(
-      (response) =>
-        response.request().method() === "PATCH" && response.url().includes("/experiences/strudel/"),
-    );
-
-    await this.page.getByRole("button", { name: "Save", exact: true }).click();
-    const updated = await updateResponse;
-
-    if (!updated.ok()) {
-      throw new Error(
-        `Strudel pattern update failed with ${updated.status()}: ${await updated.text()}`,
-      );
-    }
-
-    await this.page.mouse.move(0, 0);
-    await this.page.getByText("Pattern saved", { exact: true }).last().waitFor({ state: "hidden" });
-
-    const deleteResponse = this.page.waitForResponse(
-      (response) =>
-        response.request().method() === "DELETE" &&
-        response.url().includes("/experiences/strudel/"),
-    );
-
-    await this.page.getByRole("button", { name: "Delete pattern" }).click();
-    const deleted = await deleteResponse;
-
-    if (!deleted.ok()) {
-      throw new Error(
-        `Strudel pattern deletion failed with ${deleted.status()}: ${await deleted.text()}`,
-      );
-    }
-
-    await this.page.getByRole("heading", { name: "No patterns yet" }).waitFor();
-  }
-
   async searchProjectCapabilities(name: string) {
     await this.openProjectSurface("Plugins");
     await this.capabilitySearch().fill(name);

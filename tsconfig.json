@@ -185,9 +185,6 @@
       "path": "packages/library-policy/tsconfig.typecheck.json"
     },
     {
-      "path": "packages/library-polis/tsconfig.json"
-    },
-    {
       "path": "packages/library-prompts-catalogue/tsconfig.json"
     },
     {

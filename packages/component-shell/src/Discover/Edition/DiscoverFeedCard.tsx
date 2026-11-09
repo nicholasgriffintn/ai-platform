@@ -8,6 +8,9 @@ import { memo } from "react";
 import { discoverCardBody } from "./discover-card-drafts.js";
 import { DiscoverArticleImage } from "./DiscoverArticleImage.js";
 
+export const DISCOVER_CARD_SURFACE =
+  "group flex w-full rounded-2xl border border-border bg-surface text-left ring-offset-2 ring-offset-canvas transition hover:border-border-strong hover:bg-surface-elevated focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none active:scale-[.99] motion-reduce:active:scale-100";
+
 export type DiscoverRowCard = Exclude<DiscoverCard, { kind: "topic" | "wind_down" }>;
 
 function describeReadSource(source: string, url: string): string {
@@ -84,16 +87,15 @@ function cardText(card: DiscoverRowCard): { kicker: string; title: string; detai
       return { kicker: "Poly asks", title: card.question, detail: null };
     case "read":
       return {
-        kicker: [
-          describeReadSource(card.source, card.url),
+        kicker:
           card.outletCount && card.outletCount > 1
-            ? formatCount(card.outletCount, "outlet")
-            : card.alsoIn?.length
-              ? `+${card.alsoIn.length} more`
-              : "",
-        ]
-          .filter(Boolean)
-          .join(" · "),
+            ? `${card.source} · ${formatCount(card.outletCount, "outlet")}`
+            : [
+                describeReadSource(card.source, card.url),
+                card.alsoIn?.length ? `+${card.alsoIn.length} more` : "",
+              ]
+                .filter(Boolean)
+                .join(" · "),
         title: card.title,
         detail: discoverCardBody(card),
       };
@@ -144,8 +146,8 @@ export const DiscoverFeedCard = memo(function DiscoverFeedCard({
       data-discover-item={`card:${card.id}`}
       onClick={() => onSelect(card)}
       className={cn(
-        "group flex w-full flex-col gap-3 rounded-2xl border border-border bg-surface text-left ring-offset-2 ring-offset-canvas transition hover:border-border-strong hover:bg-surface-elevated focus-visible:ring-2 focus-visible:ring-active-work focus-visible:outline-none active:scale-[.99] motion-reduce:active:scale-100",
-        "p-4",
+        DISCOVER_CARD_SURFACE,
+        "flex-col gap-3 p-4",
         selected && "border-border-strong bg-surface-elevated ring-2 ring-active-work",
         hidden && "opacity-40",
       )}

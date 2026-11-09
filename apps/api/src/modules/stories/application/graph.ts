@@ -3,6 +3,7 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-core";
 import { parseJsonStringArray } from "@ngriffin_uk/polychat-utility-server/json";
 
 import {
+  correctEntityKind,
   entityId,
   entityKey,
   mergeEntityCandidates,
@@ -30,13 +31,27 @@ export interface StoryGraphOutcome {
   edges: number;
 }
 
+function storyCorpus(
+  draft: Pick<StoryVersionDraft, "overview" | "agreed" | "disputed" | "gaps">,
+  facts: readonly ArticleFactRecord[],
+): string {
+  return [
+    ...draft.overview,
+    ...draft.agreed,
+    ...draft.disputed,
+    ...draft.gaps,
+    ...facts.flatMap((fact) => [fact.headline, fact.standfirst]),
+  ].join("\n");
+}
+
 async function recordEntities(
   env: IEnv,
   storyId: string,
   draft: Pick<StoryVersionDraft, "entities">,
+  corpus: string,
   seenAt: string,
 ): Promise<EntityUpsert[]> {
-  const merged = mergeEntityCandidates(draft.entities);
+  const merged = mergeEntityCandidates(draft.entities, corpus);
   const keyed = await Promise.all(
     merged.map(async (entity) => ({ ...entity, id: await entityId(entity.key) })),
   );
@@ -54,7 +69,7 @@ async function recordEntities(
       id: entity.id,
       key: entity.key,
       name: existing?.name ?? entity.name,
-      kind: existing?.kind ?? entity.kind,
+      kind: correctEntityKind(entity.name, existing?.kind ?? entity.kind),
       aliases: [
         ...new Set([...(parseJsonStringArray(existing?.aliases) ?? []), ...entity.aliases]),
       ],
@@ -106,16 +121,22 @@ async function recordQuotes(
 export async function recordStoryGraph(
   env: IEnv,
   story: StoryRecord,
-  draft: Pick<StoryVersionDraft, "entities" | "quotes">,
+  draft: Pick<
+    StoryVersionDraft,
+    "entities" | "quotes" | "overview" | "agreed" | "disputed" | "gaps"
+  >,
   facts: readonly ArticleFactRecord[],
   bodies: ReadonlyMap<string, string>,
   now: Date,
 ): Promise<StoryGraphOutcome> {
   const seenAt = now.toISOString();
-  const entities = await recordEntities(env, story.id, draft, seenAt);
+  const corpus = storyCorpus(draft, facts);
+  const entities = await recordEntities(env, story.id, draft, corpus, seenAt);
   const quotes = await recordQuotes(env, story.id, draft, facts, bodies, entities, seenAt);
   const leadIds = await Promise.all(
-    pickLeadEntities(mergeEntityCandidates(draft.entities)).map((entity) => entityId(entity.key)),
+    pickLeadEntities(mergeEntityCandidates(draft.entities, corpus)).map((entity) =>
+      entityId(entity.key),
+    ),
   );
 
   await new StoryRepository(env).setLeadEntities(story.id, leadIds);

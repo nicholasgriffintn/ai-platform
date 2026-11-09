@@ -11,9 +11,16 @@ import type { DiscoverMedia } from "../media/media-status.js";
 
 export type DiscoverTopicCard = Extract<DiscoverCard, { kind: "topic" }>;
 
-export type DiscoverItem =
+export type DiscoverEditionItem =
   | { type: "media"; media: DiscoverMedia }
   | { type: "card"; card: DiscoverCard };
+
+export type DiscoverGraphItem =
+  | { type: "story"; storyId: string }
+  | { type: "entity"; entityId: string }
+  | { type: "angles" };
+
+export type DiscoverItem = DiscoverEditionItem | DiscoverGraphItem;
 
 export interface DiscoverCardGroups {
   topics: DiscoverTopicCard[];
@@ -24,8 +31,23 @@ export interface DiscoverCardGroups {
   watching: DiscoverRowCard[];
 }
 
+export function isDiscoverGraphItem(item: DiscoverItem): item is DiscoverGraphItem {
+  return item.type === "story" || item.type === "entity" || item.type === "angles";
+}
+
 export function discoverItemKey(item: DiscoverItem): string {
-  return item.type === "media" ? `media:${item.media}` : `card:${item.card.id}`;
+  switch (item.type) {
+    case "media":
+      return `media:${item.media}`;
+    case "card":
+      return `card:${item.card.id}`;
+    case "story":
+      return `story:${item.storyId}`;
+    case "entity":
+      return `entity:${item.entityId}`;
+    case "angles":
+      return "angles";
+  }
 }
 
 export function discoverMediaShelf(
@@ -60,24 +82,24 @@ export function groupDiscoverCards(cards: readonly DiscoverCard[]): DiscoverCard
 export function orderDiscoverItems(
   media: readonly DiscoverMedia[],
   groups: DiscoverCardGroups,
-): DiscoverItem[] {
+): DiscoverEditionItem[] {
   return [
-    ...media.map((entry): DiscoverItem => ({ type: "media", media: entry })),
+    ...media.map((entry): DiscoverEditionItem => ({ type: "media", media: entry })),
     ...[
       ...groups.topics,
       ...groups.forYou,
       ...groups.comingUp,
       ...groups.watching,
       ...groups.reads,
-    ].map((card): DiscoverItem => ({ type: "card", card })),
+    ].map((card): DiscoverEditionItem => ({ type: "card", card })),
   ];
 }
 
 export function stepDiscoverItem(
-  items: readonly DiscoverItem[],
+  items: readonly DiscoverEditionItem[],
   current: DiscoverItem | null,
   direction: 1 | -1,
-): DiscoverItem | null {
+): DiscoverEditionItem | null {
   if (items.length === 0) {
     return null;
   }
@@ -94,6 +116,10 @@ export function stepDiscoverItem(
 }
 
 export function discoverItemFileHref(item: DiscoverItem, edition: DiscoverEdition): string | null {
+  if (isDiscoverGraphItem(item)) {
+    return null;
+  }
+
   const files = getPlacePaths("chat").files;
 
   if (item.type === "card") {

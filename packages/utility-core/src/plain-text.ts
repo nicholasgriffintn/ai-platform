@@ -12,6 +12,7 @@ export function markdownToPlainText(markdown: string): string {
     .replace(/```[\s\S]*?```/gu, " ")
     .replace(/<[^>]+>/gu, " ")
     .replace(/!\[[^\]]*\]\([^)]*\)/gu, " ")
+    .replace(/!?\[[^\]]*(?:\]\([^)]*)?$/u, " ")
     .replace(/\[([^\]]*)\]\([^)]*\)/gu, "$1")
     .replace(/^\s{0,3}#{1,6}\s+/gmu, "")
     .replace(/^\s*(?:[-*+]|\d+[.)])\s+/gmu, "")
@@ -34,6 +35,22 @@ function isProse(paragraph: string): boolean {
     (paragraph.match(/[.!?](\s|$)/gu)?.length ?? 0) >= 1 &&
     (paragraph.match(/\s[·|•]\s/gu)?.length ?? 0) <= 2
   );
+}
+
+export function hasMarkdownMarkup(text: string): boolean {
+  return /\]\(|!\[|(?:^|\s)#{1,6}\s/mu.test(text);
+}
+
+export function trimToLastSentence(text: string): string {
+  const trimmed = text.trim();
+  const body = trimmed.replace(/(?:\.\.\.|…)$/u, "");
+  const match = /^[\s\S]*[.!?](?=\s|$)/u.exec(body);
+
+  if (match) {
+    return match[0].trim();
+  }
+
+  return body === trimmed ? trimmed : "";
 }
 
 export function isBoilerplate(text: string): boolean {
@@ -68,4 +85,31 @@ export function leadParagraphs(text: string, maxCharacters: number): string {
   }
 
   return truncateSingleLine(kept.join(" "), maxCharacters);
+}
+
+export function wordOverlap(left: string, right: string): number {
+  const words = (text: string) =>
+    new Set(
+      text
+        .toLowerCase()
+        .split(/[^\p{L}\p{N}]+/u)
+        .filter(Boolean),
+    );
+  const a = words(left);
+  const b = words(right);
+  const smaller = Math.min(a.size, b.size);
+
+  if (smaller === 0) {
+    return 0;
+  }
+
+  let shared = 0;
+
+  for (const word of a) {
+    if (b.has(word)) {
+      shared += 1;
+    }
+  }
+
+  return shared / smaller;
 }

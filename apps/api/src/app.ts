@@ -18,7 +18,6 @@ import decisions from "~/modules/decisions/api/routes";
 import desktop from "~/modules/desktop-releases/api/routes";
 import discover from "~/modules/discover/api/routes";
 import environments from "~/modules/environments/api/routes";
-import experiences from "~/modules/experiences/api/routes";
 import flags from "~/modules/experiments/api/routes";
 import extractions from "~/modules/extractions/api/routes";
 import provenance from "~/modules/generate/api/routes";
@@ -92,7 +91,6 @@ export function registerApiRoutes(app: ApiApp): void {
   app.route("/jobs", jobs);
   app.route("/approvals", approvals);
   app.route("/attention", attention);
-  app.route("/experiences", experiences);
   app.route("/recipes", recipes);
   app.route("/connectors", connectors);
   app.route("/connections", githubConnections);

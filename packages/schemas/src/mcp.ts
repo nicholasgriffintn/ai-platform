@@ -140,8 +140,19 @@ export const mcpAppCspSchema = z
     resourceDomains: domainListSchema.optional(),
     frameDomains: domainListSchema.optional(),
     baseUriDomains: domainListSchema.optional(),
+    allowEval: z.boolean().optional().catch(undefined),
   })
   .partial();
+
+const MCP_APP_FRAME_CSP_MAX_CHARS = 8_000;
+
+export const mcpAppFrameQuerySchema = z.object({
+  csp: z
+    .string()
+    .max(MCP_APP_FRAME_CSP_MAX_CHARS)
+    .optional()
+    .describe("The view's declared content security domains, as JSON."),
+});
 
 export const mcpAppPermissionsSchema = z
   .object({
@@ -189,13 +200,6 @@ export const mcpAppEntryOpenRequestSchema = mcpAppToolCallRequestSchema.pick({
 });
 
 export const MCP_APP_ENTRY_META_KEY = "app.polychat/app";
-
-export const mcpAppEntryMetaSchema = z.object({
-  name: z.string().trim().min(1).max(80).optional(),
-  description: z.string().trim().min(1).max(400).optional(),
-  category: z.string().trim().min(1).max(40).optional(),
-  layout: z.enum(["contained", "workspace"]).optional(),
-});
 
 export type McpAppCsp = z.infer<typeof mcpAppCspSchema>;
 export type McpAppPermissions = z.infer<typeof mcpAppPermissionsSchema>;

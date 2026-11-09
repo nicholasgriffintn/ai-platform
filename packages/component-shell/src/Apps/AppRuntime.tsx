@@ -1,27 +1,14 @@
 import { EmptyState } from "@ngriffin_uk/polychat-component-ui";
 import type {
+  AppSurfaceDefinition,
   ProjectExperienceDefinition,
   ProjectExperienceRuntime,
 } from "@ngriffin_uk/polychat-schemas";
 import { lazy, Suspense, type ComponentType, type ReactNode } from "react";
 
+import { CONTAINED_APP_PRESENTATION } from "./AppSurface.js";
 import { RemoteMcpApp } from "./RemoteMcpApp.js";
 
-const StrudelApp = lazy(async () => {
-  const module = await import("./StrudelApp.js");
-
-  return { default: module.StrudelApp };
-});
-const VerbatimApp = lazy(async () => {
-  const module = await import("./Verbatim/VerbatimApp.js");
-
-  return { default: module.VerbatimApp };
-});
-const PolisApp = lazy(async () => {
-  const module = await import("./Polis/PolisApp.js");
-
-  return { default: module.PolisApp };
-});
 const BenchmarksApp = lazy(async () => {
   const module = await import("../Benchmarks/app/BenchmarksApp.js");
 
@@ -33,21 +20,22 @@ const SitesApp = lazy(async () => {
   return { default: module.SitesApp };
 });
 
-interface BundledAppProps {
+interface AppRuntimeLocation {
   basePath: string;
   projectId?: string;
   subpath: string;
 }
 
+interface BundledAppProps extends AppRuntimeLocation {
+  presentation: AppSurfaceDefinition;
+}
+
 const BUNDLED_APPS: Record<ProjectExperienceRuntime, ComponentType<BundledAppProps>> = {
   benchmarks: BenchmarksApp,
-  polis: PolisApp,
   sites: SitesApp,
-  strudel: StrudelApp,
-  verbatim: VerbatimApp,
 };
 
-interface AppRuntimeProps extends BundledAppProps {
+interface AppRuntimeProps extends AppRuntimeLocation {
   app: ProjectExperienceDefinition | undefined;
   fallback?: ReactNode;
 }
@@ -67,7 +55,7 @@ function ExperienceContent({ app, fallback, ...props }: AppRuntimeProps) {
     );
   }
 
-  return <App {...props} />;
+  return <App {...props} presentation={app?.surface ?? CONTAINED_APP_PRESENTATION} />;
 }
 
 export function AppRuntime(props: AppRuntimeProps) {

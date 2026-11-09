@@ -12,11 +12,14 @@ import {
 import { discoverTopicKey } from "~/modules/discover/domain/edition";
 import {
   decideStory,
+  findUmbrellaTerms,
+  isInStoryWindow,
   readArticleSignals,
   STORY_MATCH_LIMIT,
   storyWindow,
   type ArticleSignals,
   type StoryMatch,
+  type UmbrellaTerms,
 } from "~/modules/stories/domain/clustering";
 import { outletId } from "~/modules/stories/domain/outlets";
 import { needsStoryVersion } from "~/modules/stories/domain/refresh";
@@ -117,6 +120,7 @@ async function findMatches(
             {
               storyId: fact.story_id,
               score: match.score,
+              publishedAt: fact.published_at,
               signals: readArticleSignals(fact.headline, fact.standfirst),
             },
           ]
@@ -127,9 +131,31 @@ async function findMatches(
       .map((entry) => ({
         storyId: entry.storyId,
         score: cosineSimilarity(vector, entry.vector),
+        publishedAt: entry.publishedAt,
         signals: entry.signals,
       })),
   ];
+}
+
+async function readUmbrellaTerms(
+  facts: ArticleFactRepository,
+  articles: readonly KeyedArticle[],
+): Promise<UmbrellaTerms> {
+  const times = articles.map((article) => article.publishedAt).sort();
+  const first = times[0];
+  const last = times.at(-1);
+
+  if (!first || !last) {
+    return findUmbrellaTerms([]);
+  }
+
+  const known = await facts.listTextBetween(storyWindow(first).since, storyWindow(last).until);
+
+  return findUmbrellaTerms(
+    [...known, ...articles].map((article) =>
+      readArticleSignals(article.headline, article.standfirst),
+    ),
+  );
 }
 
 async function chooseStory(
@@ -138,12 +164,26 @@ async function chooseStory(
   signals: ArticleSignals,
   matches: readonly StoryMatch[],
   publishedAt: string,
+  umbrella: UmbrellaTerms,
 ): Promise<{ storyId: string; opened: boolean }> {
-  const decision = decideStory(signals, matches);
-  const existing = decision.kind === "attach" ? await stories.get(decision.storyId) : null;
+  const open = new Map(
+    (await stories.listOpenByIds(matches.map((match) => match.storyId))).map((story) => [
+      story.id,
+      story.article_count,
+    ]),
+  );
+  const decision = decideStory(
+    signals,
+    matches.filter((match) => {
+      const articleCount = open.get(match.storyId);
 
-  if (existing?.status === "open") {
-    return { storyId: existing.id, opened: false };
+      return articleCount !== undefined && isInStoryWindow(match, publishedAt, articleCount);
+    }),
+    umbrella,
+  );
+
+  if (decision.kind === "attach") {
+    return { storyId: decision.storyId, opened: false };
   }
 
   const storyId = `story_${article.id.slice(0, 24)}`;
@@ -193,6 +233,7 @@ export async function ingestStoryArticles(
   );
   const fresh = keyed.filter((article) => !known.has(article.id));
   const vectors = await embedArticles(index, fresh);
+  const umbrella = await readUmbrellaTerms(facts, fresh);
   const batch: BatchVector[] = [];
   const refreshed = new Set<string>();
 
@@ -208,7 +249,14 @@ export async function ingestStoryArticles(
     ).toISOString();
     const signals = readArticleSignals(article.headline, article.standfirst);
     const matches = await findMatches(index, facts, vector, publishedAt, batch);
-    const { storyId, opened } = await chooseStory(stories, article, signals, matches, publishedAt);
+    const { storyId, opened } = await chooseStory(
+      stories,
+      article,
+      signals,
+      matches,
+      publishedAt,
+      umbrella,
+    );
     const outlet = outletId(article.outlet);
     const inserted = await facts.insert({
       id: article.id,
@@ -239,7 +287,10 @@ export async function ingestStoryArticles(
     await recentre(index, story, vector, opened);
 
     if (opened) {
-      await linkStory(env, story, await headlineEntityIds(signals.names), vector);
+      const leadEntityIds = await headlineEntityIds(signals.names);
+
+      await stories.setLeadEntities(storyId, leadEntityIds);
+      await linkStory(env, story, leadEntityIds, vector);
     }
 
     batch.push({ storyId, publishedAt, vector, signals });

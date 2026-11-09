@@ -31,6 +31,8 @@ export interface StoryVersionRecord {
   model: string;
   input_tokens: number;
   output_tokens: number;
+  cost_micros: number;
+  body_count: number;
 }
 
 export interface NewStory {
@@ -55,6 +57,8 @@ export interface NewStoryVersion {
   model: string;
   inputTokens: number;
   outputTokens: number;
+  costMicros: number;
+  bodyCount: number;
   articleCount: number;
   outletCount: number;
 }
@@ -113,11 +117,95 @@ export class StoryRepository extends BaseRepository {
     return this.get(storyId);
   }
 
-  async latestVersion(storyId: string): Promise<StoryVersionRecord | null> {
+  async listVersions(storyId: string, limit: number): Promise<StoryVersionRecord[]> {
     return this.runQuery<StoryVersionRecord>(
-      "SELECT * FROM story_version WHERE story_id = ? ORDER BY version DESC LIMIT 1",
-      [storyId],
-      true,
+      "SELECT * FROM story_version WHERE story_id = ? ORDER BY version DESC LIMIT ?",
+      [storyId, limit],
+    );
+  }
+
+  async listLatestVersions(storyIds: readonly string[]): Promise<StoryVersionRecord[]> {
+    return this.selectInChunks(storyIds, (chunk) =>
+      this.runQuery<StoryVersionRecord>(
+        `SELECT v.* FROM story_version v JOIN story s ON s.id = v.story_id AND v.version = s.version
+         WHERE v.story_id IN (${chunk.map(() => "?").join(", ")})`,
+        chunk,
+      ),
+    );
+  }
+
+  async listOpenByIds(ids: readonly string[]): Promise<StoryRecord[]> {
+    return (await this.listByIds(ids)).filter((story) => story.status === "open");
+  }
+
+  async listAwaitingVersion(limit: number): Promise<StoryRecord[]> {
+    return this.runQuery<StoryRecord>(
+      `SELECT * FROM story
+       WHERE status = 'open' AND (outlet_count >= 2 OR article_count >= 3)
+         AND (outlet_count > versioned_outlet_count OR article_count > versioned_article_count)
+       ORDER BY last_article_at DESC LIMIT ?`,
+      [limit],
+    );
+  }
+
+  async mergeInto(fromStoryId: string, intoStoryId: string, leadEntityIds: readonly string[]) {
+    await this.executeBatch([
+      this.env.DB.prepare("UPDATE article_fact SET story_id = ? WHERE story_id = ?").bind(
+        intoStoryId,
+        fromStoryId,
+      ),
+      this.env.DB.prepare("UPDATE quote SET story_id = ? WHERE story_id = ?").bind(
+        intoStoryId,
+        fromStoryId,
+      ),
+      this.env.DB.prepare(
+        `INSERT INTO entity_mention (entity_id, story_id, role, first_seen_at, last_seen_at, mention_count)
+         SELECT entity_id, ?, role, first_seen_at, last_seen_at, mention_count
+         FROM entity_mention WHERE story_id = ?
+         ON CONFLICT (entity_id, story_id) DO UPDATE SET
+           mention_count = entity_mention.mention_count + excluded.mention_count,
+           last_seen_at = MAX(entity_mention.last_seen_at, excluded.last_seen_at)`,
+      ).bind(intoStoryId, fromStoryId),
+      this.env.DB.prepare(
+        "UPDATE OR IGNORE story_edge SET from_story_id = ? WHERE from_story_id = ?",
+      ).bind(intoStoryId, fromStoryId),
+      this.env.DB.prepare(
+        "UPDATE OR IGNORE story_edge SET to_story_id = ? WHERE to_story_id = ?",
+      ).bind(intoStoryId, fromStoryId),
+      this.env.DB.prepare(
+        "DELETE FROM story_edge WHERE from_story_id = to_story_id OR from_story_id = ? OR to_story_id = ?",
+      ).bind(fromStoryId, fromStoryId),
+      this.env.DB.prepare("UPDATE story SET lead_entity_ids = ? WHERE id = ?").bind(
+        JSON.stringify(leadEntityIds),
+        intoStoryId,
+      ),
+      this.env.DB.prepare("DELETE FROM story WHERE id = ?").bind(fromStoryId),
+    ]);
+
+    return this.recount(intoStoryId);
+  }
+
+  async listOpenWithLeads(limit: number): Promise<StoryRecord[]> {
+    return this.runQuery<StoryRecord>(
+      `SELECT * FROM story WHERE status = 'open' AND lead_entity_ids != '[]'
+       ORDER BY article_count DESC, opened_at LIMIT ?`,
+      [limit],
+    );
+  }
+
+  async clearGraph(): Promise<void> {
+    await this.executeBatch(
+      [
+        "DELETE FROM story_edge",
+        "DELETE FROM quote",
+        "DELETE FROM entity_mention",
+        "DELETE FROM entity",
+        "DELETE FROM story_version",
+        "DELETE FROM article_fact",
+        "DELETE FROM story",
+        "DELETE FROM coverage_daily",
+        "DELETE FROM term_daily",
+      ].map((statement) => this.env.DB.prepare(statement)),
     );
   }
 
@@ -134,8 +222,8 @@ export class StoryRepository extends BaseRepository {
   async writeVersion(version: NewStoryVersion): Promise<boolean> {
     const insert = this.env.DB.prepare(
       `INSERT INTO story_version (story_id, version, written_at, overview, agreed, disputed, gaps,
-         outlet_angles, article_ids, model, input_tokens, output_tokens)
-       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+         outlet_angles, article_ids, model, input_tokens, output_tokens, cost_micros, body_count)
+       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
        WHERE EXISTS (SELECT 1 FROM story WHERE id = ? AND version = ?)`,
     ).bind(
       version.storyId,
@@ -150,6 +238,8 @@ export class StoryRepository extends BaseRepository {
       version.model,
       version.inputTokens,
       version.outputTokens,
+      version.costMicros,
+      version.bodyCount,
       version.storyId,
       version.version - 1,
     );

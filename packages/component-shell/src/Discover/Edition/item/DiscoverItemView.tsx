@@ -6,7 +6,11 @@ import { useMemo } from "react";
 import { discoverCardSuggestions, discoverMediaSuggestions } from "../discover-card-drafts.js";
 import type { DiscoverEditionController } from "../useDiscoverEditionController.js";
 import { discoverItemKind } from "./discover-item-kind.js";
-import { discoverItemFileHref, discoverItemKey, type DiscoverItem } from "./discover-items.js";
+import {
+  discoverItemFileHref,
+  discoverItemKey,
+  type DiscoverEditionItem,
+} from "./discover-items.js";
 import { DiscoverEpisodeMenu } from "./DiscoverEpisodeMenu.js";
 import { DiscoverItemBlock } from "./DiscoverItemBlock.js";
 import { DiscoverItemChat } from "./DiscoverItemChat.js";
@@ -28,7 +32,7 @@ export function DiscoverItemView({
   controller,
   playEntrance,
 }: {
-  item: DiscoverItem;
+  item: DiscoverEditionItem;
   edition: DiscoverEdition;
   controller: DiscoverEditionController;
   playEntrance: (content: HTMLElement | null) => void;

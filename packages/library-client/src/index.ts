@@ -68,7 +68,6 @@ export * from "./services/conversations-service.js";
 export * from "./services/responses-service.js";
 export * from "./services/machine-service.js";
 export * from "./services/research-service.js";
-export * from "./services/strudel-service.js";
 export * from "./services/subscription-service.js";
 export * from "./services/teammate-service.js";
 export * from "./services/upload-service.js";

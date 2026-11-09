@@ -108,9 +108,6 @@ export class MockAi extends WorkerEntrypoint {
   }
 
 	async run(model, body) {
-    if (JSON.stringify(body).includes("Generate Strudel code for: Release drum loop")) {
-      return { response: 'sound("bd sd bd sd")' };
-    }
 		if (body?.response_format?.json_schema?.name === "document_metadata" || JSON.stringify(body).includes("Read the document and describe it as JSON")) {
 		  return { response: JSON.stringify({ summary: "Release document summary", tags: ["release"], keyTopics: ["Launch"], contentType: "text", sentiment: "neutral" }) };
 		}
@@ -347,11 +344,6 @@ const TOOL_CALL_TRIGGERS = [
     marker: "Search my release documents for canary",
     name: "search_documents",
     arguments: () => JSON.stringify({ query: "canary release", top_k: 2 }),
-  },
-  {
-    marker: "Generate a playable release drum loop",
-    name: "generate_pattern",
-    arguments: () => JSON.stringify({ prompt: "Release drum loop", style: "drums", tempo: 120 }),
   },
   {
     marker: "Save the agreed release skill",
@@ -1190,15 +1182,13 @@ async function mockExternalRequest(request) {
         })
       : requestText.includes("Rewrite the document you are given")
         ? "# Rewritten release brief"
-        : requestText.includes("Generate Strudel code for: Release drum loop")
-          ? 'sound("bd sd bd sd")'
-          : JSON.stringify(body.messages ?? []).includes("Corrected child continuity note E2E")
-            ? "E2E delegation used the corrected child continuity note."
-            : prompt.includes("Polychat sandbox E2E")
-              ? "Update README.md, then validate the change with:\n```sh\nnode verify.cjs\n```"
-              : prompt.includes("You are a title generator")
-                ? "Release validation chat"
-                : `E2E response: ${prompt}`;
+        : JSON.stringify(body.messages ?? []).includes("Corrected child continuity note E2E")
+          ? "E2E delegation used the corrected child continuity note."
+          : prompt.includes("Polychat sandbox E2E")
+            ? "Update README.md, then validate the change with:\n```sh\nnode verify.cjs\n```"
+            : prompt.includes("You are a title generator")
+              ? "Release validation chat"
+              : `E2E response: ${prompt}`;
 
   if (url.pathname.endsWith("/v1/messages")) {
     if (body.stream) {

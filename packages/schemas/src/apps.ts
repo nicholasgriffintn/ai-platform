@@ -360,13 +360,82 @@ export const FieldType = {
 
 export const capabilityThemeSchema = z.enum(capabilityThemes);
 
-export const projectExperienceRuntimeSchema = z.enum([
-  "benchmarks",
-  "polis",
-  "sites",
-  "strudel",
-  "verbatim",
-]);
+export const APP_CATEGORIES = ["Creative", "Decisions", "Models", "Play", "Tools"] as const;
+
+export const appCategorySchema = z.enum(APP_CATEGORIES);
+
+export const APP_ICON_NAMES = [
+  "app",
+  "audio-lines",
+  "book-open",
+  "brain-circuit",
+  "camera",
+  "clapperboard",
+  "code-2",
+  "dices",
+  "drama",
+  "file-text",
+  "gamepad-2",
+  "globe",
+  "graduation-cap",
+  "image",
+  "images",
+  "landmark",
+  "layout",
+  "map",
+  "message-circle-question",
+  "mic",
+  "music",
+  "newspaper",
+  "palette",
+  "pencil",
+  "puzzle",
+  "search",
+  "sparkles",
+  "trophy",
+  "users",
+  "video",
+  "wand-2",
+] as const;
+
+export const appIconNameSchema = z.enum(APP_ICON_NAMES);
+
+export const appIconUrlSchema = z
+  .string()
+  .trim()
+  .max(2048)
+  .pipe(z.url({ protocol: /^https$/ }));
+
+export const appIconSchema = z.union([appIconNameSchema, appIconUrlSchema]);
+
+export const APP_LAYOUTS = ["contained", "workspace"] as const;
+
+export const appLayoutSchema = z.enum(APP_LAYOUTS);
+
+const lenient = <Schema extends z.ZodType>(schema: Schema) => schema.optional().catch(undefined);
+
+const caseInsensitiveCategorySchema = z.preprocess(
+  (value) =>
+    typeof value === "string"
+      ? APP_CATEGORIES.find((category) => category.toLowerCase() === value.trim().toLowerCase())
+      : value,
+  appCategorySchema,
+);
+
+export const mcpAppEntryMetaSchema = z.object({
+  name: lenient(z.string().trim().min(1).max(80)),
+  description: lenient(z.string().trim().min(1).max(400)),
+  category: lenient(caseInsensitiveCategorySchema),
+  icon: lenient(appIconSchema),
+  theme: lenient(capabilityThemeSchema),
+  when: lenient(z.string().trim().min(1).max(240)),
+  uses: lenient(z.string().trim().min(1).max(240)),
+  produces: lenient(z.string().trim().min(1).max(240)),
+  surface: lenient(appLayoutSchema),
+  layout: lenient(appLayoutSchema),
+});
+
+export const projectExperienceRuntimeSchema = z.enum(["benchmarks", "sites"]);
 
 export const appSurfaceSchema = z.discriminatedUnion("layout", [
   z.object({ layout: z.literal("contained"), loading: z.literal("content") }),
@@ -409,6 +478,9 @@ export type AppScope = z.infer<typeof appScopeSchema>;
 
 export const projectExperienceDefinitionSchema = z.object({
   id: z.string(),
+  slug: z
+    .string()
+    .describe("The app's address under /apps: its id when bundled, `<server>/<app>` when remote."),
   entry: appEntrySchema,
   surface: appSurfaceSchema,
   name: z.string(),
@@ -423,26 +495,31 @@ export const projectExperienceDefinitionSchema = z.object({
     .nullable()
     .describe("Why a personal-only app cannot be enabled in a project."),
   icon: z.string().optional(),
-  category: z.string().optional(),
+  category: appCategorySchema,
   theme: capabilityThemeSchema.optional(),
   tags: z.array(z.string()).optional(),
   type: toolFunctionTypeSchema.optional(),
   requirement: projectExperienceRequirementSchema,
+  enabled: z
+    .boolean()
+    .optional()
+    .describe("Whether the person has left this app turned on. Set for personal catalogues only."),
 });
 
 export const remoteAppSchema = projectExperienceDefinitionSchema.extend({
-  enabled: z.boolean().describe("Whether the person has left this app turned on."),
+  entry: appEntrySchema.options[1],
+  enabled: z.boolean(),
 });
 
 export const remoteAppListResponseSchema = z.object({
   apps: z.array(remoteAppSchema),
 });
 
-export const remoteAppParamsSchema = z.object({ app_id: z.string().min(1).max(160) });
+export const appSettingsParamsSchema = z.object({ app_id: z.string().min(1).max(160) });
 
-export const remoteAppSettingsSchema = z.object({ enabled: z.boolean() });
+export const appSettingsSchema = z.object({ enabled: z.boolean() });
 
-export const remoteAppSettingsResponseSchema = remoteAppSettingsSchema.extend({ id: z.string() });
+export const appSettingsResponseSchema = appSettingsSchema.extend({ id: z.string() });
 
 export const modelToolIdSchema = z.enum([
   "code_execution",
@@ -547,6 +624,10 @@ export const capabilityCatalogResponseSchema = z.object({
 });
 
 export type AppTheme = z.infer<typeof capabilityThemeSchema>;
+export type AppCategory = z.infer<typeof appCategorySchema>;
+export type AppIconName = z.infer<typeof appIconNameSchema>;
+export type AppLayout = z.infer<typeof appLayoutSchema>;
+export type McpAppEntryMeta = z.infer<typeof mcpAppEntryMetaSchema>;
 export type AssistantCapabilityKind = z.infer<typeof assistantCapabilityKindSchema>;
 export type AssistantCapabilityAvailability = z.infer<typeof assistantCapabilityAvailabilitySchema>;
 export type AssistantCapabilityLaunchMethod = z.infer<typeof assistantCapabilityLaunchMethodSchema>;
@@ -583,8 +664,8 @@ export type ProjectExperienceRequirement = z.infer<typeof projectExperienceRequi
 export type ProjectExperienceDefinition = z.infer<typeof projectExperienceDefinitionSchema>;
 export type RemoteApp = z.infer<typeof remoteAppSchema>;
 export type RemoteAppListResponse = z.infer<typeof remoteAppListResponseSchema>;
-export type RemoteAppSettings = z.infer<typeof remoteAppSettingsSchema>;
-export type RemoteAppSettingsResponse = z.infer<typeof remoteAppSettingsResponseSchema>;
+export type AppSettings = z.infer<typeof appSettingsSchema>;
+export type AppSettingsResponse = z.infer<typeof appSettingsResponseSchema>;
 export type ModelToolId = z.infer<typeof modelToolIdSchema>;
 export type ModelToolCapability = z.infer<typeof modelToolCapabilitySchema>;
 export type ModelToolDefinition = z.infer<typeof modelToolDefinitionSchema>;

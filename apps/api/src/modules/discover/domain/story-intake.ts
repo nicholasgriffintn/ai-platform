@@ -1,8 +1,4 @@
-import {
-  storyIntakeArticleSchema,
-  type DiscoverCard,
-  type StoryIntakeArticle,
-} from "@ngriffin_uk/polychat-schemas";
+import { storyIntakeArticleSchema, type StoryIntakeArticle } from "@ngriffin_uk/polychat-schemas";
 import {
   comparableHttpUrl,
   readUrlHost,
@@ -11,27 +7,18 @@ import {
 
 import { DISCOVER_NEWS_CATEGORIES, type DiscoverNewsItem } from "./news-categories";
 
-export function listStoryIntakeArticles(
-  cards: readonly DiscoverCard[],
-  news: readonly DiscoverNewsItem[],
-): StoryIntakeArticle[] {
-  const byUrl = new Map(
-    news.flatMap((item) => {
-      const url = comparableHttpUrl(item.url);
+export function listStoryIntakeArticles(news: readonly DiscoverNewsItem[]): StoryIntakeArticle[] {
+  const seen = new Set<string>();
 
-      return url ? [[url, item] as const] : [];
-    }),
-  );
+  return news.flatMap((item) => {
+    const url = comparableHttpUrl(item.url);
+    const topic = DISCOVER_NEWS_CATEGORIES.find((category) => category.id === item.category)?.topic;
 
-  return cards.flatMap((card) => {
-    const item = card.kind === "read" ? byUrl.get(comparableHttpUrl(card.url) ?? "") : undefined;
-    const topic = DISCOVER_NEWS_CATEGORIES.find(
-      (category) => category.id === item?.category,
-    )?.topic;
-
-    if (!item || !topic) {
+    if (!url || !topic || seen.has(url)) {
       return [];
     }
+
+    seen.add(url);
 
     const parsed = storyIntakeArticleSchema.safeParse({
       url: item.url,

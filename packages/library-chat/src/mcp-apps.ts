@@ -28,10 +28,16 @@ function sources(domains: readonly string[] | undefined, fallback: string): stri
 
 export function buildMcpAppCsp(csp: McpAppCsp | undefined): string {
   const resources = sources(csp?.resourceDomains, "");
+  const scripts = [
+    "'self' 'unsafe-inline' blob:",
+    csp?.allowEval === true ? "'unsafe-eval' data:" : "",
+    resources,
+  ].filter(Boolean);
 
   return [
     "default-src 'none'",
-    `script-src 'self' 'unsafe-inline' ${resources}`.trim(),
+    `script-src ${scripts.join(" ")}`,
+    "worker-src 'self' blob:",
     `style-src 'self' 'unsafe-inline' ${resources}`.trim(),
     `img-src 'self' data: blob: ${resources}`.trim(),
     `font-src 'self' data: ${resources}`.trim(),
@@ -45,12 +51,40 @@ export function buildMcpAppCsp(csp: McpAppCsp | undefined): string {
 
 export function buildMcpAppAllow(permissions: McpAppPermissions | undefined): string {
   return PERMISSION_FEATURES.filter(([key]) => permissions?.[key] !== undefined)
-    .map(([, feature]) => feature)
+    .map(([, feature]) => `${feature} *`)
     .join("; ");
 }
 
-export function buildMcpAppDocument(html: string, csp: McpAppCsp | undefined): string {
-  return `<!DOCTYPE html><meta charset="UTF-8"><meta http-equiv="Content-Security-Policy" content="${buildMcpAppCsp(csp)}">${html}`;
+export const MCP_APP_FRAME_READY = "polychat:mcp-app-frame-ready";
+export const MCP_APP_FRAME_HTML = "polychat:mcp-app-html";
+
+export const MCP_APP_FRAME_DOCUMENT = `<!DOCTYPE html><meta charset="UTF-8"><script>(function(){var host=window.parent;function receive(event){var data=event.data;if(event.source!==host||!data||data.type!=="${MCP_APP_FRAME_HTML}"||typeof data.html!=="string"){return;}window.removeEventListener("message",receive);document.open();document.write(data.html);document.close();}window.addEventListener("message",receive);host.postMessage({type:"${MCP_APP_FRAME_READY}"},"*");})();</script>`;
+
+export function buildMcpAppFrameCsp(
+  csp: McpAppCsp | undefined,
+  ancestors: readonly string[],
+): string {
+  const framers = ancestors.length > 0 ? ancestors.join(" ") : "'none'";
+
+  return `sandbox ${MCP_APP_SANDBOX}; ${buildMcpAppCsp(csp)}; frame-ancestors ${framers}`;
+}
+
+export function buildMcpAppFrameUrl(frameDocumentUrl: string, csp: McpAppCsp | undefined): string {
+  const url = new URL(frameDocumentUrl);
+
+  if (csp && Object.keys(csp).length > 0) {
+    url.searchParams.set("csp", JSON.stringify(csp));
+  }
+
+  return url.toString();
+}
+
+export function buildMcpAppHtml(html: string): string {
+  return `<!DOCTYPE html><meta charset="UTF-8">${html}`;
+}
+
+export function isMcpAppFrameReady(data: unknown): boolean {
+  return isRecord(data) && data.type === MCP_APP_FRAME_READY;
 }
 
 function readParams(params: unknown): Record<string, unknown> {

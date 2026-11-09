@@ -25,7 +25,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "live voice sessions",
     "sandboxed coding runs and agents",
     "Work: shared workspaces, projects and tasks",
-    "apps such as Polis, Sites, Verbatim and Strudel",
+    "apps such as Sites and Benchmarks, plus apps from servers you connect, like Pashi",
   ],
   enterprise: ["everything in Pro", "a bespoke credit allowance", "priority support"],
 };

@@ -3,21 +3,22 @@ import {
   mcpAppEntryOpenRequestSchema,
   mcpAppViewSchema,
   publicCapabilityCatalogueResponseSchema,
+  appSettingsParamsSchema,
+  appSettingsResponseSchema,
+  appSettingsSchema,
   remoteAppListResponseSchema,
-  remoteAppParamsSchema,
-  remoteAppSettingsResponseSchema,
-  remoteAppSettingsSchema,
 } from "@ngriffin_uk/polychat-schemas";
 import { Hono } from "hono";
 import z from "zod/v4";
 
 import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { createRouteLogger } from "~/middleware/loggerMiddleware";
+import { requirePlan } from "~/middleware/requirePlan";
 import {
-  listRemoteApps,
-  openRemoteApp,
-  setRemoteAppEnabled,
-} from "~/modules/capabilities/application/remote-apps";
+  readTurnedOffAppIds,
+  setAppEnabled,
+} from "~/modules/capabilities/application/app-settings";
+import { listRemoteApps, openRemoteApp } from "~/modules/capabilities/application/remote-apps";
 import { getProjectExperienceCatalog } from "~/modules/capabilities/domain/app-catalogue";
 import { MODEL_TOOL_DEFINITIONS } from "~/modules/capabilities/domain/model-tools";
 import { listRecipeCatalogueSummaries } from "~/modules/recipes/application";
@@ -45,14 +46,22 @@ addRoute(app, "get", "/", {
     200: { description: "Capability catalogue", schema: capabilityCatalogResponseSchema },
   },
   handler: async ({ query, serviceContext, user }) => {
-    const [teammates, skills] = await Promise.all([
+    const isPersonal = Boolean(user) && !query.project_id;
+    const [teammates, skills, turnedOff] = await Promise.all([
       listScopedTeammateSummaries(serviceContext, user?.id, query.project_id),
       listScopedSkillSummaries(serviceContext, user?.id, query.project_id),
+      isPersonal ? readTurnedOffAppIds(serviceContext) : undefined,
     ]);
+    const experiences = getProjectExperienceCatalog();
 
     return {
       teammates,
-      experiences: getProjectExperienceCatalog(),
+      experiences: turnedOff
+        ? experiences.map((experience) => ({
+            ...experience,
+            enabled: !turnedOff.has(experience.id),
+          }))
+        : experiences,
       modelTools: MODEL_TOOL_DEFINITIONS,
       skills,
     };
@@ -91,20 +100,22 @@ addRoute(app, "get", "/remote_apps", {
   handler: async ({ serviceContext }) => ({ apps: await listRemoteApps(serviceContext) }),
 });
 
-addRoute(app, "put", "/remote_apps/:app_id", {
+addRoute(app, "put", "/apps/:app_id", {
   tags: ["capabilities"],
-  summary: "Turn an app from a connected MCP server on or off",
+  summary: "Turn one of your apps on or off",
   description:
-    "Saves whether an app from one of the caller's MCP servers shows up and can be opened. Apps are on until turned off.",
+    "Saves whether a bundled app or an app from one of the caller's MCP servers shows as on in the caller's personal catalogue and can be opened. Apps are on until turned off.",
   auth: true,
-  paramSchema: remoteAppParamsSchema,
-  bodySchema: remoteAppSettingsSchema,
+  paramSchema: appSettingsParamsSchema,
+  bodySchema: appSettingsSchema,
   responses: {
-    200: { description: "The saved setting", schema: remoteAppSettingsResponseSchema },
+    200: { description: "The saved setting", schema: appSettingsResponseSchema },
   },
   handler: ({ serviceContext, params, body }) =>
-    setRemoteAppEnabled(serviceContext, params.app_id, body.enabled),
+    setAppEnabled(serviceContext, params.app_id, body.enabled),
 });
+
+app.use("/remote_app_views", requirePlan("pro"));
 
 addRoute(app, "post", "/remote_app_views", {
   tags: ["capabilities"],

@@ -65,6 +65,7 @@ export const INFRASTRUCTURE_UNITS = [
   "worker_cpu_ms",
   "ai_neurons",
   "analytics_data_points",
+  "browser_seconds",
 ] as const;
 
 export const DIRECT_COST_UNIT = "usd_micros";

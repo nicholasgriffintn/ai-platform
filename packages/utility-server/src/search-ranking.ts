@@ -14,6 +14,14 @@ export function toFtsAllTermsQuery(query: string): string | null {
   return terms.length > 0 ? terms.map((term) => `"${term}"`).join(" AND ") : null;
 }
 
+export function toFtsPhrasesQuery(phrases: readonly string[]): string | null {
+  const quoted = [
+    ...new Set(phrases.map((phrase) => readFtsTerms(phrase).join(" ")).filter(Boolean)),
+  ].map((phrase) => `"${phrase}"`);
+
+  return quoted.length > 0 ? quoted.join(" OR ") : null;
+}
+
 export function fuseRankedResults<T extends { id: string }>(
   rankings: readonly (readonly T[])[],
   limit: number,

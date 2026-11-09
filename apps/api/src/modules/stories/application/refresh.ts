@@ -1,6 +1,10 @@
+import { priceUsageDraft } from "@ngriffin_uk/polychat-ai-billing";
 import { getPromptText } from "@ngriffin_uk/polychat-ai-prompts";
 import { getLogger } from "@ngriffin_uk/polychat-ai-telemetry";
 import {
+  BROWSER_RENDERING_RESOURCE,
+  CLOUDFLARE_RATE_ENTRIES,
+  CLOUDFLARE_VENDOR,
   DISCOVER_ARTICLE_METADATA_KEY,
   storyVersionDraftSchema,
 } from "@ngriffin_uk/polychat-schemas";
@@ -19,22 +23,37 @@ import {
   pickVersionArticles,
   startOfUtcDay,
 } from "~/modules/stories/domain/refresh";
+import { fetchArticleBodies } from "~/modules/stories/infrastructure/ArticleBodyFetcher";
 import {
   ArticleFactRepository,
   type ArticleFactRecord,
 } from "~/modules/stories/infrastructure/ArticleFactRepository";
-import { generateStoryObject } from "~/modules/stories/infrastructure/StoryModel";
 import { StoryRepository } from "~/modules/stories/infrastructure/StoryRepository";
 import type { IEnv } from "~/types";
 
-import { recordStoryGraph } from "./graph";
+import { recordStoryGraph, type StoryGraphOutcome } from "./graph";
+import { mergeRelatedStories } from "./merge";
 import { storyRefreshState } from "./read-models";
+import { generateStoryVersion } from "./story-model";
 
 const logger = getLogger({ prefix: "stories/refresh" });
 const STORY_FACT_LIMIT = 60;
 const STORY_BODY_CHARACTERS = 6000;
+const MS_PER_SECOND = 1000;
 
-export type StoryRefreshOutcome = "written" | "unchanged" | "capped" | "missing";
+export type StoryRefreshOutcome =
+  | {
+      status: "written";
+      graph: StoryGraphOutcome & {
+        repaired: boolean;
+        bodies: number;
+        fetched: number;
+        reserved: number;
+        fetchFailed: number;
+        merged: number;
+      };
+    }
+  | { status: "unchanged" | "capped" | "missing" };
 
 async function readArticleBodies(
   env: IEnv,
@@ -70,6 +89,19 @@ async function readArticleBodies(
   );
 }
 
+function priceBrowserMs(browserMs: number): number {
+  return browserMs > 0
+    ? priceUsageDraft({
+        source: "infrastructure",
+        vendor: CLOUDFLARE_VENDOR,
+        resource: BROWSER_RENDERING_RESOURCE,
+        unit: "browser_seconds",
+        quantity: browserMs / MS_PER_SECOND,
+        rates: CLOUDFLARE_RATE_ENTRIES,
+      }).costMicros
+    : 0;
+}
+
 export async function refreshStory(
   env: IEnv,
   storyId: string,
@@ -79,17 +111,17 @@ export async function refreshStory(
   const story = await stories.get(storyId);
 
   if (!story) {
-    return "missing";
+    return { status: "missing" };
   }
 
   if (!needsStoryVersion(storyRefreshState(story), now)) {
-    return "unchanged";
+    return { status: "unchanged" };
   }
 
   if ((await stories.countVersionsSince(startOfUtcDay(now))) >= DISCOVER_STORY_DAILY_VERSION_CAP) {
     logger.warn("The daily story version cap is spent", { story_id: storyId });
 
-    return "capped";
+    return { status: "capped" };
   }
 
   const facts = pickVersionArticles(
@@ -99,8 +131,13 @@ export async function refreshStory(
       publishedAt: fact.published_at,
     })),
   );
-  const bodies = await readArticleBodies(env, facts);
-  const draft = await generateStoryObject(env, {
+  const held = await readArticleBodies(env, facts);
+  const fetched = await fetchArticleBodies(
+    env,
+    facts.filter((fact) => !held.has(fact.id)).map((fact) => ({ id: fact.id, url: fact.url })),
+  );
+  const bodies = new Map([...held, ...fetched.bodies]);
+  const draft = await generateStoryVersion(env, {
     schema: storyVersionDraftSchema,
     system: getPromptText("stories/version"),
     material: buildStoryMaterial(
@@ -129,17 +166,31 @@ export async function refreshStory(
     model: draft.model,
     inputTokens: draft.inputTokens,
     outputTokens: draft.outputTokens,
+    costMicros: draft.costMicros + priceBrowserMs(fetched.browserMs),
+    bodyCount: bodies.size,
     articleCount: story.article_count,
     outletCount: story.outlet_count,
   });
 
   if (!written) {
-    return "unchanged";
+    return { status: "unchanged" };
   }
 
   const graph = await recordStoryGraph(env, story, draft.object, facts, bodies, now);
+  const merges = await mergeRelatedStories(env, storyId, now);
 
   logger.info("Wrote a story version", { story_id: storyId, version: story.version + 1, ...graph });
 
-  return "written";
+  return {
+    status: "written",
+    graph: {
+      ...graph,
+      repaired: draft.repaired,
+      bodies: bodies.size,
+      fetched: fetched.bodies.size,
+      reserved: fetched.reserved,
+      fetchFailed: fetched.failed,
+      merged: merges.length,
+    },
+  };
 }

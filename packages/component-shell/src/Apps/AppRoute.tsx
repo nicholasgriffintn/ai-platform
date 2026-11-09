@@ -9,9 +9,11 @@ import {
   getAppPath,
   getPluginsPath,
   isExperienceEnabled,
+  resolveAppAddress,
 } from "@ngriffin_uk/polychat-library-react";
 import { Puzzle, Sparkles } from "lucide-react";
 import { useMemo } from "react";
+import { Navigate } from "react-router";
 
 import { SignInEmptyState } from "../Account/SignInEmptyState.js";
 import { PageShell } from "../Shell/PageShell.js";
@@ -40,20 +42,24 @@ export function AppRoute({
     isLoading: isCatalogLoading,
     error: catalogError,
   } = useCapabilityCatalog(surface.projectId);
-  const bundledDefinition = catalog?.experiences.find((item) => item.id === appId);
-  const looksUpRemoteApp = !project && Boolean(catalog) && !bundledDefinition;
+  const path = [appId, subpath].filter(Boolean).join("/");
+  const bundledAddress = catalog ? resolveAppAddress(catalog.experiences, path) : undefined;
+  const looksUpRemoteApp = !project && Boolean(catalog) && !bundledAddress;
   const {
     data: remoteApps,
     isLoading: isRemoteAppLoading,
     error: remoteAppError,
   } = useRemoteApps({ enabled: looksUpRemoteApp });
-  const remoteDefinition = bundledDefinition
-    ? undefined
-    : remoteApps?.find((item) => item.id === appId);
-  const definition = bundledDefinition ?? remoteDefinition;
+  const address =
+    bundledAddress ??
+    (looksUpRemoteApp && remoteApps ? resolveAppAddress(remoteApps, path) : undefined);
+  const definition = address?.app;
+  const appSubpath = address?.subpath ?? subpath;
+  const appSlug = definition?.slug ?? appId;
   const title = titleOverride ?? definition?.name;
-  const backLink = getAppBackLink(surface, appId, subpath, title);
-  const basePath = getAppPath(surface, appId);
+  const backLink =
+    definition || !isCatalogLoading ? getAppBackLink(surface, appSlug, appSubpath, title) : null;
+  const basePath = getAppPath(surface, appSlug);
   const presentation = definition?.surface ?? CONTAINED_APP_PRESENTATION;
   const needsSignIn = !isAuthenticationLoading && !isAuthenticated;
   const needsPro = !isAuthenticationLoading && isAuthenticated && !isPro;
@@ -63,10 +69,11 @@ export function AppRoute({
     Boolean(project?.isLoading) ||
     (looksUpRemoteApp && isRemoteAppLoading);
   const pageError = project?.error ?? catalogError ?? (looksUpRemoteApp ? remoteAppError : null);
-  const isEnabled = remoteDefinition
-    ? remoteDefinition.enabled
-    : !project ||
-      (definition ? isExperienceEnabled(definition, project.capabilities ?? []) : false);
+  const isEnabled = project
+    ? definition
+      ? isExperienceEnabled(definition, project.capabilities ?? [])
+      : false
+    : definition?.enabled !== false;
   const chrome = useMemo(
     () => ({ backHref: backLink?.to, backLabel: backLink?.label }),
     [backLink?.to, backLink?.label],
@@ -78,7 +85,7 @@ export function AppRoute({
         fallback={<AppSurfaceLoading presentation={presentation} />}
         app={definition}
         projectId={surface.projectId}
-        subpath={subpath}
+        subpath={appSubpath}
       />
     </AppChromeProvider>
   );
@@ -108,11 +115,11 @@ export function AppRoute({
     ) : !isEnabled ? (
       <EmptyState
         icon={<Puzzle size={24} className="text-muted-foreground" />}
-        title={remoteDefinition ? "App turned off" : "App not enabled"}
+        title={project ? "App not enabled" : "App turned off"}
         message={
-          remoteDefinition
-            ? `Turn ${title} on in Plugins to open it.`
-            : `Add ${title} to the project before opening it.`
+          project
+            ? `Add ${title} to the project before opening it.`
+            : `Turn ${title} on in Plugins to open it.`
         }
         action={
           <ButtonLink variant="primary" href={getPluginsPath(surface)}>
@@ -122,6 +129,10 @@ export function AppRoute({
       />
     ) : null;
   const surfacePresentation = !isLoading && unavailable ? CONTAINED_APP_PRESENTATION : presentation;
+
+  if (definition && address?.isLegacy) {
+    return <Navigate replace to={getAppPath(surface, definition.slug, address.subpath)} />;
+  }
 
   return (
     <AppSurface presentation={surfacePresentation}>

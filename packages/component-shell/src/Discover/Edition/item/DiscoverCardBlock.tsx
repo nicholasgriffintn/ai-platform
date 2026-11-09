@@ -1,5 +1,4 @@
 import { buttonClassName, Pet } from "@ngriffin_uk/polychat-component-ui";
-import { getStoryPath } from "@ngriffin_uk/polychat-library-react";
 import type { DiscoverCard } from "@ngriffin_uk/polychat-schemas";
 import {
   formatCount,
@@ -8,7 +7,6 @@ import {
 } from "@ngriffin_uk/polychat-utility-core";
 import { ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
-import { Link } from "react-router";
 
 import { SourceListenById } from "../../../Files/Viewer/SourceListen.js";
 import {
@@ -143,12 +141,14 @@ export function DiscoverCardBlock({
   cards,
   feedback,
   onSelect,
+  onOpenStory,
 }: {
   editionId: string;
   card: DiscoverCard;
   cards: readonly DiscoverCard[];
   feedback: DiscoverCardFeedback;
   onSelect: (card: DiscoverCard) => void;
+  onOpenStory: (storyId: string) => void;
 }) {
   const body = discoverCardBody(card);
   const link = discoverCardLink(card);
@@ -192,14 +192,15 @@ export function DiscoverCardBlock({
           </DiscoverHref>
         ) : null}
         {card.kind === "read" && card.storyId ? (
-          <Link
-            to={getStoryPath(card.storyId)}
+          <button
+            type="button"
+            onClick={() => card.storyId && onOpenStory(card.storyId)}
             className={buttonClassName({ variant: "secondary", size: "sm" })}
           >
             {card.outletCount && card.outletCount > 1
               ? `Full story · ${formatCount(card.outletCount, "outlet")}`
               : "Full story"}
-          </Link>
+          </button>
         ) : null}
         <DiscoverFollowButton card={card} feedback={feedback} />
       </div>
@@ -227,7 +228,7 @@ export function DiscoverCardBlock({
       ) : null}
       {card.kind === "topic" && card.storyId ? (
         <div data-stagger>
-          <DiscoverCoverageCard storyId={card.storyId} />
+          <DiscoverCoverageCard storyId={card.storyId} onOpenStory={onOpenStory} />
         </div>
       ) : null}
       {related.length > 0 ? (

@@ -67,6 +67,11 @@
       "types": "./dist/embeddings.d.ts",
       "import": "./dist/embeddings.js"
     },
+    "./crawl-permissions": {
+      "polychat-source": "./src/crawl-permissions.ts",
+      "types": "./dist/crawl-permissions.d.ts",
+      "import": "./dist/crawl-permissions.js"
+    },
     "./search-ranking": {
       "polychat-source": "./src/search-ranking.ts",
       "types": "./dist/search-ranking.d.ts",

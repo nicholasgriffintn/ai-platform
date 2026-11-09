@@ -19,6 +19,21 @@ export function isDesktopOrigin(origin: string): boolean {
   return (DESKTOP_ORIGINS as readonly string[]).includes(origin);
 }
 
+export function listFrameAncestors(environment: string, appBaseUrl?: string): string[] {
+  if (environment === "production") {
+    return [`https://${PROD_HOST}`, ...DESKTOP_ORIGINS];
+  }
+
+  if (environment === "development") {
+    const configured = appBaseUrl ? getOriginHost(appBaseUrl) : "";
+    const hosts = new Set([LOCAL_HOST, DESKTOP_LOCAL_HOST, configured].filter(Boolean));
+
+    return [...[...hosts].map((host) => `http://${host}`), ...DESKTOP_ORIGINS];
+  }
+
+  return [];
+}
+
 export function isAllowedOrigin(origin: string, environment: string, appBaseUrl?: string): boolean {
   if (isDesktopOrigin(origin)) {
     return true;

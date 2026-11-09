@@ -26,6 +26,7 @@ export const DISCOVER_PATH = "/";
 export { getStoryPath, STORY_PATH_PREFIX };
 
 export const ENTITY_PATH_PREFIX = "/discover/entities";
+export const COVERAGE_TRACKER_PATH = "/discover/tracker";
 
 export function getStoryEntityPath(entityId: string): string {
   return `${ENTITY_PATH_PREFIX}/${encodeURIComponent(entityId)}`;
@@ -101,6 +102,7 @@ export function getActivePlace(pathname: string): ProductPlace | undefined {
 
   if (
     pathname === DISCOVER_PATH ||
+    pathname === COVERAGE_TRACKER_PATH ||
     pathname.startsWith(`${STORY_PATH_PREFIX}/`) ||
     pathname.startsWith(`${ENTITY_PATH_PREFIX}/`)
   ) {
@@ -116,7 +118,14 @@ export function getActivePlace(pathname: string): ProductPlace | undefined {
   }
 
   const rest = pathname.slice(base.length).replace(/^\/+/, "");
-  const segments = new Set(rest.split("/").filter(Boolean));
+  const parts = rest.split("/").filter(Boolean);
+  const appsIndex = parts.indexOf("apps");
+
+  if (appsIndex !== -1) {
+    return parts[appsIndex + 1] === "sites" ? "sites" : "plugins";
+  }
+
+  const segments = new Set(parts);
 
   for (const [place, placeSegments] of PLACE_SEGMENTS) {
     if (placeSegments.some((segment) => segments.has(segment))) {

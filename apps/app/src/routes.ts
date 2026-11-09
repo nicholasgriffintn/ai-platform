@@ -5,6 +5,7 @@ export default [
     index("pages/home.tsx"),
     route("/discover/stories/:story_id", "pages/discover-story.tsx"),
     route("/discover/entities/:entity_id", "pages/discover-entity.tsx"),
+    route("/discover/tracker", "pages/discover-tracker.tsx"),
     route("/chat", "pages/chat/layout.tsx", [
       route("attention", "pages/chat/attention.tsx"),
       route("files/*", "pages/chat/files.tsx"),
@@ -87,6 +88,5 @@ export default [
   route("/admin/*?", "pages/admin.tsx"),
   route("/s/:share_id", "pages/shared/[share_id].tsx"),
   route("/o/:token", "pages/shared/output.tsx"),
-  route("/polis/:token", "pages/polis/shared.tsx"),
   route("*?", "pages/catchall.tsx"),
 ] satisfies RouteConfig;

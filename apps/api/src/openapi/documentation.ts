@@ -21,7 +21,6 @@ import { devicesTagDescription } from "./content/tags/devicesTagDescription.js";
 import { discoverTagDescription } from "./content/tags/discoverTagDescription.js";
 import { documentsTagDescription } from "./content/tags/documentsTagDescription.js";
 import { environmentsTagDescription } from "./content/tags/environmentsTagDescription.js";
-import { experiencesTagDescription } from "./content/tags/experiencesTagDescription.js";
 import { extractionsTagDescription } from "./content/tags/extractionsTagDescription.js";
 import { flagsTagDescription } from "./content/tags/flagsTagDescription.js";
 import { guardrailsTagDescription } from "./content/tags/guardrailsTagDescription.js";
@@ -91,7 +90,6 @@ export const tagDescriptions = {
   uploads: uploadsTagDescription,
   sites: sitesTagDescription,
   capabilities: capabilitiesTagDescription,
-  experiences: experiencesTagDescription,
   recipes: recipesTagDescription,
   connectors: connectorsTagDescription,
   connections: connectionsTagDescription,

@@ -65,3 +65,14 @@ export async function queueStoryBackfill(env: IEnv, after?: string): Promise<voi
     ...(after ? { after } : {}),
   });
 }
+
+export async function queueStoryRecluster(
+  env: IEnv,
+  articles: StoryIntakeArticle[],
+  now: Date,
+): Promise<void> {
+  await enqueueStoriesJob(env, `stories_recluster_${now.getTime()}`, {
+    job: "recluster",
+    articles,
+  });
+}

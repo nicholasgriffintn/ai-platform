@@ -41,6 +41,7 @@ import { readDiscoverDayProfile } from "./day-profile";
 import { publishDiscoverChanged } from "./events";
 import { listDiscoverFeedback } from "./feedback";
 import { listDiscoverFollows } from "./follows";
+import { withCurrentStories } from "./live-feed";
 import { readDiscoverLive, discoverLiveId } from "./live-store";
 import { readDiscoverNow } from "./now";
 import { readDiscoverSettings } from "./settings";
@@ -209,7 +210,7 @@ export async function readDiscover(context: ServiceContext): Promise<DiscoverRes
       sources: settings.sources,
       now: new Date(),
     }),
-    feed: presentDiscoverFeed(live, {
+    feed: presentDiscoverFeed(await withCurrentStories(context, live), {
       allowedProviders: listDiscoverFeedProviders(settings.sources),
       seen: exposure.seen,
       limit: DISCOVER_FEED_PAGE_SIZE,

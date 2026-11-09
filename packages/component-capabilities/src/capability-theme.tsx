@@ -1,4 +1,8 @@
-import type { AppTheme, CapabilityCatalogItem as AppListItem } from "@ngriffin_uk/polychat-schemas";
+import type {
+  AppIconName,
+  AppTheme,
+  CapabilityCatalogItem as AppListItem,
+} from "@ngriffin_uk/polychat-schemas";
 import {
   AppWindow,
   AudioLines,
@@ -11,23 +15,31 @@ import {
   Cloud,
   CloudSun,
   Code2,
+  Dices,
+  Drama,
   File,
   FileSearch,
   FileText,
   FolderOpen,
+  Gamepad2,
+  Globe,
   GraduationCap,
   Hammer,
   Image as ImageIcon,
   Images,
+  Landmark,
   LayoutTemplate,
   Mail,
+  Map as MapIcon,
   MessageCircleQuestion,
   MessageSquare,
   Mic,
   Music,
   NotebookPen,
+  Palette,
   Pencil,
   PlusCircle,
+  Puzzle,
   Search,
   Settings,
   Sparkles,
@@ -122,8 +134,42 @@ const THEME_STYLES: Record<ThemeKey, ThemeStyle> = {
 
 const DEFAULT_THEME: ThemeKey = "default";
 
-const ICON_MAP: Record<string, LucideIcon> = {
+const APP_ICONS = {
   app: AppWindow,
+  "audio-lines": AudioLines,
+  "book-open": BookOpen,
+  "brain-circuit": BrainCircuit,
+  camera: Camera,
+  clapperboard: Clapperboard,
+  "code-2": Code2,
+  dices: Dices,
+  drama: Drama,
+  "file-text": FileText,
+  "gamepad-2": Gamepad2,
+  globe: Globe,
+  "graduation-cap": GraduationCap,
+  image: ImageIcon,
+  images: Images,
+  landmark: Landmark,
+  layout: LayoutTemplate,
+  map: MapIcon,
+  "message-circle-question": MessageCircleQuestion,
+  mic: Mic,
+  music: Music,
+  newspaper: Newspaper,
+  palette: Palette,
+  pencil: Pencil,
+  puzzle: Puzzle,
+  search: Search,
+  sparkles: Sparkles,
+  trophy: Trophy,
+  users: Users,
+  video: Video,
+  "wand-2": Wand2,
+} satisfies Record<AppIconName, LucideIcon>;
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  ...APP_ICONS,
   "apply-edit-completion": Wand2,
   "add-reasoning-step": BrainCircuit,
   "audio-lines": AudioLines,
@@ -201,6 +247,16 @@ export const getIcon = (
   theme?: string,
   sizeClassName = "h-10 w-10",
 ): React.ReactNode => {
+  if (iconName?.startsWith("https://")) {
+    return React.createElement("img", {
+      src: iconName,
+      alt: "",
+      className: `${sizeClassName} rounded-md object-contain`,
+      referrerPolicy: "no-referrer",
+      loading: "lazy",
+    });
+  }
+
   const IconComponent = ICON_MAP[normaliseIconName(iconName) ?? ""];
   const { iconColor } = getThemeStyle(theme);
 

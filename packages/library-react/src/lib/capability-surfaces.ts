@@ -4,8 +4,9 @@ import type {
   ProjectExperienceDefinition,
 } from "@ngriffin_uk/polychat-schemas";
 
+import { getExperienceCapabilityId } from "./app-addresses.js";
 import { createRecipeManagementActionPath } from "./assistant-action-launch.js";
-import { getPlacePaths } from "./navigation/places.js";
+import { getActivePlace, getPlacePaths } from "./navigation/places.js";
 
 export interface CapabilitySurface {
   basePath: string;
@@ -89,8 +90,8 @@ export function getScheduledLibraryPath(surface: CapabilitySurface): string {
   return surface.projectId ? `${surface.basePath}/scheduled` : getPlacePaths("chat").scheduled;
 }
 
-export function getAppPath(surface: CapabilitySurface, appId: string, suffix?: string): string {
-  const base = `${surface.basePath}/apps/${appId}`;
+export function getAppPath(surface: CapabilitySurface, appSlug: string, suffix?: string): string {
+  const base = `${surface.basePath}/apps/${appSlug}`;
 
   return suffix ? `${base}/${suffix.replace(/^\/+/, "")}` : base;
 }
@@ -102,24 +103,24 @@ export interface AppBackLink {
 
 export function getAppBackLink(
   surface: CapabilitySurface,
-  appId: string,
+  appSlug: string,
   subpath: string,
   appName?: string,
 ): AppBackLink | null {
   const segments = subpath.split("/").filter(Boolean);
 
   if (segments.length === 0) {
-    if (appId === "sites") {
-      return null;
-    }
+    const appPath = getAppPath(surface, appSlug);
 
-    return { to: getPluginsPath(surface), label: "Back to plugins" };
+    return getActivePlace(appPath) === getActivePlace(getPluginsPath(surface))
+      ? { to: getPluginsPath(surface), label: "Back to plugins" }
+      : null;
   }
 
   const parent = segments.slice(0, -1).join("/");
 
   return {
-    to: getAppPath(surface, appId, parent || undefined),
+    to: getAppPath(surface, appSlug, parent || undefined),
     label: parent ? "Back" : `Back to ${appName ?? "list"}`,
   };
 }
@@ -135,12 +136,11 @@ export function getAppOpenPath(
 ): string {
   const app = apps.find(
     (candidate) =>
-      candidate.requirement.kind === "capability" &&
       candidate.requirement.capabilityKind === "app" &&
-      candidate.requirement.capabilityId === capabilityId,
+      getExperienceCapabilityId(candidate) === capabilityId,
   );
 
-  return app ? getAppPath(surface, app.id) : getPluginsPath(surface);
+  return app ? getAppPath(surface, app.slug) : getPluginsPath(surface);
 }
 
 function capabilityEnablesExperience(

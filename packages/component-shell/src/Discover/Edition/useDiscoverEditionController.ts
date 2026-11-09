@@ -18,7 +18,7 @@ import type {
   UpdateDiscoverSettings,
 } from "@ngriffin_uk/polychat-schemas";
 import { normaliseComparableText, readLocalTimeZone } from "@ngriffin_uk/polychat-utility-core";
-import { useMemo, useState } from "react";
+import { startTransition, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 
 import { cardTopic, hasDiscoverTopic } from "./discover-card-drafts.js";
@@ -29,9 +29,11 @@ import {
   groupDiscoverCards,
   orderDiscoverItems,
   stepDiscoverItem,
+  type DiscoverGraphItem,
   type DiscoverItem,
 } from "./item/discover-items.js";
 import type { DiscoverCardFeedback } from "./item/DiscoverCardActions.js";
+import { useDiscoverLinkedItem } from "./item/useDiscoverLinkedItem.js";
 import { discoverFeedEdition, discoverMediaEdition } from "./live/discover-feed-edition.js";
 import type { DiscoverMedia } from "./media/media-status.js";
 
@@ -71,6 +73,9 @@ export function useDiscoverEditionController() {
   const [requestedAt, setRequestedAt] = useState<number | null>(null);
   const [episodeRequestedAt, setEpisodeRequestedAt] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const linkedItem = useDiscoverLinkedItem();
+  const [graphItem, setGraphItem] = useState<DiscoverGraphItem | null>(linkedItem.linked);
+  const [graphCardId, setGraphCardId] = useState<string | null>(null);
   const [view, setView] = useState<DiscoverEditionViewState>(linkedMedia ? "media" : "feed");
   const [chosenMedia, setChosenMedia] = useState<DiscoverMedia | null>(linkedMedia);
   const [mediaPlaying, setMediaPlaying] = useState(false);
@@ -127,12 +132,13 @@ export function useDiscoverEditionController() {
   const mediaOpen = view === "media" && isAuthenticated;
   const panelItem = useMemo<DiscoverItem | null>(
     () =>
-      selectedCard && edition
+      graphItem ??
+      (selectedCard && edition
         ? { type: "card", card: selectedCard }
         : mediaOpen
           ? { type: "media", media }
-          : null,
-    [media, mediaOpen, edition, selectedCard],
+          : null),
+    [graphItem, media, mediaOpen, edition, selectedCard],
   );
   const panelIndex = panelItem
     ? items.findIndex((item) => discoverItemKey(item) === discoverItemKey(panelItem))
@@ -176,14 +182,26 @@ export function useDiscoverEditionController() {
 
     setChosenMedia(next);
     setSelectedId(null);
+    setGraphItem(null);
     setView("media");
     setPlayParam(next);
   };
 
-  const closePanel = () => {
+  const openGraphItem = (item: DiscoverGraphItem, cardId: string | null = null) => {
+    setGraphItem(item);
+    setGraphCardId(cardId);
     setSelectedId(null);
     setView("feed");
     setPlayParam(null);
+  };
+
+  const closePanel = () => {
+    setSelectedId(null);
+    setGraphItem(null);
+    setGraphCardId(null);
+    setView("feed");
+    setPlayParam(null);
+    linkedItem.leave();
   };
 
   const sendFeedback = (card: DiscoverCard, signal: DiscoverFeedbackSignal) => {
@@ -207,7 +225,13 @@ export function useDiscoverEditionController() {
     }
   };
 
-  const select = (card: DiscoverCard | null) => {
+  const markOpened = (card: DiscoverCard) => {
+    if (!edition?.feedback[card.id]?.includes("opened")) {
+      sendFeedback(card, "opened");
+    }
+  };
+
+  const openCard = (card: DiscoverCard | null) => {
     if (card && isHouseEdition) {
       const prompt = cardPrompt(card);
 
@@ -221,12 +245,24 @@ export function useDiscoverEditionController() {
     }
 
     setSelectedId(card?.id ?? null);
+    setGraphItem(null);
     setView(card ? "card" : "feed");
     setPlayParam(null);
 
-    if (card && !edition?.feedback[card.id]?.includes("opened")) {
-      sendFeedback(card, "opened");
+    if (card) {
+      markOpened(card);
     }
+  };
+
+  const select = (card: DiscoverCard | null) => {
+    if (card?.kind === "read" && card.storyId && !isHouseEdition) {
+      openGraphItem({ type: "story", storyId: card.storyId }, card.id);
+      startTransition(() => markOpened(card));
+
+      return;
+    }
+
+    openCard(card);
   };
 
   const playStory = (cardId: string) => {
@@ -267,6 +303,10 @@ export function useDiscoverEditionController() {
     isHouseEdition,
     settings,
     selectedCard,
+    selectedCardId: selectedCard?.id ?? (graphItem ? graphCardId : null),
+    openStory: (storyId: string) => openGraphItem({ type: "story", storyId }),
+    openEntity: (entityId: string) => openGraphItem({ type: "entity", entityId }),
+    openAngles: () => openGraphItem({ type: "angles" }),
     view,
     media,
     mediaPlaying,
@@ -278,10 +318,7 @@ export function useDiscoverEditionController() {
     storyWindDownId,
     isStartingStory: startStory.isPending,
     startStory: (card: DiscoverStoryCard) => {
-      if (!edition?.feedback[card.id]?.includes("opened")) {
-        sendFeedback(card, "opened");
-      }
-
+      markOpened(card);
       playStory(card.id);
     },
     retryStory: () => {
@@ -290,6 +327,7 @@ export function useDiscoverEditionController() {
       }
     },
     showMedia: () => {
+      setGraphItem(null);
       setView("media");
       setPlayParam(media);
     },
@@ -350,7 +388,7 @@ export function useDiscoverEditionController() {
       const next = stepDiscoverItem(items, panelItem, direction);
 
       if (next?.type === "card") {
-        select(next.card);
+        openCard(next.card);
       } else if (next) {
         openMedia(next.media);
       }

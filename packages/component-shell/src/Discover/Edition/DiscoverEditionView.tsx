@@ -5,6 +5,7 @@ import { Settings2 } from "lucide-react";
 import { useLayoutEffect, useRef, useState, type ReactNode, type UIEvent } from "react";
 
 import { PageShell } from "../../Shell/PageShell.js";
+import { DiscoverAnglesSection } from "../Tracker/DiscoverAnglesSection.js";
 import { DiscoverDayDialog } from "./day/DiscoverDayDialog.js";
 import { DiscoverBrief } from "./DiscoverBrief.js";
 import { DiscoverFeed } from "./DiscoverFeed.js";
@@ -47,7 +48,7 @@ export interface DiscoverChatSlot {
 }
 
 function DiscoverEditionBody({ controller }: { controller: DiscoverEditionController }) {
-  const { edition, ownEdition, settings, selectedCard, isAuthenticated } = controller;
+  const { edition, ownEdition, settings, isAuthenticated } = controller;
   const refreshMessage =
     controller.refreshStatus && controller.refreshStatus !== "queued"
       ? REFRESH_MESSAGES[controller.refreshStatus]
@@ -68,7 +69,7 @@ function DiscoverEditionBody({ controller }: { controller: DiscoverEditionContro
   ) : edition ? (
     <DiscoverFeed
       edition={edition}
-      selectedId={selectedCard?.id ?? null}
+      selectedId={controller.selectedCardId}
       isTopicHidden={controller.isTopicHidden}
       isFollowing={(card) => Boolean(controller.followFor(card))}
       onSelect={controller.select}
@@ -76,6 +77,14 @@ function DiscoverEditionBody({ controller }: { controller: DiscoverEditionContro
       failedStoryId={controller.failedStoryId}
       openStoryId={controller.openStoryId}
       onStartStory={controller.startStory}
+      angles={
+        <DiscoverAnglesSection
+          enabled={controller.isAuthenticated && !controller.isHouseEdition}
+          onOpenStory={controller.openStory}
+          onOpenEntity={controller.openEntity}
+          onOpenAngles={controller.openAngles}
+        />
+      }
       mediaCount={ownEdition && settings ? controller.mediaShelf.length : 0}
       media={
         ownEdition && settings ? (
@@ -173,19 +182,17 @@ export function DiscoverEditionView({ chat }: { chat?: DiscoverChatSlot }) {
 
   const headerActions =
     isAuthenticated && settings ? (
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          collapseLabel
-          icon={<Settings2 size={14} aria-hidden />}
-          aria-label="Discover settings"
-          title="Discover settings"
-          onClick={() => setShowSettings(true)}
-        >
-          {discover.data?.dayProfile?.onboarded ? "Settings" : "Set up Discover"}
-        </Button>
-      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        collapseLabel
+        icon={<Settings2 size={14} aria-hidden />}
+        aria-label="Discover settings"
+        title="Discover settings"
+        onClick={() => setShowSettings(true)}
+      >
+        {discover.data?.dayProfile?.onboarded ? "Settings" : "Set up Discover"}
+      </Button>
     ) : undefined;
 
   return (

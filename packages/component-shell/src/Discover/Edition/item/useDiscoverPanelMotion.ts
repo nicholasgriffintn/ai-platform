@@ -10,28 +10,9 @@ import {
   playDiscoverMorph,
   type DiscoverMorphSource,
 } from "./discover-motion.js";
+import { findFeedItem, holdFeedAnchor, readFeedAnchor, type FeedAnchor } from "./feed-anchor.js";
 
 const ART_TARGET = "[data-discover-art-target], [data-media-visual]";
-
-interface FeedAnchor {
-  key: string;
-  top: number;
-}
-
-function findFeedItem(feed: HTMLElement | null, key: string): HTMLElement | null {
-  const element = feed?.querySelector(`[data-discover-item="${CSS.escape(key)}"]`);
-
-  return element instanceof HTMLElement ? element : null;
-}
-
-function revealInFeed(feed: HTMLElement, element: HTMLElement) {
-  const bounds = feed.getBoundingClientRect();
-  const rect = element.getBoundingClientRect();
-
-  if (rect.top < bounds.top || rect.bottom > bounds.bottom) {
-    element.scrollIntoView({ block: "center" });
-  }
-}
 
 export function useDiscoverPanelMotion(item: DiscoverItem | null) {
   const open = item !== null;
@@ -51,40 +32,32 @@ export function useDiscoverPanelMotion(item: DiscoverItem | null) {
   }, [open]);
 
   useLayoutEffect(() => {
-    const feed = feedRef.current;
-    const element = !open && shownKey ? findFeedItem(feed, shownKey) : null;
+    const switched =
+      !open && shownKey && anchorRef.current?.key !== shownKey
+        ? findFeedItem(feedRef.current, shownKey)
+        : null;
 
-    if (!feed || !element || !shownKey) {
-      return;
+    if (switched && shownKey) {
+      anchorRef.current = { key: shownKey, top: null };
     }
-
-    revealInFeed(feed, element);
-    anchorRef.current = { key: shownKey, top: element.getBoundingClientRect().top };
   }, [open, shownKey]);
 
   useLayoutEffect(() => {
-    const anchor = anchorRef.current;
     const feed = feedRef.current;
+    const anchor = anchorRef.current;
 
-    anchorRef.current = null;
-
-    if (!anchor || !feed || feed.offsetParent === null) {
-      return;
+    if (!open && !occupied) {
+      anchorRef.current = null;
     }
 
-    const element = findFeedItem(feed, anchor.key);
-
-    if (element) {
-      feed.scrollTop += element.getBoundingClientRect().top - anchor.top;
-    }
-  }, [occupied]);
+    return feed && anchor ? holdFeedAnchor(feed, anchor) : undefined;
+  }, [open, occupied]);
 
   const capture = useCallback((target: EventTarget | null) => {
     const host = target instanceof Element ? target.closest("[data-discover-item]") : null;
-    const key = host?.getAttribute("data-discover-item");
 
     morphRef.current = captureDiscoverMorph(host);
-    anchorRef.current = key && host ? { key, top: host.getBoundingClientRect().top } : null;
+    anchorRef.current = readFeedAnchor(feedRef.current, host);
   }, []);
 
   const playEntrance = useCallback((content: HTMLElement | null) => {

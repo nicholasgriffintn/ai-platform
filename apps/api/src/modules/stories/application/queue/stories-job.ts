@@ -6,6 +6,7 @@ import type { IEnv } from "~/types";
 
 import { backfillStoryPage } from "../backfill";
 import { ingestStoryArticles } from "../ingest";
+import { reclusterStories } from "../recluster";
 import { refreshStory } from "../refresh";
 
 async function runStoriesJob(env: IEnv, job: StoriesJobTaskData): Promise<TaskResult> {
@@ -18,10 +19,15 @@ async function runStoriesJob(env: IEnv, job: StoriesJobTaskData): Promise<TaskRe
   if (job.job === "refresh") {
     const outcome = await refreshStory(env, job.storyId);
 
-    return {
-      status: outcome === "written" ? "success" : "skipped",
-      message: `Story refresh ${outcome}`,
-    };
+    return outcome.status === "written"
+      ? { status: "success", message: "Story refresh written", data: { ...outcome.graph } }
+      : { status: "skipped", message: `Story refresh ${outcome.status}` };
+  }
+
+  if (job.job === "recluster") {
+    const outcome = await reclusterStories(env, job.articles);
+
+    return { status: "success", message: "Stories reclustered", data: { ...outcome } };
   }
 
   const queued = await backfillStoryPage(env, job.after);

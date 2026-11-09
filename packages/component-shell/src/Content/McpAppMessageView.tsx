@@ -1,6 +1,6 @@
 import { McpAppView, type ToolInteractionHandler } from "@ngriffin_uk/polychat-component-content";
 import { themeAppearance } from "@ngriffin_uk/polychat-library-chat";
-import { callMcpAppTool } from "@ngriffin_uk/polychat-library-client";
+import { callMcpAppTool, MCP_APP_FRAME_DOCUMENT_URL } from "@ngriffin_uk/polychat-library-client";
 import { useResolvedThemeId } from "@ngriffin_uk/polychat-library-react";
 import { MCP_CALL_TOOL_NAME, mcpAppViewSchema } from "@ngriffin_uk/polychat-schemas";
 import { isRecord } from "@ngriffin_uk/polychat-utility-core";
@@ -33,5 +33,13 @@ export function McpAppMessageView({
     return null;
   }
 
-  return <McpAppView app={parsed.data} theme={theme} callTool={callTool} onMessage={onMessage} />;
+  return (
+    <McpAppView
+      app={parsed.data}
+      frameDocumentUrl={MCP_APP_FRAME_DOCUMENT_URL}
+      theme={theme}
+      callTool={callTool}
+      onMessage={onMessage}
+    />
+  );
 }

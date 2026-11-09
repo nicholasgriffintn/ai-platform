@@ -1,5 +1,11 @@
-import { MCP_APP_ENTRY_META_KEY, mcpAppEntryMetaSchema } from "@ngriffin_uk/polychat-schemas";
-import { isRecord } from "@ngriffin_uk/polychat-utility-core";
+import {
+  MCP_APP_ENTRY_META_KEY,
+  mcpAppEntryMetaSchema,
+  type AppCategory,
+  type AppLayout,
+  type AppTheme,
+} from "@ngriffin_uk/polychat-schemas";
+import { isRecord, omitUndefinedProperties } from "@ngriffin_uk/polychat-utility-core";
 import z from "zod/v4";
 
 export const jsonRpcErrorSchema = z.object({
@@ -74,8 +80,13 @@ export interface McpToolAppEntry {
   resourceUri: string;
   name: string;
   description?: string;
-  category?: string;
-  layout: "contained" | "workspace";
+  category?: AppCategory;
+  icon?: string;
+  theme?: AppTheme;
+  when?: string;
+  uses?: string;
+  produces?: string;
+  layout: AppLayout;
 }
 
 function hasRequiredInputs(tool: Pick<McpTool, "inputSchema">): boolean {
@@ -97,15 +108,16 @@ export function readMcpToolAppEntry(tool: McpTool): McpToolAppEntry | undefined 
     return undefined;
   }
 
-  const description = meta.data.description ?? tool.description;
+  const { name, description, surface, layout, ...presentation } = meta.data;
+  const resolvedDescription = description ?? tool.description;
 
   return {
     tool: tool.name,
     resourceUri,
-    name: meta.data.name ?? tool.title ?? tool.annotations.title ?? tool.name,
-    ...(description ? { description } : {}),
-    ...(meta.data.category ? { category: meta.data.category } : {}),
-    layout: meta.data.layout ?? "workspace",
+    name: name ?? tool.title ?? tool.annotations.title ?? tool.name,
+    ...(resolvedDescription ? { description: resolvedDescription } : {}),
+    ...omitUndefinedProperties(presentation),
+    layout: surface ?? layout ?? "workspace",
   };
 }
 

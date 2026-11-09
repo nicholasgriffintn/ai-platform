@@ -1,11 +1,6 @@
 import { generateCSP } from "@ngriffin_uk/polychat-library-client";
 
-const PERMISSIONS_POLICY = [
-  "geolocation=()",
-  "microphone=(self)",
-  "camera=(self)",
-  "payment=()",
-].join(", ");
+const PERMISSIONS_POLICY = ["geolocation=()", "microphone=*", "camera=*", "payment=()"].join(", ");
 
 const STATIC_HEADERS: Record<string, string> = {
   "Content-Security-Policy": generateCSP(),

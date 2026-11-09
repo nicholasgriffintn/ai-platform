@@ -32,7 +32,6 @@ export const promptTasks = [
   "image-style",
   "web-search-questions",
   "web-search-answer",
-  "strudel",
   "site-generate",
   "site-refine",
   "hacker-news",

@@ -5,6 +5,7 @@ export const CLOUDFLARE_VENDOR = "cloudflare";
 export const CLOUDFLARE_RATES_EFFECTIVE_FROM = "2026-08-31";
 
 const MILLION = 1e6;
+const SECONDS_PER_HOUR = 3600;
 const HUNDRED_MILLION = 1e8;
 
 function usdToMicros(usd: number): number {
@@ -41,6 +42,7 @@ export const CLOUDFLARE_RATE_ENTRIES: readonly RateEntry[] = [
   cloudflareRate("analytics_engine", "analytics_data_points", 0.25 / MILLION),
   cloudflareRate("r2", "r2_class_a_ops", 4.5 / MILLION),
   cloudflareRate("r2", "r2_class_b_ops", 0.36 / MILLION),
+  cloudflareRate("browser_rendering", "browser_seconds", 0.09 / SECONDS_PER_HOUR),
 ];
 
 export type ContainerInstanceSpec = {
@@ -61,6 +63,7 @@ export const CONTAINER_INSTANCE_TYPES = {
 export type ContainerInstanceType = keyof typeof CONTAINER_INSTANCE_TYPES;
 
 export const CONTAINER_RESOURCE = "containers";
+export const BROWSER_RENDERING_RESOURCE = "browser_rendering";
 
 export function isContainerInstanceType(value: unknown): value is ContainerInstanceType {
   return typeof value === "string" && value in CONTAINER_INSTANCE_TYPES;

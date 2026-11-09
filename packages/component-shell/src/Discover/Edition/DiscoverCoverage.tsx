@@ -1,9 +1,8 @@
 import { buttonClassName, WorkbenchCard } from "@ngriffin_uk/polychat-component-ui";
-import { getStoryPath, useStory } from "@ngriffin_uk/polychat-library-react";
+import { useStory } from "@ngriffin_uk/polychat-library-react";
 import type { StoryPage } from "@ngriffin_uk/polychat-schemas";
 import { formatCount } from "@ngriffin_uk/polychat-utility-core";
 import { Newspaper } from "lucide-react";
-import { Link } from "react-router";
 
 import { AnalysisList, AnalysisSection, AnalysisTags } from "../../Knowledge/Analysis.js";
 
@@ -36,7 +35,13 @@ function CoverageDetail({ page }: { page: StoryPage }) {
   );
 }
 
-export function DiscoverCoverageCard({ storyId }: { storyId: string }) {
+export function DiscoverCoverageCard({
+  storyId,
+  onOpenStory,
+}: {
+  storyId: string;
+  onOpenStory: (storyId: string) => void;
+}) {
   const story = useStory(storyId);
 
   if (story.isError) {
@@ -47,12 +52,13 @@ export function DiscoverCoverageCard({ storyId }: { storyId: string }) {
     <WorkbenchCard title="Coverage" icon={Newspaper}>
       <div className="flex flex-col items-start gap-3">
         {story.data ? <CoverageDetail page={story.data} /> : <p>Reading the story.</p>}
-        <Link
-          to={getStoryPath(storyId)}
+        <button
+          type="button"
+          onClick={() => onOpenStory(storyId)}
           className={buttonClassName({ variant: "outline", size: "xs" })}
         >
           Full story
-        </Link>
+        </button>
       </div>
     </WorkbenchCard>
   );

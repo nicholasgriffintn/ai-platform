@@ -2,7 +2,15 @@ import type { GlobalSearchDocument } from "@ngriffin_uk/polychat-schemas";
 import { toFtsQuery } from "@ngriffin_uk/polychat-utility-server/search-ranking";
 
 import type { Repositories } from "~/infrastructure/database/repositories";
-import { KnowledgeIndexRepository } from "~/modules/knowledge/infrastructure/KnowledgeIndexRepository";
+import {
+  KnowledgeIndexRepository,
+  type KnowledgePassage,
+} from "~/modules/knowledge/infrastructure/KnowledgeIndexRepository";
+
+export type KnowledgeMention = Pick<
+  KnowledgePassage,
+  "sourceId" | "resourceType" | "title" | "content" | "updatedAt"
+>;
 
 const SNIPPET_CHARACTERS = 160;
 
@@ -40,4 +48,25 @@ export async function findKnowledgeDocuments(
   }
 
   return [...documents.values()];
+}
+
+export async function findPersonalKnowledgeMentions(
+  repositories: Repositories,
+  userId: number,
+  ftsQuery: string,
+): Promise<KnowledgeMention[]> {
+  const passages = await repositories
+    .get(KnowledgeIndexRepository)
+    .lexical(
+      { userId, filters: { resourceTypes: ["source", "memory"], excludeConfidential: true } },
+      ftsQuery,
+    );
+
+  return passages.map(({ sourceId, resourceType, title, content, updatedAt }) => ({
+    sourceId,
+    resourceType,
+    title,
+    content,
+    updatedAt,
+  }));
 }

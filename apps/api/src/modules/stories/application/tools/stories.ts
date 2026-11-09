@@ -1,8 +1,19 @@
-import { findRelatedStoriesInputSchema, readStoryInputSchema } from "@ngriffin_uk/polychat-schemas";
+import {
+  compareCoverageInputSchema,
+  findRelatedStoriesInputSchema,
+  followEntityInputSchema,
+  readStoryInputSchema,
+} from "@ngriffin_uk/polychat-schemas";
 import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
 import type z from "zod/v4";
 
-import { describeRelatedStory, renderStoryForModel } from "~/modules/stories/domain/render";
+import { followDiscoverTopic } from "~/modules/discover/application/follows";
+import {
+  describeRelatedStory,
+  renderCoverageComparison,
+  renderStoryForModel,
+} from "~/modules/stories/domain/render";
+import { EntityRepository } from "~/modules/stories/infrastructure/EntityRepository";
 import type { ApiToolDefinition, ApiToolExecutionContext } from "~/types/functions";
 
 import { findRelatedStories, readStoryPage } from "../read-models";
@@ -58,6 +69,60 @@ export const find_related_stories: ApiToolDefinition = {
           ? stories.map((story) => `- ${describeRelatedStory(story)}`).join("\n")
           : "No related stories found.",
       data: { stories, responseType: "text" },
+    };
+  },
+};
+
+export const compare_coverage: ApiToolDefinition = {
+  name: "compare_coverage",
+  capabilityHint: "compare how outlets cover a news story",
+  type: "normal",
+  permissions: ["read"],
+  effects: { effectClass: "read" },
+  description:
+    "Compare how outlets cover a Discover story: who broke it, how many articles each outlet ran and when, each outlet's angle, and what they agree on, dispute or leave out.",
+  inputSchema: compareCoverageInputSchema,
+  execute: async (args: z.infer<typeof compareCoverageInputSchema>, toolContext) => {
+    const context = requireSignedIn(toolContext);
+    const page = await readStoryPage(context.env, args.storyId);
+
+    return {
+      name: "compare_coverage",
+      status: "success",
+      content: renderCoverageComparison(page),
+      data: { story: page.story, coverage: page.coverage, responseType: "text" },
+    };
+  },
+};
+
+export const follow_entity: ApiToolDefinition = {
+  name: "follow_entity",
+  capabilityHint: "follow a person or organisation in the news",
+  type: "normal",
+  permissions: ["write"],
+  effects: { effectClass: "write" },
+  intentEvidence: () => ({
+    operation: "follow_entity",
+    destination: "the person's Discover follows",
+  }),
+  description:
+    "Follow a person, organisation, place or product from a Discover story so new coverage of them reaches the person's Discover. Entity ids appear in read_story results.",
+  inputSchema: followEntityInputSchema,
+  execute: async (args: z.infer<typeof followEntityInputSchema>, toolContext) => {
+    const context = requireSignedIn(toolContext);
+    const entity = await new EntityRepository(context.env).get(args.entityId);
+
+    if (!entity) {
+      throw new AssistantError("Entity not found", ErrorType.NOT_FOUND, 404);
+    }
+
+    const follow = await followDiscoverTopic(context, entity.name);
+
+    return {
+      name: "follow_entity",
+      status: "success",
+      content: `Following ${entity.name} in Discover.`,
+      data: { follow, responseType: "text" },
     };
   },
 };

@@ -2,6 +2,7 @@ export const DISCOVER_STORY_DAILY_VERSION_CAP = 300;
 export const STORY_REFRESH_DEBOUNCE_MS = 15 * 60 * 1000;
 export const STORY_VERSION_ARTICLE_LIMIT = 12;
 const MIN_OUTLETS_FOR_VERSION = 2;
+const MIN_ARTICLES_FOR_VERSION = 3;
 const NEW_ARTICLES_FOR_VERSION = 3;
 const STALE_VERSION_MS = 6 * 60 * 60 * 1000;
 
@@ -15,7 +16,10 @@ export interface StoryRefreshState {
 }
 
 export function needsStoryVersion(story: StoryRefreshState, now: Date): boolean {
-  if (story.status !== "open" || story.outletCount < MIN_OUTLETS_FOR_VERSION) {
+  if (
+    story.status !== "open" ||
+    (story.outletCount < MIN_OUTLETS_FOR_VERSION && story.articleCount < MIN_ARTICLES_FOR_VERSION)
+  ) {
     return false;
   }
 

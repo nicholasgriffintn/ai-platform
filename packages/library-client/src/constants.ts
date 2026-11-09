@@ -29,6 +29,7 @@ export const SHOW_DEV_TOOLS = IS_DEVELOPMENT;
 export const API_BASE_URL =
   import.meta.env?.VITE_E2E_API_BASE_URL ||
   (IS_PRODUCTION && !IS_E2E_BUILD ? "https://api.polychat.app" : "http://localhost:8787");
+export const MCP_APP_FRAME_DOCUMENT_URL = `${API_BASE_URL}/tools/mcp_app_frames/document`;
 export const WEB_APP_BASE_URL =
   import.meta.env?.VITE_WEB_APP_BASE_URL ||
   (IS_PRODUCTION && !IS_E2E_BUILD ? "https://polychat.app" : "http://localhost:5173");
@@ -59,6 +60,7 @@ const COMMON_CSP = {
     "https://*.hcaptcha.com",
     "https://strudel.cc",
     "https://www.youtube-nocookie.com",
+    API_BASE_URL,
     ...(PREVIEW_FRAME_SOURCE ? [PREVIEW_FRAME_SOURCE] : []),
     ...(COMPUTER_SCREEN_FRAME_SOURCE ? [COMPUTER_SCREEN_FRAME_SOURCE] : []),
   ],
@@ -144,6 +146,36 @@ export function generateCSP(): string {
       return `${directiveName} ${sources.join(" ")}`;
     })
     .join("; ");
+}
+
+function matchesImageSource(url: URL, source: string): boolean {
+  if (source.startsWith("'") || source.endsWith(":")) {
+    return false;
+  }
+
+  try {
+    const expected = new URL(source.includes("://") ? source : `https://${source}`);
+
+    return (
+      url.protocol === expected.protocol &&
+      url.host === expected.host &&
+      url.pathname.startsWith(expected.pathname)
+    );
+  } catch {
+    return false;
+  }
+}
+
+export function isImageSourceAllowed(value: string): boolean {
+  try {
+    const url = new URL(value);
+
+    return (
+      url.protocol === "https:" && CSP.imgSrc.some((source) => matchesImageSource(url, source))
+    );
+  } catch {
+    return false;
+  }
 }
 
 export const shouldShowDevTools = () => SHOW_DEV_TOOLS;

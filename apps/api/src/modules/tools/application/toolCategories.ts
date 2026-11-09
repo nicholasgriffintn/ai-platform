@@ -38,7 +38,6 @@ const TOOL_IDS_BY_CATEGORY: Partial<Record<ToolCategory, readonly string[]>> = {
     "where_to_watch",
   ],
   Creative: [
-    "generate_pattern",
     "generate_podcast",
     "grade_writing",
     "build_site",
