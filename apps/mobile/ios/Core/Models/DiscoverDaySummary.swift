@@ -16,6 +16,16 @@ extension DiscoverDayProfile {
         return parts.isEmpty ? "Off" : parts.joined(separator: " · ")
     }
 
+    var lineStatusSummary: String {
+        guard let lineStatus, lineStatus.enabled else { return "Off" }
+        let count = lineStatus.lines.count
+        let parts = [
+            count > 0 ? "\(count) \(count == 1 ? "line" : "lines")" : nil,
+            lineStatus.nearby ? "Nearby" : nil
+        ].compactMap { $0 }
+        return parts.isEmpty ? "No lines chosen" : parts.joined(separator: " · ")
+    }
+
     var alertSummary: String {
         notifications.enabled && notifications.dailyLimit > 0 ? "Up to \(notifications.dailyLimit) a day" : "Off"
     }

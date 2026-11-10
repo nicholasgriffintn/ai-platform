@@ -165,3 +165,37 @@ struct DiscoverClockField: View {
         ), displayedComponents: .hourAndMinute)
     }
 }
+
+struct DiscoverDayLinesEditor: View {
+    @Binding var lineStatus: DiscoverDayProfile.LineStatus
+
+    var body: some View {
+        Form {
+            Section {
+                Toggle("Show line status", isOn: $lineStatus.enabled)
+                Toggle("Include lines near me", isOn: $lineStatus.nearby)
+                    .disabled(!lineStatus.enabled)
+            } footer: {
+                Text("Nearby lines need Where I am turned on for the Today widget in Settings.")
+            }
+            Section("Lines I use") {
+                ForEach(DiscoverTransitLine.all) { line in
+                    let chosen = lineStatus.lines.contains(line.id)
+                    Button {
+                        lineStatus.lines = chosen
+                            ? lineStatus.lines.filter { $0 != line.id }
+                            : lineStatus.lines + [line.id]
+                    } label: {
+                        HStack {
+                            Text(line.name).foregroundStyle(.primary)
+                            Spacer()
+                            if chosen { Image(systemName: "checkmark").foregroundStyle(.tint) }
+                        }
+                    }
+                    .disabled(!lineStatus.enabled || (!chosen && lineStatus.lines.count >= 12))
+                }
+            }
+        }
+        .navigationTitle("Line status")
+    }
+}

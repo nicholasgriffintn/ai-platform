@@ -52,6 +52,40 @@ const tflJourneySchema = z.object({
     .max(20),
 });
 
+const tflLineStatusSchema = z
+  .array(
+    z.object({
+      id: z.string().min(1).max(60),
+      name: z.string().min(1).max(120),
+      lineStatuses: z
+        .array(
+          z.object({
+            statusSeverity: z.number().int(),
+            statusSeverityDescription: z.string().max(120),
+            reason: z.string().nullish(),
+          }),
+        )
+        .default([]),
+    }),
+  )
+  .max(80);
+const tflNearbyLinesSchema = z.object({
+  stopPoints: z
+    .array(
+      z.object({
+        distance: z.number().optional(),
+        lines: z.array(z.object({ id: z.string().min(1).max(60) })).default([]),
+      }),
+    )
+    .max(200),
+});
+
+export interface TransitLineStatus {
+  id: string;
+  name: string;
+  statuses: { severity: number; description: string; reason: string | null }[];
+}
+
 export async function searchConnectorPlaces(
   context: ServiceContext,
   provider: RecipeConnectorProvider,
@@ -156,4 +190,62 @@ export async function readConnectorJourney(
       ],
     }),
   );
+}
+
+export async function readConnectorLineStatus(
+  context: ServiceContext,
+  lines: readonly string[],
+): Promise<TransitLineStatus[]> {
+  const response = await executeRecipeConnectorOperation({
+    context,
+    userId: context.requireUser().id,
+    request: { provider: "tfl", operation: "line_status", params: { lines: [...lines] } },
+  });
+  const parsed = tflLineStatusSchema.safeParse(response);
+
+  if (!parsed.success) {
+    throw new AssistantError("TfL returned no usable line status", ErrorType.PROVIDER_ERROR, 502);
+  }
+
+  return parsed.data.map((line) => ({
+    id: line.id,
+    name: truncateSingleLine(line.name, 120),
+    statuses: line.lineStatuses.map((status) => ({
+      severity: status.statusSeverity,
+      description: truncateSingleLine(status.statusSeverityDescription, 120),
+      reason: status.reason ? truncateSingleLine(status.reason, 600) : null,
+    })),
+  }));
+}
+
+export async function readConnectorNearbyLines(
+  context: ServiceContext,
+  point: { latitude: number; longitude: number },
+): Promise<string[]> {
+  const response = await executeRecipeConnectorOperation({
+    context,
+    userId: context.requireUser().id,
+    request: {
+      provider: "tfl",
+      operation: "nearby_lines",
+      params: { latitude: point.latitude, longitude: point.longitude, radius: 1000 },
+    },
+  });
+  const parsed = tflNearbyLinesSchema.safeParse(response);
+
+  if (!parsed.success) {
+    throw new AssistantError(
+      "TfL returned no usable nearby stations",
+      ErrorType.PROVIDER_ERROR,
+      502,
+    );
+  }
+
+  return [
+    ...new Set(
+      [...parsed.data.stopPoints]
+        .sort((left, right) => (left.distance ?? Infinity) - (right.distance ?? Infinity))
+        .flatMap((stop) => stop.lines.map((line) => line.id)),
+    ),
+  ];
 }

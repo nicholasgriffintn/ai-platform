@@ -229,6 +229,14 @@ final class APIClient: ObservableObject {
         let _: EmptyResponse = try await send(path: "/discover/health", method: "DELETE")
     }
 
+    func shareDiscoverLocation(_ location: DiscoverDeviceLocation) async throws {
+        let _: DiscoverRefreshResponse = try await send(path: "/discover/current/location", method: "PUT", body: location)
+    }
+
+    func stopSharingDiscoverLocation() async throws {
+        let _: EmptyResponse = try await send(path: "/discover/current/location", method: "DELETE")
+    }
+
     func sendRipple(_ batch: ClientAnalyticsBatch) async throws -> ClientAnalyticsBatchResponse {
         try await send(path: "/ripple", method: "POST", body: batch)
     }

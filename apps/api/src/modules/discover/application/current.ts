@@ -15,6 +15,7 @@ import { TaskRepository } from "~/modules/queue/infrastructure/TaskRepository";
 import { queueStoryIntake } from "~/modules/stories/application/intake";
 
 import { readDiscoverDayProfile } from "./day-profile";
+import { currentDiscoverDeviceLocation, gatherDiscoverLineStatus } from "./line-status";
 import { collectDiscoverLiveCandidates } from "./live-candidates";
 import { gatherDiscoverObservations } from "./live-observations";
 import { readDiscoverLive, updateDiscoverLive } from "./live-store";
@@ -98,13 +99,25 @@ export async function refreshDiscoverCurrent(
     return { added: 0, changed: false };
   }
 
-  const observations = await gatherDiscoverObservations(
+  const previousObservations =
+    previous.profileRevision === profile.revision ? previous.observations : [];
+  const location = currentDiscoverDeviceLocation(previous, now);
+  const gathered = await gatherDiscoverObservations(
     context,
     profile,
     settings,
-    previous.profileRevision === profile.revision ? previous.observations : [],
+    previousObservations,
     now,
+    location,
   );
+  const lineStatus = await gatherDiscoverLineStatus(context, {
+    profile,
+    settings,
+    live: previous,
+    previous: previousObservations,
+    now,
+  });
+  const observations = [...lineStatus.observations, ...gathered].slice(0, 16);
   const news = await readDiscoverNews(
     selectDiscoverNewsCategories(settings.newsCategoryIds),
     context.env.CACHE,
@@ -155,6 +168,8 @@ export async function refreshDiscoverCurrent(
       ...content,
       ...merged,
       observations,
+      deviceLocation: currentDiscoverDeviceLocation(content, now),
+      nearbyLines: lineStatus.nearbyLines,
       profileRevision: profile.revision,
       checkedAt: now.toISOString(),
       updatedAt: changed ? now.toISOString() : merged.updatedAt,

@@ -6,6 +6,44 @@ struct WidgetSnapshot: Codable, Equatable {
         let detail: String?
         let systemImage: String
         var expiresAt: Date? = nil
+        var kind: String? = nil
+    }
+
+    struct Health: Codable, Hashable {
+        var sleepMinutes: Int?
+        var steps: Int?
+        var restingHeartRate: Int?
+        var restingHeartRateUsual: Int?
+        var heartRateVariability: Int?
+        var heartRateVariabilityUsual: Int?
+        let observedAt: Date
+
+        var vitalsNote: String? {
+            if let resting = restingHeartRate, let usual = restingHeartRateUsual, resting - usual >= 5 {
+                return "Resting heart rate \(resting - usual) bpm above usual"
+            }
+            if let variability = heartRateVariability, let usual = heartRateVariabilityUsual, usual > 0,
+               Double(variability) < Double(usual) * 0.8 {
+                return "Heart rate variability lower than usual"
+            }
+            if restingHeartRate != nil || heartRateVariability != nil {
+                return "Vitals in your usual range"
+            }
+            return nil
+        }
+
+        var needsAttention: Bool {
+            vitalsNote.map { !$0.hasPrefix("Vitals in") } ?? false
+        }
+
+        var summary: String? {
+            let parts = [
+                sleepMinutes.map { "\($0 / 60)h \($0 % 60)m sleep" },
+                steps.map { "\($0.formatted()) steps" },
+                restingHeartRate.map { "\($0) bpm resting" }
+            ].compactMap { $0 }
+            return parts.isEmpty ? nil : parts.joined(separator: " · ")
+        }
     }
 
     struct Today: Codable, Equatable {
@@ -32,6 +70,7 @@ struct WidgetSnapshot: Codable, Equatable {
     var today: Today?
     var attention: Attention?
     var poly: Poly?
+    var health: Health?
     var updatedAt: Date?
 
     static let empty = WidgetSnapshot()
@@ -68,5 +107,14 @@ enum WidgetSnapshotStore {
 
     static func clear() {
         UserDefaults(suiteName: appGroup)?.removeObject(forKey: key)
+    }
+}
+
+enum WidgetPreferences {
+    private static let calendarKey = "widgetShowsCalendar"
+
+    static var showsCalendar: Bool {
+        get { UserDefaults(suiteName: WidgetSnapshotStore.appGroup)?.bool(forKey: calendarKey) ?? false }
+        set { UserDefaults(suiteName: WidgetSnapshotStore.appGroup)?.set(newValue, forKey: calendarKey) }
     }
 }

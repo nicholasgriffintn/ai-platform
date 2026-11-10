@@ -17,6 +17,7 @@ struct PolychatApp: App {
     @StateObject private var attentionStore = AttentionStore()
     @StateObject private var workStore = WorkStore()
     @StateObject private var healthSync = HealthSyncController.shared
+    @StateObject private var widgetContext = WidgetContextController.shared
     @StateObject private var syncClient = DeviceSyncClient()
     @StateObject private var perchStore = PerchStore { WatchBridge.shared.publishPerch() }
 
@@ -38,6 +39,7 @@ struct PolychatApp: App {
                 .environmentObject(attentionStore)
                 .environmentObject(workStore)
                 .environmentObject(healthSync)
+                .environmentObject(widgetContext)
                 .environmentObject(syncClient)
                 .environmentObject(perchStore)
                 .tint(Color.polychat.primary)

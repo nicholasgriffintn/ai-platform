@@ -68,6 +68,14 @@ struct DiscoverDaySheet: View {
                         DiscoverDaySummaryRow(title: "Weather and travel", summary: draft.weatherLocation?.label ?? (draft.commute == nil ? "Off" : "Public transport"))
                     }
                     NavigationLink {
+                        DiscoverDayLinesEditor(lineStatus: Binding(
+                            get: { draft.lineStatus ?? .off },
+                            set: { draft.lineStatus = $0 }
+                        ))
+                    } label: {
+                        DiscoverDaySummaryRow(title: "Line status", summary: draft.lineStatusSummary)
+                    }
+                    NavigationLink {
                         DiscoverDayAudioEditor(audio: $draft.audio)
                     } label: {
                         DiscoverDaySummaryRow(title: "Podcasts", summary: draft.audioSummary)

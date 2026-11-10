@@ -33,3 +33,20 @@ export function describeDiscoverAlerts(profile: DiscoverDayProfile): string {
     ? `Up to ${profile.notifications.dailyLimit} a day`
     : "Off";
 }
+
+export function describeDiscoverLines(profile: DiscoverDayProfile): string {
+  if (!profile.lineStatus.enabled) {
+    return "Off";
+  }
+
+  const count = profile.lineStatus.lines.length;
+
+  return (
+    [
+      count ? `${count} ${count === 1 ? "line" : "lines"}` : null,
+      profile.lineStatus.nearby ? "Nearby" : null,
+    ]
+      .filter(Boolean)
+      .join(" · ") || "No lines chosen"
+  );
+}

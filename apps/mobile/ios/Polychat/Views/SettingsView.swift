@@ -22,6 +22,7 @@ struct SettingsView: View {
                 accountSection
                 chatSection
                 discoverSection
+                WidgetContextSection()
                 petSection
                 notificationSection
                 aboutSection

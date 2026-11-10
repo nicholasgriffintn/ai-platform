@@ -9,6 +9,7 @@ import {
   discoverCardParamsSchema,
   discoverEpisodeChapterParamsSchema,
   discoverHealthSummarySchema,
+  discoverDeviceLocationSchema,
   discoverEpisodeProgressResponseSchema,
   discoverEpisodeProgressSchema,
   discoverEpisodeParamsSchema,
@@ -50,6 +51,10 @@ import { addRoute } from "~/infrastructure/http/routeBuilder";
 import { readDiscoverCover } from "~/modules/discover/application/covers";
 import { queueDiscoverCurrent } from "~/modules/discover/application/current";
 import { configureDiscoverDay } from "~/modules/discover/application/day-settings";
+import {
+  clearDiscoverDeviceLocation,
+  saveDiscoverDeviceLocation,
+} from "~/modules/discover/application/device-location";
 import { readDiscover, readDiscoverEditionByDate } from "~/modules/discover/application/editions";
 import {
   readEpisodeChapterAudio,
@@ -151,6 +156,29 @@ defineSingleton(app, { path: "/current", tags: ["discover"] }, (current) => {
     responses: { 200: { description: "Refresh admission", schema: discoverRefreshResponseSchema } },
     handler: async ({ serviceContext }) => queueDiscoverCurrent(serviceContext),
   });
+});
+
+addRoute(app, "put", "/current/location", {
+  tags: ["discover"],
+  summary: "Share where you are for Now",
+  description:
+    "A rounded location from your phone, kept for two hours to pick nearby lines and weather.",
+  auth: true,
+  bodySchema: discoverDeviceLocationSchema,
+  responses: { 200: { description: "Refresh admission", schema: discoverRefreshResponseSchema } },
+  handler: async ({ serviceContext, body }) => saveDiscoverDeviceLocation(serviceContext, body),
+});
+
+addRoute(app, "delete", "/current/location", {
+  tags: ["discover"],
+  summary: "Stop using your location for Now",
+  auth: true,
+  responses: { 204: { description: "The location is cleared" } },
+  handler: async ({ serviceContext }) => {
+    await clearDiscoverDeviceLocation(serviceContext);
+
+    return new Response(null, { status: 204 });
+  },
 });
 
 addRoute(app, "get", "/", {

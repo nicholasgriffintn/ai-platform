@@ -16,9 +16,11 @@ import { useCurrentTime } from "@ngriffin_uk/polychat-utility-react";
 import {
   describeDiscoverAlerts,
   describeDiscoverAudio,
+  describeDiscoverLines,
   describeDiscoverWeek,
 } from "./discover-day-summary.js";
 import { DiscoverAudioField } from "./DiscoverAudioField.js";
+import { DiscoverLinesField } from "./DiscoverLinesField.js";
 import { DiscoverNotificationField } from "./DiscoverNotificationField.js";
 import { DiscoverPlacesField } from "./DiscoverPlacesField.js";
 import { DiscoverPolySetup } from "./DiscoverPolySetup.js";
@@ -140,6 +142,12 @@ export function DiscoverDayDialog({
                 destination={form.destination}
                 onOrigin={form.setOrigin}
                 onDestination={form.setDestination}
+              />
+            </FormDisclosure>
+            <FormDisclosure title="Line status" summary={describeDiscoverLines(draft)}>
+              <DiscoverLinesField
+                value={draft.lineStatus}
+                onChange={(lineStatus) => setDraft({ ...draft, lineStatus })}
               />
             </FormDisclosure>
             <FormDisclosure title="Podcasts" summary={describeDiscoverAudio(draft)}>

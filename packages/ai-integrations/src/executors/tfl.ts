@@ -10,6 +10,18 @@ const journeyParamsSchema = z.object({
   date: z.iso.date(),
   time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/u),
 });
+const RAIL_MODES = "tube,elizabeth-line,dlr,overground,tram";
+const lineStatusParamsSchema = z.object({
+  lines: z
+    .array(z.string().regex(/^[a-z][a-z-]{1,39}$/u))
+    .max(20)
+    .optional(),
+});
+const nearbyLinesParamsSchema = z.object({
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  radius: z.number().int().min(100).max(2000).default(1000),
+});
 
 export async function executeTflOperation(
   token: string,
@@ -60,6 +72,46 @@ export async function executeTflOperation(
       token: "",
       additionalSuccessStatuses: [300],
     });
+  }
+
+  if (operation === "line_status") {
+    const status = lineStatusParamsSchema.safeParse(params);
+
+    if (!status.success) {
+      throw new AssistantError(
+        "Choose up to 20 TfL line IDs, such as northern or elizabeth",
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+
+    const lines = status.data.lines?.length ? status.data.lines.join(",") : null;
+
+    return fetchTflJson({
+      path: lines ? `/Line/${lines}/Status?${query}` : `/Line/Mode/${RAIL_MODES}/Status?${query}`,
+      token: "",
+    });
+  }
+
+  if (operation === "nearby_lines") {
+    const nearby = nearbyLinesParamsSchema.safeParse(params);
+
+    if (!nearby.success) {
+      throw new AssistantError(
+        "Give a latitude, a longitude and a radius between 100 and 2000 metres",
+        ErrorType.PARAMS_ERROR,
+        400,
+      );
+    }
+
+    query.set("lat", nearby.data.latitude.toFixed(4));
+    query.set("lon", nearby.data.longitude.toFixed(4));
+    query.set("radius", String(nearby.data.radius));
+    query.set("stopTypes", "NaptanMetroStation,NaptanRailStation");
+    query.set("modes", RAIL_MODES);
+    query.set("returnLines", "true");
+
+    return fetchTflJson({ path: `/StopPoint?${query}`, token: "" });
   }
 
   throw new AssistantError("Unsupported TfL operation", ErrorType.PARAMS_ERROR, 400);

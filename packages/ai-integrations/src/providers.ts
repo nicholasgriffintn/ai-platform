@@ -90,7 +90,7 @@ const localConnectorProviders: ConnectorProviderConfig[] = [
     id: "tfl",
     name: "Transport for London",
     description:
-      "Read London stops, planned journeys and disruptions. Public access works without a key; add your own TfL subscription key for a higher request allowance.",
+      "Read London stops, planned journeys, line status and disruptions. Public access works without a key; add your own TfL subscription key for a higher request allowance.",
     appUrl: "https://tfl.gov.uk/plan-a-journey/",
     categories: [{ id: "places-&-weather", name: "Places & Weather" }],
     setupUrl: "/chat/plugins?connector=tfl",
@@ -135,6 +135,37 @@ const localConnectorProviders: ConnectorProviderConfig[] = [
             },
             date: { type: "string", format: "date" },
             time: { type: "string", pattern: "^([01]\\d|2[0-3]):[0-5]\\d$" },
+          },
+        },
+      },
+      {
+        id: "line_status",
+        access: "read",
+        readOnly: true,
+        inputSchema: {
+          type: "object",
+          properties: {
+            lines: {
+              type: "array",
+              maxItems: 20,
+              items: { type: "string", pattern: "^[a-z][a-z-]{1,39}$" },
+              description:
+                "TfL line IDs such as northern, elizabeth or windrush. Leave out for every Tube, Elizabeth line, DLR, Overground and Tram line.",
+            },
+          },
+        },
+      },
+      {
+        id: "nearby_lines",
+        access: "read",
+        readOnly: true,
+        inputSchema: {
+          type: "object",
+          required: ["latitude", "longitude"],
+          properties: {
+            latitude: { type: "number", minimum: -90, maximum: 90 },
+            longitude: { type: "number", minimum: -180, maximum: 180 },
+            radius: { type: "integer", minimum: 100, maximum: 2000 },
           },
         },
       },

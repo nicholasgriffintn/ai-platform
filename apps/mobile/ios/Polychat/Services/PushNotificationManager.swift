@@ -161,6 +161,7 @@ final class PolychatAppDelegate: NSObject, UIApplicationDelegate, UNUserNotifica
         UNUserNotificationCenter.current().delegate = self
         NotificationCategories.register()
         WatchBridge.shared.activate()
+        WidgetContextController.shared.activate()
         return true
     }
 

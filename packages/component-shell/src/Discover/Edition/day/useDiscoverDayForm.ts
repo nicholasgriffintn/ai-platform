@@ -51,6 +51,7 @@ export function useDiscoverDayForm(
       week: draft.week,
       moments: draft.moments,
       weatherLocation: draft.weatherLocation,
+      lineStatus: draft.lineStatus,
       commute:
         origin && destination
           ? {

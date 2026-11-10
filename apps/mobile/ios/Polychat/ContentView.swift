@@ -34,6 +34,7 @@ private struct RootTabView: View {
     @EnvironmentObject private var attentionStore: AttentionStore
     @EnvironmentObject private var workStore: WorkStore
     @EnvironmentObject private var healthSync: HealthSyncController
+    @EnvironmentObject private var widgetContext: WidgetContextController
     @EnvironmentObject private var syncClient: DeviceSyncClient
     @EnvironmentObject private var perchStore: PerchStore
     @State private var selectedTab: AppTab = .home
@@ -155,6 +156,7 @@ private struct RootTabView: View {
         await pushNotificationManager.enableForAuthenticatedUser()
         healthSync.confirmOwner(userId: authManager.user?.id)
         await healthSync.syncIfNeeded()
+        await widgetContext.refresh(background: false)
     }
 
     private func startCompanionSyncIfNeeded() {
@@ -187,6 +189,7 @@ private struct RootTabView: View {
         discoverPlayback.reset()
         workStore.reset()
         healthSync.reset()
+        widgetContext.reset()
         WidgetPublisher.clear()
         perchStore.reset()
         await attentionStore.reset()
@@ -203,6 +206,7 @@ private struct RootTabView: View {
         DiscoverBackgroundRefresh.schedule()
         healthSync.confirmOwner(userId: authManager.user?.id)
         await healthSync.syncIfNeeded()
+        await widgetContext.refresh(background: false)
     }
 
     private func bindTeammates() async {

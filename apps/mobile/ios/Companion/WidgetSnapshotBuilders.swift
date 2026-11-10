@@ -11,8 +11,8 @@ extension WidgetSnapshot.Today {
         let observations = discover.settings.enabled ? discover.now?.observations.filter { !$0.isStale } ?? [] : []
         let brief: [WidgetSnapshot.Line]
         if !observations.isEmpty {
-            brief = observations.prefix(4).map {
-                WidgetSnapshot.Line(title: $0.text, detail: $0.source, systemImage: $0.kind == "travel" ? "tram" : $0.kind == "weather" ? "cloud.sun" : "calendar", expiresAt: AppDateParser.parse($0.expiresAt))
+            brief = observations.prefix(8).map {
+                WidgetSnapshot.Line(title: $0.text, detail: $0.source, systemImage: WidgetSnapshot.Line.systemImage(forObservation: $0.kind), expiresAt: AppDateParser.parse($0.expiresAt), kind: $0.kind)
             }
         } else if discover.edition?.date == today {
             brief = discover.edition?.brief.prefix(4).map {
@@ -78,5 +78,17 @@ extension WidgetSnapshot.Poly {
             },
             pausedUntil: AppDateParser.parse(agenda.pausedUntil)
         )
+    }
+}
+
+extension WidgetSnapshot.Line {
+    static func systemImage(forObservation kind: String) -> String {
+        switch kind {
+        case "travel", "lines": return "tram.fill"
+        case "weather": return "cloud.sun"
+        case "task": return "checklist"
+        case "priority": return "bell.badge"
+        default: return "calendar"
+        }
     }
 }

@@ -1,6 +1,12 @@
-import type { DiscoverDayProfile, DiscoverObservation } from "@ngriffin_uk/polychat-schemas";
+import type {
+  DiscoverDayProfile,
+  DiscoverDeviceLocation,
+  DiscoverObservation,
+  DiscoverPlace,
+} from "@ngriffin_uk/polychat-schemas";
 import {
   describeZonedInstant,
+  haversineKm,
   sha256Hex,
   truncateSingleLine,
 } from "@ngriffin_uk/polychat-utility-core";
@@ -20,17 +26,35 @@ import { readSignal, resolveDiscoverSignals } from "./gather";
 import { ensureDiscoverNotebook, listDiscoverDocuments } from "./notebook";
 import type { DiscoverRoutineSettings } from "./settings";
 
-async function readDiscoverWeather(
-  context: ServiceContext,
-  profile: DiscoverDayProfile,
-  now: Date,
-): Promise<DiscoverObservation | null> {
-  const place = profile.weatherLocation;
+const NEARBY_WEATHER_KM = 10;
 
-  if (!place) {
-    return null;
+function resolveDiscoverWeatherPlace(
+  saved: DiscoverPlace | null,
+  location: DiscoverDeviceLocation | null,
+): { place: DiscoverPlace; title: string } | null {
+  if (
+    location &&
+    (!saved ||
+      haversineKm(
+        { lat: saved.latitude, lng: saved.longitude },
+        { lat: location.latitude, lng: location.longitude },
+      ) >= NEARBY_WEATHER_KM)
+  ) {
+    return {
+      place: { label: "Near you", latitude: location.latitude, longitude: location.longitude },
+      title: "Weather near you",
+    };
   }
 
+  return saved ? { place: saved, title: `Weather in ${saved.label}` } : null;
+}
+
+async function readDiscoverWeather(
+  context: ServiceContext,
+  target: { place: DiscoverPlace; title: string },
+  now: Date,
+): Promise<DiscoverObservation> {
+  const { place, title } = target;
   const weather = await readConnectorWeather(context, place);
   const condition = weather.weather[0];
   const observedAt = new Date(weather.dt * 1000);
@@ -42,7 +66,7 @@ async function readDiscoverWeather(
   return {
     id: "weather",
     kind: "weather",
-    title: `Weather in ${place.label}`,
+    title,
     text: `${Math.round(weather.main.temp)}°C, ${condition?.description ?? "conditions unavailable"}.`,
     source: "OpenWeather",
     providerId: "openweather_api",
@@ -64,7 +88,9 @@ export async function gatherDiscoverObservations(
   settings: DiscoverRoutineSettings,
   previous: readonly DiscoverObservation[],
   now: Date,
+  location: DiscoverDeviceLocation | null = null,
 ): Promise<DiscoverObservation[]> {
+  const weatherTarget = resolveDiscoverWeatherPlace(profile.weatherLocation, location);
   const user = context.requireUser();
   const day = resolveDiscoverDay(profile, now);
   const local = describeZonedInstant(now, profile.timezone);
@@ -72,7 +98,7 @@ export async function gatherDiscoverObservations(
   const { selected } = await resolveDiscoverSignals(context, settings);
   const due = selected
     .filter((signal) => ["calendar", "tasks", "places"].includes(signal.group))
-    .filter((signal) => signal.id !== "openweather-today" || !profile.weatherLocation)
+    .filter((signal) => signal.id !== "openweather-today" || !weatherTarget)
     .filter((signal) => {
       const document = documents.signals.find((candidate) => candidate.signalId === signal.id);
       const last = document?.attemptedAt ?? document?.readAt;
@@ -113,7 +139,7 @@ export async function gatherDiscoverObservations(
       !signal ||
       !selected.some((candidate) => candidate.id === signal.id) ||
       !["calendar", "tasks", "places"].includes(signal.group) ||
-      (signal.id === "openweather-today" && profile.weatherLocation) ||
+      (signal.id === "openweather-today" && weatherTarget) ||
       !document.readAt
     ) {
       continue;
@@ -146,19 +172,20 @@ export async function gatherDiscoverObservations(
     }
   }
 
-  if (profile.weatherLocation && !settings.excludedProviders.includes("openweather_api")) {
+  if (weatherTarget && !settings.excludedProviders.includes("openweather_api")) {
     const cached = previous.find(
-      (observation) => observation.id === "weather" && observation.expiresAt > now.toISOString(),
+      (observation) =>
+        observation.id === "weather" &&
+        observation.title === weatherTarget.title &&
+        observation.expiresAt > now.toISOString(),
     );
 
     try {
-      const weather = cached ?? (await readDiscoverWeather(context, profile, now));
-
-      if (weather) {
-        observations.push(weather);
-      }
+      observations.push(cached ?? (await readDiscoverWeather(context, weatherTarget, now)));
     } catch {
-      const stale = previous.find((observation) => observation.id === "weather");
+      const stale = previous.find(
+        (observation) => observation.id === "weather" && observation.title === weatherTarget.title,
+      );
 
       if (stale) {
         observations.push({ ...stale, stale: true });

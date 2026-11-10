@@ -65,10 +65,10 @@ export const personalUtilityRecipes: CatalogRecipe[] = [
         id: "tfl",
         providerId: "tfl",
         name: "Transport for London",
-        description: "Journeys and disruptions near your London commute.",
+        description: "Journeys, line status and disruptions around your London day.",
         requiresConnection: false,
         connectionGroup: "places",
-        operationIds: ["search_stops", "plan_journey"],
+        operationIds: ["search_stops", "plan_journey", "line_status", "nearby_lines"],
       },
     ],
     triggers: [

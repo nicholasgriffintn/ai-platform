@@ -12,11 +12,22 @@ enum DiscoverBackgroundRefresh {
     }
 
     static func run() async {
-        guard let token = try? KeychainTokenStore.shared.load(), token.isUsable else { return }
+        guard let client = authorizedClient() else { return }
         schedule()
+        await WidgetContextController.shared.refresh(background: true)
+        await publishLatest(using: client)
+    }
+
+    static func authorizedClient() -> APIClient? {
+        guard let token = try? KeychainTokenStore.shared.load(), token.isUsable else { return nil }
+        let client = APIClient()
+        client.setAuthToken(token.value)
+        return client
+    }
+
+    static func publishLatest(using client: APIClient) async {
+        guard let token = try? KeychainTokenStore.shared.load() else { return }
         do {
-            let client = APIClient()
-            client.setAuthToken(token.value)
             let discover = try await client.fetchDiscover()
             guard !Task.isCancelled else { return }
             guard let current = try? KeychainTokenStore.shared.load(), current.value == token.value else { return }

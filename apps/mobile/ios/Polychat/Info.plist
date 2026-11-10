@@ -44,10 +44,16 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>The Today widget shows your next events. Your calendar stays on this iPhone.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Discover reads yesterday's sleep, mindful and exercise minutes for one line in your brief. It never uses them to choose topics.</string>
+	<string>Discover reads yesterday's sleep, mindful and exercise minutes for one line in your brief. When you turn on health vitals for the Today widget, it also reads sleep, steps, resting heart rate and heart rate variability, which stay on this iPhone. It never uses them to choose topics.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>Polychat never writes to Apple Health. It only reads yesterday's sleep, mindful and exercise minutes for your Discover brief.</string>
+	<string>Polychat never writes to Apple Health. It only reads health data for your Discover brief and Today widget.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Allow Always so the Today widget can keep nearby line status and weather up to date as you move around, even when Polychat is closed. Polychat only checks when you've moved a noticeable distance, and rounds where you are to about 100 metres.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Discover uses where you are, rounded to about 100 metres, to show nearby line status and weather in the Today widget.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We need access to your microphone to record your voice for transcription.</string>
 	<key>NSSiriUsageDescription</key>

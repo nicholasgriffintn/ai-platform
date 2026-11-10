@@ -11,7 +11,7 @@ enum DiscoverDayForm {
             expectedRevision: profile.revision, timezone: profile.timezone, onboarded: true,
             week: profile.week, moments: profile.moments,
             topics: CommaSeparatedValues.parse(topics), mutedTopics: CommaSeparatedValues.parse(mutes),
-            notifications: profile.notifications, audio: profile.audio
+            notifications: profile.notifications, audio: profile.audio, lineStatus: profile.lineStatus
         )
     }
 }

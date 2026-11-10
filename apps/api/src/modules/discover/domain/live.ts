@@ -4,6 +4,7 @@ import {
   DISCOVER_LIVE_LIMIT,
   discoverSourceOutlet,
   discoverFeedItemSchema,
+  discoverDeviceLocationSchema,
   discoverObservationSchema,
   type DiscoverCard,
   type DiscoverDayContext,
@@ -53,6 +54,14 @@ export const discoverLiveContentSchema = z
       .array(discoverFeedItemSchema.extend({ fingerprint: z.string().min(1) }))
       .max(DISCOVER_LIVE_LIMIT),
     retired: z.array(z.string()).max(DISCOVER_LIVE_RETIRED_LIMIT).default([]),
+    deviceLocation: discoverDeviceLocationSchema
+      .extend({ observedAt: z.iso.datetime(), expiresAt: z.iso.datetime() })
+      .nullable()
+      .default(null),
+    nearbyLines: discoverDeviceLocationSchema
+      .extend({ lines: z.array(z.string().min(1).max(60)).max(40), checkedAt: z.iso.datetime() })
+      .nullable()
+      .default(null),
   })
   .strict();
 
@@ -83,6 +92,8 @@ export function emptyDiscoverLive(): DiscoverLiveContent {
     observations: [],
     items: [],
     retired: [],
+    deviceLocation: null,
+    nearbyLines: null,
   };
 }
 

@@ -77,6 +77,70 @@ export const discoverCommuteSchema = z
   })
   .strict();
 
+export const discoverTransitLineIdSchema = z.enum([
+  "bakerloo",
+  "central",
+  "circle",
+  "district",
+  "hammersmith-city",
+  "jubilee",
+  "metropolitan",
+  "northern",
+  "piccadilly",
+  "victoria",
+  "waterloo-city",
+  "elizabeth",
+  "dlr",
+  "liberty",
+  "lioness",
+  "mildmay",
+  "suffragette",
+  "weaver",
+  "windrush",
+  "tram",
+]);
+
+export const DISCOVER_TRANSIT_LINES: readonly {
+  id: z.infer<typeof discoverTransitLineIdSchema>;
+  name: string;
+}[] = [
+  { id: "bakerloo", name: "Bakerloo" },
+  { id: "central", name: "Central" },
+  { id: "circle", name: "Circle" },
+  { id: "district", name: "District" },
+  { id: "hammersmith-city", name: "Hammersmith & City" },
+  { id: "jubilee", name: "Jubilee" },
+  { id: "metropolitan", name: "Metropolitan" },
+  { id: "northern", name: "Northern" },
+  { id: "piccadilly", name: "Piccadilly" },
+  { id: "victoria", name: "Victoria" },
+  { id: "waterloo-city", name: "Waterloo & City" },
+  { id: "elizabeth", name: "Elizabeth line" },
+  { id: "dlr", name: "DLR" },
+  { id: "liberty", name: "Liberty" },
+  { id: "lioness", name: "Lioness" },
+  { id: "mildmay", name: "Mildmay" },
+  { id: "suffragette", name: "Suffragette" },
+  { id: "weaver", name: "Weaver" },
+  { id: "windrush", name: "Windrush" },
+  { id: "tram", name: "Tram" },
+];
+
+export const discoverLineStatusPreferencesSchema = z
+  .object({
+    enabled: z.boolean().default(false),
+    lines: z.array(discoverTransitLineIdSchema).max(12).default([]),
+    nearby: z.boolean().default(true),
+  })
+  .strict();
+
+export const discoverDeviceLocationSchema = z
+  .object({
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
+  })
+  .strict();
+
 export const discoverAudioPreferencesSchema = z
   .object({
     morning: z
@@ -121,6 +185,7 @@ export const discoverDayProfileContentSchema = z
     moments: discoverMomentsSchema.prefault({}),
     weatherLocation: discoverPlaceSchema.nullable().default(null),
     commute: discoverCommuteSchema.nullable().default(null),
+    lineStatus: discoverLineStatusPreferencesSchema.prefault({}),
     topics: z.array(z.string().trim().min(1).max(60)).max(20).default([]),
     mutedTopics: z.array(z.string().trim().min(1).max(60)).max(40).default([]),
     overrides: z.array(discoverDayOverrideSchema).max(60).default([]),
@@ -144,6 +209,7 @@ export const updateDiscoverDayProfileSchema = z
     moments: discoverMomentsSchema.optional(),
     weatherLocation: discoverPlaceSchema.nullable().optional(),
     commute: discoverCommuteSchema.nullable().optional(),
+    lineStatus: discoverLineStatusPreferencesSchema.optional(),
     topics: z.array(z.string().trim().min(1).max(60)).max(20).optional(),
     mutedTopics: z.array(z.string().trim().min(1).max(60)).max(40).optional(),
     notifications: discoverNotificationPreferencesSchema.optional(),
@@ -170,7 +236,7 @@ export const discoverDayContextSchema = z.object({
 
 export const discoverObservationSchema = z.object({
   id: z.string().min(1).max(100),
-  kind: z.enum(["weather", "calendar", "task", "travel", "priority"]),
+  kind: z.enum(["weather", "calendar", "task", "travel", "lines", "priority"]),
   title: z.string().min(1).max(200),
   text: z.string().min(1).max(1000),
   source: z.string().min(1).max(100),
@@ -233,6 +299,9 @@ export type DiscoverDayMode = z.infer<typeof discoverDayModeSchema>;
 export type DiscoverMoment = z.infer<typeof discoverMomentSchema>;
 export type DiscoverRoutineOperation = z.infer<typeof discoverRoutineOperationSchema>;
 export type DiscoverPlace = z.infer<typeof discoverPlaceSchema>;
+export type DiscoverTransitLineId = z.infer<typeof discoverTransitLineIdSchema>;
+export type DiscoverLineStatusPreferences = z.infer<typeof discoverLineStatusPreferencesSchema>;
+export type DiscoverDeviceLocation = z.infer<typeof discoverDeviceLocationSchema>;
 export type DiscoverDayProfileContent = z.infer<typeof discoverDayProfileContentSchema>;
 export type DiscoverDayProfile = z.infer<typeof discoverDayProfileSchema>;
 export type UpdateDiscoverDayProfile = z.infer<typeof updateDiscoverDayProfileSchema>;
