@@ -1354,6 +1354,16 @@
         "costPer1kOutputTokens": 0.002501,
         "supportsToolCalls": false
       }
+    },
+    "Qwen/Qwen3.5-27B-TEE": {
+      "model": "qwen/qwen3-5-27b-tee",
+      "matchingModel": "Qwen/Qwen3.5-27B-TEE",
+      "overrides": {
+        "lastUpdated": "February 23, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.00175,
+        "supportsAttachments": true
+      }
     }
   }
 }

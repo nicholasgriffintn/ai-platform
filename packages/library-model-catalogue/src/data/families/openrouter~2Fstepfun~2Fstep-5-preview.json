@@ -1,7 +1,7 @@
 {
   "defaults": {
     "openWeights": true,
-    "contextWindow": 1048576,
+    "contextWindow": 1000000,
     "maxTokens": 64000,
     "modalities": {
       "input": [

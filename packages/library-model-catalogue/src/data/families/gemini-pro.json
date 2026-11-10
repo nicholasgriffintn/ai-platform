@@ -1,6 +1,7 @@
 {
   "defaults": {
     "openWeights": false,
+    "contextWindow": 1048576,
     "knowledgeCutoffDate": "January 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -13,7 +14,6 @@
       "defaults": {
         "name": "Deep Research Max Preview",
         "description": "Maximum-comprehensiveness agentic researcher for multi-step investigation, synthesis, and cited reports",
-        "contextWindow": 131072,
         "maxTokens": 65536,
         "modalities": {
           "input": [
@@ -42,7 +42,6 @@
       "defaults": {
         "name": "Gemini Deep Research Preview",
         "description": "Agentic model for autonomous multi-step research, synthesis, and cited reports",
-        "contextWindow": 131072,
         "maxTokens": 65536,
         "modalities": {
           "input": [
@@ -96,7 +95,6 @@
       "defaults": {
         "name": "Gemini 2.5 Pro",
         "description": "Google's advanced multimodal model with extensive capabilities across text, images, audio, video, and PDFs.",
-        "contextWindow": 1048576,
         "modalities": {
           "input": [
             "text",
@@ -131,7 +129,6 @@
       "defaults": {
         "name": "Gemini 2.5 Pro (EU)",
         "description": "Google's proven reasoning model for coding, math, and multimodal analysis",
-        "contextWindow": 1048576,
         "maxTokens": 65535,
         "modalities": {
           "input": [
@@ -177,7 +174,6 @@
       "defaults": {
         "name": "Gemini 2.5 Pro Preview 05-06",
         "description": "Advanced Gemini model for complex reasoning, coding, and multimodal analysis",
-        "contextWindow": 1048576,
         "maxTokens": 65535,
         "modalities": {
           "input": [
@@ -226,7 +222,6 @@
       "defaults": {
         "name": "Gemini 3.1 Pro Preview",
         "description": "Reasoning-first Gemini preview for agentic coding and complex problem solving",
-        "contextWindow": 1048576,
         "maxTokens": 65536,
         "modalities": {
           "input": [
@@ -271,7 +266,6 @@
       "defaults": {
         "name": "Gemini 3.1 Pro Preview Custom Tools",
         "description": "Advanced Gemini model for complex reasoning, coding, and multimodal analysis",
-        "contextWindow": 1048576,
         "maxTokens": 65536,
         "modalities": {
           "input": [
@@ -319,7 +313,6 @@
       "defaults": {
         "name": "Gemini 3 Pro",
         "description": "Gemini 3 Pro accepts text, image, audio, video, pdf and produces text.",
-        "contextWindow": 1048576,
         "maxTokens": 65536,
         "modalities": {
           "input": [
@@ -404,7 +397,6 @@
     "gemini-pro-latest": {
       "defaults": {
         "description": "Advanced Gemini model for complex reasoning, coding, and multimodal analysis",
-        "contextWindow": 1048576,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -419,7 +411,6 @@
       "defaults": {
         "name": "Google: Gemini Pro Latest",
         "description": "Advanced Gemini model for complex reasoning, coding, and multimodal analysis",
-        "contextWindow": 1048576,
         "maxTokens": 943718,
         "modalities": {
           "input": [

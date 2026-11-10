@@ -246,7 +246,7 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "speed": 4,
+        "speed": 5,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,

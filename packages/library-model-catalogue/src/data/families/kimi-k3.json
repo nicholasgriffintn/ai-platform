@@ -59,7 +59,7 @@
     "kimi-k3-1-pro": {
       "defaults": {
         "name": "Kimi K3.1 Pro",
-        "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
+        "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
         "strengths": [
           "vision",
           "video",
@@ -80,7 +80,7 @@
     "kimi-k3-1-pro-highspeed": {
       "defaults": {
         "name": "Kimi K3.1 Pro Highspeed",
-        "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
+        "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
         "maxTokens": 1048576,
         "modalities": {
           "input": [
@@ -100,6 +100,44 @@
             "max"
           ],
           "defaultEffort": "low"
+        }
+      }
+    },
+    "kimi-k3-1-pro-highspeed-global": {
+      "defaults": {
+        "name": "Kimi K3.1 Pro Highspeed (Global)",
+        "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
+        "maxTokens": 1048576,
+        "releaseDate": "October 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "kimi-k3-1-pro-highspeed-us": {
+      "defaults": {
+        "name": "Kimi K3.1 Pro Highspeed (US)",
+        "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
+        "maxTokens": 1048576,
+        "releaseDate": "October 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
         }
       }
     },

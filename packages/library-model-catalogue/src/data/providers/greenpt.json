@@ -377,8 +377,9 @@
       "matchingModel": "minimax-m2.5",
       "overrides": {
         "name": "MiniMax-M2.5",
+        "contextWindow": 204800,
         "maxTokens": 131072,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.00049346,
         "costPer1kOutputTokens": 0.0024673,

@@ -293,7 +293,7 @@
       "overrides": {
         "contextWindow": 200000,
         "maxTokens": 200000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -364,7 +364,7 @@
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196608,
         "maxTokens": 196608,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -898,7 +898,6 @@
       "matchingModel": "accounts/fireworks/models/muse-spark-open",
       "overrides": {
         "description": "Muse Spark Open is an 816B total / 42B active open-weight multimodal reasoning model from Meta for coding and long-horizon agentic work, with 1M-token context.",
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

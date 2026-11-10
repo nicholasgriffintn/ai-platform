@@ -327,7 +327,7 @@
       "model": "claude-opus/claude-opus-4-5",
       "matchingModel": "anthropic/claude-opus-4-5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "March 31, 2025",
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
@@ -443,7 +443,7 @@
       "overrides": {
         "contextWindow": 128000,
         "maxTokens": 32000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
@@ -479,7 +479,7 @@
           "tool_use"
         ],
         "contextComplexity": 3,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0004,
@@ -645,7 +645,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "GPT-5 Codex is no longer offered by Requesty.",
         "knowledgeCutoffDate": "October 1, 2024",
@@ -718,7 +718,7 @@
       "model": "gpt/gpt-5-1",
       "matchingModel": "openai/gpt-5.1",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -1041,7 +1041,7 @@
       "matchingModel": "claude-opus-4-5",
       "overrides": {
         "name": "Claude Opus 4.5 (latest)",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -1064,7 +1064,7 @@
       "model": "claude-opus/claude-opus-4-5-latest-eu",
       "matchingModel": "claude-opus-4-5@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275
@@ -1517,7 +1517,7 @@
       "model": "gpt-mini/gpt-5-mini-eu",
       "matchingModel": "gpt-5-mini@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.000275,
         "costPer1kOutputTokens": 0.0022,
@@ -1528,7 +1528,7 @@
       "model": "gpt-nano/gpt-5-nano-eu",
       "matchingModel": "gpt-5-nano@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.000055,
         "costPer1kOutputTokens": 0.00044,
@@ -1539,7 +1539,7 @@
       "model": "gpt/gpt-5-1-eu",
       "matchingModel": "gpt-5.1@eu",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.011
@@ -2851,7 +2851,7 @@
         "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
         "contextWindow": 200000,
         "maxTokens": 128000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -3861,7 +3861,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "August 27, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005,
@@ -3881,7 +3881,7 @@
       "model": "qwen/qwen3-8-flash-next-eu",
       "matchingModel": "qwen3.8-flash-next@eu",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "August 27, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0005
@@ -4406,7 +4406,6 @@
       "matchingModel": "muse-spark-open",
       "overrides": {
         "description": "Muse Spark Open is an 816B total / 42B active open-weight multimodal reasoning model from Meta for coding and long-horizon agentic work, with 1M-token context.",
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

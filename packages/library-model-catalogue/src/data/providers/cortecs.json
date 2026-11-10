@@ -92,7 +92,7 @@
       "model": "claude-opus/claude-opus-4-5-latest",
       "matchingModel": "claude-opus4-5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005313,
         "costPer1kOutputTokens": 0.026568,
@@ -664,7 +664,7 @@
       "overrides": {
         "contextWindow": 196000,
         "maxTokens": 196000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.000359,
         "costPer1kOutputTokens": 0.001435,
@@ -679,7 +679,7 @@
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196000,
         "maxTokens": 196000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.000348,
         "costPer1kOutputTokens": 0.00139,
@@ -693,7 +693,7 @@
         "name": "MiniMax-m2.7",
         "contextWindow": 196608,
         "maxTokens": 196608,
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "MiniMax-m2.7 is no longer offered by Cortecs.",
         "lastUpdated": "March 18, 2026",
@@ -713,7 +713,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "December 2, 2025",
         "costPer1kInputTokens": 0.000613,
         "costPer1kOutputTokens": 0.001838
@@ -1545,7 +1545,7 @@
       "matchingModel": "gpt-5.1",
       "overrides": {
         "name": "GPT 5.1",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.01096,
@@ -2020,7 +2020,7 @@
       "matchingModel": "gpt-5-mini",
       "overrides": {
         "name": "GPT 5 Mini",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.000279,
         "costPer1kOutputTokens": 0.002192,
@@ -2041,7 +2041,7 @@
       "matchingModel": "gpt-5-nano",
       "overrides": {
         "name": "GPT 5 Nano",
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.000439,
@@ -2650,7 +2650,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 4,
         "deprecated": true,
         "deprecationMessage": "Qwen3.8 Flash Next is no longer offered by Cortecs.",
         "lastUpdated": "August 27, 2026",
@@ -2944,6 +2944,7 @@
       "matchingModel": "kimi-k3.1-pro",
       "overrides": {
         "openWeights": false,
+        "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
         "maxTokens": 500000,
         "modalities": {
           "input": [

@@ -167,7 +167,7 @@
       "model": "minimax/minimax-m2-1",
       "matchingModel": "MiniMaxAI/MiniMax-M2.1",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "October 2025",
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -379,8 +379,9 @@
       "overrides": {
         "name": "MiniMax-M2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "contextWindow": 204800,
         "maxTokens": 131072,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -396,7 +397,7 @@
         "name": "MiniMax-M2.7",
         "contextWindow": 204800,
         "maxTokens": 131072,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -1356,7 +1357,7 @@
       "model": "minimax/minimax-m1-80k",
       "matchingModel": "MiniMaxAI/MiniMax-M1-80k",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.00055,
         "costPer1kOutputTokens": 0.0022

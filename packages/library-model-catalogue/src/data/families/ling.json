@@ -270,8 +270,7 @@
     },
     "inkling-2-small-free": {
       "defaults": {
-        "name": "Inkling 2 Small Free",
-        "description": "Inkling 2 Small, free for a limited time",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "contextWindow": 1048576,
         "maxTokens": 131072,
         "modalities": {
@@ -284,19 +283,7 @@
           ]
         },
         "releaseDate": "November 5, 2026",
-        "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": true
       }
     },
     "inkling-256k": {
@@ -985,6 +972,36 @@
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "thinking-machines-inkling-2-small-free": {
+      "defaults": {
+        "name": "Thinking Machines: Inkling 2 Small (free)",
+        "description": "Inkling 2 Small is a multimodal mixture-of-experts reasoning model from Thinking Machines Lab, with 17B active parameters out of 594B total. It is the first model in the second Inkling...",
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 5, 2026",
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "minimal"
         }
       }
     },

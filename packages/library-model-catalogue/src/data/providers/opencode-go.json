@@ -685,15 +685,6 @@
         "supportsAttachments": false
       }
     },
-    "crouton-alpha-free": {
-      "model": "opencode-go/crouton-alpha-free/crouton-alpha-free",
-      "matchingModel": "crouton-alpha-free",
-      "overrides": {
-        "lastUpdated": "November 3, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
-      }
-    },
     "hy4": {
       "model": "Hy/hy4",
       "matchingModel": "hy4",
@@ -709,6 +700,16 @@
           ],
           "defaultEffort": "none"
         }
+      }
+    },
+    "longcat-2.5-free": {
+      "model": "longcat/longcat-2-5-free",
+      "matchingModel": "longcat-2.5-free",
+      "overrides": {
+        "lastUpdated": "November 2, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsTemperature": false
       }
     }
   }

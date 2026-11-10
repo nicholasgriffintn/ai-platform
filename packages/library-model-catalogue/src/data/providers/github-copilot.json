@@ -384,7 +384,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Claude Opus 4.5 was retired on 1 September 2026. Use Claude Opus 5.5 instead.",
         "replacementModel": "claude-opus-5.5",

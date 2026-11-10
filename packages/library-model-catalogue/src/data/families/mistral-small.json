@@ -152,7 +152,7 @@
     "mistral-small-3-2-24b": {
       "defaults": {
         "description": "Efficient Mistral model for fast chat, extraction, and production assistants",
-        "maxTokens": 16384,
+        "maxTokens": 26214,
         "modalities": {
           "input": [
             "image",
