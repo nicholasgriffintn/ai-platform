@@ -884,7 +884,7 @@
         "openWeights": false,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 40960,
-        "maxTokens": 16384,
+        "maxTokens": 36864,
         "modalities": {
           "input": [
             "text"
@@ -1495,7 +1495,6 @@
         "name": "Qwen3 14B",
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 40960,
-        "maxTokens": 16384,
         "modalities": {
           "input": [
             "text"
@@ -2037,6 +2036,32 @@
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "qwen3-5-27b-tee": {
+      "defaults": {
+        "name": "Qwen3.5 27B TEE",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 23, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
         }
       }
     },

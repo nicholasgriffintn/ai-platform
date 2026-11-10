@@ -11,7 +11,14 @@
     },
     "supportsToolCalls": true,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
   },
   "description": "The longcat family includes models that produce text.",
   "models": {
@@ -25,13 +32,6 @@
         "contextComplexity": 5,
         "reliability": 2,
         "releaseDate": "June 30, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -68,6 +68,27 @@
         }
       }
     },
+    "longcat-2-5-free": {
+      "defaults": {
+        "name": "LongCat 2.5 Free",
+        "description": "Meituan's multimodal reasoning model for long-horizon coding and agent tasks, with visual understanding and a 1M-token context window",
+        "contextWindow": 1000000,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 2, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "supportsTemperature": false
+      }
+    },
     "longcat-2-5-preview": {
       "defaults": {
         "name": "LongCat 2.5 Preview",
@@ -85,14 +106,7 @@
         },
         "releaseDate": "September 25, 2026",
         "supportsAttachments": true,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsTemperature": false
       }
     },
     "longcat-flash-chat": {
@@ -112,14 +126,7 @@
         "contextWindow": 32768,
         "maxTokens": 32768,
         "releaseDate": "January 15, 2026",
-        "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsToolCalls": false
       }
     },
     "meituan-longcat-2-0": {

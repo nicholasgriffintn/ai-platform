@@ -1,6 +1,6 @@
 {
   "defaults": {
-    "openWeights": false,
+    "openWeights": true,
     "contextWindow": 1048576,
     "maxTokens": 131072,
     "modalities": {
@@ -13,7 +13,7 @@
     },
     "releaseDate": "November 4, 2026",
     "supportsToolCalls": true,
-    "supportsResponseFormat": false,
+    "supportsResponseFormat": true,
     "supportsAttachments": false,
     "supportsTemperature": true
   },

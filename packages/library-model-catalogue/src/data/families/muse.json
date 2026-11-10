@@ -9,6 +9,37 @@
   },
   "description": "Open Llama multimodal model for image understanding and text reasoning",
   "models": {
+    "meta-muse-ember": {
+      "defaults": {
+        "name": "Meta: Muse Ember",
+        "description": "Muse Ember is the smallest and most efficient model from Meta that’s designed for complex reasoning execution and the work agents repeat all day: tool calls, coding agent subtasks, routing,...",
+        "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 9, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    },
     "meta-muse-spark-1-2-contributor": {
       "defaults": {
         "name": "Meta: Muse Spark 1.2 Contributor",
@@ -111,6 +142,66 @@
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "muse-ember": {
+      "defaults": {
+        "name": "Muse Ember",
+        "description": "Open Llama multimodal model for image understanding and text reasoning",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 9, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    },
+    "muse-ember-1-0": {
+      "defaults": {
+        "name": "Muse Ember 1.0",
+        "description": "Reasoning model from Meta with text, image, video and PDF input and tool use",
+        "maxTokens": 270000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 9, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "minimal"
         }
       }
     },
@@ -325,6 +416,7 @@
         "name": "Muse Spark Open",
         "openWeights": true,
         "description": "Open Llama multimodal model for image understanding and text reasoning",
+        "maxTokens": 131072,
         "contextComplexity": 5,
         "reliability": 1,
         "knowledgeCutoffDate": "January 4, 2026",

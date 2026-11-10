@@ -315,7 +315,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 2,
+        "speed": 3,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -368,7 +368,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 3,
+        "speed": 4,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -678,7 +678,7 @@
           "vision",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "GPT-5-Codex was retired on 23 July 2026. Use GPT-5.6 Sol instead.",
         "replacementModel": "gpt-5.6-sol",
@@ -764,7 +764,7 @@
           "search",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "GPT-5.1 shuts down on 1 April 2027. Use GPT-6 Sol instead.",
         "replacementModel": "gpt-6-sol",

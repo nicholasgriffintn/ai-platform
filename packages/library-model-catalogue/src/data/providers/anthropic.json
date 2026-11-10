@@ -243,7 +243,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -569,6 +569,15 @@
           "defaultEffort": "low",
           "thinkingApi": "adaptive"
         }
+      }
+    },
+    "claude-fable-5-2": {
+      "model": "claude-fable/claude-fable-5-2",
+      "matchingModel": "claude-fable-5-2",
+      "overrides": {
+        "lastUpdated": "November 9, 2026",
+        "costPer1kInputTokens": 0.008,
+        "costPer1kOutputTokens": 0.04
       }
     }
   }

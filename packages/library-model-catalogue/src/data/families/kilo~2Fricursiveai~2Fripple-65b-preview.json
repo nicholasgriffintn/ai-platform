@@ -13,9 +13,16 @@
     },
     "releaseDate": "November 4, 2026",
     "supportsToolCalls": true,
-    "supportsResponseFormat": false,
+    "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "high"
+      ],
+      "defaultEffort": "none"
+    }
   },
   "description": "The kilo/ricursiveai/ripple 65b preview family includes models that produce text.",
   "models": {

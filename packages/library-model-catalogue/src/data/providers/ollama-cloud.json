@@ -279,8 +279,9 @@
       "overrides": {
         "name": "minimax-m2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "contextWindow": 204800,
         "maxTokens": 131072,
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "minimax-m2.5 is no longer offered by Ollama Cloud.",
         "knowledgeCutoffDate": "January 2025",
@@ -301,7 +302,7 @@
         "name": "minimax-m2.7",
         "contextWindow": 196608,
         "maxTokens": 196608,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -480,7 +481,6 @@
       "matchingModel": "muse-spark-open",
       "overrides": {
         "description": "Muse Spark Open is an 816B total / 42B active open-weight multimodal reasoning model from Meta for coding and long-horizon agentic work, with 1M-token context.",
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

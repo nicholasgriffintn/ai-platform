@@ -96,6 +96,21 @@
         }
       }
     },
+    "nex-agi-nex-n2-6": {
+      "defaults": {
+        "name": "Nex AGI: Nex-N2.6",
+        "openWeights": false,
+        "description": "Nex-N2.6 is an agentic model from Nex AGI, built on [GLM-5.3-Flash](https://huggingface.co/zai-org/GLM-5.3-Flash-BF16) with about 321B parameters. It is suited for computer use, coding, and long-horizon tasks that involve tools. Compared with...",
+        "releaseDate": "November 10, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "medium"
+        }
+      }
+    },
     "nex-n2-5-mini": {
       "defaults": {
         "name": "Nex-N2.5-Mini",
@@ -162,6 +177,20 @@
             "high"
           ],
           "defaultEffort": "none"
+        }
+      }
+    },
+    "nex-n2-6": {
+      "defaults": {
+        "name": "Nex-N2.6",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "releaseDate": "November 10, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "medium"
         }
       }
     },

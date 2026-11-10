@@ -189,7 +189,7 @@
         "name": "MiniMax M2.1",
         "contextWindow": 196608,
         "maxTokens": 196608,
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "MiniMax M2.1 is no longer offered by DeepInfra. Use MiniMax-M3 instead.",
         "replacementModel": "MiniMaxAI/MiniMax-M3",
