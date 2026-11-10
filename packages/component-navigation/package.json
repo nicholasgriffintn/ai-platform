@@ -42,12 +42,12 @@
   },
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",
-    "@tailwindcss/vite": "4.3.3",
+    "@tailwindcss/vite": "4.3.4",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "tailwindcss": "4.3.3",
+    "tailwindcss": "4.3.4",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vite": "8.3.5"

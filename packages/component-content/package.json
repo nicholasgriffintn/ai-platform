@@ -48,7 +48,7 @@
   "devDependencies": {
     "@ngriffin_uk/polychat-config": "workspace:^",
     "@tailwindcss/typography": "0.5.20",
-    "@tailwindcss/vite": "4.3.3",
+    "@tailwindcss/vite": "4.3.4",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "catalog:",
     "@types/react": "catalog:",
@@ -58,7 +58,7 @@
     "oxlint": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "tailwindcss": "4.3.3",
+    "tailwindcss": "4.3.4",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vite": "8.3.5",
