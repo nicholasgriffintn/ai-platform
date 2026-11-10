@@ -106,6 +106,11 @@ describe("resolveTeammateConnectorAuthority", () => {
 
     expect(authority.connection).toBeNull();
     expect(authority.credentialSource).toBe("public");
-    expect(authority.allowedOperations).toEqual(["plan_journey", "search_stops"]);
+    expect(authority.allowedOperations).toEqual([
+      "line_status",
+      "nearby_lines",
+      "plan_journey",
+      "search_stops",
+    ]);
   });
 });
