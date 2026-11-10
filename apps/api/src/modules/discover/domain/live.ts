@@ -5,6 +5,7 @@ import {
   discoverSourceOutlet,
   discoverFeedItemSchema,
   discoverDeviceLocationSchema,
+  discoverLineReadingSchema,
   discoverObservationSchema,
   type DiscoverCard,
   type DiscoverDayContext,
@@ -58,6 +59,7 @@ export const discoverLiveContentSchema = z
       .extend({ observedAt: z.iso.datetime(), expiresAt: z.iso.datetime() })
       .nullable()
       .default(null),
+    lines: z.array(discoverLineReadingSchema).max(20).default([]),
     nearbyLines: discoverDeviceLocationSchema
       .extend({ lines: z.array(z.string().min(1).max(60)).max(40), checkedAt: z.iso.datetime() })
       .nullable()
@@ -93,6 +95,7 @@ export function emptyDiscoverLive(): DiscoverLiveContent {
     items: [],
     retired: [],
     deviceLocation: null,
+    lines: [],
     nearbyLines: null,
   };
 }
@@ -415,6 +418,8 @@ export function presentDiscoverNow(
             describeZonedInstant(new Date(observation.observedAt), day.timezone).date !== day.date),
       }))
       .sort((left, right) => discoverObservationRank(left) - discoverObservationRank(right)),
+    lines: content.lines,
+    health: null,
     checkedAt: content.checkedAt,
     updatedAt: content.updatedAt,
     nextRefreshAt: content.checkedAt

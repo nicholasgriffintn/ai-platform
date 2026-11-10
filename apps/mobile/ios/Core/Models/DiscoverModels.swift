@@ -475,6 +475,12 @@ struct DiscoverHealthSummary: Codable, Equatable {
     let sleepMinutes: Int?
     let mindfulMinutes: Int?
     let exerciseMinutes: Int?
+    var stepsToday: Int? = nil
+    var restingHeartRate: Int? = nil
+    var restingHeartRateUsual: Int? = nil
+    var heartRateVariability: Int? = nil
+    var heartRateVariabilityUsual: Int? = nil
+    var observedAt: String? = nil
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
@@ -482,5 +488,11 @@ struct DiscoverHealthSummary: Codable, Equatable {
         try container.encode(sleepMinutes, forKey: .sleepMinutes)
         try container.encode(mindfulMinutes, forKey: .mindfulMinutes)
         try container.encode(exerciseMinutes, forKey: .exerciseMinutes)
+        try container.encode(stepsToday, forKey: .stepsToday)
+        try container.encode(restingHeartRate, forKey: .restingHeartRate)
+        try container.encode(restingHeartRateUsual, forKey: .restingHeartRateUsual)
+        try container.encode(heartRateVariability, forKey: .heartRateVariability)
+        try container.encode(heartRateVariabilityUsual, forKey: .heartRateVariabilityUsual)
+        try container.encode(observedAt, forKey: .observedAt)
     }
 }

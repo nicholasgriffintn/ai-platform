@@ -1,6 +1,6 @@
 import z from "zod/v4";
 
-import { deviceActivitySourceSchema } from "./machines.js";
+import { desktopActivitySourceSchema } from "./machines.js";
 
 export const DEVICE_ACTIVITY_CHANGED_EVENT = "polychat://activity-changed";
 export const DEVICE_ACTIVITY_PAUSE_CHOICES = ["hour", "tomorrow", "untilResumed"] as const;
@@ -41,7 +41,7 @@ export const deviceActivityCollectionSchema = z.object({
   periodEnd: z.string(),
   sources: z.array(
     z.object({
-      source: deviceActivitySourceSchema,
+      source: desktopActivitySourceSchema,
       items: z.array(
         z.object({ line: z.string(), neverShare: deviceActivityNeverShareKeySchema.nullable() }),
       ),
@@ -69,7 +69,7 @@ export type DeviceActivitySent = z.infer<typeof deviceActivitySentSchema>;
 
 export const deviceActivityStatusSchema = z.object({
   enabled: z.boolean(),
-  sharing: z.array(deviceActivitySourceSchema),
+  sharing: z.array(desktopActivitySourceSchema),
   paused: z.boolean(),
   pausedUntil: z.string().nullable(),
   lastSentAt: z.string().nullable(),

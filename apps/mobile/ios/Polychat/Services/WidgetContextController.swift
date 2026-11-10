@@ -14,34 +14,36 @@ final class WidgetContextController: ObservableObject {
     static let shared = WidgetContextController()
 
     private static let locationKey = "widget.sharesLocation"
-    private static let healthKey = "widget.showsHealth"
     private static let sentLocationKey = "widget.sentLocation"
     private static let resendInterval: TimeInterval = 10 * 60
     private static let resendDistance: CLLocationDistance = 300
 
     @Published private(set) var sharesLocation = UserDefaults.standard.bool(forKey: WidgetContextController.locationKey)
-    @Published private(set) var showsHealth = UserDefaults.standard.bool(forKey: WidgetContextController.healthKey)
-    @Published private(set) var showsCalendar = WidgetPreferences.showsCalendar
+    @Published private(set) var syncsCalendar = PhoneActivitySync.syncsCalendar
     @Published private(set) var tracksInBackground = false
     @Published private(set) var isWorking = false
     @Published var error: String?
 
     private let apiClient: APIClient
     private let location = NowLocationService.shared
-    private let health = HealthSummaryService.shared
+    private let eventStore = EKEventStore()
+    private var calendarObserver: NSObjectProtocol?
 
     init(apiClient: APIClient = .shared) {
         self.apiClient = apiClient
         location.onMove = { [weak self] fix in self?.handleMove(fix) }
         location.onBackgroundAccess = { [weak self] in self?.startMonitoring() }
+        calendarObserver = NotificationCenter.default.addObserver(
+            forName: .EKEventStoreChanged, object: eventStore, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in await self?.calendarChanged() }
+        }
         startMonitoring()
     }
 
     func activate() {
         startMonitoring()
     }
-
-    var isHealthAvailable: Bool { health.isAvailable }
 
     func setLocation(_ enabled: Bool) async {
         await working {
@@ -71,60 +73,46 @@ final class WidgetContextController: ObservableObject {
     func setCalendar(_ enabled: Bool) async {
         await working {
             if enabled {
-                guard try await EKEventStore().requestFullAccessToEvents() else {
-                    error = "Allow full calendar access for Polychat in Settings to show your next event."
+                guard try await eventStore.requestFullAccessToEvents() else {
+                    error = "Allow full calendar access for Polychat in Settings to sync your calendar."
                     return
                 }
             }
-            showsCalendar = enabled
-            WidgetPreferences.showsCalendar = enabled
-            WidgetPublisher.reloadCalendar()
-            error = nil
-        }
-    }
-
-    func setHealth(_ enabled: Bool) async {
-        await working {
-            if enabled {
-                try await health.requestVitalsAccess()
-                showsHealth = true
-                UserDefaults.standard.set(true, forKey: Self.healthKey)
-                await publishHealth()
-            } else {
-                showsHealth = false
-                UserDefaults.standard.removeObject(forKey: Self.healthKey)
-                WidgetPublisher.publish(health: nil)
-            }
+            syncsCalendar = enabled
+            PhoneActivitySync.syncsCalendar = enabled
+            await PhoneActivitySync.sync(client: apiClient, force: true)
             error = nil
         }
     }
 
     func refresh(background: Bool) async {
         tracksInBackground = sharesLocation && location.tracksInBackground
+        guard let client = background ? DiscoverBackgroundRefresh.authorizedClient() : apiClient else { return }
         if sharesLocation {
-            let client = background ? DiscoverBackgroundRefresh.authorizedClient() : apiClient
             let maxAge: TimeInterval = tracksInBackground ? 12 * 60 * 60 : 15 * 60
             let fix = background ? location.cachedLocation(maxAge: maxAge) : await location.currentLocation()
-            if let client, let fix {
+            if let fix {
                 await shareLocation(fix, force: false, client: client)
             }
         }
-        if showsHealth {
-            await publishHealth()
-        }
+        await PhoneActivitySync.sync(client: client)
+        await HealthSyncController.shared.syncIfNeeded(client: client)
     }
 
     func reset() {
         location.stopMonitoring()
         tracksInBackground = false
         sharesLocation = false
-        showsHealth = false
-        showsCalendar = false
+        syncsCalendar = false
         error = nil
-        WidgetPreferences.showsCalendar = false
         UserDefaults.standard.removeObject(forKey: Self.locationKey)
-        UserDefaults.standard.removeObject(forKey: Self.healthKey)
         UserDefaults.standard.removeObject(forKey: Self.sentLocationKey)
+        PhoneActivitySync.reset()
+    }
+
+    private func calendarChanged() async {
+        guard syncsCalendar else { return }
+        await PhoneActivitySync.sync(client: apiClient)
     }
 
     private func working(_ action: () async throws -> Void) async {
@@ -133,7 +121,7 @@ final class WidgetContextController: ObservableObject {
         do {
             try await action()
         } catch {
-            self.error = "The widget could not be updated: \(error.localizedDescription)"
+            self.error = "This could not be updated: \(error.localizedDescription)"
         }
     }
 
@@ -145,13 +133,14 @@ final class WidgetContextController: ObservableObject {
 
     private func handleMove(_ fix: CLLocation) {
         guard sharesLocation, !isRecentlySent(fix) else { return }
-        let task = UIApplication.shared.beginBackgroundTask(withName: "Today widget location")
+        let task = UIApplication.shared.beginBackgroundTask(withName: "Polychat location")
         Task {
             defer { UIApplication.shared.endBackgroundTask(task) }
-            guard let client = DiscoverBackgroundRefresh.authorizedClient(),
-                  await shareLocation(fix, force: false, client: client) else { return }
+            guard let client = DiscoverBackgroundRefresh.authorizedClient() else { return }
+            await PhoneActivitySync.sync(client: client)
+            await HealthSyncController.shared.syncIfNeeded(client: client)
+            await shareLocation(fix, force: false, client: client)
             await DiscoverBackgroundRefresh.publishLatest(using: client)
-            if showsHealth { await publishHealth() }
         }
     }
 
@@ -188,10 +177,5 @@ final class WidgetContextController: ObservableObject {
             verticalAccuracy: -1,
             timestamp: sent.sentAt
         )
-    }
-
-    private func publishHealth() async {
-        guard health.isAvailable, let vitals = try? await health.vitals() else { return }
-        WidgetPublisher.publish(health: vitals)
     }
 }

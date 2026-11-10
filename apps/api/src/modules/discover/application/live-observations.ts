@@ -20,6 +20,8 @@ import {
   discoverCommuteMaterial,
 } from "~/modules/discover/domain/commute";
 import { discoverCommuteWindow, resolveDiscoverDay } from "~/modules/discover/domain/day";
+import { readDeviceActivitySource } from "~/modules/discover/domain/device-activity";
+import { readUpcomingDeviceEvents } from "~/modules/discover/domain/device-calendar";
 import { findDiscoverSignal } from "~/modules/discover/domain/signal-catalogue";
 
 import { readSignal, resolveDiscoverSignals } from "./gather";
@@ -27,6 +29,7 @@ import { ensureDiscoverNotebook, listDiscoverDocuments } from "./notebook";
 import type { DiscoverRoutineSettings } from "./settings";
 
 const NEARBY_WEATHER_KM = 10;
+const DEVICE_CALENDAR_FRESH_MS = 24 * 60 * 60 * 1000;
 
 function resolveDiscoverWeatherPlace(
   saved: DiscoverPlace | null,
@@ -168,6 +171,39 @@ export async function gatherDiscoverObservations(
         actionable: false,
         fingerprint,
         stale: document.error !== null,
+      });
+    }
+  }
+
+  for (const document of fresh.signals) {
+    if (
+      readDeviceActivitySource(document.providerId) !== "calendar" ||
+      settings.excludedProviders.includes(document.providerId) ||
+      !document.readAt ||
+      now.getTime() - Date.parse(document.readAt) > DEVICE_CALENDAR_FRESH_MS
+    ) {
+      continue;
+    }
+
+    const events = readUpcomingDeviceEvents(document.lines, now, profile.timezone);
+
+    for (const { line, startsAt, endsAt } of events.slice(0, 3)) {
+      const fingerprint = await sha256Hex(line);
+
+      observations.push({
+        id: `${document.signalId}:${fingerprint.slice(0, 16)}`.slice(0, 100),
+        kind: "calendar",
+        title: truncateSingleLine(line.split(" · ")[1] ?? document.title, 200),
+        text: truncateSingleLine(line, 1000),
+        source: document.title,
+        providerId: document.providerId,
+        observedAt: document.readAt,
+        expiresAt: endsAt.toISOString(),
+        actionable: false,
+        fingerprint,
+        stale: false,
+        startsAt: startsAt.toISOString(),
+        endsAt: endsAt.toISOString(),
       });
     }
   }

@@ -479,19 +479,6 @@ export const updateDiscoverSettingsSchema = z
 
 export const DISCOVER_HEALTH_SUMMARY_KIND = "discover.health_summary";
 
-const dailyMinutesSchema = z.number().int().min(0).max(1440).nullable();
-
-export const discoverHealthSummarySchema = z
-  .object({
-    date: z.iso.date(),
-    sleepMinutes: dailyMinutesSchema,
-    mindfulMinutes: dailyMinutesSchema,
-    exerciseMinutes: dailyMinutesSchema,
-  })
-  .strict();
-
-export type DiscoverHealthSummary = z.infer<typeof discoverHealthSummarySchema>;
-
 export const discoverFollowSchema = z.object({
   notebookId: z.string().min(1),
   topic: z.string().min(1),

@@ -142,6 +142,8 @@ struct DiscoverNow: Decodable, Equatable {
         let expiresAt: String
         let actionable: Bool
         let stale: Bool
+        var startsAt: String? = nil
+        var endsAt: String? = nil
 
         var isStale: Bool {
             stale || (AppDateParser.parse(expiresAt).map { $0 <= Date() } ?? true)
@@ -149,7 +151,17 @@ struct DiscoverNow: Decodable, Equatable {
     }
     let context: Context
     let title: String
+    struct LineReading: Decodable, Equatable {
+        let id: String
+        let name: String
+        let status: String
+        let disrupted: Bool
+        let reason: String?
+        let nearby: Bool
+    }
     let observations: [Observation]
+    var lines: [LineReading]? = nil
+    var health: DiscoverHealthSummary? = nil
     let checkedAt: String?
     let updatedAt: String?
     let nextRefreshAt: String

@@ -46,6 +46,13 @@ const DEVICE_SOURCE_DETAILS: Record<
     description: "What you played, from the desktop app.",
     group: "playing",
   },
+  calendar: {
+    name: "Calendar on your iPhone",
+    description: "Events from every calendar on your iPhone, synced by the iOS app.",
+    group: "calendar",
+    contextNote:
+      "These are their real plans across every calendar on their phone: use them for timing, travel and what to prepare for",
+  },
 };
 
 const DEVICE_DOCUMENT_TITLES: Record<DeviceActivitySource, string> = {
@@ -54,6 +61,7 @@ const DEVICE_DOCUMENT_TITLES: Record<DeviceActivitySource, string> = {
   apps: "Apps",
   music: "Music",
   games: "Games",
+  calendar: "Calendar",
 };
 
 export function deviceActivityProviderId(source: DeviceActivitySource): string {

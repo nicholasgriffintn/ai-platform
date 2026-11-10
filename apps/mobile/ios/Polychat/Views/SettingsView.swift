@@ -150,7 +150,7 @@ struct SettingsView: View {
             Text("Discover")
         } footer: {
             Text(healthSync.isAvailable
-                 ? "The evening edition arrives at 19:00 and looks at tomorrow. Apple Health shares yesterday's sleep, mindful and exercise minutes each morning for one line in your brief, and is never used to choose topics."
+                 ? "The evening edition arrives at 19:00 and looks at tomorrow. Apple Health syncs your sleep, activity, resting heart rate and heart rate variability through the day for Discover, Poly and the Health widget, and is never used to choose topics."
                  : "Poly writes an edition each morning from what you've been working on, and a shorter one at 19:00 when the evening edition is on.")
         }
     }

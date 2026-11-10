@@ -16,14 +16,13 @@ final class HealthSummaryService {
     var isAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
 
     func requestAccess() async throws {
-        try await store.requestAuthorization(toShare: [], read: [sleep, mindful, exercise])
+        try await store.requestAuthorization(
+            toShare: [],
+            read: [sleep, mindful, exercise, steps, restingHeartRate, heartRateVariability]
+        )
     }
 
-    func requestVitalsAccess() async throws {
-        try await store.requestAuthorization(toShare: [], read: [sleep, steps, restingHeartRate, heartRateVariability])
-    }
-
-    func vitals(calendar: Calendar = .current, now: Date = Date()) async throws -> WidgetSnapshot.Health {
+    func summary(calendar: Calendar = .current, now: Date = Date()) async throws -> DiscoverHealthSummary {
         let today = calendar.startOfDay(for: now)
         let yesterday = calendar.date(byAdding: .day, value: -1, to: today) ?? today
         let sleepStart = calendar.date(byAdding: .hour, value: 18, to: yesterday) ?? yesterday
@@ -32,15 +31,23 @@ final class HealthSummaryService {
         let usualStart = calendar.date(byAdding: .day, value: -28, to: today) ?? today
         let beatsPerMinute = HKUnit.count().unitDivided(by: .minute())
         let milliseconds = HKUnit.secondUnit(with: .milli)
+        let formatter = DateFormatter()
 
-        return WidgetSnapshot.Health(
+        formatter.calendar = calendar
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+
+        return DiscoverHealthSummary(
+            date: formatter.string(from: yesterday),
             sleepMinutes: try await minutes(of: sleep, from: sleepStart, to: min(sleepEnd, now), asleepOnly: true),
-            steps: try await total(of: steps, unit: .count(), from: today, to: now),
+            mindfulMinutes: try await minutes(of: mindful, from: yesterday, to: today, asleepOnly: false),
+            exerciseMinutes: try await exerciseMinutes(from: yesterday, to: today),
+            stepsToday: try await total(of: steps, unit: .count(), from: today, to: now),
             restingHeartRate: try await latest(of: restingHeartRate, unit: beatsPerMinute, since: recent),
             restingHeartRateUsual: try await average(of: restingHeartRate, unit: beatsPerMinute, from: usualStart, to: today),
             heartRateVariability: try await latest(of: heartRateVariability, unit: milliseconds, since: recent),
             heartRateVariabilityUsual: try await average(of: heartRateVariability, unit: milliseconds, from: usualStart, to: today),
-            observedAt: now
+            observedAt: ISO8601DateFormatter().string(from: now)
         )
     }
 
@@ -67,24 +74,6 @@ final class HealthSummaryService {
             limit: 1
         )
         return try await descriptor.result(for: store).first.map { Int($0.quantity.doubleValue(for: unit).rounded()) }
-    }
-
-    func yesterday(calendar: Calendar = .current, now: Date = Date()) async throws -> DiscoverHealthSummary {
-        let today = calendar.startOfDay(for: now)
-        let yesterday = calendar.date(byAdding: .day, value: -1, to: today) ?? today
-        let sleepStart = calendar.date(byAdding: .hour, value: 18, to: yesterday) ?? yesterday
-        let sleepEnd = calendar.date(byAdding: .hour, value: 12, to: today) ?? today
-        let formatter = DateFormatter()
-
-        formatter.calendar = calendar
-        formatter.dateFormat = "yyyy-MM-dd"
-
-        return DiscoverHealthSummary(
-            date: formatter.string(from: yesterday),
-            sleepMinutes: try await minutes(of: sleep, from: sleepStart, to: sleepEnd, asleepOnly: true),
-            mindfulMinutes: try await minutes(of: mindful, from: yesterday, to: today, asleepOnly: false),
-            exerciseMinutes: try await exerciseMinutes(from: yesterday, to: today)
-        )
     }
 
     private func minutes(

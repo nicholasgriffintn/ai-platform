@@ -14,14 +14,6 @@ enum WidgetPublisher {
         write { $0.attention = WidgetSnapshot.Attention(items: items, needsYou: needsYou, running: running) }
     }
 
-    static func publish(health: WidgetSnapshot.Health?) {
-        write { $0.health = health }
-    }
-
-    static func reloadCalendar() {
-        WidgetCenter.shared.reloadTimelines(ofKind: "DiscoverToday")
-    }
-
     static func publish(agenda: PolyAgenda?) {
         write { $0.poly = agenda.map(WidgetSnapshot.Poly.init(agenda:)) }
     }
@@ -37,7 +29,7 @@ enum WidgetPublisher {
         let before = WidgetSnapshotStore.read()
         var after = before
         change(&after)
-        guard after.today != before.today || after.attention != before.attention || after.poly != before.poly || after.health != before.health else {
+        guard after.today != before.today || after.attention != before.attention || after.poly != before.poly else {
             return
         }
         WidgetSnapshotStore.update(change)

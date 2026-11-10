@@ -5,6 +5,8 @@ import WidgetKit
 struct PolychatWidgetsBundle: WidgetBundle {
     var body: some Widget {
         DiscoverTodayWidget()
+        TubeStatusWidget()
+        HealthTodayWidget()
         AttentionWidget()
         AskPolyWidget()
         PolyLiveActivity()

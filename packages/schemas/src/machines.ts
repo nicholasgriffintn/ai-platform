@@ -115,7 +115,14 @@ export function isMachineOnline(
   return Number.isFinite(lastSeenAt) && now - lastSeenAt < MACHINE_ONLINE_WINDOW_MS;
 }
 
-export const DEVICE_ACTIVITY_SOURCES = ["browsing", "agents", "apps", "music", "games"] as const;
+export const DESKTOP_ACTIVITY_SOURCES = ["browsing", "agents", "apps", "music", "games"] as const;
+export const PHONE_ACTIVITY_SOURCES = ["calendar"] as const;
+export const DEVICE_ACTIVITY_SOURCES = [
+  ...DESKTOP_ACTIVITY_SOURCES,
+  ...PHONE_ACTIVITY_SOURCES,
+] as const;
+export const desktopActivitySourceSchema = z.enum(DESKTOP_ACTIVITY_SOURCES);
+export type DesktopActivitySource = z.infer<typeof desktopActivitySourceSchema>;
 export const deviceActivitySourceSchema = z.enum(DEVICE_ACTIVITY_SOURCES);
 export type DeviceActivitySource = z.infer<typeof deviceActivitySourceSchema>;
 export const DEVICE_ACTIVITY_PROVIDER_PREFIX = "device_";

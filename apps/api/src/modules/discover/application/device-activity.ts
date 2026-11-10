@@ -19,7 +19,9 @@ import {
 import { readKnowledgeText } from "~/modules/knowledge/application/intake/body";
 import { SourceRepository } from "~/modules/sources/infrastructure/SourceRepository";
 
+import { refreshDiscoverNow } from "./current";
 import { deleteDeviceDocuments, listDeviceDocuments } from "./device-documents";
+import { updateDiscoverLive } from "./live-store";
 import { ensureDiscoverNotebook } from "./notebook";
 import { readDiscoverRoutine } from "./settings";
 import { discoverSignalSourceId, writeDiscoverDocument } from "./signal-documents";
@@ -94,6 +96,11 @@ export async function recordDeviceActivity(
       (source, owner) => owner === machineId && !kept.has(source.provider ?? ""),
     ),
   );
+
+  if (recorded.includes("calendar")) {
+    await updateDiscoverLive(context, (content) => ({ ...content, checkedAt: null }));
+    await refreshDiscoverNow(context);
+  }
 
   return { recorded, excluded };
 }

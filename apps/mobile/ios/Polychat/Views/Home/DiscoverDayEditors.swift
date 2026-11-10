@@ -176,7 +176,7 @@ struct DiscoverDayLinesEditor: View {
                 Toggle("Include lines near me", isOn: $lineStatus.nearby)
                     .disabled(!lineStatus.enabled)
             } footer: {
-                Text("Nearby lines need Where I am turned on for the Today widget in Settings.")
+                Text("Nearby lines use Where I am, under iPhone data in Settings.")
             }
             Section("Lines I use") {
                 ForEach(DiscoverTransitLine.all) { line in

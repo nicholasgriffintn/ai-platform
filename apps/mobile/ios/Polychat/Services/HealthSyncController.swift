@@ -1,5 +1,6 @@
 import BackgroundTasks
 import Foundation
+import UIKit
 
 @MainActor
 final class HealthSyncController: ObservableObject {
@@ -9,6 +10,8 @@ final class HealthSyncController: ObservableObject {
     private static let enabledKey = "discover.sharesAppleHealth"
     private static let ownerKey = "discover.healthOwnerUserId"
     private static let syncedDateKey = "discover.healthSyncedDate"
+    private static let syncedAtKey = "discover.healthSyncedAt"
+    private static let resyncInterval: TimeInterval = 30 * 60
     private static let summaryKey = "discover.healthLastSummary"
 
     @Published private(set) var isEnabled = HealthSyncController.hasOwnedOptIn()
@@ -56,6 +59,7 @@ final class HealthSyncController: ObservableObject {
                 try await apiClient.stopSharingDiscoverHealth()
                 lastSummary = nil
                 UserDefaults.standard.removeObject(forKey: Self.syncedDateKey)
+        UserDefaults.standard.removeObject(forKey: Self.syncedAtKey)
                 UserDefaults.standard.removeObject(forKey: Self.summaryKey)
                 BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: Self.refreshTaskId)
             }
@@ -78,19 +82,25 @@ final class HealthSyncController: ObservableObject {
         reset()
     }
 
-    func syncIfNeeded() async {
+    func syncIfNeeded(client: APIClient? = nil) async {
         guard isEnabled, health.isAvailable else {
             return
         }
 
         scheduleBackgroundRefresh()
 
-        guard UserDefaults.standard.string(forKey: Self.syncedDateKey) != CalendarDate.string(from: Date()) else {
+        let syncedAt = Date(timeIntervalSince1970: UserDefaults.standard.double(forKey: Self.syncedAtKey))
+        guard UserDefaults.standard.string(forKey: Self.syncedDateKey) != CalendarDate.string(from: Date())
+                || Date().timeIntervalSince(syncedAt) >= Self.resyncInterval else {
             return
         }
 
+        if UIApplication.shared.applicationState == .active {
+            try? await health.requestAccess()
+        }
+
         do {
-            try await upload()
+            try await upload(client: client ?? apiClient)
             error = nil
         } catch {
             self.error = "Apple Health did not sync: \(error.localizedDescription)"
@@ -107,16 +117,18 @@ final class HealthSyncController: ObservableObject {
         UserDefaults.standard.removeObject(forKey: Self.enabledKey)
         UserDefaults.standard.removeObject(forKey: Self.ownerKey)
         UserDefaults.standard.removeObject(forKey: Self.syncedDateKey)
+        UserDefaults.standard.removeObject(forKey: Self.syncedAtKey)
         UserDefaults.standard.removeObject(forKey: Self.summaryKey)
         BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: Self.refreshTaskId)
     }
 
-    private func upload() async throws {
-        let summary = try await health.yesterday()
-        try await apiClient.shareDiscoverHealth(summary)
+    private func upload(client: APIClient? = nil) async throws {
+        let summary = try await health.summary()
+        try await (client ?? apiClient).shareDiscoverHealth(summary)
         lastSummary = summary
         UserDefaults.standard.set(try? JSONEncoder().encode(summary), forKey: Self.summaryKey)
         UserDefaults.standard.set(CalendarDate.string(from: Date()), forKey: Self.syncedDateKey)
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: Self.syncedAtKey)
     }
 
     private func scheduleBackgroundRefresh() {

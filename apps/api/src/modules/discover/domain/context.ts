@@ -106,6 +106,19 @@ function describeResearchStories(
   });
 }
 
+function vitalLine(
+  label: string,
+  value: number | null,
+  usual: number | null,
+  unit: string,
+): string[] {
+  if (value === null) {
+    return [];
+  }
+
+  return [`${label}: ${value}${unit}${usual === null ? "" : ` (usually ${usual}${unit})`}`];
+}
+
 function minutesLine(label: string, minutes: number | null): string[] {
   if (minutes === null) {
     return [];
@@ -190,12 +203,25 @@ export function describeDiscoverContext(snapshot: DiscoverContextSnapshot): stri
         ]
       : []),
     markdownSection(
-      "Their body yesterday, from Apple Health, for one gentle brief line only: never an interest, never advice",
+      "Their body, from Apple Health: mention it when it matters for their day, never as an interest or topic",
       snapshot.health
         ? markdownBullets([
-            ...minutesLine("Sleep", snapshot.health.sleepMinutes),
-            ...minutesLine("Mindful minutes", snapshot.health.mindfulMinutes),
-            ...minutesLine("Exercise", snapshot.health.exerciseMinutes),
+            ...minutesLine("Sleep last night", snapshot.health.sleepMinutes),
+            ...minutesLine("Mindful minutes yesterday", snapshot.health.mindfulMinutes),
+            ...minutesLine("Exercise yesterday", snapshot.health.exerciseMinutes),
+            ...vitalLine("Steps today", snapshot.health.stepsToday, null, ""),
+            ...vitalLine(
+              "Resting heart rate",
+              snapshot.health.restingHeartRate,
+              snapshot.health.restingHeartRateUsual,
+              " bpm",
+            ),
+            ...vitalLine(
+              "Heart rate variability",
+              snapshot.health.heartRateVariability,
+              snapshot.health.heartRateVariabilityUsual,
+              " ms",
+            ),
           ])
         : [],
       "Not shared.",

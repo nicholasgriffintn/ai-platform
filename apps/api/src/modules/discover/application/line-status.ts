@@ -8,6 +8,7 @@ import {
 } from "~/modules/connectors/application/places";
 import {
   describeDiscoverLineStatus,
+  presentDiscoverLineReadings,
   selectDiscoverLines,
 } from "~/modules/discover/domain/line-status";
 import type { DiscoverLiveContent } from "~/modules/discover/domain/live";
@@ -17,7 +18,7 @@ import type { DiscoverRoutineSettings } from "./settings";
 const NEARBY_REUSE_KM = 0.3;
 const NEARBY_REUSE_MS = 24 * 60 * 60 * 1000;
 
-type DiscoverLineState = Pick<DiscoverLiveContent, "deviceLocation" | "nearbyLines">;
+type DiscoverLineState = Pick<DiscoverLiveContent, "deviceLocation" | "nearbyLines" | "lines">;
 
 export function currentDiscoverDeviceLocation(live: DiscoverLineState, now: Date) {
   return live.deviceLocation && live.deviceLocation.expiresAt > now.toISOString()
@@ -74,13 +75,14 @@ export async function gatherDiscoverLineStatus(
   },
 ): Promise<{
   observations: DiscoverObservation[];
+  lines: DiscoverLiveContent["lines"];
   nearbyLines: DiscoverLiveContent["nearbyLines"];
 }> {
   const { profile, settings, live, previous, now } = input;
   const preferences = profile.lineStatus;
 
   if (!preferences.enabled || settings.excludedProviders.includes("tfl")) {
-    return { observations: [], nearbyLines: live.nearbyLines };
+    return { observations: [], lines: [], nearbyLines: live.nearbyLines };
   }
 
   const nearbyLines = preferences.nearby
@@ -90,18 +92,23 @@ export async function gatherDiscoverLineStatus(
   const lines = selectDiscoverLines(preferences, nearby);
 
   if (lines.length === 0) {
-    return { observations: [], nearbyLines };
+    return { observations: [], lines: [], nearbyLines };
   }
 
   try {
     const readings = await readConnectorLineStatus(context, lines);
 
-    return { observations: describeDiscoverLineStatus(readings, { lines, now }), nearbyLines };
+    return {
+      observations: describeDiscoverLineStatus(readings, { lines, now }),
+      lines: presentDiscoverLineReadings(readings, { lines, nearby }),
+      nearbyLines,
+    };
   } catch {
     return {
       observations: previous
         .filter((observation) => observation.kind === "lines")
         .map((observation) => ({ ...observation, stale: true })),
+      lines: live.lines,
       nearbyLines,
     };
   }

@@ -7,6 +7,17 @@ struct WidgetSnapshot: Codable, Equatable {
         let systemImage: String
         var expiresAt: Date? = nil
         var kind: String? = nil
+        var startsAt: Date? = nil
+        var endsAt: Date? = nil
+    }
+
+    struct LineStatus: Codable, Hashable {
+        let id: String
+        let name: String
+        let status: String
+        let disrupted: Bool
+        let reason: String?
+        let nearby: Bool
     }
 
     struct Health: Codable, Hashable {
@@ -51,6 +62,8 @@ struct WidgetSnapshot: Codable, Equatable {
         let greeting: String
         let brief: [Line]
         let cards: [Line]
+        var lines: [LineStatus]? = nil
+        var health: Health? = nil
     }
 
     struct Attention: Codable, Equatable {
@@ -70,13 +83,14 @@ struct WidgetSnapshot: Codable, Equatable {
     var today: Today?
     var attention: Attention?
     var poly: Poly?
-    var health: Health?
     var updatedAt: Date?
 
     static let empty = WidgetSnapshot()
 
     var needsYou: Int { attention?.needsYou ?? poly?.needsYou ?? 0 }
     var running: Int { attention?.running ?? poly?.workingOn ?? 0 }
+    var health: Health? { today?.health }
+    var lines: [LineStatus] { today?.lines ?? [] }
 
     func pose(at now: Date = Date()) -> PetPose {
         if needsYou > 0 { return .wait }
@@ -107,14 +121,5 @@ enum WidgetSnapshotStore {
 
     static func clear() {
         UserDefaults(suiteName: appGroup)?.removeObject(forKey: key)
-    }
-}
-
-enum WidgetPreferences {
-    private static let calendarKey = "widgetShowsCalendar"
-
-    static var showsCalendar: Bool {
-        get { UserDefaults(suiteName: WidgetSnapshotStore.appGroup)?.bool(forKey: calendarKey) ?? false }
-        set { UserDefaults(suiteName: WidgetSnapshotStore.appGroup)?.set(newValue, forKey: calendarKey) }
     }
 }

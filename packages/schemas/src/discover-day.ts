@@ -234,6 +234,33 @@ export const discoverDayContextSchema = z.object({
   returning: discoverLocalTimeSchema,
 });
 
+const dailyMinutesSchema = z.number().int().min(0).max(1440).nullable();
+const vitalSchema = z.number().int().min(0).max(1000).nullable().default(null);
+
+export const discoverHealthSummarySchema = z
+  .object({
+    date: z.iso.date(),
+    sleepMinutes: dailyMinutesSchema,
+    mindfulMinutes: dailyMinutesSchema,
+    exerciseMinutes: dailyMinutesSchema,
+    stepsToday: z.number().int().min(0).max(200_000).nullable().default(null),
+    restingHeartRate: vitalSchema,
+    restingHeartRateUsual: vitalSchema,
+    heartRateVariability: vitalSchema,
+    heartRateVariabilityUsual: vitalSchema,
+    observedAt: z.iso.datetime().nullable().default(null),
+  })
+  .strict();
+
+export const discoverLineReadingSchema = z.object({
+  id: z.string().min(1).max(60),
+  name: z.string().min(1).max(120),
+  status: z.string().min(1).max(120),
+  disrupted: z.boolean(),
+  reason: z.string().max(1000).nullable(),
+  nearby: z.boolean(),
+});
+
 export const discoverObservationSchema = z.object({
   id: z.string().min(1).max(100),
   kind: z.enum(["weather", "calendar", "task", "travel", "lines", "priority"]),
@@ -250,12 +277,16 @@ export const discoverObservationSchema = z.object({
   journey: z
     .object({ durationMinutes: z.number().positive(), baselineMinutes: z.number().positive() })
     .optional(),
+  startsAt: z.iso.datetime().optional(),
+  endsAt: z.iso.datetime().optional(),
 });
 
 export const discoverNowSchema = z.object({
   context: discoverDayContextSchema,
   title: z.string().min(1),
   observations: z.array(discoverObservationSchema).max(16),
+  lines: z.array(discoverLineReadingSchema).max(20).default([]),
+  health: discoverHealthSummarySchema.nullable().default(null),
   checkedAt: z.iso.datetime().nullable(),
   updatedAt: z.iso.datetime().nullable(),
   nextRefreshAt: z.iso.datetime(),
@@ -307,6 +338,8 @@ export type DiscoverDayProfile = z.infer<typeof discoverDayProfileSchema>;
 export type UpdateDiscoverDayProfile = z.infer<typeof updateDiscoverDayProfileSchema>;
 export type DiscoverDayContext = z.infer<typeof discoverDayContextSchema>;
 export type DiscoverObservation = z.infer<typeof discoverObservationSchema>;
+export type DiscoverHealthSummary = z.infer<typeof discoverHealthSummarySchema>;
+export type DiscoverLineReading = z.infer<typeof discoverLineReadingSchema>;
 export type DiscoverNow = z.infer<typeof discoverNowSchema>;
 export type DiscoverAudioRelease = z.infer<typeof discoverAudioReleaseSchema>;
 export type DiscoverFeedQuery = z.infer<typeof discoverFeedQuerySchema>;

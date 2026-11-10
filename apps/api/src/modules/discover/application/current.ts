@@ -169,6 +169,7 @@ export async function refreshDiscoverCurrent(
       ...merged,
       observations,
       deviceLocation: currentDiscoverDeviceLocation(content, now),
+      lines: lineStatus.lines,
       nearbyLines: lineStatus.nearbyLines,
       profileRevision: profile.revision,
       checkedAt: now.toISOString(),
@@ -186,4 +187,25 @@ export async function refreshDiscoverCurrent(
   });
 
   return { added, changed: saved.updatedAt !== previous.updatedAt };
+}
+
+export async function refreshDiscoverNow(
+  context: ServiceContext,
+  now = new Date(),
+): Promise<DiscoverRefreshResponse> {
+  const settings = await readDiscoverRoutine(context);
+
+  if (settings.enabled && settings.installationId) {
+    try {
+      await refreshDiscoverCurrent(context, { installationId: settings.installationId }, now);
+
+      return { status: "queued", taskId: null };
+    } catch (error) {
+      context
+        .getLogger({ prefix: "discover/current" })
+        .warn("Inline refresh failed; queueing instead", { error });
+    }
+  }
+
+  return queueDiscoverCurrent(context, now);
 }

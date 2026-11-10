@@ -15,6 +15,8 @@ import {
 } from "~/modules/discover/domain/live";
 import { loadPolyAgenda } from "~/modules/poly/application/read-agenda";
 
+import { readDiscoverHealthSummary } from "./health";
+
 export async function readDiscoverNow(
   context: ServiceContext,
   input: {
@@ -49,13 +51,19 @@ export async function readDiscoverNow(
         )
       : [];
 
-  return presentDiscoverNow(
-    {
-      ...live,
-      observations: [...priorities, ...observations].slice(0, 16),
-      checkedAt: live.profileRevision === profile.revision ? live.checkedAt : null,
-    },
-    resolveDiscoverDay(profile, now),
-    now,
-  );
+  const day = resolveDiscoverDay(profile, now);
+  const health = await readDiscoverHealthSummary(context, context.requireUser().id, day.date);
+
+  return {
+    ...presentDiscoverNow(
+      {
+        ...live,
+        observations: [...priorities, ...observations].slice(0, 16),
+        checkedAt: live.profileRevision === profile.revision ? live.checkedAt : null,
+      },
+      day,
+      now,
+    ),
+    health,
+  };
 }

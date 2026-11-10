@@ -6,10 +6,9 @@ import { haversineKm } from "@ngriffin_uk/polychat-utility-core";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 
-import { queueDiscoverCurrent, refreshDiscoverCurrent } from "./current";
+import { queueDiscoverCurrent, refreshDiscoverNow } from "./current";
 import { currentDiscoverDeviceLocation } from "./line-status";
 import { updateDiscoverLive } from "./live-store";
-import { readDiscoverRoutine } from "./settings";
 
 const LOCATION_LIFETIME_MS = 2 * 60 * 60 * 1000;
 const MOVED_KM = 0.3;
@@ -49,19 +48,7 @@ export async function saveDiscoverDeviceLocation(
   });
 
   if (moved) {
-    const settings = await readDiscoverRoutine(context);
-
-    if (settings.enabled && settings.installationId) {
-      try {
-        await refreshDiscoverCurrent(context, { installationId: settings.installationId }, now);
-
-        return { status: "queued", taskId: null };
-      } catch (error) {
-        context
-          .getLogger({ prefix: "discover/location" })
-          .warn("Inline refresh failed; queueing instead", { error });
-      }
-    }
+    return refreshDiscoverNow(context, now);
   }
 
   return queueDiscoverCurrent(context, now);

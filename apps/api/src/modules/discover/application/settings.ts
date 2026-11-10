@@ -140,7 +140,9 @@ async function describeSources(
       providerId: integration.providerId,
       name: integration.name,
       description: integration.description,
-      connected: integration.connectionStatus === "connected",
+      connected:
+        integration.connectionStatus === "connected" ||
+        integration.connectionStatus === "not_required",
       ...health(integration.providerId),
     })),
     ...devices.map((source) => ({

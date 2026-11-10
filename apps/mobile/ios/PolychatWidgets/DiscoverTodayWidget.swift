@@ -103,15 +103,15 @@ private struct NowItemView: View {
         }
     }
 
-    private func eventDetail(_ event: NowEvent) -> Text {
-        let place = event.location.map { " · \($0)" } ?? ""
-        if event.start <= date {
-            return Text("Now until \(event.end, style: .time)\(place)")
+    private func eventDetail(_ event: WidgetSnapshot.Line) -> Text? {
+        guard let start = event.startsAt, let end = event.endsAt else { return event.detail.map { Text($0) } }
+        if start <= date {
+            return Text("Now until \(end, style: .time)")
         }
-        if event.start.timeIntervalSince(date) < 60 * 60 {
-            return Text("In \(event.start, style: .relative)\(place)")
+        if start.timeIntervalSince(date) < 60 * 60 {
+            return Text("In \(start, style: .relative)")
         }
-        return Text("\(event.start, style: .time)–\(event.end, style: .time)\(place)")
+        return Text("\(start, style: .time)–\(end, style: .time)")
     }
 
     private func row(systemImage: String, tint: Color, title: Text, detail: Text?) -> some View {

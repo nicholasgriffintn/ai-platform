@@ -5,7 +5,7 @@ struct WidgetContextSection: View {
 
     var body: some View {
         Section {
-            Toggle("iPhone calendar", isOn: binding(\.showsCalendar, widgetContext.setCalendar))
+            Toggle("Calendar", isOn: binding(\.syncsCalendar, widgetContext.setCalendar))
             Toggle("Where I am", isOn: binding(\.sharesLocation, widgetContext.setLocation))
             if widgetContext.sharesLocation && !widgetContext.tracksInBackground {
                 Button("Keep it current when Polychat is closed") {
@@ -15,18 +15,15 @@ struct WidgetContextSection: View {
                 }
                 .font(.footnote)
             }
-            if widgetContext.isHealthAvailable {
-                Toggle("Health vitals", isOn: binding(\.showsHealth, widgetContext.setHealth))
-            }
             if let error = widgetContext.error {
                 Text(error)
                     .font(.footnote)
                     .foregroundStyle(Color.polychat.error)
             }
         } header: {
-            Text("Today widget")
+            Text("iPhone data")
         } footer: {
-            Text("Your calendar and health stay on this iPhone. With location set to Always, the widget updates when you move a noticeable distance or arrive somewhere, using little battery. Where you are is rounded to about 100 metres and kept for two hours to pick nearby lines and weather. Choose lines to watch in Your day.")
+            Text("Syncs every calendar on this iPhone and where you are to Polychat, so Discover, Poly and your widgets on every device use them. With location set to Always, it keeps up as you move around. Apple Health is under Discover.")
         }
         .disabled(widgetContext.isWorking)
     }

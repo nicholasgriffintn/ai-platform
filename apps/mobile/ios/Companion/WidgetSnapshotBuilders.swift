@@ -12,7 +12,15 @@ extension WidgetSnapshot.Today {
         let brief: [WidgetSnapshot.Line]
         if !observations.isEmpty {
             brief = observations.prefix(8).map {
-                WidgetSnapshot.Line(title: $0.text, detail: $0.source, systemImage: WidgetSnapshot.Line.systemImage(forObservation: $0.kind), expiresAt: AppDateParser.parse($0.expiresAt), kind: $0.kind)
+                WidgetSnapshot.Line(
+                    title: $0.startsAt == nil ? $0.text : $0.title,
+                    detail: $0.source,
+                    systemImage: WidgetSnapshot.Line.systemImage(forObservation: $0.kind),
+                    expiresAt: AppDateParser.parse($0.expiresAt),
+                    kind: $0.kind,
+                    startsAt: AppDateParser.parse($0.startsAt),
+                    endsAt: AppDateParser.parse($0.endsAt)
+                )
             }
         } else if discover.edition?.date == today {
             brief = discover.edition?.brief.prefix(4).map {
@@ -34,7 +42,16 @@ extension WidgetSnapshot.Today {
         } else {
             cards = []
         }
-        self.init(date: date, greeting: discover.now?.title ?? discover.edition?.greeting ?? "Discover", brief: brief, cards: cards)
+        self.init(
+            date: date,
+            greeting: discover.now?.title ?? discover.edition?.greeting ?? "Discover",
+            brief: brief,
+            cards: cards,
+            lines: discover.now?.lines?.map {
+                WidgetSnapshot.LineStatus(id: $0.id, name: $0.name, status: $0.status, disrupted: $0.disrupted, reason: $0.reason, nearby: $0.nearby)
+            },
+            health: discover.now?.health.map(WidgetSnapshot.Health.init(summary:))
+        )
     }
 
     init(edition: DiscoverEdition) {
@@ -90,5 +107,19 @@ extension WidgetSnapshot.Line {
         case "priority": return "bell.badge"
         default: return "calendar"
         }
+    }
+}
+
+extension WidgetSnapshot.Health {
+    init(summary: DiscoverHealthSummary) {
+        self.init(
+            sleepMinutes: summary.sleepMinutes,
+            steps: summary.stepsToday,
+            restingHeartRate: summary.restingHeartRate,
+            restingHeartRateUsual: summary.restingHeartRateUsual,
+            heartRateVariability: summary.heartRateVariability,
+            heartRateVariabilityUsual: summary.heartRateVariabilityUsual,
+            observedAt: AppDateParser.parse(summary.observedAt) ?? Date()
+        )
     }
 }

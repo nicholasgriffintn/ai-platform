@@ -45,9 +45,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCalendarsFullAccessUsageDescription</key>
-	<string>The Today widget shows your next events. Your calendar stays on this iPhone.</string>
+	<string>Polychat syncs your calendar so Discover, Poly and your widgets can plan around it.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Discover reads yesterday's sleep, mindful and exercise minutes for one line in your brief. When you turn on health vitals for the Today widget, it also reads sleep, steps, resting heart rate and heart rate variability, which stay on this iPhone. It never uses them to choose topics.</string>
+	<string>Polychat syncs sleep, mindful and exercise minutes, steps, resting heart rate and heart rate variability so Discover, Poly and your widgets can use them. They are never used to choose topics.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Polychat never writes to Apple Health. It only reads health data for your Discover brief and Today widget.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
