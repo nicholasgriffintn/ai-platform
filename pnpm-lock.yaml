@@ -762,8 +762,8 @@ importers:
         specifier: 'catalog:'
         version: 1.89.0(oxlint-tsgolint@7.0.2006)(vite-plus@1.5.0(@opentelemetry/api@1.10.0)(@types/node@26.6.6)(@vitest/browser-playwright@4.1.12)(@vitest/coverage-v8@4.1.12)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@30.1.3)(playwright@1.64.1)(terser@5.51.2)(tsx@4.23.15)(typescript@6.0.3)(yaml@2.9.1))
       rollup-plugin-visualizer:
-        specifier: 7.1.1
-        version: 7.1.1(rolldown@1.2.16)(rollup@4.68.0)
+        specifier: 7.1.2
+        version: 7.1.2(rolldown@1.2.16)(rollup@4.68.0)
       terser:
         specifier: 5.51.2
         version: 5.51.2
@@ -10828,8 +10828,8 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
-  rollup-plugin-visualizer@7.1.1:
-    resolution: {integrity: sha512-ThaGiHTU8XW02OkK80TrTHATraJmM9OAduU4otal+7gyXLpYEtmGBLfx5kW+EHvvLwn03YGW2NnwKUIqsYlJAA==}
+  rollup-plugin-visualizer@7.1.2:
+    resolution: {integrity: sha512-+yrEz9LJ7fxd7T0yj4GPvcKHKfJNzTzKT7FHiF3f/US+7EaWlgB8PoGbUOlobD4Al8v6TeCCl/Fgbov5FV/DaA==}
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
@@ -20791,7 +20791,7 @@ snapshots:
       '@rolldown/binding-win32-arm64-msvc': 1.2.16
       '@rolldown/binding-win32-x64-msvc': 1.2.16
 
-  rollup-plugin-visualizer@7.1.1(rolldown@1.2.16)(rollup@4.68.0):
+  rollup-plugin-visualizer@7.1.2(rolldown@1.2.16)(rollup@4.68.0):
     dependencies:
       open: 11.0.4
       picomatch: 4.0.7
