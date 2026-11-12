@@ -1,6 +1,11 @@
 import z from "zod/v4";
 
 import { queryBooleanSchema } from "./platform/query.js";
+import {
+  TOOL_USE_STARTER_SUITE,
+  toolUseEvalCaseResultSchema,
+  toolUseEvalSpecSchema,
+} from "./tool-use-evals.js";
 
 export const MODEL_ASSET_KINDS = ["model", "adapter", "dataset"] as const;
 export const modelAssetKindSchema = z.enum(MODEL_ASSET_KINDS);
@@ -323,10 +328,15 @@ export const lineageEdgeSchema = z.object({
 });
 export type LineageEdge = z.infer<typeof lineageEdgeSchema>;
 
+export const EVAL_SUITE_KINDS = ["answer", "tool_use"] as const;
+export const evalSuiteKindSchema = z.enum(EVAL_SUITE_KINDS);
+export type EvalSuiteKind = z.infer<typeof evalSuiteKindSchema>;
+
 export const evalCaseSchema = z.object({
   id: z.string().min(1).max(64),
   input: z.string().min(1).max(20_000),
   expected: z.string().max(20_000).optional(),
+  toolUse: toolUseEvalSpecSchema.optional(),
 });
 export type EvalCase = z.infer<typeof evalCaseSchema>;
 
@@ -335,6 +345,7 @@ export const evalSuiteSchema = z.object({
   workspaceId: z.string(),
   projectId: z.string().nullable(),
   name: z.string(),
+  kind: evalSuiteKindSchema,
   description: z.string().nullable(),
   systemPrompt: z.string().nullable(),
   cases: z.array(evalCaseSchema),
@@ -503,16 +514,39 @@ export const registryRouteParamsSchema = registryWorkspaceParamsSchema.extend({
   route_id: z.string().min(1),
 });
 
-export const createEvalSuiteRequestSchema = z.object({
-  projectId: z.string().min(1).nullable(),
-  name: z.string().min(1).max(120),
-  description: z.string().max(1000).optional(),
-  systemPrompt: z.string().max(8000).optional(),
-  cases: z.array(evalCaseSchema).min(1).max(500),
-  graderIds: z.array(z.string().min(1)).min(1).max(8),
-  replaySampleSize: z.number().int().positive().max(200).default(50),
-});
+export const createEvalSuiteRequestSchema = z
+  .object({
+    projectId: z.string().min(1).nullable(),
+    name: z.string().min(1).max(120),
+    kind: evalSuiteKindSchema.default("answer"),
+    builtIn: z.literal(TOOL_USE_STARTER_SUITE).optional(),
+    description: z.string().max(1000).optional(),
+    systemPrompt: z.string().max(8000).optional(),
+    cases: z.array(evalCaseSchema).max(500).default([]),
+    graderIds: z.array(z.string().min(1)).max(8).default([]),
+    replaySampleSize: z.number().int().positive().max(200).default(50),
+  })
+  .superRefine((input, context) => {
+    const kind = input.builtIn ? "tool_use" : input.kind;
+
+    if (!input.builtIn && input.cases.length === 0) {
+      context.addIssue({ code: "custom", path: ["cases"], message: "Add at least one case" });
+    }
+
+    if (kind === "answer" && input.graderIds.length === 0) {
+      context.addIssue({ code: "custom", path: ["graderIds"], message: "Choose a grader" });
+    }
+
+    if (kind === "tool_use" && input.cases.some((item) => !item.toolUse)) {
+      context.addIssue({
+        code: "custom",
+        path: ["cases"],
+        message: "Every tool-use case needs a toolUse expectation",
+      });
+    }
+  });
 export type CreateEvalSuiteRequest = z.infer<typeof createEvalSuiteRequestSchema>;
+export type CreateEvalSuiteInput = z.input<typeof createEvalSuiteRequestSchema>;
 
 export const registrySuiteParamsSchema = registryWorkspaceParamsSchema.extend({
   suite_id: z.string().min(1),
@@ -633,6 +667,7 @@ export const evalCaseResultSchema = z.object({
   latencyMs: z.number(),
   scores: z.record(z.string(), z.number()),
   error: z.string().optional(),
+  toolUse: toolUseEvalCaseResultSchema.optional(),
 });
 export type EvalCaseResult = z.infer<typeof evalCaseResultSchema>;
 export const evalCaseResultsResponseSchema = z.object({ results: z.array(evalCaseResultSchema) });
@@ -640,6 +675,17 @@ export const evalCaseResultsResponseSchema = z.object({ results: z.array(evalCas
 export const registryRunParamsSchema = registryWorkspaceParamsSchema.extend({
   run_id: z.string().min(1),
 });
+
+export const regradeEvalRunRequestSchema = z.object({
+  baselineRunId: z.string().min(1).optional(),
+});
+export type RegradeEvalRunRequest = z.infer<typeof regradeEvalRunRequestSchema>;
+
+export const regradeEvalRunResponseSchema = z.object({
+  run: evalRunSchema,
+  regressions: z.array(z.string()).nullable(),
+});
+export type RegradeEvalRunResponse = z.infer<typeof regradeEvalRunResponseSchema>;
 export const bomFormatSchema = z.enum(["cyclonedx", "spdx"]);
 export type BomFormat = z.infer<typeof bomFormatSchema>;
 export const bomQuerySchema = z.object({

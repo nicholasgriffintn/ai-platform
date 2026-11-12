@@ -1,6 +1,7 @@
 import { authorise } from "@ngriffin_uk/polychat-library-policy";
 import {
   MODEL_REGISTRY_EVAL_TASK_TYPE,
+  TOOL_USE_STARTER_SUITE,
   type CreateEvalSuiteRequest,
   type EvalCaseResult,
   type EvalRun,
@@ -33,6 +34,8 @@ import type {
 import { canBatchEvalRoute } from "./batch-runner";
 import { toEvalRun, toEvalSuite } from "./mappers";
 import { readEvalResults } from "./run-results";
+import { requireToolUseRoute } from "./tool-use/case-runner";
+import { listToolUseStarterCases } from "./tool-use/starter-cases";
 
 export async function createEvalSuite(
   context: ServiceContext,
@@ -41,10 +44,12 @@ export async function createEvalSuite(
 ): Promise<EvalSuite> {
   const { userId } = await requireModelAction(context, workspaceId, "build_datasets");
   const projectId = await requireWorkspaceProject(context, workspaceId, input.projectId);
+  const kind = input.builtIn === TOOL_USE_STARTER_SUITE ? "tool_use" : input.kind;
+  const graderIds = kind === "tool_use" ? [] : input.graderIds;
   const graders = await context.repositories
     .get(ModelGraderRepository)
     .list(workspaceId, projectId);
-  const missing = input.graderIds.filter((id) => !graders.some((grader) => grader.id === id));
+  const missing = graderIds.filter((id) => !graders.some((grader) => grader.id === id));
 
   if (missing.length > 0) {
     throw badRequest(`Unknown graders: ${missing.join(", ")}`);
@@ -54,10 +59,11 @@ export async function createEvalSuite(
     workspaceId,
     projectId,
     name: input.name,
+    kind,
     description: input.description ?? null,
     systemPrompt: input.systemPrompt ?? null,
-    cases: input.cases,
-    graderIds: input.graderIds,
+    cases: input.builtIn === TOOL_USE_STARTER_SUITE ? listToolUseStarterCases() : input.cases,
+    graderIds,
     replaySampleSize: input.replaySampleSize,
     createdBy: userId,
   });
@@ -168,6 +174,16 @@ export async function startEvalRuns(
 
     if (!route || route.status !== "active") {
       throw notFound(`Active route ${routeId}`);
+    }
+
+    if (suite.suite_kind === "tool_use") {
+      requireToolUseRoute(route);
+
+      if (input.batch) {
+        throw badRequest(
+          "Tool-use suites take several turns per case, so they cannot run as a batch",
+        );
+      }
     }
 
     if (input.batch && !canBatchEvalRoute(route)) {

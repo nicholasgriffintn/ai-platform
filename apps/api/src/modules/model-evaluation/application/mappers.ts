@@ -12,6 +12,7 @@ export function toEvalSuite(record: ModelEvalSuiteRecord): EvalSuite {
     workspaceId: record.workspace_id,
     projectId: record.project_id,
     name: record.name,
+    kind: record.suite_kind ?? "answer",
     description: record.description,
     systemPrompt: record.system_prompt,
     cases: record.cases,

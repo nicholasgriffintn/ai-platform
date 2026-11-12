@@ -21,6 +21,11 @@
       "polychat-source": "./src/scoring.ts",
       "types": "./dist/scoring.d.ts",
       "import": "./dist/scoring.js"
+    },
+    "./tool-use": {
+      "polychat-source": "./src/tool-use.ts",
+      "types": "./dist/tool-use.d.ts",
+      "import": "./dist/tool-use.js"
     }
   },
   "publishConfig": {

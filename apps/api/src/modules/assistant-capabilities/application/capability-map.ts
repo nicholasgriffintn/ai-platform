@@ -41,7 +41,10 @@ function hasRequiredEnv(env: IEnv, requiredEnv: readonly string[] | undefined): 
   return (requiredEnv ?? []).every((key) => Boolean(values[key]));
 }
 
-function listDiscoverableTools(request: CapabilityMapRequest, enabled: ReadonlySet<string>) {
+function listDiscoverableTools(
+  request: Omit<CapabilityMapRequest, "repositories">,
+  enabled: ReadonlySet<string>,
+) {
   const { env, user, mode, projectTools, settingsDisabledTools } = request;
   const isPro = hasProEntitlement(user);
 
@@ -99,6 +102,22 @@ async function listConnectedApps(request: CapabilityMapRequest): Promise<string[
   });
 }
 
+export function buildRequestCapabilityMap(
+  request: Omit<CapabilityMapRequest, "repositories">,
+  connectedApps: readonly string[],
+): CapabilityMap | null {
+  const enabled = resolveEnabledFunctionToolNames(request.requestedToolNames, request.user);
+
+  if (!enabled.has(CAPABILITY_DISCOVERY_TOOL_NAME)) {
+    return null;
+  }
+
+  return buildCapabilityMap({
+    tools: listDiscoverableTools(request, enabled),
+    connectedApps,
+  });
+}
+
 export async function resolveCapabilityMap(
   request: CapabilityMapRequest,
 ): Promise<CapabilityMap | null> {
@@ -109,10 +128,7 @@ export async function resolveCapabilityMap(
   }
 
   try {
-    return buildCapabilityMap({
-      tools: listDiscoverableTools(request, enabled),
-      connectedApps: await listConnectedApps(request),
-    });
+    return buildRequestCapabilityMap(request, await listConnectedApps(request));
   } catch (error) {
     logger.warn("Could not build the capability map", { error });
 

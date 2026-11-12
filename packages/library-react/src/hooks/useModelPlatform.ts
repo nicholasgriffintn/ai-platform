@@ -81,7 +81,7 @@ import {
   type CreateAliasRequest,
   type CreateDatasetRequest,
   type CreateDeploymentRequest,
-  type CreateEvalSuiteRequest,
+  type CreateEvalSuiteInput,
   type CreateGraderRequest,
   type CreateRouteRequest,
   type DatasetSplit,
@@ -710,7 +710,7 @@ export function useModelPlatformMutations(workspaceId: string) {
         expected?: string;
       }) => previewGrader(workspaceId, graderId, { output, expected }),
     }),
-    createSuite: usePlatformMutation(workspaceId, (input: CreateEvalSuiteRequest) =>
+    createSuite: usePlatformMutation(workspaceId, (input: CreateEvalSuiteInput) =>
       createEvalSuite(workspaceId, input),
     ),
     deleteSuite: usePlatformMutation(workspaceId, (suiteId: string) =>
