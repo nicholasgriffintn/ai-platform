@@ -10,7 +10,8 @@ import {
   type QueuedChatMessage,
   type QueuedChatTaskData,
 } from "@ngriffin_uk/polychat-schemas";
-import { generateId } from "@ngriffin_uk/polychat-utility-core";
+import { canonicalJson, generateId } from "@ngriffin_uk/polychat-utility-core";
+import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 import {
   AssistantError,
   ErrorType,
@@ -121,13 +122,73 @@ export async function listQueuedFollowUps(
   });
 }
 
+function queuedInputDigest(data: Pick<QueuedChatTaskData, "message" | "request">): string {
+  const { id: _id, ...message } = data.message;
+
+  return canonicalJson({ message, request: data.request });
+}
+
+function presentReplayedFollowUp(
+  task: Task,
+  userId: number,
+  conversationId: string,
+  input: EnqueueChatMessageRequest,
+): QueuedChatMessage {
+  const parsed = queuedChatTaskDataSchema.safeParse(task.task_data);
+  const queued = presentQueuedFollowUp(task);
+
+  if (!parsed.success || !queued || task.user_id !== userId) {
+    throw new AssistantError(
+      "This idempotency key was already used for something else",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  if (parsed.data.conversationId !== conversationId) {
+    throw new AssistantError(
+      "This idempotency key was already used to queue a message in another conversation",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  if (queuedInputDigest(parsed.data) !== queuedInputDigest(input)) {
+    throw new AssistantError(
+      "This idempotency key was already used to queue a different message",
+      ErrorType.CONFLICT_ERROR,
+      409,
+    );
+  }
+
+  return queued;
+}
+
+async function queuedTaskId(userId: number, idempotencyKey: string | undefined): Promise<string> {
+  if (!idempotencyKey) {
+    return `queued_chat_${generateId()}`;
+  }
+
+  const digest = await sha256Hex(canonicalJson({ userId, idempotencyKey }));
+
+  return `queued_chat_key_${digest.slice(0, 40)}`;
+}
+
 export async function queueFollowUp(
   context: ServiceContext,
   conversationId: string,
   input: EnqueueChatMessageRequest,
 ): Promise<QueuedChatMessage> {
   const user = await requireQueueableConversation(context, conversationId);
-  const waiting = await context.repositories.get(TaskRepository).listSuspendedTasksForConversation({
+  const tasks = context.repositories.get(TaskRepository);
+  const taskId = await queuedTaskId(user.id, input.idempotency_key);
+  const replayed = input.idempotency_key ? await tasks.getTaskById(taskId) : null;
+
+  if (replayed) {
+    return presentReplayedFollowUp(replayed, user.id, conversationId, input);
+  }
+
+  const waiting = await tasks.listSuspendedTasksForConversation({
     taskType: QUEUED_CHAT_MESSAGE_TASK_TYPE,
     userId: user.id,
     conversationId,
@@ -147,15 +208,28 @@ export async function queueFollowUp(
     message: { ...input.message, id: input.message.id ?? generateId() },
     request: input.request,
   };
-  const task = await context.repositories.get(TaskRepository).createTask({
-    id: `queued_chat_${generateId()}`,
-    task_type: QUEUED_CHAT_MESSAGE_TASK_TYPE,
-    user_id: user.id,
-    task_data: taskData,
-    priority: 6,
-    created_by: "user",
-    status: "suspended",
-  });
+  let task: Task | null;
+
+  try {
+    task = await tasks.createTask({
+      id: taskId,
+      task_type: QUEUED_CHAT_MESSAGE_TASK_TYPE,
+      user_id: user.id,
+      task_data: taskData,
+      priority: 6,
+      created_by: "user",
+      status: "suspended",
+    });
+  } catch (error) {
+    const raced = input.idempotency_key ? await tasks.getTaskById(taskId) : null;
+
+    if (!raced) {
+      throw error;
+    }
+
+    return presentReplayedFollowUp(raced, user.id, conversationId, input);
+  }
+
   const queued = task ? presentQueuedFollowUp(task) : null;
 
   if (!queued) {
@@ -238,6 +312,17 @@ export async function releaseQueuedFollowUpAfterRun(
   }
 }
 
+export async function releaseQueuedFollowUpWhenIdle(
+  context: QueueContext,
+  conversationId: string,
+): Promise<boolean> {
+  if (await hasActiveRun(context, conversationId)) {
+    return false;
+  }
+
+  return releaseQueuedFollowUp(context, conversationId);
+}
+
 const STRANDED_AFTER_MS = 2 * 60 * 1000;
 const STRANDED_BATCH_SIZE = 50;
 
@@ -260,11 +345,7 @@ export async function releaseStrandedQueuedFollowUps(
   let released = 0;
 
   for (const conversationId of conversationIds) {
-    if (await hasActiveRun(context, conversationId)) {
-      continue;
-    }
-
-    if (await releaseQueuedFollowUp(context, conversationId)) {
+    if (await releaseQueuedFollowUpWhenIdle(context, conversationId)) {
       released += 1;
     }
   }

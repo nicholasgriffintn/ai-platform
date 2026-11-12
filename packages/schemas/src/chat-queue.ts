@@ -1,5 +1,6 @@
 import z from "zod/v4";
 
+import { chatRunCommandIdSchema } from "./chat-runs.js";
 import { chatCompletionMessageSchema, engineRequestFieldsSchema } from "./engine-request.js";
 import { listSchema } from "./platform/list.js";
 
@@ -27,6 +28,11 @@ export const enqueueChatMessageRequestSchema = z
   .object({
     message: queuedChatUserMessageSchema,
     request: queuedChatRequestSchema.default({}),
+    idempotency_key: chatRunCommandIdSchema
+      .optional()
+      .describe(
+        "Repeating a key returns the message it already queued instead of queueing it again.",
+      ),
   })
   .strict();
 

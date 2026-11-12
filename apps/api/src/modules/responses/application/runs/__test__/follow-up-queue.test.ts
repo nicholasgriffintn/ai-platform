@@ -27,6 +27,7 @@ import { queueFollowUp, releaseQueuedFollowUpAfterRun } from "../follow-up-queue
 function queuedTask(id: string) {
   return {
     id,
+    user_id: 7,
     created_at: "2026-10-08T10:00:00.000Z",
     task_data: {
       conversationId: "conversation-1",
@@ -46,6 +47,7 @@ function createContext(options: {
       Array.from({ length: options.waiting ?? 0 }, (_, index) => queuedTask(`queued-${index}`)),
     ),
     createTask: vi.fn(async (params: { id: string }) => queuedTask(params.id)),
+    getTaskById: vi.fn(async (): Promise<ReturnType<typeof queuedTask> | null> => null),
     releaseNextSuspendedTaskForConversation: vi.fn(async () => queuedTask("queued-0")),
   };
 
@@ -85,6 +87,17 @@ const input = { message: { role: "user" as const, content: "And then?" }, reques
 describe("queueFollowUp", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("returns the message a repeated key already queued without queueing it again", async () => {
+    const { context, tasks } = createContext({ latestStatus: "running" });
+    const keyed = { ...input, idempotency_key: "queue-1" };
+    const first = await queueFollowUp(context, "conversation-1", keyed);
+
+    tasks.getTaskById.mockResolvedValueOnce(queuedTask(first.id));
+
+    await expect(queueFollowUp(context, "conversation-1", keyed)).resolves.toEqual(first);
+    expect(tasks.createTask).toHaveBeenCalledTimes(1);
   });
 
   it("refuses conversations the user does not own and project conversations", async () => {

@@ -13,8 +13,10 @@ import { handleCancelChatRun } from "../cancel";
 const metrics = vi.hoisted(() => ({
   recordTurnCancellationRequested: vi.fn(),
 }));
+const coordinator = vi.hoisted(() => ({ signalRunEffects: vi.fn(async () => true) }));
 
 vi.mock("~/modules/responses/application/engine/streaming/continuity-telemetry", () => metrics);
+vi.mock("~/modules/conversations/infrastructure/coordinator/client", () => coordinator);
 
 const run: ChatRun = {
   protocolVersion: 1,

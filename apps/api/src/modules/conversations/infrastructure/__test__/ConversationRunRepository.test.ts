@@ -37,6 +37,29 @@ function createRepository() {
 }
 
 describe("ConversationRunRepository", () => {
+  it("rejects a command id reused on another conversation", async () => {
+    const { batch, first, repository } = createRepository();
+
+    first.mockResolvedValueOnce({
+      ...runRow,
+      command_id: "command-1",
+      command_kind: "turn",
+      input_digest: "digest-1",
+      accepted_at: "2026-09-05T01:00:00.000Z",
+    });
+
+    await expect(
+      repository.acceptCommand({
+        commandId: "command-1",
+        conversationId: "conversation-2",
+        digest: "digest-1",
+        kind: "turn",
+        userId: 42,
+      }),
+    ).rejects.toMatchObject({ statusCode: 409 });
+    expect(batch).not.toHaveBeenCalled();
+  });
+
   it("only allows the run initiator to resume project and personal runs", async () => {
     const projectRepository = createRepository();
 
