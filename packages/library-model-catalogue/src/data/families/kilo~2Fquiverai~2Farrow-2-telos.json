@@ -1,0 +1,40 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 131072,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text",
+        "image"
+      ]
+    },
+    "releaseDate": "September 16, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The kilo/quiverai/arrow 2 telos family includes models that produce image, text.",
+  "models": {
+    "arrow-2-telos": {
+      "defaults": {
+        "name": "Arrow 2 Telos",
+        "description": "Higher-refinement Arrow 2 variant combining Arrow's speed with frontier-model reasoning."
+      }
+    }
+  }
+}

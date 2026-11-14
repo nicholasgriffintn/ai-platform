@@ -560,7 +560,7 @@
           "coding",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.0000605,
         "costPer1kOutputTokens": 0.0004,
@@ -665,7 +665,6 @@
       "overrides": {
         "name": "Glm 5.3",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "speed": 3,
         "isFeatured": true,
@@ -748,11 +747,6 @@
       "overrides": {
         "name": "Deepseek V4.1 Flash 1017",
         "maxTokens": 1048576,
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "speed": 4,
         "lastUpdated": "October 17, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -767,6 +761,17 @@
           ],
           "defaultEffort": "none"
         }
+      }
+    },
+    "@cf/thinkingmachines/inkling-2-small": {
+      "model": "kling/inkling-2-small",
+      "matchingModel": "@cf/thinkingmachines/inkling-2-small",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "November 9, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.001,
+        "supportsAttachments": true
       }
     }
   }

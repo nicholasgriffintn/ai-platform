@@ -582,7 +582,7 @@
               "value": 1260,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 13
+              "confidenceInterval95": 12
             }
           ]
         }
@@ -621,7 +621,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1283,
+              "value": 1284,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 13
@@ -913,6 +913,100 @@
         }
       }
     },
+    "gemini-4-carbon": {
+      "defaults": {
+        "name": "Gemini 4 Carbon",
+        "description": "Gemini multimodal model for text, image, audio, video, and document tasks",
+        "contextWindow": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
+        "knowledgeCutoffDate": "March 2026",
+        "releaseDate": "November 10, 2026",
+        "supportsResponseFormat": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 60,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "gemini-4-hydrogen": {
+      "defaults": {
+        "name": "Gemini 4 Hydrogen",
+        "description": "Gemini multimodal model for text, image, audio, video, and document tasks",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
+        "knowledgeCutoffDate": "March 2026",
+        "releaseDate": "November 12, 2026",
+        "supportsResponseFormat": true,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 53.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
     "gemini-embedding-001": {
       "defaults": {
         "name": "Gemini Embedding 001",
@@ -1061,6 +1155,141 @@
         }
       }
     },
+    "google-gemini-3-flash": {
+      "defaults": {
+        "name": "Google: Gemini 3 Flash",
+        "description": "Google's most intelligent model built for speed, combining frontier intelligence with superior search and grounding.",
+        "contextWindow": 1000000,
+        "maxTokens": 65000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "releaseDate": "December 17, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "google-gemini-4-carbon": {
+      "defaults": {
+        "name": "Google: Gemini 4 Carbon",
+        "description": "Gemini 4 Carbon is a frontier Gemini 4 model from Google for coding, agentic and complex reasoning work. It takes text, image, audio, video and file input, supports long decode...",
+        "contextWindow": 1048576,
+        "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
+        "knowledgeCutoffDate": "March 2026",
+        "releaseDate": "November 10, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 60,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "google-gemini-4-hydrogen": {
+      "defaults": {
+        "name": "Google: Gemini 4 Hydrogen",
+        "description": "Gemini 4 Hydrogen is the high-efficiency workhorse model of the Gemini 4 family from Google, built for high-throughput agentic workflows, coding and multi-model routing at lower cost and latency than...",
+        "contextWindow": 1048576,
+        "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 3,
+        "knowledgeCutoffDate": "March 2026",
+        "releaseDate": "November 12, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 53.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
     "google-gemini-omni-1-1-flash": {
       "defaults": {
         "name": "Google: Gemini Omni 1.1 Flash",
@@ -1118,6 +1347,38 @@
             "high"
           ],
           "defaultEffort": "low"
+        }
+      }
+    },
+    "google-gemini-omni-flash-preview": {
+      "defaults": {
+        "name": "Google: Gemini Omni Flash Preview",
+        "description": "Gemini Omni Flash (Preview) is a multimodal model designed for video, image, and text tasks. It is optimized for video generation, offering video output alongside text responses in a single model.",
+        "contextWindow": 1000000,
+        "maxTokens": 57920,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf",
+            "video"
+          ],
+          "output": [
+            "text",
+            "video"
+          ]
+        },
+        "releaseDate": "June 30, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
         }
       }
     },

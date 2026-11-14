@@ -154,8 +154,7 @@
       },
       "unset": [
         "strengths",
-        "knowledgeCutoffDate",
-        "artificialAnalysis"
+        "knowledgeCutoffDate"
       ]
     },
     "openai.gpt-oss-safeguard-20b": {
@@ -172,8 +171,7 @@
       },
       "unset": [
         "strengths",
-        "knowledgeCutoffDate",
-        "artificialAnalysis"
+        "knowledgeCutoffDate"
       ]
     },
     "anthropic.claude-3-5-haiku": {
@@ -672,7 +670,7 @@
       "model": "claude-opus/claude-opus-4-5",
       "matchingModel": "anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -800,7 +798,7 @@
       "model": "claude-opus/claude-opus-4-5-eu",
       "matchingModel": "eu.anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275
@@ -845,7 +843,7 @@
       "model": "claude-opus/claude-opus-4-5-global",
       "matchingModel": "global.anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025
@@ -1068,7 +1066,7 @@
         "name": "Qwen3 235B A22B 2507",
         "maxTokens": 131072,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "April 2024",
         "lastUpdated": "September 18, 2025",
         "costPer1kInputTokens": 0.00022,
@@ -1109,7 +1107,7 @@
       "overrides": {
         "name": "Qwen/Qwen3-VL-235B-A22B-Instruct",
         "maxTokens": 262000,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 25, 2025",
         "costPer1kInputTokens": 0.00053,
         "costPer1kOutputTokens": 0.00266
@@ -1128,7 +1126,7 @@
       "model": "claude-opus/claude-opus-4-5-us",
       "matchingModel": "us.anthropic.claude-opus-4-5-20251101-v1:0",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.0055,
         "costPer1kOutputTokens": 0.0275
@@ -1367,7 +1365,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "December 2, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015
@@ -1830,8 +1828,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0012,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.0012
       }
     },
     "global.openai.gpt-5.6-sol": {
@@ -1841,8 +1838,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.004,
-        "costPer1kOutputTokens": 0.02,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.02
       }
     },
     "global.openai.gpt-5.6-terra": {
@@ -1852,8 +1848,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.012,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.012
       }
     },
     "anthropic.claude-fable-5-1": {
@@ -2105,8 +2100,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.00022,
-        "costPer1kOutputTokens": 0.00132,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.00132
       }
     },
     "us.openai.gpt-5.6-sol": {
@@ -2116,8 +2110,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0044,
-        "costPer1kOutputTokens": 0.022,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.022
       }
     },
     "us.openai.gpt-5.6-terra": {
@@ -2127,8 +2120,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0022,
-        "costPer1kOutputTokens": 0.0132,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.0132
       }
     },
     "us.openai.gpt-6-astra": {
@@ -2149,8 +2141,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.00022,
-        "costPer1kOutputTokens": 0.00132,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.00132
       }
     },
     "in.openai.gpt-5.6-terra": {
@@ -2160,8 +2151,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0022,
-        "costPer1kOutputTokens": 0.0132,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.0132
       }
     },
     "us-gov.openai.gpt-oss-120b-1:0": {
@@ -2282,8 +2272,7 @@
         "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0005,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.0005
       }
     },
     "global.openai.gpt-6-sol": {
@@ -2293,8 +2282,7 @@
         "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.01
       }
     },
     "us.moonshotai.kimi-k3": {
@@ -2315,8 +2303,7 @@
         "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00011,
-        "costPer1kOutputTokens": 0.00055,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.00055
       }
     },
     "us.openai.gpt-6-sol": {
@@ -2326,8 +2313,7 @@
         "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.0022,
-        "costPer1kOutputTokens": 0.011,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.011
       }
     },
     "global.anthropic.claude-sonnet-5-5": {
@@ -2590,28 +2576,27 @@
       "model": "gpt-terra/gpt-6-1-terra-global",
       "matchingModel": "global.openai.gpt-6.1-terra",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.005,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.005
       }
     },
     "us.openai.gpt-6.1-terra": {
       "model": "gpt-terra/gpt-6-1-terra-us",
       "matchingModel": "us.openai.gpt-6.1-terra",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.0011,
-        "costPer1kOutputTokens": 0.0055,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.0055
       }
     },
     "anthropic.claude-fable-5-2": {
       "model": "claude-fable/claude-fable-5-2",
       "matchingModel": "anthropic.claude-fable-5-2",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "November 9, 2026",
         "costPer1kInputTokens": 0.008,
         "costPer1kOutputTokens": 0.04,
@@ -2622,6 +2607,7 @@
       "model": "claude-fable/claude-fable-5-2-global",
       "matchingModel": "global.anthropic.claude-fable-5-2",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "November 9, 2026",
         "costPer1kInputTokens": 0.008,
         "costPer1kOutputTokens": 0.04,
@@ -2642,6 +2628,7 @@
       "model": "claude-fable/claude-fable-5-2-us",
       "matchingModel": "us.anthropic.claude-fable-5-2",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "November 9, 2026",
         "costPer1kInputTokens": 0.0088,
         "costPer1kOutputTokens": 0.044,

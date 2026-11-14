@@ -670,7 +670,7 @@
       "overrides": {
         "contextWindow": 65536,
         "maxTokens": 65536,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.00058,
         "costPer1kOutputTokens": 0.00144,
@@ -695,7 +695,7 @@
       "overrides": {
         "contextWindow": 262144,
         "maxTokens": 262144,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.00058,
         "costPer1kOutputTokens": 0.00144,
@@ -720,7 +720,7 @@
       "overrides": {
         "contextWindow": 262144,
         "maxTokens": 262144,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -793,7 +793,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00084,
         "costPer1kOutputTokens": 0.00211,

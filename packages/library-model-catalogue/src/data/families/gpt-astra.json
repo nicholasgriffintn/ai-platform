@@ -87,6 +87,12 @@
         "releaseDate": "September 11, 2026"
       }
     },
+    "openai-gpt-6-astra-fast": {
+      "defaults": {
+        "name": "OpenAI: GPT-6 Astra (Fast) ($$$$)",
+        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation."
+      }
+    },
     "openai-gpt-astra-latest": {
       "defaults": {
         "name": "OpenAI: GPT Astra Latest ($$$$)",

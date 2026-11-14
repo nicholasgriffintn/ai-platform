@@ -74,7 +74,6 @@
         "openWeights": true,
         "description": "Mistral's largest general model for enterprise agents, coding, and multilingual reasoning",
         "contextWindow": 262144,
-        "maxTokens": 256000,
         "knowledgeCutoffDate": "November 2024",
         "releaseDate": "December 2, 2025",
         "artificialAnalysis": {
@@ -165,9 +164,8 @@
     "mistral-large-latest": {
       "defaults": {
         "name": "Mistral Large",
-        "openWeights": true,
-        "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
-        "contextWindow": 262144,
+        "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
+        "contextWindow": 1048576,
         "card": "https://www.prompthub.us/models/mistral-large",
         "strengths": [
           "chat",
@@ -179,8 +177,17 @@
           "document",
           "tool_use"
         ],
+        "contextComplexity": 5,
         "knowledgeCutoffDate": "November 2024",
-        "releaseDate": "November 1, 2024",
+        "releaseDate": "October 6, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,

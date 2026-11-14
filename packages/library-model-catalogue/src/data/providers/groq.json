@@ -283,8 +283,7 @@
       },
       "unset": [
         "strengths",
-        "knowledgeCutoffDate",
-        "artificialAnalysis"
+        "knowledgeCutoffDate"
       ]
     },
     "whisper-large-v3": {

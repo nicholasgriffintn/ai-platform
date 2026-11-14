@@ -35,49 +35,6 @@
         }
       }
     },
-    "deepseek-ai/DeepSeek-V4-Pro": {
-      "model": "deepseek-thinking/deepseek-v4-pro",
-      "matchingModel": "deepseek-ai/DeepSeek-V4-Pro",
-      "overrides": {
-        "contextWindow": 1048576,
-        "maxTokens": 1048576,
-        "speed": 3,
-        "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.00175,
-        "costPer1kOutputTokens": 0.0035,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "deepseek-ai/DeepSeek-V4.1-Flash": {
-      "model": "deepseek-flash/deepseek-v4-1-flash",
-      "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash",
-      "overrides": {
-        "contextWindow": 1048000,
-        "maxTokens": 1048000,
-        "speed": 5,
-        "lastUpdated": "September 10, 2026",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "google/gemma-3-27b-it": {
       "model": "gemma/gemma-3-27b-it",
       "matchingModel": "google/gemma-3-27b-it",
@@ -425,7 +382,7 @@
           "coding",
           "document"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005,
@@ -556,6 +513,50 @@
             "medium",
             "high",
             "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-ai/DeepSeek-V4-Pro-0813": {
+      "model": "deepseek-thinking/deepseek-v4-pro-0813",
+      "matchingModel": "deepseek-ai/DeepSeek-V4-Pro-0813",
+      "overrides": {
+        "contextWindow": 979000,
+        "maxTokens": 979000,
+        "contextComplexity": 4,
+        "speed": 3,
+        "lastUpdated": "August 22, 2026",
+        "costPer1kInputTokens": 0.00132,
+        "costPer1kOutputTokens": 0.00396,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-ai/DeepSeek-V4.1-Flash-1017": {
+      "model": "deepseek-flash/deepseek-v4-1-flash-1017",
+      "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+      "overrides": {
+        "name": "DeepSeek V4.1 Flash 1017",
+        "maxTokens": 1048576,
+        "speed": 4,
+        "lastUpdated": "October 17, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
             "max"
           ],
           "defaultEffort": "none"

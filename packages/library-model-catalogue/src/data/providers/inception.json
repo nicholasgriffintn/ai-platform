@@ -89,6 +89,7 @@
       "matchingModel": "mercury-3",
       "overrides": {
         "description": "Inception's diffusion reasoning model for chat, multi-step problem solving, and tool use",
+        "releaseDate": "October 16, 2026",
         "lastUpdated": "October 20, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.00035,

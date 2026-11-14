@@ -118,7 +118,16 @@
           "tool_use"
         ],
         "knowledgeCutoffDate": "August 31, 2025",
-        "releaseDate": "December 11, 2025"
+        "releaseDate": "December 11, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "gpt-5-3-chat": {
@@ -187,7 +196,6 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "minimal",
             "low",
             "medium",
             "high",
@@ -209,6 +217,65 @@
       "defaults": {
         "description": "Coding-optimized GPT model for repository edits, reviews, and agentic software work",
         "releaseDate": "September 15, 2025"
+      }
+    },
+    "openai-gpt-5-3-codex-fast": {
+      "defaults": {
+        "name": "OpenAI: GPT 5.3 Codex (Fast)",
+        "description": "GPT-5.3-Codex advances both the frontier coding performance of GPT‑5.2-Codex and the reasoning and professional knowledge capabilities of GPT‑5.2, together in one model, which is also 25% faster. This enables it to take on long-running tasks that involve research, tool use, and complex execution.",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "August 31, 2025",
+        "releaseDate": "February 5, 2026",
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai-gpt-5-codex": {
+      "defaults": {
+        "name": "OpenAI: GPT-5-Codex",
+        "description": "GPT-5-Codex is a version of GPT-5 optimized for agentic coding tasks in Codex or similar environments.",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "releaseDate": "September 15, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }

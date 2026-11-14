@@ -1,11 +1,9 @@
 {
   "defaults": {
-    "openWeights": true,
-    "contextWindow": 123000,
-    "maxTokens": 16000,
+    "openWeights": false,
+    "contextWindow": 1024000,
     "modalities": {
       "input": [
-        "image",
         "text"
       ],
       "output": [
@@ -13,25 +11,100 @@
       ]
     },
     "knowledgeCutoffDate": "March 31, 2025",
-    "releaseDate": "June 30, 2025",
-    "supportsToolCalls": false,
-    "supportsResponseFormat": false,
-    "supportsAttachments": true,
-    "supportsTemperature": true,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "none",
-        "thinking"
-      ],
-      "defaultEffort": "none"
-    }
+    "releaseDate": "November 10, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
   },
   "description": "The ernie family includes models that produce text.",
   "models": {
+    "baidu-ernie-5-5-flash-preview-free": {
+      "defaults": {
+        "name": "Baidu: ERNIE-5.5-Flash-Preview (free)",
+        "description": "ERNIE 5.5 Flash Preview is the latest foundation model in the ERNIE family, with comprehensive improvements in coding, agentic capabilities, knowledge work, and deep research. It has 280 billion total...",
+        "maxTokens": 921600,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "baidu-ernie-light-dt-1-0": {
+      "defaults": {
+        "name": "Baidu: ERNIE-Light-DT-1.0",
+        "description": "ERNIE-Light-DT-1.0 is based on open-source GLM models and includes research findings from Baidu Search's Lightning large model. It features Baidu Sparse Attention (BSA), a unique sparse attention mechanism developed by...",
+        "maxTokens": 131072,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "ernie-4-5-vl-424b-a47b": {
       "defaults": {
         "name": "ERNIE 4.5 VL 424B A47B ",
-        "description": "Multimodal reasoning model for visual analysis, planning, and tool use"
+        "openWeights": true,
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 123000,
+        "maxTokens": 16000,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "June 30, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ernie-5-5-flash-preview-free": {
+      "defaults": {
+        "name": "ERNIE-5.5-Flash-Preview (free)",
+        "openWeights": true,
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "maxTokens": 921600,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "ernie-light-dt-1-0": {
+      "defaults": {
+        "name": "ERNIE-Light-DT-1.0",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "maxTokens": 131072,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

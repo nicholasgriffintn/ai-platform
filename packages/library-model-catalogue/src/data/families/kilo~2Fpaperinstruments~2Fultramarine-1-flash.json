@@ -1,0 +1,39 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1048576,
+    "maxTokens": 131000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 12, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "low",
+        "high",
+        "max"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The kilo/paperinstruments/ultramarine 1 flash family includes models that produce text.",
+  "models": {
+    "ultramarine-1-flash": {
+      "defaults": {
+        "name": "Ultramarine 1 Flash",
+        "description": "Ultramarine 1 Flash is an open-weight multimodal reasoning model from Paper Instruments, post-trained from GLM-5.3 Flash for knowledge work in enterprise operations, finance, law, and consulting. It supports long-context document analysis and agentic workflows."
+      }
+    }
+  }
+}

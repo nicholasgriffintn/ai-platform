@@ -127,6 +127,13 @@
         "releaseDate": "December 5, 2024",
         "supportsToolCalls": true,
         "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -304,6 +311,79 @@
             "high"
           ],
           "defaultEffort": "high"
+        }
+      }
+    },
+    "openai-o1": {
+      "defaults": {
+        "name": "o1",
+        "description": "o1 is OpenAI's flagship reasoning model, designed for complex problems that require deep thinking. It provides strong reasoning capabilities with improved accuracy for complex multi-step tasks.",
+        "contextWindow": 200000,
+        "maxTokens": 100000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "knowledgeCutoffDate": "September 2023",
+        "releaseDate": "December 5, 2024",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "high"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "openai-o3-fast": {
+      "defaults": {
+        "name": "OpenAI: o3 (Fast)",
+        "description": "OpenAI's o3 is their most powerful reasoning model, setting new state-of-the-art benchmarks in coding, math, science, and visual perception. It excels at complex queries requiring multi-faceted analysis, with particular strength in analyzing images, charts, and graphics.",
+        "contextWindow": 200000,
+        "maxTokens": 100000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "May 2024",
+        "releaseDate": "April 16, 2025",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
         }
       }
     },
@@ -503,7 +583,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1108,
+              "value": 1104,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11
@@ -626,7 +706,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1086,
+              "value": 1084,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10
@@ -662,7 +742,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1107,
+              "value": 1108,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11

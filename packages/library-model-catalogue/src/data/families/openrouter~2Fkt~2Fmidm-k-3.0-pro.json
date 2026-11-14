@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 261795,
+    "maxTokens": 235615,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 5, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The openrouter/kt/midm k 3.0 pro family includes models that produce text.",
+  "models": {
+    "mi-dm-k-3-0-pro": {
+      "defaults": {
+        "name": "Mi:dm K 3.0 Pro",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows"
+      }
+    }
+  }
+}

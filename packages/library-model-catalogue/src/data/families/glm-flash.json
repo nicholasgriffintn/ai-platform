@@ -4,15 +4,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "low",
-        "high",
-        "max"
-      ],
-      "defaultEffort": "low"
-    }
+    "supportsTemperature": true
   },
   "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
   "models": {
@@ -119,6 +111,14 @@
         "contextComplexity": 5,
         "reliability": 1,
         "releaseDate": "August 26, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": 27.8,
           "codingIndex": null,
@@ -189,14 +189,30 @@
             "text"
           ]
         },
-        "releaseDate": "August 26, 2026"
+        "releaseDate": "August 26, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "glm-5-3-flashx": {
       "defaults": {
         "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
         "contextWindow": 1000000,
-        "maxTokens": 131072
+        "maxTokens": 131072,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "glm-flash-latest": {
@@ -216,7 +232,15 @@
             "text"
           ]
         },
-        "releaseDate": "August 27, 2026"
+        "releaseDate": "August 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "glm-flash-latest-glm-5-3-flash": {
@@ -234,7 +258,44 @@
             "text"
           ]
         },
-        "releaseDate": "August 26, 2026"
+        "releaseDate": "August 26, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "z-ai-glm-4-7-flashx": {
+      "defaults": {
+        "name": "Z.ai: GLM 4.7 FlashX",
+        "description": "GLM-4.7-Flash balances high performance with efficiency, making it the perfect lightweight deployment option.",
+        "contextWindow": 200000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "January 19, 2026",
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "z-ai-glm-flash-latest": {
@@ -254,7 +315,15 @@
             "text"
           ]
         },
-        "releaseDate": "August 27, 2026"
+        "releaseDate": "August 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     }
   }

@@ -108,11 +108,12 @@
       "model": "mistral-large/mistral-large-latest",
       "matchingModel": "mistral-large-latest",
       "overrides": {
+        "status": "beta",
         "speed": 3,
         "isFeatured": false,
-        "lastUpdated": "December 2, 2025",
-        "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.0015,
+        "lastUpdated": "October 6, 2026",
+        "costPer1kInputTokens": 0.0007,
+        "costPer1kOutputTokens": 0.0021,
         "supportsFim": true
       }
     },
@@ -145,6 +146,7 @@
       "model": "codestral/codestral-latest",
       "matchingModel": "codestral-latest",
       "overrides": {
+        "contextWindow": 256000,
         "maxTokens": 4096,
         "card": "https://www.prompthub.us/models/codestral",
         "strengths": [
@@ -365,7 +367,6 @@
       "model": "glm/glm-5-3",
       "matchingModel": "zai-glm-5-3",
       "overrides": {
-        "contextWindow": 1048576,
         "maxTokens": 131072,
         "speed": 3,
         "isFeatured": true,
@@ -397,7 +398,7 @@
           "video",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005
@@ -425,13 +426,13 @@
           ]
         },
         "strengths": [
-          "tool_use"
+          "tool_use",
+          "document"
         ],
         "speed": 4,
         "lastUpdated": "October 17, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
