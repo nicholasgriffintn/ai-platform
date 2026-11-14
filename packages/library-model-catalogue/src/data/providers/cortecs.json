@@ -92,7 +92,7 @@
       "model": "claude-opus/claude-opus-4-5-latest",
       "matchingModel": "claude-opus4-5",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005313,
         "costPer1kOutputTokens": 0.026568,
@@ -181,14 +181,6 @@
       "matchingModel": "codestral-2508",
       "overrides": {
         "maxTokens": 256000,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "knowledgeCutoffDate": "March 2025",
         "lastUpdated": "July 30, 2025",
         "costPer1kInputTokens": 0.000368,
@@ -202,7 +194,6 @@
       "overrides": {
         "contextWindow": 164000,
         "maxTokens": 164000,
-        "contextComplexity": 4,
         "speed": 2,
         "deprecated": true,
         "deprecationMessage": "DeepSeek R1 0528 is no longer offered by Cortecs.",
@@ -407,7 +398,7 @@
       "overrides": {
         "contextWindow": 203000,
         "maxTokens": 203000,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.00008,
         "costPer1kOutputTokens": 0.000478,
@@ -438,6 +429,8 @@
         "contextWindow": 202752,
         "maxTokens": 202752,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "GLM-5.1 is no longer offered by Cortecs.",
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.001384,
         "costPer1kOutputTokens": 0.004348,
@@ -648,9 +641,10 @@
       "model": "minimax/minimax-m2",
       "matchingModel": "minimax-m2",
       "overrides": {
+        "name": "MiniMax-M2",
         "contextWindow": 400000,
         "maxTokens": 196000,
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "November 2024",
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.000349,
@@ -662,6 +656,7 @@
       "model": "minimax/minimax-m2-1",
       "matchingModel": "minimax-m2.1",
       "overrides": {
+        "name": "MiniMax-M2.1",
         "contextWindow": 196000,
         "maxTokens": 196000,
         "speed": 3,
@@ -700,23 +695,6 @@
         "costPer1kInputTokens": 0.000668,
         "costPer1kOutputTokens": 0.002674,
         "supportsAttachments": false
-      }
-    },
-    "mistral-large-2512": {
-      "model": "mistral-large/mistral-large-3",
-      "matchingModel": "mistral-large-2512",
-      "overrides": {
-        "name": "Mistral Large 3 2512",
-        "contextWindow": 256000,
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "speed": 4,
-        "lastUpdated": "December 2, 2025",
-        "costPer1kInputTokens": 0.000613,
-        "costPer1kOutputTokens": 0.001838
       }
     },
     "mixtral-8x7B-instruct-v0.1": {
@@ -771,6 +749,7 @@
       "model": "nova-pro/nova-pro-1-0",
       "matchingModel": "nova-pro-v1",
       "overrides": {
+        "maxTokens": 10000,
         "lastUpdated": "December 5, 2024",
         "costPer1kInputTokens": 0.000918,
         "costPer1kOutputTokens": 0.003671,
@@ -871,7 +850,7 @@
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "contextWindow": 262000,
         "maxTokens": 262000,
-        "speed": 4,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Qwen3 Coder 480B A35B Instruct is no longer offered by Cortecs.",
         "knowledgeCutoffDate": "January 2025",
@@ -907,6 +886,11 @@
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 128000,
         "maxTokens": 128000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
         "speed": 4,
         "deprecated": true,
         "deprecationMessage": "Qwen3 Next 80B A3B Thinking is no longer offered by Cortecs.",
@@ -1025,6 +1009,8 @@
       "model": "cortecs/minicpm-v-4.5/minicpm-v-4-5",
       "matchingModel": "minicpm-v-4.5",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Minicpm V 4.5 is no longer offered by Cortecs.",
         "lastUpdated": "June 2, 2026",
         "costPer1kInputTokens": 0.000651,
         "costPer1kOutputTokens": 0.001097,
@@ -1344,7 +1330,6 @@
       "matchingModel": "mistral-small-2603",
       "overrides": {
         "name": "Mistral Small 2603",
-        "maxTokens": 256000,
         "speed": 4,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.000156,
@@ -1494,8 +1479,7 @@
       },
       "unset": [
         "strengths",
-        "knowledgeCutoffDate",
-        "artificialAnalysis"
+        "knowledgeCutoffDate"
       ]
     },
     "ministral-8b-2512": {
@@ -1545,7 +1529,7 @@
       "matchingModel": "gpt-5.1",
       "overrides": {
         "name": "GPT 5.1",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.01096,
@@ -1605,7 +1589,7 @@
       "matchingModel": "gpt-5",
       "overrides": {
         "name": "GPT 5",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.001375,
         "costPer1kOutputTokens": 0.01096,
@@ -2020,7 +2004,7 @@
       "matchingModel": "gpt-5-mini",
       "overrides": {
         "name": "GPT 5 Mini",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.000279,
         "costPer1kOutputTokens": 0.002192,
@@ -2041,7 +2025,7 @@
       "matchingModel": "gpt-5-nano",
       "overrides": {
         "name": "GPT 5 Nano",
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.000439,
@@ -2093,6 +2077,8 @@
         "name": "Mistral Nemo Instruct 2407",
         "contextWindow": 118000,
         "maxTokens": 118000,
+        "deprecated": true,
+        "deprecationMessage": "Mistral Nemo Instruct 2407 is no longer offered by Cortecs.",
         "lastUpdated": "July 18, 2024",
         "costPer1kInputTokens": 0.000145,
         "costPer1kOutputTokens": 0.000145,
@@ -2201,6 +2187,8 @@
       "model": "kimi-k2/kimi-k2-7-code",
       "matchingModel": "kimi-k2.7-code",
       "overrides": {
+        "contextWindow": 256000,
+        "maxTokens": 256000,
         "modalities": {
           "input": [
             "text",
@@ -2364,7 +2352,6 @@
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.000219,
         "costPer1kOutputTokens": 0.00132,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2392,7 +2379,6 @@
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.004399,
         "costPer1kOutputTokens": 0.021998,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2420,7 +2406,6 @@
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0022,
         "costPer1kOutputTokens": 0.013199,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2594,7 +2579,6 @@
       "model": "glm/glm-5-3",
       "matchingModel": "glm-5.3",
       "overrides": {
-        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "speed": 3,
         "lastUpdated": "August 14, 2026",
@@ -2624,7 +2608,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.00035
@@ -2650,7 +2634,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 4,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Qwen3.8 Flash Next is no longer offered by Cortecs.",
         "lastUpdated": "August 27, 2026",
@@ -2744,7 +2728,6 @@
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.0006,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2763,7 +2746,6 @@
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.0024,
         "costPer1kOutputTokens": 0.011999,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2903,7 +2885,7 @@
       "matchingModel": "minimax-m3.1-flash",
       "overrides": {
         "contextWindow": 1048576,
-        "maxTokens": 64000,
+        "maxTokens": 500000,
         "modalities": {
           "input": [
             "text",
@@ -2913,22 +2895,20 @@
             "text"
           ]
         },
-        "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "October 19, 2026",
-        "costPer1kInputTokens": 0.000304,
-        "costPer1kOutputTokens": 0.001219
+        "costPer1kInputTokens": 0.000153,
+        "costPer1kOutputTokens": 0.000613
       }
     },
     "gpt-6.1-terra": {
       "model": "gpt-terra/gpt-6-1-terra",
       "matchingModel": "gpt-6.1-terra",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001176,
         "costPer1kOutputTokens": 0.005882,
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2943,8 +2923,6 @@
       "model": "kimi-k3/kimi-k3-1-pro",
       "matchingModel": "kimi-k3.1-pro",
       "overrides": {
-        "openWeights": false,
-        "description": "Multimodal Kimi model with 1M context and always-on reasoning for coding, 3D creation, financial research, and agentic work",
         "maxTokens": 500000,
         "modalities": {
           "input": [
@@ -2958,8 +2936,8 @@
         },
         "speed": 2,
         "lastUpdated": "October 23, 2026",
-        "costPer1kInputTokens": 0.002041,
-        "costPer1kOutputTokens": 0.010205,
+        "costPer1kInputTokens": 0.002042,
+        "costPer1kOutputTokens": 0.010209,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2969,6 +2947,54 @@
           ],
           "defaultEffort": "low"
         }
+      }
+    },
+    "gemini-4-carbon": {
+      "model": "gemini/gemini-4-carbon",
+      "matchingModel": "gemini-4-carbon",
+      "overrides": {
+        "description": "Google's most capable reasoning model for complex software engineering, deep math and science, high factual accuracy, and long-horizon autonomous agents",
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "speed": 2,
+        "lastUpdated": "November 10, 2026",
+        "costPer1kInputTokens": 0.002229,
+        "costPer1kOutputTokens": 0.011146,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "mistral-large-2402": {
+      "model": "mistral/mistral-large-2402",
+      "matchingModel": "mistral-large-2402",
+      "overrides": {
+        "lastUpdated": "May 26, 2025",
+        "costPer1kInputTokens": 0.004284,
+        "costPer1kOutputTokens": 0.012952,
+        "supportsTemperature": false
       }
     }
   }

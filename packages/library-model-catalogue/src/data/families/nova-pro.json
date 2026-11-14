@@ -2,23 +2,11 @@
   "defaults": {
     "openWeights": false,
     "contextWindow": 300000,
-    "maxTokens": 10000,
-    "modalities": {
-      "input": [
-        "text",
-        "image",
-        "video"
-      ],
-      "output": [
-        "text"
-      ]
-    },
     "contextComplexity": 4,
     "reliability": 1,
     "knowledgeCutoffDate": "October 2024",
     "releaseDate": "December 3, 2024",
     "supportsToolCalls": true,
-    "supportsResponseFormat": false,
     "supportsAttachments": true,
     "supportsTemperature": true,
     "artificialAnalysis": {
@@ -30,6 +18,29 @@
   },
   "description": "Flagship model for demanding analysis, coding, and production agent workflows",
   "models": {
+    "amazon-nova-pro": {
+      "defaults": {
+        "name": "Amazon: Nova Pro",
+        "description": "A highly capable multimodal model with the best combination of accuracy, speed, and cost for a wide range of tasks.",
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "supportsResponseFormat": true
+      }
+    },
     "amazon-nova-pro-1-0": {
       "defaults": {
         "name": "Amazon: Nova Pro 1.0",
@@ -46,6 +57,7 @@
         },
         "knowledgeCutoffDate": "October 31, 2024",
         "releaseDate": "December 5, 2024",
+        "supportsResponseFormat": false,
         "artificialAnalysis": {
           "intelligenceIndex": 7.7,
           "codingIndex": null,
@@ -95,7 +107,18 @@
     "nova-pro": {
       "defaults": {
         "name": "Nova Pro",
-        "description": "Flagship model for demanding analysis, coding, and production agent workflows"
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "maxTokens": 10000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        }
       }
     },
     "nova-pro-1-0": {
@@ -119,36 +142,72 @@
       "defaults": {
         "name": "Nova Pro (APAC)",
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "maxTokens": 10000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "video",
           "document",
           "tool_use"
-        ]
+        ],
+        "supportsResponseFormat": false
       }
     },
     "nova-pro-eu": {
       "defaults": {
         "name": "Nova Pro (EU)",
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "maxTokens": 10000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "video",
           "document",
           "tool_use"
-        ]
+        ],
+        "supportsResponseFormat": false
       }
     },
     "nova-pro-us": {
       "defaults": {
         "name": "Nova Pro (US)",
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "maxTokens": 10000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "video",
           "document",
           "tool_use"
-        ]
+        ],
+        "supportsResponseFormat": false
       }
     }
   }

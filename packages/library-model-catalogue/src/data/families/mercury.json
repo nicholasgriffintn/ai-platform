@@ -15,63 +15,10 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": true,
-    "reasoningConfig": {
-      "supportedEffortLevels": [
-        "none",
-        "low",
-        "medium",
-        "high"
-      ],
-      "defaultEffort": "none"
-    }
+    "supportsTemperature": true
   },
   "description": "The mercury family includes models that produce text.",
   "models": {
-    "inception-mercury-2-5-retires-nov-8": {
-      "defaults": {
-        "name": "Inception: Mercury 2.5",
-        "description": "Mercury 2.5 is the fastest reasoning LLM, and the latest diffusion LLM (dLLM) from Inception. Instead of generating tokens sequentially, Mercury 2.5 produces and refines multiple tokens in parallel, achieving...",
-        "contextWindow": 260000,
-        "maxTokens": 65536,
-        "contextComplexity": 4,
-        "reliability": 1,
-        "releaseDate": "September 8, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "inception-mercury-2-retires-nov-8": {
-      "defaults": {
-        "name": "Inception: Mercury 2",
-        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
-        "contextWindow": 128000,
-        "maxTokens": 50000,
-        "contextComplexity": 3,
-        "reliability": 2,
-        "releaseDate": "February 24, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "inception-mercury-3-retires-nov-8": {
-      "defaults": {
-        "name": "Inception: Mercury 3",
-        "description": "Mercury 3 is a diffusion-based language model from Inception, and the lab's most capable model to date. It is suited for agentic workflows and real-time applications where latency compounds, such...",
-        "contextWindow": 1000000,
-        "maxTokens": 131072,
-        "reliability": 1,
-        "releaseDate": "October 16, 2026"
-      }
-    },
     "mercury-2": {
       "defaults": {
         "name": "Mercury 2",
@@ -106,6 +53,15 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "September 8, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -120,7 +76,66 @@
         "description": "Preview model for early access evaluation, prototyping, and compatibility testing",
         "contextWindow": 260000,
         "maxTokens": 65536,
-        "releaseDate": "August 31, 2026"
+        "releaseDate": "August 31, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "mercury-2-5-retires-nov-15": {
+      "defaults": {
+        "name": "Inception: Mercury 2.5",
+        "description": "Mercury 2.5 is Inception’s diffusion-based reasoning model for chat, agents, and structured workflows, with tool calling, structured outputs, and a 260K context window.",
+        "contextWindow": 260000,
+        "maxTokens": 65536,
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "September 8, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "mercury-2-retires-nov-15": {
+      "defaults": {
+        "name": "Inception: Mercury 2",
+        "description": "A diffusion-based reasoning LLM that generates text via parallel refinement (not token-by-token), delivering real-time latency with ~1k tokens/sec plus 128K context and built-in tool/JSON support.",
+        "contextWindow": 128000,
+        "maxTokens": 128000,
+        "contextComplexity": 4,
+        "reliability": 2,
+        "releaseDate": "February 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "mercury-3": {
@@ -129,8 +144,7 @@
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 1000000,
         "maxTokens": 131072,
-        "reliability": 1,
-        "releaseDate": "October 16, 2026"
+        "reliability": 1
       }
     },
     "mercury-coder-small-beta": {
@@ -141,6 +155,24 @@
         "maxTokens": 16384,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "February 26, 2025"
+      }
+    },
+    "mercury-coder-small-beta-retires-nov-15": {
+      "defaults": {
+        "name": "Mercury Coder Small Beta (retires Nov 15)",
+        "description": "Mercury Coder Small is ideal for code generation, debugging, and refactoring tasks with minimal latency.",
+        "contextWindow": 32000,
+        "maxTokens": 16384,
+        "releaseDate": "February 26, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "mercury-edit-2": {

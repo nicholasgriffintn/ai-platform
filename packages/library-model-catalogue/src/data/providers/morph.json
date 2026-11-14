@@ -137,7 +137,6 @@
       "model": "glm/glm-5-3",
       "matchingModel": "morph-glm53-744b",
       "overrides": {
-        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "speed": 3,
         "lastUpdated": "August 14, 2026",
@@ -177,7 +176,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0007,

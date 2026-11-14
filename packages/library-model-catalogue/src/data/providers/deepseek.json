@@ -99,11 +99,6 @@
       "overrides": {
         "name": "DeepSeek V4.1 Flash",
         "maxTokens": 393216,
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "reliability": 2,
         "speed": 5,
         "isFeatured": true,

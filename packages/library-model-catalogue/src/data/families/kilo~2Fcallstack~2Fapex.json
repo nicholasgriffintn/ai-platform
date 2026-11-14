@@ -1,0 +1,39 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 8, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "low",
+        "medium",
+        "xhigh"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The kilo/callstack/apex family includes models that produce text.",
+  "models": {
+    "apex": {
+      "defaults": {
+        "name": "Apex",
+        "description": "Apex is Callstack’s agentic coding model for mobile and web development, optimized for React Native, React, and Next.js. With a 256K context window, it supports feature development, debugging, code reviews, testing, and large refactors."
+      }
+    }
+  }
+}

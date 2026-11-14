@@ -3,7 +3,8 @@
     "openWeights": false,
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsAttachments": true
+    "supportsAttachments": true,
+    "supportsTemperature": true
   },
   "description": "The gpt family includes models that produce audio, image, text.",
   "models": {
@@ -59,7 +60,6 @@
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
         "supportsAttachments": false,
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -84,8 +84,7 @@
         },
         "knowledgeCutoffDate": "September 30, 2021",
         "releaseDate": "August 28, 2023",
-        "supportsAttachments": false,
-        "supportsTemperature": true
+        "supportsAttachments": false
       }
     },
     "gpt-3-5-turbo-instruct": {
@@ -101,8 +100,7 @@
           ]
         },
         "supportsToolCalls": false,
-        "supportsAttachments": false,
-        "supportsTemperature": true
+        "supportsAttachments": false
       }
     },
     "gpt-3-5-turbo-older-v0613": {
@@ -126,7 +124,6 @@
         "knowledgeCutoffDate": "September 30, 2021",
         "releaseDate": "January 25, 2024",
         "supportsAttachments": false,
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -158,7 +155,6 @@
         "releaseDate": "November 6, 2023",
         "supportsResponseFormat": false,
         "supportsAttachments": false,
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -177,7 +173,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -211,7 +206,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -245,7 +239,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "April 14, 2025",
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -270,8 +263,7 @@
         },
         "knowledgeCutoffDate": "November 2023",
         "releaseDate": "March 14, 2023",
-        "supportsAttachments": false,
-        "supportsTemperature": true
+        "supportsAttachments": false
       }
     },
     "gpt-4-turbo": {
@@ -289,7 +281,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "November 6, 2023",
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -320,7 +311,6 @@
         "knowledgeCutoffDate": "April 30, 2023",
         "releaseDate": "November 6, 2023",
         "supportsAttachments": false,
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -345,8 +335,7 @@
         },
         "knowledgeCutoffDate": "December 31, 2023",
         "releaseDate": "January 25, 2024",
-        "supportsAttachments": false,
-        "supportsTemperature": true
+        "supportsAttachments": false
       }
     },
     "gpt-4o": {
@@ -374,7 +363,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "May 13, 2024",
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -400,8 +388,7 @@
           ]
         },
         "knowledgeCutoffDate": "October 31, 2023",
-        "releaseDate": "August 15, 2025",
-        "supportsTemperature": true
+        "releaseDate": "August 15, 2025"
       }
     },
     "gpt-4o-fast": {
@@ -429,7 +416,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "May 13, 2024",
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -564,7 +550,6 @@
         "reliability": 3,
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "November 13, 2025",
-        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -606,7 +591,6 @@
         "reliability": 3,
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "November 13, 2025",
-        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -644,7 +628,6 @@
         },
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "November 12, 2025",
-        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -673,15 +656,12 @@
         },
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "November 12, 2025",
-        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "minimal",
             "low",
             "medium",
-            "high",
-            "xhigh"
+            "high"
           ],
           "defaultEffort": "none"
         }
@@ -707,11 +687,9 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "minimal",
             "low",
             "medium",
-            "high",
-            "xhigh"
+            "high"
           ],
           "defaultEffort": "none"
         }
@@ -792,11 +770,9 @@
         "reliability": 1,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "December 11, 2025",
-        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "minimal",
             "low",
             "medium",
             "high",
@@ -864,7 +840,6 @@
         "reliability": 4,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "March 5, 2026",
-        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -909,7 +884,6 @@
         "reliability": 4,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "March 5, 2026",
-        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -954,11 +928,9 @@
         "reliability": 4,
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "March 5, 2026",
-        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "minimal",
             "low",
             "medium",
             "high",
@@ -1031,7 +1003,6 @@
         "reliability": 3,
         "knowledgeCutoffDate": "December 1, 2025",
         "releaseDate": "April 23, 2026",
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1076,7 +1047,6 @@
         "reliability": 3,
         "knowledgeCutoffDate": "December 1, 2025",
         "releaseDate": "April 23, 2026",
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1121,11 +1091,9 @@
         "reliability": 3,
         "knowledgeCutoffDate": "December 1, 2025",
         "releaseDate": "April 23, 2026",
-        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "minimal",
             "low",
             "medium",
             "high",
@@ -1160,7 +1128,6 @@
         },
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "August 7, 2025",
-        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1276,7 +1243,6 @@
         "knowledgeCutoffDate": "October 1, 2024",
         "releaseDate": "October 14, 2025",
         "supportsToolCalls": false,
-        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1303,8 +1269,7 @@
           ]
         },
         "releaseDate": "October 16, 2025",
-        "supportsToolCalls": false,
-        "supportsTemperature": true
+        "supportsToolCalls": false
       }
     },
     "gpt-6-1-sol-pro": {
@@ -1465,8 +1430,7 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "knowledgeCutoffDate": "October 1, 2023",
-        "releaseDate": "August 28, 2025",
-        "supportsTemperature": true
+        "releaseDate": "August 28, 2025"
       }
     },
     "gpt-audio-1-5": {
@@ -1494,8 +1458,7 @@
         "reliability": 4,
         "multimodal": true,
         "knowledgeCutoffDate": "September 30, 2024",
-        "supportsResponseFormat": false,
-        "supportsTemperature": true
+        "supportsResponseFormat": false
       }
     },
     "gpt-audio-mini": {
@@ -1523,8 +1486,7 @@
         "reliability": 4,
         "multimodal": true,
         "knowledgeCutoffDate": "October 1, 2023",
-        "supportsResponseFormat": false,
-        "supportsTemperature": true
+        "supportsResponseFormat": false
       }
     },
     "gpt-chat-latest": {
@@ -1642,12 +1604,11 @@
           "tool_use"
         ],
         "contextComplexity": 3,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "August 5, 2025",
         "supportsAttachments": false,
-        "supportsTemperature": true,
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 3.8,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -1672,12 +1633,11 @@
           "tool_use"
         ],
         "contextComplexity": 3,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "August 5, 2025",
         "supportsAttachments": false,
-        "supportsTemperature": true,
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 3.8,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -1698,7 +1658,6 @@
         },
         "reliability": 1,
         "supportsAttachments": false,
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1732,7 +1691,6 @@
         "reliability": 5,
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "February 23, 2026",
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1781,7 +1739,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1074,
+              "value": 1072,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -1880,7 +1838,6 @@
         "multimodal": true,
         "knowledgeCutoffDate": "October 1, 2023",
         "supportsResponseFormat": false,
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -2029,8 +1986,7 @@
             "text"
           ]
         },
-        "releaseDate": "August 28, 2023",
-        "supportsTemperature": true
+        "releaseDate": "August 28, 2023"
       }
     },
     "openai-gpt-3-5-turbo-instruct": {
@@ -2049,8 +2005,7 @@
           ]
         },
         "releaseDate": "September 28, 2023",
-        "supportsToolCalls": false,
-        "supportsTemperature": true
+        "supportsToolCalls": false
       }
     },
     "openai-gpt-3-5-turbo-older-v0613": {
@@ -2074,13 +2029,32 @@
         ],
         "contextComplexity": 3,
         "releaseDate": "January 25, 2024",
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
+      }
+    },
+    "openai-gpt-4-1-fast": {
+      "defaults": {
+        "name": "OpenAI: GPT-4.1 (Fast)",
+        "description": "GPT 4.1 is OpenAI's flagship model for complex tasks. It is well suited for problem solving across domains.",
+        "contextWindow": 1047576,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "April 14, 2025"
       }
     },
     "openai-gpt-4-5": {
@@ -2113,13 +2087,32 @@
         "multimodal": true,
         "knowledgeCutoffDate": "April 2024",
         "releaseDate": "November 6, 2024",
-        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
+      }
+    },
+    "openai-gpt-4o-fast": {
+      "defaults": {
+        "name": "OpenAI: GPT-4o (Fast)",
+        "description": "GPT-4o from OpenAI has broad general knowledge and domain expertise allowing it to follow complex instructions in natural language and solve difficult problems accurately. It matches GPT-4 Turbo performance with a faster and cheaper API.",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "September 2023",
+        "releaseDate": "May 13, 2024"
       }
     },
     "openai-gpt-4o-mini-search-preview": {
@@ -2187,6 +2180,62 @@
         "supportsTopP": false
       }
     },
+    "openai-gpt-5-1-thinking": {
+      "defaults": {
+        "name": "OpenAI: GPT 5.1 Thinking",
+        "description": "An upgraded version of GPT-5 that adapts thinking time more precisely to the question to spend more time on complex questions and respond more quickly to simpler tasks.",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 12, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai-gpt-5-1-thinking-fast": {
+      "defaults": {
+        "name": "OpenAI: GPT 5.1 Thinking (Fast)",
+        "description": "An upgraded version of GPT-5 that adapts thinking time more precisely to the question to spend more time on complex questions and respond more quickly to simpler tasks.",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 12, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "openai-gpt-5-2-chat": {
       "defaults": {
         "name": "OpenAI: GPT-5.2 Chat",
@@ -2206,6 +2255,127 @@
         "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "December 11, 2025",
         "supportsTemperature": false
+      }
+    },
+    "openai-gpt-5-2-fast": {
+      "defaults": {
+        "name": "OpenAI: GPT 5.2 (Fast)",
+        "description": "GPT-5.2 is OpenAI's best general-purpose model, part of the GPT-5 flagship model family. It's their most intelligent model yet for both general and agentic tasks.",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "August 31, 2025",
+        "releaseDate": "December 11, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai-gpt-5-4-fast": {
+      "defaults": {
+        "name": "OpenAI: GPT 5.4 (Fast)",
+        "description": "GPT-5.4 is OpenAI's best general-purpose model, part of the GPT-5 flagship model family. It's their most intelligent model yet for both general and agentic tasks.",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "August 31, 2025",
+        "releaseDate": "March 5, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai-gpt-5-5-fast": {
+      "defaults": {
+        "name": "OpenAI: GPT 5.5 (Fast) ($$$$)",
+        "description": "GPT‑5.5 understands what you’re trying to do faster and can carry more of the work itself. It excels at writing and debugging code, researching online, analyzing data, creating documents and spreadsheets, operating software, and moving across tools until a task is finished. Instead of carefully managing every step, you can give GPT‑5.5 a messy, multi-part task and trust it to plan, use tools, check its work, navigate through ambiguity, and keep going.",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "December 1, 2025",
+        "releaseDate": "April 23, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai-gpt-5-fast": {
+      "defaults": {
+        "name": "OpenAI: GPT-5 (Fast)",
+        "description": "GPT-5 is OpenAI's flagship language model that excels at complex reasoning, broad real-world knowledge, code-intensive, and multi-step agentic tasks.",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "September 30, 2024",
+        "releaseDate": "August 7, 2025",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
       }
     },
     "openai-gpt-6-1-sol-pro": {

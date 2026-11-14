@@ -71,6 +71,7 @@
     },
     "o3-mini": {
       "defaults": {
+        "name": "o3 Mini",
         "description": "Smaller o-series reasoner for economical coding, math, and planning tasks",
         "modalities": {
           "input": [
@@ -85,23 +86,20 @@
           "document",
           "tool_use"
         ],
-        "releaseDate": "December 20, 2024"
+        "releaseDate": "December 20, 2024",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "o4-mini": {
       "defaults": {
         "name": "o4 Mini",
         "description": "Fast o-series model for compact reasoning, coding, and tool use",
-        "modalities": {
-          "input": [
-            "image",
-            "text",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "multimodal": true,
         "releaseDate": "April 16, 2025",
         "reasoningConfig": {
@@ -184,6 +182,65 @@
             "high"
           ],
           "defaultEffort": "low"
+        }
+      }
+    },
+    "openai-o3-mini": {
+      "defaults": {
+        "name": "o3-mini",
+        "description": "o3-mini is OpenAI's most recent small reasoning model, providing high intelligence at the same cost and latency targets of o1-mini.",
+        "modalities": {
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
+        "releaseDate": "December 20, 2024",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "openai-o4-mini": {
+      "defaults": {
+        "name": "o4-mini",
+        "description": "OpenAI's o4-mini delivers fast, cost-efficient reasoning with exceptional performance for its size, particularly excelling in math (best-performing on AIME benchmarks), coding, and visual tasks.",
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "multimodal": true,
+        "releaseDate": "April 16, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "high"
         }
       }
     }

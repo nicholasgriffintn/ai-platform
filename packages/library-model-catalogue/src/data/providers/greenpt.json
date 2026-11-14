@@ -235,8 +235,7 @@
         "supportsAttachments": true
       },
       "unset": [
-        "strengths",
-        "artificialAnalysis"
+        "strengths"
       ]
     },
     "green-r-raw": {
@@ -249,8 +248,7 @@
         "supportsAttachments": true
       },
       "unset": [
-        "strengths",
-        "artificialAnalysis"
+        "strengths"
       ]
     },
     "green-s-pro": {
@@ -305,6 +303,7 @@
       "model": "kimi-k2/kimi-k2-7-code",
       "matchingModel": "kimi-k2.7-code",
       "overrides": {
+        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text"
@@ -563,7 +562,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.000127754,
         "costPer1kOutputTokens": 0.000511016,

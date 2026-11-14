@@ -648,7 +648,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005
@@ -679,6 +679,8 @@
       "model": "deepseek-thinking/deepseek-v4-pro-0813",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro-0813",
       "overrides": {
+        "contextWindow": 1048576,
+        "maxTokens": 384000,
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "August 22, 2026",
@@ -698,6 +700,7 @@
       "matchingModel": "meta-models/Muse-Spark-Open-816B-A42B",
       "overrides": {
         "description": "Muse Spark Open is an 816B total / 42B active open-weight multimodal reasoning model from Meta for coding and long-horizon agentic work, with 1M-token context.",
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

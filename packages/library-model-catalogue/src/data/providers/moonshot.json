@@ -184,6 +184,7 @@
       "model": "kimi-k2/kimi-k2-7-code",
       "matchingModel": "kimi-k2.7-code",
       "overrides": {
+        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",

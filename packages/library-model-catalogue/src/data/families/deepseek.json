@@ -117,6 +117,56 @@
         }
       }
     },
+    "deepseek-deepseek-v3-2-thinking": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek V3.2 Thinking",
+        "openWeights": false,
+        "description": "DeepSeek‑V3.2 from DeepSeek harmonizes high computational efficiency with superior reasoning and agent performance. It builds on three main techniques: DeepSeek Sparse Attention for long‑context efficiency, a scalable reinforcement learning framework, and a large‑scale agentic task synthesis pipeline. This model excels at long-context reasoning and agentic tasks, efficiently handling extended inputs while maintaining strong accuracy. Its sparse attention design enables it to process complex, multi-step workflows without excessive compute costs. Overall, DeepSeek‑V3.2 targets long‑context reasoning, tool‑using agents, and efficient deployment in production environments.",
+        "contextWindow": 128000,
+        "maxTokens": 8000,
+        "releaseDate": "December 1, 2025",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-deepseek-v4-1-flash-1017-ultrafast": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek V4.1 Flash 1017 Ultrafast",
+        "openWeights": false,
+        "description": "DeepSeek V4.1 Flash 1017 Ultrafast serves the October 17, 2026 update of DeepSeek V4.1 Flash through Fireworks' accelerated serverless endpoint. It supports text and image input, configurable reasoning, tool calling, structured outputs, and automatic prefix caching. Available in public preview without a waitroom or session time limit.",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 6, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "deepseek-deepseek-v4-flash-latest": {
       "defaults": {
         "name": "DeepSeek: DeepSeek V4 Flash Latest",
@@ -675,18 +725,18 @@
         "name": "DeepSeek V4.1 Flash 1017",
         "openWeights": true,
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
-        "contextWindow": 0,
-        "maxTokens": 0,
+        "contextWindow": 1000000,
+        "maxTokens": 393216,
         "strengths": [
           "vision",
           "document",
           "tool_use"
         ],
-        "contextComplexity": 1,
+        "contextComplexity": 5,
         "reliability": 1,
         "releaseDate": "October 26, 2026",
-        "supportsToolCalls": false,
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -816,15 +866,15 @@
         "name": "DeepSeek V4 Pro 0813",
         "openWeights": true,
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
-        "contextWindow": 0,
-        "maxTokens": 0,
+        "contextWindow": 1000000,
+        "maxTokens": 393216,
         "strengths": [
-          "coding"
+          "coding",
+          "tool_use"
         ],
-        "contextComplexity": 1,
+        "contextComplexity": 5,
         "reliability": 1,
         "releaseDate": "October 20, 2026",
-        "supportsToolCalls": false,
         "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 23.1,

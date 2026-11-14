@@ -46,7 +46,7 @@
       "model": "claude-opus/claude-opus-4-5",
       "matchingModel": "claude-opus-4-5",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -300,7 +300,7 @@
       "matchingModel": "gpt-5",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00107,
         "costPer1kOutputTokens": 0.0085,
@@ -337,7 +337,7 @@
       "matchingModel": "gpt-5-nano",
       "overrides": {
         "description": "Compact GPT model for low-latency assistance and high-volume workloads",
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0004,
@@ -349,7 +349,7 @@
       "matchingModel": "gpt-5.1",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00107,
         "costPer1kOutputTokens": 0.0085
@@ -421,20 +421,11 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsTemperature": false
       }
     },
     "gpt-5.3-codex": {
@@ -502,16 +493,6 @@
       "overrides": {
         "name": "GPT-5.4 Mini",
         "description": "Compact GPT model for low-latency assistance and high-volume workloads",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 4,
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.00075,
@@ -559,8 +540,7 @@
         "speed": 2,
         "lastUpdated": "April 23, 2026",
         "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.03,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.03
       }
     },
     "gpt-5.5-pro": {
@@ -787,6 +767,7 @@
       "model": "kimi-k2/kimi-k2-7-code",
       "matchingModel": "kimi-k2.7-code",
       "overrides": {
+        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",
@@ -868,8 +849,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0012,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.0012
       }
     },
     "gpt-5.6-sol": {
@@ -879,8 +859,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.004,
-        "costPer1kOutputTokens": 0.02,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.02
       }
     },
     "gpt-5.6-terra": {
@@ -890,8 +869,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.012,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.012
       }
     },
     "gemini-3.5-flash-lite": {
@@ -1111,7 +1089,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005
@@ -1182,13 +1160,15 @@
       ]
     },
     "deepseek-v4.1-flash": {
-      "model": "deepseek-flash/deepseek-v4-1-flash",
+      "model": "deepseek-flash/deepseek-v4-1-flash-1017",
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
+        "name": "DeepSeek V4.1 Flash",
         "contextWindow": 1000000,
         "maxTokens": 384000,
+        "reliability": 2,
         "speed": 5,
-        "lastUpdated": "September 10, 2026",
+        "lastUpdated": "October 17, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
         "reasoningConfig": {
@@ -1198,6 +1178,12 @@
             "max"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1248,8 +1234,7 @@
         "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0005,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.0005
       }
     },
     "gpt-6-sol": {
@@ -1259,8 +1244,7 @@
         "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.01
       }
     },
     "grok-4.7": {
@@ -1396,7 +1380,7 @@
       "model": "deepseek-flash/deepseek-v4-1-flash-free",
       "matchingModel": "deepseek-v4.1-flash-free",
       "overrides": {
-        "lastUpdated": "September 10, 2026",
+        "lastUpdated": "October 17, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
       }
@@ -1500,6 +1484,7 @@
       "model": "claude-fable/claude-fable-5-2",
       "matchingModel": "claude-fable-5-2",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "November 9, 2026",
         "costPer1kInputTokens": 0.008,
         "costPer1kOutputTokens": 0.04,
@@ -1533,6 +1518,36 @@
         "lastUpdated": "November 9, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005
+      },
+      "unset": [
+        "contextComplexity"
+      ]
+    },
+    "gemini-4-carbon": {
+      "model": "gemini/gemini-4-carbon",
+      "matchingModel": "gemini-4-carbon",
+      "overrides": {
+        "description": "Google's most capable reasoning model for complex software engineering, deep math and science, high factual accuracy, and long-horizon autonomous agents",
+        "maxTokens": 65536,
+        "speed": 2,
+        "lastUpdated": "November 10, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://opencode.ai/inference/google/v1beta"
+      }
+    },
+    "gemini-4-hydrogen": {
+      "model": "gemini/gemini-4-hydrogen",
+      "matchingModel": "gemini-4-hydrogen",
+      "overrides": {
+        "description": "Google's Gemini 4 model for everyday coding and agentic workflows, with four thinking levels and a 1M-token context window",
+        "speed": 4,
+        "lastUpdated": "November 12, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.0075,
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://opencode.ai/inference/google/v1beta"
       }
     }
   }

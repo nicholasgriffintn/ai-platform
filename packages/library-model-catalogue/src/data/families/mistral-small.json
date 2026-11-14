@@ -44,6 +44,29 @@
         "releaseDate": "June 20, 2025"
       }
     },
+    "mistral-mistral-small": {
+      "defaults": {
+        "name": "Mistral: Mistral Small",
+        "openWeights": false,
+        "description": "Mistral Small currently runs Mistral Small 4, a multimodal model combining instruction following, reasoning, and coding with a 262,144-token context window.",
+        "contextWindow": 262144,
+        "maxTokens": 4000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "releaseDate": "September 17, 2024",
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
     "mistral-small-3": {
       "defaults": {
         "name": "Mistral Small 3",
@@ -180,6 +203,7 @@
         "name": "Mistral Small 4",
         "description": "Fast Mistral production model for chat, extraction, and cost-sensitive agents",
         "contextWindow": 262144,
+        "maxTokens": 256000,
         "strengths": [
           "vision",
           "document",

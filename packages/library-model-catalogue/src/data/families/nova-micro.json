@@ -31,6 +31,14 @@
   },
   "description": "Efficient model for low-latency assistance, extraction, and routine automation",
   "models": {
+    "amazon-nova-micro": {
+      "defaults": {
+        "name": "Amazon: Nova Micro",
+        "description": "A text-only model that delivers the lowest latency responses at very low cost.",
+        "maxTokens": 8192,
+        "supportsResponseFormat": true
+      }
+    },
     "amazon-nova-micro-1-0": {
       "defaults": {
         "name": "Amazon: Nova Micro 1.0",

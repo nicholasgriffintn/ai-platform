@@ -17,6 +17,36 @@
   },
   "description": "The deepseek thinking family includes models that produce text.",
   "models": {
+    "deepseek-deepseek-r1": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek-R1",
+        "description": "DeepSeek-R1 provides customers a state-of-the-art reasoning model, optimized for general reasoning tasks, math, science, and code generation.",
+        "contextWindow": 128000,
+        "maxTokens": 8192,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "knowledgeCutoffDate": "July 2024",
+        "releaseDate": "January 20, 2025",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
     "deepseek-pro-latest": {
       "defaults": {
         "name": "DeepSeek Pro Latest",
@@ -71,8 +101,16 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 4,
         "knowledgeCutoffDate": "July 2024",
         "releaseDate": "May 28, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -175,8 +213,6 @@
       "defaults": {
         "name": "DeepSeek V4 Pro 0813",
         "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
-        "contextWindow": 1048576,
-        "maxTokens": 384000,
         "strengths": [
           "tool_use",
           "coding"

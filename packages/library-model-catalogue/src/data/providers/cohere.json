@@ -97,7 +97,7 @@
       "overrides": {
         "maxTokens": 8000,
         "isFree": true,
-        "speed": 1,
+        "speed": 2,
         "knowledgeCutoffDate": "June 1, 2024",
         "lastUpdated": "March 13, 2025",
         "costPer1kInputTokens": 0.0025,

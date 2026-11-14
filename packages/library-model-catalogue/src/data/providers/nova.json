@@ -69,7 +69,6 @@
       },
       "unset": [
         "knowledgeCutoffDate",
-        "supportsResponseFormat",
         "artificialAnalysis"
       ]
     },
