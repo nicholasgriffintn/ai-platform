@@ -19,7 +19,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": false,
+    "supportsTemperature": true,
     "reasoningConfig": {
       "supportedEffortLevels": [
         "none",
@@ -143,7 +143,8 @@
       "defaults": {
         "name": "GPT-5.6 Luna Pro",
         "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
-        "releaseDate": "July 9, 2026"
+        "releaseDate": "July 9, 2026",
+        "supportsTemperature": false
       }
     },
     "gpt-5-6-luna-us": {
@@ -302,7 +303,24 @@
             "text"
           ]
         },
-        "releaseDate": "September 11, 2026"
+        "releaseDate": "September 11, 2026",
+        "supportsTemperature": false
+      }
+    },
+    "openai-gpt-5-6-luna-fast": {
+      "defaults": {
+        "name": "OpenAI: GPT 5.6 Luna (Fast)",
+        "description": "GPT-5.6 Luna is a fast, affordable GPT-5.6 model that brings strong capability at the lowest cost in the series.",
+        "releaseDate": "July 9, 2026",
+        "supportsTemperature": false
+      }
+    },
+    "openai-gpt-6-luna-fast": {
+      "defaults": {
+        "name": "OpenAI: GPT-6 Luna (Fast)",
+        "description": "GPT-6 Luna is OpenAI's efficient reasoning model for focused, high-volume tasks. It accepts text and images, generates text, and supports a 1,050,000-token context window with up to 128,000 output tokens. Configurable reasoning effort, structured outputs, prompt caching, and Responses API tools support cost-sensitive applications, coding tasks, and automated workflows.",
+        "knowledgeCutoffDate": "May 18, 2026",
+        "releaseDate": "September 22, 2026"
       }
     },
     "openai-gpt-luna-latest": {
@@ -319,7 +337,8 @@
             "text"
           ]
         },
-        "releaseDate": "September 11, 2026"
+        "releaseDate": "September 11, 2026",
+        "supportsTemperature": false
       }
     }
   }

@@ -39,7 +39,7 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 961,
+              "value": 963,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 16
@@ -71,7 +71,6 @@
         "name": "Veo 3.1",
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
         "reliability": 2,
-        "releaseDate": "October 15, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -81,7 +80,7 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 959,
+              "value": 961,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 16
@@ -137,9 +136,9 @@
       "defaults": {
         "name": "Veo 3.1 Fast Generate",
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
-        "contextWindow": 0,
+        "contextWindow": 1024,
         "maxTokens": 0,
-        "releaseDate": "October 15, 2025"
+        "releaseDate": "November 17, 2025"
       }
     },
     "veo-3-1-lite": {
@@ -188,7 +187,7 @@
       "defaults": {
         "name": "Veo 3.1 Lite Generate",
         "description": "Video model for prompt-guided generation, editing, and motion workflows",
-        "contextWindow": 0,
+        "contextWindow": 1024,
         "maxTokens": 0,
         "releaseDate": "April 2, 2026"
       }

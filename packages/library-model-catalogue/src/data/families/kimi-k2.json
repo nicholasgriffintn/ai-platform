@@ -338,7 +338,6 @@
       "defaults": {
         "name": "Kimi K2.7 Code",
         "description": "Coding-focused Kimi model, stronger on long-horizon repo work with less overthinking",
-        "maxTokens": 262144,
         "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "June 12, 2026",
@@ -513,6 +512,34 @@
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "September 5, 2025",
         "supportsAttachments": false
+      }
+    },
+    "moonshotai-kimi-k2-7-code-high-speed": {
+      "defaults": {
+        "name": "MoonshotAI: Kimi K2.7 Code High Speed",
+        "description": "Kimi K2.7 Code HighSpeed is the high-speed version of Kimi K2.7 Code, the same model as Kimi K2.7 Code, but with an output speed of approximately 180 Tokens/s and up to 260 Tokens/s in short context scenarios, delivering a more extreme coding experience.",
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "June 12, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

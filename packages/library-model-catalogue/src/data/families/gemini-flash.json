@@ -134,7 +134,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1071,
+              "value": 1070,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -588,7 +588,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1283,
+              "value": 1284,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 13
@@ -789,7 +789,7 @@
         "name": "Google: Gemini Flash Latest",
         "description": "Fast Gemini model balancing multimodal reasoning, tool use, and cost",
         "contextWindow": 1048576,
-        "maxTokens": 65536,
+        "maxTokens": 943718,
         "modalities": {
           "input": [
             "text",
@@ -807,7 +807,8 @@
           "supportedEffortLevels": [
             "low",
             "medium",
-            "high"
+            "high",
+            "xhigh"
           ],
           "defaultEffort": "low"
         }
@@ -839,7 +840,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 986,
+              "value": 987,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -858,6 +859,13 @@
         "reliability": 3,
         "releaseDate": "May 28, 2026",
         "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -867,7 +875,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1142,
+              "value": 1143,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10
@@ -960,7 +968,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 986,
+              "value": 987,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12

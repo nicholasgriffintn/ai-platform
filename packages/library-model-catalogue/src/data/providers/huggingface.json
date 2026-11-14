@@ -76,7 +76,7 @@
           "reasoning",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "July 22, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.002
@@ -167,6 +167,9 @@
       "model": "minimax/minimax-m2-1",
       "matchingModel": "MiniMaxAI/MiniMax-M2.1",
       "overrides": {
+        "name": "MiniMax-M2.1",
+        "contextWindow": 204800,
+        "maxTokens": 131072,
         "speed": 3,
         "knowledgeCutoffDate": "October 2025",
         "lastUpdated": "December 23, 2025",
@@ -285,9 +288,6 @@
       },
       "unset": [
         "supportsResponseFormat",
-        "strengths",
-        "contextComplexity",
-        "reliability",
         "reasoningConfig"
       ]
     },
@@ -330,7 +330,7 @@
       "matchingModel": "zai-org/GLM-4.7-Flash",
       "overrides": {
         "maxTokens": 128000,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
@@ -573,10 +573,11 @@
       "model": "minimax/minimax-m2",
       "matchingModel": "MiniMaxAI/MiniMax-M2",
       "overrides": {
+        "name": "MiniMax-M2",
         "description": "Efficient open MiniMax model built for coding agents and tool-heavy workflows",
         "contextWindow": 204800,
         "maxTokens": 131072,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -616,6 +617,7 @@
       "model": "kimi-k2/kimi-k2-7-code",
       "matchingModel": "moonshotai/Kimi-K2.7-Code",
       "overrides": {
+        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",
@@ -1036,7 +1038,7 @@
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
         "contextWindow": 524288,
         "maxTokens": 1048576,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0012,
@@ -1059,7 +1061,7 @@
       "overrides": {
         "description": "DeepSeek chat model for instruction following, coding, and analysis",
         "contextWindow": 64000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 26, 2024",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0013
@@ -1124,7 +1126,7 @@
       "matchingModel": "Qwen/Qwen3-30B-A3B",
       "overrides": {
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.0005
@@ -1134,7 +1136,6 @@
       "model": "qwen/qwen3-8-2-4t-a95b",
       "matchingModel": "Qwen/Qwen3.8-2.4T-A95B",
       "overrides": {
-        "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "August 12, 2026",
         "costPer1kInputTokens": 0.0025,
@@ -1147,7 +1148,7 @@
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 131072,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0015,
@@ -1221,7 +1222,6 @@
       "matchingModel": "zai-org/GLM-5.3",
       "overrides": {
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "contextWindow": 1048576,
         "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "August 14, 2026",
@@ -1250,7 +1250,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005,

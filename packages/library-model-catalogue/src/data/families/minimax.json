@@ -268,7 +268,6 @@
     },
     "minimax-m2": {
       "defaults": {
-        "name": "MiniMax-M2",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "strengths": [
           "tool_use"
@@ -293,10 +292,7 @@
     },
     "minimax-m2-1": {
       "defaults": {
-        "name": "MiniMax-M2.1",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
-        "contextWindow": 204800,
-        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],
@@ -808,6 +804,114 @@
             "high"
           ],
           "defaultEffort": "none"
+        }
+      }
+    },
+    "minimax-minimax-m2-1": {
+      "defaults": {
+        "name": "MiniMax-M2.1",
+        "description": "MiniMax 2.1 is MiniMax's latest model, optimized specifically for robustness in coding, tool use, instruction following, and long-horizon planning.",
+        "contextWindow": 204800,
+        "maxTokens": 131072,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "December 23, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "high"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "minimax-minimax-m2-1-lightning-retires-nov-18": {
+      "defaults": {
+        "name": "MiniMax: MiniMax M2.1 Lightning (retires Nov 18)",
+        "openWeights": false,
+        "description": "MiniMax-M2.1-lightning is a faster version of MiniMax-M2.1, offering the same performance but with significantly higher throughput (output speed ~100 TPS, MiniMax-M2 output speed ~60 TPS).",
+        "contextWindow": 204800,
+        "maxTokens": 131072,
+        "releaseDate": "December 23, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "minimax-minimax-m2-5-high-speed-retires-nov-18": {
+      "defaults": {
+        "name": "MiniMax: MiniMax M2.5 High Speed (retires Nov 18)",
+        "description": "M2.5 highspeed: Same performance, faster and more agile (output speed approximately 100 tps)",
+        "contextWindow": 204800,
+        "maxTokens": 131000,
+        "releaseDate": "February 13, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "minimax-minimax-m2-7-high-speed-retires-nov-18": {
+      "defaults": {
+        "name": "MiniMax: MiniMax M2.7 High Speed (retires Nov 18)",
+        "description": "M2.7 Highspeed: Same performance, faster and more agile (output speed approximately 100 tps)",
+        "contextWindow": 204800,
+        "maxTokens": 131100,
+        "releaseDate": "March 18, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "minimax-minimax-m2-retires-nov-18": {
+      "defaults": {
+        "name": "MiniMax-M2",
+        "description": "MiniMax-M2 redefines efficiency for agents. It is a compact, fast, and cost-effective MoE model (230 billion total parameters with 10 billion active parameters) built for elite performance in coding and agentic tasks, all while maintaining powerful general intelligence.",
+        "contextWindow": 205000,
+        "maxTokens": 205000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "October 27, 2025",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "high"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },

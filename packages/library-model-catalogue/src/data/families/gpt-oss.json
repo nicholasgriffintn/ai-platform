@@ -26,12 +26,6 @@
         "high"
       ],
       "defaultEffort": "low"
-    },
-    "artificialAnalysis": {
-      "intelligenceIndex": null,
-      "codingIndex": null,
-      "agenticIndex": null,
-      "intelligenceIndexVersion": 5
     }
   },
   "description": "The gpt oss family includes models that produce guardrails, text.",
@@ -41,7 +35,13 @@
         "name": "GPT OSS 120B",
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "contextComplexity": 4,
-        "reliability": 2
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": 3.8,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-oss-120b-free": {
@@ -50,7 +50,7 @@
         "description": "gpt-oss-120b (free) accepts text and produces text.",
         "maxTokens": 131072,
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "knowledgeCutoffDate": "June 30, 2024",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -59,6 +59,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 3.8,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -69,7 +75,13 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "contextComplexity": 3,
-        "reliability": 2
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": 3.8,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-oss-120b-tee": {
@@ -92,7 +104,13 @@
         "name": "GPT OSS 20B",
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
         "contextComplexity": 3,
-        "reliability": 1
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-oss-20b-free": {
@@ -109,6 +127,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -119,7 +143,13 @@
         "contextWindow": 128000,
         "maxTokens": 16384,
         "contextComplexity": 3,
-        "reliability": 1
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-oss-safeguard-120b": {
@@ -193,7 +223,7 @@
         "contextWindow": 128072,
         "maxTokens": 128072,
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -205,6 +235,27 @@
             "max"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 3.8,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "openai-gpt-oss-safeguard-120b": {
+      "defaults": {
+        "name": "OpenAI: GPT OSS Safeguard 120B",
+        "description": "GPT OSS Safeguard 120B is OpenAI’s open-weight safety model for content moderation and guardrail enforcement. It helps teams evaluate content against custom safety policies and build scalable, adaptable protections for production AI applications.",
+        "contextWindow": 128000,
+        "maxTokens": 16000,
+        "releaseDate": "October 29, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },

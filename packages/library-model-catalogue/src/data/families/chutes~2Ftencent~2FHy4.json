@@ -1,8 +1,8 @@
 {
   "defaults": {
     "openWeights": true,
-    "contextWindow": 0,
-    "maxTokens": 0,
+    "contextWindow": 1048576,
+    "maxTokens": 65536,
     "modalities": {
       "input": [
         "text"
@@ -11,12 +11,16 @@
         "text"
       ]
     },
-    "contextComplexity": 1,
+    "strengths": [
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 4,
     "reliability": 1,
     "releaseDate": "November 4, 2026",
-    "supportsToolCalls": false,
+    "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsAttachments": false,
+    "supportsAttachments": true,
     "supportsTemperature": true,
     "artificialAnalysis": {
       "intelligenceIndex": 34.6,

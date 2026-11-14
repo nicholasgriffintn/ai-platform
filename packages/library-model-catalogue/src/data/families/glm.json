@@ -571,7 +571,8 @@
     "glm-5-2-fast": {
       "defaults": {
         "name": "GLM 5.2 Fast",
-        "description": "GLM-5.2 introduces a robust 1M-token context and advanced, multi-effort coding capabilities to significantly enhance performance on long-horizon tasks. Its new IndexShare architecture and improved MTP layer simultaneously boost efficiency by reducing per-token FLOPs and increasing speculative decoding lengths. A 743B-parameter model in Zhipu AI's GLM series, designed to plan, execute, and iterate autonomously on extended, engineering-grade tasks."
+        "description": "GLM-5.2 introduces a robust 1M-token context and advanced, multi-effort coding capabilities to significantly enhance performance on long-horizon tasks. Its new IndexShare architecture and improved MTP layer simultaneously boost efficiency by reducing per-token FLOPs and increasing speculative decoding lengths. A 743B-parameter model in Zhipu AI's GLM series, designed to plan, execute, and iterate autonomously on extended, engineering-grade tasks.",
+        "maxTokens": 131072
       }
     },
     "glm-5-2-free": {
@@ -738,6 +739,7 @@
       "defaults": {
         "name": "GLM-5.3",
         "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
+        "contextWindow": 1048576,
         "strengths": [
           "tool_use",
           "coding"
@@ -874,7 +876,6 @@
           ]
         },
         "releaseDate": "September 18, 2026",
-        "supportsResponseFormat": false,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1081,6 +1082,42 @@
         "releaseDate": "April 17, 2025"
       }
     },
+    "z-ai-glm-5-2-fast": {
+      "defaults": {
+        "name": "Z.ai: GLM 5.2 Fast",
+        "description": "GLM-5.2-Fast-Preview is the high-speed variant of Zhipu AI&#39;s GLM-5.2, with 1M context and capabilities on par with the standard version. Inference-optimized to deliver 1.5–2× the output TPS, it fits latency-sensitive use cases such as real-time chat, multi-turn agents, and streaming code generation.",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "releaseDate": "June 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "z-ai-glm-5-3-fast": {
+      "defaults": {
+        "name": "Z.ai: GLM 5.3 Fast",
+        "description": "Speed-optimized version of Z.AI’s GLM-5.3 agentic coding model, built for responsive, real-time workloads. It supports advanced coding, long-horizon task execution, testing, vulnerability discovery, and cybersecurity analysis, making it ideal for developer tools, coding agents, and complex multi-step engineering workflows.",
+        "contextWindow": 1048576,
+        "maxTokens": 262144,
+        "releaseDate": "August 14, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "z-ai-glm-5-3-flashx": {
       "defaults": {
         "name": "Z.ai: GLM 5.3 FlashX",
@@ -1099,7 +1136,6 @@
           ]
         },
         "releaseDate": "September 18, 2026",
-        "supportsResponseFormat": false,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [

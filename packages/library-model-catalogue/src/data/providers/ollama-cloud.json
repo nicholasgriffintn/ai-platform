@@ -177,7 +177,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005
@@ -231,6 +231,7 @@
       "matchingModel": "kimi-k2.7-code",
       "overrides": {
         "name": "kimi-k2.7-code",
+        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",
@@ -414,7 +415,6 @@
       "model": "glm/glm-5-3",
       "matchingModel": "glm-5.3",
       "overrides": {
-        "contextWindow": 1048576,
         "maxTokens": 131072,
         "speed": 3,
         "isFeatured": true,
@@ -481,6 +481,7 @@
       "matchingModel": "muse-spark-open",
       "overrides": {
         "description": "Muse Spark Open is an 816B total / 42B active open-weight multimodal reasoning model from Meta for coding and long-horizon agentic work, with 1M-token context.",
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -542,7 +543,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.000435,
         "costPer1kOutputTokens": 0.00087

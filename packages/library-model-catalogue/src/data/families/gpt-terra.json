@@ -24,7 +24,7 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": false,
+    "supportsTemperature": true,
     "reasoningConfig": {
       "supportedEffortLevels": [
         "none",
@@ -83,18 +83,6 @@
         "description": "Balanced GPT-5.6 model for capable, cost-efficient everyday work",
         "reliability": 1,
         "releaseDate": "July 9, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 32.3,
           "codingIndex": null,
@@ -135,7 +123,8 @@
       "defaults": {
         "name": "GPT-5.6 Terra Pro",
         "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
-        "releaseDate": "July 9, 2026"
+        "releaseDate": "July 9, 2026",
+        "supportsTemperature": false
       }
     },
     "gpt-5-6-terra-us": {
@@ -269,7 +258,16 @@
             "text"
           ]
         },
-        "releaseDate": "September 11, 2026"
+        "releaseDate": "September 11, 2026",
+        "supportsTemperature": false
+      }
+    },
+    "openai-gpt-5-6-terra-fast": {
+      "defaults": {
+        "name": "OpenAI: GPT 5.6 Terra (Fast)",
+        "description": "GPT-5.6 Terra is a balanced GPT-5.6 model for everyday work, with performance comparable to the previous generation at half the cost.",
+        "releaseDate": "July 9, 2026",
+        "supportsTemperature": false
       }
     },
     "openai-gpt-6-1-terra": {
@@ -279,12 +277,21 @@
         "reliability": 3,
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "October 26, 2026",
+        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": 51.3,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
+      }
+    },
+    "openai-gpt-6-1-terra-fast": {
+      "defaults": {
+        "name": "OpenAI: GPT-6.1 Terra (Fast)",
+        "description": "GPT-6.1 Terra is OpenAI’s model for visual reasoning, precise computer use, and natural writing. It accepts text and images and generates text, with configurable reasoning effort, structured outputs, tool calling through the Responses API, and implicit and explicit prompt caching.",
+        "knowledgeCutoffDate": "June 1, 2026",
+        "releaseDate": "October 26, 2026"
       }
     },
     "openai-gpt-terra-latest": {
@@ -301,7 +308,8 @@
             "text"
           ]
         },
-        "releaseDate": "September 11, 2026"
+        "releaseDate": "September 11, 2026",
+        "supportsTemperature": false
       }
     }
   }

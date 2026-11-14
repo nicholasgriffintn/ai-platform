@@ -33,7 +33,7 @@
         }
       }
     },
-    "tencent-hunyuan-a13b-instruct": {
+    "tencent-hunyuan-a13b-instruct-retires-nov-15": {
       "defaults": {
         "name": "Tencent: Hunyuan A13B Instruct",
         "openWeights": false,

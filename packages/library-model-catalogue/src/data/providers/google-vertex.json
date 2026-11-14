@@ -141,14 +141,7 @@
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.06,
-        "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        }
+        "supportsToolCalls": false
       },
       "unset": [
         "supportsResponseFormat"
@@ -427,6 +420,31 @@
         "lastUpdated": "October 13, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "gemini-4-carbon": {
+      "model": "gemini/gemini-4-carbon",
+      "matchingModel": "gemini-4-carbon",
+      "overrides": {
+        "description": "Google's most capable reasoning model for complex software engineering, deep math and science, high factual accuracy, and long-horizon autonomous agents",
+        "maxTokens": 65536,
+        "speed": 2,
+        "lastUpdated": "November 10, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "gemini-4-hydrogen": {
+      "model": "gemini/gemini-4-hydrogen",
+      "matchingModel": "gemini-4-hydrogen",
+      "overrides": {
+        "description": "Google's Gemini 4 model for everyday coding and agentic workflows, with four thinking levels and a 1M-token context window",
+        "speed": 4,
+        "lastUpdated": "November 12, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.0075,
         "supportsTemperature": false
       }
     }

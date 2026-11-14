@@ -47,9 +47,9 @@
     "inclusionai-ling-3-0-flash-fin": {
       "defaults": {
         "name": "inclusionAI: Ling 3.0 Flash Fin",
-        "description": "Ling 3.0 Flash Fin is a finance-focused mixture-of-experts model from InclusionAI, built on Ling 3.0 Flash with 5.1B active parameters out of 124B total. It is designed for real-world investment...",
-        "contextWindow": 262144,
-        "maxTokens": 32768,
+        "description": "Ling 3.0 Flash Fin is InclusionAI’s finance-enhanced MoE language model, combining 124 billion total parameters with approximately 5.1 billion active parameters for efficient financial reasoning. Its 256K context window, function calling, and support for complex, multi-step investment workflows make it ideal for financial research, analysis, long-horizon planning, and execution, while retaining strong capabilities in coding and mathematics.",
+        "contextWindow": 256000,
+        "maxTokens": 32000,
         "modalities": {
           "input": [
             "text"
@@ -64,7 +64,7 @@
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "August 27, 2026",
-        "supportsResponseFormat": false,
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -83,9 +83,9 @@
     "inclusionai-ling-3-0-flash-sante": {
       "defaults": {
         "name": "inclusionAI: Ling 3.0 Flash Sante",
-        "description": "Ling 3.0 Flash Sante is a health and medicine-focused mixture-of-experts model from InclusionAI, built on Ling 3.0 Flash with 5.1B active parameters out of 124B total. It is designed for...",
-        "contextWindow": 262144,
-        "maxTokens": 32768,
+        "description": "Ling-3.0-Flash-Sante is inclusionAI’s language model specialized for health and medicine, built on a Mixture-of-Experts architecture with 124 billion total parameters and approximately 5.1 billion active per token. With a 256K context window and function calling, it supports medical knowledge reasoning, evidence-based retrieval, and complex medical workflows while retaining general reasoning, coding, and agentic capabilities.",
+        "contextWindow": 256000,
+        "maxTokens": 32000,
         "modalities": {
           "input": [
             "text"
@@ -99,6 +99,8 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
+            "low",
+            "medium",
             "high"
           ],
           "defaultEffort": "none"
@@ -245,6 +247,33 @@
         }
       }
     },
+    "inclusionai-ling-3-2-flash-free": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.2 Flash (free)",
+        "description": "Ling 3.2 Flash is a hybrid reasoning model from inclusionAI that accepts text and image input, with a 1M-token context window and up to 200 images per request. Thinking can...",
+        "contextWindow": 1048576,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 13, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "inkling": {
       "defaults": {
         "name": "Inkling",
@@ -262,6 +291,37 @@
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 12.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "inkling-2-small": {
+      "defaults": {
+        "name": "Inkling 2 Small",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "releaseDate": "November 5, 2026",
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 30.6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -969,6 +1029,49 @@
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "thinking-machines-inkling-2-small": {
+      "defaults": {
+        "name": "Thinking Machines: Inkling 2 Small",
+        "description": "Inkling 2 Small is an open-weight multimodal mixture-of-experts reasoning model from Thinking Machines Lab, with 17B active parameters out of 594B total. It is the first model in the second...",
+        "contextWindow": 1048576,
+        "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "releaseDate": "November 5, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 30.6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5

@@ -87,9 +87,8 @@
       "defaults": {
         "name": "Reflection: Beam 1.0 (free)",
         "openWeights": false,
-        "description": "Your prompts and completions may be retained and used to train or improve the provider's services. Beam is Reflection's reasoning model for coding and agentic workflows, combining strong coding capabilities with fast, low-latency inference, served through Vercel AI Gateway at no cost. It supports function calling, structured outputs, and streaming, and takes text input only. Zero Data Retention is not available for this model.",
-        "releaseDate": "August 26, 2025",
-        "supportsResponseFormat": false
+        "description": "Beam is Reflection’s reasoning model for coding and agentic workflows, combining strong coding capabilities with fast, low-latency inference.",
+        "releaseDate": "October 16, 2026"
       }
     }
   }

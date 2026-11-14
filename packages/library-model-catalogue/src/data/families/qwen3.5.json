@@ -41,13 +41,6 @@
         "releaseDate": "February 16, 2026"
       }
     },
-    "qwen-qwen3-5-plus-2026-04-20": {
-      "defaults": {
-        "name": "Qwen: Qwen3.5 Plus 2026-04-20",
-        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
-        "releaseDate": "April 27, 2026"
-      }
-    },
     "qwen3-5-plus-2026-04-20": {
       "defaults": {
         "name": "Qwen3.5 Plus 2026-04-20",

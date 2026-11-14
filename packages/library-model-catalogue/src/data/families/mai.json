@@ -89,7 +89,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1168,
+              "value": 1169,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -127,7 +127,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1122,
+              "value": 1125,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12

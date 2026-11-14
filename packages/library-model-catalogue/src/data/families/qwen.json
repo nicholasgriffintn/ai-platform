@@ -226,6 +226,44 @@
         }
       }
     },
+    "qwen-3-6-35b-a3b": {
+      "defaults": {
+        "name": "Qwen 3.6 35B A3B",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 262144,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "releaseDate": "April 17, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
     "qwen-3-6-max-preview": {
       "defaults": {
         "name": "Qwen 3.6 Max Preview",
@@ -398,7 +436,7 @@
           "coding"
         ],
         "contextComplexity": 5,
-        "reliability": 4,
+        "reliability": 1,
         "releaseDate": "August 27, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
@@ -410,7 +448,7 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 28.6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -611,10 +649,10 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 904,
+              "value": 908,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 17
+              "confidenceInterval95": 16
             }
           ]
         }
@@ -657,7 +695,7 @@
             {
               "key": "image_editingElo",
               "label": "Image-editing arena",
-              "value": 887,
+              "value": 886,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 19
@@ -697,10 +735,10 @@
             {
               "key": "image_editingElo",
               "label": "Image-editing arena",
-              "value": 992,
+              "value": 996,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 17
+              "confidenceInterval95": 16
             }
           ]
         }
@@ -839,6 +877,153 @@
         "supportsToolCalls": false
       }
     },
+    "qwen-qwen-3-5-flash": {
+      "defaults": {
+        "name": "Qwen: Qwen 3.5 Flash",
+        "openWeights": false,
+        "description": "The Qwen3.5 native vision-language Flash models are built on a hybrid architecture that integrates a linear attention mechanism with a sparse mixture-of-experts model, achieving higher inference efficiency. Compared to the 3 series, these models deliver a leap forward in performance for both pure text and multimodal tasks, offering fast response times while balancing inference speed and overall performance.",
+        "contextWindow": 1000000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 23, 2026",
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen-qwen-3-5-plus": {
+      "defaults": {
+        "name": "Qwen: Qwen 3.5 Plus",
+        "openWeights": false,
+        "description": "The Qwen3.5 native vision-language series Plus models are built on a hybrid architecture that integrates linear attention mechanisms with sparse mixture-of-experts models, achieving higher inference efficiency. In a variety of task evaluations, the 3.5 series consistently demonstrates performance on par with state-of-the-art leading models. Compared to the 3 series, these models show a leap forward in both pure-text and multimodal capabilities.",
+        "contextWindow": 1000000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "February 16, 2026",
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen-qwen-3-8-max": {
+      "defaults": {
+        "name": "Qwen: Qwen 3.8 Max",
+        "openWeights": false,
+        "description": "Qwen 3.8 Max is a 2.4-trillion-parameter MoE model delivering a comprehensive leap in coding and professional work. Autonomously codes and delivers complete projects spanning 10+ days. Handles hundreds of specialized tasks across legal, financial, design, and other professional domains, producing production-grade results end-to-end in a single conversation. Native visual understanding runs through the full cycle of planning, execution, and verification, enabling deep semantic analysis of ultra-long documents and extended video content. In long-horizon tasks, plans autonomously, iterates through closed feedback loops, and continuously evolves.",
+        "contextWindow": 262144,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "August 3, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 33.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "qwen-qwen-3-max-thinking": {
+      "defaults": {
+        "name": "Qwen: Qwen3 Max Thinking (retires Oct 9)",
+        "openWeights": false,
+        "description": "Compared with the snapshot as of September 23, 2025, the Qwen-3 series Max model in this release achieves an effective integration of thinking and non-thinking modes, resulting in a comprehensive and substantial improvement in the model’s overall performance. In thinking mode, the model simultaneously supports web search, web information extraction, and a code interpreter tool, enabling it to tackle more complex and challenging problems with greater accuracy by leveraging external tools while engaging in slow, deliberative reasoning. This version is based on a snapshot taken on January 23, 2026.",
+        "contextWindow": 256000,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "January 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
     "qwen-qwen2-5-7b-instruct": {
       "defaults": {
         "name": "Qwen: Qwen2.5 7B Instruct",
@@ -880,11 +1065,10 @@
     },
     "qwen-qwen3-14b": {
       "defaults": {
-        "name": "Qwen: Qwen3 14B",
         "openWeights": false,
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 40960,
-        "maxTokens": 36864,
+        "maxTokens": 16384,
         "modalities": {
           "input": [
             "text"
@@ -1063,13 +1247,12 @@
         "releaseDate": "July 22, 2025"
       }
     },
-    "qwen-qwen3-max-thinking-retires-oct-9": {
+    "qwen-qwen3-next-80b-a3b-thinking": {
       "defaults": {
-        "name": "Qwen: Qwen3 Max Thinking (retires Oct 9)",
-        "openWeights": false,
-        "description": "Qwen reasoning model for deliberate problem solving, math, and coding",
+        "name": "Qwen3-Next 80B-A3B (Thinking)",
+        "description": "Qwen3-Next uses a highly sparse MoE design: 80B total parameters, but only ~3B activated per inference step. Experiments show that, with global load balancing, increasing total expert parameters while keeping activated experts fixed steadily reduces training loss.Compared to Qwen3’s MoE (128 total experts, 8 routed), Qwen3-Next expands to 512 total experts, combining 10 routed experts + 1 shared expert — maximizing resource usage without hurting performance. The Qwen3-Next-80B-A3B-Thinking excels at complex reasoning tasks — outperforming higher-cost models like Qwen3-30B-A3B-Thinking-2507 and Qwen3-32B-Thinking, outpeforming the closed-source Gemini-2.5-Flash-Thinking on multiple benchmarks, and approaching the performance of our top-tier model Qwen3-235B-A22B-Thinking-2507.",
         "contextWindow": 262144,
-        "maxTokens": 65536,
+        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text"
@@ -1083,13 +1266,14 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "releaseDate": "February 9, 2026",
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "September 2025",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
             "high"
           ],
-          "defaultEffort": "none"
+          "defaultEffort": "high"
         },
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -1099,7 +1283,7 @@
         }
       }
     },
-    "qwen-qwen3-vl-30b-a3b-thinking": {
+    "qwen-qwen3-vl-30b-a3b-thinking-retires-nov-15": {
       "defaults": {
         "name": "Qwen: Qwen3 VL 30B A3B Thinking (retires Oct 9)",
         "openWeights": false,
@@ -1495,6 +1679,7 @@
         "name": "Qwen3 14B",
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 40960,
+        "maxTokens": 16384,
         "modalities": {
           "input": [
             "text"
@@ -2695,6 +2880,7 @@
         "name": "Qwen3.8 2.4T A95B",
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "contextWindow": 262144,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text"
@@ -2893,11 +3079,11 @@
         "description": "Open-weight experimental preview of the Qwen4 architecture: hybrid-attention MoE (125B total, 6B active) with vision encoder for coding, agent tasks, and image and video understanding",
         "contextWindow": 262144,
         "contextComplexity": 4,
-        "reliability": 4,
+        "reliability": 1,
         "releaseDate": "August 27, 2026",
         "supportsAttachments": true,
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 28.6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -2928,7 +3114,7 @@
           "coding"
         ],
         "contextComplexity": 4,
-        "reliability": 4,
+        "reliability": 1,
         "releaseDate": "August 27, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
@@ -2942,7 +3128,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 28.6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -2973,17 +3159,6 @@
         "openWeights": false,
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "contextWindow": 1000000,
-        "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "September 2, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
@@ -3602,11 +3777,6 @@
             "text"
           ]
         },
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "September 2025",
         "reasoningConfig": {

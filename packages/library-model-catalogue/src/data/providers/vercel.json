@@ -40,7 +40,7 @@
       "model": "gpt-mini/gpt-5-mini",
       "matchingModel": "openai/gpt-5-mini",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
@@ -76,7 +76,7 @@
       "model": "gpt/gpt-5",
       "matchingModel": "openai/gpt-5",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -98,7 +98,7 @@
       "model": "gpt-nano/gpt-5-nano",
       "matchingModel": "openai/gpt-5-nano",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0004,
@@ -110,16 +110,6 @@
       "matchingModel": "openai/gpt-4.1-mini",
       "overrides": {
         "name": "GPT-4.1 mini",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 4,
         "lastUpdated": "April 14, 2025",
         "costPer1kInputTokens": 0.0004,
@@ -250,10 +240,7 @@
         "lastUpdated": "December 3, 2024",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.0032
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "amazon/nova-lite": {
       "model": "nova-lite/nova-lite",
@@ -434,7 +421,6 @@
       "overrides": {
         "name": "Qwen3-14B",
         "openWeights": false,
-        "maxTokens": 16384,
         "speed": 3,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "April 2025",
@@ -482,7 +468,7 @@
       "overrides": {
         "name": "Qwen3-30B-A3B",
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.00012,
@@ -512,7 +498,7 @@
       "overrides": {
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "maxTokens": 32768,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "July 22, 2025",
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.0018,
@@ -690,10 +676,7 @@
         "supportsAttachments": false
       },
       "unset": [
-        "supportsResponseFormat",
-        "strengths",
-        "contextComplexity",
-        "reliability"
+        "supportsResponseFormat"
       ]
     },
     "alibaba/qwen3-vl-instruct": {
@@ -741,10 +724,8 @@
         "supportsToolCalls": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "none",
             "low",
-            "medium",
-            "high"
+            "medium"
           ],
           "defaultEffort": "low"
         }
@@ -798,7 +779,7 @@
       "model": "claude-opus/claude-opus-4-5",
       "matchingModel": "anthropic/claude-opus-4.5",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -956,6 +937,8 @@
       "model": "seed/seed-1-6",
       "matchingModel": "bytedance/seed-1.6",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Seed 1.6 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "October 15, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002
@@ -967,6 +950,8 @@
       "overrides": {
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 32768,
+        "deprecated": true,
+        "deprecationMessage": "Seed 1.8 is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "December 28, 2025",
         "costPer1kInputTokens": 0.00025,
@@ -988,7 +973,7 @@
       "matchingModel": "cohere/command-a",
       "overrides": {
         "maxTokens": 8000,
-        "speed": 1,
+        "speed": 2,
         "knowledgeCutoffDate": "August 31, 2024",
         "lastUpdated": "March 13, 2025",
         "costPer1kInputTokens": 0.0025,
@@ -1016,7 +1001,7 @@
         "name": "DeepSeek V3 0324",
         "contextWindow": 163840,
         "maxTokens": 163840,
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "DeepSeek V3 0324 is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "July 2024",
@@ -1159,7 +1144,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 986,
+              "value": 987,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -1284,12 +1269,11 @@
         "costPer1kOutputTokens": 0.01,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "none",
             "low",
             "medium",
             "high"
           ],
-          "defaultEffort": "none"
+          "defaultEffort": "low"
         }
       }
     },
@@ -1321,7 +1305,9 @@
         "costPer1kOutputTokens": 0.003,
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "minimal",
             "low",
+            "medium",
             "high"
           ],
           "defaultEffort": "low"
@@ -1457,8 +1443,7 @@
       },
       "unset": [
         "strengths",
-        "supportsResponseFormat",
-        "reasoningConfig"
+        "supportsResponseFormat"
       ]
     },
     "kwaipilot/kat-coder-pro-v1": {
@@ -1482,10 +1467,7 @@
         "deprecationMessage": "LongCat Flash Chat is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "August 30, 2025",
         "supportsAttachments": false
-      },
-      "unset": [
-        "reasoningConfig"
-      ]
+      }
     },
     "meta/llama-3.1-70b": {
       "model": "llama/llama-3-1-70b-instruct",
@@ -1633,7 +1615,7 @@
         "description": "Efficient open MiniMax model built for coding agents and tool-heavy workflows",
         "contextWindow": 205000,
         "maxTokens": 196608,
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -1647,6 +1629,8 @@
       "overrides": {
         "name": "MiniMax M2.1",
         "description": "Earlier MiniMax agent model for practical coding and productivity tasks",
+        "contextWindow": 204800,
+        "maxTokens": 131072,
         "speed": 3,
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "December 23, 2025",
@@ -1762,11 +1746,12 @@
       "matchingModel": "mistral/mistral-large-3",
       "overrides": {
         "description": "Flagship Mistral model for advanced reasoning, coding, and multilingual work",
+        "maxTokens": 256000,
         "strengths": [
           "vision",
           "document"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "December 2, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.0015,
@@ -1947,10 +1932,7 @@
         "lastUpdated": "October 28, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0006
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "nvidia/nemotron-nano-9b-v2": {
       "model": "nemotron/nvidia-nemotron-nano-9b-v2",
@@ -1961,10 +1943,7 @@
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00023,
         "supportsAttachments": false
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "openai/codex-mini": {
       "model": "vercel/openai/codex-mini/codex-mini",
@@ -2113,16 +2092,7 @@
         "speed": 3,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
-        "costPer1kOutputTokens": 0.01,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "costPer1kOutputTokens": 0.01
       }
     },
     "openai/gpt-5.1-codex-max": {
@@ -2142,16 +2112,7 @@
         },
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00125,
-        "costPer1kOutputTokens": 0.01,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "costPer1kOutputTokens": 0.01
       },
       "unset": [
         "contextComplexity",
@@ -2178,16 +2139,7 @@
         "speed": 3,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.002,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "costPer1kOutputTokens": 0.002
       }
     },
     "openai/gpt-5.1-instant": {
@@ -2233,18 +2185,7 @@
         "speed": 2,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
-        "costPer1kOutputTokens": 0.014,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.014
       }
     },
     "openai/gpt-5.2-chat": {
@@ -2297,19 +2238,10 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
-        "costPer1kOutputTokens": 0.014,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "costPer1kOutputTokens": 0.014
       }
     },
     "openai/gpt-5.2-pro": {
@@ -2361,8 +2293,7 @@
         "supportsAttachments": false
       },
       "unset": [
-        "strengths",
-        "artificialAnalysis"
+        "strengths"
       ]
     },
     "openai/o3-deep-research": {
@@ -3098,7 +3029,7 @@
           "vision",
           "document"
         ],
-        "speed": 3,
+        "speed": 2,
         "deprecated": true,
         "deprecationMessage": "Qwen3 VL 235B A22B Instruct is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 23, 2025",
@@ -3352,7 +3283,9 @@
         "costPer1kOutputTokens": 0.0015,
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "minimal",
             "low",
+            "medium",
             "high"
           ],
           "defaultEffort": "low"
@@ -3396,14 +3329,7 @@
         "speed": 3,
         "lastUpdated": "February 19, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.012,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "costPer1kOutputTokens": 0.012
       }
     },
     "google/gemini-embedding-2": {
@@ -3635,10 +3561,7 @@
           ],
           "defaultEffort": "none"
         }
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "openai/gpt-5.3-chat": {
       "model": "gpt/gpt-5-3-chat",
@@ -3666,7 +3589,6 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "minimal",
             "low",
             "medium",
             "high",
@@ -3684,18 +3606,7 @@
         "speed": 2,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.0025,
-        "costPer1kOutputTokens": 0.015,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.015
       }
     },
     "openai/gpt-5.4-mini": {
@@ -3703,31 +3614,10 @@
       "matchingModel": "openai/gpt-5.4-mini",
       "overrides": {
         "name": "GPT 5.4 Mini",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 4,
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.00075,
-        "costPer1kOutputTokens": 0.0045,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.0045
       }
     },
     "openai/gpt-5.4-nano": {
@@ -3748,18 +3638,7 @@
         "speed": 3,
         "lastUpdated": "March 17, 2026",
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.00125,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.00125
       }
     },
     "openai/gpt-5.4-pro": {
@@ -3769,18 +3648,7 @@
         "name": "GPT 5.4 Pro",
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.03,
-        "costPer1kOutputTokens": 0.18,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "medium"
-        }
+        "costPer1kOutputTokens": 0.18
       }
     },
     "openai/gpt-5.5": {
@@ -3792,18 +3660,7 @@
         "speed": 2,
         "lastUpdated": "April 23, 2026",
         "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.03,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.03
       }
     },
     "openai/gpt-5.5-pro": {
@@ -3995,7 +3852,7 @@
       "matchingModel": "xai/grok-4.3",
       "overrides": {
         "maxTokens": 1000000,
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Grok 4.3 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 17, 2026",
@@ -4111,7 +3968,7 @@
         "name": "GLM 4.7 Flash",
         "description": "Budget GLM lane for fast coding help, routing, and everyday automation",
         "maxTokens": 131000,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.0004,
@@ -4295,7 +4152,7 @@
         "costPer1kOutputTokens": 0.009,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "none",
+            "minimal",
             "low",
             "medium",
             "high"
@@ -4453,14 +4310,7 @@
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
-        "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsToolCalls": false
       },
       "unset": [
         "supportsResponseFormat"
@@ -4518,10 +4368,7 @@
           ],
           "defaultEffort": "none"
         }
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "stepfun/step-3.5-flash": {
       "model": "step/stepfun-3-5-flash",
@@ -4782,6 +4629,8 @@
       "model": "seed/seedance-v1-5-pro",
       "matchingModel": "bytedance/seedance-v1.5-pro",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Seedance v1.5 Pro is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "December 16, 2025",
         "supportsToolCalls": false,
         "supportsTemperature": false,
@@ -4897,7 +4746,7 @@
       "model": "veo/veo-3-1-fast-generate",
       "matchingModel": "google/veo-3.1-fast-generate-001",
       "overrides": {
-        "lastUpdated": "June 8, 2026",
+        "lastUpdated": "November 17, 2025",
         "supportsToolCalls": false,
         "supportsTemperature": false,
         "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
@@ -4907,16 +4756,17 @@
       "model": "veo/veo-3-1",
       "matchingModel": "google/veo-3.1-generate-001",
       "overrides": {
-        "contextWindow": 0,
+        "contextWindow": 1024,
         "maxTokens": 0,
         "strengths": [
           "video",
           "creative",
           "document"
         ],
-        "contextComplexity": 4,
+        "contextComplexity": 3,
         "isFeatured": true,
-        "lastUpdated": "June 8, 2026",
+        "releaseDate": "November 17, 2025",
+        "lastUpdated": "November 17, 2025",
         "supportsToolCalls": false,
         "supportsTemperature": false,
         "apiBaseUrl": "https://ai-gateway.vercel.sh/v4/ai"
@@ -5770,19 +5620,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.004,
-        "costPer1kOutputTokens": 0.02,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.02
       }
     },
     "openai/gpt-5.6-terra": {
@@ -5794,19 +5632,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.012,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.012
       }
     },
     "kwaipilot/kat-coder-air-v2.5": {
@@ -6043,7 +5869,9 @@
         "costPer1kOutputTokens": 0.0025,
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "minimal",
             "low",
+            "medium",
             "high"
           ],
           "defaultEffort": "low"
@@ -6078,7 +5906,9 @@
         "costPer1kOutputTokens": 0.00375,
         "reasoningConfig": {
           "supportedEffortLevels": [
+            "minimal",
             "low",
+            "medium",
             "high"
           ],
           "defaultEffort": "low"
@@ -6091,6 +5921,8 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 131072,
+        "deprecated": true,
+        "deprecationMessage": "Laguna S 2.1 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0.00009,
         "costPer1kOutputTokens": 0.00018,
@@ -6276,7 +6108,7 @@
           ]
         },
         "contextComplexity": 5,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0012,
@@ -6387,7 +6219,8 @@
       },
       "unset": [
         "supportsResponseFormat",
-        "supportsTemperature"
+        "supportsTemperature",
+        "contextComplexity"
       ]
     },
     "fish-audio/s1": {
@@ -6506,7 +6339,10 @@
           ],
           "defaultEffort": "low"
         }
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "sakana/namazu": {
       "model": "sakana-namazu/sakana-namazu",
@@ -6625,16 +6461,7 @@
         "speed": 4,
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.00075,
-        "costPer1kOutputTokens": 0.00375,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "costPer1kOutputTokens": 0.00375
       }
     },
     "alibaba/qwen3.8-27b": {
@@ -6646,7 +6473,7 @@
         "speed": 2,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00006,
-        "costPer1kOutputTokens": 0.0023,
+        "costPer1kOutputTokens": 0.0022,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -6725,7 +6552,7 @@
       "model": "gpt/gpt-5-fast",
       "matchingModel": "openai/gpt-5-fast",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.02,
@@ -6736,7 +6563,7 @@
       "model": "gpt-mini/gpt-5-mini-fast",
       "matchingModel": "openai/gpt-5-mini-fast",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0036,
@@ -6803,8 +6630,7 @@
         "speed": 2,
         "lastUpdated": "April 23, 2026",
         "costPer1kInputTokens": 0.0125,
-        "costPer1kOutputTokens": 0.075,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.075
       }
     },
     "openai/gpt-5.6-luna-fast": {
@@ -6814,8 +6640,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.0004,
-        "costPer1kOutputTokens": 0.0024,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.0024
       }
     },
     "openai/gpt-5.6-sol-fast": {
@@ -6825,8 +6650,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.008,
-        "costPer1kOutputTokens": 0.04,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.04
       }
     },
     "openai/gpt-5.6-terra-fast": {
@@ -6836,8 +6660,7 @@
         "speed": 3,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.004,
-        "costPer1kOutputTokens": 0.024,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.024
       }
     },
     "openai/o3-fast": {
@@ -7013,12 +6836,11 @@
         "costPer1kOutputTokens": 0.0025,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "none",
             "low",
             "medium",
             "high"
           ],
-          "defaultEffort": "none"
+          "defaultEffort": "low"
         }
       },
       "unset": [
@@ -7044,12 +6866,11 @@
         "costPer1kOutputTokens": 0.0025,
         "reasoningConfig": {
           "supportedEffortLevels": [
-            "none",
             "low",
             "medium",
             "high"
           ],
-          "defaultEffort": "none"
+          "defaultEffort": "low"
         }
       },
       "unset": [
@@ -7154,7 +6975,7 @@
       "overrides": {
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
         "maxTokens": 1000000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
@@ -7502,8 +7323,7 @@
       },
       "unset": [
         "strengths",
-        "knowledgeCutoffDate",
-        "artificialAnalysis"
+        "knowledgeCutoffDate"
       ]
     },
     "alibaba/qwen3.8-flash": {
@@ -7638,7 +7458,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005
@@ -7658,7 +7478,7 @@
       "model": "qwen/qwen-3-8-flash-next",
       "matchingModel": "alibaba/qwen3.8-flash-next",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Qwen 3.8 Flash Next is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "August 27, 2026",
@@ -7732,14 +7552,7 @@
         "speed": 3,
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
-        "costPer1kOutputTokens": 0.00375,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "costPer1kOutputTokens": 0.00375
       },
       "unset": [
         "knowledgeCutoffDate"
@@ -7804,7 +7617,8 @@
       },
       "unset": [
         "supportsResponseFormat",
-        "supportsTemperature"
+        "supportsTemperature",
+        "contextComplexity"
       ]
     },
     "zai/glm-5.3-fast": {
@@ -8383,7 +8197,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.000435,
         "costPer1kOutputTokens": 0.00087,
@@ -8441,8 +8255,7 @@
         "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0005,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.0005
       }
     },
     "openai/gpt-6-luna-fast": {
@@ -8452,8 +8265,7 @@
         "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.001,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.001
       }
     },
     "openai/gpt-6-sol": {
@@ -8463,8 +8275,7 @@
         "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.01
       }
     },
     "openai/gpt-6-sol-fast": {
@@ -8474,8 +8285,7 @@
         "speed": 3,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.004,
-        "costPer1kOutputTokens": 0.02,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.02
       }
     },
     "alibaba/qwen3.8-max-prime": {
@@ -9108,8 +8918,8 @@
           "supportedEffortLevels": [
             "none",
             "low",
-            "medium",
-            "high"
+            "high",
+            "max"
           ],
           "defaultEffort": "none"
         }
@@ -9360,22 +9170,20 @@
       "matchingModel": "openai/gpt-6.1-terra",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.005,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.005
       }
     },
     "openai/gpt-6.1-terra-fast": {
       "model": "gpt-terra/gpt-6-1-terra-fast",
       "matchingModel": "openai/gpt-6.1-terra-fast",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": false
+        "costPer1kOutputTokens": 0.01
       }
     },
     "particle/particle-1": {
@@ -9434,6 +9242,7 @@
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.009,
         "supportsToolCalls": false,
+        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -9524,6 +9333,7 @@
       "matchingModel": "anthropic/claude-fable-5.2",
       "overrides": {
         "description": "Claude model for creative writing, analysis, and controlled agent workflows",
+        "speed": 2,
         "lastUpdated": "November 9, 2026",
         "costPer1kInputTokens": 0.008,
         "costPer1kOutputTokens": 0.04,
@@ -9534,6 +9344,7 @@
       "model": "claude-fable/claude-fable-5-2-fast",
       "matchingModel": "anthropic/claude-fable-5.2-fast",
       "overrides": {
+        "speed": 2,
         "lastUpdated": "November 9, 2026",
         "costPer1kInputTokens": 0.016,
         "costPer1kOutputTokens": 0.08,
@@ -9555,9 +9366,119 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
         "lastUpdated": "November 9, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0005
+      }
+    },
+    "alibaba/qwen3.6-35b-a3b": {
+      "model": "qwen/qwen-3-6-35b-a3b",
+      "matchingModel": "alibaba/qwen3.6-35b-a3b",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "April 17, 2026",
+        "costPer1kInputTokens": 0.000375,
+        "costPer1kOutputTokens": 0.00225
+      }
+    },
+    "google/gemini-4-carbon": {
+      "model": "gemini/gemini-4-carbon",
+      "matchingModel": "google/gemini-4-carbon",
+      "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "speed": 2,
+        "lastUpdated": "November 10, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "google/gemini-4-hydrogen": {
+      "model": "gemini/gemini-4-hydrogen",
+      "matchingModel": "google/gemini-4-hydrogen",
+      "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "speed": 4,
+        "lastUpdated": "November 12, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.0075,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "paperinstruments/ultramarine-1-flash": {
+      "model": "vercel/paperinstruments/ultramarine-1-flash/ultramarine-1-flash",
+      "matchingModel": "paperinstruments/ultramarine-1-flash",
+      "overrides": {
+        "lastUpdated": "November 12, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0005
+      }
+    },
+    "thinkingmachines/inkling-2-small": {
+      "model": "ling/inkling-2-small",
+      "matchingModel": "thinkingmachines/inkling-2-small",
+      "overrides": {
+        "description": "Multimodal MoE reasoning model (594B total, 17B active) for agentic coding, vision, and knowledge work",
+        "maxTokens": 262144,
+        "speed": 3,
+        "lastUpdated": "November 5, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.001,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

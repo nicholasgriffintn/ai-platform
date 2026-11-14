@@ -574,7 +574,7 @@
           ]
         },
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,

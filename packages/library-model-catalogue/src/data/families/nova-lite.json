@@ -36,6 +36,24 @@
   },
   "description": "Efficient model for low-latency assistance, extraction, and routine automation",
   "models": {
+    "amazon-nova-lite": {
+      "defaults": {
+        "name": "Amazon: Nova Lite",
+        "description": "A very low cost multimodal model that is lightning fast for processing image, video, and text inputs.",
+        "maxTokens": 8192,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "supportsResponseFormat": true
+      }
+    },
     "amazon-nova-lite-1-0": {
       "defaults": {
         "name": "Amazon: Nova Lite 1.0",

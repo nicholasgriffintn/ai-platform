@@ -2768,8 +2768,7 @@
       "unset": [
         "openWeights",
         "supportsToolCalls",
-        "supportsTemperature",
-        "releaseDate"
+        "supportsTemperature"
       ]
     },
     "replicate-google-veo-3-1-fast": {

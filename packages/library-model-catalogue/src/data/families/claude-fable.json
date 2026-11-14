@@ -27,6 +27,12 @@
       "defaults": {
         "name": "Anthropic: Claude Fable 5.2",
         "description": "Claude Fable 5.2 is Anthropic's most capable model for the most demanding technical work, with gains over Fable 5.1 in coding, reasoning, and vision. In prerelease testing it completed otherwise-infeasible...",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
         "releaseDate": "November 9, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -37,6 +43,12 @@
             "max"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 64.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -216,6 +228,12 @@
       "defaults": {
         "name": "Claude Fable 5.2",
         "description": "Claude model for demanding reasoning and long-horizon agentic work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
         "releaseDate": "November 9, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -226,6 +244,12 @@
             "max"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 64.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -233,6 +257,12 @@
       "defaults": {
         "name": "Claude Fable 5.2 (Fast)",
         "description": "Claude model for creative writing, analysis, and controlled agent workflows",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
         "releaseDate": "November 9, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -243,6 +273,12 @@
             "max"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 64.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -250,6 +286,12 @@
       "defaults": {
         "name": "Claude Fable 5.2 (Global)",
         "description": "Claude model for demanding reasoning and long-horizon agentic work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
         "releaseDate": "November 9, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -260,6 +302,12 @@
             "max"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 64.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -267,6 +315,12 @@
       "defaults": {
         "name": "Claude Fable 5.2 (US)",
         "description": "Claude model for demanding reasoning and long-horizon agentic work",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 3,
         "releaseDate": "November 9, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -277,6 +331,12 @@
             "max"
           ],
           "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 64.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },

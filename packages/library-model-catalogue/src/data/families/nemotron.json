@@ -10,7 +10,6 @@
       ]
     },
     "supportsToolCalls": true,
-    "supportsResponseFormat": true,
     "supportsAttachments": false,
     "supportsTemperature": true
   },
@@ -24,6 +23,7 @@
         "maxTokens": 4096,
         "releaseDate": "October 28, 2025",
         "supportsToolCalls": false,
+        "supportsResponseFormat": true,
         "supportsTemperature": false
       }
     },
@@ -62,6 +62,7 @@
         },
         "releaseDate": "December 18, 2025",
         "supportsToolCalls": false,
+        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "supportsTemperature": false
       }
@@ -83,6 +84,7 @@
         },
         "releaseDate": "December 18, 2025",
         "supportsToolCalls": false,
+        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "supportsTemperature": false
       }
@@ -170,6 +172,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "August 11, 2026",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -194,6 +197,7 @@
         "contextWindow": 262144,
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "August 11, 2026",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -209,6 +213,7 @@
         "contextWindow": 1000000,
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "August 11, 2026",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -225,6 +230,7 @@
         "contextWindow": 1048576,
         "maxTokens": 131072,
         "releaseDate": "October 15, 2026",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -279,6 +285,7 @@
           ]
         },
         "releaseDate": "October 15, 2026",
+        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -294,6 +301,7 @@
         "description": "Nemotron multimodal model for visual reasoning and agentic AI workflows",
         "maxTokens": 131072,
         "releaseDate": "October 15, 2026",
+        "supportsResponseFormat": true,
         "supportsAttachments": true
       }
     },
@@ -327,6 +335,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "June 25, 2025",
         "releaseDate": "December 15, 2025",
+        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -355,7 +364,8 @@
     },
     "nemotron-3-nano-omni": {
       "defaults": {
-        "description": "The most open, efficient, and accurate omni modal reasoning model for agentic AI."
+        "description": "The most open, efficient, and accurate omni modal reasoning model for agentic AI.",
+        "supportsResponseFormat": true
       }
     },
     "nemotron-3-nano-omni-30b-a3b-reasoning": {
@@ -423,6 +433,7 @@
         "contextWindow": 300000,
         "maxTokens": 300000,
         "releaseDate": "May 20, 2026",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -519,6 +530,7 @@
         "reliability": 2,
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "March 11, 2026",
+        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -535,6 +547,7 @@
         "maxTokens": 235929,
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "March 11, 2026",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -603,6 +616,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "September 2025",
         "releaseDate": "June 4, 2026",
+        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 11.8,
           "codingIndex": null,
@@ -659,6 +673,7 @@
         "contextWindow": 262144,
         "maxTokens": 262144,
         "releaseDate": "August 15, 2026",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -737,6 +752,7 @@
         "maxTokens": 128000,
         "knowledgeCutoffDate": "March 31, 2025",
         "releaseDate": "August 18, 2025",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -762,6 +778,7 @@
           ]
         },
         "releaseDate": "October 28, 2025",
+        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
@@ -781,6 +798,7 @@
         "maxTokens": 202800,
         "knowledgeCutoffDate": "February 2026",
         "releaseDate": "March 11, 2026",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -813,6 +831,7 @@
         "contextComplexity": 3,
         "reliability": 3,
         "releaseDate": "March 16, 2026",
+        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -891,6 +910,7 @@
         "contextComplexity": 5,
         "reliability": 1,
         "releaseDate": "October 15, 2026",
+        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 13.6,
@@ -917,6 +937,7 @@
           ]
         },
         "releaseDate": "October 15, 2026",
+        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -940,6 +961,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "June 25, 2025",
         "releaseDate": "December 15, 2025",
+        "supportsResponseFormat": true,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -962,7 +984,8 @@
         "description": "NVIDIA Nemotron 3 Nano 30B A3B BF16 accepts text and produces text.",
         "contextWindow": 262144,
         "maxTokens": 262144,
-        "releaseDate": "December 29, 2025"
+        "releaseDate": "December 29, 2025",
+        "supportsResponseFormat": true
       }
     },
     "nvidia-nemotron-3-nano-omni": {
@@ -973,6 +996,7 @@
         "contextWindow": 300000,
         "maxTokens": 65536,
         "releaseDate": "April 29, 2026",
+        "supportsResponseFormat": true,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1036,6 +1060,7 @@
         "maxTokens": 235929,
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "March 11, 2026",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1115,6 +1140,7 @@
         "maxTokens": 8192,
         "knowledgeCutoffDate": "June 25, 2025",
         "releaseDate": "December 15, 2025",
+        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1141,6 +1167,75 @@
           "supportedEffortLevels": [
             "none",
             "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "nvidia-nvidia-nemotron-nano-12b-v2-vl": {
+      "defaults": {
+        "name": "NVIDIA: Nvidia Nemotron Nano 12B V2 VL",
+        "description": "The model is an auto-regressive vision language model that uses an optimized transformer architecture. The model enables multi-image reasoning and video understanding, along with strong document intelligence, visual Q&A and summarization capabilities.",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "releaseDate": "October 28, 2025",
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "nvidia-nvidia-nemotron-nano-9b-v2": {
+      "defaults": {
+        "name": "NVIDIA: Nvidia Nemotron Nano 9B V2",
+        "description": "NVIDIA-Nemotron-Nano-9B-v2 is a large language model (LLM) trained from scratch by NVIDIA, and designed as a unified model for both reasoning and non-reasoning tasks. It responds to user queries and tasks by first generating a reasoning trace and then concluding with a final response. The model's reasoning capabilities can be controlled via a system prompt. If the user prefers the model to provide its final answer without intermediate reasoning traces, it can be configured to do so.\\",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "knowledgeCutoffDate": "September 2024",
+        "releaseDate": "August 18, 2025",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
             "medium",
             "high"
           ],

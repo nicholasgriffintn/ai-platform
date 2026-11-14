@@ -38,6 +38,40 @@
         }
       }
     },
+    "deepseek-deepseek-v4-1-flash-1017-fast": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek V4.1 Flash 1017 Fast",
+        "description": "Higher-throughput variant of DeepSeek V4.1 Flash 1017 served by Baseten for multimodal reasoning, tool calling, and structured output, with automatic prefix caching.",
+        "maxTokens": 262144,
+        "releaseDate": "October 17, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-deepseek-v4-1-flash-fast": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek V4.1 Flash Fast",
+        "description": "Higher-throughput variant of DeepSeek V4.1 Flash for responsive coding, reasoning, and agentic workloads.",
+        "maxTokens": 32768,
+        "releaseDate": "September 10, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "deepseek-flash-latest": {
       "defaults": {
         "name": "DeepSeek Flash Latest",
@@ -66,6 +100,11 @@
     "deepseek-v4-1-flash-1017": {
       "defaults": {
         "description": "October 17 update of DeepSeek V4.1 Flash with improved reasoning, coding, agentic tasks, and visual understanding",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 1,
         "releaseDate": "October 17, 2026",
         "artificialAnalysis": {
@@ -191,11 +230,11 @@
     "deepseek-v4-1-flash-free": {
       "defaults": {
         "name": "DeepSeek V4.1 Flash Free",
-        "description": "DeepSeek V4.1 Flash model for reasoning and agentic coding",
+        "description": "October 17 update of DeepSeek V4.1 Flash with improved reasoning, coding, agentic tasks, and visual understanding",
         "contextWindow": 200000,
         "maxTokens": 32000,
         "reliability": 2,
-        "releaseDate": "September 10, 2026",
+        "releaseDate": "October 17, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",

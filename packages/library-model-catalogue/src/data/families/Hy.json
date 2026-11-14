@@ -1,6 +1,6 @@
 {
   "defaults": {
-    "openWeights": true,
+    "openWeights": false,
     "modalities": {
       "input": [
         "text"
@@ -9,6 +9,7 @@
         "text"
       ]
     },
+    "supportsToolCalls": false,
     "supportsAttachments": false,
     "supportsTemperature": true
   },
@@ -16,37 +17,38 @@
   "models": {
     "hy-mt2-1-8b": {
       "defaults": {
+        "openWeights": true,
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 8192,
         "maxTokens": 4096,
         "releaseDate": "May 21, 2026",
-        "supportsToolCalls": false,
         "supportsResponseFormat": false
       }
     },
     "hy-mt2-30b-a3b": {
       "defaults": {
+        "openWeights": true,
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 8192,
         "maxTokens": 4096,
         "releaseDate": "May 21, 2026",
-        "supportsToolCalls": false,
         "supportsResponseFormat": true
       }
     },
     "hy-mt2-7b": {
       "defaults": {
+        "openWeights": true,
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 8192,
         "maxTokens": 4096,
         "releaseDate": "May 21, 2026",
-        "supportsToolCalls": false,
         "supportsResponseFormat": true
       }
     },
     "hy3": {
       "defaults": {
         "name": "Hy3",
+        "openWeights": true,
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 262144,
         "maxTokens": 128000,
@@ -77,6 +79,7 @@
     "hy3-preview": {
       "defaults": {
         "name": "Hy3 preview",
+        "openWeights": true,
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 262144,
         "maxTokens": 235929,
@@ -107,7 +110,6 @@
     "hy4": {
       "defaults": {
         "name": "Hy4",
-        "openWeights": false,
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 1048576,
         "maxTokens": 65536,
@@ -129,6 +131,7 @@
     "hy4-preview": {
       "defaults": {
         "name": "Hy4 preview",
+        "openWeights": true,
         "description": "A next-generation productivity model with significantly enhanced Agent and complex task execution capabilities.",
         "contextWindow": 1048576,
         "maxTokens": 64000,
@@ -147,39 +150,32 @@
     "tencent-hy-mt2-lite": {
       "defaults": {
         "name": "Tencent Hy-MT2-Lite",
-        "openWeights": false,
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 8000,
         "maxTokens": 4000,
-        "releaseDate": "June 12, 2026",
-        "supportsToolCalls": false
+        "releaseDate": "June 12, 2026"
       }
     },
     "tencent-hy-mt2-plus": {
       "defaults": {
         "name": "Tencent Hy-MT2-Plus",
-        "openWeights": false,
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 8000,
         "maxTokens": 4000,
-        "releaseDate": "June 12, 2026",
-        "supportsToolCalls": false
+        "releaseDate": "June 12, 2026"
       }
     },
     "tencent-hy-mt2-pro": {
       "defaults": {
         "name": "Tencent Hy-MT2-Pro",
-        "openWeights": false,
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 8000,
         "maxTokens": 4000,
-        "releaseDate": "May 21, 2026",
-        "supportsToolCalls": false
+        "releaseDate": "May 21, 2026"
       }
     },
     "tencent-hy4": {
       "defaults": {
-        "openWeights": false,
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "modalities": {
           "input": [
@@ -211,6 +207,7 @@
     "tencent-hy4-preview": {
       "defaults": {
         "name": "Tencent Hy4 Preview",
+        "openWeights": true,
         "description": "A next-generation productivity model with significantly enhanced Agent and complex task execution capabilities.",
         "contextWindow": 1024000,
         "maxTokens": 64000,
@@ -223,6 +220,36 @@
           ],
           "defaultEffort": "none"
         }
+      }
+    },
+    "tencent-tencent-hy-mt2-lite": {
+      "defaults": {
+        "name": "Tencent: Tencent Hy-MT2-Lite",
+        "description": "Hy-MT2-Lite is Tencent Cloud Hunyuan’s lightweight 1.8B translation model, combining efficient performance with an 8K-token context window and broad multilingual coverage. It supports translation across 33 languages and five ethnic Chinese and dialect variants, delivering strong results on benchmarks including FLORES-200 and WMT25. Designed for professional and real-world business use, it reliably follows instructions for structured, delimiter-preserving, context-aware, glossary-guided, and style-specific translation.",
+        "contextWindow": 8000,
+        "maxTokens": 4000,
+        "releaseDate": "June 12, 2026",
+        "supportsResponseFormat": false
+      }
+    },
+    "tencent-tencent-hy-mt2-plus": {
+      "defaults": {
+        "name": "Tencent: Tencent Hy-MT2-Plus",
+        "description": "Hy-MT2-Plus is Tencent Cloud Hunyuan’s 7B translation model, offering an 8K-token context window and broad multilingual coverage. Optimized for translation across 33 languages and five ethnic Chinese and dialect variants, it delivers industry-leading performance on benchmarks including FLORES-200 and WMT25. It excels in professional domains and real-world business scenarios, with strong instruction-following for structured, delimiter-preserving, context-aware, glossary-guided, and style-specific translation.",
+        "contextWindow": 8000,
+        "maxTokens": 4000,
+        "releaseDate": "June 12, 2026",
+        "supportsResponseFormat": true
+      }
+    },
+    "tencent-tencent-hy-mt2-pro": {
+      "defaults": {
+        "name": "Tencent: Tencent Hy-MT2-Pro",
+        "description": "Hy-MT2-Pro is Tencent Cloud Hunyuan’s flagship translation model, featuring 30B-A3B parameters and an 8K-token context window. It delivers bidirectional translation across 33 core language pairs, plus five minority-language and dialect pairs. With industry-leading performance on FLORES-200 and WMT25, it excels in specialized domains and real-world business scenarios while supporting structured, contextual, terminology-aware, style-specific, and delimiter-preserving translation.",
+        "contextWindow": 8000,
+        "maxTokens": 4000,
+        "releaseDate": "May 21, 2026",
+        "supportsResponseFormat": true
       }
     }
   }

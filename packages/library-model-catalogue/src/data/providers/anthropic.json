@@ -61,57 +61,6 @@
         }
       }
     },
-    "claude-4-5-sonnet": {
-      "model": "claude-sonnet/claude-sonnet-4-5-latest",
-      "matchingModel": "claude-sonnet-4-5",
-      "overrides": {
-        "name": "Claude Sonnet 4.5",
-        "contextWindow": 200000,
-        "card": "https://www.prompthub.us/models/claude-sonnet-4-5",
-        "strengths": [
-          "chat",
-          "general_knowledge",
-          "analysis",
-          "coding",
-          "reasoning",
-          "creative",
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
-        "speed": 2,
-        "multimodal": true,
-        "deprecated": true,
-        "deprecationMessage": "Claude Sonnet 4.5 shuts down on 30 November 2026. Use Claude Sonnet 5.5 instead.",
-        "replacementModel": "claude-sonnet-5-5",
-        "lastUpdated": "September 29, 2025",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015,
-        "costPerCodeExecutionHour": 0.05,
-        "supportsDocuments": true,
-        "supportsTemperature": true,
-        "supportsTokenCounting": true,
-        "restrictsCombinedTopPAndTemperature": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      },
-      "unset": [
-        "supportsTopP"
-      ]
-    },
     "claude-4-sonnet": {
       "model": "claude-sonnet/claude-sonnet-4",
       "matchingModel": "claude-sonnet-4-0",
@@ -243,7 +192,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "November 24, 2025",
         "costPer1kInputTokens": 0.005,
         "costPer1kOutputTokens": 0.025,
@@ -575,6 +524,13 @@
       "model": "claude-fable/claude-fable-5-2",
       "matchingModel": "claude-fable-5-2",
       "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "speed": 2,
         "lastUpdated": "November 9, 2026",
         "costPer1kInputTokens": 0.008,
         "costPer1kOutputTokens": 0.04

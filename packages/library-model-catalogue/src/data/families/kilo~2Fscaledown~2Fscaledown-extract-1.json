@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 1000000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 20, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The kilo/scaledown/scaledown extract 1 family includes models that produce text.",
+  "models": {
+    "scaledown-extract-1": {
+      "defaults": {
+        "name": "ScaleDown: Extract-1",
+        "description": "ScaleDown Extract-1 is a task-specific language model for extracting structured data from unstructured text using a custom JSON schema. It identifies domain-specific entities with confidence scores, character offsets, and surrounding context, and supports nested objects and arrays for workflows such as invoice processing, contract analysis, and record parsing."
+      }
+    }
+  }
+}

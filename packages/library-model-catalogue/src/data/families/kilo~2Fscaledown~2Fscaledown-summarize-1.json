@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 1000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 20, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The kilo/scaledown/scaledown summarize 1 family includes models that produce text.",
+  "models": {
+    "scaledown-summarize-1": {
+      "defaults": {
+        "name": "ScaleDown: Summarize-1",
+        "description": "ScaleDown Summarize-1 is a task-specific language model for abstractive summarization of long documents, transcripts, and conversations. It rewrites source text into concise summaries and accepts instructions for format, language, length, and focus, making it useful for document processing, meeting summaries, and support workflows."
+      }
+    }
+  }
+}

@@ -1,7 +1,6 @@
 {
   "defaults": {
     "openWeights": false,
-    "contextWindow": 256000,
     "modalities": {
       "input": [
         "text"
@@ -19,6 +18,7 @@
       "defaults": {
         "name": "Codestral 25.01",
         "description": "Mistral coding model for code completion, generation, and developer workflows",
+        "contextWindow": 256000,
         "maxTokens": 256000,
         "knowledgeCutoffDate": "March 2024",
         "releaseDate": "January 1, 2025",
@@ -29,19 +29,9 @@
       "defaults": {
         "name": "Codestral 2508",
         "description": "Mistral coding model for code completion, generation, and developer workflows",
-        "maxTokens": 204800,
-        "modalities": {
-          "input": [
-            "text",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
+        "contextWindow": 256000,
         "releaseDate": "July 30, 2025",
-        "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "supportsResponseFormat": true
       }
     },
     "codestral-latest": {
@@ -51,6 +41,17 @@
         "description": "Mistral code model for completions, refactors, and developer IDE workflows",
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "May 29, 2024"
+      }
+    },
+    "mistral-mistral-codestral": {
+      "defaults": {
+        "name": "Mistral: Mistral Codestral",
+        "description": "Mistral's cutting-edge language model for coding released end of July 2025, Codestral specializes in low-latency, high-frequency tasks such as fill-in-the-middle (FIM), code correction and test generation.",
+        "contextWindow": 128000,
+        "maxTokens": 4000,
+        "releaseDate": "May 29, 2024",
+        "supportsResponseFormat": true,
+        "supportsAttachments": false
       }
     }
   }
