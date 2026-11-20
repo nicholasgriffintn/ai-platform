@@ -173,7 +173,7 @@
         "openWeights": false,
         "description": "This model always redirects to the latest model in the DeepSeek V4 Flash family.",
         "contextWindow": 1048576,
-        "maxTokens": 943718,
+        "maxTokens": 384000,
         "releaseDate": "August 1, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -847,7 +847,7 @@
         "openWeights": false,
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
         "contextWindow": 1048576,
-        "maxTokens": 943718,
+        "maxTokens": 384000,
         "releaseDate": "August 1, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -877,7 +877,7 @@
         "releaseDate": "October 20, 2026",
         "supportsResponseFormat": true,
         "artificialAnalysis": {
-          "intelligenceIndex": 23.1,
+          "intelligenceIndex": 20.8,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5

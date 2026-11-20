@@ -18,7 +18,7 @@
       "model": "github-copilot/o4-mini/o4-mini-preview",
       "matchingModel": "o4-mini",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "deprecated": true,
         "deprecationMessage": "o4-mini (Preview) was retired on 23 October 2025. Use GPT-6 Luna instead.",
         "replacementModel": "gpt-6-luna",
@@ -538,7 +538,7 @@
       "matchingModel": "gpt-5.2-codex",
       "overrides": {
         "name": "GPT-5.2-Codex",
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "GPT-5.2-Codex was retired on 5 June 2026. Use GPT-6.1 Sol instead.",
         "replacementModel": "gpt-6.1-sol",
@@ -897,7 +897,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -1118,7 +1118,6 @@
       "matchingModel": "gemini-4-carbon",
       "overrides": {
         "description": "Google's most capable reasoning model for complex software engineering, deep math and science, high factual accuracy, and long-horizon autonomous agents",
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -1138,6 +1137,97 @@
         "lastUpdated": "November 10, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "gemini-4-hydrogen": {
+      "model": "gemini/gemini-4-hydrogen",
+      "matchingModel": "gemini-4-hydrogen",
+      "overrides": {
+        "description": "Google's Gemini 4 model for everyday coding and agentic workflows, with four thinking levels and a 1M-token context window",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 4,
+        "lastUpdated": "November 12, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.0075,
+        "supportsTemperature": false
+      }
+    },
+    "gemini-4-neon": {
+      "model": "gemini/gemini-4-neon",
+      "matchingModel": "gemini-4-neon",
+      "overrides": {
+        "description": "Google's Gemini 4 model for fast, frontier-level coding, knowledge work and science workflows, with four thinking levels and a 1M-token context window",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "November 18, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-6.2-astra": {
+      "model": "gpt-astra/gpt-6-2-astra",
+      "matchingModel": "gpt-6.2-astra",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.008,
+        "costPer1kOutputTokens": 0.04,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-6.2-sol": {
+      "model": "gpt-sol/gpt-6-2-sol",
+      "matchingModel": "gpt-6.2-sol",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "mai-code-2": {
+      "model": "mai/mai-code-2",
+      "matchingModel": "mai-code-2",
+      "overrides": {
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.0005,
+        "costPer1kOutputTokens": 0.0025,
+        "supportsTemperature": false
+      }
+    },
+    "mai-code-2-flash": {
+      "model": "mai/mai-code-2-flash",
+      "matchingModel": "mai-code-2-flash",
+      "overrides": {
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.00025,
         "supportsTemperature": false
       }
     }

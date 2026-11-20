@@ -176,7 +176,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0007,
@@ -196,8 +196,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "morph-kimik3",
       "overrides": {
-        "maxTokens": 1048576,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.014,
@@ -218,7 +217,6 @@
       "model": "kimi-k3/kimi-k3-fast",
       "matchingModel": "morph-kimik3-fast",
       "overrides": {
-        "maxTokens": 1048576,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.006,
         "costPer1kOutputTokens": 0.0225,
@@ -238,7 +236,6 @@
       "model": "kimi-k3/kimi-k3-1-pro",
       "matchingModel": "morph-kimik31",
       "overrides": {
-        "maxTokens": 1048576,
         "speed": 2,
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.0025,

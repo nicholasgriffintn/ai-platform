@@ -299,6 +299,7 @@
       "overrides": {
         "contextWindow": 262144,
         "maxTokens": 262144,
+        "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0018,
@@ -331,6 +332,7 @@
       "matchingModel": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16:peft:262144",
       "overrides": {
         "description": "Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads",
+        "contextWindow": 262144,
         "maxTokens": 262144,
         "lastUpdated": "August 11, 2026",
         "costPer1kInputTokens": 0.000184,
@@ -424,6 +426,7 @@
       "overrides": {
         "contextWindow": 32768,
         "maxTokens": 32768,
+        "contextComplexity": 3,
         "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00018,
@@ -670,7 +673,7 @@
       "overrides": {
         "contextWindow": 65536,
         "maxTokens": 65536,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.00058,
         "costPer1kOutputTokens": 0.00144,
@@ -695,7 +698,7 @@
       "overrides": {
         "contextWindow": 262144,
         "maxTokens": 262144,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.00058,
         "costPer1kOutputTokens": 0.00144,
@@ -720,7 +723,7 @@
       "overrides": {
         "contextWindow": 262144,
         "maxTokens": 262144,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -793,7 +796,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00084,
         "costPer1kOutputTokens": 0.00211,

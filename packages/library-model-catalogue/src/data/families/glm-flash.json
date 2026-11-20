@@ -172,34 +172,6 @@
         }
       }
     },
-    "glm-5-3-flash-free": {
-      "defaults": {
-        "name": "GLM-5.3-Flash Free",
-        "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",
-        "contextWindow": 200000,
-        "maxTokens": 32000,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "August 26, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
     "glm-5-3-flashx": {
       "defaults": {
         "description": "Native multimodal GLM model for efficient coding and long-horizon agent tasks",

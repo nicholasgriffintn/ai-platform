@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 65536,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 29, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The workers ai/@cf/cloudflare/clairic flash family includes models that produce text.",
+  "models": {
+    "clairic-flash": {
+      "defaults": {
+        "name": "Clairic Flash",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation"
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1048576,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 18, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "minimal"
+    }
+  },
+  "description": "The opencode/tidepool alpha free family includes models that produce text.",
+  "models": {
+    "tidepool-alpha-free": {
+      "defaults": {
+        "name": "Tidepool Alpha Free",
+        "description": "Stealth reasoning model, free for a limited time"
+      }
+    }
+  }
+}

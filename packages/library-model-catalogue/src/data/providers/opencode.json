@@ -180,59 +180,6 @@
         "supportsResponseFormat"
       ]
     },
-    "gemini-3-flash": {
-      "model": "gemini-flash/gemini-3-flash",
-      "matchingModel": "gemini-3-flash",
-      "overrides": {
-        "contextWindow": 1048576,
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "audio",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use"
-        ],
-        "speed": 5,
-        "lastUpdated": "December 17, 2025",
-        "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.003,
-        "apiBaseUrl": "https://opencode.ai/inference/google/v1beta",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        }
-      }
-    },
-    "gemini-3.1-pro": {
-      "model": "gemini-pro/gemini-3-1-pro-preview",
-      "matchingModel": "gemini-3.1-pro",
-      "overrides": {
-        "description": "Advanced Gemini model for complex reasoning, coding, and multimodal analysis",
-        "speed": 3,
-        "lastUpdated": "February 19, 2026",
-        "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.012,
-        "apiBaseUrl": "https://opencode.ai/inference/google/v1beta"
-      }
-    },
     "gemini-3.5-flash": {
       "model": "gemini-flash/gemini-3-5-flash",
       "matchingModel": "gemini-3.5-flash",
@@ -260,40 +207,6 @@
           "defaultEffort": "minimal"
         }
       }
-    },
-    "glm-5": {
-      "model": "glm/glm-5",
-      "matchingModel": "glm-5",
-      "overrides": {
-        "name": "GLM-5",
-        "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "contextWindow": 204800,
-        "speed": 3,
-        "knowledgeCutoffDate": "April 2025",
-        "lastUpdated": "February 12, 2026",
-        "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.0032,
-        "supportsAttachments": false
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
-    },
-    "glm-5.1": {
-      "model": "glm/glm-5-1",
-      "matchingModel": "glm-5.1",
-      "overrides": {
-        "contextWindow": 204800,
-        "speed": 3,
-        "knowledgeCutoffDate": "April 2025",
-        "lastUpdated": "April 7, 2026",
-        "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044,
-        "supportsAttachments": false
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
     },
     "gpt-5": {
       "model": "gpt/gpt-5",
@@ -421,7 +334,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014,
@@ -714,30 +627,6 @@
         }
       }
     },
-    "glm-5.2": {
-      "model": "glm/glm-5-2",
-      "matchingModel": "glm-5.2",
-      "overrides": {
-        "contextWindow": 1000000,
-        "maxTokens": 131072,
-        "strengths": [
-          "tool_use",
-          "coding"
-        ],
-        "speed": 3,
-        "lastUpdated": "June 13, 2026",
-        "costPer1kInputTokens": 0.0014,
-        "costPer1kOutputTokens": 0.0044,
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high",
-            "max"
-          ],
-          "defaultEffort": "high"
-        }
-      }
-    },
     "claude-sonnet-5": {
       "model": "claude-sonnet/claude-sonnet-5",
       "matchingModel": "claude-sonnet-5",
@@ -798,7 +687,7 @@
       "overrides": {
         "contextWindow": 512000,
         "maxTokens": 128000,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -941,7 +830,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -1089,7 +978,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005
@@ -1323,7 +1212,7 @@
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "contextWindow": 524288,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.00068,
         "costPer1kOutputTokens": 0.00209
@@ -1395,15 +1284,6 @@
         "supportsAttachments": false
       }
     },
-    "glm-5.3-flash-free": {
-      "model": "glm-flash/glm-5-3-flash-free",
-      "matchingModel": "glm-5.3-flash-free",
-      "overrides": {
-        "lastUpdated": "August 26, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
-      }
-    },
     "muse-wonder-1.0": {
       "model": "muse/muse-wonder",
       "matchingModel": "muse-wonder-1.0",
@@ -1458,28 +1338,6 @@
         "supportsAttachments": false
       }
     },
-    "inkling-2-small-free": {
-      "model": "ling/inkling-2-small-free",
-      "matchingModel": "inkling-2-small-free",
-      "overrides": {
-        "name": "Inkling 2 Small Free",
-        "description": "Inkling 2 Small, free for a limited time",
-        "lastUpdated": "November 5, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "claude-fable-5-2": {
       "model": "claude-fable/claude-fable-5-2",
       "matchingModel": "claude-fable-5-2",
@@ -1502,15 +1360,6 @@
         "supportsTemperature": false
       }
     },
-    "minimax-m3.1-flash-free": {
-      "model": "minimax/minimax-m3-1-flash-free",
-      "matchingModel": "minimax-m3.1-flash-free",
-      "overrides": {
-        "lastUpdated": "October 19, 2026",
-        "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0
-      }
-    },
     "muse-ember-1.0": {
       "model": "muse/muse-ember-1-0",
       "matchingModel": "muse-ember-1.0",
@@ -1528,7 +1377,6 @@
       "matchingModel": "gemini-4-carbon",
       "overrides": {
         "description": "Google's most capable reasoning model for complex software engineering, deep math and science, high factual accuracy, and long-horizon autonomous agents",
-        "maxTokens": 65536,
         "speed": 2,
         "lastUpdated": "November 10, 2026",
         "costPer1kInputTokens": 0.002,
@@ -1548,6 +1396,60 @@
         "costPer1kOutputTokens": 0.0075,
         "supportsTemperature": false,
         "apiBaseUrl": "https://opencode.ai/inference/google/v1beta"
+      }
+    },
+    "gemini-4-neon": {
+      "model": "gemini/gemini-4-neon",
+      "matchingModel": "gemini-4-neon",
+      "overrides": {
+        "description": "Google's Gemini 4 model for fast, frontier-level coding, knowledge work and science workflows, with four thinking levels and a 1M-token context window",
+        "speed": 3,
+        "lastUpdated": "November 18, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "supportsTemperature": false,
+        "apiBaseUrl": "https://opencode.ai/inference/google/v1beta"
+      }
+    },
+    "gpt-6.2-astra": {
+      "model": "gpt-astra/gpt-6-2-astra",
+      "matchingModel": "gpt-6.2-astra",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.008,
+        "costPer1kOutputTokens": 0.04,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-6.2-sol": {
+      "model": "gpt-sol/gpt-6-2-sol",
+      "matchingModel": "gpt-6.2-sol",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "hy4-flash-free": {
+      "model": "Hy/hy4-flash-free",
+      "matchingModel": "hy4-flash-free",
+      "overrides": {
+        "lastUpdated": "November 16, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "tidepool-alpha-free": {
+      "model": "opencode/tidepool-alpha-free/tidepool-alpha-free",
+      "matchingModel": "tidepool-alpha-free",
+      "overrides": {
+        "lastUpdated": "November 18, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
       }
     }
   }

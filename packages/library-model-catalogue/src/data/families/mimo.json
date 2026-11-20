@@ -1,7 +1,6 @@
 {
   "defaults": {
     "openWeights": true,
-    "contextWindow": 1048576,
     "knowledgeCutoffDate": "December 2024",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -56,6 +55,7 @@
       "defaults": {
         "name": "MiMo-V2.5",
         "description": "MiMo model for long-context reasoning, perception, and agentic tasks",
+        "contextWindow": 262144,
         "maxTokens": 131072,
         "modalities": {
           "input": [
@@ -90,6 +90,7 @@
       "defaults": {
         "name": "MiMo-V2.5-Pro",
         "description": "Stronger MiMo Pro tier for multimodal reasoning and coding-agent execution",
+        "contextWindow": 1048576,
         "modalities": {
           "input": [
             "text"
@@ -118,6 +119,7 @@
       "defaults": {
         "name": "MiMo V2.5 Pro UltraSpeed",
         "description": "MiMo pro model for strong multimodal reasoning and agent execution",
+        "contextWindow": 1048576,
         "maxTokens": 131072,
         "modalities": {
           "input": [
@@ -135,6 +137,7 @@
       "defaults": {
         "name": "MiMo-V2.6-Flash",
         "description": "MiMo Flash model for multimodal coding agents and long-context automation",
+        "contextWindow": 1048576,
         "maxTokens": 131072,
         "strengths": [
           "vision",
@@ -182,6 +185,7 @@
       "defaults": {
         "name": "MiMo-V2.6-Pro",
         "description": "Stronger MiMo Pro tier for multimodal reasoning and coding-agent execution",
+        "contextWindow": 1048576,
         "maxTokens": 131072,
         "strengths": [
           "vision",
@@ -206,6 +210,7 @@
       "defaults": {
         "name": "MiMo-V2.6-Pro-UltraSpeed",
         "description": "MiMo pro model for strong multimodal reasoning and agent execution",
+        "contextWindow": 1048576,
         "maxTokens": 131072,
         "reliability": 2,
         "releaseDate": "September 21, 2026"

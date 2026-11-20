@@ -103,7 +103,7 @@
       "defaults": {
         "name": "GPT OSS 20B",
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
-        "contextComplexity": 3,
+        "contextComplexity": 4,
         "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -186,7 +186,7 @@
       "defaults": {
         "name": "Green R",
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
-        "maxTokens": 32768,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -203,7 +203,7 @@
       "defaults": {
         "name": "Green R Raw",
         "description": "Open GPT reasoning model for self-hosted agents and controllable deployments",
-        "maxTokens": 32768,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",

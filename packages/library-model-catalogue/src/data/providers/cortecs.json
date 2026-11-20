@@ -33,8 +33,8 @@
         "reliability": 1,
         "speed": 2,
         "lastUpdated": "September 29, 2025",
-        "costPer1kInputTokens": 0.002989,
-        "costPer1kOutputTokens": 0.014945,
+        "costPer1kInputTokens": 0.003411,
+        "costPer1kOutputTokens": 0.017058,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -58,8 +58,8 @@
         "description": "Balanced Claude model for coding, analysis, agent workflows, and cost control",
         "speed": 2,
         "lastUpdated": "March 13, 2026",
-        "costPer1kInputTokens": 0.003196,
-        "costPer1kOutputTokens": 0.01594,
+        "costPer1kInputTokens": 0.003411,
+        "costPer1kOutputTokens": 0.017058,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -76,8 +76,8 @@
       "overrides": {
         "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
         "lastUpdated": "October 15, 2025",
-        "costPer1kInputTokens": 0.000996,
-        "costPer1kOutputTokens": 0.004982,
+        "costPer1kInputTokens": 0.001137,
+        "costPer1kOutputTokens": 0.005687,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -94,8 +94,8 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "November 24, 2025",
-        "costPer1kInputTokens": 0.005313,
-        "costPer1kOutputTokens": 0.026568,
+        "costPer1kInputTokens": 0.005687,
+        "costPer1kOutputTokens": 0.028436,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -116,8 +116,8 @@
         "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
         "speed": 2,
         "lastUpdated": "March 13, 2026",
-        "costPer1kInputTokens": 0.005313,
-        "costPer1kOutputTokens": 0.026561,
+        "costPer1kInputTokens": 0.005687,
+        "costPer1kOutputTokens": 0.028436,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -138,8 +138,8 @@
         "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
         "speed": 2,
         "lastUpdated": "April 16, 2026",
-        "costPer1kInputTokens": 0.005437,
-        "costPer1kOutputTokens": 0.027186,
+        "costPer1kInputTokens": 0.005687,
+        "costPer1kOutputTokens": 0.028436,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -409,9 +409,7 @@
       "model": "glm/glm-5",
       "matchingModel": "glm-5",
       "overrides": {
-        "name": "GLM 5",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "contextWindow": 202752,
         "maxTokens": 202752,
         "speed": 3,
         "deprecated": true,
@@ -459,8 +457,8 @@
         ],
         "speed": 4,
         "lastUpdated": "April 14, 2025",
-        "costPer1kInputTokens": 0.002192,
-        "costPer1kOutputTokens": 0.008769,
+        "costPer1kInputTokens": 0.002275,
+        "costPer1kOutputTokens": 0.009097,
         "supportsResponseFormat": false
       }
     },
@@ -686,7 +684,6 @@
       "matchingModel": "minimax-m2.7",
       "overrides": {
         "name": "MiniMax-m2.7",
-        "contextWindow": 196608,
         "maxTokens": 196608,
         "speed": 3,
         "deprecated": true,
@@ -943,7 +940,7 @@
         "name": "Qwen3.5 397B A17B",
         "description": "Large open Qwen multimodal MoE for visual agents and long technical tasks",
         "contextWindow": 262000,
-        "maxTokens": 262000,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text"
@@ -1035,8 +1032,8 @@
         "speed": 2,
         "isFeatured": true,
         "lastUpdated": "May 28, 2026",
-        "costPer1kInputTokens": 0.005437,
-        "costPer1kOutputTokens": 0.027186,
+        "costPer1kInputTokens": 0.005687,
+        "costPer1kOutputTokens": 0.028436,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1253,8 +1250,8 @@
         },
         "speed": 2,
         "lastUpdated": "March 5, 2026",
-        "costPer1kInputTokens": 0.002898,
-        "costPer1kOutputTokens": 0.015453,
+        "costPer1kInputTokens": 0.002844,
+        "costPer1kOutputTokens": 0.017058,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -1531,8 +1528,8 @@
         "name": "GPT 5.1",
         "speed": 2,
         "lastUpdated": "November 13, 2025",
-        "costPer1kInputTokens": 0.001375,
-        "costPer1kOutputTokens": 0.01096,
+        "costPer1kInputTokens": 0.001427,
+        "costPer1kOutputTokens": 0.011372,
         "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1591,8 +1588,8 @@
         "name": "GPT 5",
         "speed": 2,
         "lastUpdated": "August 7, 2025",
-        "costPer1kInputTokens": 0.001375,
-        "costPer1kOutputTokens": 0.01096,
+        "costPer1kInputTokens": 0.001427,
+        "costPer1kOutputTokens": 0.011372,
         "supportsResponseFormat": false,
         "supportsTemperature": false,
         "reasoningConfig": {
@@ -1632,7 +1629,6 @@
       "overrides": {
         "contextWindow": 131000,
         "maxTokens": 131000,
-        "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.000045,
@@ -1722,8 +1718,8 @@
         },
         "speed": 4,
         "lastUpdated": "April 14, 2025",
-        "costPer1kInputTokens": 0.000434,
-        "costPer1kOutputTokens": 0.001704,
+        "costPer1kInputTokens": 0.000455,
+        "costPer1kOutputTokens": 0.001819,
         "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1755,8 +1751,8 @@
         "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "April 14, 2025",
-        "costPer1kInputTokens": 0.000111,
-        "costPer1kOutputTokens": 0.000434,
+        "costPer1kInputTokens": 0.000114,
+        "costPer1kOutputTokens": 0.000455,
         "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1987,8 +1983,8 @@
         },
         "speed": 4,
         "lastUpdated": "August 6, 2024",
-        "costPer1kInputTokens": 0.002659,
-        "costPer1kOutputTokens": 0.010635,
+        "costPer1kInputTokens": 0.002844,
+        "costPer1kOutputTokens": 0.011372,
         "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2004,10 +2000,10 @@
       "matchingModel": "gpt-5-mini",
       "overrides": {
         "name": "GPT 5 Mini",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
-        "costPer1kInputTokens": 0.000279,
-        "costPer1kOutputTokens": 0.002192,
+        "costPer1kInputTokens": 0.00029,
+        "costPer1kOutputTokens": 0.002275,
         "supportsResponseFormat": false,
         "supportsTemperature": false,
         "reasoningConfig": {
@@ -2027,8 +2023,8 @@
         "name": "GPT 5 Nano",
         "speed": 3,
         "lastUpdated": "August 7, 2025",
-        "costPer1kInputTokens": 0.00006,
-        "costPer1kOutputTokens": 0.000439,
+        "costPer1kInputTokens": 0.000062,
+        "costPer1kOutputTokens": 0.000455,
         "supportsResponseFormat": false,
         "supportsTemperature": false,
         "reasoningConfig": {
@@ -2115,8 +2111,8 @@
         },
         "speed": 3,
         "lastUpdated": "July 18, 2024",
-        "costPer1kInputTokens": 0.000159,
-        "costPer1kOutputTokens": 0.000638,
+        "costPer1kInputTokens": 0.00017,
+        "costPer1kOutputTokens": 0.000683,
         "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2157,7 +2153,7 @@
         "contextWindow": 1000000,
         "maxTokens": 500000,
         "contextComplexity": 5,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -2168,11 +2164,11 @@
       "matchingModel": "glm-5.2",
       "overrides": {
         "contextWindow": 1048576,
-        "maxTokens": 1000000,
+        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "June 13, 2026",
-        "costPer1kInputTokens": 0.0009,
-        "costPer1kOutputTokens": 0.00324,
+        "costPer1kInputTokens": 0.0013,
+        "costPer1kOutputTokens": 0.0042,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2238,8 +2234,9 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
-        "maxTokens": 1048576,
-        "speed": 3,
+        "contextWindow": 1024000,
+        "maxTokens": 1024000,
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.014999,
@@ -2283,8 +2280,8 @@
         },
         "speed": 2,
         "lastUpdated": "July 24, 2026",
-        "costPer1kInputTokens": 0.0055,
-        "costPer1kOutputTokens": 0.027498,
+        "costPer1kInputTokens": 0.005687,
+        "costPer1kOutputTokens": 0.028436,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2311,8 +2308,8 @@
         },
         "speed": 2,
         "lastUpdated": "June 30, 2026",
-        "costPer1kInputTokens": 0.0022,
-        "costPer1kOutputTokens": 0.011,
+        "costPer1kInputTokens": 0.002275,
+        "costPer1kOutputTokens": 0.011372,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2350,8 +2347,8 @@
         },
         "speed": 3,
         "lastUpdated": "July 9, 2026",
-        "costPer1kInputTokens": 0.000219,
-        "costPer1kOutputTokens": 0.00132,
+        "costPer1kInputTokens": 0.000227,
+        "costPer1kOutputTokens": 0.001364,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2377,8 +2374,8 @@
         },
         "speed": 3,
         "lastUpdated": "July 9, 2026",
-        "costPer1kInputTokens": 0.004399,
-        "costPer1kOutputTokens": 0.021998,
+        "costPer1kInputTokens": 0.004548,
+        "costPer1kOutputTokens": 0.022743,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2404,8 +2401,8 @@
         },
         "speed": 3,
         "lastUpdated": "July 9, 2026",
-        "costPer1kInputTokens": 0.0022,
-        "costPer1kOutputTokens": 0.013199,
+        "costPer1kInputTokens": 0.002275,
+        "costPer1kOutputTokens": 0.01364,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2456,7 +2453,6 @@
       "model": "deepseek-flash/deepseek-v4-flash-0731",
       "matchingModel": "deepseek-v4-flash-0731",
       "overrides": {
-        "maxTokens": 1048576,
         "speed": 4,
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.000082,
@@ -2579,7 +2575,7 @@
       "model": "glm/glm-5-3",
       "matchingModel": "glm-5.3",
       "overrides": {
-        "maxTokens": 1048576,
+        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.000511,
@@ -2592,7 +2588,6 @@
       "matchingModel": "glm-5.3-flash",
       "overrides": {
         "contextWindow": 1048576,
-        "maxTokens": 1048576,
         "modalities": {
           "input": [
             "text",
@@ -2608,7 +2603,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.00035
@@ -2706,8 +2701,8 @@
         "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
-        "costPer1kInputTokens": 0.004399,
-        "costPer1kOutputTokens": 0.021998,
+        "costPer1kInputTokens": 0.004548,
+        "costPer1kOutputTokens": 0.022743,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2726,8 +2721,8 @@
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
-        "costPer1kInputTokens": 0.00012,
-        "costPer1kOutputTokens": 0.0006,
+        "costPer1kInputTokens": 0.000124,
+        "costPer1kOutputTokens": 0.00062,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2744,8 +2739,8 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "September 22, 2026",
-        "costPer1kInputTokens": 0.0024,
-        "costPer1kOutputTokens": 0.011999,
+        "costPer1kInputTokens": 0.002482,
+        "costPer1kOutputTokens": 0.012408,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2763,8 +2758,8 @@
         "speed": 2,
         "isFeatured": true,
         "lastUpdated": "September 29, 2026",
-        "costPer1kInputTokens": 0.0024,
-        "costPer1kOutputTokens": 0.011999,
+        "costPer1kInputTokens": 0.002482,
+        "costPer1kOutputTokens": 0.012408,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2782,8 +2777,8 @@
       "overrides": {
         "speed": 3,
         "lastUpdated": "September 28, 2026",
-        "costPer1kInputTokens": 0.00225,
-        "costPer1kOutputTokens": 0.011249,
+        "costPer1kInputTokens": 0.002275,
+        "costPer1kOutputTokens": 0.011372,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2801,7 +2796,7 @@
       "overrides": {
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "contextWindow": 1000000,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.000765,
         "costPer1kOutputTokens": 0.002351
@@ -2813,8 +2808,8 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "October 7, 2026",
-        "costPer1kInputTokens": 0.000113,
-        "costPer1kOutputTokens": 0.000563,
+        "costPer1kInputTokens": 0.000114,
+        "costPer1kOutputTokens": 0.000569,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2856,8 +2851,8 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "September 4, 2026",
-        "costPer1kInputTokens": 0.012272,
-        "costPer1kOutputTokens": 0.061359,
+        "costPer1kInputTokens": 0.012408,
+        "costPer1kOutputTokens": 0.062041,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2907,8 +2902,8 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "October 26, 2026",
-        "costPer1kInputTokens": 0.001176,
-        "costPer1kOutputTokens": 0.005882,
+        "costPer1kInputTokens": 0.001241,
+        "costPer1kOutputTokens": 0.006204,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -2954,7 +2949,6 @@
       "matchingModel": "gemini-4-carbon",
       "overrides": {
         "description": "Google's most capable reasoning model for complex software engineering, deep math and science, high factual accuracy, and long-horizon autonomous agents",
-        "maxTokens": 1048576,
         "modalities": {
           "input": [
             "text",
@@ -2972,19 +2966,11 @@
           "audio",
           "tool_use"
         ],
-        "contextComplexity": 5,
         "speed": 2,
         "lastUpdated": "November 10, 2026",
         "costPer1kInputTokens": 0.002229,
         "costPer1kOutputTokens": 0.011146,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsTemperature": false
       }
     },
     "mistral-large-2402": {
@@ -2995,6 +2981,158 @@
         "costPer1kInputTokens": 0.004284,
         "costPer1kOutputTokens": 0.012952,
         "supportsTemperature": false
+      }
+    },
+    "gemini-4-hydrogen": {
+      "model": "gemini/gemini-4-hydrogen",
+      "matchingModel": "gemini-4-hydrogen",
+      "overrides": {
+        "description": "Google's Gemini 4 model for everyday coding and agentic workflows, with four thinking levels and a 1M-token context window",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 4,
+        "lastUpdated": "November 12, 2026",
+        "costPer1kInputTokens": 0.001688,
+        "costPer1kOutputTokens": 0.008437,
+        "supportsTemperature": false
+      }
+    },
+    "gemini-4-neon": {
+      "model": "gemini/gemini-4-neon",
+      "matchingModel": "gemini-4-neon",
+      "overrides": {
+        "description": "Google's Gemini 4 model for fast, frontier-level coding, knowledge work and science workflows, with four thinking levels and a 1M-token context window",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "November 18, 2026",
+        "costPer1kInputTokens": 0.003412,
+        "costPer1kOutputTokens": 0.017061,
+        "supportsTemperature": false
+      }
+    },
+    "gpt-6.2-astra": {
+      "model": "gpt-astra/gpt-6-2-astra",
+      "matchingModel": "gpt-6.2-astra",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.009925,
+        "costPer1kOutputTokens": 0.049622,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gpt-6.2-sol": {
+      "model": "gpt-sol/gpt-6-2-sol",
+      "matchingModel": "gpt-6.2-sol",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.002482,
+        "costPer1kOutputTokens": 0.012408,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "inkling-2-small": {
+      "model": "ling/inkling-2-small",
+      "matchingModel": "inkling-2-small",
+      "overrides": {
+        "contextWindow": 1048000,
+        "speed": 4,
+        "lastUpdated": "November 12, 2026",
+        "costPer1kInputTokens": 0.000306,
+        "costPer1kOutputTokens": 0.001023,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    },
+    "nemotron-3.5-super-vl": {
+      "model": "nemotron/nemotron-3-5-super-vl-120b-a12b",
+      "matchingModel": "nemotron-3.5-super-vl",
+      "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 500000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "speed": 5,
+        "lastUpdated": "October 15, 2026",
+        "costPer1kInputTokens": 0.000204,
+        "costPer1kOutputTokens": 0.00051,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 13.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     }
   }

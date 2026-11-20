@@ -222,7 +222,6 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
-        "maxTokens": 1048576,
         "modalities": {
           "input": [
             "text",
@@ -240,7 +239,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
@@ -259,7 +258,6 @@
       "model": "kimi-k3/kimi-k3-1-pro",
       "matchingModel": "kimi-k3.1-pro",
       "overrides": {
-        "maxTokens": 1048576,
         "modalities": {
           "input": [
             "text",

@@ -64,7 +64,7 @@
         "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "August 27, 2026",
-        "supportsResponseFormat": true,
+        "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -99,8 +99,6 @@
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "low",
-            "medium",
             "high"
           ],
           "defaultEffort": "none"
@@ -204,7 +202,7 @@
           "tool_use"
         ],
         "contextComplexity": 5,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "September 29, 2026",
         "supportsResponseFormat": false,
         "reasoningConfig": {
@@ -215,7 +213,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 29.6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -300,8 +298,10 @@
     "inkling-2-small": {
       "defaults": {
         "name": "Inkling 2 Small",
-        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "openWeights": true,
+        "description": "Multimodal MoE reasoning model (594B total, 17B active) for agentic coding, vision, and knowledge work",
         "contextWindow": 1048576,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -319,6 +319,7 @@
         "contextComplexity": 5,
         "reliability": 1,
         "releaseDate": "November 5, 2026",
+        "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 30.6,
@@ -330,6 +331,7 @@
     },
     "inkling-2-small-free": {
       "defaults": {
+        "name": "Inkling 2 Small (free)",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "contextWindow": 1048576,
         "maxTokens": 131072,
@@ -342,8 +344,32 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
         "releaseDate": "November 5, 2026",
-        "supportsAttachments": true
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 30.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "inkling-256k": {
@@ -987,11 +1013,11 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "September 29, 2026",
         "supportsResponseFormat": false,
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 29.6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -1016,7 +1042,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 2,
+        "reliability": 1,
         "releaseDate": "September 29, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1028,16 +1054,45 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": null,
+          "intelligenceIndex": 29.6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
         }
       }
     },
+    "ling-3-2-flash-free": {
+      "defaults": {
+        "name": "Ling 3.2 Flash (free)",
+        "openWeights": true,
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1048576,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 13, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "thinking-machines-inkling-2-small": {
       "defaults": {
         "name": "Thinking Machines: Inkling 2 Small",
+        "openWeights": true,
         "description": "Inkling 2 Small is an open-weight multimodal mixture-of-experts reasoning model from Thinking Machines Lab, with 17B active parameters out of 594B total. It is the first model in the second...",
         "contextWindow": 1048576,
         "maxTokens": 943718,

@@ -2,6 +2,7 @@
   "defaults": {
     "openWeights": true,
     "contextWindow": 1048576,
+    "maxTokens": 1048576,
     "modalities": {
       "input": [
         "text",
@@ -23,7 +24,6 @@
       "defaults": {
         "name": "Kimi Fast Latest",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
-        "maxTokens": 131072,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -39,7 +39,6 @@
       "defaults": {
         "name": "Kimi K3",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
-        "maxTokens": 131072,
         "strengths": [
           "vision",
           "document",
@@ -77,11 +76,52 @@
         }
       }
     },
+    "kimi-k3-1-pro-eu": {
+      "defaults": {
+        "name": "Kimi K3.1 Pro (EU)",
+        "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "releaseDate": "October 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 46.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
     "kimi-k3-1-pro-highspeed": {
       "defaults": {
         "name": "Kimi K3.1 Pro Highspeed",
         "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
-        "maxTokens": 1048576,
         "modalities": {
           "input": [
             "text",
@@ -107,7 +147,6 @@
       "defaults": {
         "name": "Kimi K3.1 Pro Highspeed (Global)",
         "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
-        "maxTokens": 1048576,
         "releaseDate": "October 23, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -126,7 +165,6 @@
       "defaults": {
         "name": "Kimi K3.1 Pro Highspeed (US)",
         "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
-        "maxTokens": 1048576,
         "releaseDate": "October 23, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -161,7 +199,7 @@
       "defaults": {
         "name": "Kimi K3 (EU)",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
-        "maxTokens": 262144,
+        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -179,7 +217,7 @@
           "tool_use",
           "coding"
         ],
-        "contextComplexity": 5,
+        "contextComplexity": 4,
         "reliability": 4,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -202,8 +240,7 @@
     "kimi-k3-fast": {
       "defaults": {
         "name": "Kimi K3 Fast",
-        "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
-        "maxTokens": 131072
+        "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work"
       }
     },
     "kimi-k3-global": {
@@ -291,7 +328,6 @@
       "defaults": {
         "name": "Kimi Latest",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
-        "maxTokens": 131072,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -350,7 +386,6 @@
         "name": "MoonshotAI: Kimi K3.1 Pro Highspeed",
         "openWeights": false,
         "description": "Kimi K3.1 Pro Highspeed is the high-speed variant of Moonshot AI’s frontier Kimi K3.1 Pro model for complex reasoning, coding, and agentic workflows, with vision, tool use, structured outputs, and long-context support.",
-        "maxTokens": 1048576,
         "releaseDate": "October 23, 2026",
         "supportsTemperature": true,
         "reasoningConfig": {
@@ -368,7 +403,7 @@
         "name": "MoonshotAI: Kimi K3 Fast",
         "description": "Fast version of Kimi’s flagship model for long-horizon coding and end-to-end knowledge work, with a 1M-token context window.",
         "contextWindow": 1000000,
-        "maxTokens": 131072,
+        "maxTokens": 1000000,
         "modalities": {
           "input": [
             "text",

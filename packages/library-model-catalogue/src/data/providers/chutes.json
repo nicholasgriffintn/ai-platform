@@ -126,7 +126,7 @@
       "overrides": {
         "description": "Qwen3 30B A3B model with reasoning support.",
         "maxTokens": 40960,
-        "speed": 3,
+        "speed": 4,
         "deprecated": true,
         "deprecationMessage": "Qwen3 30B A3B is no longer offered by Chutes.",
         "knowledgeCutoffDate": "April 2025",
@@ -608,7 +608,7 @@
       "matchingModel": "Qwen/Qwen3-14B",
       "overrides": {
         "maxTokens": 40960,
-        "speed": 3,
+        "speed": 2,
         "deprecated": true,
         "deprecationMessage": "Qwen3 14B is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
@@ -655,6 +655,7 @@
       "model": "qwen/qwen3-30b-a3b-instruct-2507",
       "matchingModel": "Qwen/Qwen3-30B-A3B-Instruct-2507",
       "overrides": {
+        "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "maxTokens": 262144,
         "deprecated": true,
         "deprecationMessage": "Qwen3 30B A3B Instruct 2507 is no longer offered by Chutes.",
@@ -947,7 +948,6 @@
       "matchingModel": "zai-org/GLM-4.6V",
       "overrides": {
         "name": "GLM 4.6V",
-        "contextWindow": 131072,
         "maxTokens": 65536,
         "modalities": {
           "input": [
@@ -958,11 +958,6 @@
             "text"
           ]
         },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "speed": 3,
         "deprecated": true,
         "deprecationMessage": "GLM 4.6V is no longer offered by Chutes.",
@@ -1270,8 +1265,8 @@
       "overrides": {
         "speed": 4,
         "lastUpdated": "October 26, 2026",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012,
+        "costPer1kInputTokens": 0.000195,
+        "costPer1kOutputTokens": 0.00078,
         "supportsAttachments": true
       }
     },
@@ -1337,8 +1332,8 @@
         "speed": 3,
         "releaseDate": "October 26, 2026",
         "lastUpdated": "October 26, 2026",
-        "costPer1kInputTokens": 0.001225,
-        "costPer1kOutputTokens": 0.00385
+        "costPer1kInputTokens": 0.0008,
+        "costPer1kOutputTokens": 0.0025
       }
     },
     "tencent/Hy4": {

@@ -134,7 +134,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1070,
+              "value": 1072,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -588,7 +588,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1284,
+              "value": 1283,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 13
@@ -644,7 +644,7 @@
             {
               "key": "tauVoiceScore",
               "label": "Tau Voice",
-              "value": 0.3,
+              "value": 0.36,
               "min": 0,
               "max": 1
             }
@@ -685,7 +685,7 @@
             {
               "key": "tauVoiceScore",
               "label": "Tau Voice",
-              "value": 0.69,
+              "value": 0.65,
               "min": 0,
               "max": 1
             }
@@ -840,7 +840,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 987,
+              "value": 988,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -939,7 +939,7 @@
         "name": "Nano Banana (Gemini 2.5 Flash Image)",
         "description": "Nano Banana image model for fast generation, edits, and character-consistent assets",
         "contextWindow": 32768,
-        "maxTokens": 65535,
+        "maxTokens": 32768,
         "modalities": {
           "input": [
             "text"
@@ -968,7 +968,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 987,
+              "value": 988,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12

@@ -1,0 +1,53 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 262144,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "video",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 5,
+    "reliability": 2,
+    "releaseDate": "November 16, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "high",
+        "xhigh"
+      ],
+      "defaultEffort": "low"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 42.9,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
+  },
+  "description": "The qwen4 max family includes models that produce text.",
+  "models": {
+    "qwen4-max": {
+      "defaults": {
+        "name": "Qwen4 Max",
+        "description": "Flagship multimodal model for coding, office productivity, frontend design, and complex agentic tasks"
+      }
+    }
+  }
+}

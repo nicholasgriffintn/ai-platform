@@ -1332,6 +1332,66 @@
         }
       }
     },
+    "gpt-6-2-astra-pro": {
+      "defaults": {
+        "name": "GPT-6.2 Astra Pro",
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 17, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gpt-6-2-sol-pro": {
+      "defaults": {
+        "name": "GPT-6.2 Sol Pro",
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 17, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "gpt-6-astra-pro": {
       "defaults": {
         "name": "GPT-6 Astra Pro",
@@ -1551,7 +1611,7 @@
             {
               "key": "tauVoiceScore",
               "label": "Tau Voice",
-              "value": 0.74,
+              "value": 0.8,
               "min": 0,
               "max": 1
             }
@@ -2425,6 +2485,66 @@
           ]
         },
         "releaseDate": "October 26, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "openai-gpt-6-2-astra-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6.2 Astra Pro",
+        "description": "GPT-6.2 Astra Pro is the same underlying model as [GPT-6.2 Astra](https://openrouter.ai/openai/gpt-6.2-astra), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 17, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "openai-gpt-6-2-sol-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6.2 Sol Pro",
+        "description": "GPT-6.2 Sol Pro is the same underlying model as [GPT-6.2 Sol](https://openrouter.ai/openai/gpt-6.2-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 17, 2026",
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [

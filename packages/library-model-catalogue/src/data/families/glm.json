@@ -251,6 +251,13 @@
       "defaults": {
         "name": "GLM-4.6V",
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
@@ -381,7 +388,9 @@
     },
     "glm-5": {
       "defaults": {
+        "name": "GLM 5",
         "description": "General GLM flagship for coding, analysis, and tool-heavy engineering workflows",
+        "contextWindow": 202752,
         "maxTokens": 131072,
         "strengths": [
           "tool_use"

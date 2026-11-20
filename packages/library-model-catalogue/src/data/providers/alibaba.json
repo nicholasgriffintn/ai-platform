@@ -19,7 +19,6 @@
       "matchingModel": "deepseek-v4-flash-0731",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 384000,
         "speed": 4,
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.00044,
@@ -329,7 +328,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 23, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0024
@@ -577,8 +576,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
-        "maxTokens": 1048576,
-        "speed": 3,
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,

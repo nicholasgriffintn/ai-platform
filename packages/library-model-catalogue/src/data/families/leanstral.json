@@ -9,8 +9,7 @@
       ]
     },
     "supportsToolCalls": true,
-    "supportsResponseFormat": true,
-    "supportsAttachments": false
+    "supportsResponseFormat": true
   },
   "description": "The leanstral family includes models that produce text.",
   "models": {
@@ -27,6 +26,7 @@
         "contextWindow": 262144,
         "maxTokens": 32768,
         "releaseDate": "May 27, 2026",
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
