@@ -370,26 +370,7 @@ async fn discover_models(
     store: State<'_, Store>,
 ) -> Result<Vec<DiscoveredModel>, String> {
     let (endpoint, base) = authorised_endpoint(&store, &endpoint_id)?;
-    let target = base
-        .join(discovery::models_path(&endpoint))
-        .map_err(|cause| cause.to_string())?;
-
-    let response = with_pairing(http_client(DISCOVERY_TIMEOUT)?.get(target), &endpoint)?
-        .send()
-        .await
-        .map_err(|cause| transport_failure(&endpoint.label, &cause))?;
-
-    if !response.status().is_success() {
-        return Err(format!(
-            "{} answered with status {}",
-            endpoint.label,
-            response.status().as_u16()
-        ));
-    }
-
-    let body = read_bounded_json(response, &endpoint.label).await?;
-
-    Ok(discovery::parse_models(&endpoint, &body, &timestamp()))
+    discovery::discover(&endpoint, &base).await
 }
 
 #[tauri::command]

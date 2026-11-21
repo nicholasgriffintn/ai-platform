@@ -63,7 +63,11 @@ function createAdapter(
   const transport = { send: (payload: string) => session.send(payload) };
 
   if (input.driver === "codex") {
-    return createCodexAdapter({ transport, emit, clientVersion });
+    return createCodexAdapter({
+      transport,
+      emit,
+      clientVersion: clientVersion?.trim() || session.clientVersion,
+    });
   }
 
   if (input.driver === "claude-code" && input.session) {

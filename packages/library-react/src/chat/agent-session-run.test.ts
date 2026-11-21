@@ -11,7 +11,11 @@ interface ScriptedSession {
   push: (message: unknown) => void;
 }
 
-function createScriptedSession(threadId: string, directoryPath: string): ScriptedSession {
+function createScriptedSession(
+  threadId: string,
+  directoryPath: string,
+  clientVersion?: string,
+): ScriptedSession {
   const sent: unknown[] = [];
   const waiting: ((line: string | null) => void)[] = [];
   const buffered: string[] = [];
@@ -32,6 +36,7 @@ function createScriptedSession(threadId: string, directoryPath: string): Scripte
 
   const session: DesktopAgentSession = {
     sessionKey: `codex:${directoryPath}`,
+    ...(clientVersion ? { clientVersion } : {}),
     directoryPath,
     head: null,
     adopted: false,
@@ -62,12 +67,22 @@ function createScriptedSession(threadId: string, directoryPath: string): Scripte
       },
     },
     send: async (payload) => {
-      const message = JSON.parse(payload) as { id?: number; method?: string };
+      const message: {
+        id?: number;
+        method?: string;
+        params?: { clientInfo?: { version?: unknown } };
+      } = JSON.parse(payload);
 
       sent.push(message);
 
       if (message.method === "initialize") {
-        push({ id: message.id, result: { userAgent: "codex/test" } });
+        const version = message.params?.clientInfo?.version;
+
+        push(
+          typeof version === "string" && version.length > 0
+            ? { id: message.id, result: { userAgent: "codex/test" } }
+            : { id: message.id, error: { code: -32600, message: "Missing client version" } },
+        );
       }
 
       if (message.method === "thread/start" || message.method === "thread/resume") {
@@ -91,11 +106,16 @@ function createScriptedSession(threadId: string, directoryPath: string): Scripte
 
 function createBackend(options: {
   binding?: AgentThreadBinding;
+  clientVersion?: string;
   threadId?: string;
   snapshots?: string[];
 }) {
   const snapshots = [...(options.snapshots ?? [])];
-  const scripted = createScriptedSession(options.threadId ?? "thread-1", "/repo");
+  const scripted = createScriptedSession(
+    options.threadId ?? "thread-1",
+    "/repo",
+    options.clientVersion,
+  );
   const saved: AgentThreadBinding[] = [];
   let stored = options.binding ?? null;
 
@@ -174,6 +194,17 @@ describe("streamAgentSessionRun", () => {
       conversationId: "conversation-1",
       driver: "codex",
       directoryId: "directory-1",
+    });
+  });
+
+  it("identifies the desktop app version when opening a Codex session", async () => {
+    const harness = createBackend({ clientVersion: "0.6.12" });
+
+    await streamAgentSessionRun(runOptions(harness, "conversation-1"));
+
+    expect(harness.scripted.sent[0]).toMatchObject({
+      method: "initialize",
+      params: { clientInfo: { version: "0.6.12" } },
     });
   });
 

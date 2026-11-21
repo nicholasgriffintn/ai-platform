@@ -35,7 +35,7 @@ class ChatExecutionRequest {
 
     return {
       app_url: chatOptions.app_url,
-      system_prompt: prepared.systemPrompt,
+      system_prompt: prepared.primaryModelConfig.machineId ? undefined : prepared.systemPrompt,
       env: chatOptions.env,
       context: chatOptions.context,
       connectedConnectorProviders: prepared.connectedConnectorProviders,

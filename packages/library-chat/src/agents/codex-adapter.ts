@@ -92,7 +92,7 @@ export function createCodexAdapter(options: CodexAdapterOptions): AgentSessionAd
         clientInfo: {
           name: CLIENT_NAME,
           title: CLIENT_TITLE,
-          ...(options.clientVersion ? { version: options.clientVersion } : {}),
+          version: options.clientVersion?.trim() || "0.0.0",
         },
       });
       await client.notify("initialized", {});

@@ -1,7 +1,16 @@
+use std::collections::HashMap;
+
+use futures_util::{stream, StreamExt};
+use reqwest::{Client, RequestBuilder};
 use serde::Serialize;
-use serde_json::Value;
+use serde_json::{json, Value};
+use url::Url;
 
 use crate::egress::DesktopEndpoint;
+use crate::{
+    http_client, read_bounded_json, timestamp, transport_failure, with_pairing, DISCOVERY_TIMEOUT,
+    REQUEST_TIMEOUT,
+};
 
 #[derive(Clone, Debug, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -22,6 +31,152 @@ pub struct DiscoveredModel {
     pub capabilities: ModelCapabilities,
     pub loaded: bool,
     pub discovered_at: String,
+}
+
+pub async fn discover(
+    endpoint: &DesktopEndpoint,
+    base: &Url,
+) -> Result<Vec<DiscoveredModel>, String> {
+    let deadline = tokio::time::Instant::now() + DISCOVERY_TIMEOUT;
+    let client = http_client(DISCOVERY_TIMEOUT)?;
+    let target = base
+        .join(models_path(endpoint))
+        .map_err(|cause| cause.to_string())?;
+    let body = read_model_json(endpoint, client.get(target)).await?;
+    let mut models = parse_models(endpoint, &body, &timestamp());
+
+    if endpoint.vendor == "ollama" && !models.is_empty() {
+        let _ = tokio::time::timeout_at(
+            deadline,
+            discover_ollama_context(endpoint, base, &client, &mut models),
+        )
+        .await;
+    }
+
+    Ok(models)
+}
+
+async fn read_model_json(
+    endpoint: &DesktopEndpoint,
+    request: RequestBuilder,
+) -> Result<Value, String> {
+    let response = with_pairing(request, endpoint)?
+        .send()
+        .await
+        .map_err(|cause| transport_failure(&endpoint.label, &cause))?;
+
+    if !response.status().is_success() {
+        return Err(format!(
+            "{} answered with status {}",
+            endpoint.label,
+            response.status().as_u16()
+        ));
+    }
+
+    read_bounded_json(response, &endpoint.label).await
+}
+
+async fn discover_ollama_context(
+    endpoint: &DesktopEndpoint,
+    base: &Url,
+    client: &Client,
+    models: &mut [DiscoveredModel],
+) {
+    if let Ok(target) = base.join("/api/ps") {
+        if let Ok(running) =
+            read_model_json(endpoint, client.get(target).timeout(REQUEST_TIMEOUT)).await
+        {
+            apply_ollama_running_models(models, &running);
+        }
+    }
+
+    let Ok(target) = base.join("/api/show") else {
+        return;
+    };
+
+    stream::iter(
+        models
+            .iter_mut()
+            .filter(|model| model.context_tokens.is_none()),
+    )
+    .for_each_concurrent(4, |model| {
+        let request = client
+            .post(target.clone())
+            .timeout(REQUEST_TIMEOUT)
+            .json(&json!({ "model": model.native_id }));
+
+        async move {
+            if let Ok(details) = read_model_json(endpoint, request).await {
+                model.context_tokens = ollama_configured_context(&details);
+            }
+        }
+    })
+    .await;
+}
+
+fn ollama_model_id(entry: &Value) -> Option<&str> {
+    entry
+        .get("model")
+        .or_else(|| entry.get("name"))
+        .and_then(Value::as_str)
+}
+
+fn ollama_model_key(id: &str) -> &str {
+    id.strip_suffix(":latest").unwrap_or(id)
+}
+
+fn apply_ollama_running_models(models: &mut [DiscoveredModel], body: &Value) {
+    let Some(entries) = body.get("models").and_then(Value::as_array) else {
+        return;
+    };
+
+    let running: HashMap<_, _> = entries
+        .iter()
+        .filter_map(|entry| {
+            Some((
+                ollama_model_key(ollama_model_id(entry)?),
+                positive_context_tokens(entry.get("context_length")),
+            ))
+        })
+        .collect();
+
+    for model in models {
+        if let Some(&context_tokens) = running.get(ollama_model_key(&model.native_id)) {
+            model.loaded = true;
+            model.context_tokens = context_tokens;
+        }
+    }
+}
+
+fn positive_context_tokens(value: Option<&Value>) -> Option<u32> {
+    u32::try_from(value?.as_u64()?)
+        .ok()
+        .filter(|tokens| *tokens > 0)
+}
+
+fn ollama_configured_context(details: &Value) -> Option<u32> {
+    let configured = details
+        .get("parameters")?
+        .as_str()?
+        .lines()
+        .find_map(|line| {
+            let mut parts = line.split_whitespace();
+            if parts.next()? != "num_ctx" {
+                return None;
+            }
+
+            parts
+                .next()?
+                .parse::<u32>()
+                .ok()
+                .filter(|tokens| *tokens > 0)
+        })?;
+    let maximum = details.get("model_info").and_then(|info| {
+        let architecture = info.get("general.architecture")?.as_str()?;
+        positive_context_tokens(info.get(format!("{architecture}.context_length")))
+    });
+
+    Some(maximum.map_or(configured, |limit| configured.min(limit)))
 }
 
 pub fn models_path(endpoint: &DesktopEndpoint) -> &'static str {
@@ -52,7 +207,7 @@ fn parse_ollama(endpoint_id: &str, body: &Value, discovered_at: &str) -> Vec<Dis
     entries
         .iter()
         .filter_map(|entry| {
-            let native_id = entry.get("model").or_else(|| entry.get("name"))?.as_str()?;
+            let native_id = ollama_model_id(entry)?;
             let details = entry.get("details");
             let families = details
                 .and_then(|details| details.get("families"))
@@ -213,6 +368,54 @@ mod tests {
         assert_eq!(models[0].parameter_size_bytes, Some(13_780_173_724));
         assert!(!models[0].capabilities.vision);
         assert!(models[1].capabilities.vision);
+    }
+
+    #[test]
+    fn applies_only_the_matching_running_ollama_context() {
+        let installed = json!({
+            "models": [
+                { "model": "gemma4:latest" },
+                { "model": "gemma4:small" },
+                { "model": "llama3.2:latest" }
+            ]
+        });
+        let running = json!({
+            "models": [
+                { "name": "gemma4", "context_length": 32_768 },
+                { "model": "llama3.2:latest", "context_length": 0 },
+                { "model": "another-model", "context_length": 16_384 }
+            ]
+        });
+        let mut models = parse_models(&endpoint("ollama"), &installed, "2026-09-06T09:00:00Z");
+
+        apply_ollama_running_models(&mut models, &running);
+
+        assert_eq!(models[0].context_tokens, Some(32_768));
+        assert!(models[0].loaded);
+        assert_eq!(models[1].context_tokens, None);
+        assert!(!models[1].loaded);
+        assert_eq!(models[2].context_tokens, None);
+        assert!(models[2].loaded);
+    }
+
+    #[test]
+    fn reads_the_configured_ollama_context_without_assuming_the_model_maximum() {
+        let mut details = json!({
+            "parameters": "num_predict 512\n num_ctx 32768",
+            "model_info": {
+                "general.architecture": "gemma4",
+                "gemma4.context_length": 131_072,
+                "gemma4.vision.context_length": 512
+            }
+        });
+
+        assert_eq!(ollama_configured_context(&details), Some(32_768));
+
+        details["parameters"] = json!("num_ctx 200000");
+        assert_eq!(ollama_configured_context(&details), Some(131_072));
+
+        details["parameters"] = json!("num_ctx 0\nnum_predict 512");
+        assert_eq!(ollama_configured_context(&details), None);
     }
 
     #[test]

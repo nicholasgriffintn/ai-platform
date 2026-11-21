@@ -35,6 +35,7 @@ import {
   type AgentRuntimeFailure,
 } from "@ngriffin_uk/polychat-schemas";
 import { createAsyncEventQueue, generateId } from "@ngriffin_uk/polychat-utility-core";
+import { getVersion } from "@tauri-apps/api/app";
 import { Channel, invoke } from "@tauri-apps/api/core";
 import z from "zod/v4";
 
@@ -92,6 +93,7 @@ async function startAgentSession(
   session?: AgentSessionSpec,
   workspace?: AgentWorkspaceOptions,
 ): Promise<DesktopAgentSession> {
+  const clientVersion = driver === "codex" ? await getVersion().catch(() => undefined) : undefined;
   const queue = createAsyncEventQueue<AgentSessionEvent>();
   const lines = createAsyncEventQueue<string>();
   const channel = new Channel();
@@ -144,6 +146,7 @@ async function startAgentSession(
 
   return {
     sessionKey: descriptor.sessionKey,
+    clientVersion,
     directoryPath: descriptor.directoryPath,
     head: descriptor.head,
     adopted: descriptor.adopted,

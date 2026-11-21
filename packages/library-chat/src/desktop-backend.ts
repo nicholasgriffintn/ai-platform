@@ -42,6 +42,7 @@ export interface AgentWorkspaceOptions {
 
 export interface DesktopAgentSession {
   sessionKey: string;
+  clientVersion?: string;
   directoryPath: string;
   head: string | null;
   adopted: boolean;
