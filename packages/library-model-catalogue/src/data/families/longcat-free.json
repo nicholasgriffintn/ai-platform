@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 262144,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 2, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The longcat free family includes models that produce text.",
+  "models": {
+    "longcat-2-5-free": {
+      "defaults": {
+        "name": "LongCat 2.5 Free",
+        "description": "Meituan's multimodal reasoning model for long-horizon coding and agent tasks, with visual understanding and a 1M-token context window"
+      }
+    }
+  }
+}

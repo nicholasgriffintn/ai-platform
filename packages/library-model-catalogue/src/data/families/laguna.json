@@ -43,6 +43,8 @@
       "defaults": {
         "name": "Laguna S 2.1",
         "description": "Agentic coding model from Poolside in the XS size class for local deployment",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
         "releaseDate": "July 21, 2026"
       }
     },
@@ -52,13 +54,6 @@
         "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads",
         "contextWindow": 256000,
         "releaseDate": "July 21, 2026"
-      }
-    },
-    "laguna-xs-2-1": {
-      "defaults": {
-        "name": "Laguna XS 2.1",
-        "description": "Agentic coding model from Poolside in the XS size class for local deployment",
-        "releaseDate": "July 2, 2026"
       }
     },
     "poolside-laguna-s-2-1-free": {

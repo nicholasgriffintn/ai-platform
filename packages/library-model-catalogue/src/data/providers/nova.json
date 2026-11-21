@@ -14,7 +14,7 @@
   },
   "models": {
     "nova-2-lite-v1": {
-      "model": "nova/nova-2-lite",
+      "model": "nova-lite/nova-2-lite",
       "matchingModel": "nova-2-lite-v1",
       "overrides": {
         "maxTokens": 64000,
@@ -53,7 +53,10 @@
           ],
           "defaultEffort": "low"
         }
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "nova-2-pro-v1": {
       "model": "nova-pro/nova-2-pro",
@@ -126,7 +129,6 @@
         "supportsAudio": true
       },
       "unset": [
-        "contextWindow",
         "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature"

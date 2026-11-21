@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 32768,
+    "maxTokens": 29491,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "December 31, 2023",
+    "releaseDate": "February 4, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+  "models": {
+    "aion-rp-1-0-8b": {
+      "defaults": {
+        "name": "Aion-RP 1.0 (8B)",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding"
+      }
+    },
+    "aionlabs-aion-rp-1-0-8b": {
+      "defaults": {
+        "name": "AionLabs: Aion-RP 1.0 (8B)",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding"
+      }
+    }
+  }
+}

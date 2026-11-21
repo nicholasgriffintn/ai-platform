@@ -1,0 +1,68 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text",
+        "audio"
+      ],
+      "output": [
+        "text",
+        "audio"
+      ]
+    },
+    "strengths": [
+      "audio",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 5,
+    "knowledgeCutoffDate": "July 31, 2025",
+    "releaseDate": "September 10, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "bbaScore",
+          "label": "Big Bench Audio",
+          "value": 0.9,
+          "min": 0,
+          "max": 1
+        },
+        {
+          "key": "fdbScore",
+          "label": "Full Duplex Bench",
+          "value": 0.95,
+          "min": 0,
+          "max": 1
+        },
+        {
+          "key": "tauVoiceScore",
+          "label": "Tau Voice",
+          "value": 0.8,
+          "min": 0,
+          "max": 1
+        }
+      ]
+    }
+  },
+  "description": "The gpt live family includes models that produce audio, text.",
+  "models": {
+    "gpt-live-1": {
+      "defaults": {
+        "name": "GPT-Live 1",
+        "description": "Full-duplex voice model for natural conversations that delegates reasoning and tools to a backend agent"
+      }
+    }
+  }
+}

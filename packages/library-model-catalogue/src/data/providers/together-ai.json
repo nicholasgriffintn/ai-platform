@@ -24,10 +24,10 @@
         "deprecationMessage": "Meta Llama 3.3 70B Instruct Turbo Free was removed from Together AI serverless on 13 November 2025."
       },
       "unset": [
-        "openWeights",
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature",
-        "supportsToolCalls",
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -42,10 +42,10 @@
         "costPer1kOutputTokens": 0.0012
       },
       "unset": [
-        "openWeights",
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature",
-        "supportsToolCalls",
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -60,10 +60,10 @@
         "costPer1kOutputTokens": 0.00018
       },
       "unset": [
-        "openWeights",
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature",
-        "supportsToolCalls",
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -77,10 +77,10 @@
         "deprecationMessage": "Meta Llama Vision Free was removed from Together AI serverless on 28 August 2025."
       },
       "unset": [
-        "openWeights",
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature",
-        "supportsToolCalls",
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -96,10 +96,10 @@
         "costPer1kOutputTokens": 0.0035
       },
       "unset": [
-        "openWeights",
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature",
-        "supportsToolCalls",
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -129,10 +129,10 @@
         "deprecationMessage": "Llama 4 Maverick Instruct was removed from Together AI serverless on 31 March 2026."
       },
       "unset": [
-        "openWeights",
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature",
-        "supportsToolCalls",
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -168,7 +168,7 @@
       "model": "kimi/kimi-k2-instruct",
       "matchingModel": "moonshotai/Kimi-K2-Instruct",
       "overrides": {
-        "contextWindow": 131072,
+        "description": "Kimi K2 instruction-following model optimized for conversational AI and task completion.",
         "maxTokens": 131072,
         "deprecated": true,
         "deprecationMessage": "Kimi K2 Instruct was removed from Together AI serverless on 29 July 2026. Use Kimi K3.1 Pro instead.",
@@ -179,6 +179,7 @@
         "costPer1kOutputTokens": 0.003
       },
       "unset": [
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -197,6 +198,7 @@
         "costPer1kOutputTokens": 0.003
       },
       "unset": [
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -204,7 +206,6 @@
       "model": "kimi/kimi-k2-thinking",
       "matchingModel": "moonshotai/Kimi-K2-Thinking",
       "overrides": {
-        "contextWindow": 262144,
         "maxTokens": 262144,
         "speed": 4,
         "deprecated": true,
@@ -216,7 +217,9 @@
         "costPer1kOutputTokens": 0.004
       },
       "unset": [
-        "supportsResponseFormat"
+        "openWeights",
+        "supportsResponseFormat",
+        "reasoningConfig"
       ]
     },
     "openai/gpt-oss-120b": {
@@ -265,8 +268,8 @@
         "costPer1kOutputTokens": 0.0022
       },
       "unset": [
-        "openWeights",
         "supportsResponseFormat",
+        "openWeights",
         "reasoningConfig"
       ]
     },
@@ -287,8 +290,8 @@
         "costPer1kOutputTokens": 0.002
       },
       "unset": [
-        "openWeights",
         "supportsResponseFormat",
+        "openWeights",
         "reasoningConfig"
       ]
     },
@@ -307,6 +310,7 @@
       "model": "kimi-k2/kimi-k2-6",
       "matchingModel": "moonshotai/Kimi-K2.6",
       "overrides": {
+        "contextWindow": 262144,
         "maxTokens": 131000,
         "modalities": {
           "input": [
@@ -328,14 +332,13 @@
         "speed": 2,
         "deprecated": true,
         "deprecationMessage": "Kimi K2.6 was removed from Together AI serverless on 19 August 2026.",
-        "releaseDate": "April 21, 2026",
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.0045
       }
     },
     "Qwen/Qwen3.6-Plus": {
-      "model": "qwen/qwen3-6-plus",
+      "model": "qwen-plus/qwen3-6-plus",
       "matchingModel": "Qwen/Qwen3.6-Plus",
       "overrides": {
         "modalities": {
@@ -357,7 +360,7 @@
       }
     },
     "Qwen/Qwen3.7-Max": {
-      "model": "qwen/qwen3-7-max",
+      "model": "qwen-max/qwen3-7-max",
       "matchingModel": "Qwen/Qwen3.7-Max",
       "overrides": {
         "strengths": [
@@ -458,7 +461,7 @@
       }
     },
     "MiniMaxAI/MiniMax-M3": {
-      "model": "minimax/minimax-m3",
+      "model": "minimax-m/minimax-m3",
       "matchingModel": "MiniMaxAI/MiniMax-M3",
       "overrides": {
         "contextWindow": 524288,
@@ -489,16 +492,7 @@
       "model": "kimi-k2/kimi-k2-7-code",
       "matchingModel": "moonshotai/Kimi-K2.7-Code",
       "overrides": {
-        "description": "Kimi coding model for software agents, refactors, and repository reasoning",
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "coding",
           "tool_use"
@@ -509,8 +503,7 @@
         "releaseDate": "June 14, 2026",
         "lastUpdated": "June 14, 2026",
         "costPer1kInputTokens": 0.00095,
-        "costPer1kOutputTokens": 0.004,
-        "supportsAttachments": false
+        "costPer1kOutputTokens": 0.004
       },
       "unset": [
         "knowledgeCutoffDate"
@@ -537,7 +530,7 @@
       }
     },
     "thinkingmachines/Inkling": {
-      "model": "ling/inkling",
+      "model": "inkling/inkling",
       "matchingModel": "thinkingmachines/Inkling",
       "overrides": {
         "description": "Multimodal MoE reasoning model (975B total, 41B active) for text, image, and audio",
@@ -575,7 +568,7 @@
       }
     },
     "moonshotai/Kimi-K3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "moonshotai/Kimi-K3",
       "overrides": {
         "modalities": {
@@ -675,7 +668,7 @@
       }
     },
     "deepseek-ai/DeepSeek-V4-Pro-0813": {
-      "model": "deepseek-thinking/deepseek-v4-pro-0813",
+      "model": "deepseek-pro/deepseek-v4-pro-0813",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro-0813",
       "overrides": {
         "contextWindow": 1048576,
@@ -695,7 +688,7 @@
       }
     },
     "meta-models/Muse-Spark-Open-816B-A42B": {
-      "model": "muse/muse-spark-open",
+      "model": "muse-spark/muse-spark-open",
       "matchingModel": "meta-models/Muse-Spark-Open-816B-A42B",
       "overrides": {
         "description": "Muse Spark Open is an 816B total / 42B active open-weight multimodal reasoning model from Meta for coding and long-horizon agentic work, with 1M-token context.",
@@ -733,7 +726,7 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3.5-Super-VL": {
-      "model": "nemotron/nemotron-3-5-super-vl-120b-a12b",
+      "model": "nemotron-super/nemotron-3-5-super-vl-120b-a12b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3.5-Super-VL",
       "overrides": {
         "contextWindow": 262144,
@@ -775,7 +768,7 @@
       }
     },
     "moonshotai/Kimi-K3.1-Pro": {
-      "model": "kimi-k3/kimi-k3-1-pro",
+      "model": "kimi-pro/kimi-k3-1-pro",
       "matchingModel": "moonshotai/Kimi-K3.1-Pro",
       "overrides": {
         "speed": 2,

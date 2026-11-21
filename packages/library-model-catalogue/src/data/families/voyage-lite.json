@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 32000,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The voyage lite family includes models that produce text.",
+  "models": {
+    "voyage-3-5-lite": {
+      "defaults": {
+        "name": "voyage-3.5-lite",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "releaseDate": "May 20, 2025"
+      }
+    },
+    "voyage-4-lite": {
+      "defaults": {
+        "name": "voyage-4-lite",
+        "description": "Lightweight general-purpose embedding model optimized for latency and cost",
+        "releaseDate": "January 15, 2026"
+      }
+    }
+  }
+}

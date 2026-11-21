@@ -92,7 +92,7 @@
       ]
     },
     "glm-4.5v": {
-      "model": "glm/glm-4-5v",
+      "model": "glmv/glm-4-5v",
       "matchingModel": "glm-4.5v",
       "overrides": {
         "contextWindow": 64000,
@@ -117,10 +117,7 @@
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0018,
         "supportsAttachments": true
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "glm-4.6": {
       "model": "glm/glm-4-6",
@@ -139,7 +136,7 @@
       ]
     },
     "glm-4.6v": {
-      "model": "glm/glm-4-6v",
+      "model": "glmv/glm-4-6v",
       "matchingModel": "glm-4.6v",
       "overrides": {
         "contextWindow": 128000,
@@ -164,10 +161,7 @@
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0009,
         "supportsAttachments": true
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "glm-4.7-flash": {
       "model": "glm-flash/glm-4-7-flash",
@@ -206,14 +200,22 @@
       ]
     },
     "glm-5-turbo": {
-      "model": "glm/glm-5-turbo",
+      "model": "glm-turbo/glm-5-turbo",
       "matchingModel": "glm-5-turbo",
       "overrides": {
         "name": "GLM-5-Turbo",
         "contextWindow": 200000,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.0012,
-        "costPer1kOutputTokens": 0.004
+        "costPer1kOutputTokens": 0.004,
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "glm-5.1": {
@@ -222,7 +224,7 @@
       "overrides": {
         "description": "Strong GLM coding model for agentic engineering, terminals, and repository generation",
         "contextWindow": 200000,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.0014,
         "costPer1kOutputTokens": 0.0044
@@ -292,7 +294,7 @@
       }
     },
     "glm-5v-turbo": {
-      "model": "glm/glm-5v-turbo",
+      "model": "glmv-turbo/glm-5v-turbo",
       "matchingModel": "glm-5v-turbo",
       "overrides": {
         "name": "GLM-5V-Turbo",
@@ -317,11 +319,15 @@
         "lastUpdated": "April 1, 2026",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.004,
-        "supportsAttachments": true
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
     },
     "glm-5.3-flashx": {
       "model": "glm-flash/glm-5-3-flashx",
@@ -349,7 +355,7 @@
       }
     },
     "glm-4.6v-flash": {
-      "model": "glm-flash/glm-4-6v-flash",
+      "model": "glmv-flash/glm-4-6v-flash",
       "matchingModel": "glm-4.6v-flash",
       "overrides": {
         "description": "Lightweight GLM vision model for visual reasoning, documents, and multimodal agents",
@@ -367,6 +373,7 @@
         "lastUpdated": "December 8, 2025",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
+        "supportsResponseFormat": true,
         "supportsAttachments": true
       }
     }

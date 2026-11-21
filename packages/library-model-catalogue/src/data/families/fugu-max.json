@@ -1,0 +1,39 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 11, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "high"
+    }
+  },
+  "description": "The fugu max family includes models that produce text.",
+  "models": {
+    "fugu-max": {
+      "defaults": {
+        "name": "Fugu Max",
+        "description": "Multi-agent model for routing expert agents across complex analytical tasks"
+      }
+    }
+  }
+}

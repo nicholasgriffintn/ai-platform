@@ -1,0 +1,41 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 200000,
+    "maxTokens": 32000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 5,
+    "reliability": 2,
+    "knowledgeCutoffDate": "May 2025",
+    "releaseDate": "October 17, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "high",
+        "max"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The deepseek flash free family includes models that produce text.",
+  "models": {
+    "deepseek-v4-1-flash-free": {
+      "defaults": {
+        "name": "DeepSeek V4.1 Flash Free",
+        "description": "October 17 update of DeepSeek V4.1 Flash with improved reasoning, coding, agentic tasks, and visual understanding"
+      }
+    }
+  }
+}

@@ -192,23 +192,13 @@
       "model": "deepseek-thinking/deepseek-r1-0528",
       "matchingModel": "deepseek-r1-0528",
       "overrides": {
-        "contextWindow": 164000,
-        "maxTokens": 164000,
         "speed": 2,
         "deprecated": true,
         "deprecationMessage": "DeepSeek R1 0528 is no longer offered by Cortecs.",
         "lastUpdated": "May 28, 2025",
         "costPer1kInputTokens": 0.000652,
         "costPer1kOutputTokens": 0.00257,
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsAttachments": false
       }
     },
     "deepseek-v3-0324": {
@@ -252,7 +242,7 @@
       }
     },
     "deepseek-v4-pro": {
-      "model": "deepseek-thinking/deepseek-v4-pro",
+      "model": "deepseek-pro/deepseek-v4-pro",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
         "contextWindow": 1000000,
@@ -426,7 +416,7 @@
       "overrides": {
         "contextWindow": 202752,
         "maxTokens": 202752,
-        "speed": 3,
+        "speed": 4,
         "deprecated": true,
         "deprecationMessage": "GLM-5.1 is no longer offered by Cortecs.",
         "lastUpdated": "April 7, 2026",
@@ -507,11 +497,8 @@
       "model": "kimi-k2/kimi-k2-instruct",
       "matchingModel": "kimi-k2-instruct",
       "overrides": {
-        "contextWindow": 131000,
-        "maxTokens": 131000,
         "deprecated": true,
         "deprecationMessage": "Kimi K2 Instruct is no longer offered by Cortecs.",
-        "knowledgeCutoffDate": "July 2024",
         "lastUpdated": "September 5, 2025",
         "costPer1kInputTokens": 0.000551,
         "costPer1kOutputTokens": 0.002646,
@@ -525,7 +512,6 @@
       "model": "kimi/kimi-k2-thinking",
       "matchingModel": "kimi-k2-thinking",
       "overrides": {
-        "openWeights": true,
         "contextWindow": 262000,
         "maxTokens": 262000,
         "strengths": [
@@ -539,14 +525,7 @@
         "releaseDate": "December 8, 2025",
         "lastUpdated": "December 8, 2025",
         "costPer1kInputTokens": 0.000656,
-        "costPer1kOutputTokens": 0.002731,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.002731
       },
       "unset": [
         "supportsResponseFormat"
@@ -556,8 +535,6 @@
       "model": "kimi-k2/kimi-k2-5",
       "matchingModel": "kimi-k2.5",
       "overrides": {
-        "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
-        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",
@@ -574,9 +551,10 @@
           "tool_use",
           "document"
         ],
-        "speed": 3,
+        "speed": 2,
         "deprecated": true,
         "deprecationMessage": "Kimi K2.5 is no longer offered by Cortecs.",
+        "knowledgeCutoffDate": "January 2025",
         "releaseDate": "January 2026",
         "lastUpdated": "January 2026",
         "costPer1kInputTokens": 0.000495,
@@ -584,7 +562,7 @@
       }
     },
     "kimi-k2.6": {
-      "model": "kimi-k2/kimi-k2-6",
+      "model": "kimi/kimi-k2-6",
       "matchingModel": "kimi-k2.6",
       "overrides": {
         "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
@@ -636,10 +614,10 @@
       }
     },
     "minimax-m2": {
-      "model": "minimax/minimax-m2",
+      "model": "minimax-m/minimax-m2",
       "matchingModel": "minimax-m2",
       "overrides": {
-        "name": "MiniMax-M2",
+        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 400000,
         "maxTokens": 196000,
         "speed": 4,
@@ -651,10 +629,9 @@
       }
     },
     "minimax-m2.1": {
-      "model": "minimax/minimax-m2-1",
+      "model": "minimax-m/minimax-m2-1",
       "matchingModel": "minimax-m2.1",
       "overrides": {
-        "name": "MiniMax-M2.1",
         "contextWindow": 196000,
         "maxTokens": 196000,
         "speed": 3,
@@ -665,7 +642,7 @@
       }
     },
     "minimax-m2.5": {
-      "model": "minimax/minimax-m2-5",
+      "model": "minimax-m/minimax-m2-5",
       "matchingModel": "minimax-m2.5",
       "overrides": {
         "name": "MiniMax-M2.5",
@@ -683,8 +660,6 @@
       "model": "minimax/minimax-m2-7",
       "matchingModel": "minimax-m2.7",
       "overrides": {
-        "name": "MiniMax-m2.7",
-        "maxTokens": 196608,
         "speed": 3,
         "deprecated": true,
         "deprecationMessage": "MiniMax-m2.7 is no longer offered by Cortecs.",
@@ -695,32 +670,25 @@
       }
     },
     "mixtral-8x7B-instruct-v0.1": {
-      "model": "mistral/mixtral-8x7b-instruct-v0-1",
+      "model": "mixtral/mixtral-8x7b-instruct-v0-1",
       "matchingModel": "mixtral-8x7B-instruct-v0.1",
       "overrides": {
-        "name": "Mixtral 8x7B Instruct v0.1",
-        "openWeights": true,
-        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
-        "maxTokens": 4096,
-        "knowledgeCutoffDate": "September 2023",
-        "releaseDate": "December 11, 2023",
         "lastUpdated": "December 11, 2023",
         "costPer1kInputTokens": 0.000488,
         "costPer1kOutputTokens": 0.000758,
-        "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
+        "supportsToolCalls": false
+      },
+      "unset": [
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
     },
     "nemotron-3-super-120b-a12b": {
       "model": "nemotron/nemotron-3-super-120b-a12b",
       "matchingModel": "nemotron-3-super-120b-a12b",
       "overrides": {
+        "contextWindow": 262144,
         "maxTokens": 262144,
         "speed": 4,
         "deprecated": true,
@@ -729,14 +697,7 @@
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.000266,
         "costPer1kOutputTokens": 0.000799,
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": false
       },
       "unset": [
         "supportsResponseFormat"
@@ -821,7 +782,7 @@
       }
     },
     "qwen3-coder-30b-a3b-instruct": {
-      "model": "qwen/qwen3-coder-30b-a3b-instruct",
+      "model": "qwen-coder/qwen3-coder-30b-a3b-instruct",
       "matchingModel": "qwen3-coder-30b-a3b-instruct",
       "overrides": {
         "name": "Qwen3 Coder 30B A3B Instruct",
@@ -862,7 +823,7 @@
       ]
     },
     "qwen3-coder-next": {
-      "model": "qwen/qwen3-coder-next",
+      "model": "qwen-coder/qwen3-coder-next",
       "matchingModel": "qwen3-coder-next",
       "overrides": {
         "name": "Qwen3 Coder Next 80B",
@@ -909,14 +870,6 @@
       "overrides": {
         "name": "Qwen3.5 122B A10B",
         "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -941,14 +894,6 @@
         "description": "Large open Qwen multimodal MoE for visual agents and long technical tasks",
         "contextWindow": 262000,
         "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -1143,32 +1088,17 @@
         "name": "Qwen3.6 35B A3B",
         "description": "Open multimodal Qwen MoE for local agents that need vision, audio, and code",
         "contextWindow": 262000,
-        "maxTokens": 32768,
+        "maxTokens": 64000,
         "speed": 4,
         "lastUpdated": "April 17, 2026",
-        "costPer1kInputTokens": 0.000279,
-        "costPer1kOutputTokens": 0.001671
+        "costPer1kInputTokens": 0.000189,
+        "costPer1kOutputTokens": 0.001281
       }
     },
     "glm-5v-turbo": {
       "model": "glm/glm-5v-turbo",
       "matchingModel": "glm-5v-turbo",
       "overrides": {
-        "maxTokens": 202752,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "deprecated": true,
         "deprecationMessage": "GLM 5V Turbo is no longer offered by Cortecs.",
         "lastUpdated": "April 1, 2026",
@@ -1180,9 +1110,11 @@
       "model": "glm/glm-5-turbo",
       "matchingModel": "glm-5-turbo",
       "overrides": {
+        "openWeights": false,
         "maxTokens": 202752,
         "deprecated": true,
         "deprecationMessage": "GLM 5 Turbo is no longer offered by Cortecs.",
+        "releaseDate": "March 16, 2026",
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.001186,
         "costPer1kOutputTokens": 0.003955,
@@ -1196,8 +1128,8 @@
         "contextWindow": 262000,
         "maxTokens": 81920,
         "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.000111,
-        "costPer1kOutputTokens": 0.000557
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.00039
       }
     },
     "mistral-medium-3.5": {
@@ -1302,8 +1234,8 @@
         "supportsAttachments": false
       },
       "unset": [
-        "openWeights",
         "supportsResponseFormat",
+        "openWeights",
         "knowledgeCutoffDate"
       ]
     },
@@ -1393,7 +1325,7 @@
       }
     },
     "voxtral-small-2507": {
-      "model": "voxtral/voxtral-small-2507",
+      "model": "voxtral-small/voxtral-small-2507",
       "matchingModel": "voxtral-small-2507",
       "overrides": {
         "lastUpdated": "July 15, 2025",
@@ -1403,7 +1335,7 @@
       }
     },
     "qwen3-vl-235b-a22b": {
-      "model": "qwen/qwen3-vl-235b-a22b",
+      "model": "qwen-vl/qwen3-vl-235b-a22b",
       "matchingModel": "qwen3-vl-235b-a22b",
       "overrides": {
         "speed": 3,
@@ -1414,9 +1346,13 @@
       }
     },
     "nvidia-nemotron-3-nano-30b-a3b": {
-      "model": "nemotron/nvidia-nemotron-3-nano-30b-a3b",
+      "model": "nemotron-nano/nvidia-nemotron-3-nano-30b-a3b",
       "matchingModel": "nvidia-nemotron-3-nano-30b-a3b",
       "overrides": {
+        "name": "Nvidia Nemotron 3 Nano 30B A3B",
+        "contextWindow": 256000,
+        "maxTokens": 256000,
+        "reliability": 1,
         "speed": 5,
         "lastUpdated": "December 15, 2025",
         "costPer1kInputTokens": 0.00006,
@@ -1438,7 +1374,7 @@
       }
     },
     "nova-2-lite": {
-      "model": "nova/nova-2-lite",
+      "model": "nova-lite/nova-2-lite",
       "matchingModel": "nova-2-lite",
       "overrides": {
         "description": "Nova 2 Lite is an advanced multimodal reasoning model that combines efficiency and performance, delivering reliable AI for agentic workflows and enterprise applications.",
@@ -1465,7 +1401,7 @@
       }
     },
     "gpt-oss-safeguard-120b": {
-      "model": "gpt-oss/gpt-oss-safeguard-120b",
+      "model": "gpt-oss-safeguard/gpt-oss-safeguard-120b",
       "matchingModel": "gpt-oss-safeguard-120b",
       "overrides": {
         "maxTokens": 128000,
@@ -1473,11 +1409,7 @@
         "costPer1kInputTokens": 0.000179,
         "costPer1kOutputTokens": 0.000697,
         "supportsAttachments": false
-      },
-      "unset": [
-        "strengths",
-        "knowledgeCutoffDate"
-      ]
+      }
     },
     "ministral-8b-2512": {
       "model": "ministral/ministral-3-8b-2512",
@@ -1542,14 +1474,18 @@
       }
     },
     "nemotron-nano-v2-12b": {
-      "model": "nemotron/nemotron-nano-v2-12b",
+      "model": "nemotron-nano/nemotron-nano-v2-12b",
       "matchingModel": "nemotron-nano-v2-12b",
       "overrides": {
         "lastUpdated": "October 28, 2025",
         "costPer1kInputTokens": 0.00024,
         "costPer1kOutputTokens": 0.000707,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "artificialAnalysis"
+      ]
     },
     "magistral-medium-2509": {
       "model": "cortecs/magistral-medium-2509/magistral-medium-2509",
@@ -1586,7 +1522,7 @@
       "matchingModel": "gpt-5",
       "overrides": {
         "name": "GPT 5",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.001427,
         "costPer1kOutputTokens": 0.011372,
@@ -1665,13 +1601,17 @@
       }
     },
     "pixtral-large-2502": {
-      "model": "pixtral/pixtral-large-25-02",
+      "model": "pixtral-large/pixtral-large-25-02",
       "matchingModel": "pixtral-large-2502",
       "overrides": {
         "name": "Pixtral Large 2502",
         "description": "Pixtral Large (25.02) is a 124B open-weight multimodal model built on Mistral Large 2, offering advanced image understanding and strong performance across text and code tasks.",
         "maxTokens": 128000,
-        "contextComplexity": 4,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "April 8, 2025",
         "costPer1kInputTokens": 0.001993,
@@ -1684,10 +1624,7 @@
           ],
           "defaultEffort": "none"
         }
-      },
-      "unset": [
-        "knowledgeCutoffDate"
-      ]
+      }
     },
     "mistral-small-3.2-24b-instruct-2506": {
       "model": "mistral-small/mistral-small-3-2-24b-instruct-2506",
@@ -1803,6 +1740,7 @@
       "overrides": {
         "name": "Nova Lite V1",
         "description": "Nova Lite is a fast, low-cost multimodal foundation model capable of reasoning over text, images, and video in 200+ languages.",
+        "maxTokens": 10000,
         "lastUpdated": "December 5, 2024",
         "costPer1kInputTokens": 0.000069,
         "costPer1kOutputTokens": 0.000275,
@@ -1814,13 +1752,7 @@
           ],
           "defaultEffort": "none"
         }
-      },
-      "unset": [
-        "strengths",
-        "contextComplexity",
-        "reliability",
-        "artificialAnalysis"
-      ]
+      }
     },
     "llama-3.1-nemotron-ultra-253b-v1": {
       "model": "llama/llama-3-1-nemotron-ultra-253b-v1",
@@ -1846,7 +1778,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "deprecated": true,
         "deprecationMessage": "Llama 4 Maverick is no longer offered by Cortecs.",
         "lastUpdated": "April 5, 2025",
@@ -1868,6 +1800,7 @@
         "costPer1kOutputTokens": 0.000537
       },
       "unset": [
+        "contextComplexity",
         "openWeights",
         "supportsResponseFormat"
       ]
@@ -1921,12 +1854,6 @@
             "high"
           ],
           "defaultEffort": "low"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1945,10 +1872,9 @@
       }
     },
     "qwen2.5-vl-72b-instruct": {
-      "model": "qwen/qwen2-5-vl-72b-instruct",
+      "model": "qwen-vl/qwen2-5-vl-72b-instruct",
       "matchingModel": "qwen2.5-vl-72b-instruct",
       "overrides": {
-        "name": "Qwen2.5 VL 72B Instruct",
         "description": "Qwen2.5-VL is a powerful vision-language model with advanced capabilities in visual understanding, long video reasoning, and structured output generation.",
         "contextWindow": 32000,
         "maxTokens": 32000,
@@ -1964,7 +1890,12 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
     },
     "gpt-4o": {
       "model": "gpt/gpt-4o",
@@ -2000,7 +1931,7 @@
       "matchingModel": "gpt-5-mini",
       "overrides": {
         "name": "GPT 5 Mini",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00029,
         "costPer1kOutputTokens": 0.002275,
@@ -2147,7 +2078,7 @@
       }
     },
     "minimax-m3": {
-      "model": "minimax/minimax-m3",
+      "model": "minimax-m/minimax-m3",
       "matchingModel": "minimax-m3",
       "overrides": {
         "contextWindow": 1000000,
@@ -2180,7 +2111,7 @@
       }
     },
     "kimi-k2.7-code": {
-      "model": "kimi-k2/kimi-k2-7-code",
+      "model": "kimi-code/kimi-k2-7-code",
       "matchingModel": "kimi-k2.7-code",
       "overrides": {
         "contextWindow": 256000,
@@ -2213,25 +2144,17 @@
       "model": "Hy/hy3",
       "matchingModel": "hy3",
       "overrides": {
-        "maxTokens": 64000,
         "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Hy3 is no longer offered by Cortecs.",
         "lastUpdated": "July 6, 2026",
         "costPer1kInputTokens": 0.00041,
         "costPer1kOutputTokens": 0.001025,
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": false
       }
     },
     "kimi-k3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
         "contextWindow": 1024000,
@@ -2613,36 +2536,12 @@
       "model": "qwen/qwen3-8-flash-next",
       "matchingModel": "qwen3.8-flash-next",
       "overrides": {
-        "maxTokens": 64000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use",
-          "coding"
-        ],
         "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Qwen3.8 Flash Next is no longer offered by Cortecs.",
         "lastUpdated": "August 27, 2026",
         "costPer1kInputTokens": 0.000201,
-        "costPer1kOutputTokens": 0.0005,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "xhigh"
-          ],
-          "defaultEffort": "low"
-        }
+        "costPer1kOutputTokens": 0.0005
       }
     },
     "gemini-3.8-flash": {
@@ -2670,6 +2569,7 @@
           "coding"
         ],
         "speed": 3,
+        "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.000825,
         "costPer1kOutputTokens": 0.004125
@@ -2865,7 +2765,7 @@
       }
     },
     "kolibri-1": {
-      "model": "cortecs/kolibri-1/kolibri-1",
+      "model": "kolibri/kolibri-1",
       "matchingModel": "kolibri-1",
       "overrides": {
         "lastUpdated": "October 3, 2026",
@@ -2876,7 +2776,7 @@
       }
     },
     "minimax-m3.1-flash": {
-      "model": "minimax/minimax-m3-1-flash",
+      "model": "minimax-m-flash/minimax-m3-1-flash",
       "matchingModel": "minimax-m3.1-flash",
       "overrides": {
         "contextWindow": 1048576,
@@ -2915,7 +2815,7 @@
       }
     },
     "kimi-k3.1-pro": {
-      "model": "kimi-k3/kimi-k3-1-pro",
+      "model": "kimi-pro/kimi-k3-1-pro",
       "matchingModel": "kimi-k3.1-pro",
       "overrides": {
         "maxTokens": 500000,
@@ -3074,7 +2974,7 @@
       }
     },
     "inkling-2-small": {
-      "model": "ling/inkling-2-small",
+      "model": "inkling-small/inkling-2-small",
       "matchingModel": "inkling-2-small",
       "overrides": {
         "contextWindow": 1048000,
@@ -3095,7 +2995,7 @@
       }
     },
     "nemotron-3.5-super-vl": {
-      "model": "nemotron/nemotron-3-5-super-vl-120b-a12b",
+      "model": "nemotron-super/nemotron-3-5-super-vl-120b-a12b",
       "matchingModel": "nemotron-3.5-super-vl",
       "overrides": {
         "contextWindow": 1000000,

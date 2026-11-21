@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 15000,
+    "maxTokens": 15000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "releaseDate": "March 16, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The grok tts family includes models that produce audio.",
+  "models": {
+    "grok-tts": {
+      "defaults": {
+        "name": "Grok TTS",
+        "description": "Convert text into spoken audio with a single API call. The API supports a rich set of expressive voices, inline speech tags for fine-grained delivery control, and output formats from high-fidelity MP3 to telephony-optimized μ-law."
+      }
+    }
+  }
+}

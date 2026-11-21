@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 262144,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "July 2, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The laguna xs family includes models that produce text.",
+  "models": {
+    "laguna-xs-2-1": {
+      "defaults": {
+        "name": "Laguna XS 2.1",
+        "description": "Agentic coding model from Poolside in the XS size class for local deployment"
+      }
+    }
+  }
+}

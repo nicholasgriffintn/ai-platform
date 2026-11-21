@@ -1,0 +1,42 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 200000,
+    "maxTokens": 32000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "audio",
+        "video",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "reliability": 2,
+    "knowledgeCutoffDate": "September 22, 2026",
+    "releaseDate": "September 22, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The mimo flash free family includes models that produce text.",
+  "models": {
+    "mimo-v2-6-flash-free": {
+      "defaults": {
+        "name": "MiMo-V2.6-Flash Free",
+        "description": "MiMo Flash model for multimodal coding agents and long-context automation"
+      }
+    }
+  }
+}

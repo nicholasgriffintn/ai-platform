@@ -50,7 +50,7 @@
       }
     },
     "MiniMaxAI/MiniMax-M3": {
-      "model": "minimax/minimax-m3",
+      "model": "minimax-m/minimax-m3",
       "matchingModel": "MiniMaxAI/MiniMax-M3",
       "overrides": {
         "contextWindow": 1048576,
@@ -74,15 +74,8 @@
       "model": "kimi-k2/kimi-k2-7-code",
       "matchingModel": "moonshotai/Kimi-K2.7-Code",
       "overrides": {
+        "description": "Coding-focused Kimi model, stronger on long-horizon repo work with less overthinking",
         "maxTokens": 8000,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use",
           "coding"
@@ -96,7 +89,7 @@
       }
     },
     "moonshotai/Kimi-K3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "moonshotai/Kimi-K3",
       "overrides": {
         "contextWindow": 1024000,
@@ -146,7 +139,7 @@
       }
     },
     "nvidia/Nemotron-3_5-Lightning": {
-      "model": "nemotron/nemotron-3-5-lightning-30b-a3b",
+      "model": "nemotron-lightning/nemotron-3-5-lightning-30b-a3b",
       "matchingModel": "nvidia/Nemotron-3_5-Lightning",
       "overrides": {
         "description": "Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads",
@@ -177,11 +170,12 @@
       }
     },
     "nvidia/nemotron-3-super-120b-a12b": {
-      "model": "nemotron/nemotron-3-super-120b-a12b",
+      "model": "nemotron-super/nemotron-3-super-120b-a12b",
       "matchingModel": "nvidia/nemotron-3-super-120b-a12b",
       "overrides": {
         "name": "Nemotron-3-Super-120B-A12B",
         "maxTokens": 32768,
+        "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -196,7 +190,7 @@
       }
     },
     "nvidia/Nemotron-3-Ultra-550b-a55b": {
-      "model": "nemotron/nemotron-3-ultra-550b-a55b",
+      "model": "nemotron-ultra/nemotron-3-ultra-550b-a55b",
       "matchingModel": "nvidia/Nemotron-3-Ultra-550b-a55b",
       "overrides": {
         "contextWindow": 1048576,
@@ -258,7 +252,7 @@
       }
     },
     "Qwen/Qwen3-Embedding-8B": {
-      "model": "qwen/qwen3-embedding-8b",
+      "model": "qwen-embedding/qwen3-embedding-8b",
       "matchingModel": "Qwen/Qwen3-Embedding-8B",
       "overrides": {
         "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
@@ -279,14 +273,6 @@
         "name": "Qwen3.5-397B-A17B",
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
         "maxTokens": 8192,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -391,7 +377,7 @@
       }
     },
     "meta-models/muse-spark-open": {
-      "model": "muse/muse-spark-open",
+      "model": "muse-spark/muse-spark-open",
       "matchingModel": "meta-models/muse-spark-open",
       "overrides": {
         "description": "Muse Spark Open is an 816B total / 42B active open-weight multimodal reasoning model from Meta for coding and long-horizon agentic work, with 1M-token context.",
@@ -420,7 +406,7 @@
       }
     },
     "nvidia/Nemotron-3.5-Super-VL": {
-      "model": "nemotron/nemotron-3-5-super-vl-120b-a12b",
+      "model": "nemotron-super/nemotron-3-5-super-vl-120b-a12b",
       "matchingModel": "nvidia/Nemotron-3.5-Super-VL",
       "overrides": {
         "description": "NVIDIA vision-language reasoning model for coding, visual understanding, and agentic tool use",
@@ -498,7 +484,7 @@
       }
     },
     "MiniMaxAI/MiniMax-M3.1-Flash": {
-      "model": "minimax/minimax-m3-1-flash",
+      "model": "minimax-m-flash/minimax-m3-1-flash",
       "matchingModel": "MiniMaxAI/MiniMax-M3.1-Flash",
       "overrides": {
         "contextWindow": 1048576,
@@ -531,7 +517,7 @@
       }
     },
     "deepseek-ai/DeepSeek-V4-Pro-0813": {
-      "model": "deepseek-thinking/deepseek-v4-pro-0813",
+      "model": "deepseek-pro/deepseek-v4-pro-0813",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro-0813",
       "overrides": {
         "contextWindow": 979000,
@@ -575,7 +561,7 @@
       }
     },
     "moonshotai/Kimi-K3.1-Pro": {
-      "model": "kimi-k3/kimi-k3-1-pro",
+      "model": "kimi-pro/kimi-k3-1-pro",
       "matchingModel": "moonshotai/Kimi-K3.1-Pro",
       "overrides": {
         "speed": 2,
@@ -596,7 +582,7 @@
       }
     },
     "thinkingmachines/Inkling-2-Small": {
-      "model": "ling/inkling-2-small",
+      "model": "inkling-small/inkling-2-small",
       "matchingModel": "thinkingmachines/Inkling-2-Small",
       "overrides": {
         "maxTokens": 1048576,
@@ -617,6 +603,20 @@
           ],
           "defaultEffort": "none"
         }
+      }
+    },
+    "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B": {
+      "model": "nemotron-nano/nvidia-nemotron-3-nano-30b-a3b",
+      "matchingModel": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+      "overrides": {
+        "name": "NVIDIA-Nemotron-3-Nano-30B-A3B",
+        "description": "Small Nemotron 3 MoE for efficient coding, math, and long-context agents",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "speed": 5,
+        "lastUpdated": "December 15, 2025",
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00024
       }
     }
   }

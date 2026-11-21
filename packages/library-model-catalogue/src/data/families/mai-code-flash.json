@@ -1,0 +1,66 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "maxTokens": 128000,
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The mai code flash family includes models that produce text.",
+  "models": {
+    "mai-code-1-1-flash": {
+      "defaults": {
+        "name": "MAI-Code-1.1-Flash",
+        "description": "Microsoft coding model with native vision support, optimized for fast and efficient software development",
+        "contextWindow": 256000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 11, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "mai-code-2-flash": {
+      "defaults": {
+        "name": "MAI Code 2 Flash",
+        "description": "Microsoft's lightweight coding model for explanations, targeted edits and routine fixes at high volume",
+        "contextWindow": 1050000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 17, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    }
+  }
+}

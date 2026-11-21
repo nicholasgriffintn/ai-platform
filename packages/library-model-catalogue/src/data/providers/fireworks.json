@@ -103,6 +103,7 @@
       "model": "kimi/kimi-k2-instruct",
       "matchingModel": "accounts/fireworks/models/kimi-k2-instruct",
       "overrides": {
+        "description": "Kimi K2 instruction-following model optimized for conversational AI and task completion.",
         "contextWindow": 128000,
         "maxTokens": 16384,
         "strengths": [
@@ -113,11 +114,14 @@
         "contextComplexity": 4,
         "reliability": 4,
         "speed": 3,
-        "releaseDate": "July 11, 2025",
         "lastUpdated": "July 11, 2025",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.003
-      }
+      },
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
     },
     "accounts/fireworks/models/deepseek-v3p1": {
       "model": "deepseek/deepseek-v3-1",
@@ -169,8 +173,8 @@
         "costPer1kOutputTokens": 0.00219
       },
       "unset": [
-        "openWeights",
         "supportsResponseFormat",
+        "openWeights",
         "reasoningConfig"
       ]
     },
@@ -185,8 +189,8 @@
         "costPer1kOutputTokens": 0.00088
       },
       "unset": [
-        "openWeights",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "openWeights"
       ]
     },
     "accounts/fireworks/models/glm-4p6": {
@@ -202,8 +206,8 @@
         "costPer1kOutputTokens": 0.00219
       },
       "unset": [
-        "openWeights",
         "supportsResponseFormat",
+        "openWeights",
         "reasoningConfig"
       ]
     },
@@ -219,8 +223,8 @@
         "costPer1kOutputTokens": 0.0022
       },
       "unset": [
-        "openWeights",
         "supportsResponseFormat",
+        "openWeights",
         "reasoningConfig"
       ]
     },
@@ -258,18 +262,46 @@
         "lastUpdated": "November 6, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0025
-      }
+      },
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat",
+        "reasoningConfig"
+      ]
     },
     "accounts/fireworks/models/kimi-k2p5": {
       "model": "kimi/kimi-k2-5",
       "matchingModel": "accounts/fireworks/models/kimi-k2p5",
       "overrides": {
-        "speed": 3,
+        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
+        "contextWindow": 256000,
+        "maxTokens": 256000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 2,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
     },
     "accounts/fireworks/models/minimax-m2": {
       "model": "minimax/minimax-m2",
@@ -285,7 +317,6 @@
         "costPer1kOutputTokens": 0.0012
       },
       "unset": [
-        "openWeights",
         "reasoningConfig"
       ]
     },
@@ -302,7 +333,6 @@
         "costPer1kOutputTokens": 0.0012
       },
       "unset": [
-        "openWeights",
         "reasoningConfig"
       ]
     },
@@ -314,14 +344,14 @@
         "contextWindow": 256000,
         "maxTokens": 32768,
         "speed": 3,
+        "releaseDate": "July 22, 2025",
         "lastUpdated": "July 22, 2025",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0018
       },
       "unset": [
         "openWeights",
-        "supportsResponseFormat",
-        "knowledgeCutoffDate"
+        "supportsResponseFormat"
       ]
     },
     "accounts/fireworks/models/glm-5": {
@@ -336,8 +366,8 @@
         "costPer1kOutputTokens": 0.0032
       },
       "unset": [
-        "openWeights",
         "supportsResponseFormat",
+        "openWeights",
         "reasoningConfig"
       ]
     },
@@ -347,7 +377,7 @@
       "overrides": {
         "name": "GLM 5.1",
         "contextWindow": 202800,
-        "speed": 3,
+        "speed": 4,
         "releaseDate": "April 1, 2026",
         "lastUpdated": "April 1, 2026",
         "costPer1kInputTokens": 0.0014,
@@ -362,45 +392,22 @@
       "matchingModel": "accounts/fireworks/models/minimax-m2p5",
       "overrides": {
         "name": "MiniMax-M2.5",
-        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
         "contextWindow": 196608,
         "maxTokens": 196608,
         "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
-      },
-      "unset": [
-        "openWeights"
-      ]
+      }
     },
     "accounts/fireworks/models/qwen3p6-plus": {
       "model": "qwen/qwen-3-6-plus",
       "matchingModel": "accounts/fireworks/models/qwen3p6-plus",
       "overrides": {
-        "contextWindow": 262144,
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "April 4, 2026",
         "lastUpdated": "April 4, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": true
       },
       "unset": [
         "openWeights",
@@ -414,7 +421,11 @@
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0
-      }
+      },
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
     },
     "accounts/fireworks/routers/glm-5p1-fast": {
       "model": "glm/glm-5-1-fast",
@@ -449,7 +460,7 @@
       }
     },
     "accounts/fireworks/models/minimax-m3": {
-      "model": "minimax/minimax-m3",
+      "model": "minimax-m/minimax-m3",
       "matchingModel": "accounts/fireworks/models/minimax-m3",
       "overrides": {
         "description": "Fireworks text-only MiniMax coding model for long-context reasoning and agent tasks",
@@ -485,30 +496,10 @@
       "model": "qwen/qwen-3-7-plus",
       "matchingModel": "accounts/fireworks/models/qwen3p7-plus",
       "overrides": {
-        "contextWindow": 262144,
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "June 12, 2026",
         "lastUpdated": "June 12, 2026",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0016,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsAttachments": true
       },
       "unset": [
         "supportsResponseFormat"
@@ -547,7 +538,7 @@
       ]
     },
     "accounts/fireworks/models/kimi-k3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "accounts/fireworks/models/kimi-k3",
       "overrides": {
         "speed": 2,
@@ -568,7 +559,7 @@
       }
     },
     "accounts/fireworks/routers/kimi-k3-fast": {
-      "model": "kimi-k3/kimi-k3-fast",
+      "model": "kimi/kimi-k3-fast",
       "matchingModel": "accounts/fireworks/routers/kimi-k3-fast",
       "overrides": {
         "lastUpdated": "July 16, 2026",
@@ -588,7 +579,7 @@
       }
     },
     "accounts/fireworks/models/qwen3p8-max": {
-      "model": "qwen/qwen3-8-max",
+      "model": "qwen-max/qwen3-8-max",
       "matchingModel": "accounts/fireworks/models/qwen3p8-max",
       "overrides": {
         "contextWindow": 262144,
@@ -605,6 +596,7 @@
           "tool_use",
           "coding"
         ],
+        "contextComplexity": 4,
         "speed": 2,
         "lastUpdated": "August 3, 2026",
         "costPer1kInputTokens": 0.002,
@@ -813,7 +805,7 @@
       }
     },
     "accounts/fireworks/routers/kimi-fast-latest": {
-      "model": "kimi-k3/kimi-fast-latest",
+      "model": "kimi/kimi-fast-latest",
       "matchingModel": "accounts/fireworks/routers/kimi-fast-latest",
       "overrides": {
         "lastUpdated": "July 16, 2026",
@@ -824,29 +816,46 @@
       }
     },
     "accounts/fireworks/routers/kimi-latest": {
-      "model": "kimi-k3/kimi-latest",
+      "model": "kimi/kimi-latest",
       "matchingModel": "accounts/fireworks/routers/kimi-latest",
       "overrides": {
+        "openWeights": true,
+        "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
+        "maxTokens": 1048576,
+        "releaseDate": "July 16, 2026",
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsAttachments": true,
-        "supportsTemperature": false
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "accounts/fireworks/routers/minimax-latest": {
-      "model": "minimax/minimax-latest",
+      "model": "minimax-m/minimax-latest",
       "matchingModel": "accounts/fireworks/routers/minimax-latest",
       "overrides": {
-        "contextWindow": 512000,
-        "releaseDate": "June 1, 2026",
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
-      }
+      },
+      "unset": [
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
     },
     "accounts/fireworks/routers/qwen-max-latest": {
-      "model": "qwen/qwen-max-latest-qwen3-8-max",
+      "model": "qwen-max/qwen-max-latest-qwen3-8-max",
       "matchingModel": "accounts/fireworks/routers/qwen-max-latest",
       "overrides": {
         "lastUpdated": "August 3, 2026",
@@ -856,18 +865,29 @@
       }
     },
     "accounts/fireworks/models/ember-1": {
-      "model": "fireworks/accounts/fireworks/models/ember-1/ember-1",
+      "model": "ember/ember-1",
       "matchingModel": "accounts/fireworks/models/ember-1",
       "overrides": {
+        "description": "Specialized model from Fireworks built on Kimi K3, producing shorter reasoning traces with approximately 40% fewer tokens while maintaining comparable quality",
+        "maxTokens": 131072,
         "isFeatured": true,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
-        "supportsAttachments": true
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "accounts/fireworks/models/minimax-m3p1-flash": {
-      "model": "minimax/minimax-m3-1-flash",
+      "model": "minimax-m-flash/minimax-m3-1-flash",
       "matchingModel": "accounts/fireworks/models/minimax-m3p1-flash",
       "overrides": {
         "maxTokens": 512000,
@@ -893,7 +913,7 @@
       }
     },
     "accounts/fireworks/models/muse-spark-open": {
-      "model": "muse/muse-spark-open",
+      "model": "muse-spark/muse-spark-open",
       "matchingModel": "accounts/fireworks/models/muse-spark-open",
       "overrides": {
         "description": "Muse Spark Open is an 816B total / 42B active open-weight multimodal reasoning model from Meta for coding and long-horizon agentic work, with 1M-token context.",
@@ -940,7 +960,7 @@
       }
     },
     "accounts/fireworks/models/kimi-k3p1-pro": {
-      "model": "kimi-k3/kimi-k3-1-pro",
+      "model": "kimi-pro/kimi-k3-1-pro",
       "matchingModel": "accounts/fireworks/models/kimi-k3p1-pro",
       "overrides": {
         "speed": 2,

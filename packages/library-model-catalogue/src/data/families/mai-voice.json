@@ -1,0 +1,44 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "Speech generation model for controllable voice, narration, and audio delivery",
+  "models": {
+    "mai-voice-2": {
+      "defaults": {
+        "name": "MAI-Voice-2",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "releaseDate": "June 2, 2026"
+      }
+    },
+    "mai-voice-2-1": {
+      "defaults": {
+        "name": "MAI-Voice-2.1",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "releaseDate": "October 1, 2026"
+      }
+    }
+  }
+}

@@ -213,7 +213,7 @@
       "matchingModel": "gpt-5",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00107,
         "costPer1kOutputTokens": 0.0085,
@@ -296,11 +296,19 @@
       ]
     },
     "gpt-5.1-codex-mini": {
-      "model": "gpt-codex/gpt-5-1-codex-mini",
+      "model": "gpt-codex-mini/gpt-5-1-codex-mini",
       "matchingModel": "gpt-5.1-codex-mini",
       "overrides": {
         "name": "GPT-5.1 Codex Mini",
-        "description": "Coding-optimized GPT model for repository edits, reviews, and agentic software work",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "speed": 3,
         "lastUpdated": "November 13, 2025",
         "costPer1kInputTokens": 0.00025,
@@ -478,7 +486,7 @@
       }
     },
     "kimi-k2.5": {
-      "model": "kimi-k2/kimi-k2-5",
+      "model": "kimi/kimi-k2-5",
       "matchingModel": "kimi-k2.5",
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
@@ -499,7 +507,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
@@ -510,7 +518,7 @@
       ]
     },
     "kimi-k2.6": {
-      "model": "kimi-k2/kimi-k2-6",
+      "model": "kimi/kimi-k2-6",
       "matchingModel": "kimi-k2.6",
       "overrides": {
         "maxTokens": 65536,
@@ -541,7 +549,7 @@
       ]
     },
     "minimax-m2.5": {
-      "model": "minimax/minimax-m2-5",
+      "model": "minimax-m/minimax-m2-5",
       "matchingModel": "minimax-m2.5",
       "overrides": {
         "name": "MiniMax M2.5",
@@ -560,12 +568,11 @@
       ]
     },
     "minimax-m2.7": {
-      "model": "minimax/minimax-m2-7",
+      "model": "minimax-m/minimax-m2-7",
       "matchingModel": "minimax-m2.7",
       "overrides": {
         "name": "MiniMax M2.7",
         "contextWindow": 204800,
-        "maxTokens": 131072,
         "speed": 3,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "March 18, 2026",
@@ -578,7 +585,7 @@
       ]
     },
     "qwen3.5-plus": {
-      "model": "qwen/qwen3-5-plus",
+      "model": "qwen-plus/qwen3-5-plus",
       "matchingModel": "qwen3.5-plus",
       "overrides": {
         "contextWindow": 262144,
@@ -592,7 +599,7 @@
       ]
     },
     "qwen3.6-plus": {
-      "model": "qwen/qwen3-6-plus",
+      "model": "qwen-plus/qwen3-6-plus",
       "matchingModel": "qwen3.6-plus",
       "overrides": {
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
@@ -608,7 +615,7 @@
       ]
     },
     "deepseek-v4-pro": {
-      "model": "deepseek-thinking/deepseek-v4-pro",
+      "model": "deepseek-pro/deepseek-v4-pro",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
         "contextWindow": 1000000,
@@ -653,10 +660,9 @@
       ]
     },
     "kimi-k2.7-code": {
-      "model": "kimi-k2/kimi-k2-7-code",
+      "model": "kimi-code/kimi-k2-7-code",
       "matchingModel": "kimi-k2.7-code",
       "overrides": {
-        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",
@@ -682,7 +688,7 @@
       }
     },
     "minimax-m3": {
-      "model": "minimax/minimax-m3",
+      "model": "minimax-m/minimax-m3",
       "matchingModel": "minimax-m3",
       "overrides": {
         "contextWindow": 512000,
@@ -810,7 +816,7 @@
       ]
     },
     "kimi-k3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
         "modalities": {
@@ -846,7 +852,7 @@
       }
     },
     "nemotron-3.5-lightning-free": {
-      "model": "nemotron/nemotron-3-5-lightning-free",
+      "model": "nemotron-lightning-free/nemotron-3-5-lightning-free",
       "matchingModel": "nemotron-3.5-lightning-free",
       "overrides": {
         "name": "Nemotron 3.5 Lightning Free",
@@ -882,7 +888,7 @@
       }
     },
     "muse-spark-1.2": {
-      "model": "muse/muse-spark-1-2",
+      "model": "muse-spark/muse-spark-1-2",
       "matchingModel": "muse-spark-1.2",
       "overrides": {
         "maxTokens": 131072,
@@ -937,10 +943,7 @@
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
         "apiBaseUrl": "https://opencode.ai/inference/google/v1beta"
-      },
-      "unset": [
-        "knowledgeCutoffDate"
-      ]
+      }
     },
     "glm-5.3": {
       "model": "glm/glm-5-3",
@@ -996,7 +999,7 @@
       }
     },
     "muse-spark-1.3": {
-      "model": "muse/muse-spark-1-3",
+      "model": "muse-spark/muse-spark-1-3",
       "matchingModel": "muse-spark-1.3",
       "overrides": {
         "description": "Muse Spark 1.3 is a multimodal reasoning model from Meta for long-running agentic, multi-agent, and coding workflows. It improves long-horizon agent collaboration, instruction following, and coding efficiency relative to Muse Spark 1.2.",
@@ -1077,7 +1080,7 @@
       }
     },
     "qwen3.8-flash": {
-      "model": "qwen/qwen3-8-flash",
+      "model": "qwen-flash/qwen3-8-flash",
       "matchingModel": "qwen3.8-flash",
       "overrides": {
         "lastUpdated": "August 26, 2026",
@@ -1095,7 +1098,7 @@
       }
     },
     "mimo-v2.6-flash-free": {
-      "model": "mimo/mimo-v2-6-flash-free",
+      "model": "mimo-flash-free/mimo-v2-6-flash-free",
       "matchingModel": "mimo-v2.6-flash-free",
       "overrides": {
         "lastUpdated": "September 22, 2026",
@@ -1148,7 +1151,7 @@
       }
     },
     "qwen3.8-max": {
-      "model": "qwen/qwen3-8-max",
+      "model": "qwen-max/qwen3-8-max",
       "matchingModel": "qwen3.8-max",
       "overrides": {
         "contextWindow": 262144,
@@ -1167,6 +1170,7 @@
           "tool_use",
           "coding"
         ],
+        "contextComplexity": 4,
         "speed": 2,
         "lastUpdated": "August 3, 2026",
         "costPer1kInputTokens": 0.002,
@@ -1256,7 +1260,7 @@
       }
     },
     "beam-free": {
-      "model": "beam/beam-free",
+      "model": "beam-free/beam-free",
       "matchingModel": "beam-free",
       "overrides": {
         "lastUpdated": "October 16, 2026",
@@ -1266,7 +1270,7 @@
       }
     },
     "deepseek-v4.1-flash-free": {
-      "model": "deepseek-flash/deepseek-v4-1-flash-free",
+      "model": "deepseek-flash-free/deepseek-v4-1-flash-free",
       "matchingModel": "deepseek-v4.1-flash-free",
       "overrides": {
         "lastUpdated": "October 17, 2026",
@@ -1275,7 +1279,7 @@
       }
     },
     "flint-40b-free": {
-      "model": "flint/flint-40b-free",
+      "model": "flint-free/flint-40b-free",
       "matchingModel": "flint-40b-free",
       "overrides": {
         "lastUpdated": "October 21, 2026",
@@ -1285,7 +1289,7 @@
       }
     },
     "muse-wonder-1.0": {
-      "model": "muse/muse-wonder",
+      "model": "muse-wonder/muse-wonder",
       "matchingModel": "muse-wonder-1.0",
       "overrides": {
         "description": "Muse Wonder is a frontier multimodal reasoning model from Meta for personal and professional agents, long-horizon coding, and computer use. It combines Active Memory, which carries relevant context across conversations, with Active Focus, which keeps it working through blockers toward a goal.",
@@ -1297,7 +1301,7 @@
       }
     },
     "nemotron-3.5-super-vl-free": {
-      "model": "nemotron/nemotron-3-5-super-vl-free",
+      "model": "nemotron-super-free/nemotron-3-5-super-vl-free",
       "matchingModel": "nemotron-3.5-super-vl-free",
       "overrides": {
         "name": "Nemotron 3.5 Super VL Free",
@@ -1351,7 +1355,7 @@
       }
     },
     "longcat-2.5-free": {
-      "model": "longcat/longcat-2-5-free",
+      "model": "longcat-free/longcat-2-5-free",
       "matchingModel": "longcat-2.5-free",
       "overrides": {
         "lastUpdated": "November 2, 2026",
@@ -1361,7 +1365,7 @@
       }
     },
     "muse-ember-1.0": {
-      "model": "muse/muse-ember-1-0",
+      "model": "muse-ember/muse-ember-1-0",
       "matchingModel": "muse-ember-1.0",
       "overrides": {
         "lastUpdated": "November 9, 2026",
@@ -1369,7 +1373,10 @@
         "costPer1kOutputTokens": 0.0005
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "strengths",
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "gemini-4-carbon": {
@@ -1434,7 +1441,7 @@
       }
     },
     "hy4-flash-free": {
-      "model": "Hy/hy4-flash-free",
+      "model": "hy-flash-free/hy4-flash-free",
       "matchingModel": "hy4-flash-free",
       "overrides": {
         "lastUpdated": "November 16, 2026",

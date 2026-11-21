@@ -22,7 +22,6 @@
       "matchingModel": "kimi-k2-thinking",
       "overrides": {
         "description": "Thinking Kimi model for slower research passes, planning, and hard technical questions",
-        "maxTokens": 262144,
         "strengths": [
           "reasoning",
           "coding",
@@ -51,7 +50,7 @@
       "model": "kimi-k2/kimi-k2-5",
       "matchingModel": "kimi-k2.5",
       "overrides": {
-        "maxTokens": 262144,
+        "description": "Earlier Kimi frontier model for long-context agents, coding, and multimodal work",
         "modalities": {
           "input": [
             "text"
@@ -66,10 +65,11 @@
           "tool_use",
           "document"
         ],
-        "speed": 3,
+        "speed": 2,
         "deprecated": true,
         "deprecationMessage": "Kimi K2.5 is being retired by the end of December 2026. Use Kimi K3 instead.",
         "replacementModel": "kimi-k3",
+        "knowledgeCutoffDate": "January 2025",
         "releaseDate": "January 2026",
         "lastUpdated": "January 2026",
         "costPer1kInputTokens": 0.0006,
@@ -80,12 +80,9 @@
       "model": "kimi-k2/kimi-k2-0711",
       "matchingModel": "kimi-k2-0711-preview",
       "overrides": {
-        "maxTokens": 16384,
         "deprecated": true,
         "deprecationMessage": "Kimi K2 0711 is being retired by the end of December 2026. Use Kimi K3 instead.",
         "replacementModel": "kimi-k3",
-        "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "July 14, 2025",
         "lastUpdated": "July 14, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0025,
@@ -93,10 +90,7 @@
         "supportsTemperature": true
       },
       "unset": [
-        "supportsResponseFormat",
-        "contextComplexity",
-        "reliability",
-        "artificialAnalysis"
+        "supportsResponseFormat"
       ]
     },
     "kimi-k2-0905-preview": {
@@ -152,7 +146,7 @@
       ]
     },
     "kimi-k2.6": {
-      "model": "kimi-k2/kimi-k2-6",
+      "model": "kimi/kimi-k2-6",
       "matchingModel": "kimi-k2.6",
       "overrides": {
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
@@ -181,10 +175,9 @@
       }
     },
     "kimi-k2.7-code": {
-      "model": "kimi-k2/kimi-k2-7-code",
+      "model": "kimi-code/kimi-k2-7-code",
       "matchingModel": "kimi-k2.7-code",
       "overrides": {
-        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",
@@ -210,7 +203,7 @@
       }
     },
     "kimi-k2.7-code-highspeed": {
-      "model": "kimi-k2/kimi-k2-7-code-highspeed",
+      "model": "kimi-code/kimi-k2-7-code-highspeed",
       "matchingModel": "kimi-k2.7-code-highspeed",
       "overrides": {
         "lastUpdated": "June 12, 2026",
@@ -219,7 +212,7 @@
       }
     },
     "kimi-k3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
         "modalities": {
@@ -255,7 +248,7 @@
       }
     },
     "kimi-k3.1-pro": {
-      "model": "kimi-k3/kimi-k3-1-pro",
+      "model": "kimi-pro/kimi-k3-1-pro",
       "matchingModel": "kimi-k3.1-pro",
       "overrides": {
         "modalities": {
@@ -283,7 +276,7 @@
       }
     },
     "kimi-k3.1-pro-highspeed": {
-      "model": "kimi-k3/kimi-k3-1-pro-highspeed",
+      "model": "kimi-pro/kimi-k3-1-pro-highspeed",
       "matchingModel": "kimi-k3.1-pro-highspeed",
       "overrides": {
         "lastUpdated": "October 23, 2026",

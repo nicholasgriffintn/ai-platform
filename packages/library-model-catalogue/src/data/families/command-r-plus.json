@@ -1,0 +1,41 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 128000,
+    "maxTokens": 4000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "contextComplexity": 3,
+    "reliability": 1,
+    "knowledgeCutoffDate": "June 1, 2024",
+    "releaseDate": "August 30, 2024",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
+  },
+  "description": "The command r plus family includes models that produce text.",
+  "models": {
+    "command-r": {
+      "defaults": {
+        "name": "Command R+",
+        "description": "Cohere's RAG workhorse for long-context enterprise search and tool use"
+      }
+    }
+  }
+}

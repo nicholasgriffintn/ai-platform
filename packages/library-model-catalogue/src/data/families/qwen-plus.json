@@ -1,0 +1,376 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "knowledgeCutoffDate": "April 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The qwen plus family includes models that produce text.",
+  "models": {
+    "qwen-3-5-plus": {
+      "defaults": {
+        "name": "Qwen 3.5 Plus",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 16, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen-3-6-plus": {
+      "defaults": {
+        "name": "Qwen 3.6 Plus",
+        "description": "Earlier Qwen multimodal workhorse for million-token agent and document tasks",
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
+        "releaseDate": "April 2, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "qwen-3-7-plus": {
+      "defaults": {
+        "name": "Qwen 3.7 Plus",
+        "description": "Multimodal Qwen workhorse for long-context agents, visual inputs, and coding",
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "releaseDate": "June 2, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "qwen-plus": {
+      "defaults": {
+        "name": "Qwen Plus",
+        "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "January 25, 2024",
+        "supportsResponseFormat": true,
+        "supportsAttachments": false
+      }
+    },
+    "qwen-plus-character-japanese": {
+      "defaults": {
+        "name": "Qwen Plus Character (Japanese)",
+        "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
+        "contextWindow": 8192,
+        "maxTokens": 512,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "January 2024",
+        "supportsToolCalls": false,
+        "supportsAttachments": false
+      }
+    },
+    "qwen-qwen-3-5-plus": {
+      "defaults": {
+        "name": "Qwen: Qwen 3.5 Plus",
+        "description": "The Qwen3.5 native vision-language series Plus models are built on a hybrid architecture that integrates linear attention mechanisms with sparse mixture-of-experts models, achieving higher inference efficiency. In a variety of task evaluations, the 3.5 series consistently demonstrates performance on par with state-of-the-art leading models. Compared to the 3 series, these models show a leap forward in both pure-text and multimodal capabilities.",
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 16, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen-qwen3-5-plus-2026-02-15": {
+      "defaults": {
+        "name": "Qwen: Qwen3.5 Plus 2026-02-15",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 16, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3-5-plus": {
+      "defaults": {
+        "name": "Qwen3.5 Plus",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 16, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3-5-plus-2026-02-15": {
+      "defaults": {
+        "name": "Qwen3.5 Plus 2026-02-15",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 16, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3-5-plus-2026-04-20": {
+      "defaults": {
+        "name": "Qwen3.5 Plus 2026-04-20",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "April 27, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3-6-plus": {
+      "defaults": {
+        "name": "Qwen3.6 Plus",
+        "description": "Earlier Qwen multimodal workhorse for million-token agent and document tasks",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
+        "releaseDate": "April 2, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "qwen3-7-plus": {
+      "defaults": {
+        "name": "Qwen3.7 Plus",
+        "description": "Multimodal Qwen workhorse for long-context agents, visual inputs, and coding",
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 5,
+        "reliability": 2,
+        "releaseDate": "June 2, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    }
+  }
+}

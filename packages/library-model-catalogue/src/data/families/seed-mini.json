@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "February 14, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The seed mini family includes models that produce text.",
+  "models": {
+    "seed-2-0-mini": {
+      "defaults": {
+        "name": "Seed 2.0 Mini",
+        "description": "Lightweight ByteDance Seed 2.0 model for low-latency multimodal reasoning and high-volume tasks"
+      }
+    }
+  }
+}

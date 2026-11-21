@@ -1,0 +1,134 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 4,
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "high"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The hy family includes models that produce text.",
+  "models": {
+    "hy3": {
+      "defaults": {
+        "name": "Hy3",
+        "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
+        "contextWindow": 262144,
+        "maxTokens": 128000,
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 2,
+        "releaseDate": "July 6, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "hy4": {
+      "defaults": {
+        "name": "Hy4",
+        "openWeights": false,
+        "description": "A next-generation multimodal productivity model with significantly enhanced Agent and complex task execution capabilities.",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 1,
+        "releaseDate": "November 4, 2026",
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 34.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "hy4-preview": {
+      "defaults": {
+        "name": "Hy4 preview",
+        "description": "A next-generation productivity model with significantly enhanced Agent and complex task execution capabilities.",
+        "contextWindow": 1048576,
+        "maxTokens": 64000,
+        "releaseDate": "August 28, 2026"
+      }
+    },
+    "tencent-hy4": {
+      "defaults": {
+        "openWeights": false,
+        "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 1,
+        "releaseDate": "November 4, 2026",
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 34.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "tencent-hy4-preview": {
+      "defaults": {
+        "name": "Tencent Hy4 Preview",
+        "description": "A next-generation productivity model with significantly enhanced Agent and complex task execution capabilities.",
+        "contextWindow": 1024000,
+        "maxTokens": 64000,
+        "releaseDate": "August 28, 2026"
+      }
+    }
+  }
+}

@@ -182,15 +182,6 @@
           ]
         }
       }
-    },
-    "veo-3-1-lite-generate": {
-      "defaults": {
-        "name": "Veo 3.1 Lite Generate",
-        "description": "Video model for prompt-guided generation, editing, and motion workflows",
-        "contextWindow": 1024,
-        "maxTokens": 0,
-        "releaseDate": "April 2, 2026"
-      }
     }
   }
 }

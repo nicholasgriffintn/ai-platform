@@ -2,6 +2,7 @@
   "defaults": {
     "openWeights": false,
     "contextWindow": 8192,
+    "maxTokens": 1536,
     "modalities": {
       "input": [
         "text"
@@ -10,52 +11,31 @@
         "embedding"
       ]
     },
+    "releaseDate": "January 25, 2024",
     "supportsToolCalls": false,
     "supportsAttachments": false,
     "supportsTemperature": false
   },
   "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
   "models": {
-    "text-embedding-005": {
-      "defaults": {
-        "name": "Text Embedding 005",
-        "description": "Gecko-based text embedding model specialized in English and code tasks, producing up to 768-dimensional vectors",
-        "contextWindow": 2048,
-        "maxTokens": 0,
-        "releaseDate": "November 18, 2024"
-      }
-    },
     "text-embedding-3-large": {
       "defaults": {
         "name": "text-embedding-3-large",
         "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
-        "maxTokens": 3072,
-        "releaseDate": "January 25, 2024"
+        "maxTokens": 3072
       }
     },
     "text-embedding-3-small": {
       "defaults": {
         "name": "text-embedding-3-small",
-        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
-        "maxTokens": 1536,
-        "releaseDate": "January 25, 2024"
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines"
       }
     },
     "text-embedding-ada-002": {
       "defaults": {
         "name": "text-embedding-ada-002",
         "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
-        "maxTokens": 1536,
         "releaseDate": "December 15, 2022"
-      }
-    },
-    "text-multilingual-embedding-002": {
-      "defaults": {
-        "name": "Text Multilingual Embedding 002",
-        "description": "Gecko-based multilingual text embedding model producing up to 768-dimensional vectors",
-        "contextWindow": 2048,
-        "maxTokens": 0,
-        "releaseDate": "May 14, 2024"
       }
     }
   }

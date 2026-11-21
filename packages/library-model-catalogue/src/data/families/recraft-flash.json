@@ -1,0 +1,48 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "image"
+    ],
+    "reliability": 1,
+    "releaseDate": "September 23, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_imageElo",
+          "label": "Text-to-image arena",
+          "value": 949,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 12
+        }
+      ]
+    }
+  },
+  "description": "The recraft flash family includes models that produce image.",
+  "models": {
+    "recraft-v4-1-flash": {
+      "defaults": {
+        "name": "Recraft V4.1 Flash",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows"
+      }
+    }
+  }
+}

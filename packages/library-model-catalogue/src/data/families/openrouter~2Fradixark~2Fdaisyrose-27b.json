@@ -1,0 +1,39 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 262144,
+    "maxTokens": 235929,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 20, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "low",
+        "medium",
+        "xhigh"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The openrouter/radixark/daisyrose 27b family includes models that produce text.",
+  "models": {
+    "daisyrose-27b": {
+      "defaults": {
+        "name": "DaisyRose 27B",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use"
+      }
+    }
+  }
+}

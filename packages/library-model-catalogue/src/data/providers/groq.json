@@ -100,7 +100,11 @@
         "lastUpdated": "December 11, 2023",
         "costPer1kInputTokens": 0.00024,
         "costPer1kOutputTokens": 0.00024
-      }
+      },
+      "unset": [
+        "openWeights",
+        "supportsResponseFormat"
+      ]
     },
     "gemma-2-2b-it": {
       "model": "gemma/gemma-2-2b-it",
@@ -182,7 +186,7 @@
       ]
     },
     "allam-2-7b": {
-      "model": "groq/allam-2-7b/allam-2-7b",
+      "model": "allam/allam-2-7b",
       "matchingModel": "allam-2-7b",
       "overrides": {
         "lastUpdated": "January 23, 2025",
@@ -192,7 +196,7 @@
       }
     },
     "canopylabs/orpheus-arabic-saudi": {
-      "model": "canopylabs/canopy-labs-orpheus-arabic-saudi",
+      "model": "orpheus/canopy-labs-orpheus-arabic-saudi",
       "matchingModel": "canopylabs/orpheus-arabic-saudi",
       "overrides": {
         "status": "beta",
@@ -205,7 +209,7 @@
       }
     },
     "canopylabs/orpheus-v1-english": {
-      "model": "canopylabs/canopy-labs-orpheus-v1-english",
+      "model": "orpheus/canopy-labs-orpheus-v1-english",
       "matchingModel": "canopylabs/orpheus-v1-english",
       "overrides": {
         "status": "beta",
@@ -247,7 +251,7 @@
       }
     },
     "meta-llama/llama-prompt-guard-2-22m": {
-      "model": "llama/llama-prompt-guard-2-22m",
+      "model": "llama-prompt-guard/llama-prompt-guard-2-22m",
       "matchingModel": "meta-llama/llama-prompt-guard-2-22m",
       "overrides": {
         "status": "beta",
@@ -259,7 +263,7 @@
       }
     },
     "meta-llama/llama-prompt-guard-2-86m": {
-      "model": "llama/prompt-guard-2-86m",
+      "model": "llama-prompt-guard/prompt-guard-2-86m",
       "matchingModel": "meta-llama/llama-prompt-guard-2-86m",
       "overrides": {
         "status": "beta",
@@ -271,7 +275,7 @@
       }
     },
     "openai/gpt-oss-safeguard-20b": {
-      "model": "gpt-oss/safety-gpt-oss-20b",
+      "model": "gpt-oss-safeguard/safety-gpt-oss-20b",
       "matchingModel": "openai/gpt-oss-safeguard-20b",
       "overrides": {
         "status": "beta",
@@ -279,11 +283,7 @@
         "lastUpdated": "October 29, 2025",
         "costPer1kInputTokens": 0.000075,
         "costPer1kOutputTokens": 0.0003
-      },
-      "unset": [
-        "strengths",
-        "knowledgeCutoffDate"
-      ]
+      }
     },
     "whisper-large-v3": {
       "model": "whisper/whisper",

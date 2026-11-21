@@ -1,0 +1,57 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "supportsToolCalls": false
+  },
+  "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+  "models": {
+    "llama-3-1-nemotron-safety-guard-8b-v3": {
+      "defaults": {
+        "name": "llama-3.1-nemotron-safety-guard-8b-v3",
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "October 28, 2025",
+        "supportsResponseFormat": true,
+        "supportsAttachments": false,
+        "supportsTemperature": false
+      }
+    },
+    "nemotron-3-5-content-safety": {
+      "defaults": {
+        "name": "Nemotron 3.5 Content Safety",
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+        "contextWindow": 131072,
+        "maxTokens": 117964,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "June 2, 2026",
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

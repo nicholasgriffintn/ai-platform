@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 512,
+    "maxTokens": 512,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "guardrails"
+      ]
+    },
+    "knowledgeCutoffDate": "October 2024",
+    "releaseDate": "April 29, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+  "models": {
+    "llama-prompt-guard-2-22m": {
+      "defaults": {
+        "name": "Llama Prompt Guard 2 22M",
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows"
+      }
+    },
+    "prompt-guard-2-86m": {
+      "defaults": {
+        "name": "Llama Prompt Guard 2 86M",
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows"
+      }
+    }
+  }
+}

@@ -2,95 +2,21 @@
   "defaults": {
     "openWeights": false,
     "contextWindow": 1048576,
+    "contextComplexity": 4,
     "knowledgeCutoffDate": "January 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
   },
   "description": "The gemini pro family includes models that produce audio, image, text.",
   "models": {
-    "deep-research-max-preview-apr-21-2026": {
-      "defaults": {
-        "name": "Deep Research Max Preview",
-        "description": "Maximum-comprehensiveness agentic researcher for multi-step investigation, synthesis, and cited reports",
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "audio",
-            "pdf"
-          ],
-          "output": [
-            "text",
-            "image"
-          ]
-        },
-        "releaseDate": "April 21, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "deep-research-preview-apr-21-2026": {
-      "defaults": {
-        "name": "Gemini Deep Research Preview",
-        "description": "Agentic model for autonomous multi-step research, synthesis, and cited reports",
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "audio",
-            "pdf"
-          ],
-          "output": [
-            "text",
-            "image"
-          ]
-        },
-        "releaseDate": "April 21, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "gemini-2-5-computer-use-preview-10-2025": {
-      "defaults": {
-        "name": "Gemini 2.5 Computer Use Preview",
-        "description": "Specialized Gemini 2.5 model for browser-control agents that automate UI tasks",
-        "contextWindow": 128000,
-        "maxTokens": 64000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "October 7, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "gemini-2-5-pro": {
       "defaults": {
         "name": "Gemini 2.5 Pro",
@@ -107,7 +33,6 @@
             "text"
           ]
         },
-        "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "June 17, 2025",
         "reasoningConfig": {
@@ -116,12 +41,6 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -149,7 +68,6 @@
           "video",
           "tool_use"
         ],
-        "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "June 17, 2025",
         "reasoningConfig": {
@@ -161,12 +79,6 @@
             "max"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -198,24 +110,30 @@
         }
       }
     },
-    "gemini-2-5-pro-tts": {
+    "gemini-2-5-pro-preview-06-05": {
       "defaults": {
-        "name": "Gemini 2.5 Pro TTS",
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
-        "contextWindow": 32768,
-        "maxTokens": 16384,
+        "description": "Advanced Gemini model for complex reasoning, coding, and multimodal analysis",
+        "maxTokens": 65536,
         "modalities": {
           "input": [
-            "text"
+            "pdf",
+            "image",
+            "text",
+            "audio"
           ],
           "output": [
-            "audio"
+            "text"
           ]
         },
-        "releaseDate": "September 30, 2025",
-        "supportsToolCalls": false,
-        "supportsAttachments": false,
-        "supportsTemperature": false
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "tool_use"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 31, 2025",
+        "releaseDate": "June 5, 2025"
       }
     },
     "gemini-3-1-pro-preview": {
@@ -242,7 +160,6 @@
           "video",
           "tool_use"
         ],
-        "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "February 19, 2026",
         "reasoningConfig": {
@@ -252,12 +169,6 @@
             "high"
           ],
           "defaultEffort": "low"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -289,25 +200,6 @@
         }
       }
     },
-    "gemini-3-5-live-translate-preview": {
-      "defaults": {
-        "name": "Gemini 3.5 Live Translate Preview",
-        "description": "Low-latency audio-to-audio model for real-time speech translation across 70+ languages",
-        "contextWindow": 16384,
-        "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "audio"
-          ],
-          "output": [
-            "audio",
-            "text"
-          ]
-        },
-        "releaseDate": "June 9, 2026",
-        "supportsToolCalls": false
-      }
-    },
     "gemini-3-pro": {
       "defaults": {
         "name": "Gemini 3 Pro",
@@ -332,7 +224,6 @@
           "video",
           "tool_use"
         ],
-        "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "November 18, 2025",
         "reasoningConfig": {
@@ -341,12 +232,6 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -375,7 +260,6 @@
           "video",
           "tool_use"
         ],
-        "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "November 18, 2025",
         "reasoningConfig": {
@@ -384,12 +268,6 @@
             "thinking"
           ],
           "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -438,7 +316,7 @@
       "defaults": {
         "name": "Nano Banana Pro",
         "description": "Nano Banana Pro for higher-fidelity image generation and design-heavy edits",
-        "contextWindow": 65536,
+        "contextWindow": 131072,
         "maxTokens": 32768,
         "modalities": {
           "input": [
@@ -450,10 +328,23 @@
             "image"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
         "contextComplexity": 3,
         "reliability": 3,
-        "releaseDate": "May 28, 2026",
+        "releaseDate": "November 20, 2025",
         "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -470,22 +361,6 @@
             }
           ]
         }
-      }
-    },
-    "nano-banana-pro-preview": {
-      "defaults": {
-        "description": "Nano Banana Pro for higher-fidelity image generation and design-heavy edits",
-        "contextWindow": 65536,
-        "maxTokens": 32768,
-        "strengths": [
-          "vision",
-          "document",
-          "image",
-          "creative"
-        ],
-        "contextComplexity": 3,
-        "releaseDate": "November 20, 2025",
-        "supportsToolCalls": false
       }
     }
   }

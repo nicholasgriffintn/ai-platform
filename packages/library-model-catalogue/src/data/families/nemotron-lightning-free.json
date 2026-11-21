@@ -1,0 +1,50 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 1000000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "September 2025",
+    "releaseDate": "August 11, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The nemotron lightning free family includes models that produce text.",
+  "models": {
+    "nemotron-3-5-lightning-free": {
+      "defaults": {
+        "description": "Nemotron model for efficient reasoning, coding, and specialized AI agents",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nvidia-nemotron-3-5-lightning-free": {
+      "defaults": {
+        "name": "NVIDIA: Nemotron 3.5 Lightning (free)",
+        "description": "NVIDIA Nemotron 3.5 Lightning is an open mixture-of-experts model from NVIDIA, with 3B active parameters out of 30B total. It is suited for high-throughput agentic workloads and specialized tasks that... **Terms of service** For NVIDIA free endpoints (Super/Ultra/etc): Trial use only - do not submit personal or confidential data. Your use is logged for security purposes and to improve NVIDIA products and services. The logged session data for improvement purposes is not linked to your identity or any persistent identifier. For more information about our data processing practices, see our [Privacy Policy](https://www.nvidia.com/en-us/about-nvidia/privacy-policy/). By interacting with this endpoint, you consent to our collection, recording, and use of such information and the [NVIDIA API Trial Terms of Service](https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf).",
+        "maxTokens": 65536,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

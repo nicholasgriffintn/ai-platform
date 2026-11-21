@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 16000,
+    "maxTokens": 2000,
+    "modalities": {
+      "input": [
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "June 1, 2024",
+    "releaseDate": "March 20, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The gpt transcribe mini family includes models that produce text.",
+  "models": {
+    "gpt-4o-mini-transcribe": {
+      "defaults": {
+        "name": "GPT-4o mini Transcribe",
+        "description": "Speech-to-text model powered by GPT-4o Mini for fast, accurate transcription"
+      }
+    }
+  }
+}

@@ -69,7 +69,7 @@
       "model": "gpt/gpt-5",
       "matchingModel": "gpt-5",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00107,
         "costPer1kOutputTokens": 0.0085
@@ -111,13 +111,7 @@
         "speed": 5,
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0025,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
+        "costPer1kOutputTokens": 0.0025
       }
     },
     "deepseek-chat": {
@@ -218,8 +212,8 @@
       "matchingModel": "~deepseek/deepseek-v4-flash-latest",
       "overrides": {
         "lastUpdated": "August 1, 2026",
-        "costPer1kInputTokens": 0.00044,
-        "costPer1kOutputTokens": 0.00132,
+        "costPer1kInputTokens": 0.0000443,
+        "costPer1kOutputTokens": 0.0003,
         "supportsAttachments": false
       }
     },
@@ -231,7 +225,11 @@
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.0075,
         "costPer1kReasoningTokens": 0.00375
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "artificialAnalysis"
+      ]
     },
     "~google/gemini-pro-latest": {
       "model": "gemini-pro/google-gemini-pro-latest",
@@ -241,7 +239,11 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "costPer1kReasoningTokens": 0.01
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "artificialAnalysis"
+      ]
     },
     "~moonshotai/kimi-latest": {
       "model": "kimi/moonshotai-kimi-latest",
@@ -304,8 +306,8 @@
         "supportsTemperature": false
       },
       "unset": [
-        "contextComplexity",
-        "strengths"
+        "strengths",
+        "contextComplexity"
       ]
     },
     "~openai/gpt-terra-latest": {
@@ -351,7 +353,7 @@
       }
     },
     "aion-labs/aion-2.0": {
-      "model": "kilo/aion-labs/aion-2.0/aionlabs-aion-2-0",
+      "model": "aion/aionlabs-aion-2-0",
       "matchingModel": "aion-labs/aion-2.0",
       "overrides": {
         "lastUpdated": "December 21, 2025",
@@ -362,7 +364,7 @@
       }
     },
     "aion-labs/aion-3.0": {
-      "model": "kilo/aion-labs/aion-3.0/aionlabs-aion-3-0",
+      "model": "aion/aionlabs-aion-3-0",
       "matchingModel": "aion-labs/aion-3.0",
       "overrides": {
         "lastUpdated": "May 5, 2026",
@@ -373,7 +375,7 @@
       }
     },
     "aion-labs/aion-3.0-mini": {
-      "model": "kilo/aion-labs/aion-3.0-mini/aionlabs-aion-3-0-mini",
+      "model": "aion-mini/aionlabs-aion-3-0-mini",
       "matchingModel": "aion-labs/aion-3.0-mini",
       "overrides": {
         "lastUpdated": "May 14, 2026",
@@ -384,7 +386,7 @@
       }
     },
     "aion-labs/aion-3.5": {
-      "model": "kilo/aion-labs/aion-3.5/aionlabs-aion-3-5",
+      "model": "aion/aionlabs-aion-3-5",
       "matchingModel": "aion-labs/aion-3.5",
       "overrides": {
         "lastUpdated": "September 23, 2026",
@@ -395,7 +397,7 @@
       }
     },
     "aion-labs/aion-3.5-mini": {
-      "model": "kilo/aion-labs/aion-3.5-mini/aionlabs-aion-3-5-mini",
+      "model": "aion/aionlabs-aion-3-5-mini",
       "matchingModel": "aion-labs/aion-3.5-mini",
       "overrides": {
         "lastUpdated": "September 23, 2026",
@@ -406,7 +408,7 @@
       }
     },
     "aion-labs/aion-rp-llama-3.1-8b": {
-      "model": "llama/aionlabs-aion-rp-1-0-8b",
+      "model": "aion-rp/aionlabs-aion-rp-1-0-8b",
       "matchingModel": "aion-labs/aion-rp-llama-3.1-8b",
       "overrides": {
         "lastUpdated": "February 4, 2025",
@@ -418,7 +420,7 @@
       }
     },
     "amazon/nova-2-lite-v1": {
-      "model": "nova/amazon-nova-2-lite",
+      "model": "nova-lite/amazon-nova-2-lite",
       "matchingModel": "amazon/nova-2-lite-v1",
       "overrides": {
         "lastUpdated": "December 2, 2025",
@@ -459,7 +461,7 @@
       }
     },
     "anthracite-org/magnum-v4-72b": {
-      "model": "kilo/anthracite-org/magnum-v4-72b/magnum-v4-72b",
+      "model": "magnum/magnum-v4-72b",
       "matchingModel": "anthracite-org/magnum-v4-72b",
       "overrides": {
         "lastUpdated": "October 22, 2024",
@@ -816,7 +818,7 @@
       }
     },
     "bytedance-seed/seed-2-1-turbo": {
-      "model": "seed/bytedance-seed-seed-2-1-turbo",
+      "model": "seed-turbo/bytedance-seed-seed-2-1-turbo",
       "matchingModel": "bytedance-seed/seed-2-1-turbo",
       "overrides": {
         "lastUpdated": "June 23, 2026",
@@ -825,7 +827,7 @@
       }
     },
     "bytedance-seed/seed-2.0-lite": {
-      "model": "seed/seed-2-0-lite",
+      "model": "seed-lite/seed-2-0-lite",
       "matchingModel": "bytedance-seed/seed-2.0-lite",
       "overrides": {
         "name": "Seed 2.0 Lite",
@@ -845,7 +847,7 @@
       }
     },
     "bytedance-seed/seed-2.0-mini": {
-      "model": "seed/seed-2-0-mini",
+      "model": "seed-mini/seed-2-0-mini",
       "matchingModel": "bytedance-seed/seed-2.0-mini",
       "overrides": {
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
@@ -877,7 +879,7 @@
       }
     },
     "cognitivecomputations/dolphin-mistral-24b-venice-edition": {
-      "model": "mistral/venice-uncensored",
+      "model": "dolphin/venice-uncensored",
       "matchingModel": "cognitivecomputations/dolphin-mistral-24b-venice-edition",
       "overrides": {
         "lastUpdated": "July 9, 2025",
@@ -893,9 +895,7 @@
       "matchingModel": "cohere/command-a",
       "overrides": {
         "name": "Cohere: Command A",
-        "maxTokens": 8192,
         "speed": 3,
-        "knowledgeCutoffDate": "August 31, 2024",
         "lastUpdated": "March 13, 2025",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,
@@ -903,7 +903,7 @@
       }
     },
     "cohere/command-a-plus": {
-      "model": "command-a/cohere-command-a",
+      "model": "command-a-plus/cohere-command-a",
       "matchingModel": "cohere/command-a-plus",
       "overrides": {
         "speed": 5,
@@ -916,7 +916,6 @@
       "model": "command-r/command-r",
       "matchingModel": "cohere/command-r-08-2024",
       "overrides": {
-        "name": "Command R",
         "lastUpdated": "August 30, 2024",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -924,10 +923,10 @@
       }
     },
     "cohere/command-r-plus-08-2024": {
-      "model": "command-r/command-r",
+      "model": "command-r-plus/command-r",
       "matchingModel": "cohere/command-r-plus-08-2024",
       "overrides": {
-        "name": "Command R+",
+        "description": "Cohere retrieval model for long-context chat and enterprise RAG workflows",
         "lastUpdated": "August 30, 2024",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.01,
@@ -949,6 +948,8 @@
       "model": "north/cohere-north-mini-code-free",
       "matchingModel": "cohere/north-mini-code:free",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Cohere: North Mini Code (free) is no longer offered by Kilo.",
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -975,13 +976,13 @@
       "matchingModel": "deepseek/deepseek-chat-v3-0324",
       "overrides": {
         "name": "DeepSeek: DeepSeek V3 0324",
-        "contextWindow": 128000,
-        "maxTokens": 115200,
+        "contextWindow": 163840,
+        "maxTokens": 147456,
         "speed": 4,
         "knowledgeCutoffDate": "July 31, 2024",
         "lastUpdated": "March 24, 2025",
-        "costPer1kInputTokens": 0.00029,
-        "costPer1kOutputTokens": 0.00114,
+        "costPer1kInputTokens": 0.00025,
+        "costPer1kOutputTokens": 0.001,
         "supportsAttachments": false
       }
     },
@@ -1073,11 +1074,10 @@
       "matchingModel": "deepseek/deepseek-v4-flash-vision-exp",
       "overrides": {
         "description": "DeepSeek V4 Flash Vision Exp is an experimental vision-enabled version of [DeepSeek V4 Flash 0731](https://openrouter.ai/deepseek/deepseek-v4-flash-0731) from DeepSeek, adding image understanding while matching the base model on text capabilities including agents,...",
-        "contextWindow": 1048575,
-        "maxTokens": 943717,
+        "maxTokens": 262144,
         "lastUpdated": "September 1, 2026",
-        "costPer1kInputTokens": 0.00044,
-        "costPer1kOutputTokens": 0.00132,
+        "costPer1kInputTokens": 0.0002156,
+        "costPer1kOutputTokens": 0.0006468,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1093,7 +1093,7 @@
       ]
     },
     "deepseek/deepseek-v4-pro": {
-      "model": "deepseek-thinking/deepseek-v4-pro",
+      "model": "deepseek-pro/deepseek-v4-pro",
       "matchingModel": "deepseek/deepseek-v4-pro",
       "overrides": {
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
@@ -1101,8 +1101,8 @@
         "maxTokens": 393216,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
-        "costPer1kInputTokens": 0.0016,
-        "costPer1kOutputTokens": 0.0032,
+        "costPer1kInputTokens": 0.0009,
+        "costPer1kOutputTokens": 0.0015,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1119,11 +1119,11 @@
       "matchingModel": "deepseek/deepseek-v4.1-flash",
       "overrides": {
         "description": "DeepSeek V4.1 Flash is a sparse mixture-of-experts model from DeepSeek, and the cost-efficient tier of the V4.1 family. DeepSeek reports that it exceeds V4 Pro on performance, speed, and task...",
-        "maxTokens": 943718,
+        "maxTokens": 393216,
         "speed": 5,
         "lastUpdated": "September 10, 2026",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012,
+        "costPer1kInputTokens": 0.0000507,
+        "costPer1kOutputTokens": 0.0002028,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1145,7 +1145,7 @@
       }
     },
     "fireworks/ember-1": {
-      "model": "kilo/fireworks/ember-1/fireworks-ember-1",
+      "model": "ember/fireworks-ember-1",
       "matchingModel": "fireworks/ember-1",
       "overrides": {
         "lastUpdated": "September 22, 2026",
@@ -1154,7 +1154,7 @@
       }
     },
     "google/gemini-2.5-flash-image": {
-      "model": "gemini-flash/nano-banana",
+      "model": "nano-banana/nano-banana",
       "matchingModel": "google/gemini-2.5-flash-image",
       "overrides": {
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
@@ -1176,30 +1176,10 @@
       }
     },
     "google/gemini-2.5-pro-preview": {
-      "model": "gemini/gemini-2-5-pro-preview-06-05",
+      "model": "gemini-pro/gemini-2-5-pro-preview-06-05",
       "matchingModel": "google/gemini-2.5-pro-preview",
       "overrides": {
         "name": "Google: Gemini 2.5 Pro Preview 06-05",
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text",
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 3,
-        "knowledgeCutoffDate": "January 31, 2025",
         "lastUpdated": "June 5, 2025",
         "costPer1kInputTokens": 0.000625,
         "costPer1kOutputTokens": 0.005,
@@ -1209,12 +1189,6 @@
             "high"
           ],
           "defaultEffort": "high"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1241,7 +1215,7 @@
       }
     },
     "google/gemini-3-pro-image": {
-      "model": "gemini-pro/nano-banana-pro",
+      "model": "nano-banana-pro/nano-banana-pro",
       "matchingModel": "google/gemini-3-pro-image",
       "overrides": {
         "description": "Nano Banana Pro is Google’s most advanced image-generation and editing model, built on Gemini 3 Pro. It extends the original Nano Banana with significantly improved multimodal reasoning, real-world grounding, and...",
@@ -1276,7 +1250,7 @@
       }
     },
     "google/gemini-3-pro-image-preview": {
-      "model": "gemini-pro/nano-banana-pro-preview",
+      "model": "nano-banana-pro/nano-banana-pro-preview",
       "matchingModel": "google/gemini-3-pro-image-preview",
       "overrides": {
         "name": "Nano Banana Pro Preview",
@@ -1323,7 +1297,7 @@
       }
     },
     "google/gemini-3.1-flash-image": {
-      "model": "gemini-flash/nano-banana-2",
+      "model": "nano-banana/nano-banana-2",
       "matchingModel": "google/gemini-3.1-flash-image",
       "overrides": {
         "description": "Gemini 3.1 Flash Image, a.k.a. \"Nano Banana 2,\" is Google’s latest state of the art image generation and editing model, delivering Pro-level visual quality at Flash speed. It combines advanced...",
@@ -1359,7 +1333,7 @@
       }
     },
     "google/gemini-3.1-flash-image-preview": {
-      "model": "gemini-flash/nano-banana-2-preview",
+      "model": "nano-banana/nano-banana-2-preview",
       "matchingModel": "google/gemini-3.1-flash-image-preview",
       "overrides": {
         "name": "Nano Banana 2 Preview",
@@ -1427,7 +1401,7 @@
       }
     },
     "google/gemini-3.1-flash-lite-image": {
-      "model": "gemini-flash-lite/nano-banana-2-lite",
+      "model": "nano-banana-lite/nano-banana-2-lite",
       "matchingModel": "google/gemini-3.1-flash-lite-image",
       "overrides": {
         "description": "Nano Banana 2 Lite (Gemini 3.1 Flash Lite Image) is Google's fastest, most cost-efficient Gemini image model, built for high-velocity developer pipelines and rapid-fire visual exploration. It delivers text-to-image generation...",
@@ -1517,7 +1491,11 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
         "costPer1kReasoningTokens": 0.012
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "artificialAnalysis"
+      ]
     },
     "google/gemini-3.5-flash": {
       "model": "gemini-flash/gemini-3-5-flash",
@@ -1589,6 +1567,7 @@
       "overrides": {
         "description": "Gemini 3.8 Flash is Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows.",
         "speed": 3,
+        "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
@@ -1596,7 +1575,7 @@
       }
     },
     "google/gemini-nano-banana-2.1": {
-      "model": "gemini-flash/nano-banana-2-1",
+      "model": "nano-banana/nano-banana-2-1",
       "matchingModel": "google/gemini-nano-banana-2.1",
       "overrides": {
         "description": "Nano Banana 2.1 (Gemini Nano Banana 2.1) is Google's image generation and editing model on the Flash tier, succeeding Nano Banana 2 and Nano Banana Pro. It improves product recontextualization,...",
@@ -1652,7 +1631,7 @@
       "matchingModel": "google/gemma-3-27b-it",
       "overrides": {
         "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
-        "maxTokens": 16384,
+        "maxTokens": 117964,
         "lastUpdated": "March 12, 2025",
         "costPer1kInputTokens": 0.000064,
         "costPer1kOutputTokens": 0.000128
@@ -1686,8 +1665,8 @@
           ]
         },
         "lastUpdated": "April 2, 2026",
-        "costPer1kInputTokens": 0.00004,
-        "costPer1kOutputTokens": 0.00015,
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0.00019,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1726,7 +1705,7 @@
       }
     },
     "google/lyria-3-clip-preview": {
-      "model": "lyria/lyria-3-clip-preview",
+      "model": "lyria-clip/lyria-3-clip-preview",
       "matchingModel": "google/lyria-3-clip-preview",
       "overrides": {
         "lastUpdated": "March 25, 2026",
@@ -1737,7 +1716,7 @@
       }
     },
     "google/lyria-3-pro-preview": {
-      "model": "lyria/lyria-3-pro-preview",
+      "model": "lyria-pro/lyria-3-pro-preview",
       "matchingModel": "google/lyria-3-pro-preview",
       "overrides": {
         "lastUpdated": "March 25, 2026",
@@ -1748,7 +1727,7 @@
       }
     },
     "gryphe/mythomax-l2-13b": {
-      "model": "kilo/gryphe/mythomax-l2-13b/mythomax-13b",
+      "model": "mythomax/mythomax-13b",
       "matchingModel": "gryphe/mythomax-l2-13b",
       "overrides": {
         "lastUpdated": "August 10, 2023",
@@ -1773,7 +1752,8 @@
       },
       "unset": [
         "contextComplexity",
-        "reliability"
+        "reliability",
+        "strengths"
       ]
     },
     "ibm-granite/granite-4.2-8b": {
@@ -1814,7 +1794,7 @@
       }
     },
     "inclusionai/ling-3.0-flash": {
-      "model": "ling/inclusionai-ling-3-0-flash",
+      "model": "ling-flash/inclusionai-ling-3-0-flash",
       "matchingModel": "inclusionai/ling-3.0-flash",
       "overrides": {
         "speed": 4,
@@ -1826,7 +1806,7 @@
       }
     },
     "inclusionai/ling-3.0-flash-fin": {
-      "model": "ling/inclusionai-ling-3-0-flash-fin",
+      "model": "ling-flash/inclusionai-ling-3-0-flash-fin",
       "matchingModel": "inclusionai/ling-3.0-flash-fin",
       "overrides": {
         "speed": 4,
@@ -1839,7 +1819,7 @@
       }
     },
     "inclusionai/ling-3.0-flash-sante": {
-      "model": "ling/inclusionai-ling-3-0-flash-sante",
+      "model": "ling-flash/inclusionai-ling-3-0-flash-sante",
       "matchingModel": "inclusionai/ling-3.0-flash-sante",
       "overrides": {
         "lastUpdated": "September 4, 2026",
@@ -1848,10 +1828,16 @@
         "costPer1kReasoningTokens": 0,
         "supportsResponseFormat": false,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
     },
     "inclusionai/ling-3.0-flash-vl": {
-      "model": "ling/inclusionai-ling-3-0-flash-vl",
+      "model": "ling-flash/inclusionai-ling-3-0-flash-vl",
       "matchingModel": "inclusionai/ling-3.0-flash-vl",
       "overrides": {
         "lastUpdated": "September 10, 2026",
@@ -1860,7 +1846,7 @@
       }
     },
     "inclusionai/ling-3.1-flash": {
-      "model": "ling/inclusionai-ling-3-1-flash",
+      "model": "ling-flash/inclusionai-ling-3-1-flash",
       "matchingModel": "inclusionai/ling-3.1-flash",
       "overrides": {
         "speed": 3,
@@ -1872,7 +1858,7 @@
       }
     },
     "inference-net/schematron-v2-small": {
-      "model": "kilo/inference-net/schematron-v2-small/inference-net-schematron-v2-small",
+      "model": "schematron-small/inference-net-schematron-v2-small",
       "matchingModel": "inference-net/schematron-v2-small",
       "overrides": {
         "lastUpdated": "April 16, 2026",
@@ -1883,7 +1869,7 @@
       }
     },
     "inference-net/schematron-v2-turbo": {
-      "model": "kilo/inference-net/schematron-v2-turbo/inference-net-schematron-v2-turbo",
+      "model": "schematron-turbo/inference-net-schematron-v2-turbo",
       "matchingModel": "inference-net/schematron-v2-turbo",
       "overrides": {
         "lastUpdated": "April 16, 2026",
@@ -1965,7 +1951,7 @@
       ]
     },
     "mancer/weaver": {
-      "model": "alpha/mancer-weaver-alpha",
+      "model": "weaver/mancer-weaver-alpha",
       "matchingModel": "mancer/weaver",
       "overrides": {
         "lastUpdated": "August 2, 2023",
@@ -2019,6 +2005,8 @@
         "name": "Meta: Llama 3.2 1B Instruct",
         "contextWindow": 60000,
         "maxTokens": 54000,
+        "deprecated": true,
+        "deprecationMessage": "Meta: Llama 3.2 1B Instruct is no longer offered by Kilo.",
         "lastUpdated": "September 25, 2024",
         "costPer1kInputTokens": 0.000027,
         "costPer1kOutputTokens": 0.000201,
@@ -2028,7 +2016,7 @@
       }
     },
     "meta-llama/llama-3.2-3b-instruct": {
-      "model": "llama/meta-llama-3-2-3b-instruct-retires-nov-20",
+      "model": "llama/meta-llama-3-2-3b-instruct",
       "matchingModel": "meta-llama/llama-3.2-3b-instruct",
       "overrides": {
         "lastUpdated": "September 25, 2024",
@@ -2054,7 +2042,7 @@
       "model": "llama/meta-llama-4-maverick",
       "matchingModel": "meta-llama/llama-4-maverick",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 5, 2025",
         "costPer1kInputTokens": 0.00035,
         "costPer1kOutputTokens": 0.001
@@ -2071,7 +2059,7 @@
       }
     },
     "meta-llama/llama-guard-4-12b": {
-      "model": "llama/meta-llama-guard-4-12b",
+      "model": "llama-guard/meta-llama-guard-4-12b",
       "matchingModel": "meta-llama/llama-guard-4-12b",
       "overrides": {
         "lastUpdated": "April 29, 2025",
@@ -2082,7 +2070,7 @@
       }
     },
     "meta/muse-glimmer-30b": {
-      "model": "muse/muse-glimmer-30b",
+      "model": "muse-glimmer/muse-glimmer-30b",
       "matchingModel": "meta/muse-glimmer-30b",
       "overrides": {
         "description": "Muse Glimmer 30B is a dense, open-weight multimodal model from Meta Superintelligence Labs, distilled from Muse Spark and optimized for autonomous agents on consumer hardware. It is suited for long-horizon...",
@@ -2109,13 +2097,10 @@
           ],
           "defaultEffort": "low"
         }
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "meta/muse-spark-1.1": {
-      "model": "muse/muse-spark-1-1",
+      "model": "muse-spark/muse-spark-1-1",
       "matchingModel": "meta/muse-spark-1.1",
       "overrides": {
         "description": "Muse Spark 1.1 is a multimodal reasoning model from Meta, built for agentic tasks. It accepts text, images, video, audio, and PDF documents and returns text, with a 1M-token context...",
@@ -2145,7 +2130,7 @@
       }
     },
     "meta/muse-spark-1.2": {
-      "model": "muse/muse-spark-1-2",
+      "model": "muse-spark/muse-spark-1-2",
       "matchingModel": "meta/muse-spark-1.2",
       "overrides": {
         "description": "Muse Spark 1.2 is a reasoning model from Meta, designed for complex agentic tasks. It accepts text, images, video, audio, and PDF documents, returns text, and offers a 1M-token context...",
@@ -2175,19 +2160,16 @@
       }
     },
     "meta/muse-spark-1.2-contributor": {
-      "model": "muse/meta-muse-spark-1-2-contributor",
+      "model": "muse-spark/meta-muse-spark-1-2-contributor",
       "matchingModel": "meta/muse-spark-1.2-contributor",
       "overrides": {
         "lastUpdated": "August 21, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0002
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "meta/muse-spark-1.3": {
-      "model": "muse/muse-spark-1-3",
+      "model": "muse-spark/muse-spark-1-3",
       "matchingModel": "meta/muse-spark-1.3",
       "overrides": {
         "description": "Muse Spark 1.3 is a multimodal reasoning model from Meta for long-running agentic, multi-agent, and coding workflows. It is designed to keep track of information across extended tasks, work through...",
@@ -2217,16 +2199,13 @@
       }
     },
     "meta/muse-spark-1.3-contributor": {
-      "model": "muse/meta-muse-spark-1-3-contributor",
+      "model": "muse-spark/meta-muse-spark-1-3-contributor",
       "matchingModel": "meta/muse-spark-1.3-contributor",
       "overrides": {
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0002
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "microsoft/phi-4": {
       "model": "phi/microsoft-phi-4",
@@ -2305,18 +2284,11 @@
         "costPer1kOutputTokens": 0.0012,
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": false
       }
     },
     "minimax/minimax-m2.1": {
-      "model": "minimax/minimax-minimax-m2-1",
+      "model": "minimax-m/minimax-minimax-m2-1",
       "matchingModel": "minimax/minimax-m2.1",
       "overrides": {
         "speed": 3,
@@ -2328,17 +2300,18 @@
       }
     },
     "minimax/minimax-m2.5": {
-      "model": "minimax/minimax-m2-5",
+      "model": "minimax-m/minimax-m2-5",
       "matchingModel": "minimax/minimax-m2.5",
       "overrides": {
         "name": "MiniMax-M2.5",
         "description": "MiniMax model for chat, coding, office work, and agentic tasks",
-        "contextWindow": 196608,
-        "maxTokens": 176947,
+        "contextWindow": 198000,
+        "maxTokens": 32768,
+        "contextComplexity": 3,
         "speed": 3,
         "lastUpdated": "February 12, 2026",
-        "costPer1kInputTokens": 0.000295,
-        "costPer1kOutputTokens": 0.0012,
+        "costPer1kInputTokens": 0.00027,
+        "costPer1kOutputTokens": 0.00095,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2349,15 +2322,14 @@
       }
     },
     "minimax/minimax-m2.7": {
-      "model": "minimax/minimax-m2-7",
+      "model": "minimax-m/minimax-m2-7",
       "matchingModel": "minimax/minimax-m2.7",
       "overrides": {
         "name": "MiniMax-M2.7",
-        "maxTokens": 176947,
         "speed": 3,
         "lastUpdated": "March 18, 2026",
-        "costPer1kInputTokens": 0.00021,
-        "costPer1kOutputTokens": 0.00084,
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0018,
         "supportsResponseFormat": false,
         "supportsAttachments": false,
         "reasoningConfig": {
@@ -2369,15 +2341,15 @@
       }
     },
     "minimax/minimax-m3": {
-      "model": "minimax/minimax-m3",
+      "model": "minimax-m/minimax-m3",
       "matchingModel": "minimax/minimax-m3",
       "overrides": {
-        "contextWindow": 524288,
-        "maxTokens": 512000,
+        "contextWindow": 262144,
+        "maxTokens": 235929,
         "speed": 3,
         "lastUpdated": "June 1, 2026",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012,
+        "costPer1kInputTokens": 0.00023,
+        "costPer1kOutputTokens": 0.00096,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -2531,7 +2503,7 @@
       }
     },
     "mistralai/mixtral-8x22b-instruct": {
-      "model": "mistral/mixtral-8x22b-instruct",
+      "model": "mixtral/mixtral-8x22b-instruct",
       "matchingModel": "mistralai/mixtral-8x22b-instruct",
       "overrides": {
         "name": "Mistral: Mixtral 8x22B Instruct",
@@ -2541,7 +2513,7 @@
       }
     },
     "mistralai/voxtral-small-24b-2507": {
-      "model": "voxtral/voxtral-small-24b-2507",
+      "model": "voxtral-small/voxtral-small-24b-2507",
       "matchingModel": "mistralai/voxtral-small-24b-2507",
       "overrides": {
         "lastUpdated": "July 15, 2025",
@@ -2550,7 +2522,7 @@
       }
     },
     "moonshotai/kimi-k2": {
-      "model": "kimi-k2/kimi-k2-0711",
+      "model": "kimi/kimi-k2-0711",
       "matchingModel": "moonshotai/kimi-k2",
       "overrides": {
         "name": "MoonshotAI: Kimi K2 0711",
@@ -2566,11 +2538,13 @@
       }
     },
     "moonshotai/kimi-k2-thinking": {
-      "model": "kimi-thinking/kimi-k2-thinking",
+      "model": "kimi/kimi-k2-thinking",
       "matchingModel": "moonshotai/kimi-k2-thinking",
       "overrides": {
+        "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
         "maxTokens": 98304,
         "speed": 4,
+        "knowledgeCutoffDate": "August 2024",
         "lastUpdated": "November 6, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0025,
@@ -2584,17 +2558,26 @@
       }
     },
     "moonshotai/kimi-k2.5": {
-      "model": "kimi-k2/kimi-k2-5",
+      "model": "kimi/kimi-k2-5",
       "matchingModel": "moonshotai/kimi-k2.5",
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "maxTokens": 235929,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
@@ -2608,7 +2591,7 @@
       }
     },
     "moonshotai/kimi-k2.6": {
-      "model": "kimi-k2/kimi-k2-6",
+      "model": "kimi/kimi-k2-6",
       "matchingModel": "moonshotai/kimi-k2.6",
       "overrides": {
         "maxTokens": 235929,
@@ -2632,7 +2615,7 @@
       }
     },
     "moonshotai/kimi-k2.7-code": {
-      "model": "kimi-k2/kimi-k2-7-code",
+      "model": "kimi-code/kimi-k2-7-code",
       "matchingModel": "moonshotai/kimi-k2.7-code",
       "overrides": {
         "description": "MoonshotAI: Kimi K2.7 Code is a coding-focused model in Moonshot AI's Kimi K2 family, built to complete end-to-end programming tasks reliably over long contexts. It uses a native multimodal mixture-of-experts...",
@@ -2665,7 +2648,7 @@
       }
     },
     "moonshotai/kimi-k3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "moonshotai/kimi-k3",
       "overrides": {
         "description": "Kimi K3 is a 2.8T parameter open-weight multimodal reasoning model from Moonshot AI. It is suited for complex coding, knowledge work, and long-horizon agentic workflows, and is particularly strong at...",
@@ -2703,7 +2686,7 @@
       }
     },
     "morph/morph-v3-fast": {
-      "model": "morph/morph-morph-v3-fast",
+      "model": "morph-fast/morph-morph-v3-fast",
       "matchingModel": "morph/morph-v3-fast",
       "overrides": {
         "lastUpdated": "July 7, 2025",
@@ -2714,7 +2697,7 @@
       }
     },
     "morph/morph-v3-large": {
-      "model": "morph/morph-morph-v3-large",
+      "model": "morph-large/morph-morph-v3-large",
       "matchingModel": "morph/morph-v3-large",
       "overrides": {
         "lastUpdated": "July 7, 2025",
@@ -2725,7 +2708,7 @@
       }
     },
     "nex-agi/nex-n2.5-mini": {
-      "model": "agi/nex-agi-nex-n2-5-mini",
+      "model": "nex-n-mini/nex-agi-nex-n2-5-mini",
       "matchingModel": "nex-agi/nex-n2.5-mini",
       "overrides": {
         "lastUpdated": "September 8, 2026",
@@ -2735,7 +2718,7 @@
       }
     },
     "nex-agi/nex-n2.5-pro": {
-      "model": "agi/nex-agi-nex-n2-5-pro",
+      "model": "nex-n-pro/nex-agi-nex-n2-5-pro",
       "matchingModel": "nex-agi/nex-n2.5-pro",
       "overrides": {
         "lastUpdated": "September 8, 2026",
@@ -2755,10 +2738,9 @@
       }
     },
     "nvidia/nemotron-3-nano-30b-a3b": {
-      "model": "nemotron/nemotron-3-nano-30b-a3b",
+      "model": "nemotron-nano/nemotron-3-nano-30b-a3b",
       "matchingModel": "nvidia/nemotron-3-nano-30b-a3b",
       "overrides": {
-        "maxTokens": 235929,
         "speed": 5,
         "lastUpdated": "December 15, 2025",
         "costPer1kInputTokens": 0.00006,
@@ -2774,7 +2756,7 @@
       }
     },
     "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
-      "model": "nemotron/nvidia-nemotron-3-nano-omni-free",
+      "model": "nemotron-nano-free/nvidia-nemotron-3-nano-omni-free",
       "matchingModel": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
       "overrides": {
         "lastUpdated": "April 28, 2026",
@@ -2784,9 +2766,10 @@
       }
     },
     "nvidia/nemotron-3-super-120b-a12b": {
-      "model": "nemotron/nemotron-3-super-120b-a12b",
+      "model": "nemotron-super/nemotron-3-super-120b-a12b",
       "matchingModel": "nvidia/nemotron-3-super-120b-a12b",
       "overrides": {
+        "name": "Nemotron 3 Super 120B A12B",
         "maxTokens": 16384,
         "contextComplexity": 3,
         "speed": 4,
@@ -2817,7 +2800,7 @@
       }
     },
     "nvidia/nemotron-3-ultra-550b-a55b": {
-      "model": "nemotron/nemotron-3-ultra-550b-a55b",
+      "model": "nemotron-ultra/nemotron-3-ultra-550b-a55b",
       "matchingModel": "nvidia/nemotron-3-ultra-550b-a55b",
       "overrides": {
         "description": "NVIDIA Nemotron 3 Ultra is an open frontier-reasoning and orchestration model from NVIDIA, with 55B active parameters out of 550B total (MoE). Built on a hybrid Transformer-Mamba mixture-of-experts architecture, it...",
@@ -2840,7 +2823,7 @@
       }
     },
     "nvidia/nemotron-3-ultra-550b-a55b:free": {
-      "model": "nemotron/nvidia-nemotron-3-ultra-free",
+      "model": "nemotron-ultra-free/nvidia-nemotron-3-ultra-free",
       "matchingModel": "nvidia/nemotron-3-ultra-550b-a55b:free",
       "overrides": {
         "lastUpdated": "June 4, 2026",
@@ -2851,11 +2834,10 @@
       }
     },
     "nvidia/nemotron-3.5-content-safety": {
-      "model": "nemotron/nemotron-3-5-content-safety",
+      "model": "nemotron-safety/nemotron-3-5-content-safety",
       "matchingModel": "nvidia/nemotron-3.5-content-safety",
       "overrides": {
         "description": "NVIDIA Nemotron 3.5 Content Safety is a compact 4B-parameter multimodal guardrail model from NVIDIA, fine-tuned from Google Gemma-3-4B. It moderates both inputs to and responses from LLMs and VLMs, accepting...",
-        "maxTokens": 117964,
         "lastUpdated": "June 2, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0002,
@@ -2884,11 +2866,10 @@
       }
     },
     "nvidia/nemotron-3.5-lightning": {
-      "model": "nemotron/nemotron-3-5-lightning-30b-a3b",
+      "model": "nemotron-lightning/nemotron-3-5-lightning-30b-a3b",
       "matchingModel": "nvidia/nemotron-3.5-lightning",
       "overrides": {
         "description": "NVIDIA Nemotron 3.5 Lightning is an open mixture-of-experts model from NVIDIA, with 3B active parameters out of 30B total. It is suited for high-throughput agentic workloads and specialized tasks that...",
-        "contextWindow": 262144,
         "maxTokens": 235929,
         "strengths": [
           "tool_use"
@@ -2897,8 +2878,8 @@
         "reliability": 1,
         "speed": 5,
         "lastUpdated": "August 11, 2026",
-        "costPer1kInputTokens": 0.000025,
-        "costPer1kOutputTokens": 0.00012,
+        "costPer1kInputTokens": 0.00002,
+        "costPer1kOutputTokens": 0.000096,
         "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -2916,7 +2897,7 @@
       }
     },
     "nvidia/nemotron-3.5-lightning:free": {
-      "model": "nemotron/nvidia-nemotron-3-5-lightning-free",
+      "model": "nemotron-lightning-free/nvidia-nemotron-3-5-lightning-free",
       "matchingModel": "nvidia/nemotron-3.5-lightning:free",
       "overrides": {
         "lastUpdated": "August 11, 2026",
@@ -3081,7 +3062,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -3089,7 +3070,7 @@
       }
     },
     "openai/gpt-5-image": {
-      "model": "gpt/gpt-5-image",
+      "model": "gpt-image/gpt-5-image",
       "matchingModel": "openai/gpt-5-image",
       "overrides": {
         "name": "OpenAI: GPT-5 Image ($$$$)",
@@ -3103,10 +3084,13 @@
           ],
           "defaultEffort": "high"
         }
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "openai/gpt-5-image-mini": {
-      "model": "gpt/gpt-5-image-mini",
+      "model": "gpt-image-mini/gpt-5-image-mini",
       "matchingModel": "openai/gpt-5-image-mini",
       "overrides": {
         "name": "OpenAI: GPT-5 Image Mini",
@@ -3137,7 +3121,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
@@ -3181,14 +3165,16 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "lastUpdated": "October 6, 2025",
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.12,
         "supportsTemperature": false
-      },
-      "unset": [
-        "artificialAnalysis"
-      ]
+      }
     },
     "openai/gpt-5.1": {
       "model": "gpt/gpt-5-1",
@@ -3259,11 +3245,10 @@
       ]
     },
     "openai/gpt-5.1-codex-mini": {
-      "model": "gpt-codex/gpt-5-1-codex-mini",
+      "model": "gpt-codex-mini/gpt-5-1-codex-mini",
       "matchingModel": "openai/gpt-5.1-codex-mini",
       "overrides": {
         "name": "GPT-5.1 Codex mini",
-        "description": "Coding-optimized GPT model for repository edits, reviews, and agentic software work",
         "modalities": {
           "input": [
             "image",
@@ -3352,14 +3337,16 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.021,
         "costPer1kOutputTokens": 0.168,
         "supportsTemperature": false
-      },
-      "unset": [
-        "artificialAnalysis"
-      ]
+      }
     },
     "openai/gpt-5.3-codex": {
       "model": "gpt-codex/gpt-5-3-codex",
@@ -3395,7 +3382,7 @@
       }
     },
     "openai/gpt-5.4-image-2": {
-      "model": "gpt/gpt-5-4-image-2",
+      "model": "gpt-image/gpt-5-4-image-2",
       "matchingModel": "openai/gpt-5.4-image-2",
       "overrides": {
         "name": "OpenAI: GPT-5.4 Image 2",
@@ -3404,7 +3391,10 @@
         "costPer1kOutputTokens": 0.015,
         "supportsToolCalls": false,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "openai/gpt-5.4-mini": {
       "model": "gpt-mini/gpt-5-4-mini",
@@ -3571,7 +3561,7 @@
       }
     },
     "openai/gpt-6-astra-pro": {
-      "model": "gpt/openai-gpt-6-astra-pro",
+      "model": "gpt-pro/openai-gpt-6-astra-pro",
       "matchingModel": "openai/gpt-6-astra-pro",
       "overrides": {
         "lastUpdated": "September 4, 2026",
@@ -3593,7 +3583,7 @@
       }
     },
     "openai/gpt-6-luna-pro": {
-      "model": "gpt/openai-gpt-6-luna-pro",
+      "model": "gpt-pro/openai-gpt-6-luna-pro",
       "matchingModel": "openai/gpt-6-luna-pro",
       "overrides": {
         "lastUpdated": "September 22, 2026",
@@ -3615,7 +3605,7 @@
       }
     },
     "openai/gpt-6-sol-pro": {
-      "model": "gpt/openai-gpt-6-sol-pro",
+      "model": "gpt-pro/openai-gpt-6-sol-pro",
       "matchingModel": "openai/gpt-6-sol-pro",
       "overrides": {
         "lastUpdated": "September 22, 2026",
@@ -3637,7 +3627,7 @@
       }
     },
     "openai/gpt-6.1-sol-pro": {
-      "model": "gpt/openai-gpt-6-1-sol-pro",
+      "model": "gpt-pro/openai-gpt-6-1-sol-pro",
       "matchingModel": "openai/gpt-6.1-sol-pro",
       "overrides": {
         "lastUpdated": "September 29, 2026",
@@ -3647,7 +3637,7 @@
       }
     },
     "openai/gpt-audio": {
-      "model": "gpt/gpt-audio",
+      "model": "gpt-audio/gpt-audio",
       "matchingModel": "openai/gpt-audio",
       "overrides": {
         "name": "OpenAI: GPT Audio",
@@ -3668,7 +3658,7 @@
       }
     },
     "openai/gpt-audio-mini": {
-      "model": "gpt-mini/gpt-audio-mini",
+      "model": "gpt-audio-mini/gpt-audio-mini",
       "matchingModel": "openai/gpt-audio-mini",
       "overrides": {
         "name": "OpenAI: GPT Audio Mini",
@@ -3686,13 +3676,7 @@
         "lastUpdated": "October 6, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0024
-      },
-      "unset": [
-        "contextComplexity",
-        "reliability",
-        "artificialAnalysis",
-        "strengths"
-      ]
+      }
     },
     "openai/gpt-chat-latest": {
       "model": "gpt/openai-gpt-chat-latest",
@@ -3725,16 +3709,17 @@
         "maxTokens": 117964,
         "speed": 4,
         "lastUpdated": "August 5, 2025",
-        "costPer1kInputTokens": 0.000018,
-        "costPer1kOutputTokens": 0.00009,
+        "costPer1kInputTokens": 0.000017,
+        "costPer1kOutputTokens": 0.000085,
         "supportsAttachments": false
       }
     },
     "openai/gpt-oss-safeguard-20b": {
-      "model": "gpt-oss/gpt-oss-safeguard-20b",
+      "model": "gpt-oss-safeguard/gpt-oss-safeguard-20b",
       "matchingModel": "openai/gpt-oss-safeguard-20b",
       "overrides": {
         "name": "GPT OSS Safeguard 20B",
+        "contextWindow": 131072,
         "maxTokens": 65536,
         "modalities": {
           "input": [
@@ -3754,11 +3739,7 @@
           ],
           "defaultEffort": "high"
         }
-      },
-      "unset": [
-        "strengths",
-        "knowledgeCutoffDate"
-      ]
+      }
     },
     "openai/o1": {
       "model": "o/openai-o1",
@@ -3867,7 +3848,7 @@
       "model": "o-mini/openai-o4-mini",
       "matchingModel": "openai/o4-mini",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 16, 2025",
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0044,
@@ -3930,7 +3911,7 @@
       }
     },
     "perceptron/perceptron-mk1": {
-      "model": "kilo/perceptron/perceptron-mk1/perceptron-perceptron-mk1",
+      "model": "perceptron-mk/perceptron-perceptron-mk1",
       "matchingModel": "perceptron/perceptron-mk1",
       "overrides": {
         "lastUpdated": "May 12, 2026",
@@ -3994,7 +3975,7 @@
       }
     },
     "perplexity/sonar-reasoning-pro": {
-      "model": "sonar-reasoning/perplexity-sonar-reasoning-pro",
+      "model": "sonar-reasoning-pro/perplexity-sonar-reasoning-pro",
       "matchingModel": "perplexity/sonar-reasoning-pro",
       "overrides": {
         "lastUpdated": "March 7, 2025",
@@ -4065,9 +4046,10 @@
       }
     },
     "qwen/qwen-2.5-coder-32b-instruct": {
-      "model": "qwen/qwen2-5-coder-32b-instruct",
+      "model": "qwen-coder/qwen2-5-coder-32b-instruct",
       "matchingModel": "qwen/qwen-2.5-coder-32b-instruct",
       "overrides": {
+        "name": "Qwen2.5 Coder 32B Instruct",
         "maxTokens": 29491,
         "contextComplexity": 2,
         "lastUpdated": "November 12, 2024",
@@ -4076,10 +4058,13 @@
         "supportsToolCalls": false,
         "supportsResponseFormat": false,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "qwen/qwen-plus": {
-      "model": "qwen/qwen-plus",
+      "model": "qwen-plus/qwen-plus",
       "matchingModel": "qwen/qwen-plus",
       "overrides": {
         "lastUpdated": "September 11, 2025",
@@ -4089,21 +4074,26 @@
       }
     },
     "qwen/qwen2.5-vl-72b-instruct": {
-      "model": "qwen/qwen-qwen2-5-vl-72b-instruct",
+      "model": "qwen-vl/qwen-qwen2-5-vl-72b-instruct",
       "matchingModel": "qwen/qwen2.5-vl-72b-instruct",
       "overrides": {
         "lastUpdated": "January 26, 2025",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.001,
         "supportsToolCalls": false
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
     },
     "qwen/qwen3-14b": {
       "model": "qwen/qwen-qwen3-14b",
       "matchingModel": "qwen/qwen3-14b",
       "overrides": {
         "name": "Qwen: Qwen3 14B",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.00024,
@@ -4126,7 +4116,7 @@
       "matchingModel": "qwen/qwen3-30b-a3b",
       "overrides": {
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.0005,
@@ -4198,7 +4188,7 @@
       }
     },
     "qwen/qwen3-coder": {
-      "model": "qwen/qwen-qwen3-coder-480b-a35b",
+      "model": "qwen-coder/qwen-qwen3-coder-480b-a35b",
       "matchingModel": "qwen/qwen3-coder",
       "overrides": {
         "lastUpdated": "July 22, 2025",
@@ -4208,7 +4198,7 @@
       }
     },
     "qwen/qwen3-coder-30b-a3b-instruct": {
-      "model": "qwen/qwen3-coder-30b-a3b-instruct",
+      "model": "qwen-coder/qwen3-coder-30b-a3b-instruct",
       "matchingModel": "qwen/qwen3-coder-30b-a3b-instruct",
       "overrides": {
         "name": "Qwen3-Coder 30B-A3B Instruct",
@@ -4216,13 +4206,13 @@
         "maxTokens": 235929,
         "speed": 4,
         "lastUpdated": "July 31, 2025",
-        "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.0006,
+        "costPer1kInputTokens": 0.00007,
+        "costPer1kOutputTokens": 0.00028,
         "supportsAttachments": false
       }
     },
     "qwen/qwen3-coder-flash": {
-      "model": "qwen/qwen3-coder-flash",
+      "model": "qwen-coder-flash/qwen3-coder-flash",
       "matchingModel": "qwen/qwen3-coder-flash",
       "overrides": {
         "lastUpdated": "July 28, 2025",
@@ -4233,7 +4223,7 @@
       }
     },
     "qwen/qwen3-coder-next": {
-      "model": "qwen/qwen3-coder-next",
+      "model": "qwen-coder/qwen3-coder-next",
       "matchingModel": "qwen/qwen3-coder-next",
       "overrides": {
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
@@ -4273,7 +4263,7 @@
       }
     },
     "qwen/qwen3-max-thinking": {
-      "model": "qwen/qwen-qwen-3-max-thinking",
+      "model": "qwen-max/qwen-qwen-3-max-thinking",
       "matchingModel": "qwen/qwen3-max-thinking",
       "overrides": {
         "lastUpdated": "January 23, 2026",
@@ -4310,7 +4300,7 @@
       }
     },
     "qwen/qwen3-vl-235b-a22b-instruct": {
-      "model": "qwen/qwen3-vl-235b-a22b-instruct",
+      "model": "qwen-vl/qwen3-vl-235b-a22b-instruct",
       "matchingModel": "qwen/qwen3-vl-235b-a22b-instruct",
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
@@ -4339,7 +4329,7 @@
       }
     },
     "qwen/qwen3-vl-30b-a3b-instruct": {
-      "model": "qwen/qwen3-vl-30b-a3b-instruct",
+      "model": "qwen-vl/qwen3-vl-30b-a3b-instruct",
       "matchingModel": "qwen/qwen3-vl-30b-a3b-instruct",
       "overrides": {
         "name": "Qwen: Qwen3 VL 30B A3B Instruct",
@@ -4378,7 +4368,7 @@
       }
     },
     "qwen/qwen3-vl-8b-instruct": {
-      "model": "qwen/qwen-qwen3-vl-8b-instruct",
+      "model": "qwen-vl/qwen-qwen3-vl-8b-instruct",
       "matchingModel": "qwen/qwen3-vl-8b-instruct",
       "overrides": {
         "speed": 4,
@@ -4435,7 +4425,6 @@
       "model": "qwen/qwen3-5-27b",
       "matchingModel": "qwen/qwen3.5-27b",
       "overrides": {
-        "maxTokens": 81920,
         "modalities": {
           "input": [
             "text",
@@ -4529,7 +4518,7 @@
       }
     },
     "qwen/qwen3.5-flash-02-23": {
-      "model": "qwen3.5/qwen-qwen3-5-flash",
+      "model": "qwen-flash/qwen-qwen3-5-flash",
       "matchingModel": "qwen/qwen3.5-flash-02-23",
       "overrides": {
         "lastUpdated": "February 25, 2026",
@@ -4538,13 +4527,16 @@
       }
     },
     "qwen/qwen3.5-plus-02-15": {
-      "model": "qwen3.5/qwen-qwen3-5-plus-2026-02-15",
+      "model": "qwen-plus/qwen-qwen3-5-plus-2026-02-15",
       "matchingModel": "qwen/qwen3.5-plus-02-15",
       "overrides": {
         "lastUpdated": "February 16, 2026",
         "costPer1kInputTokens": 0.00026,
         "costPer1kOutputTokens": 0.00156
-      }
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "qwen/qwen3.6-27b": {
       "model": "qwen/qwen3-6-27b",
@@ -4615,7 +4607,7 @@
       }
     },
     "qwen/qwen3.6-flash": {
-      "model": "qwen3.6/qwen3-6-flash",
+      "model": "qwen-flash/qwen3-6-flash",
       "matchingModel": "qwen/qwen3.6-flash",
       "overrides": {
         "lastUpdated": "April 27, 2026",
@@ -4651,7 +4643,7 @@
       }
     },
     "qwen/qwen3.6-plus": {
-      "model": "qwen/qwen3-6-plus",
+      "model": "qwen-plus/qwen3-6-plus",
       "matchingModel": "qwen/qwen3.6-plus",
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
@@ -4669,7 +4661,7 @@
       }
     },
     "qwen/qwen3.7-flash": {
-      "model": "qwen/qwen3-7-flash",
+      "model": "qwen-flash/qwen3-7-flash",
       "matchingModel": "qwen/qwen3.7-flash",
       "overrides": {
         "description": "Qwen3.7 Flash is a vision-language reasoning model from Alibaba. It is suited for multimodal agents, visual coding, search, and computer interaction, with strengths in object recognition, spatial understanding, and real-world...",
@@ -4688,7 +4680,7 @@
       }
     },
     "qwen/qwen3.7-max": {
-      "model": "qwen/qwen3-7-max",
+      "model": "qwen-max/qwen3-7-max",
       "matchingModel": "qwen/qwen3.7-max",
       "overrides": {
         "description": "Flagship Qwen model for complex reasoning, coding, and agentic workflows",
@@ -4707,7 +4699,7 @@
       }
     },
     "qwen/qwen3.7-plus": {
-      "model": "qwen/qwen3-7-plus",
+      "model": "qwen-plus/qwen3-7-plus",
       "matchingModel": "qwen/qwen3.7-plus",
       "overrides": {
         "description": "Qwen3.7-Plus is a cost-effective model in Alibaba's Qwen3.7 series. It supports text and image input with text output, building on the series' text capabilities with a comprehensive upgrade to its...",
@@ -4791,7 +4783,7 @@
       }
     },
     "qwen/qwen3.8-flash": {
-      "model": "qwen/qwen3-8-flash",
+      "model": "qwen-flash/qwen3-8-flash",
       "matchingModel": "qwen/qwen3.8-flash",
       "overrides": {
         "description": "Qwen3.8 Flash is a multimodal reasoning model from Alibaba. It is suited for coding assistance, agentic workflows, visual understanding, document and codebase analysis, desktop interaction, chart analysis, and long-video analysis.",
@@ -4808,7 +4800,7 @@
       }
     },
     "qwen/qwen3.8-max-prime": {
-      "model": "qwen3.8-max/qwen-3-8-max-prime",
+      "model": "qwen-max/qwen-3-8-max-prime",
       "matchingModel": "qwen/qwen3.8-max-prime",
       "overrides": {
         "description": "Qwen3.8 Max Prime is a higher-throughput variant of Qwen3.8 Max from Alibaba's Qwen team, served as a separate SKU at a higher price point. It accepts text, image, and video...",
@@ -4818,7 +4810,7 @@
       }
     },
     "qwen/qwen3.8-omni-flash": {
-      "model": "qwen/qwen3-8-omni-flash",
+      "model": "qwen-omni-flash/qwen3-8-omni-flash",
       "matchingModel": "qwen/qwen3.8-omni-flash",
       "overrides": {
         "description": "Qwen3.8 Omni Flash is an omni-modal reasoning model from Alibaba, the first Qwen model built around agentic capabilities with native audio-video understanding. It is suited for audio-video analysis and summarization,...",
@@ -4862,7 +4854,7 @@
       }
     },
     "relace/relace-apply-3": {
-      "model": "kilo/relace/relace-apply-3/relace-relace-apply-3",
+      "model": "relace-apply/relace-relace-apply-3",
       "matchingModel": "relace/relace-apply-3",
       "overrides": {
         "lastUpdated": "September 26, 2025",
@@ -4875,7 +4867,7 @@
       }
     },
     "relace/relace-search": {
-      "model": "kilo/relace/relace-search/relace-relace-search",
+      "model": "relace-search/relace-relace-search",
       "matchingModel": "relace/relace-search",
       "overrides": {
         "lastUpdated": "December 8, 2025",
@@ -4886,7 +4878,7 @@
       }
     },
     "sakana/fugu-max": {
-      "model": "fugu/fugu-max",
+      "model": "fugu-max/fugu-max",
       "matchingModel": "sakana/fugu-max",
       "overrides": {
         "name": "Sakana: Fugu Max",
@@ -4898,7 +4890,7 @@
       }
     },
     "sakana/fugu-ultra": {
-      "model": "fugu/fugu-ultra",
+      "model": "fugu-ultra/fugu-ultra",
       "matchingModel": "sakana/fugu-ultra",
       "overrides": {
         "description": "Fugu Ultra is the higher-performance model in Sakana AI's Fugu family. Rather than a single monolithic model, Fugu is a learned multi-agent orchestration system: a language model trained to route...",
@@ -4910,7 +4902,7 @@
       }
     },
     "sakana/fugu-ultra-v2": {
-      "model": "fugu/fugu-ultra-v2",
+      "model": "fugu-ultra/fugu-ultra-v2",
       "matchingModel": "sakana/fugu-ultra-v2",
       "overrides": {
         "name": "Sakana: Fugu Ultra v2",
@@ -4940,7 +4932,7 @@
       }
     },
     "sao10k/l3-lunaris-8b": {
-      "model": "llama/sao10k-llama-3-8b-lunaris",
+      "model": "lunaris/sao10k-llama-3-8b-lunaris",
       "matchingModel": "sao10k/l3-lunaris-8b",
       "overrides": {
         "lastUpdated": "August 13, 2024",
@@ -4951,7 +4943,7 @@
       }
     },
     "sao10k/l3.1-euryale-70b": {
-      "model": "llama/sao10k-llama-3-1-euryale-70b-v2-2",
+      "model": "euryale/sao10k-llama-3-1-euryale-70b-v2-2",
       "matchingModel": "sao10k/l3.1-euryale-70b",
       "overrides": {
         "lastUpdated": "August 28, 2024",
@@ -5082,9 +5074,12 @@
       }
     },
     "stepfun/step-3.7-flash": {
-      "model": "kilo/stepfun/step-3.7-flash/step-3-7-flash",
+      "model": "step-flash/step-3-7-flash",
       "matchingModel": "stepfun/step-3.7-flash",
       "overrides": {
+        "description": "Step 3.7 Flash is StepFun's latest high-efficiency multimodal Mixture-of-Experts model. It pairs a 196B-parameter language backbone with a vision encoder for native image and video understanding, activating roughly 11B parameters...",
+        "contextWindow": 256000,
+        "maxTokens": 230400,
         "speed": 4,
         "lastUpdated": "May 29, 2026",
         "costPer1kInputTokens": 0.0002,
@@ -5092,9 +5087,11 @@
       }
     },
     "stepfun/step-5-preview": {
-      "model": "kilo/stepfun/step-5-preview/step-5-preview",
+      "model": "step/step-5-preview",
       "matchingModel": "stepfun/step-5-preview",
       "overrides": {
+        "description": "Step 5 Preview is StepFun's flagship model for agentic work, built on a sparse Mixture-of-Experts architecture (27B active / 600B total parameters). It performs strongly in software engineering and professional...",
+        "maxTokens": 64000,
         "speed": 4,
         "lastUpdated": "September 20, 2026",
         "costPer1kInputTokens": 0.001,
@@ -5112,10 +5109,7 @@
         "costPer1kOutputTokens": 0,
         "costPer1kReasoningTokens": 0,
         "supportsResponseFormat": false
-      },
-      "unset": [
-        "artificialAnalysis"
-      ]
+      }
     },
     "tencent/hunyuan-a13b-instruct": {
       "model": "hunyuan/tencent-hunyuan-a13b-instruct-retires-nov-15",
@@ -5131,7 +5125,7 @@
       }
     },
     "tencent/hy-mt2-1.8b": {
-      "model": "Hy/hy-mt2-1-8b",
+      "model": "hy-mt/hy-mt2-1-8b",
       "matchingModel": "tencent/hy-mt2-1.8b",
       "overrides": {
         "name": "Tencent: Hy-MT2-1.8B",
@@ -5145,7 +5139,7 @@
       }
     },
     "tencent/hy-mt2-30b-a3b": {
-      "model": "Hy/hy-mt2-30b-a3b",
+      "model": "hy-mt/hy-mt2-30b-a3b",
       "matchingModel": "tencent/hy-mt2-30b-a3b",
       "overrides": {
         "name": "Tencent: Hy-MT2-30B-A3B",
@@ -5158,7 +5152,7 @@
       }
     },
     "tencent/hy-mt2-7b": {
-      "model": "Hy/hy-mt2-7b",
+      "model": "hy-mt/hy-mt2-7b",
       "matchingModel": "tencent/hy-mt2-7b",
       "overrides": {
         "name": "Tencent: Hy-MT2-7B",
@@ -5171,7 +5165,7 @@
       }
     },
     "tencent/hy3": {
-      "model": "Hy/hy3",
+      "model": "hy/hy3",
       "matchingModel": "tencent/hy3",
       "overrides": {
         "description": "Hy3 is a 295B-parameter Mixture-of-Experts model from Tencent (21B active, 192 experts with top-8 routing) built for reasoning, agentic workflows, and real-world production use. It supports a configurable reasoning effort:...",
@@ -5187,6 +5181,8 @@
       "matchingModel": "tencent/hy3-preview",
       "overrides": {
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Hy3 preview is no longer offered by Kilo.",
         "lastUpdated": "April 20, 2026",
         "costPer1kInputTokens": 0.00018,
         "costPer1kOutputTokens": 0.0006,
@@ -5195,7 +5191,7 @@
       }
     },
     "tencent/hy4-preview": {
-      "model": "Hy/hy4-preview",
+      "model": "hy/hy4-preview",
       "matchingModel": "tencent/hy4-preview",
       "overrides": {
         "description": "Tencent: Hy4 preview is a mixture-of-experts model from Tencent, with 49B active parameters out of 770B total. It is designed for coding agents, complex tool-use workflows, and productivity tasks that...",
@@ -5211,10 +5207,13 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "thedrummer/cydonia-24b-v4.1": {
-      "model": "kilo/thedrummer/cydonia-24b-v4.1/thedrummer-cydonia-24b-v4-1",
+      "model": "cydonia/thedrummer-cydonia-24b-v4-1",
       "matchingModel": "thedrummer/cydonia-24b-v4.1",
       "overrides": {
         "lastUpdated": "September 27, 2025",
@@ -5225,7 +5224,7 @@
       }
     },
     "thedrummer/skyfall-36b-v2": {
-      "model": "kilo/thedrummer/skyfall-36b-v2/thedrummer-skyfall-36b-v2",
+      "model": "skyfall/thedrummer-skyfall-36b-v2",
       "matchingModel": "thedrummer/skyfall-36b-v2",
       "overrides": {
         "lastUpdated": "March 10, 2025",
@@ -5236,7 +5235,7 @@
       }
     },
     "thedrummer/unslopnemo-12b": {
-      "model": "kilo/thedrummer/unslopnemo-12b/thedrummer-unslopnemo-12b",
+      "model": "unslopnemo/thedrummer-unslopnemo-12b",
       "matchingModel": "thedrummer/unslopnemo-12b",
       "overrides": {
         "lastUpdated": "November 8, 2024",
@@ -5247,7 +5246,7 @@
       }
     },
     "thinkingmachines/inkling": {
-      "model": "ling/inkling",
+      "model": "inkling/inkling",
       "matchingModel": "thinkingmachines/inkling",
       "overrides": {
         "description": "Inkling is an open-weight multimodal mixture-of-experts model from Thinking Machines Lab, with 41B active parameters out of 975B total. It is designed for general-purpose reasoning, coding, agentic and tool-use systems,...",
@@ -5282,7 +5281,7 @@
       }
     },
     "thinkingmachines/inkling-small": {
-      "model": "ling/inkling-small",
+      "model": "inkling-small/inkling-small",
       "matchingModel": "thinkingmachines/inkling-small",
       "overrides": {
         "description": "Inkling Small is an open-weight multimodal mixture-of-experts model from Thinking Machines Lab, with 12B active parameters out of 276B total. It is positioned as the smaller, more efficient member of...",
@@ -5332,7 +5331,11 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsResponseFormat": false
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "reliability"
+      ]
     },
     "unbiased/pareto": {
       "model": "kilo/unbiased/pareto/pareto",
@@ -5347,9 +5350,10 @@
       }
     },
     "unbiased/pareto-26.10-preview": {
-      "model": "kilo/unbiased/pareto-26.10-preview/pareto-26-10-preview",
+      "model": "pareto/pareto-26-10-preview",
       "matchingModel": "unbiased/pareto-26.10-preview",
       "overrides": {
+        "description": "Pareto is a multimodal composite model built for research, coding, and agentic workflows, while delivering frontier-level performance across a broad range of general-purpose tasks. This is a preview of the...",
         "lastUpdated": "October 1, 2026",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.0032,
@@ -5357,7 +5361,7 @@
       }
     },
     "undi95/remm-slerp-l2-13b": {
-      "model": "kilo/undi95/remm-slerp-l2-13b/remm-slerp-13b",
+      "model": "remm/remm-slerp-13b",
       "matchingModel": "undi95/remm-slerp-l2-13b",
       "overrides": {
         "lastUpdated": "July 22, 2023",
@@ -5415,7 +5419,7 @@
       }
     },
     "x-ai/grok-4.20": {
-      "model": "grok/spacexai-grok-4-20",
+      "model": "grok/spacexsi-grok-4-20",
       "matchingModel": "x-ai/grok-4.20",
       "overrides": {
         "speed": 3,
@@ -5425,7 +5429,7 @@
       }
     },
     "x-ai/grok-4.20-multi-agent": {
-      "model": "grok/spacexai-grok-4-20-multi-agent",
+      "model": "grok/spacexsi-grok-4-20-multi-agent",
       "matchingModel": "x-ai/grok-4.20-multi-agent",
       "overrides": {
         "lastUpdated": "March 31, 2026",
@@ -5531,7 +5535,7 @@
       }
     },
     "xiaomi/mimo-v2.6-flash": {
-      "model": "mimo/mimo-v2-6-flash",
+      "model": "mimo-flash/mimo-v2-6-flash",
       "matchingModel": "xiaomi/mimo-v2.6-flash",
       "overrides": {
         "description": "MiMo-V2.6-Flash is an open-source foundation model developed by Xiaomi. Built on a Mixture-of-Experts architecture with 309B total parameters and 15B activated per token, it employs a hybrid attention mechanism for...",
@@ -5560,7 +5564,7 @@
       }
     },
     "xiaomi/mimo-v2.6-pro": {
-      "model": "mimo/mimo-v2-6-pro",
+      "model": "mimo-pro/mimo-v2-6-pro",
       "matchingModel": "xiaomi/mimo-v2.6-pro",
       "overrides": {
         "description": "MiMo-V2.6-Pro is the flagship foundation model developed by Xiaomi. Built at a scale of over 1T parameters, it is designed to push the ceiling of capability for the most demanding...",
@@ -5577,7 +5581,7 @@
         },
         "speed": 3,
         "lastUpdated": "September 22, 2026",
-        "costPer1kInputTokens": 0.000435,
+        "costPer1kInputTokens": 0.00043,
         "costPer1kOutputTokens": 0.00087,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -5589,7 +5593,7 @@
       }
     },
     "xiaomi/mimo-v2.6-pro-ultraspeed": {
-      "model": "mimo/mimo-v2-6-pro-ultraspeed",
+      "model": "mimo-pro/mimo-v2-6-pro-ultraspeed",
       "matchingModel": "xiaomi/mimo-v2.6-pro-ultraspeed",
       "overrides": {
         "description": "MiMo-V2.6-Pro-UltraSpeed is the fast speed edition of Xiaomi's flagship foundation model, MiMo-V2.6-Pro. Built from the same 1T MiMo-V2.6-Pro checkpoint, it matches the original model in quality while delivering roughly 10x...",
@@ -5614,7 +5618,10 @@
           ],
           "defaultEffort": "none"
         }
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "z-ai/glm-4.5": {
       "model": "glm/glm-4-5",
@@ -5660,7 +5667,7 @@
       }
     },
     "z-ai/glm-4.5v": {
-      "model": "glm/glm-4-5v",
+      "model": "glmv/glm-4-5v",
       "matchingModel": "z-ai/glm-4.5v",
       "overrides": {
         "speed": 2,
@@ -5698,7 +5705,7 @@
       }
     },
     "z-ai/glm-4.6v": {
-      "model": "glm/glm-4-6v",
+      "model": "glmv/glm-4-6v",
       "matchingModel": "z-ai/glm-4.6v",
       "overrides": {
         "modalities": {
@@ -5793,11 +5800,12 @@
       }
     },
     "z-ai/glm-5-turbo": {
-      "model": "glm/glm-5-turbo",
+      "model": "glm-turbo/glm-5-turbo",
       "matchingModel": "z-ai/glm-5-turbo",
       "overrides": {
         "name": "GLM-5-Turbo",
         "description": "Efficient GLM model for fast reasoning, coding, and agent workflows",
+        "contextWindow": 202752,
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.004,
@@ -5817,7 +5825,7 @@
       "matchingModel": "z-ai/glm-5.1",
       "overrides": {
         "contextWindow": 204800,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.00119,
         "costPer1kOutputTokens": 0.00374,
@@ -5871,8 +5879,7 @@
       "matchingModel": "z-ai/glm-5.3-flash",
       "overrides": {
         "description": "GLM-5.3-Flash is a native multimodal model from Z.ai. It is suited for efficient coding and long-horizon agent tasks. Its hybrid sparse and linear attention architecture maintains accurate long-context behavior while...",
-        "contextWindow": 1048575,
-        "maxTokens": 943717,
+        "contextWindow": 1048576,
         "modalities": {
           "input": [
             "text",
@@ -5917,11 +5924,12 @@
       }
     },
     "z-ai/glm-5v-turbo": {
-      "model": "glm/glm-5v-turbo",
+      "model": "glmv-turbo/glm-5v-turbo",
       "matchingModel": "z-ai/glm-5v-turbo",
       "overrides": {
         "name": "GLM-5V-Turbo",
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+        "contextWindow": 202752,
         "modalities": {
           "input": [
             "image",
@@ -5963,7 +5971,7 @@
       }
     },
     "meta/muse-wonder": {
-      "model": "muse/meta-muse-wonder",
+      "model": "muse-wonder/meta-muse-wonder",
       "matchingModel": "meta/muse-wonder",
       "overrides": {
         "speed": 3,
@@ -5973,9 +5981,10 @@
       }
     },
     "~unbiased/pareto-latest": {
-      "model": "kilo/~unbiased/pareto-latest/pareto-latest",
+      "model": "pareto/pareto-latest",
       "matchingModel": "~unbiased/pareto-latest",
       "overrides": {
+        "description": "This model always redirects to the latest model in the Pareto family.",
         "lastUpdated": "October 13, 2026",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.0032,
@@ -5997,17 +6006,14 @@
       }
     },
     "liquid/lfm-2.5-24b-a2b": {
-      "model": "liquid/liquidai-lfm2-5-24b-a2b",
+      "model": "lfm/liquidai-lfm2-5-24b-a2b",
       "matchingModel": "liquid/lfm-2.5-24b-a2b",
       "overrides": {
         "lastUpdated": "October 13, 2026",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0007,
         "supportsAttachments": false
-      },
-      "unset": [
-        "artificialAnalysis"
-      ]
+      }
     },
     "scaledown/extract": {
       "model": "kilo/scaledown/extract/scaledown-extract",
@@ -6034,9 +6040,10 @@
       }
     },
     "unbiased/pareto-26.9": {
-      "model": "kilo/unbiased/pareto-26.9/pareto-26-9",
+      "model": "pareto/pareto-26-9",
       "matchingModel": "unbiased/pareto-26.9",
       "overrides": {
+        "description": "Pareto is a multimodal composite model built for research, coding, and agentic workflows, while delivering frontier-level performance across a broad range of general-purpose tasks.",
         "lastUpdated": "October 13, 2026",
         "costPer1kInputTokens": 0.0025,
         "costPer1kOutputTokens": 0.0075,
@@ -6075,7 +6082,7 @@
       }
     },
     "meta/muse-spark-open": {
-      "model": "muse/muse-spark-open",
+      "model": "muse-spark/muse-spark-open",
       "matchingModel": "meta/muse-spark-open",
       "overrides": {
         "description": "Muse Spark Open is a coding-optimized open-weight model. Trained specifically for agentic coding workflows, it delivers higher first-attempt accuracy, reliable tool calling, and deep codebase understanding across the repos developers...",
@@ -6106,13 +6113,13 @@
       }
     },
     "minimax/minimax-m3.1-flash": {
-      "model": "minimax/minimax-minimax-m3-1-flash",
+      "model": "minimax-m-flash/minimax-minimax-m3-1-flash",
       "matchingModel": "minimax/minimax-m3.1-flash",
       "overrides": {
         "speed": 4,
         "lastUpdated": "October 19, 2026",
-        "costPer1kInputTokens": 0.000075,
-        "costPer1kOutputTokens": 0.0003
+        "costPer1kInputTokens": 0.000135,
+        "costPer1kOutputTokens": 0.00054
       }
     },
     "moondream/moondream3-preview": {
@@ -6138,7 +6145,7 @@
       }
     },
     "moonshotai/kimi-k3.1-pro": {
-      "model": "kimi-k3/moonshotai-kimi-k3-1-pro",
+      "model": "kimi-pro/moonshotai-kimi-k3-1-pro",
       "matchingModel": "moonshotai/kimi-k3.1-pro",
       "overrides": {
         "speed": 2,
@@ -6148,13 +6155,12 @@
       }
     },
     "nvidia/nemotron-3.5-super-vl": {
-      "model": "nemotron/nvidia-nemotron-3-5-super-vl",
+      "model": "nemotron-super/nvidia-nemotron-3-5-super-vl",
       "matchingModel": "nvidia/nemotron-3.5-super-vl",
       "overrides": {
         "name": "NVIDIA: Nemotron 3.5 Super VL",
         "description": "NVIDIA Nemotron 3.5 Super VL is an open multimodal mixture-of-experts model from NVIDIA, with 12B active parameters out of 120B total. It takes text, images, documents, GUI screenshots, and video...",
-        "contextWindow": 262144,
-        "maxTokens": 235929,
+        "maxTokens": 943718,
         "modalities": {
           "input": [
             "text",
@@ -6171,7 +6177,6 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 4,
         "speed": 5,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00006,
@@ -6186,7 +6191,7 @@
       }
     },
     "nvidia/nemotron-3.5-super-vl:free": {
-      "model": "nemotron/nvidia-nemotron-3-5-super-vl-free",
+      "model": "nemotron-super-free/nvidia-nemotron-3-5-super-vl-free",
       "matchingModel": "nvidia/nemotron-3.5-super-vl:free",
       "overrides": {
         "lastUpdated": "October 15, 2026",
@@ -6195,7 +6200,7 @@
       }
     },
     "recursive/flint-v1.0:free": {
-      "model": "flint/recursive-flint-free",
+      "model": "flint-free/recursive-flint-free",
       "matchingModel": "recursive/flint-v1.0:free",
       "overrides": {
         "lastUpdated": "October 21, 2026",
@@ -6216,7 +6221,7 @@
       }
     },
     "reflection/beam-free": {
-      "model": "beam/reflection-beam-1-0-free",
+      "model": "beam-free/reflection-beam-1-0-free",
       "matchingModel": "reflection/beam-free",
       "overrides": {
         "lastUpdated": "October 16, 2026",
@@ -6230,9 +6235,10 @@
       ]
     },
     "unbiased/pareto-26.10": {
-      "model": "kilo/unbiased/pareto-26.10/pareto-26-10",
+      "model": "pareto/pareto-26-10",
       "matchingModel": "unbiased/pareto-26.10",
       "overrides": {
+        "description": "Pareto is a multimodal composite model built for research, coding, and agentic workflows, while delivering frontier-level performance across a broad range of general-purpose tasks.",
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.0008,
         "costPer1kOutputTokens": 0.0032,
@@ -6287,7 +6293,7 @@
       }
     },
     "openai/gpt-6.1-terra-pro": {
-      "model": "gpt/openai-gpt-6-1-terra-pro",
+      "model": "gpt-pro/openai-gpt-6-1-terra-pro",
       "matchingModel": "openai/gpt-6.1-terra-pro",
       "overrides": {
         "lastUpdated": "October 26, 2026",
@@ -6297,11 +6303,11 @@
       }
     },
     "particle-ai/particle-1": {
-      "model": "kilo/particle-ai/particle-1/particle-ai-particle-1",
+      "model": "particle/particle-ai-particle-1",
       "matchingModel": "particle-ai/particle-1",
       "overrides": {
         "lastUpdated": "October 28, 2026",
-        "costPer1kInputTokens": 0.00003,
+        "costPer1kInputTokens": 0.000035,
         "costPer1kOutputTokens": 0.00025
       }
     },
@@ -6326,7 +6332,11 @@
         "costPer1kReasoningTokens": 0,
         "supportsResponseFormat": false,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "reliability"
+      ]
     },
     "stealth/crouton-alpha": {
       "model": "alpha/crouton-alpha",
@@ -6350,7 +6360,7 @@
       }
     },
     "google/gemini-omni-1.1-flash": {
-      "model": "gemini/google-gemini-omni-1-1-flash",
+      "model": "gemini-omni-flash/google-gemini-omni-1-1-flash",
       "matchingModel": "google/gemini-omni-1.1-flash",
       "overrides": {
         "lastUpdated": "August 27, 2026",
@@ -6361,7 +6371,7 @@
       }
     },
     "google/gemini-omni-1.2-flash": {
-      "model": "gemini/google-gemini-omni-1-2-flash",
+      "model": "gemini-omni-flash/google-gemini-omni-1-2-flash",
       "matchingModel": "google/gemini-omni-1.2-flash",
       "overrides": {
         "lastUpdated": "November 5, 2026",
@@ -6372,7 +6382,7 @@
       }
     },
     "inclusionai/ling-3.0-tiny": {
-      "model": "ling/inclusionai-ling-3-0-tiny",
+      "model": "ling-tiny/inclusionai-ling-3-0-tiny",
       "matchingModel": "inclusionai/ling-3.0-tiny",
       "overrides": {
         "speed": 4,
@@ -6393,7 +6403,7 @@
       }
     },
     "tencent/hy4": {
-      "model": "Hy/tencent-hy4",
+      "model": "hy/tencent-hy4",
       "matchingModel": "tencent/hy4",
       "overrides": {
         "name": "Tencent: Hy4",
@@ -6415,7 +6425,7 @@
       }
     },
     "liquid/lfm-3-1.7b": {
-      "model": "liquid/liquidai-lfm3-1-7b",
+      "model": "lfm/liquidai-lfm3-1-7b",
       "matchingModel": "liquid/lfm-3-1.7b",
       "overrides": {
         "lastUpdated": "November 6, 2026",
@@ -6425,7 +6435,7 @@
       }
     },
     "liquid/lfm-3-1.7b:free": {
-      "model": "liquid/liquidai-lfm3-1-7b-free",
+      "model": "lfm-free/liquidai-lfm3-1-7b-free",
       "matchingModel": "liquid/lfm-3-1.7b:free",
       "overrides": {
         "lastUpdated": "November 6, 2026",
@@ -6446,7 +6456,7 @@
       }
     },
     "meta/muse-ember": {
-      "model": "muse/meta-muse-ember",
+      "model": "muse-ember/meta-muse-ember",
       "matchingModel": "meta/muse-ember",
       "overrides": {
         "speed": 4,
@@ -6456,7 +6466,7 @@
       }
     },
     "nex-agi/nex-n2.6": {
-      "model": "agi/nex-agi-nex-n2-6",
+      "model": "nex-n/nex-agi-nex-n2-6",
       "matchingModel": "nex-agi/nex-n2.6",
       "overrides": {
         "lastUpdated": "November 10, 2026",
@@ -6474,7 +6484,11 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsResponseFormat": false
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "reliability"
+      ]
     },
     "amazon/nova-lite": {
       "model": "nova-lite/amazon-nova-lite",
@@ -6508,7 +6522,7 @@
       }
     },
     "baidu/ernie-5.5-flash-preview:free": {
-      "model": "ernie/baidu-ernie-5-5-flash-preview-free",
+      "model": "ernie-free/baidu-ernie-5-5-flash-preview-free",
       "matchingModel": "baidu/ernie-5.5-flash-preview:free",
       "overrides": {
         "lastUpdated": "November 10, 2026",
@@ -6539,7 +6553,7 @@
       }
     },
     "deepseek/deepseek-r1": {
-      "model": "deepseek-thinking/deepseek-deepseek-r1",
+      "model": "deepseek-r/deepseek-deepseek-r1",
       "matchingModel": "deepseek/deepseek-r1",
       "overrides": {
         "speed": 2,
@@ -6594,7 +6608,7 @@
       }
     },
     "google/gemini-3-flash": {
-      "model": "gemini/google-gemini-3-flash",
+      "model": "gemini-flash/google-gemini-3-flash",
       "matchingModel": "google/gemini-3-flash",
       "overrides": {
         "speed": 5,
@@ -6627,7 +6641,7 @@
       }
     },
     "google/gemini-omni-flash-preview": {
-      "model": "gemini/google-gemini-omni-flash-preview",
+      "model": "gemini-omni-flash/google-gemini-omni-flash-preview",
       "matchingModel": "google/gemini-omni-flash-preview",
       "overrides": {
         "lastUpdated": "June 30, 2026",
@@ -6638,7 +6652,7 @@
       }
     },
     "humansand/ampersand-v0.1": {
-      "model": "v0/ampersand-v0-1",
+      "model": "ampersand/ampersand-v0-1",
       "matchingModel": "humansand/ampersand-v0.1",
       "overrides": {
         "description": "Ampersand v0.1 is a collaborator model from Humans& for shared goals, group conversations, and long-running collaboration. Its Responses API supports text, reasoning, client-side function tools, and implicit prompt caching.",
@@ -6663,7 +6677,7 @@
       }
     },
     "inclusionai/ling-3.2-flash:free": {
-      "model": "ling/inclusionai-ling-3-2-flash-free",
+      "model": "ling-flash-free/inclusionai-ling-3-2-flash-free",
       "matchingModel": "inclusionai/ling-3.2-flash:free",
       "overrides": {
         "lastUpdated": "November 13, 2026",
@@ -6785,9 +6799,10 @@
       }
     },
     "mixedbread/toast-1": {
-      "model": "kilo/mixedbread/toast-1/toast-1",
+      "model": "toast/toast-1",
       "matchingModel": "mixedbread/toast-1",
       "overrides": {
+        "description": "Built for knowledge-intensive questions, multi-step retrieval, and evidence synthesis. Toast 1 can work with any backend exposed through function calling.",
         "lastUpdated": "August 13, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.00072,
@@ -6795,7 +6810,7 @@
       }
     },
     "moonshotai/kimi-k2.7-code-highspeed": {
-      "model": "kimi-k2/moonshotai-kimi-k2-7-code-high-speed",
+      "model": "kimi-code/moonshotai-kimi-k2-7-code-high-speed",
       "matchingModel": "moonshotai/kimi-k2.7-code-highspeed",
       "overrides": {
         "lastUpdated": "June 12, 2026",
@@ -6805,7 +6820,7 @@
       }
     },
     "moonshotai/kimi-k3-fast": {
-      "model": "kimi-k3/moonshotai-kimi-k3-fast",
+      "model": "kimi/moonshotai-kimi-k3-fast",
       "matchingModel": "moonshotai/kimi-k3-fast",
       "overrides": {
         "lastUpdated": "July 16, 2026",
@@ -6816,7 +6831,7 @@
       }
     },
     "moonshotai/kimi-k3.1-pro-highspeed": {
-      "model": "kimi-k3/moonshotai-kimi-k3-1-pro-highspeed",
+      "model": "kimi-pro/moonshotai-kimi-k3-1-pro-highspeed",
       "matchingModel": "moonshotai/kimi-k3.1-pro-highspeed",
       "overrides": {
         "lastUpdated": "October 23, 2026",
@@ -6836,7 +6851,7 @@
       }
     },
     "nvidia/nemotron-nano-12b-v2-vl": {
-      "model": "nemotron/nvidia-nvidia-nemotron-nano-12b-v2-vl",
+      "model": "nemotron-nano/nvidia-nvidia-nemotron-nano-12b-v2-vl",
       "matchingModel": "nvidia/nemotron-nano-12b-v2-vl",
       "overrides": {
         "speed": 4,
@@ -6848,7 +6863,7 @@
       }
     },
     "nvidia/nemotron-nano-9b-v2": {
-      "model": "nemotron/nvidia-nvidia-nemotron-nano-9b-v2",
+      "model": "nemotron-nano/nvidia-nvidia-nemotron-nano-9b-v2",
       "matchingModel": "nvidia/nemotron-nano-9b-v2",
       "overrides": {
         "speed": 4,
@@ -7095,7 +7110,7 @@
       }
     },
     "openai/gpt-oss-safeguard-120b": {
-      "model": "gpt-oss/openai-gpt-oss-safeguard-120b",
+      "model": "gpt-oss-safeguard/openai-gpt-oss-safeguard-120b",
       "matchingModel": "openai/gpt-oss-safeguard-120b",
       "overrides": {
         "lastUpdated": "October 29, 2025",
@@ -7127,7 +7142,7 @@
       }
     },
     "particle-ai/particle-1:free": {
-      "model": "kilo/particle-ai/particle-1:free/particle-ai-particle-1-free",
+      "model": "particle/particle-ai-particle-1-free",
       "matchingModel": "particle-ai/particle-1:free",
       "overrides": {
         "lastUpdated": "October 28, 2026",
@@ -7136,9 +7151,10 @@
       }
     },
     "particle/particle-1": {
-      "model": "kilo/particle/particle-1/particle-1",
+      "model": "particle/particle-1",
       "matchingModel": "particle/particle-1",
       "overrides": {
+        "description": "Particle-1 is Particle AI’s model for agentic coding and software engineering, post-trained on DeepSeek V4.1 Flash to complete tasks with fewer tokens. It supports text and image inputs, reasoning, tool use, and implicit prompt caching.",
         "lastUpdated": "October 28, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.001,
@@ -7147,9 +7163,11 @@
       }
     },
     "quiverai/arrow-2": {
-      "model": "kilo/quiverai/arrow-2/arrow-2",
+      "model": "arrow/arrow-2",
       "matchingModel": "quiverai/arrow-2",
       "overrides": {
+        "description": "SVG generation model with agentic refinement and tool calling.",
+        "maxTokens": 131072,
         "lastUpdated": "September 16, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.02,
@@ -7158,9 +7176,11 @@
       }
     },
     "quiverai/arrow-2-telos": {
-      "model": "kilo/quiverai/arrow-2-telos/arrow-2-telos",
+      "model": "arrow/arrow-2-telos",
       "matchingModel": "quiverai/arrow-2-telos",
       "overrides": {
+        "description": "Higher-refinement Arrow 2 variant combining Arrow's speed with frontier-model reasoning.",
+        "maxTokens": 131072,
         "lastUpdated": "September 16, 2026",
         "costPer1kInputTokens": 0.006,
         "costPer1kOutputTokens": 0.03,
@@ -7182,7 +7202,7 @@
       }
     },
     "qwen/qwen3.5-flash": {
-      "model": "qwen/qwen-qwen-3-5-flash",
+      "model": "qwen-flash/qwen-qwen-3-5-flash",
       "matchingModel": "qwen/qwen3.5-flash",
       "overrides": {
         "lastUpdated": "February 23, 2026",
@@ -7193,7 +7213,7 @@
       }
     },
     "qwen/qwen3.5-plus": {
-      "model": "qwen/qwen-qwen-3-5-plus",
+      "model": "qwen-plus/qwen-qwen-3-5-plus",
       "matchingModel": "qwen/qwen3.5-plus",
       "overrides": {
         "lastUpdated": "February 16, 2026",
@@ -7204,7 +7224,7 @@
       }
     },
     "qwen/qwen3.8-max": {
-      "model": "qwen/qwen-qwen-3-8-max",
+      "model": "qwen-max/qwen-qwen-3-8-max",
       "matchingModel": "qwen/qwen3.8-max",
       "overrides": {
         "speed": 2,
@@ -7238,7 +7258,7 @@
       }
     },
     "tencent/hy-mt2-lite": {
-      "model": "Hy/tencent-tencent-hy-mt2-lite",
+      "model": "hy-mt/tencent-tencent-hy-mt2-lite",
       "matchingModel": "tencent/hy-mt2-lite",
       "overrides": {
         "lastUpdated": "June 12, 2026",
@@ -7250,7 +7270,7 @@
       }
     },
     "tencent/hy-mt2-plus": {
-      "model": "Hy/tencent-tencent-hy-mt2-plus",
+      "model": "hy-mt/tencent-tencent-hy-mt2-plus",
       "matchingModel": "tencent/hy-mt2-plus",
       "overrides": {
         "lastUpdated": "June 12, 2026",
@@ -7261,7 +7281,7 @@
       }
     },
     "tencent/hy-mt2-pro": {
-      "model": "Hy/tencent-tencent-hy-mt2-pro",
+      "model": "hy-mt/tencent-tencent-hy-mt2-pro",
       "matchingModel": "tencent/hy-mt2-pro",
       "overrides": {
         "lastUpdated": "May 21, 2026",
@@ -7272,7 +7292,7 @@
       }
     },
     "thinkingmachines/inkling-2-small": {
-      "model": "ling/thinking-machines-inkling-2-small",
+      "model": "inkling-small/thinking-machines-inkling-2-small",
       "matchingModel": "thinkingmachines/inkling-2-small",
       "overrides": {
         "speed": 4,
@@ -7282,7 +7302,7 @@
       }
     },
     "x-ai/grok-4.20-multi-agent-beta": {
-      "model": "grok/spacexai-grok-4-20-multi-agent-beta",
+      "model": "grok/spacexsi-grok-4-20-multi-agent-beta",
       "matchingModel": "x-ai/grok-4.20-multi-agent-beta",
       "overrides": {
         "lastUpdated": "March 11, 2026",
@@ -7292,7 +7312,7 @@
       }
     },
     "x-ai/grok-4.20-non-reasoning": {
-      "model": "grok/spacexai-grok-4-20-non-reasoning",
+      "model": "grok/spacexsi-grok-4-20-non-reasoning",
       "matchingModel": "x-ai/grok-4.20-non-reasoning",
       "overrides": {
         "speed": 4,
@@ -7302,7 +7322,7 @@
       }
     },
     "x-ai/grok-4.20-non-reasoning-beta": {
-      "model": "grok/spacexai-grok-4-20-beta-non-reasoning",
+      "model": "grok/spacexsi-grok-4-20-beta-non-reasoning",
       "matchingModel": "x-ai/grok-4.20-non-reasoning-beta",
       "overrides": {
         "lastUpdated": "March 11, 2026",
@@ -7311,7 +7331,7 @@
       }
     },
     "x-ai/grok-4.20-reasoning": {
-      "model": "grok/spacexai-grok-4-20-reasoning",
+      "model": "grok/spacexsi-grok-4-20-reasoning",
       "matchingModel": "x-ai/grok-4.20-reasoning",
       "overrides": {
         "lastUpdated": "March 10, 2026",
@@ -7321,7 +7341,7 @@
       }
     },
     "x-ai/grok-4.20-reasoning-beta": {
-      "model": "grok/spacexai-grok-4-20-beta-reasoning",
+      "model": "grok/spacexsi-grok-4-20-beta-reasoning",
       "matchingModel": "x-ai/grok-4.20-reasoning-beta",
       "overrides": {
         "lastUpdated": "March 11, 2026",
@@ -7398,7 +7418,7 @@
       }
     },
     "openai/gpt-6.2-astra-pro": {
-      "model": "gpt/openai-gpt-6-2-astra-pro",
+      "model": "gpt-pro/openai-gpt-6-2-astra-pro",
       "matchingModel": "openai/gpt-6.2-astra-pro",
       "overrides": {
         "lastUpdated": "November 17, 2026",
@@ -7433,7 +7453,7 @@
       ]
     },
     "openai/gpt-6.2-sol-pro": {
-      "model": "gpt/openai-gpt-6-2-sol-pro",
+      "model": "gpt-pro/openai-gpt-6-2-sol-pro",
       "matchingModel": "openai/gpt-6.2-sol-pro",
       "overrides": {
         "lastUpdated": "November 17, 2026",
@@ -7443,7 +7463,7 @@
       }
     },
     "qwen/qwen4-max": {
-      "model": "qwen/qwen-qwen4-max",
+      "model": "qwen-max/qwen-qwen4-max",
       "matchingModel": "qwen/qwen4-max",
       "overrides": {
         "speed": 3,
@@ -7464,7 +7484,7 @@
       }
     },
     "tencent/hy4-flash": {
-      "model": "Hy/tencent-hy4-flash",
+      "model": "hy-flash/tencent-hy4-flash",
       "matchingModel": "tencent/hy4-flash",
       "overrides": {
         "name": "Tencent: Hy4 flash",
@@ -7475,6 +7495,21 @@
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.000281
       }
+    },
+    "mistralai/pixtral-large-2502": {
+      "model": "pixtral-large/mistral-pixtral-large-2502",
+      "matchingModel": "mistralai/pixtral-large-2502",
+      "overrides": {
+        "lastUpdated": "April 8, 2025",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.006,
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false
+      },
+      "unset": [
+        "reliability",
+        "artificialAnalysis"
+      ]
     }
   }
 }

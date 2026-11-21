@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 8192,
+    "maxTokens": 7372,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "December 31, 2023",
+    "releaseDate": "August 13, 2024",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
+  "models": {
+    "llama-3-8b-lunaris": {
+      "defaults": {
+        "name": "Llama 3 8B Lunaris",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding"
+      }
+    },
+    "sao10k-llama-3-8b-lunaris": {
+      "defaults": {
+        "name": "Sao10K: Llama 3 8B Lunaris",
+        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding"
+      }
+    }
+  }
+}

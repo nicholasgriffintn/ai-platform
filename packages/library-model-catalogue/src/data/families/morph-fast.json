@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "July 7, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+  "models": {
+    "morph-morph-v3-fast": {
+      "defaults": {
+        "name": "Morph: Morph V3 Fast",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "supportsResponseFormat": true
+      }
+    },
+    "morph-v3-fast": {
+      "defaults": {
+        "name": "Morph v3 Fast",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation"
+      }
+    }
+  }
+}

@@ -1,41 +1,31 @@
 {
   "defaults": {
     "openWeights": false,
-    "contextWindow": 400000,
+    "contextWindow": 1050000,
     "maxTokens": 128000,
     "modalities": {
       "input": [
-        "text",
+        "pdf",
         "image",
-        "pdf"
+        "text"
       ],
       "output": [
         "text"
       ]
     },
-    "strengths": [
-      "vision",
-      "document",
-      "tool_use"
-    ],
-    "knowledgeCutoffDate": "August 31, 2025",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": false,
     "reasoningConfig": {
       "supportedEffortLevels": [
+        "low",
         "medium",
         "high",
-        "xhigh"
+        "xhigh",
+        "max"
       ],
-      "defaultEffort": "medium"
-    },
-    "artificialAnalysis": {
-      "intelligenceIndex": null,
-      "codingIndex": null,
-      "agenticIndex": null,
-      "intelligenceIndexVersion": 5
+      "defaultEffort": "low"
     }
   },
   "description": "The gpt pro family includes models that produce text.",
@@ -44,44 +34,143 @@
       "defaults": {
         "name": "GPT 5.2 ",
         "description": "Higher-accuracy GPT-5.2 variant for tougher reasoning and review workflows",
+        "contextWindow": 400000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
+        "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "December 11, 2025",
         "supportsResponseFormat": false,
-        "supportsTemperature": true
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "medium"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-5-2-pro": {
       "defaults": {
         "name": "GPT-5.2 Pro",
         "description": "Higher-accuracy GPT-5.2 variant for tougher reasoning and review workflows",
-        "releaseDate": "December 11, 2025"
+        "contextWindow": 400000,
+        "knowledgeCutoffDate": "August 31, 2025",
+        "releaseDate": "December 11, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "medium"
+        }
       }
     },
     "gpt-5-4-pro": {
       "defaults": {
         "name": "GPT-5.4 Pro",
         "description": "More exact GPT-5.4 tier for demanding professional reasoning and agent tasks",
-        "contextWindow": 1050000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
+        "knowledgeCutoffDate": "August 31, 2025",
         "releaseDate": "March 5, 2026",
-        "supportsResponseFormat": false
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "medium"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-5-5-pro": {
       "defaults": {
         "name": "GPT-5.5 Pro",
         "description": "Highest-accuracy GPT-5.5 tier for slower, precision-heavy reasoning and coding",
-        "contextWindow": 1050000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 5,
         "knowledgeCutoffDate": "December 1, 2025",
-        "releaseDate": "April 23, 2026"
+        "releaseDate": "April 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "medium"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-5-pro": {
       "defaults": {
         "name": "GPT-5 Pro",
         "description": "Higher-accuracy GPT-5 tier for tough analysis, coding reviews, and planning",
+        "contextWindow": 400000,
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "October 6, 2025",
         "reasoningConfig": {
@@ -89,6 +178,148 @@
             "high"
           ],
           "defaultEffort": "high"
+        }
+      }
+    },
+    "gpt-6-1-sol-pro": {
+      "defaults": {
+        "name": "GPT-6.1 Sol Pro",
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "releaseDate": "September 29, 2026"
+      }
+    },
+    "gpt-6-1-terra-pro": {
+      "defaults": {
+        "name": "GPT-6.1 Terra Pro",
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "releaseDate": "October 26, 2026"
+      }
+    },
+    "gpt-6-2-astra-pro": {
+      "defaults": {
+        "name": "GPT-6.2 Astra Pro",
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "releaseDate": "November 17, 2026"
+      }
+    },
+    "gpt-6-2-sol-pro": {
+      "defaults": {
+        "name": "GPT-6.2 Sol Pro",
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "releaseDate": "November 17, 2026"
+      }
+    },
+    "gpt-6-astra-pro": {
+      "defaults": {
+        "name": "GPT-6 Astra Pro",
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "releaseDate": "September 4, 2026"
+      }
+    },
+    "gpt-6-luna-pro": {
+      "defaults": {
+        "name": "GPT-6 Luna Pro",
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "releaseDate": "September 22, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-6-sol-pro": {
+      "defaults": {
+        "name": "GPT-6 Sol Pro",
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "releaseDate": "September 22, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai-gpt-6-1-sol-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6.1 Sol Pro",
+        "description": "GPT-6.1 Sol Pro is the same underlying model as [GPT-6.1 Sol](https://openrouter.ai/openai/gpt-6.1-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
+        "releaseDate": "September 29, 2026"
+      }
+    },
+    "openai-gpt-6-1-terra-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6.1 Terra Pro",
+        "description": "GPT-6.1 Terra Pro is the same underlying model as [GPT-6.1 Terra](https://openrouter.ai/openai/gpt-6.1-terra), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
+        "releaseDate": "October 26, 2026"
+      }
+    },
+    "openai-gpt-6-2-astra-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6.2 Astra Pro",
+        "description": "GPT-6.2 Astra Pro is the same underlying model as [GPT-6.2 Astra](https://openrouter.ai/openai/gpt-6.2-astra), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
+        "releaseDate": "November 17, 2026"
+      }
+    },
+    "openai-gpt-6-2-sol-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6.2 Sol Pro",
+        "description": "GPT-6.2 Sol Pro is the same underlying model as [GPT-6.2 Sol](https://openrouter.ai/openai/gpt-6.2-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
+        "releaseDate": "November 17, 2026"
+      }
+    },
+    "openai-gpt-6-astra-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6 Astra Pro ($$$$)",
+        "description": "GPT-6 Astra Pro is the same underlying model as [GPT-6 Astra](https://openrouter.ai/openai/gpt-6-astra), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. Learn more in OpenAI's docs: https://developers.openai.com/api/docs/guides/reasoning#reasoning-mode",
+        "releaseDate": "September 4, 2026"
+      }
+    },
+    "openai-gpt-6-luna-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6 Luna Pro",
+        "description": "GPT-6 Luna Pro is the same underlying model as [GPT-6 Luna](https://openrouter.ai/openai/gpt-6-luna), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. Learn more in OpenAI's docs: https://developers.openai.com/api/docs/guides/reasoning#reasoning-mode",
+        "releaseDate": "September 22, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai-gpt-6-sol-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6 Sol Pro",
+        "description": "GPT-6 Sol Pro is the same underlying model as [GPT-6 Sol](https://openrouter.ai/openai/gpt-6-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. Learn more in OpenAI's docs: https://developers.openai.com/api/docs/guides/reasoning#reasoning-mode",
+        "releaseDate": "September 22, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
         }
       }
     }

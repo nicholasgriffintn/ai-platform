@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "July 7, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+  "models": {
+    "morph-morph-v3-large": {
+      "defaults": {
+        "name": "Morph: Morph V3 Large",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "supportsResponseFormat": true
+      }
+    },
+    "morph-v3-large": {
+      "defaults": {
+        "name": "Morph v3 Large",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows"
+      }
+    }
+  }
+}

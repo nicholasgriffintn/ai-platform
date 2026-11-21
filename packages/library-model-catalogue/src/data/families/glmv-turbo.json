@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "maxTokens": 131072,
+    "contextComplexity": 4,
+    "reliability": 1,
+    "releaseDate": "April 1, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
+  },
+  "description": "The glmv turbo family groups related models and their shared configuration.",
+  "models": {
+    "glm-5v-turbo": {
+      "defaults": {
+        "description": "Fast GLM vision model for screenshots, documents, and multimodal agent tasks"
+      }
+    }
+  }
+}

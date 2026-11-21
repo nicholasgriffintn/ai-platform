@@ -15,30 +15,6 @@
   },
   "description": "The llama family includes models that produce guardrails, text.",
   "models": {
-    "aion-rp-1-0-8b": {
-      "defaults": {
-        "name": "Aion-RP 1.0 (8B)",
-        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "contextWindow": 32768,
-        "maxTokens": 29491,
-        "knowledgeCutoffDate": "December 31, 2023",
-        "releaseDate": "February 4, 2025",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": false
-      }
-    },
-    "aionlabs-aion-rp-1-0-8b": {
-      "defaults": {
-        "name": "AionLabs: Aion-RP 1.0 (8B)",
-        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "contextWindow": 32768,
-        "maxTokens": 29491,
-        "knowledgeCutoffDate": "December 31, 2023",
-        "releaseDate": "February 4, 2025",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": false
-      }
-    },
     "codellama-7b-instruct-solidity": {
       "defaults": {
         "name": "CodeLLaMa 7B Instruct Solidity",
@@ -226,18 +202,6 @@
         "contextWindow": 131072,
         "maxTokens": 16384,
         "releaseDate": "July 23, 2024"
-      }
-    },
-    "llama-3-1-euryale-70b-v2-2": {
-      "defaults": {
-        "name": "Llama 3.1 Euryale 70B v2.2",
-        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "contextWindow": 131072,
-        "maxTokens": 16384,
-        "knowledgeCutoffDate": "December 31, 2023",
-        "releaseDate": "August 28, 2024",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": true
       }
     },
     "llama-3-1-nemotron-ultra-253b-v1": {
@@ -484,18 +448,6 @@
         "supportsToolCalls": false
       }
     },
-    "llama-3-8b-lunaris": {
-      "defaults": {
-        "name": "Llama 3 8B Lunaris",
-        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "contextWindow": 8192,
-        "maxTokens": 7372,
-        "knowledgeCutoffDate": "December 31, 2023",
-        "releaseDate": "August 13, 2024",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": true
-      }
-    },
     "llama-4-maverick": {
       "defaults": {
         "name": "Llama 4 Maverick",
@@ -700,49 +652,10 @@
             "guardrails"
           ]
         },
+        "knowledgeCutoffDate": "December 31, 2023",
+        "releaseDate": "February 12, 2025",
         "supportsToolCalls": false,
         "supportsResponseFormat": false
-      }
-    },
-    "llama-guard-4-12b": {
-      "defaults": {
-        "name": "Llama Guard 4 12B",
-        "description": "Multimodal Llama 4-based safety classifier for moderating prompts and responses",
-        "contextWindow": 163840,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "knowledgeCutoffDate": "August 31, 2024",
-        "releaseDate": "April 29, 2025",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": true,
-        "supportsAttachments": true
-      }
-    },
-    "llama-prompt-guard-2-22m": {
-      "defaults": {
-        "name": "Llama Prompt Guard 2 22M",
-        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
-        "contextWindow": 512,
-        "maxTokens": 512,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "guardrails"
-          ]
-        },
-        "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "April 29, 2025",
-        "supportsToolCalls": false,
-        "supportsTemperature": false
       }
     },
     "meta-llama-3-1-405b-instruct": {
@@ -826,12 +739,12 @@
         "multimodal": true
       }
     },
-    "meta-llama-3-2-3b-instruct-retires-nov-20": {
+    "meta-llama-3-2-3b-instruct": {
       "defaults": {
         "name": "Meta: Llama 3.2 3B Instruct",
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "contextWindow": 80000,
-        "maxTokens": 72000,
+        "contextWindow": 131072,
+        "maxTokens": 117964,
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "September 25, 2024",
         "supportsToolCalls": false,
@@ -991,27 +904,6 @@
         }
       }
     },
-    "meta-llama-guard-4-12b": {
-      "defaults": {
-        "name": "Meta: Llama Guard 4 12B",
-        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
-        "contextWindow": 163840,
-        "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "image",
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "April 29, 2025",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": false,
-        "supportsAttachments": true
-      }
-    },
     "meta-llama-vision-free": {
       "defaults": {
         "name": "Meta Llama Vision Free",
@@ -1036,38 +928,6 @@
         "multimodal": true
       }
     },
-    "prompt-guard-2-86m": {
-      "defaults": {
-        "name": "Llama Prompt Guard 2 86M",
-        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
-        "contextWindow": 512,
-        "maxTokens": 512,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "guardrails"
-          ]
-        },
-        "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "April 29, 2025",
-        "supportsToolCalls": false,
-        "supportsTemperature": false
-      }
-    },
-    "sao10k-llama-3-1-euryale-70b-v2-2": {
-      "defaults": {
-        "name": "Sao10K: Llama 3.1 Euryale 70B v2.2",
-        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "contextWindow": 131072,
-        "maxTokens": 16384,
-        "knowledgeCutoffDate": "December 31, 2023",
-        "releaseDate": "August 28, 2024",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": true
-      }
-    },
     "sao10k-llama-3-3-euryale-70b": {
       "defaults": {
         "name": "Sao10K: Llama 3.3 Euryale 70B",
@@ -1076,18 +936,6 @@
         "contextWindow": 131072,
         "maxTokens": 16384,
         "releaseDate": "December 18, 2024",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": true
-      }
-    },
-    "sao10k-llama-3-8b-lunaris": {
-      "defaults": {
-        "name": "Sao10K: Llama 3 8B Lunaris",
-        "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
-        "contextWindow": 8192,
-        "maxTokens": 7372,
-        "knowledgeCutoffDate": "December 31, 2023",
-        "releaseDate": "August 13, 2024",
         "supportsToolCalls": false,
         "supportsResponseFormat": true
       }

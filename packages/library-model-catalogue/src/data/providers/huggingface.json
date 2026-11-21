@@ -40,7 +40,7 @@
       ]
     },
     "moonshotai/Kimi-K2-Instruct": {
-      "model": "kimi-k2/kimi-k2-instruct",
+      "model": "kimi/kimi-k2-instruct",
       "matchingModel": "moonshotai/Kimi-K2-Instruct",
       "overrides": {
         "name": "Kimi-K2-Instruct",
@@ -54,7 +54,6 @@
         "contextComplexity": 5,
         "reliability": 4,
         "speed": 3,
-        "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "July 11, 2025",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.003
@@ -64,18 +63,9 @@
       ]
     },
     "Qwen/Qwen3-Coder-480B-A35B-Instruct": {
-      "model": "qwen/qwen3-coder-480b-a35b-instruct",
+      "model": "qwen-coder/qwen3-coder-480b-a35b-instruct",
       "matchingModel": "Qwen/Qwen3-Coder-480B-A35B-Instruct",
       "overrides": {
-        "name": "Qwen3-Coder-480B-A35B-Instruct",
-        "description": "Qwen coding model for software agents, repository edits, and code reasoning",
-        "maxTokens": 65536,
-        "strengths": [
-          "coding",
-          "analysis",
-          "reasoning",
-          "tool_use"
-        ],
         "speed": 3,
         "lastUpdated": "July 22, 2025",
         "costPer1kInputTokens": 0.002,
@@ -164,12 +154,9 @@
       ]
     },
     "MiniMaxAI/MiniMax-M2.1": {
-      "model": "minimax/minimax-m2-1",
+      "model": "minimax-m/minimax-m2-1",
       "matchingModel": "MiniMaxAI/MiniMax-M2.1",
       "overrides": {
-        "name": "MiniMax-M2.1",
-        "contextWindow": 204800,
-        "maxTokens": 131072,
         "speed": 3,
         "knowledgeCutoffDate": "October 2025",
         "lastUpdated": "December 23, 2025",
@@ -181,12 +168,14 @@
       ]
     },
     "moonshotai/Kimi-K2-Thinking": {
-      "model": "kimi-thinking/kimi-k2-thinking",
+      "model": "kimi/kimi-k2-thinking",
       "matchingModel": "moonshotai/Kimi-K2-Thinking",
       "overrides": {
         "name": "Kimi-K2-Thinking",
+        "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
         "maxTokens": 262144,
         "speed": 4,
+        "knowledgeCutoffDate": "August 2024",
         "lastUpdated": "November 6, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0025
@@ -196,7 +185,7 @@
       ]
     },
     "moonshotai/Kimi-K2.5": {
-      "model": "kimi-k2/kimi-k2-5",
+      "model": "kimi/kimi-k2-5",
       "matchingModel": "moonshotai/Kimi-K2.5",
       "overrides": {
         "name": "Kimi-K2.5",
@@ -218,7 +207,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
@@ -229,7 +218,7 @@
       ]
     },
     "Qwen/Qwen3-Embedding-4B": {
-      "model": "qwen/qwen-3-embedding-4b",
+      "model": "qwen-embedding/qwen-3-embedding-4b",
       "matchingModel": "Qwen/Qwen3-Embedding-4B",
       "overrides": {
         "lastUpdated": "June 5, 2025",
@@ -244,7 +233,7 @@
       ]
     },
     "Qwen/Qwen3-Embedding-8B": {
-      "model": "qwen/qwen-3-embedding-8b",
+      "model": "qwen-embedding/qwen-3-embedding-8b",
       "matchingModel": "Qwen/Qwen3-Embedding-8B",
       "overrides": {
         "lastUpdated": "June 5, 2025",
@@ -355,7 +344,7 @@
       ]
     },
     "deepseek-ai/DeepSeek-V4-Pro": {
-      "model": "deepseek-thinking/deepseek-v4-pro",
+      "model": "deepseek-pro/deepseek-v4-pro",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro",
       "overrides": {
         "contextWindow": 1048576,
@@ -373,7 +362,7 @@
       }
     },
     "MiniMaxAI/MiniMax-M2.5": {
-      "model": "minimax/minimax-m2-5",
+      "model": "minimax-m/minimax-m2-5",
       "matchingModel": "MiniMaxAI/MiniMax-M2.5",
       "overrides": {
         "name": "MiniMax-M2.5",
@@ -390,12 +379,11 @@
       ]
     },
     "MiniMaxAI/MiniMax-M2.7": {
-      "model": "minimax/minimax-m2-7",
+      "model": "minimax-m/minimax-m2-7",
       "matchingModel": "MiniMaxAI/MiniMax-M2.7",
       "overrides": {
         "name": "MiniMax-M2.7",
         "contextWindow": 204800,
-        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -403,7 +391,7 @@
       }
     },
     "moonshotai/Kimi-K2.6": {
-      "model": "kimi-k2/kimi-k2-6",
+      "model": "kimi/kimi-k2-6",
       "matchingModel": "moonshotai/Kimi-K2.6",
       "overrides": {
         "name": "Kimi-K2.6",
@@ -436,7 +424,7 @@
       ]
     },
     "Qwen/Qwen3-Coder-Next": {
-      "model": "qwen/qwen3-coder-next",
+      "model": "qwen-coder/qwen3-coder-next",
       "matchingModel": "Qwen/Qwen3-Coder-Next",
       "overrides": {
         "name": "Qwen3-Coder-Next",
@@ -497,7 +485,7 @@
       "matchingModel": "zai-org/GLM-5.1",
       "overrides": {
         "contextWindow": 202752,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.0032
@@ -507,7 +495,7 @@
       ]
     },
     "deepseek-ai/DeepSeek-R1": {
-      "model": "deepseek-thinking/deepseek-r1",
+      "model": "deepseek-r/deepseek-r1",
       "matchingModel": "deepseek-ai/DeepSeek-R1",
       "overrides": {
         "speed": 2,
@@ -569,11 +557,9 @@
       }
     },
     "MiniMaxAI/MiniMax-M2": {
-      "model": "minimax/minimax-m2",
+      "model": "minimax-m/minimax-m2",
       "matchingModel": "MiniMaxAI/MiniMax-M2",
       "overrides": {
-        "name": "MiniMax-M2",
-        "description": "Efficient open MiniMax model built for coding agents and tool-heavy workflows",
         "contextWindow": 204800,
         "maxTokens": 131072,
         "speed": 4,
@@ -586,7 +572,7 @@
       ]
     },
     "MiniMaxAI/MiniMax-M3": {
-      "model": "minimax/minimax-m3",
+      "model": "minimax-m/minimax-m3",
       "matchingModel": "MiniMaxAI/MiniMax-M3",
       "overrides": {
         "contextWindow": 524288,
@@ -613,10 +599,9 @@
       }
     },
     "moonshotai/Kimi-K2.7-Code": {
-      "model": "kimi-k2/kimi-k2-7-code",
+      "model": "kimi-code/kimi-k2-7-code",
       "matchingModel": "moonshotai/Kimi-K2.7-Code",
       "overrides": {
-        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",
@@ -670,7 +655,7 @@
       }
     },
     "Qwen/Qwen3-Coder-30B-A3B-Instruct": {
-      "model": "qwen/qwen3-coder-30b-a3b-instruct",
+      "model": "qwen-coder/qwen3-coder-30b-a3b-instruct",
       "matchingModel": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
       "overrides": {
         "name": "Qwen3-Coder 30B-A3B Instruct",
@@ -781,10 +766,9 @@
       }
     },
     "stepfun-ai/Step-3.5-Flash": {
-      "model": "step/step-3-5-flash",
+      "model": "step-flash/step-3-5-flash",
       "matchingModel": "stepfun-ai/Step-3.5-Flash",
       "overrides": {
-        "maxTokens": 256000,
         "speed": 3,
         "lastUpdated": "February 13, 2026",
         "costPer1kInputTokens": 0.0001,
@@ -795,7 +779,7 @@
       ]
     },
     "zai-org/GLM-4.5V": {
-      "model": "glm/glm-4-5v",
+      "model": "glmv/glm-4-5v",
       "matchingModel": "zai-org/GLM-4.5V",
       "overrides": {
         "speed": 2,
@@ -872,9 +856,23 @@
       }
     },
     "stepfun-ai/Step-3.7-Flash": {
-      "model": "huggingface/stepfun-ai/Step-3.7-Flash/step-3-7-flash",
+      "model": "step-flash/step-3-7-flash",
       "matchingModel": "stepfun-ai/Step-3.7-Flash",
       "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 4,
         "lastUpdated": "May 29, 2026",
         "costPer1kInputTokens": 0.0002,
@@ -886,10 +884,9 @@
       ]
     },
     "XiaomiMiMo/MiMo-V2.5-Pro": {
-      "model": "mimo/mimo-v2-5-pro",
+      "model": "mimo-pro/mimo-v2-5-pro",
       "matchingModel": "XiaomiMiMo/MiMo-V2.5-Pro",
       "overrides": {
-        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.001,
@@ -933,6 +930,8 @@
       "model": "mimo/mimo-v2-5",
       "matchingModel": "XiaomiMiMo/MiMo-V2.5",
       "overrides": {
+        "contextWindow": 262144,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text"
@@ -961,7 +960,7 @@
       }
     },
     "moonshotai/Kimi-K3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "moonshotai/Kimi-K3",
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
@@ -984,7 +983,7 @@
       }
     },
     "tencent/Hy3": {
-      "model": "Hy/hy3",
+      "model": "hy/hy3",
       "matchingModel": "tencent/Hy3",
       "overrides": {
         "speed": 3,
@@ -994,20 +993,11 @@
       }
     },
     "thinkingmachines/Inkling": {
-      "model": "ling/inkling",
+      "model": "inkling/inkling",
       "matchingModel": "thinkingmachines/Inkling",
       "overrides": {
         "contextWindow": 1048576,
         "maxTokens": 1048576,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -1030,7 +1020,7 @@
       }
     },
     "thinkingmachines/Inkling-Small": {
-      "model": "ling/inkling-small",
+      "model": "inkling-small/inkling-small",
       "matchingModel": "thinkingmachines/Inkling-Small",
       "overrides": {
         "description": "Efficient model for low-latency assistance, extraction, and routine automation",
@@ -1105,7 +1095,7 @@
       }
     },
     "Qwen/Qwen2.5-Coder-32B-Instruct": {
-      "model": "qwen/qwen2-5-coder-32b-instruct",
+      "model": "qwen-coder/qwen2-5-coder-32b-instruct",
       "matchingModel": "Qwen/Qwen2.5-Coder-32B-Instruct",
       "overrides": {
         "name": "Qwen2.5-Coder-32B-Instruct",
@@ -1114,17 +1104,21 @@
         "strengths": [
           "tool_use"
         ],
+        "contextComplexity": 3,
         "lastUpdated": "November 12, 2024",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.0002
-      }
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "Qwen/Qwen3-30B-A3B": {
       "model": "qwen/qwen3-30b-a3b",
       "matchingModel": "Qwen/Qwen3-30B-A3B",
       "overrides": {
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.0005
@@ -1141,7 +1135,7 @@
       }
     },
     "Qwen/Qwen3-VL-235B-A22B-Instruct": {
-      "model": "qwen/qwen3-vl-235b-a22b-instruct",
+      "model": "qwen-vl/qwen3-vl-235b-a22b-instruct",
       "matchingModel": "Qwen/Qwen3-VL-235B-A22B-Instruct",
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
@@ -1154,25 +1148,22 @@
       }
     },
     "Qwen/Qwen3-VL-235B-A22B-Thinking": {
-      "model": "qwen/qwen3-vl-235b-a22b-thinking",
+      "model": "qwen-vl/qwen3-vl-235b-a22b-thinking",
       "matchingModel": "Qwen/Qwen3-VL-235B-A22B-Thinking",
       "overrides": {
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.00098,
         "costPer1kOutputTokens": 0.00395,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
-      }
+        "supportsAttachments": true
+      },
+      "unset": [
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
     },
     "zai-org/GLM-4.6V-Flash": {
-      "model": "glm-flash/glm-4-6v-flash",
+      "model": "glmv-flash/glm-4-6v-flash",
       "matchingModel": "zai-org/GLM-4.6V-Flash",
       "overrides": {
         "contextWindow": 131072,
@@ -1340,7 +1331,7 @@
       }
     },
     "tencent/Hy4-preview": {
-      "model": "Hy/hy4-preview",
+      "model": "hy/hy4-preview",
       "matchingModel": "tencent/Hy4-preview",
       "overrides": {
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
@@ -1349,10 +1340,13 @@
         "lastUpdated": "August 28, 2026",
         "costPer1kInputTokens": 0.000834,
         "costPer1kOutputTokens": 0.002501
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "MiniMaxAI/MiniMax-M1-80k": {
-      "model": "minimax/minimax-m1-80k",
+      "model": "minimax-m/minimax-m1-80k",
       "matchingModel": "MiniMaxAI/MiniMax-M1-80k",
       "overrides": {
         "speed": 2,
@@ -1362,7 +1356,7 @@
       }
     },
     "Qwen/Qwen3-VL-30B-A3B-Instruct": {
-      "model": "qwen/qwen3-vl-30b-a3b-instruct",
+      "model": "qwen-vl/qwen3-vl-30b-a3b-instruct",
       "matchingModel": "Qwen/Qwen3-VL-30B-A3B-Instruct",
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
@@ -1376,7 +1370,7 @@
       }
     },
     "zai-org/AutoGLM-Phone-9B-Multilingual": {
-      "model": "glm/autoglm-phone-9b-multilingual",
+      "model": "autoglm/autoglm-phone-9b-multilingual",
       "matchingModel": "zai-org/AutoGLM-Phone-9B-Multilingual",
       "overrides": {
         "lastUpdated": "December 10, 2025",
@@ -1387,7 +1381,7 @@
       }
     },
     "meta-llama/Llama-Guard-4-12B": {
-      "model": "llama/llama-guard-4-12b",
+      "model": "llama-guard/llama-guard-4-12b",
       "matchingModel": "meta-llama/Llama-Guard-4-12B",
       "overrides": {
         "maxTokens": 163840,
@@ -1418,7 +1412,7 @@
       }
     },
     "MiniMaxAI/MiniMax-M3.1-Flash": {
-      "model": "minimax/minimax-m3-1-flash",
+      "model": "minimax-m-flash/minimax-m3-1-flash",
       "matchingModel": "MiniMaxAI/MiniMax-M3.1-Flash",
       "overrides": {
         "maxTokens": 512000,
@@ -1484,7 +1478,7 @@
       }
     },
     "moonshotai/Kimi-K3.1-Pro": {
-      "model": "kimi-k3/kimi-k3-1-pro",
+      "model": "kimi-pro/kimi-k3-1-pro",
       "matchingModel": "moonshotai/Kimi-K3.1-Pro",
       "overrides": {
         "speed": 2,
@@ -1515,7 +1509,7 @@
       }
     },
     "tencent/Hy4-flash": {
-      "model": "Hy/hy4-flash",
+      "model": "hy-flash/hy4-flash",
       "matchingModel": "tencent/Hy4-flash",
       "overrides": {
         "lastUpdated": "November 16, 2026",
@@ -1532,7 +1526,7 @@
       }
     },
     "thinkingmachines/Inkling-2-Small": {
-      "model": "ling/inkling-2-small",
+      "model": "inkling-small/inkling-2-small",
       "matchingModel": "thinkingmachines/Inkling-2-Small",
       "overrides": {
         "speed": 4,
@@ -1554,7 +1548,7 @@
       }
     },
     "zai-org/GLM-4.6V": {
-      "model": "glm/glm-4-6v",
+      "model": "glmv/glm-4-6v",
       "matchingModel": "zai-org/GLM-4.6V",
       "overrides": {
         "modalities": {
@@ -1566,10 +1560,26 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "speed": 3,
         "lastUpdated": "December 8, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0009,
+        "supportsAttachments": true
+      }
+    },
+    "tencent/Hy4": {
+      "model": "hy/hy4",
+      "matchingModel": "tencent/Hy4",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "November 4, 2026",
+        "costPer1kInputTokens": 0.000417,
+        "costPer1kOutputTokens": 0.0012505,
         "supportsAttachments": true
       }
     }

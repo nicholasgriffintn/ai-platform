@@ -1,40 +1,33 @@
 {
   "defaults": {
     "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "July 13, 2026",
     "supportsToolCalls": true,
-    "supportsResponseFormat": false
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "low",
+        "medium",
+        "high",
+        "max"
+      ],
+      "defaultEffort": "none"
+    }
   },
   "description": "The qwen3.6 family includes models that produce text.",
   "models": {
-    "qwen3-6-flash": {
-      "defaults": {
-        "name": "Qwen3.6 Flash",
-        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
-        "contextWindow": 1000000,
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "April 27, 2026",
-        "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "supportsTemperature": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "stealth-qwen3-6-plus-50-off": {
       "defaults": {
         "name": "Stealth: Qwen3.6 Plus (50% off)",
@@ -81,57 +74,13 @@
     "thinkingcap-qwen3-6-27b": {
       "defaults": {
         "name": "thinkingcap-qwen3.6-27b",
-        "description": "ThinkingCap-Qwen3.6-27B is a reasoning tuned model from BottlecapAI built on Qwen3.6 27B. It supports extended thinking with tool calling and a 256K context window. Served via Sference.",
-        "contextWindow": 262144,
-        "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "July 13, 2026",
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "description": "ThinkingCap-Qwen3.6-27B is a reasoning tuned model from BottlecapAI built on Qwen3.6 27B. It supports extended thinking with tool calling and a 256K context window. Served via Sference."
       }
     },
     "thinkingcap-qwen3-6-27b-eu": {
       "defaults": {
         "name": "thinkingcap-qwen3.6-27b@eu",
-        "description": "ThinkingCap-Qwen3.6-27B is a reasoning tuned model from BottlecapAI built on Qwen3.6 27B. It supports extended thinking with tool calling and a 256K context window. Served via Sference.",
-        "contextWindow": 262144,
-        "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "July 13, 2026",
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "description": "ThinkingCap-Qwen3.6-27B is a reasoning tuned model from BottlecapAI built on Qwen3.6 27B. It supports extended thinking with tool calling and a 256K context window. Served via Sference."
       }
     }
   }

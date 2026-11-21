@@ -56,6 +56,7 @@
         "name": "Kimi K2 Thinking",
         "description": "Kimi reasoning model for long-horizon research, planning, and tool use",
         "contextWindow": 262144,
+        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text"

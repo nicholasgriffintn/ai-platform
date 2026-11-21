@@ -1,0 +1,43 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 250000,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "January 2025",
+    "releaseDate": "June 9, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The gemma diffusion family includes models that produce text.",
+  "models": {
+    "diffusiongemma-26b-a4b-it": {
+      "defaults": {
+        "name": "DiffusionGemma 26B A4B IT",
+        "description": "Gemma 4 based discrete text diffusion model for fast chat, reasoning, and tool use"
+      }
+    }
+  }
+}

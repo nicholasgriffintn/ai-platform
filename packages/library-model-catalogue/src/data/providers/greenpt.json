@@ -234,7 +234,8 @@
         "supportsAttachments": true
       },
       "unset": [
-        "strengths"
+        "strengths",
+        "reliability"
       ]
     },
     "green-r-raw": {
@@ -247,7 +248,8 @@
         "supportsAttachments": true
       },
       "unset": [
-        "strengths"
+        "strengths",
+        "reliability"
       ]
     },
     "green-s-pro": {
@@ -270,7 +272,7 @@
       ]
     },
     "kimi-k2.6": {
-      "model": "kimi-k2/kimi-k2-6",
+      "model": "kimi/kimi-k2-6",
       "matchingModel": "kimi-k2.6",
       "overrides": {
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
@@ -299,10 +301,9 @@
       }
     },
     "kimi-k2.7-code": {
-      "model": "kimi-k2/kimi-k2-7-code",
+      "model": "kimi-code/kimi-k2-7-code",
       "matchingModel": "kimi-k2.7-code",
       "overrides": {
-        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text"
@@ -333,7 +334,7 @@
       }
     },
     "kimi-k3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
         "speed": 2,
@@ -371,7 +372,7 @@
       ]
     },
     "minimax-m2.5": {
-      "model": "minimax/minimax-m2-5",
+      "model": "minimax-m/minimax-m2-5",
       "matchingModel": "minimax-m2.5",
       "overrides": {
         "name": "MiniMax-M2.5",
@@ -446,14 +447,6 @@
         "name": "Qwen3.5 397B-A17B",
         "description": "Large open Qwen multimodal MoE for visual agents and long technical tasks",
         "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -635,8 +628,6 @@
       "model": "minimax/minimax-m3",
       "matchingModel": "minimax-m3",
       "overrides": {
-        "contextWindow": 1000000,
-        "maxTokens": 64000,
         "speed": 3,
         "lastUpdated": "July 2026",
         "costPer1kInputTokens": 0.0005016,

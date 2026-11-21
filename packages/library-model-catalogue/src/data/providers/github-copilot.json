@@ -18,7 +18,7 @@
       "model": "github-copilot/o4-mini/o4-mini-preview",
       "matchingModel": "o4-mini",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "o4-mini (Preview) was retired on 23 October 2025. Use GPT-6 Luna instead.",
         "replacementModel": "gpt-6-luna",
@@ -501,6 +501,7 @@
         "deprecated": true,
         "deprecationMessage": "Gemini 3 Flash was retired on 31 July 2026. Use Gemini 3.8 Flash instead.",
         "replacementModel": "gemini-3.8-flash",
+        "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "December 17, 2025",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.003,
@@ -894,7 +895,7 @@
       }
     },
     "kimi-k3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
         "speed": 2,
@@ -913,7 +914,7 @@
       }
     },
     "mai-code-1.1-flash": {
-      "model": "mai/mai-code-1-1-flash",
+      "model": "mai-code-flash/mai-code-1-1-flash",
       "matchingModel": "mai-code-1.1-flash",
       "overrides": {
         "lastUpdated": "August 11, 2026",
@@ -971,10 +972,7 @@
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375
-      },
-      "unset": [
-        "knowledgeCutoffDate"
-      ]
+      }
     },
     "gpt-6-astra": {
       "model": "gpt-astra/gpt-6-astra",
@@ -1212,7 +1210,7 @@
       }
     },
     "mai-code-2": {
-      "model": "mai/mai-code-2",
+      "model": "mai-code/mai-code-2",
       "matchingModel": "mai-code-2",
       "overrides": {
         "lastUpdated": "November 17, 2026",
@@ -1222,7 +1220,7 @@
       }
     },
     "mai-code-2-flash": {
-      "model": "mai/mai-code-2-flash",
+      "model": "mai-code-flash/mai-code-2-flash",
       "matchingModel": "mai-code-2-flash",
       "overrides": {
         "lastUpdated": "November 17, 2026",

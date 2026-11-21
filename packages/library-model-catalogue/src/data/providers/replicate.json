@@ -1320,9 +1320,9 @@
         }
       },
       "unset": [
-        "openWeights",
         "supportsToolCalls",
-        "supportsTemperature"
+        "supportsTemperature",
+        "reasoningConfig"
       ]
     },
     "replicate-chatterbox-turbo": {
@@ -1565,13 +1565,7 @@
           ],
           "reference": "https://replicate.com/black-forest-labs/flux-2-max"
         }
-      },
-      "unset": [
-        "maxTokens",
-        "supportsToolCalls",
-        "supportsTemperature",
-        "releaseDate"
-      ]
+      }
     },
     "replicate-flux-2-pro": {
       "model": "flux/flux-2-pro",
@@ -1670,14 +1664,7 @@
           ],
           "reference": "https://replicate.com/black-forest-labs/flux-2-pro"
         }
-      },
-      "unset": [
-        "maxTokens",
-        "supportsToolCalls",
-        "supportsTemperature",
-        "contextComplexity",
-        "releaseDate"
-      ]
+      }
     },
     "replicate-flux-2-flex": {
       "model": "flux/flux-2-flex",
@@ -1794,13 +1781,7 @@
           ],
           "reference": "https://replicate.com/black-forest-labs/flux-2-flex"
         }
-      },
-      "unset": [
-        "maxTokens",
-        "supportsToolCalls",
-        "supportsTemperature",
-        "releaseDate"
-      ]
+      }
     },
     "replicate-flux-2-dev": {
       "model": "flux/flux-2-dev",
@@ -1886,12 +1867,7 @@
           ],
           "reference": "https://replicate.com/black-forest-labs/flux-2-dev"
         }
-      },
-      "unset": [
-        "maxTokens",
-        "supportsToolCalls",
-        "supportsTemperature"
-      ]
+      }
     },
     "replicate-flux-1.1-pro": {
       "model": "flux/flux-1-1-pro",
@@ -1964,13 +1940,7 @@
           ],
           "reference": "https://replicate.com/black-forest-labs/flux-1.1-pro"
         }
-      },
-      "unset": [
-        "reliability",
-        "maxTokens",
-        "supportsToolCalls",
-        "supportsTemperature"
-      ]
+      }
     },
     "replicate-sd3.5large": {
       "model": "stable-diffusion/stable-diffusion-3-5-large",
@@ -2391,9 +2361,7 @@
       "unset": [
         "supportsToolCalls",
         "supportsTemperature",
-        "openWeights",
-        "maxTokens",
-        "releaseDate"
+        "openWeights"
       ]
     },
     "replicate-qwen-image-edit-2511": {
@@ -2677,9 +2645,9 @@
         }
       },
       "unset": [
-        "openWeights",
         "supportsToolCalls",
-        "supportsTemperature"
+        "supportsTemperature",
+        "reasoningConfig"
       ]
     },
     "replicate-veo-3-1": {
@@ -2942,33 +2910,13 @@
         }
       },
       "unset": [
-        "openWeights",
-        "supportsToolCalls"
+        "supportsTemperature"
       ]
     },
     "replicate-bytedance-seedance-2-0": {
       "model": "seed/seedance-2-0",
       "matchingModel": "bytedance/seedance-2.0",
       "overrides": {
-        "description": "ByteDance video generation model with first-frame, last-frame, reference image, reference video, and reference audio support.",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "audio"
-          ],
-          "output": [
-            "video"
-          ]
-        },
-        "strengths": [
-          "creative",
-          "video",
-          "vision",
-          "audio",
-          "document"
-        ],
         "isFeatured": false,
         "supportsAttachments": true,
         "inputSchema": {
@@ -3063,8 +3011,7 @@
         }
       },
       "unset": [
-        "openWeights",
-        "supportsToolCalls"
+        "supportsTemperature"
       ]
     },
     "replicate-alibaba-happyhorse-1-0": {
@@ -3146,13 +3093,6 @@
       "model": "grok/grok-imagine-video",
       "matchingModel": "xai/grok-imagine-video",
       "overrides": {
-        "description": "Generate videos using xAI's Grok Imagine Video model",
-        "strengths": [
-          "creative",
-          "video",
-          "vision"
-        ],
-        "contextComplexity": 4,
         "inputSchema": {
           "fields": [
             {
@@ -3460,18 +3400,19 @@
           ],
           "reference": "https://replicate.com/kwaivgi/kling-v3-video"
         }
-      }
+      },
+      "unset": [
+        "openWeights",
+        "supportsToolCalls",
+        "supportsTemperature",
+        "contextWindow",
+        "maxTokens"
+      ]
     },
     "replicate-alibaba-wan-3": {
       "model": "o/wan-v3-0-video",
       "matchingModel": "alibaba/wan-3",
       "overrides": {
-        "description": "Alibaba Wan 3.0 video generation model with text-to-video, first-frame animation, and output up to 30 seconds.",
-        "strengths": [
-          "creative",
-          "video",
-          "vision"
-        ],
         "supportsAttachments": true,
         "inputSchema": {
           "fields": [
@@ -3665,7 +3606,14 @@
           ],
           "reference": "https://replicate.com/kwaivgi/kling-v3-omni-video"
         }
-      }
+      },
+      "unset": [
+        "openWeights",
+        "supportsToolCalls",
+        "supportsTemperature",
+        "contextWindow",
+        "maxTokens"
+      ]
     },
     "replicate-luma-ray-3-2": {
       "model": "replicate/luma/ray-3.2/ray-3-2",
@@ -4500,7 +4448,10 @@
           ],
           "reference": "https://replicate.com/minimax/image-01"
         }
-      }
+      },
+      "unset": [
+        "reasoningConfig"
+      ]
     },
     "replicate-datacte-proteus-v0-3": {
       "model": "replicate/datacte/proteus-v0.3/proteus-v0-3",

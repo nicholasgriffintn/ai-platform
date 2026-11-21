@@ -1,0 +1,99 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1024,
+    "maxTokens": 0,
+    "reliability": 4,
+    "releaseDate": "January 28, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_videoElo",
+          "label": "Text-to-video arena",
+          "value": 1232,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 8
+        }
+      ]
+    }
+  },
+  "description": "The grok imagine video family includes models that produce video.",
+  "models": {
+    "grok-imagine": {
+      "defaults": {
+        "name": "Grok Imagine",
+        "description": "Video model for text-to-video, image-to-video, video editing and extension with native synchronized audio",
+        "contextWindow": 0,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "strengths": [
+          "video",
+          "creative",
+          "document"
+        ],
+        "contextComplexity": 4
+      }
+    },
+    "grok-imagine-video": {
+      "defaults": {
+        "name": "Grok Imagine Video",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "creative"
+        ],
+        "contextComplexity": 3
+      }
+    },
+    "grok-imagine-video-1-5": {
+      "defaults": {
+        "name": "Grok Imagine Video 1.5",
+        "description": "Video model for text-to-video, image-to-video, and reference-to-video generation with optional voice references",
+        "reliability": 2,
+        "releaseDate": "May 30, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "image_to_videoElo",
+              "label": "Image-to-video arena",
+              "value": 1047,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 16
+            }
+          ]
+        }
+      }
+    }
+  }
+}

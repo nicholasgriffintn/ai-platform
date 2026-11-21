@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "April 2025",
+    "releaseDate": "September 23, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The qwen vl plus family includes models that produce text.",
+  "models": {
+    "qwen3-vl-plus": {
+      "defaults": {
+        "name": "Qwen3-VL Plus",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks"
+      }
+    }
+  }
+}

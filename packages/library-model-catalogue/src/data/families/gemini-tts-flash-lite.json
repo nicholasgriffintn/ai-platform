@@ -1,0 +1,50 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 8192,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "strengths": [
+      "audio",
+      "creative"
+    ],
+    "contextComplexity": 2,
+    "reliability": 5,
+    "releaseDate": "September 22, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_speechElo",
+          "label": "Text-to-speech arena",
+          "value": 1261,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 12
+        }
+      ]
+    }
+  },
+  "description": "The gemini tts flash lite family includes models that produce audio.",
+  "models": {
+    "gemini-3-8-flash-lite-tts": {
+      "defaults": {
+        "name": "Gemini 3.8 Flash-Lite TTS",
+        "description": "Fast, cost-efficient text-to-speech model for high-volume narration and voice agent pipelines"
+      }
+    }
+  }
+}

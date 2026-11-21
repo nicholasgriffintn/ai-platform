@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "March 16, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The grok transcribe family includes models that produce text.",
+  "models": {
+    "grok-stt": {
+      "defaults": {
+        "name": "Grok STT",
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows"
+      }
+    }
+  }
+}

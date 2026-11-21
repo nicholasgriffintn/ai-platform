@@ -32,7 +32,7 @@
       ]
     },
     "morph-v3-large": {
-      "model": "morph/morph-v3-large",
+      "model": "morph-large/morph-v3-large",
       "matchingModel": "morph-v3-large",
       "overrides": {
         "strengths": [
@@ -52,7 +52,7 @@
       ]
     },
     "morph-v3-fast": {
-      "model": "morph/morph-v3-fast",
+      "model": "morph-fast/morph-v3-fast",
       "matchingModel": "morph-v3-fast",
       "overrides": {
         "strengths": [
@@ -193,7 +193,7 @@
       }
     },
     "morph-kimik3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "morph-kimik3",
       "overrides": {
         "speed": 2,
@@ -214,7 +214,7 @@
       }
     },
     "morph-kimik3-fast": {
-      "model": "kimi-k3/kimi-k3-fast",
+      "model": "kimi/kimi-k3-fast",
       "matchingModel": "morph-kimik3-fast",
       "overrides": {
         "lastUpdated": "July 16, 2026",
@@ -233,7 +233,7 @@
       }
     },
     "morph-kimik31": {
-      "model": "kimi-k3/kimi-k3-1-pro",
+      "model": "kimi-pro/kimi-k3-1-pro",
       "matchingModel": "morph-kimik31",
       "overrides": {
         "speed": 2,

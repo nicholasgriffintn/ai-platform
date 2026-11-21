@@ -101,57 +101,6 @@
         }
       }
     },
-    "recraft-v4-1-flash": {
-      "defaults": {
-        "name": "Recraft V4.1 Flash",
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "reliability": 1,
-        "releaseDate": "September 23, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 949,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 12
-            }
-          ]
-        }
-      }
-    },
-    "recraft-v4-1-pro": {
-      "defaults": {
-        "name": "Recraft V4.1 Pro",
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "strengths": [
-          "image",
-          "creative"
-        ],
-        "releaseDate": "May 14, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 987,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 8
-            }
-          ]
-        }
-      }
-    },
     "recraft-v4-1-utility": {
       "defaults": {
         "name": "Recraft V4.1 Utility",
@@ -174,56 +123,6 @@
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10
-            }
-          ]
-        }
-      }
-    },
-    "recraft-v4-1-utility-pro": {
-      "defaults": {
-        "name": "Recraft V4.1 Utility Pro",
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "strengths": [
-          "image",
-          "creative"
-        ],
-        "releaseDate": "May 14, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 1020,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 9
-            }
-          ]
-        }
-      }
-    },
-    "recraft-v4-pro": {
-      "defaults": {
-        "name": "Recraft V4 Pro",
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "releaseDate": "February 17, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 987,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 8
             }
           ]
         }

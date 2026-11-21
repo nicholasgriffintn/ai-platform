@@ -1,0 +1,67 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 32000,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "text",
+        "audio"
+      ],
+      "output": [
+        "text",
+        "audio"
+      ]
+    },
+    "strengths": [
+      "audio",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 3,
+    "reliability": 5,
+    "knowledgeCutoffDate": "October 1, 2023",
+    "releaseDate": "October 6, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "bbaScore",
+          "label": "Big Bench Audio",
+          "value": 0.64,
+          "min": 0,
+          "max": 1
+        },
+        {
+          "key": "fdbScore",
+          "label": "Full Duplex Bench",
+          "value": 0.96,
+          "min": 0,
+          "max": 1
+        },
+        {
+          "key": "tauVoiceScore",
+          "label": "Tau Voice",
+          "value": 0.15,
+          "min": 0,
+          "max": 1
+        }
+      ]
+    }
+  },
+  "description": "The gpt realtime mini family includes models that produce audio, text.",
+  "models": {
+    "gpt-realtime-mini": {
+      "defaults": {
+        "name": "GPT-Realtime mini",
+        "description": "Cost-efficient realtime speech-to-speech model for voice agents"
+      }
+    }
+  }
+}

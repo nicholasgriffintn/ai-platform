@@ -51,17 +51,14 @@
       }
     },
     "mercury-edit-2": {
-      "model": "mercury/mercury-edit-2",
+      "model": "mercury-edit/mercury-edit-2",
       "matchingModel": "mercury-edit-2",
       "overrides": {
         "lastUpdated": "March 30, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00075,
         "supportsToolCalls": false
-      },
-      "unset": [
-        "strengths"
-      ]
+      }
     },
     "mercury-2.5": {
       "model": "mercury/mercury-2-5",

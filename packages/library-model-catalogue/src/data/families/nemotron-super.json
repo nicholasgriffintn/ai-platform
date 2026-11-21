@@ -1,0 +1,160 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 15, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The nemotron super family includes models that produce text.",
+  "models": {
+    "nemotron-3-5-super-120b-a12b": {
+      "defaults": {
+        "name": "Nemotron 3.5 Super 120B A12B",
+        "description": "NVIDIA Nemotron 3.5 Super reasoning model (120B total, 12B active) served with text-only input",
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "nemotron-3-5-super-vl": {
+      "defaults": {
+        "name": "Nemotron 3.5 Super VL",
+        "description": "Nemotron multimodal model for visual reasoning and agentic AI workflows",
+        "contextWindow": 1048576,
+        "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 13.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "nemotron-3-5-super-vl-120b-a12b": {
+      "defaults": {
+        "name": "Nemotron 3.5 Super VL 120B A12B",
+        "description": "NVIDIA vision-language reasoning model for text, image, and video understanding and agentic tool use",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nemotron-3-super": {
+      "defaults": {
+        "name": "nemotron-3-super",
+        "description": "Nemotron middle tier for collaborative agents and high-volume reasoning workloads",
+        "contextWindow": 262144,
+        "maxTokens": 65536,
+        "knowledgeCutoffDate": "June 2025",
+        "releaseDate": "March 11, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nemotron-3-super-120b-a12b": {
+      "defaults": {
+        "description": "Nemotron middle tier for collaborative agents and high-volume reasoning workloads",
+        "contextWindow": 262144,
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 2,
+        "knowledgeCutoffDate": "June 2025",
+        "releaseDate": "March 11, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "nvidia-nemotron-3-5-super-vl": {
+      "defaults": {
+        "description": "Nemotron multimodal model for visual reasoning and agentic AI workflows",
+        "contextWindow": 1048576,
+        "contextComplexity": 5,
+        "reliability": 1,
+        "supportsAttachments": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": 13.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "nvidia-nemotron-3-super-120b-a12b": {
+      "defaults": {
+        "name": "NVIDIA Nemotron 3 Super 120B A12B",
+        "description": "Nemotron middle tier for collaborative agents and high-volume reasoning workloads",
+        "contextComplexity": 4,
+        "reliability": 2,
+        "knowledgeCutoffDate": "June 2025",
+        "releaseDate": "March 11, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    }
+  }
+}
