@@ -460,7 +460,7 @@
         "name": "Qwen 3.8 Max",
         "openWeights": false,
         "description": "Preview Qwen flagship for million-token multimodal reasoning and long-horizon agentic workflows",
-        "contextWindow": 262144,
+        "contextWindow": 1000000,
         "maxTokens": 128000,
         "modalities": {
           "input": [
@@ -477,7 +477,7 @@
           "tool_use",
           "coding"
         ],
-        "contextComplexity": 4,
+        "contextComplexity": 5,
         "reliability": 1,
         "releaseDate": "July 19, 2026",
         "supportsAttachments": true,
@@ -609,6 +609,47 @@
         "supportsTemperature": false
       }
     },
+    "qwen-4-max": {
+      "defaults": {
+        "name": "Qwen 4 Max",
+        "openWeights": false,
+        "description": "Flagship multimodal model for coding, office productivity, frontend design, and complex agentic tasks",
+        "contextWindow": 1000000,
+        "maxTokens": 384000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "releaseDate": "November 16, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 42.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
     "qwen-flash": {
       "defaults": {
         "name": "Qwen Flash",
@@ -695,10 +736,10 @@
             {
               "key": "image_editingElo",
               "label": "Image-editing arena",
-              "value": 886,
+              "value": 887,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 19
+              "confidenceInterval95": 18
             }
           ]
         }
@@ -951,7 +992,7 @@
         "name": "Qwen: Qwen 3.8 Max",
         "openWeights": false,
         "description": "Qwen 3.8 Max is a 2.4-trillion-parameter MoE model delivering a comprehensive leap in coding and professional work. Autonomously codes and delivers complete projects spanning 10+ days. Handles hundreds of specialized tasks across legal, financial, design, and other professional domains, producing production-grade results end-to-end in a single conversation. Native visual understanding runs through the full cycle of planning, execution, and verification, enabling deep semantic analysis of ultra-long documents and extended video content. In long-horizon tasks, plans autonomously, iterates through closed feedback loops, and continuously evolves.",
-        "contextWindow": 262144,
+        "contextWindow": 1000000,
         "maxTokens": 128000,
         "modalities": {
           "input": [
@@ -967,7 +1008,7 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 4,
+        "contextComplexity": 5,
         "reliability": 1,
         "releaseDate": "August 3, 2026",
         "supportsAttachments": true,
@@ -1398,6 +1439,50 @@
             "high"
           ],
           "defaultEffort": "high"
+        }
+      }
+    },
+    "qwen-qwen4-max": {
+      "defaults": {
+        "name": "Qwen: Qwen4 Max",
+        "openWeights": false,
+        "description": "Qwen4 Max is the flagship model in Alibaba's Qwen4 series. It accepts text, image, and video input and returns text, with a 1M-token context window and reasoning enabled by default....",
+        "contextWindow": 1000000,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "releaseDate": "November 16, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 42.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -1984,7 +2069,7 @@
     "qwen3-30b-a3b-instruct-2507": {
       "defaults": {
         "name": "Qwen3 30B A3B Instruct 2507",
-        "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
+        "description": "Updated compact Qwen3 MoE instruct model for multilingual chat, coding, and tool use",
         "contextWindow": 262144,
         "modalities": {
           "input": [
@@ -3846,7 +3931,7 @@
         "name": "Qwen3 VL 235B A22B",
         "description": "Qwen3 VL 235B A22B is a 235B-parameter MoE vision-language flagship model (≈22B active) designed for frontier-level multimodal understanding across text, images, documents, and long videos.",
         "contextWindow": 256000,
-        "maxTokens": 256000,
+        "maxTokens": 32768,
         "modalities": {
           "input": [
             "text",
@@ -4219,6 +4304,49 @@
       "defaults": {
         "description": "Qwen3Guard-Gen-8B is a large-scale multilingual safety moderation model designed for high-accuracy prompt and response classification.",
         "supportsToolCalls": false
+      }
+    },
+    "qwen4-max": {
+      "defaults": {
+        "name": "Qwen4 Max",
+        "openWeights": false,
+        "description": "Flagship multimodal model for coding, office productivity, frontend design, and complex agentic tasks",
+        "contextWindow": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "releaseDate": "November 16, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 42.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "qwq-32b-free": {

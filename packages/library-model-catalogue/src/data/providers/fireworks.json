@@ -230,6 +230,7 @@
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 32768,
+        "contextComplexity": 3,
         "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00007,
@@ -327,9 +328,7 @@
       "model": "glm/glm-5",
       "matchingModel": "accounts/fireworks/models/glm-5",
       "overrides": {
-        "name": "GLM 5",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "contextWindow": 202752,
         "speed": 3,
         "releaseDate": "February 11, 2026",
         "lastUpdated": "February 11, 2026",
@@ -468,7 +467,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -551,7 +550,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "accounts/fireworks/models/kimi-k3",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -667,7 +666,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005,
@@ -829,8 +828,8 @@
       "matchingModel": "accounts/fireworks/routers/kimi-latest",
       "overrides": {
         "lastUpdated": "July 16, 2026",
-        "costPer1kInputTokens": 0.003,
-        "costPer1kOutputTokens": 0.015,
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
         "supportsAttachments": true,
         "supportsTemperature": false
       }
@@ -925,8 +924,8 @@
       "matchingModel": "accounts/fireworks/routers/deepseek-v4p1-flash-1017-spot",
       "overrides": {
         "lastUpdated": "October 17, 2026",
-        "costPer1kInputTokens": 0.00021,
-        "costPer1kOutputTokens": 0.00084,
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": true
       }
     },
@@ -935,8 +934,8 @@
       "matchingModel": "accounts/fireworks/routers/deepseek-v4p1-flash-spot",
       "overrides": {
         "lastUpdated": "September 10, 2026",
-        "costPer1kInputTokens": 0.00021,
-        "costPer1kOutputTokens": 0.00084,
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": true
       }
     },
@@ -944,7 +943,6 @@
       "model": "kimi-k3/kimi-k3-1-pro",
       "matchingModel": "accounts/fireworks/models/kimi-k3p1-pro",
       "overrides": {
-        "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002,
@@ -967,8 +965,8 @@
       "matchingModel": "accounts/fireworks/routers/deepseek-v4p1-flash-1017-ultrafast",
       "overrides": {
         "lastUpdated": "October 17, 2026",
-        "costPer1kInputTokens": 0.0024,
-        "costPer1kOutputTokens": 0.0096,
+        "costPer1kInputTokens": 0.0012,
+        "costPer1kOutputTokens": 0.0048,
         "supportsAttachments": true
       }
     }

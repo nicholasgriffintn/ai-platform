@@ -1185,7 +1185,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1168,
+              "value": 1167,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -1318,7 +1318,7 @@
             {
               "key": "image_to_videoElo",
               "label": "Image-to-video arena",
-              "value": 1048,
+              "value": 1047,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 16
@@ -1346,10 +1346,10 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 978,
+              "value": 979,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 16
+              "confidenceInterval95": 15
             }
           ]
         }

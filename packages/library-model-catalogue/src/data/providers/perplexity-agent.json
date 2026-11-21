@@ -431,7 +431,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005
@@ -441,7 +441,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "perplexity/kimi-k3",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,

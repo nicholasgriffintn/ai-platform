@@ -634,6 +634,7 @@
       "model": "gemini-pro/gemini-3-1-pro-preview",
       "matchingModel": "gemini-3.1-pro-preview",
       "overrides": {
+        "maxTokens": 65536,
         "isFree": true,
         "strengths": [
           "coding",
@@ -1025,7 +1026,7 @@
         ],
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.12,
+        "costPer1kOutputTokens": 0.012,
         "supportsToolCalls": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1065,7 +1066,7 @@
         "isFeatured": false,
         "lastUpdated": "May 28, 2026",
         "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.06,
+        "costPer1kOutputTokens": 0.003,
         "supportsToolCalls": false
       },
       "unset": [
@@ -1096,7 +1097,7 @@
         ],
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.03,
+        "costPer1kOutputTokens": 0.0015,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "minimal",
@@ -1427,6 +1428,17 @@
         "lastUpdated": "November 12, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.0075
+      }
+    },
+    "gemini-4-neon": {
+      "model": "gemini/gemini-4-neon",
+      "matchingModel": "gemini-4-neon",
+      "overrides": {
+        "description": "Google's Gemini 4 model for fast, frontier-level coding, knowledge work and science workflows, with four thinking levels and a 1M-token context window",
+        "speed": 3,
+        "lastUpdated": "November 18, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015
       }
     }
   }

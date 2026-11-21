@@ -40,7 +40,6 @@
       "model": "glm/glm-5",
       "matchingModel": "glm-5",
       "overrides": {
-        "name": "GLM 5",
         "contextWindow": 204800,
         "strengths": [
           "coding",
@@ -113,7 +112,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 11, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0018,
@@ -144,7 +143,6 @@
       "matchingModel": "glm-4.6v",
       "overrides": {
         "contextWindow": 128000,
-        "maxTokens": 32768,
         "modalities": {
           "input": [
             "text",
@@ -286,7 +284,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005,

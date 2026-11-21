@@ -271,7 +271,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 987,
+              "value": 988,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -340,7 +340,7 @@
       "overrides": {
         "contextWindow": 1048576,
         "maxTokens": 50000,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -353,7 +353,7 @@
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "maxTokens": 50000,
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.00068,
         "costPer1kOutputTokens": 0.00209
@@ -382,7 +382,7 @@
           "video"
         ],
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -584,7 +584,7 @@
       "overrides": {
         "maxTokens": 30000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
@@ -604,6 +604,7 @@
       "matchingModel": "xiaomi/mimo-v2.5",
       "overrides": {
         "description": "Open MiMo model for multimodal coding agents and long-context automation",
+        "contextWindow": 1048576,
         "maxTokens": 50000,
         "speed": 3,
         "lastUpdated": "April 22, 2026",
@@ -731,7 +732,7 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00008,
         "costPer1kOutputTokens": 0.0005

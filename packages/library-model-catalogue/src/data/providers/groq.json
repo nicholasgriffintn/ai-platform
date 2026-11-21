@@ -137,7 +137,6 @@
           "coding",
           "tool_use"
         ],
-        "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.000075,

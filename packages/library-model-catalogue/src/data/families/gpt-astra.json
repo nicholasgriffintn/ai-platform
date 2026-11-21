@@ -21,8 +21,6 @@
     ],
     "contextComplexity": 5,
     "reliability": 3,
-    "knowledgeCutoffDate": "April 30, 2026",
-    "releaseDate": "September 4, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
@@ -36,38 +34,161 @@
         "max"
       ],
       "defaultEffort": "low"
-    },
-    "artificialAnalysis": {
-      "intelligenceIndex": 56.9,
-      "codingIndex": null,
-      "agenticIndex": null,
-      "intelligenceIndexVersion": 5
     }
   },
   "description": "The gpt astra family includes models that produce text.",
   "models": {
+    "gpt-6-2-astra": {
+      "defaults": {
+        "name": "GPT-6.2 Astra",
+        "description": "A frontier reasoning model for coding, computer use, and professional work such as slides, spreadsheets, and documents.",
+        "knowledgeCutoffDate": "May 18, 2026",
+        "releaseDate": "November 17, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 62.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "gpt-6-2-astra-eu": {
+      "defaults": {
+        "name": "GPT-6.2 Astra (EU)",
+        "description": "A frontier reasoning model for coding, computer use, and professional work such as slides, spreadsheets, and documents.",
+        "knowledgeCutoffDate": "May 18, 2026",
+        "releaseDate": "November 17, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 62.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "gpt-6-2-astra-fast": {
+      "defaults": {
+        "name": "GPT-6.2 Astra (Fast)",
+        "description": "A frontier reasoning model for coding, computer use, and professional work such as slides, spreadsheets, and documents.",
+        "knowledgeCutoffDate": "May 18, 2026",
+        "releaseDate": "November 17, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 62.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "gpt-6-2-astra-global": {
+      "defaults": {
+        "name": "GPT-6.2 Astra (Global)",
+        "description": "A frontier reasoning model for coding, computer use, and professional work such as slides, spreadsheets, and documents.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "May 18, 2026",
+        "releaseDate": "November 17, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 62.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "gpt-6-2-astra-us": {
+      "defaults": {
+        "name": "GPT-6.2 Astra (US)",
+        "description": "A frontier reasoning model for coding, computer use, and professional work such as slides, spreadsheets, and documents.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "May 18, 2026",
+        "releaseDate": "November 17, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 62.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
     "gpt-6-astra": {
       "defaults": {
         "name": "GPT-6 Astra",
-        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation."
+        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation.",
+        "knowledgeCutoffDate": "April 30, 2026",
+        "releaseDate": "September 4, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 56.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-6-astra-fast": {
       "defaults": {
         "name": "GPT-6 Astra (Fast)",
-        "description": "Fast variant of GPT-6 Astra for low-latency assistance and high-volume workloads."
+        "description": "Fast variant of GPT-6 Astra for low-latency assistance and high-volume workloads.",
+        "releaseDate": "September 4, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 56.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-6-astra-global": {
       "defaults": {
         "name": "GPT-6 Astra (Global)",
-        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation."
+        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation.",
+        "knowledgeCutoffDate": "April 30, 2026",
+        "releaseDate": "September 4, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 56.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-6-astra-us": {
       "defaults": {
         "name": "GPT-6 Astra (US)",
-        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation."
+        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation.",
+        "knowledgeCutoffDate": "April 30, 2026",
+        "releaseDate": "September 4, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 56.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "gpt-astra-latest": {
@@ -84,13 +205,50 @@
             "text"
           ]
         },
+        "knowledgeCutoffDate": "April 30, 2026",
         "releaseDate": "September 11, 2026"
+      }
+    },
+    "openai-gpt-6-2-astra": {
+      "defaults": {
+        "name": "OpenAI: GPT-6.2 Astra",
+        "description": "GPT-6.2 Astra is the flagship model in the GPT-6.2 series from OpenAI, built for the hardest projects. It is suited for real-world engineering, professional work and scientific research, with stronger...",
+        "knowledgeCutoffDate": "May 18, 2026",
+        "releaseDate": "November 17, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 62.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "openai-gpt-6-2-astra-fast": {
+      "defaults": {
+        "name": "OpenAI: GPT-6.2 Astra (Fast)",
+        "description": "GPT-6.2 Astra is OpenAI's frontier reasoning model for coding and professional work. It can build and revise software, use a computer, and work with documents. It accepts text and images, generates text, and supports a 1,050,000-token context window with up to 128,000 output tokens, along with structured outputs, prompt caching, and Responses API tools such as web search.",
+        "knowledgeCutoffDate": "May 18, 2026",
+        "releaseDate": "November 17, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 56.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "openai-gpt-6-astra-fast": {
       "defaults": {
         "name": "OpenAI: GPT-6 Astra (Fast) ($$$$)",
-        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation."
+        "description": "GPT-6 Astra is OpenAI's most capable model for complex reasoning, coding, computer use, research, and document creation.",
+        "knowledgeCutoffDate": "April 30, 2026",
+        "releaseDate": "September 4, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 56.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "openai-gpt-astra-latest": {
@@ -107,6 +265,7 @@
             "text"
           ]
         },
+        "knowledgeCutoffDate": "April 30, 2026",
         "releaseDate": "September 11, 2026"
       }
     }

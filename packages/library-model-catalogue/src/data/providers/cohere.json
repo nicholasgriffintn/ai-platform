@@ -97,7 +97,7 @@
       "overrides": {
         "maxTokens": 8000,
         "isFree": true,
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "June 1, 2024",
         "lastUpdated": "March 13, 2025",
         "costPer1kInputTokens": 0.0025,
@@ -195,7 +195,7 @@
       "matchingModel": "north-mini-code-1-0",
       "overrides": {
         "isFree": true,
-        "speed": 5,
+        "speed": 4,
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,

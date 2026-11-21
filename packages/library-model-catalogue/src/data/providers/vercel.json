@@ -40,7 +40,7 @@
       "model": "gpt-mini/gpt-5-mini",
       "matchingModel": "openai/gpt-5-mini",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
@@ -421,7 +421,7 @@
       "overrides": {
         "name": "Qwen3-14B",
         "openWeights": false,
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "April 2025",
         "costPer1kInputTokens": 0.00012,
@@ -440,6 +440,8 @@
         "maxTokens": 16384,
         "contextComplexity": 3,
         "speed": 2,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 235B A22B Instruct 2507 is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "July 21, 2025",
         "costPer1kInputTokens": 0.00022,
@@ -468,7 +470,7 @@
       "overrides": {
         "name": "Qwen3-30B-A3B",
         "description": "Qwen instruction model for multilingual chat, reasoning, and tool use",
-        "speed": 3,
+        "speed": 4,
         "knowledgeCutoffDate": "April 2025",
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.00012,
@@ -499,6 +501,8 @@
         "description": "Qwen coding model for software agents, repository edits, and code reasoning",
         "maxTokens": 32768,
         "speed": 3,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Coder 480B A35B Instruct is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "July 22, 2025",
         "costPer1kInputTokens": 0.00022,
         "costPer1kOutputTokens": 0.0018,
@@ -652,12 +656,11 @@
       "matchingModel": "alibaba/qwen3-next-80b-a3b-instruct",
       "overrides": {
         "name": "Qwen3 Next 80B A3B Instruct",
-        "contextWindow": 262114,
-        "maxTokens": 262114,
+        "maxTokens": 32768,
         "speed": 4,
         "lastUpdated": "September 2025",
-        "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.0012,
+        "costPer1kInputTokens": 0.00009,
+        "costPer1kOutputTokens": 0.0011,
         "supportsAttachments": false
       },
       "unset": [
@@ -670,6 +673,8 @@
       "overrides": {
         "description": "Efficient Qwen thinking model for local reasoning, math, and coding agents",
         "maxTokens": 262144,
+        "deprecated": true,
+        "deprecationMessage": "Qwen3 Next 80B A3B Thinking is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0012,
@@ -973,7 +978,7 @@
       "matchingModel": "cohere/command-a",
       "overrides": {
         "maxTokens": 8000,
-        "speed": 2,
+        "speed": 3,
         "knowledgeCutoffDate": "August 31, 2024",
         "lastUpdated": "March 13, 2025",
         "costPer1kInputTokens": 0.0025,
@@ -1045,7 +1050,7 @@
         "contextWindow": 131072,
         "maxTokens": 32768,
         "contextComplexity": 3,
-        "speed": 3,
+        "speed": 4,
         "deprecated": true,
         "deprecationMessage": "DeepSeek V3.1 Terminus is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "July 2025",
@@ -1144,7 +1149,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 987,
+              "value": 988,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -1436,6 +1441,8 @@
       "model": "mercury/mercury-coder-small-beta",
       "matchingModel": "inception/mercury-coder-small",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Mercury Coder Small Beta is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "February 26, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.001,
@@ -1473,15 +1480,13 @@
       "model": "llama/llama-3-1-70b-instruct",
       "matchingModel": "meta/llama-3.1-70b",
       "overrides": {
+        "name": "Llama 3.1 70B Instruct",
         "contextWindow": 128000,
         "lastUpdated": "July 23, 2024",
         "costPer1kInputTokens": 0.00072,
         "costPer1kOutputTokens": 0.00072,
         "supportsAttachments": false
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "meta/llama-3.1-8b": {
       "model": "llama/llama-3-1-8b-instruct",
@@ -1616,6 +1621,8 @@
         "contextWindow": 205000,
         "maxTokens": 196608,
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "MiniMax M2 is no longer offered by Vercel AI Gateway.",
         "knowledgeCutoffDate": "October 2024",
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.0003,
@@ -1643,6 +1650,8 @@
       "model": "minimax/minimax-m2-1-lightning",
       "matchingModel": "minimax/minimax-m2.1-lightning",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "MiniMax M2.1 Lightning is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "October 27, 2025",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0024,
@@ -1904,6 +1913,8 @@
         "maxTokens": 262144,
         "contextComplexity": 5,
         "speed": 5,
+        "deprecated": true,
+        "deprecationMessage": "Nemotron 3 Nano 30B A3B is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "December 15, 2025",
         "costPer1kInputTokens": 0.00005,
         "costPer1kOutputTokens": 0.0002,
@@ -1920,8 +1931,8 @@
         }
       },
       "unset": [
-        "supportsResponseFormat",
-        "strengths"
+        "strengths",
+        "supportsResponseFormat"
       ]
     },
     "nvidia/nemotron-nano-12b-v2-vl": {
@@ -2238,7 +2249,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 11, 2025",
         "costPer1kInputTokens": 0.00175,
         "costPer1kOutputTokens": 0.014
@@ -2272,6 +2283,7 @@
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 8192,
+        "contextComplexity": 3,
         "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00003,
@@ -2869,7 +2881,7 @@
         "name": "GLM 4.5V",
         "contextWindow": 66000,
         "maxTokens": 16000,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 11, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0018
@@ -2911,11 +2923,6 @@
             "text"
           ]
         },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "contextComplexity": 3,
         "speed": 3,
         "deprecated": true,
@@ -3397,6 +3404,8 @@
       "matchingModel": "inception/mercury-2",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Mercury 2 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "February 24, 2026",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.00075,
@@ -3452,8 +3461,8 @@
       "matchingModel": "minimax/minimax-m2.5",
       "overrides": {
         "name": "MiniMax M2.5",
-        "contextWindow": 204800,
-        "maxTokens": 131000,
+        "contextWindow": 1000000,
+        "maxTokens": 8192,
         "speed": 3,
         "lastUpdated": "February 12, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -3465,6 +3474,8 @@
       "model": "minimax/minimax-m2-5-high-speed",
       "matchingModel": "minimax/minimax-m2.5-highspeed",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "MiniMax M2.5 High Speed is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "February 13, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0024,
@@ -3477,8 +3488,7 @@
       "overrides": {
         "name": "Minimax M2.7",
         "description": "Open MiniMax flagship for coding agents, office automation, and complex environments",
-        "contextWindow": 204800,
-        "maxTokens": 131000,
+        "maxTokens": 196608,
         "modalities": {
           "input": [
             "text",
@@ -3496,15 +3506,25 @@
         ],
         "speed": 3,
         "lastUpdated": "March 18, 2026",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0012,
-        "supportsAttachments": false
+        "costPer1kInputTokens": 0.00021,
+        "costPer1kOutputTokens": 0.00084,
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "minimax/minimax-m2.7-highspeed": {
       "model": "minimax/minimax-m2-7-high-speed",
       "matchingModel": "minimax/minimax-m2.7-highspeed",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "MiniMax M2.7 High Speed is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "March 18, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0024,
@@ -3852,7 +3872,7 @@
       "matchingModel": "xai/grok-4.3",
       "overrides": {
         "maxTokens": 1000000,
-        "speed": 3,
+        "speed": 2,
         "deprecated": true,
         "deprecationMessage": "Grok 4.3 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 17, 2026",
@@ -4321,8 +4341,8 @@
       "matchingModel": "minimax/minimax-m3",
       "overrides": {
         "name": "MiniMax M3",
-        "contextWindow": 512000,
-        "maxTokens": 512000,
+        "contextWindow": 1000000,
+        "maxTokens": 1000000,
         "modalities": {
           "input": [
             "text",
@@ -4338,7 +4358,8 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "contextComplexity": 5,
+        "speed": 3,
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012
@@ -4963,6 +4984,8 @@
       "model": "flux/flux-schnell",
       "matchingModel": "prodia/flux-fast-schnell",
       "overrides": {
+        "deprecated": true,
+        "deprecationMessage": "Flux Schnell is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "June 8, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false,
@@ -5767,6 +5790,7 @@
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "contextWindow": 1000000,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -5777,7 +5801,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -6031,6 +6055,7 @@
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "contextWindow": 1000000,
+        "maxTokens": 1000000,
         "modalities": {
           "input": [
             "text",
@@ -6042,7 +6067,7 @@
           ]
         },
         "lastUpdated": "July 16, 2026",
-        "costPer1kInputTokens": 0.0045,
+        "costPer1kInputTokens": 0.006,
         "costPer1kOutputTokens": 0.0225,
         "supportsTemperature": false,
         "reasoningConfig": {
@@ -6108,7 +6133,7 @@
           ]
         },
         "contextComplexity": 5,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0012,
@@ -6218,9 +6243,9 @@
         "costPer1kOutputTokens": 0.0002
       },
       "unset": [
+        "contextComplexity",
         "supportsResponseFormat",
-        "supportsTemperature",
-        "contextComplexity"
+        "supportsTemperature"
       ]
     },
     "fish-audio/s1": {
@@ -6424,7 +6449,6 @@
       "matchingModel": "alibaba/qwen3.8-2.4t-a95b",
       "overrides": {
         "description": "Open-weight sparse MoE (2.4T total, 95B active), the open-weight twin of Qwen3.8 Max for coding, research, complex reasoning, and agentic workflows",
-        "maxTokens": 128000,
         "strengths": [
           "tool_use",
           "coding",
@@ -6563,7 +6587,7 @@
       "model": "gpt-mini/gpt-5-mini-fast",
       "matchingModel": "openai/gpt-5-mini-fast",
       "overrides": {
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0036,
@@ -6678,7 +6702,7 @@
       "model": "o-mini/o4-mini-fast",
       "matchingModel": "openai/o4-mini-fast",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "deprecated": true,
         "deprecationMessage": "o4-mini (Fast) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 16, 2025",
@@ -6975,7 +6999,7 @@
       "overrides": {
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
         "maxTokens": 1000000,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
@@ -7016,6 +7040,8 @@
       "matchingModel": "spacexai/grok-build-0.1",
       "overrides": {
         "description": "Grok coding model for agentic engineering, edits, and codebase workflows",
+        "deprecated": true,
+        "deprecationMessage": "Grok Build 0.1 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "April 16, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.002,
@@ -7295,7 +7321,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "MiniMax M3 (Free) is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "June 1, 2026",
@@ -7458,7 +7484,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005
@@ -7616,9 +7642,9 @@
         }
       },
       "unset": [
+        "contextComplexity",
         "supportsResponseFormat",
-        "supportsTemperature",
-        "contextComplexity"
+        "supportsTemperature"
       ]
     },
     "zai/glm-5.3-fast": {
@@ -7725,10 +7751,7 @@
         "costPer1kInputTokens": 0.02,
         "costPer1kOutputTokens": 0.1,
         "supportsTemperature": false
-      },
-      "unset": [
-        "knowledgeCutoffDate"
-      ]
+      }
     },
     "deepseek/deepseek-v4.1-flash-beta": {
       "model": "deepseek/deepseek-v4-1-flash-beta",
@@ -7746,6 +7769,8 @@
       "matchingModel": "inception/mercury-2.5",
       "overrides": {
         "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Mercury 2.5 is no longer offered by Vercel AI Gateway.",
         "lastUpdated": "September 8, 2026",
         "costPer1kInputTokens": 0.00004,
         "costPer1kOutputTokens": 0.00015,
@@ -7806,8 +7831,7 @@
       "model": "deepseek-flash/deepseek-v4-1-flash",
       "matchingModel": "deepseek/deepseek-v4.1-flash",
       "overrides": {
-        "maxTokens": 32768,
-        "contextComplexity": 4,
+        "maxTokens": 1048576,
         "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -8655,7 +8679,7 @@
       "model": "mistral-large/mistral-large-4",
       "matchingModel": "mistral/mistral-large-4",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.0007,
         "costPer1kOutputTokens": 0.0021
@@ -8983,8 +9007,7 @@
       "matchingModel": "minimax/minimax-m3.1-flash",
       "overrides": {
         "description": "MiniMax multimodal coding model for long-context reasoning and agent tasks",
-        "contextWindow": 1048576,
-        "maxTokens": 1048576,
+        "maxTokens": 524288,
         "modalities": {
           "input": [
             "text",
@@ -9091,6 +9114,7 @@
       "matchingModel": "nvidia/nemotron-3.5-super-vl",
       "overrides": {
         "name": "NVIDIA Nemotron 3.5 Super VL",
+        "contextWindow": 1048576,
         "maxTokens": 1048576,
         "modalities": {
           "input": [
@@ -9106,6 +9130,7 @@
           "document",
           "tool_use"
         ],
+        "contextComplexity": 5,
         "speed": 5,
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.0002,
@@ -9464,21 +9489,145 @@
       "model": "ling/inkling-2-small",
       "matchingModel": "thinkingmachines/inkling-2-small",
       "overrides": {
-        "description": "Multimodal MoE reasoning model (594B total, 17B active) for agentic coding, vision, and knowledge work",
         "maxTokens": 262144,
-        "speed": 3,
-        "lastUpdated": "November 5, 2026",
+        "speed": 4,
+        "lastUpdated": "November 12, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.001,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
+            "minimal",
             "low",
             "medium",
-            "high"
+            "high",
+            "xhigh",
+            "max"
           ],
           "defaultEffort": "none"
         }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "alibaba/qwen4-max": {
+      "model": "qwen/qwen-4-max",
+      "matchingModel": "alibaba/qwen4-max",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "November 16, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.0045
+      }
+    },
+    "google/gemini-4-neon": {
+      "model": "gemini/gemini-4-neon",
+      "matchingModel": "google/gemini-4-neon",
+      "overrides": {
+        "description": "Google's Gemini 4 model for fast, frontier-level coding, knowledge work and science workflows, with four thinking levels and a 1M-token context window",
+        "contextWindow": 1000000,
+        "maxTokens": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "speed": 3,
+        "lastUpdated": "November 18, 2026",
+        "costPer1kInputTokens": 0.003,
+        "costPer1kOutputTokens": 0.015,
+        "supportsTemperature": false
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
+    },
+    "openai/gpt-6.2-astra": {
+      "model": "gpt-astra/gpt-6-2-astra",
+      "matchingModel": "openai/gpt-6.2-astra",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.008,
+        "costPer1kOutputTokens": 0.04,
+        "supportsTemperature": false
+      }
+    },
+    "openai/gpt-6.2-astra-fast": {
+      "model": "gpt-astra/gpt-6-2-astra-fast",
+      "matchingModel": "openai/gpt-6.2-astra-fast",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.016,
+        "costPer1kOutputTokens": 0.08,
+        "supportsTemperature": false
+      }
+    },
+    "openai/gpt-6.2-sol": {
+      "model": "gpt-sol/gpt-6-2-sol",
+      "matchingModel": "openai/gpt-6.2-sol",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false
+      }
+    },
+    "openai/gpt-6.2-sol-fast": {
+      "model": "gpt-sol/gpt-6-2-sol-fast",
+      "matchingModel": "openai/gpt-6.2-sol-fast",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
+        "supportsTemperature": false
+      }
+    },
+    "recursive/flint-v1.0": {
+      "model": "flint/flint",
+      "matchingModel": "recursive/flint-v1.0",
+      "overrides": {
+        "lastUpdated": "November 16, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsAttachments": false
+      }
+    },
+    "scaledown/extract-1": {
+      "model": "vercel/scaledown/extract-1/extract-1",
+      "matchingModel": "scaledown/extract-1",
+      "overrides": {
+        "lastUpdated": "October 20, 2026",
+        "costPer1kInputTokens": 0.00005,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false
+      }
+    },
+    "tencent/hy4-flash": {
+      "model": "Hy/tencent-hy4-flash",
+      "matchingModel": "tencent/hy4-flash",
+      "overrides": {
+        "name": "Tencent Hy4 Flash",
+        "contextWindow": 1024000,
+        "maxTokens": 64000,
+        "lastUpdated": "November 16, 2026",
+        "costPer1kInputTokens": 0.000035,
+        "costPer1kOutputTokens": 0.0001405
       }
     }
   }

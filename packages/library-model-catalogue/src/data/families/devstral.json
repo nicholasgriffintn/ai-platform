@@ -14,7 +14,6 @@
     "contextComplexity": 4,
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsAttachments": false,
     "supportsTemperature": true,
     "artificialAnalysis": {
       "intelligenceIndex": null,
@@ -40,6 +39,7 @@
         "name": "devstral-latest",
         "description": "An enterprise grade text model, that excels at using tools to explore codebases, editing multiple files and power software engineering agents.",
         "releaseDate": "May 27, 2026",
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -57,6 +57,7 @@
         "name": "devstral-latest@eu",
         "description": "An enterprise grade text model, that excels at using tools to explore codebases, editing multiple files and power software engineering agents.",
         "releaseDate": "May 27, 2026",
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -80,7 +81,8 @@
         ],
         "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "May 21, 2025"
+        "releaseDate": "May 21, 2025",
+        "supportsAttachments": false
       }
     },
     "devstral-small-2": {
@@ -92,7 +94,8 @@
         ],
         "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "December 9, 2025"
+        "releaseDate": "December 9, 2025",
+        "supportsAttachments": false
       }
     }
   }

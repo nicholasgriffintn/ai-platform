@@ -9,7 +9,6 @@
         "text"
       ]
     },
-    "supportsToolCalls": false,
     "supportsAttachments": false,
     "supportsTemperature": true
   },
@@ -22,6 +21,7 @@
         "contextWindow": 8192,
         "maxTokens": 4096,
         "releaseDate": "May 21, 2026",
+        "supportsToolCalls": false,
         "supportsResponseFormat": false
       }
     },
@@ -32,6 +32,7 @@
         "contextWindow": 8192,
         "maxTokens": 4096,
         "releaseDate": "May 21, 2026",
+        "supportsToolCalls": false,
         "supportsResponseFormat": true
       }
     },
@@ -42,6 +43,7 @@
         "contextWindow": 8192,
         "maxTokens": 4096,
         "releaseDate": "May 21, 2026",
+        "supportsToolCalls": false,
         "supportsResponseFormat": true
       }
     },
@@ -128,6 +130,55 @@
         "supportsAttachments": true
       }
     },
+    "hy4-flash": {
+      "defaults": {
+        "name": "Hy4 flash",
+        "description": "Tencent's lower-cost Hy4 tier for everyday agent and productivity tasks, with image understanding and a 1M-token context window.",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 16, 2026",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true
+      }
+    },
+    "hy4-flash-free": {
+      "defaults": {
+        "name": "Hy4 flash Free",
+        "description": "Tencent's lower-cost Hy4 tier for everyday agent and productivity tasks, with image understanding and a 1M-token context window.",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 16, 2026",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "hy4-preview": {
       "defaults": {
         "name": "Hy4 preview",
@@ -153,7 +204,8 @@
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 8000,
         "maxTokens": 4000,
-        "releaseDate": "June 12, 2026"
+        "releaseDate": "June 12, 2026",
+        "supportsToolCalls": false
       }
     },
     "tencent-hy-mt2-plus": {
@@ -162,7 +214,8 @@
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 8000,
         "maxTokens": 4000,
-        "releaseDate": "June 12, 2026"
+        "releaseDate": "June 12, 2026",
+        "supportsToolCalls": false
       }
     },
     "tencent-hy-mt2-pro": {
@@ -171,7 +224,8 @@
         "description": "Tencent Hy reasoning model for coding, instruction following, and agent tasks",
         "contextWindow": 8000,
         "maxTokens": 4000,
-        "releaseDate": "May 21, 2026"
+        "releaseDate": "May 21, 2026",
+        "supportsToolCalls": false
       }
     },
     "tencent-hy4": {
@@ -204,6 +258,30 @@
         }
       }
     },
+    "tencent-hy4-flash": {
+      "defaults": {
+        "description": "Tencent's lower-cost Hy4 tier for everyday agent and productivity tasks, with image understanding and a 1M-token context window.",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 16, 2026",
+        "supportsToolCalls": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "tencent-hy4-preview": {
       "defaults": {
         "name": "Tencent Hy4 Preview",
@@ -229,6 +307,7 @@
         "contextWindow": 8000,
         "maxTokens": 4000,
         "releaseDate": "June 12, 2026",
+        "supportsToolCalls": false,
         "supportsResponseFormat": false
       }
     },
@@ -239,6 +318,7 @@
         "contextWindow": 8000,
         "maxTokens": 4000,
         "releaseDate": "June 12, 2026",
+        "supportsToolCalls": false,
         "supportsResponseFormat": true
       }
     },
@@ -249,6 +329,7 @@
         "contextWindow": 8000,
         "maxTokens": 4000,
         "releaseDate": "May 21, 2026",
+        "supportsToolCalls": false,
         "supportsResponseFormat": true
       }
     }

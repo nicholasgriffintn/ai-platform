@@ -305,7 +305,7 @@
           "tool_use",
           "search"
         ],
-        "speed": 2,
+        "speed": 3,
         "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
@@ -883,7 +883,7 @@
             "text"
           ]
         },
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "GPT-5.2 Codex was retired on 23 July 2026. Use GPT-5.6 Sol instead.",
         "replacementModel": "gpt-5.6-sol",
@@ -1818,7 +1818,8 @@
         "supportsPromptCacheOptions": true
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "strengths"
       ]
     },
     "gpt-5.6-luna": {
@@ -2195,7 +2196,8 @@
         "supportsTemperature": true
       },
       "unset": [
-        "contextComplexity"
+        "contextComplexity",
+        "strengths"
       ]
     },
     "gpt-daybreak-red-latest": {
@@ -2400,6 +2402,26 @@
           ],
           "reference": "https://developers.openai.com/api/docs/guides/image-generation"
         }
+      }
+    },
+    "gpt-6.2-astra": {
+      "model": "gpt-astra/gpt-6-2-astra",
+      "matchingModel": "gpt-6.2-astra",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.008,
+        "costPer1kOutputTokens": 0.04
+      }
+    },
+    "gpt-6.2-sol": {
+      "model": "gpt-sol/gpt-6-2-sol",
+      "matchingModel": "gpt-6.2-sol",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01
       }
     }
   }

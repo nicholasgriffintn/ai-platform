@@ -220,7 +220,7 @@
         "contextComplexity": 5,
         "releaseDate": "August 13, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 23.1,
+          "intelligenceIndex": 20.8,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -250,7 +250,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 23.1,
+          "intelligenceIndex": 20.8,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5

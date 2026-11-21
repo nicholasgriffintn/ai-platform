@@ -19,7 +19,7 @@
         "openWeights": true,
         "description": "Open Whisper checkpoint for robust multilingual transcription and captioning",
         "contextWindow": 448,
-        "maxTokens": 4096,
+        "maxTokens": 448,
         "releaseDate": "November 6, 2023",
         "supportsTemperature": true
       }
@@ -99,7 +99,7 @@
         "openWeights": true,
         "description": "Open Whisper checkpoint for robust multilingual transcription and captioning",
         "contextWindow": 448,
-        "maxTokens": 4096,
+        "maxTokens": 448,
         "knowledgeCutoffDate": "September 2023",
         "releaseDate": "November 6, 2023",
         "supportsResponseFormat": true,

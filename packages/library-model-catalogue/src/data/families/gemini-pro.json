@@ -222,7 +222,6 @@
       "defaults": {
         "name": "Gemini 3.1 Pro Preview",
         "description": "Reasoning-first Gemini preview for agentic coding and complex problem solving",
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
@@ -295,7 +294,7 @@
         "name": "Gemini 3.5 Live Translate Preview",
         "description": "Low-latency audio-to-audio model for real-time speech translation across 70+ languages",
         "contextWindow": 16384,
-        "maxTokens": 32768,
+        "maxTokens": 16384,
         "modalities": {
           "input": [
             "audio"

@@ -607,6 +607,7 @@
           "coding",
           "tool_use"
         ],
+        "contextComplexity": 3,
         "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.0002,
@@ -767,10 +768,20 @@
       "model": "kling/inkling-2-small",
       "matchingModel": "@cf/thinkingmachines/inkling-2-small",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "November 9, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.001,
+        "supportsAttachments": true
+      }
+    },
+    "@cf/cloudflare/clairic-flash": {
+      "model": "workers-ai/@cf/cloudflare/clairic-flash/clairic-flash",
+      "matchingModel": "@cf/cloudflare/clairic-flash",
+      "overrides": {
+        "lastUpdated": "October 29, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0,
         "supportsAttachments": true
       }
     }

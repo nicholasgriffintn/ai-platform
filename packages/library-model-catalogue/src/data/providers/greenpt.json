@@ -55,7 +55,6 @@
       "matchingModel": "deepseek-v4-flash-0731",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 384000,
         "speed": 4,
         "lastUpdated": "July 31, 2026",
         "costPer1kInputTokens": 0.0001596,
@@ -190,7 +189,7 @@
       "model": "gpt-oss/gpt-oss-120b",
       "matchingModel": "gpt-oss-120b",
       "overrides": {
-        "maxTokens": 32768,
+        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -337,7 +336,7 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "isFeatured": true,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003762,
@@ -562,7 +561,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.000127754,
         "costPer1kOutputTokens": 0.000511016,
@@ -638,7 +637,7 @@
       "overrides": {
         "contextWindow": 1000000,
         "maxTokens": 64000,
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "July 2026",
         "costPer1kInputTokens": 0.0005016,
         "costPer1kOutputTokens": 0.002508,

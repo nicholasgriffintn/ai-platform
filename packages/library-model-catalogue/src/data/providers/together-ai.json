@@ -421,7 +421,6 @@
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
         "maxTokens": 131072,
-        "contextComplexity": 4,
         "speed": 4,
         "deprecated": true,
         "deprecationMessage": "GPT OSS 20B was removed from Together AI serverless on 15 September 2026.",
@@ -478,7 +477,7 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "MiniMax-M3 was removed from Together AI serverless on 6 November 2026. Use MiniMaxAI/MiniMax-M3.1-Flash instead.",
         "lastUpdated": "June 1, 2026",
@@ -596,7 +595,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -648,7 +647,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005
@@ -739,6 +738,16 @@
       "overrides": {
         "contextWindow": 262144,
         "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005
@@ -769,7 +778,6 @@
       "model": "kimi-k3/kimi-k3-1-pro",
       "matchingModel": "moonshotai/Kimi-K3.1-Pro",
       "overrides": {
-        "maxTokens": 131072,
         "speed": 2,
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002,

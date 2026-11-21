@@ -20,13 +20,12 @@
       "matchingModel": "gpt-oss:120b",
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
-        "maxTokens": 32768,
+        "maxTokens": 131072,
         "strengths": [
           "reasoning",
           "coding",
           "tool_use"
         ],
-        "contextComplexity": 3,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00015,
@@ -39,7 +38,7 @@
       "matchingModel": "gpt-oss:20b",
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
-        "maxTokens": 32768,
+        "maxTokens": 131072,
         "strengths": [
           "reasoning",
           "coding",
@@ -87,7 +86,8 @@
         "name": "deepseek-v4-pro",
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
         "contextWindow": 1048576,
-        "maxTokens": 1048576,
+        "maxTokens": 65536,
+        "contextComplexity": 4,
         "speed": 3,
         "lastUpdated": "April 24, 2026",
         "costPer1kInputTokens": 0.00066,
@@ -177,7 +177,7 @@
           "tool_use",
           "coding"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005
@@ -259,7 +259,7 @@
       "matchingModel": "kimi-k3",
       "overrides": {
         "name": "kimi-k3",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -301,7 +301,6 @@
       "matchingModel": "minimax-m2.7",
       "overrides": {
         "name": "minimax-m2.7",
-        "contextWindow": 196608,
         "maxTokens": 196608,
         "speed": 3,
         "lastUpdated": "March 18, 2026",
@@ -318,7 +317,7 @@
         "description": "MiniMax multimodal coding model for long-context reasoning and agent tasks",
         "contextWindow": 512000,
         "maxTokens": 131072,
-        "speed": 4,
+        "speed": 3,
         "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "June 1, 2026",
         "costPer1kInputTokens": 0.0006,
@@ -449,7 +448,7 @@
       "matchingModel": "mistral-large-4",
       "overrides": {
         "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
-        "speed": 4,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "October 6, 2026",
         "costPer1kInputTokens": 0.00068,
@@ -553,7 +552,6 @@
       "model": "kimi-k3/kimi-k3-1-pro",
       "matchingModel": "kimi-k3.1-pro",
       "overrides": {
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -569,6 +567,25 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
         "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "inkling-2-small": {
+      "model": "ling/inkling-2-small",
+      "matchingModel": "inkling-2-small",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "November 12, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.001,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",

@@ -9,6 +9,7 @@
         "text"
       ]
     },
+    "supportsToolCalls": true,
     "supportsAttachments": false,
     "supportsTemperature": true
   },
@@ -57,8 +58,7 @@
         "contextWindow": 131072,
         "maxTokens": 8192,
         "knowledgeCutoffDate": "April 2024",
-        "releaseDate": "February 28, 2025",
-        "supportsToolCalls": true
+        "releaseDate": "February 28, 2025"
       }
     },
     "groq-llama-3-70b": {
@@ -76,8 +76,7 @@
         "contextComplexity": 4,
         "reliability": 4,
         "knowledgeCutoffDate": "December 2023",
-        "releaseDate": "April 18, 2024",
-        "supportsToolCalls": true
+        "releaseDate": "April 18, 2024"
       }
     },
     "groq-llama-3-8b": {
@@ -93,8 +92,7 @@
         "contextComplexity": 3,
         "reliability": 3,
         "knowledgeCutoffDate": "December 2023",
-        "releaseDate": "April 18, 2024",
-        "supportsToolCalls": true
+        "releaseDate": "April 18, 2024"
       }
     },
     "hermes-2-pro-llama-3-8b": {
@@ -124,7 +122,6 @@
         ],
         "contextComplexity": 2,
         "reliability": 1,
-        "supportsToolCalls": true,
         "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -142,7 +139,6 @@
         "maxTokens": 128000,
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "July 23, 2024",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -171,8 +167,7 @@
         "description": "Llama 3.1 70B accepts text and produces text.",
         "contextWindow": 131072,
         "maxTokens": 16384,
-        "releaseDate": "July 23, 2024",
-        "supportsToolCalls": true
+        "releaseDate": "July 23, 2024"
       }
     },
     "llama-3-1-70b-hanami-x1": {
@@ -189,14 +184,11 @@
     },
     "llama-3-1-70b-instruct": {
       "defaults": {
-        "name": "Llama 3.1 70B Instruct",
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
         "contextWindow": 131072,
         "maxTokens": 8192,
         "knowledgeCutoffDate": "December 2023",
-        "releaseDate": "July 23, 2024",
-        "supportsToolCalls": true,
-        "supportsResponseFormat": false
+        "releaseDate": "July 23, 2024"
       }
     },
     "llama-3-1-70b-turbo": {
@@ -205,8 +197,7 @@
         "description": "Llama 3.1 70B Turbo accepts text and produces text.",
         "contextWindow": 131072,
         "maxTokens": 16384,
-        "releaseDate": "July 23, 2024",
-        "supportsToolCalls": true
+        "releaseDate": "July 23, 2024"
       }
     },
     "llama-3-1-8b": {
@@ -215,8 +206,7 @@
         "description": "Compact Llama instruction model for fast chat and local deployment",
         "contextWindow": 131072,
         "maxTokens": 16384,
-        "releaseDate": "July 23, 2024",
-        "supportsToolCalls": true
+        "releaseDate": "July 23, 2024"
       }
     },
     "llama-3-1-8b-instruct": {
@@ -226,7 +216,6 @@
         "contextWindow": 131072,
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "July 23, 2024",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true
       }
     },
@@ -236,8 +225,7 @@
         "description": "Llama 3.1 8B Turbo accepts text and produces text.",
         "contextWindow": 131072,
         "maxTokens": 16384,
-        "releaseDate": "July 23, 2024",
-        "supportsToolCalls": true
+        "releaseDate": "July 23, 2024"
       }
     },
     "llama-3-1-euryale-70b-v2-2": {
@@ -265,7 +253,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 7, 2025",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true,
         "supportsTemperature": false,
         "reasoningConfig": {
@@ -300,7 +287,6 @@
         },
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "September 25, 2024",
-        "supportsToolCalls": true,
         "supportsAttachments": true
       }
     },
@@ -320,7 +306,6 @@
         },
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "September 25, 2024",
-        "supportsToolCalls": true,
         "supportsAttachments": true
       }
     },
@@ -329,8 +314,7 @@
         "name": "Llama 3.2 1B Instruct",
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
         "knowledgeCutoffDate": "December 2023",
-        "releaseDate": "September 25, 2024",
-        "supportsToolCalls": false
+        "releaseDate": "September 25, 2024"
       }
     },
     "llama-3-2-3b-instruct": {
@@ -378,7 +362,6 @@
         "multimodal": true,
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "September 25, 2024",
-        "supportsToolCalls": true,
         "supportsAttachments": true
       }
     },
@@ -399,7 +382,6 @@
         },
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "September 25, 2024",
-        "supportsToolCalls": true,
         "supportsAttachments": true
       }
     },
@@ -421,7 +403,6 @@
         "description": "Open Llama instruction model for multilingual chat, reasoning, and coding",
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "December 6, 2024",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true
       }
     },
@@ -442,7 +423,6 @@
         "reliability": 5,
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "December 6, 2024",
-        "supportsToolCalls": true,
         "supportsResponseFormat": false
       }
     },
@@ -462,7 +442,6 @@
         "reliability": 4,
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "December 6, 2024",
-        "supportsToolCalls": true,
         "supportsResponseFormat": false
       }
     },
@@ -474,7 +453,6 @@
         "maxTokens": 16384,
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "December 6, 2024",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true
       }
     },
@@ -526,7 +504,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "April 5, 2025",
-        "supportsToolCalls": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -550,7 +527,6 @@
         },
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "April 5, 2025",
-        "supportsToolCalls": true,
         "supportsAttachments": true
       }
     },
@@ -597,7 +573,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "April 5, 2025",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
@@ -623,7 +598,6 @@
         },
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "April 5, 2025",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true,
         "supportsAttachments": true
       }
@@ -643,7 +617,6 @@
         },
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "April 5, 2025",
-        "supportsToolCalls": true,
         "supportsAttachments": true
       }
     },
@@ -671,7 +644,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "April 5, 2025",
-        "supportsToolCalls": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -705,7 +677,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "April 5, 2025",
-        "supportsToolCalls": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -781,8 +752,7 @@
         "contextWindow": 128000,
         "maxTokens": 32768,
         "knowledgeCutoffDate": "December 2023",
-        "releaseDate": "July 23, 2024",
-        "supportsToolCalls": true
+        "releaseDate": "July 23, 2024"
       }
     },
     "meta-llama-3-1-405b-instruct-turbo": {
@@ -818,8 +788,7 @@
         "contextWindow": 128000,
         "maxTokens": 32768,
         "knowledgeCutoffDate": "December 2023",
-        "releaseDate": "July 23, 2024",
-        "supportsToolCalls": true
+        "releaseDate": "July 23, 2024"
       }
     },
     "meta-llama-3-1-8b-instruct": {
@@ -829,8 +798,7 @@
         "contextWindow": 128000,
         "maxTokens": 32768,
         "knowledgeCutoffDate": "December 2023",
-        "releaseDate": "July 23, 2024",
-        "supportsToolCalls": true
+        "releaseDate": "July 23, 2024"
       }
     },
     "meta-llama-3-2-11b-vision-instruct-turbo": {
@@ -904,7 +872,6 @@
         "maxTokens": 131072,
         "knowledgeCutoffDate": "December 2023",
         "releaseDate": "December 6, 2024",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true
       }
     },
@@ -980,7 +947,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "April 5, 2025",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {
@@ -1015,7 +981,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "April 5, 2025",
-        "supportsToolCalls": true,
         "supportsResponseFormat": true,
         "supportsAttachments": true,
         "artificialAnalysis": {

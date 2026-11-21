@@ -72,7 +72,6 @@
           "coding",
           "tool_use"
         ],
-        "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00007,
@@ -95,7 +94,7 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "June 28, 2026",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.0025,
@@ -285,6 +284,46 @@
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.0011,
         "costPer1kOutputTokens": 0.0055
+      }
+    },
+    "openai.gpt-6.2-astra": {
+      "model": "gpt-astra/gpt-6-2-astra",
+      "matchingModel": "openai.gpt-6.2-astra",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 2,
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.0088,
+        "costPer1kOutputTokens": 0.044,
+        "supportsTemperature": false
+      }
+    },
+    "openai.gpt-6.2-sol": {
+      "model": "gpt-sol/gpt-6-2-sol",
+      "matchingModel": "openai.gpt-6.2-sol",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 2,
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.0022,
+        "costPer1kOutputTokens": 0.011,
+        "supportsTemperature": false
       }
     }
   }

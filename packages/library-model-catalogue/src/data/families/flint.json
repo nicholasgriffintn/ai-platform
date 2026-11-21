@@ -1,8 +1,7 @@
 {
   "defaults": {
-    "openWeights": true,
+    "openWeights": false,
     "contextWindow": 262144,
-    "maxTokens": 235929,
     "modalities": {
       "input": [
         "text"
@@ -19,9 +18,26 @@
   },
   "description": "The flint family includes models that produce text.",
   "models": {
+    "flint": {
+      "defaults": {
+        "name": "Flint",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "maxTokens": 262144,
+        "releaseDate": "November 16, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "flint-40b-free": {
       "defaults": {
         "name": "Flint 40B Free",
+        "openWeights": true,
         "description": "Open-weight mixture-of-experts model with about 2.5B active parameters for local coding agents",
         "maxTokens": 65536,
         "knowledgeCutoffDate": "June 2026",
@@ -41,7 +57,9 @@
     "flint-free": {
       "defaults": {
         "name": "Flint (free)",
+        "openWeights": true,
         "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads",
+        "maxTokens": 235929,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -51,11 +69,28 @@
         }
       }
     },
+    "recursive-flint": {
+      "defaults": {
+        "name": "Recursive: Flint",
+        "description": "Flint is Recursive's open-weight mixture-of-experts model for agentic coding, with 40 billion total parameters and 2.5 billion active per token. It returns its reasoning alongside the answer and supports tool calling and structured outputs.",
+        "maxTokens": 262144,
+        "releaseDate": "November 16, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "recursive-flint-free": {
       "defaults": {
         "name": "Recursive: Flint (free)",
-        "openWeights": false,
         "description": "Flint is an open-weight mixture-of-experts model from Recursive, with about 2.5B active parameters out of 40B total, built by Recursive's autoresearch system Eureka Machine for coding agents. It is suited...",
+        "maxTokens": 235929,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "high"

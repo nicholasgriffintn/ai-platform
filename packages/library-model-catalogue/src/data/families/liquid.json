@@ -116,6 +116,9 @@
         "name": "LFM3-1.7B",
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 262144,
+        "strengths": [
+          "tool_use"
+        ],
         "releaseDate": "November 6, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -123,6 +126,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -131,6 +140,9 @@
         "name": "LFM3-1.7B (free)",
         "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads",
         "contextWindow": 262144,
+        "strengths": [
+          "tool_use"
+        ],
         "releaseDate": "November 6, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -138,6 +150,12 @@
             "thinking"
           ],
           "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },

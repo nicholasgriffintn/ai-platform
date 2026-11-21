@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "pdf"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 20, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The vercel/scaledown/extract 1 family includes models that produce text.",
+  "models": {
+    "extract-1": {
+      "defaults": {
+        "name": "Extract-1",
+        "description": "Multimodal model for analyzing text, images, documents, and rich media"
+      }
+    }
+  }
+}

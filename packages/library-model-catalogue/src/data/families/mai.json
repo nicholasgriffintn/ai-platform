@@ -5,7 +5,7 @@
     "maxTokens": 0,
     "supportsToolCalls": false,
     "supportsResponseFormat": true,
-    "supportsAttachments": false,
+    "supportsAttachments": true,
     "supportsTemperature": false,
     "reasoningConfig": {
       "supportedEffortLevels": [
@@ -35,8 +35,7 @@
           ]
         },
         "releaseDate": "August 11, 2026",
-        "supportsToolCalls": true,
-        "supportsAttachments": true
+        "supportsToolCalls": true
       }
     },
     "mai-code-1-flash": {
@@ -56,7 +55,66 @@
         "knowledgeCutoffDate": "December 2025",
         "releaseDate": "June 2, 2026",
         "supportsToolCalls": true,
+        "supportsAttachments": false,
         "supportsTemperature": true
+      }
+    },
+    "mai-code-2": {
+      "defaults": {
+        "name": "MAI Code 2",
+        "description": "Microsoft's larger agentic coding model for debugging, multi-file changes and repository-wide reasoning",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 17, 2026",
+        "supportsToolCalls": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "mai-code-2-flash": {
+      "defaults": {
+        "name": "MAI Code 2 Flash",
+        "description": "Microsoft's lightweight coding model for explanations, targeted edits and routine fixes at high volume",
+        "contextWindow": 1050000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 17, 2026",
+        "supportsToolCalls": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "mai-image-2-6": {
@@ -79,7 +137,6 @@
         "contextComplexity": 4,
         "reliability": 4,
         "releaseDate": "October 13, 2026",
-        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -89,7 +146,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1169,
+              "value": 1168,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -117,7 +174,6 @@
         "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "October 13, 2026",
-        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -127,7 +183,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1125,
+              "value": 1124,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -155,6 +211,7 @@
         "contextComplexity": 4,
         "reliability": 4,
         "releaseDate": "June 1, 2026",
+        "supportsAttachments": false,
         "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
@@ -194,7 +251,6 @@
         "contextComplexity": 4,
         "reliability": 5,
         "releaseDate": "September 3, 2026",
-        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -225,8 +281,7 @@
             "text"
           ]
         },
-        "releaseDate": "October 1, 2026",
-        "supportsAttachments": true
+        "releaseDate": "October 1, 2026"
       }
     },
     "mai-voice-2": {
@@ -241,7 +296,8 @@
             "audio"
           ]
         },
-        "releaseDate": "June 2, 2026"
+        "releaseDate": "June 2, 2026",
+        "supportsAttachments": false
       }
     },
     "mai-voice-2-1": {
@@ -256,7 +312,8 @@
             "audio"
           ]
         },
-        "releaseDate": "October 1, 2026"
+        "releaseDate": "October 1, 2026",
+        "supportsAttachments": false
       }
     },
     "mai-voice-2-1-flash": {
@@ -271,7 +328,8 @@
             "audio"
           ]
         },
-        "releaseDate": "October 1, 2026"
+        "releaseDate": "October 1, 2026",
+        "supportsAttachments": false
       }
     },
     "mai-voice-2-flash": {
@@ -286,7 +344,8 @@
             "audio"
           ]
         },
-        "releaseDate": "July 23, 2026"
+        "releaseDate": "July 23, 2026",
+        "supportsAttachments": false
       }
     }
   }

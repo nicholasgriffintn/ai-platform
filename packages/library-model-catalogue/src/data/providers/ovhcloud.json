@@ -55,8 +55,7 @@
       "overrides": {
         "name": "gpt-oss-20b",
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
-        "maxTokens": 131072,
-        "contextComplexity": 4,
+        "maxTokens": 65536,
         "speed": 4,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00005,
@@ -193,7 +192,6 @@
       "overrides": {
         "name": "Qwen3.5-9B",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "maxTokens": 262144,
         "speed": 3,
         "lastUpdated": "February 23, 2026",
         "costPer1kInputTokens": 0.00012,
