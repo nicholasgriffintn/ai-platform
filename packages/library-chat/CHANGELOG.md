@@ -1,5 +1,13 @@
 # @ngriffin_uk/polychat-library-chat
 
+## 1.5.1
+
+### Patch Changes
+
+- 43975f2: Fix desktop Codex sessions with CLI versions that require the app version. Size tasks sent to Ollama using the messages relayed to the desktop and the model’s running or configured context length when available.
+- Updated dependencies [75f2096]
+  - @ngriffin_uk/polychat-schemas@1.19.0
+
 ## 1.5.0
 
 ### Minor Changes
