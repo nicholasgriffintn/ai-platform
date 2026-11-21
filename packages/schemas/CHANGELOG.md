@@ -1,5 +1,11 @@
 # @ngriffin_uk/polychat-schemas
 
+## 1.19.1
+
+### Patch Changes
+
+- 8c14d5e: Discover shows when it reaches its monthly budget. Review the cap in Discover settings and resume the routine when it has budget available again. Discover remains readable when an edition or episode model is unavailable, retries interrupted live refreshes, and tries a backup model when a news story fails to generate.
+
 ## 1.19.0
 
 ### Minor Changes
