@@ -3065,7 +3065,7 @@ dependencies = [
 
 [[package]]
 name = "polychat-desktop"
-version = "0.6.12"
+version = "0.6.13"
 dependencies = [
  "bytes",
  "futures-util",
