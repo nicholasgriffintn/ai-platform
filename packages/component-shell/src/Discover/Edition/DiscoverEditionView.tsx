@@ -53,7 +53,9 @@ function DiscoverEditionBody({ controller }: { controller: DiscoverEditionContro
     controller.refreshStatus && controller.refreshStatus !== "queued"
       ? REFRESH_MESSAGES[controller.refreshStatus]
       : null;
-  const showTurnOn = isAuthenticated && settings !== null && !settings.enabled && !ownEdition;
+  const pausedForBudget = settings?.pausedReason === "budget";
+  const showTurnOn =
+    isAuthenticated && settings !== null && !settings.enabled && !pausedForBudget && !ownEdition;
   const showNoEdition =
     isAuthenticated && settings?.enabled === true && !ownEdition && !controller.isAwaitingEdition;
   const dayProfile = controller.discover.data?.dayProfile;
@@ -108,6 +110,12 @@ function DiscoverEditionBody({ controller }: { controller: DiscoverEditionContro
   return (
     <>
       {refreshMessage && <p className="text-sm text-muted-foreground">{refreshMessage}</p>}
+      {pausedForBudget && (
+        <p className="text-sm text-muted-foreground">
+          Discover is paused because it reached its monthly budget. Manage your budget in Discover
+          settings.
+        </p>
+      )}
       {showTurnOn && (
         <DiscoverTurnOn
           isWorking={controller.isSavingSettings || controller.isRefreshing}

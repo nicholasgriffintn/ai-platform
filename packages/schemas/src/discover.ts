@@ -420,6 +420,7 @@ export const discoverFeedUrlSchema = z.url({ protocol: /^https?$/ }).max(2048);
 
 export const discoverSettingsSchema = z.object({
   enabled: z.boolean(),
+  pausedReason: z.enum(["person", "budget"]).nullable().optional(),
   timezone: z.string().nullable(),
   curate: z.string().max(DISCOVER_CURATE_MAX_LENGTH),
   location: z.string().nullable(),

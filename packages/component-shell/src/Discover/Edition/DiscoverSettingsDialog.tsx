@@ -13,6 +13,7 @@ import {
   Textarea,
 } from "@ngriffin_uk/polychat-component-ui";
 import {
+  DISCOVER_QUERY_KEY,
   getNotebookPath,
   getPlacePaths,
   PERSONAL_SURFACE,
@@ -30,6 +31,7 @@ import {
   type DiscoverDayProfile,
 } from "@ngriffin_uk/polychat-schemas";
 import { formatCredits, formatRelativeTime } from "@ngriffin_uk/polychat-utility-core";
+import { useQueryClient } from "@tanstack/react-query";
 import { RefreshCw, X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
@@ -120,12 +122,14 @@ export function DiscoverSettingsDialog({
   dayProfile,
   onEditDay,
 }: DiscoverSettingsDialogProps) {
+  const queryClient = useQueryClient();
   const [curate, setCurate] = useState(settings.curate);
   const [showSources, setShowSources] = useState(false);
   const changed = curate.trim() !== settings.curate.trim();
   const connectedSources = settings.sources.filter((source) => source.connected);
   const usedSources = connectedSources.filter((source) => source.used);
   const unconnectedCount = settings.sources.length - connectedSources.length;
+  const pausedForBudget = settings.pausedReason === "budget";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -139,17 +143,34 @@ export function DiscoverSettingsDialog({
             configured={dayProfile?.onboarded ?? false}
             onOpen={() => onOpenChange(false)}
           />
-          <Switch
-            label="Discover"
-            description={
-              settings.enabled
-                ? `Current updates through the day, with a morning edition at ${dayProfile?.moments.morning ?? "07:00"}${settings.timezone ? ` ${settings.timezone} time` : ""}.`
-                : "Off. Your earlier editions stay here."
-            }
-            checked={settings.enabled}
-            disabled={isSaving}
-            onChange={(event) => onToggle(event.target.checked)}
-          />
+          {pausedForBudget ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Discover has reached its monthly budget. Raise the cap or wait for the next month,
+                then resume Discover.
+              </p>
+              {settings.installationId && (
+                <RoutineSpendControl
+                  installationId={settings.installationId}
+                  onResumed={() =>
+                    void queryClient.invalidateQueries({ queryKey: DISCOVER_QUERY_KEY })
+                  }
+                />
+              )}
+            </div>
+          ) : (
+            <Switch
+              label="Discover"
+              description={
+                settings.enabled
+                  ? `Current updates through the day, with a morning edition at ${dayProfile?.moments.morning ?? "07:00"}${settings.timezone ? ` ${settings.timezone} time` : ""}.`
+                  : "Off. Your earlier editions stay here."
+              }
+              checked={settings.enabled}
+              disabled={isSaving}
+              onChange={(event) => onToggle(event.target.checked)}
+            />
+          )}
           {onEditDay && dayProfile ? (
             <div className="flex items-center justify-between gap-4 border-t border-border pt-4">
               <div className="space-y-1">
@@ -328,8 +349,8 @@ export function DiscoverSettingsDialog({
             <FormDisclosure title="Monthly budget" summary="Manage spending">
               <div className="flex flex-col gap-0.5">
                 <p className="text-xs text-muted-foreground">
-                  Each morning's edition, its episode, The Perch and Your week count here. When it
-                  runs short, episodes get shorter rather than stopping.
+                  Your editions, episodes, The Perch and Your week count toward this cap. Discover
+                  pauses when it reaches the cap.
                 </p>
               </div>
               <RoutineSpendControl installationId={settings.installationId} />

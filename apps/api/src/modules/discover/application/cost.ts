@@ -6,7 +6,11 @@ import {
   type SpendLedger,
   type UsageUnit,
 } from "@ngriffin_uk/polychat-schemas";
-import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/errors";
+import {
+  AssistantError,
+  ErrorType,
+  isConfigurationError,
+} from "@ngriffin_uk/polychat-utility-server/errors";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import {
@@ -89,6 +93,20 @@ export async function estimateDiscoverCosts(context: ServiceContext): Promise<Di
     },
     listen: pricePlan(models, listenUsagePlan()),
   };
+}
+
+export async function readDiscoverEpisodeCosts(
+  context: ServiceContext,
+): Promise<DiscoverCosts["episode"] | null> {
+  try {
+    return (await estimateDiscoverCosts(context)).episode;
+  } catch (error) {
+    if (isConfigurationError(error)) {
+      return null;
+    }
+
+    throw error;
+  }
 }
 
 export async function affordableEpisodeLength(

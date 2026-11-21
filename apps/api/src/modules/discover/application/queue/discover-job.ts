@@ -32,6 +32,7 @@ import { produceYourWeek } from "../week";
 import { renderDiscoverWindDown } from "../wind-down";
 
 type EditionJob = Extract<DiscoverJobTaskData, { job: "edition" }>;
+const missingOwner: TaskResult = { status: "error", message: "A Discover job requires an owner" };
 
 async function produceEpisode(
   context: ServiceContext,
@@ -123,7 +124,7 @@ async function runEditionJob(
 
 async function runDiscoverJob(
   context: ServiceContext,
-  job: DiscoverJobTaskData,
+  job: Exclude<DiscoverJobTaskData, { job: "current" }>,
   steps: TaskSteps,
   assertOwned: () => Promise<void>,
 ): Promise<TaskResult> {
@@ -131,12 +132,6 @@ async function runDiscoverJob(
     await deliverDiscoverNotification(context, job.notificationId, assertOwned);
 
     return { status: "success", message: "Discover notification evaluated" };
-  }
-
-  if (job.job === "current") {
-    const result = await refreshDiscoverCurrent(context, { ...job, assertOwned });
-
-    return { status: "success", message: `Added ${result.added} Discover developments` };
   }
 
   if (job.job === "audio") {
@@ -205,17 +200,33 @@ export const discoverJob = defineTask<DiscoverJobTaskData>({
   payload: discoverJobTaskDataSchema,
   durable: true,
   handle: async (job, { env, message, execution }) => {
-    const owner = await loadUserContext(env, message.user_id);
+    const assertOwned = () => execution.fence.assertOwned();
+    const loadOwner = async () => {
+      const owner = await loadUserContext(env, message.user_id);
 
-    if (!owner) {
-      return { status: "error", message: "A Discover job requires an owner" };
+      return owner && job.runId ? withExecutionRunContext(owner, job.runId) : owner;
+    };
+
+    if (job.job === "current") {
+      const added = await execution.steps.value(
+        "refresh-current",
+        z.number().nullable(),
+        async () => {
+          const owner = await loadOwner();
+
+          return owner
+            ? (await refreshDiscoverCurrent(owner, { ...job, assertOwned })).added
+            : null;
+        },
+      );
+
+      return added === null
+        ? missingOwner
+        : { status: "success", message: `Added ${added} Discover developments` };
     }
 
-    return runDiscoverJob(
-      job.runId ? withExecutionRunContext(owner, job.runId) : owner,
-      job,
-      execution.steps,
-      () => execution.fence.assertOwned(),
-    );
+    const owner = await loadOwner();
+
+    return owner ? runDiscoverJob(owner, job, execution.steps, assertOwned) : missingOwner;
   },
 });

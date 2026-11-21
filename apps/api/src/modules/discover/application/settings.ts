@@ -49,7 +49,7 @@ import {
   listRecipeInstallations,
 } from "~/modules/recipes/application";
 
-import { estimateDiscoverCosts } from "./cost";
+import { readDiscoverEpisodeCosts } from "./cost";
 import { readDiscoverDayProfile, saveDiscoverDayProfile } from "./day-profile";
 import { forgetDeviceActivity } from "./device-documents";
 import { enqueueDiscoverJob } from "./jobs";
@@ -214,6 +214,7 @@ function describeRoutine(
 
   return {
     enabled: installation.status === "active",
+    pausedReason: installation.pausedReason,
     timezone: schedule?.timezone ?? null,
     curate: preferences.curate,
     location,
@@ -240,10 +241,10 @@ async function describeInstallation(
   }
 
   const preferences = storedPreferences(installation);
-  const [location, notify, costs, sources] = await Promise.all([
+  const [location, notify, episodeCosts, sources] = await Promise.all([
     readUserLocation(context),
     isRoutineAlwaysNotified(context, installation.id),
-    estimateDiscoverCosts(context),
+    readDiscoverEpisodeCosts(context),
     describeSources(context, preferences),
   ]);
   const {
@@ -253,7 +254,7 @@ async function describeInstallation(
     ...routine
   } = describeRoutine(installation, location);
 
-  return { ...routine, notify, episodeCosts: costs.episode, sources };
+  return { ...routine, notify, episodeCosts, sources };
 }
 
 async function readUserLocation(context: ServiceContext): Promise<string | null> {
