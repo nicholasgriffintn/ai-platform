@@ -1,0 +1,73 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "contextComplexity": 3,
+    "reliability": 1,
+    "knowledgeCutoffDate": "July 2024",
+    "releaseDate": "January 20, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
+  },
+  "description": "The deepseek r family includes models that produce text.",
+  "models": {
+    "deepseek-deepseek-r1": {
+      "defaults": {
+        "name": "DeepSeek: DeepSeek-R1",
+        "description": "DeepSeek-R1 provides customers a state-of-the-art reasoning model, optimized for general reasoning tasks, math, science, and code generation.",
+        "contextWindow": 128000,
+        "maxTokens": 8192,
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-r1": {
+      "defaults": {
+        "name": "DeepSeek-R1",
+        "description": "Classic open reasoning model for transparent math, coding, and deliberate problem solving",
+        "contextWindow": 64000,
+        "maxTokens": 32768
+      }
+    },
+    "deepseek-r1-0528": {
+      "defaults": {
+        "description": "DeepSeek reasoning model for multi-step analysis, math, coding, and tools",
+        "contextWindow": 163840,
+        "releaseDate": "May 28, 2025"
+      }
+    }
+  }
+}

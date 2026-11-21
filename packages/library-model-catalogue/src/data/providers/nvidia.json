@@ -24,7 +24,7 @@
       }
     },
     "black-forest-labs/flux_1-kontext-dev": {
-      "model": "flux/flux-1-kontext-dev",
+      "model": "flux-kontext-dev/flux-1-kontext-dev",
       "matchingModel": "black-forest-labs/flux_1-kontext-dev",
       "overrides": {
         "lastUpdated": "May 29, 2025",
@@ -34,7 +34,7 @@
       }
     },
     "black-forest-labs/flux_1-schnell": {
-      "model": "flux/flux-1-schnell",
+      "model": "flux-schnell/flux-1-schnell",
       "matchingModel": "black-forest-labs/flux_1-schnell",
       "overrides": {
         "lastUpdated": "August 1, 2024",
@@ -46,9 +46,10 @@
       }
     },
     "black-forest-labs/flux_2-klein-4b": {
-      "model": "flux/flux-2-klein-4b",
+      "model": "flux-klein/flux-2-klein-4b",
       "matchingModel": "black-forest-labs/flux_2-klein-4b",
       "overrides": {
+        "name": "FLUX.2 Klein 4B",
         "openWeights": true,
         "description": "Fast 4B open-weight image generation and editing model",
         "modalities": {
@@ -65,6 +66,7 @@
           "vision",
           "document"
         ],
+        "knowledgeCutoffDate": "June 2025",
         "lastUpdated": "January 15, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -72,7 +74,7 @@
       }
     },
     "black-forest-labs/flux.1-dev": {
-      "model": "flux/flux-1-dev",
+      "model": "flux-dev/flux-1-dev",
       "matchingModel": "black-forest-labs/flux.1-dev",
       "overrides": {
         "lastUpdated": "August 1, 2024",
@@ -105,7 +107,7 @@
       }
     },
     "google/diffusiongemma-26b-a4b-it": {
-      "model": "gemma/diffusiongemma-26b-a4b-it",
+      "model": "gemma-diffusion/diffusiongemma-26b-a4b-it",
       "matchingModel": "google/diffusiongemma-26b-a4b-it",
       "overrides": {
         "lastUpdated": "July 15, 2026",
@@ -191,7 +193,7 @@
       }
     },
     "meta/llama-guard-4-12b": {
-      "model": "llama/llama-guard-4-12b",
+      "model": "llama-guard/llama-guard-4-12b",
       "matchingModel": "meta/llama-guard-4-12b",
       "overrides": {
         "maxTokens": 16384,
@@ -201,7 +203,7 @@
       }
     },
     "meta/muse-glimmer-30b": {
-      "model": "muse/muse-glimmer-30b",
+      "model": "muse-glimmer/muse-glimmer-30b",
       "matchingModel": "meta/muse-glimmer-30b",
       "overrides": {
         "maxTokens": 131072,
@@ -220,10 +222,7 @@
           ],
           "defaultEffort": "none"
         }
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "nvidia/active-speaker-detection": {
       "model": "nvidia/nvidia/active-speaker-detection/active-speaker-detection",
@@ -281,7 +280,7 @@
       }
     },
     "nvidia/llama-3.1-nemotron-safety-guard-8b-v3": {
-      "model": "nemotron/llama-3-1-nemotron-safety-guard-8b-v3",
+      "model": "nemotron-safety/llama-3-1-nemotron-safety-guard-8b-v3",
       "matchingModel": "nvidia/llama-3.1-nemotron-safety-guard-8b-v3",
       "overrides": {
         "lastUpdated": "October 28, 2025",
@@ -291,7 +290,7 @@
       }
     },
     "nvidia/llama-nemotron-embed-vl-1b-v2": {
-      "model": "nemotron/llama-nemotron-embed-vl-1b-v2",
+      "model": "nemotron-embed/llama-nemotron-embed-vl-1b-v2",
       "matchingModel": "nvidia/llama-nemotron-embed-vl-1b-v2",
       "overrides": {
         "lastUpdated": "December 18, 2025",
@@ -300,7 +299,7 @@
       }
     },
     "nvidia/llama-nemotron-rerank-vl-1b-v2": {
-      "model": "nemotron/llama-nemotron-rerank-vl-1b-v2",
+      "model": "nemotron-rerank/llama-nemotron-rerank-vl-1b-v2",
       "matchingModel": "nvidia/llama-nemotron-rerank-vl-1b-v2",
       "overrides": {
         "lastUpdated": "December 18, 2025",
@@ -319,82 +318,30 @@
       }
     },
     "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning": {
-      "model": "nemotron/nemotron-3-nano-omni",
+      "model": "nemotron-nano/nemotron-3-nano-omni",
       "matchingModel": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
       "overrides": {
-        "name": "Nemotron 3 Nano Omni",
-        "description": "Open Nemotron omni model combining reasoning with text, vision, and audio",
-        "contextWindow": 256000,
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "audio",
-          "video",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
         "speed": 5,
-        "releaseDate": "April 28, 2026",
         "lastUpdated": "April 28, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsToolCalls": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
+        "supportsToolCalls": true
       }
     },
     "nvidia/nemotron-3-super-120b-a12b": {
       "model": "nemotron/nemotron-3-super",
       "matchingModel": "nvidia/nemotron-3-super-120b-a12b",
       "overrides": {
-        "name": "Nemotron 3 Super",
-        "maxTokens": 262144,
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 2,
         "speed": 4,
-        "knowledgeCutoffDate": "April 2024",
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0008,
         "supportsToolCalls": true,
-        "supportsAttachments": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
+        "supportsAttachments": false
       }
     },
     "nvidia/nemotron-3-ultra-550b-a55b": {
-      "model": "nemotron/nemotron-3-ultra-550b-a55b",
+      "model": "nemotron-ultra/nemotron-3-ultra-550b-a55b",
       "matchingModel": "nvidia/nemotron-3-ultra-550b-a55b",
       "overrides": {
         "contextWindow": 1000000,
@@ -417,29 +364,21 @@
       }
     },
     "nvidia/nemotron-3.5-content-safety": {
-      "model": "nemotron/nemotron-3-5-content-safety",
+      "model": "nemotron-safety/nemotron-3-5-content-safety",
       "matchingModel": "nvidia/nemotron-3.5-content-safety",
       "overrides": {
         "contextWindow": 128000,
         "maxTokens": 8192,
         "lastUpdated": "June 2, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0
       }
     },
     "nvidia/nemotron-3.5-lightning-30b-a3b": {
-      "model": "nemotron/nemotron-3-5-lightning-30b-a3b",
+      "model": "nemotron-lightning/nemotron-3-5-lightning-30b-a3b",
       "matchingModel": "nvidia/nemotron-3.5-lightning-30b-a3b",
       "overrides": {
         "description": "Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads",
-        "contextWindow": 262144,
         "maxTokens": 262144,
         "lastUpdated": "August 11, 2026",
         "costPer1kInputTokens": 0,
@@ -449,7 +388,7 @@
       }
     },
     "nvidia/nemotron-voicechat": {
-      "model": "nemotron/nemotron-voicechat",
+      "model": "nemotron-voice/nemotron-voicechat",
       "matchingModel": "nvidia/nemotron-voicechat",
       "overrides": {
         "lastUpdated": "March 16, 2026",
@@ -537,7 +476,7 @@
       }
     },
     "poolside/laguna-xs-2.1": {
-      "model": "laguna/laguna-xs-2-1",
+      "model": "laguna-xs/laguna-xs-2-1",
       "matchingModel": "poolside/laguna-xs-2.1",
       "overrides": {
         "maxTokens": 16384,
@@ -550,10 +489,10 @@
       }
     },
     "qwen/qwen-image": {
-      "model": "qwen/qwen-image",
+      "model": "qwen-image/qwen-image",
       "matchingModel": "qwen/qwen-image",
       "overrides": {
-        "openWeights": false,
+        "name": "Qwen Image",
         "description": "Text-to-image foundation model with multilingual text rendering",
         "contextWindow": 0,
         "maxTokens": 0,
@@ -582,7 +521,7 @@
       }
     },
     "qwen/qwen-image-edit": {
-      "model": "qwen/qwen-image-edit",
+      "model": "qwen-image/qwen-image-edit",
       "matchingModel": "qwen/qwen-image-edit",
       "overrides": {
         "lastUpdated": "August 19, 2025",
@@ -622,7 +561,7 @@
       }
     },
     "minimaxai/minimax-m3.1-flash": {
-      "model": "minimax/minimax-m3-1-flash",
+      "model": "minimax-m-flash/minimax-m3-1-flash",
       "matchingModel": "minimaxai/minimax-m3.1-flash",
       "overrides": {
         "contextWindow": 262144,
@@ -636,7 +575,7 @@
       }
     },
     "nvidia/nemotron-3.5-super-vl-120b-a12b": {
-      "model": "nemotron/nemotron-3-5-super-vl-120b-a12b",
+      "model": "nemotron-super/nemotron-3-5-super-vl-120b-a12b",
       "matchingModel": "nvidia/nemotron-3.5-super-vl-120b-a12b",
       "overrides": {
         "contextWindow": 1048576,
@@ -658,15 +597,45 @@
       }
     },
     "stepfun-ai/step-5-preview": {
-      "model": "nvidia/stepfun-ai/step-5-preview/step-5-preview",
+      "model": "step/step-5-preview",
       "matchingModel": "stepfun-ai/step-5-preview",
       "overrides": {
+        "description": "StepFun's next-generation flagship base model for coding and professional knowledge work, with native text, image, and video input and a 1M-token context window",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
         "speed": 4,
         "lastUpdated": "September 20, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": true,
-        "supportsResponseFormat": false
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

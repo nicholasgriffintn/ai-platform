@@ -83,12 +83,21 @@
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "contextWindow": 262000,
         "maxTokens": 262000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 2,
         "knowledgeCutoffDate": "December 2025",
         "releaseDate": "January 30, 2026",
         "lastUpdated": "February 12, 2026",
@@ -102,6 +111,15 @@
       "overrides": {
         "contextWindow": 262000,
         "maxTokens": 262000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -109,7 +127,6 @@
           "coding"
         ],
         "speed": 2,
-        "releaseDate": "April 21, 2026",
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004
@@ -119,6 +136,7 @@
       "model": "kimi-k2/kimi-k2-7-code",
       "matchingModel": "moonshotai/Kimi-K2.7-Code",
       "overrides": {
+        "description": "Coding-focused Kimi model, stronger on long-horizon repo work with less overthinking",
         "contextWindow": 262000,
         "maxTokens": 262000,
         "modalities": {
@@ -143,7 +161,7 @@
       }
     },
     "moonshotai/Kimi-K3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "moonshotai/Kimi-K3",
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
@@ -174,7 +192,7 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B": {
-      "model": "nemotron/nemotron-3-ultra",
+      "model": "nemotron-ultra/nemotron-3-ultra",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B",
       "overrides": {
         "name": "Nemotron Ultra",
@@ -209,64 +227,20 @@
       "model": "ling/inkling",
       "matchingModel": "thinkingmachines/inkling",
       "overrides": {
-        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 1048576,
-        "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "speed": 4,
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.00405,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.00405
       }
     },
     "thinkingmachines/inkling-small": {
       "model": "ling/inkling-small",
       "matchingModel": "thinkingmachines/inkling-small",
       "overrides": {
-        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 1048576,
-        "maxTokens": 32768,
         "speed": 3,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.0012,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.0012
       }
     },
     "zai-org/GLM-4.7": {
@@ -305,7 +279,7 @@
         "description": "Strong GLM coding model for agentic engineering, terminals, and repository generation",
         "contextWindow": 202800,
         "maxTokens": 202800,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "April 7, 2026",
         "costPer1kInputTokens": 0.0013,
         "costPer1kOutputTokens": 0.0043,
@@ -456,7 +430,7 @@
       }
     },
     "deepseek-ai/DeepSeek-V4-Pro-0813": {
-      "model": "deepseek-thinking/deepseek-v4-pro-0813",
+      "model": "deepseek-pro/deepseek-v4-pro-0813",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro-0813",
       "overrides": {
         "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
@@ -498,7 +472,7 @@
       }
     },
     "moonshotai/Kimi-K3.1-Pro": {
-      "model": "kimi-k3/kimi-k3-1-pro",
+      "model": "kimi-pro/kimi-k3-1-pro",
       "matchingModel": "moonshotai/Kimi-K3.1-Pro",
       "overrides": {
         "maxTokens": 262144,

@@ -15,7 +15,7 @@
   },
   "models": {
     "thinkingmachines/Inkling": {
-      "model": "ling/inkling",
+      "model": "inkling/inkling",
       "matchingModel": "thinkingmachines/Inkling",
       "overrides": {
         "description": "Multimodal MoE reasoning model (975B total, 41B active) for text, image, and audio",
@@ -54,7 +54,7 @@
       ]
     },
     "thinkingmachines/Inkling:peft:262144": {
-      "model": "ling/inkling-256k",
+      "model": "inkling/inkling-256k",
       "matchingModel": "thinkingmachines/Inkling:peft:262144",
       "overrides": {
         "name": "Inkling (256K)",
@@ -65,7 +65,6 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
         "speed": 4,
         "isFeatured": true,
         "lastUpdated": "July 15, 2026",
@@ -169,7 +168,7 @@
       }
     },
     "moonshotai/Kimi-K2.6": {
-      "model": "kimi-k2/kimi-k2-6",
+      "model": "kimi/kimi-k2-6",
       "matchingModel": "moonshotai/Kimi-K2.6",
       "overrides": {
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
@@ -189,7 +188,7 @@
       }
     },
     "moonshotai/Kimi-K2.6:peft:131072": {
-      "model": "kimi-k2/kimi-k2-6",
+      "model": "kimi/kimi-k2-6",
       "matchingModel": "moonshotai/Kimi-K2.6:peft:131072",
       "overrides": {
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
@@ -208,7 +207,7 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16": {
-      "model": "nemotron/nemotron-3-nano-30b-a3b",
+      "model": "nemotron-nano/nemotron-3-nano-30b-a3b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16",
       "overrides": {
         "contextWindow": 65536,
@@ -217,13 +216,6 @@
         "costPer1kInputTokens": 0.000195,
         "costPer1kOutputTokens": 0.000495,
         "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
         "artificialAnalysis": {
           "intelligenceIndex": 6.8,
           "codingIndex": null,
@@ -233,9 +225,10 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16": {
-      "model": "nemotron/nemotron-3-super-120b-a12b",
+      "model": "nemotron-super/nemotron-3-super-120b-a12b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16",
       "overrides": {
+        "name": "Nemotron 3 Super 120B A12B",
         "contextWindow": 65536,
         "maxTokens": 65536,
         "contextComplexity": 3,
@@ -254,10 +247,12 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16:peft:262144": {
-      "model": "nemotron/nemotron-3-super-120b-a12b",
+      "model": "nemotron-super/nemotron-3-super-120b-a12b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16:peft:262144",
       "overrides": {
+        "name": "Nemotron 3 Super 120B A12B",
         "maxTokens": 262144,
+        "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.00057,
@@ -273,7 +268,7 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16": {
-      "model": "nemotron/nemotron-3-ultra-550b-a55b",
+      "model": "nemotron-ultra/nemotron-3-ultra-550b-a55b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16",
       "overrides": {
         "contextWindow": 65536,
@@ -294,7 +289,7 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16:peft:262144": {
-      "model": "nemotron/nemotron-3-ultra-550b-a55b",
+      "model": "nemotron-ultra/nemotron-3-ultra-550b-a55b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16:peft:262144",
       "overrides": {
         "contextWindow": 262144,
@@ -315,7 +310,7 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16": {
-      "model": "nemotron/nemotron-3-5-lightning-30b-a3b",
+      "model": "nemotron-lightning/nemotron-3-5-lightning-30b-a3b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
       "overrides": {
         "description": "Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads",
@@ -328,11 +323,10 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16:peft:262144": {
-      "model": "nemotron/nemotron-3-5-lightning-30b-a3b",
+      "model": "nemotron-lightning/nemotron-3-5-lightning-30b-a3b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16:peft:262144",
       "overrides": {
         "description": "Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads",
-        "contextWindow": 262144,
         "maxTokens": 262144,
         "lastUpdated": "August 11, 2026",
         "costPer1kInputTokens": 0.000184,
@@ -341,7 +335,7 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16": {
-      "model": "nemotron/nemotron-3-5-super-vl-120b-a12b",
+      "model": "nemotron-super/nemotron-3-5-super-vl-120b-a12b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
       "overrides": {
         "contextWindow": 65536,
@@ -361,7 +355,7 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16:peft:262144": {
-      "model": "nemotron/nemotron-3-5-super-vl-120b-a12b",
+      "model": "nemotron-super/nemotron-3-5-super-vl-120b-a12b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16:peft:262144",
       "overrides": {
         "contextWindow": 262144,
@@ -668,7 +662,7 @@
       }
     },
     "thinkingmachines/Inkling-Small": {
-      "model": "ling/inkling-small",
+      "model": "inkling-small/inkling-small",
       "matchingModel": "thinkingmachines/Inkling-Small",
       "overrides": {
         "contextWindow": 65536,
@@ -693,7 +687,7 @@
       ]
     },
     "thinkingmachines/Inkling-Small:peft:262144": {
-      "model": "ling/inkling-small",
+      "model": "inkling-small/inkling-small",
       "matchingModel": "thinkingmachines/Inkling-Small:peft:262144",
       "overrides": {
         "contextWindow": 262144,
@@ -718,7 +712,7 @@
       ]
     },
     "thinkingmachines/Inkling-Small:peft:262144:sampling-nvfp4": {
-      "model": "ling/inkling-small",
+      "model": "inkling-small/inkling-small",
       "matchingModel": "thinkingmachines/Inkling-Small:peft:262144:sampling-nvfp4",
       "overrides": {
         "contextWindow": 262144,
@@ -743,21 +737,12 @@
       ]
     },
     "thinkingmachines/Inkling:peft:262144:sampling-nvfp4": {
-      "model": "ling/inkling",
+      "model": "inkling/inkling",
       "matchingModel": "thinkingmachines/Inkling:peft:262144:sampling-nvfp4",
       "overrides": {
         "description": "Multimodal MoE reasoning model (975B total, 41B active) for text, image, and audio",
         "contextWindow": 262144,
         "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 4,
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.001,

@@ -1,0 +1,44 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 1048576,
+    "maxTokens": 131072,
+    "strengths": [
+      "vision",
+      "audio",
+      "video",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 5,
+    "reliability": 1,
+    "knowledgeCutoffDate": "September 22, 2026",
+    "releaseDate": "September 22, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 26.7,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
+  },
+  "description": "The mimo flash family groups related models and their shared configuration.",
+  "models": {
+    "mimo-v2-6-flash": {
+      "defaults": {
+        "name": "MiMo-V2.6-Flash",
+        "description": "MiMo Flash model for multimodal coding agents and long-context automation"
+      }
+    }
+  }
+}

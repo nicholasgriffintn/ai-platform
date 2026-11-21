@@ -16,7 +16,7 @@
   },
   "models": {
     "nova-2-lite": {
-      "model": "nova/nova-2-lite-global",
+      "model": "nova-lite/nova-2-lite-global",
       "matchingModel": "global.amazon.nova-2-lite-v1:0",
       "overrides": {
         "speed": 4,
@@ -111,9 +111,9 @@
       },
       "unset": [
         "supportsToolCalls",
+        "supportsResponseFormat",
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsTemperature"
       ]
     },
     "nova-reel": {
@@ -126,9 +126,9 @@
       },
       "unset": [
         "supportsToolCalls",
+        "supportsResponseFormat",
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsTemperature"
       ]
     },
     "nova-2-sonic": {
@@ -137,13 +137,13 @@
       "overrides": {},
       "unset": [
         "supportsToolCalls",
+        "supportsResponseFormat",
         "supportsAttachments",
-        "supportsTemperature",
-        "supportsResponseFormat"
+        "supportsTemperature"
       ]
     },
     "openai.gpt-oss-safeguard-120b": {
-      "model": "gpt-oss/gpt-oss-safeguard-120b",
+      "model": "gpt-oss-safeguard/gpt-oss-safeguard-120b",
       "matchingModel": "openai.gpt-oss-safeguard-120b",
       "overrides": {
         "maxTokens": 16384,
@@ -151,14 +151,10 @@
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
         "supportsAttachments": false
-      },
-      "unset": [
-        "strengths",
-        "knowledgeCutoffDate"
-      ]
+      }
     },
     "openai.gpt-oss-safeguard-20b": {
-      "model": "gpt-oss/gpt-oss-safeguard-20b",
+      "model": "gpt-oss-safeguard/gpt-oss-safeguard-20b",
       "matchingModel": "openai.gpt-oss-safeguard-20b",
       "overrides": {
         "name": "GPT OSS Safeguard 20B",
@@ -168,11 +164,7 @@
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.0002,
         "supportsAttachments": false
-      },
-      "unset": [
-        "strengths",
-        "knowledgeCutoffDate"
-      ]
+      }
     },
     "anthropic.claude-3-5-haiku": {
       "model": "claude/claude-3-5-haiku-bedrock-us",
@@ -437,7 +429,7 @@
       ]
     },
     "amazon.nova-2-lite-v1:0": {
-      "model": "nova/nova-2-lite",
+      "model": "nova-lite/nova-2-lite",
       "matchingModel": "amazon.nova-2-lite-v1:0",
       "overrides": {
         "modalities": {
@@ -1004,11 +996,8 @@
       "model": "mistral/mixtral-8x7b-instruct-v0-1",
       "matchingModel": "mistral.mixtral-8x7b-instruct-v0:1",
       "overrides": {
-        "name": "Mixtral-8x7B-Instruct-v0.1",
-        "maxTokens": 32000,
         "deprecated": true,
         "deprecationMessage": "Mixtral-8x7B-Instruct-v0.1 shuts down on 30 March 2027.",
-        "releaseDate": "April 1, 2025",
         "lastUpdated": "April 1, 2025",
         "costPer1kInputTokens": 0.0007,
         "costPer1kOutputTokens": 0.0007,
@@ -1017,16 +1006,25 @@
       }
     },
     "moonshotai.kimi-k2.5": {
-      "model": "kimi-k2/kimi-k2-5",
+      "model": "kimi/kimi-k2-5",
       "matchingModel": "moonshotai.kimi-k2.5",
       "overrides": {
         "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "tool_use",
           "document"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "February 6, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003
@@ -1101,7 +1099,7 @@
       }
     },
     "qwen.qwen3-vl-235b-a22b": {
-      "model": "qwen/qwen3-vl-235b-a22b-instruct",
+      "model": "qwen-vl/qwen3-vl-235b-a22b-instruct",
       "matchingModel": "qwen.qwen3-vl-235b-a22b",
       "overrides": {
         "name": "Qwen/Qwen3-VL-235B-A22B-Instruct",
@@ -1321,7 +1319,7 @@
       }
     },
     "minimax.minimax-m2.5": {
-      "model": "minimax/minimax-m2-5",
+      "model": "minimax-m/minimax-m2-5",
       "matchingModel": "minimax.minimax-m2.5",
       "overrides": {
         "name": "MiniMax M2.5",
@@ -1335,7 +1333,7 @@
       }
     },
     "mistral.magistral-small-2509": {
-      "model": "magistral/magistral-small-1-2",
+      "model": "magistral-small/magistral-small-1-2",
       "matchingModel": "mistral.magistral-small-2509",
       "overrides": {
         "speed": 3,
@@ -1371,10 +1369,9 @@
       }
     },
     "mistral.pixtral-large-2502-v1:0": {
-      "model": "pixtral/pixtral-large-25-02",
+      "model": "pixtral-large/pixtral-large-25-02",
       "matchingModel": "mistral.pixtral-large-2502-v1:0",
       "overrides": {
-        "name": "Pixtral Large (25.02)",
         "maxTokens": 8192,
         "strengths": [
           "vision",
@@ -1387,23 +1384,24 @@
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
         "supportsResponseFormat": false
-      },
-      "unset": [
-        "knowledgeCutoffDate"
-      ]
+      }
     },
     "nvidia.nemotron-nano-3-30b": {
-      "model": "nemotron/nvidia-nemotron-nano-3-30b",
+      "model": "nemotron-nano/nvidia-nemotron-nano-3-30b",
       "matchingModel": "nvidia.nemotron-nano-3-30b",
       "overrides": {
         "lastUpdated": "December 23, 2025",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00024,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "artificialAnalysis"
+      ]
     },
     "nvidia.nemotron-super-3-120b": {
-      "model": "nemotron/nvidia-nemotron-3-super-120b-a12b",
+      "model": "nemotron-super/nvidia-nemotron-3-super-120b-a12b",
       "matchingModel": "nvidia.nemotron-super-3-120b",
       "overrides": {
         "contextWindow": 262144,
@@ -1426,7 +1424,7 @@
       }
     },
     "qwen.qwen3-coder-next": {
-      "model": "qwen/qwen3-coder-next",
+      "model": "qwen-coder/qwen3-coder-next",
       "matchingModel": "qwen.qwen3-coder-next",
       "overrides": {
         "maxTokens": 65536,
@@ -1961,7 +1959,7 @@
       }
     },
     "eu.amazon.nova-2-lite-v1:0": {
-      "model": "nova/nova-2-lite-eu",
+      "model": "nova-lite/nova-2-lite-eu",
       "matchingModel": "eu.amazon.nova-2-lite-v1:0",
       "overrides": {
         "lastUpdated": "December 1, 2025",
@@ -2005,7 +2003,7 @@
       }
     },
     "eu.mistral.pixtral-large-2502-v1:0": {
-      "model": "pixtral/pixtral-large-25-02-eu",
+      "model": "pixtral-large/pixtral-large-25-02-eu",
       "matchingModel": "eu.mistral.pixtral-large-2502-v1:0",
       "overrides": {
         "speed": 3,
@@ -2027,7 +2025,7 @@
       }
     },
     "jp.amazon.nova-2-lite-v1:0": {
-      "model": "nova/nova-2-lite-jp",
+      "model": "nova-lite/nova-2-lite-jp",
       "matchingModel": "jp.amazon.nova-2-lite-v1:0",
       "overrides": {
         "lastUpdated": "December 1, 2025",
@@ -2037,7 +2035,7 @@
       }
     },
     "us.amazon.nova-2-lite-v1:0": {
-      "model": "nova/nova-2-lite-us",
+      "model": "nova-lite/nova-2-lite-us",
       "matchingModel": "us.amazon.nova-2-lite-v1:0",
       "overrides": {
         "lastUpdated": "December 1, 2025",
@@ -2081,7 +2079,7 @@
       }
     },
     "us.mistral.pixtral-large-2502-v1:0": {
-      "model": "pixtral/pixtral-large-25-02-us",
+      "model": "pixtral-large/pixtral-large-25-02-us",
       "matchingModel": "us.mistral.pixtral-large-2502-v1:0",
       "overrides": {
         "speed": 3,
@@ -2253,7 +2251,7 @@
       }
     },
     "global.moonshotai.kimi-k3": {
-      "model": "kimi-k3/kimi-k3-global",
+      "model": "kimi/kimi-k3-global",
       "matchingModel": "global.moonshotai.kimi-k3",
       "overrides": {
         "speed": 2,
@@ -2284,7 +2282,7 @@
       }
     },
     "us.moonshotai.kimi-k3": {
-      "model": "kimi-k3/kimi-k3-us",
+      "model": "kimi/kimi-k3-us",
       "matchingModel": "us.moonshotai.kimi-k3",
       "overrides": {
         "speed": 2,
@@ -2613,7 +2611,7 @@
       }
     },
     "global.moonshotai.kimi-k3.1": {
-      "model": "kimi-k3/kimi-k3-1-pro-highspeed-global",
+      "model": "kimi-pro/kimi-k3-1-pro-highspeed-global",
       "matchingModel": "global.moonshotai.kimi-k3.1",
       "overrides": {
         "lastUpdated": "October 23, 2026",
@@ -2634,7 +2632,7 @@
       }
     },
     "us.moonshotai.kimi-k3.1": {
-      "model": "kimi-k3/kimi-k3-1-pro-highspeed-us",
+      "model": "kimi-pro/kimi-k3-1-pro-highspeed-us",
       "matchingModel": "us.moonshotai.kimi-k3.1",
       "overrides": {
         "lastUpdated": "October 23, 2026",

@@ -1,0 +1,82 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 262144,
+    "maxTokens": 256000,
+    "contextComplexity": 4,
+    "supportsToolCalls": true,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
+  },
+  "description": "The step flash family includes models that produce text.",
+  "models": {
+    "step-3-5-flash": {
+      "defaults": {
+        "name": "Step 3.5 Flash",
+        "description": "StepFun flash lane for quick multimodal reasoning and coding assistance",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "reliability": 1,
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "January 29, 2026",
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "step-3-7-flash": {
+      "defaults": {
+        "name": "Step 3.7 Flash",
+        "description": "Newer StepFun flash model for faster agents, coding, and multimodal prompts",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "reliability": 2,
+        "knowledgeCutoffDate": "March 1, 2026",
+        "releaseDate": "May 29, 2026",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    }
+  }
+}

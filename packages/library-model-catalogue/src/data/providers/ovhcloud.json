@@ -116,7 +116,7 @@
       }
     },
     "qwen2.5-vl-72b-instruct": {
-      "model": "qwen/qwen2-5-vl-72b-instruct",
+      "model": "qwen-vl/qwen2-5-vl-72b-instruct",
       "matchingModel": "qwen2.5-vl-72b-instruct",
       "overrides": {
         "name": "Qwen2.5-VL-72B-Instruct",
@@ -128,26 +128,24 @@
         "costPer1kOutputTokens": 0.00101,
         "supportsToolCalls": false,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
     },
     "qwen3-coder-30b-a3b-instruct": {
       "model": "qwen/qwen3-coder-30b-a3b-instruct",
       "matchingModel": "qwen3-coder-30b-a3b-instruct",
       "overrides": {
-        "name": "Qwen3-Coder-30B-A3B-Instruct",
-        "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
-        "maxTokens": 262144,
         "speed": 4,
         "deprecated": true,
         "deprecationMessage": "Qwen3-Coder-30B-A3B-Instruct is no longer offered by OVHcloud.",
-        "releaseDate": "October 28, 2025",
         "lastUpdated": "October 28, 2025",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.00026
-      },
-      "unset": [
-        "knowledgeCutoffDate"
-      ]
+      }
     },
     "qwen3.5-397b-a17b": {
       "model": "qwen/qwen3-5-397b-a17b",
@@ -272,14 +270,6 @@
         "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads",
         "contextWindow": 32768,
         "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "January 22, 2026",
         "lastUpdated": "January 22, 2026",
         "costPer1kInputTokens": 0,

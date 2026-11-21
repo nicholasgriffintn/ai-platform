@@ -1,0 +1,150 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 262144,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "April 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "Qwen coding model for software agents, repository edits, and code reasoning",
+  "models": {
+    "qwen-3-coder-30b-a3b-instruct": {
+      "defaults": {
+        "name": "Qwen 3 Coder 30B A3B Instruct",
+        "description": "Qwen coding model for software agents, repository edits, and code reasoning",
+        "maxTokens": 8192,
+        "releaseDate": "July 31, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen-qwen3-coder-480b-a35b": {
+      "defaults": {
+        "name": "Qwen: Qwen3 Coder 480B A35B",
+        "description": "Qwen coding model for software agents, repository edits, and code reasoning",
+        "maxTokens": 65536,
+        "releaseDate": "July 22, 2025"
+      }
+    },
+    "qwen2-5-coder-32b-instruct": {
+      "defaults": {
+        "description": "Qwen coding model for software agents, repository edits, and code reasoning",
+        "contextWindow": 32768,
+        "reliability": 1,
+        "releaseDate": "November 12, 2024",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "qwen3-coder-30b-a3b-instruct": {
+      "defaults": {
+        "description": "Smaller Qwen coder for efficient local agents and repo-level fixes",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "July 31, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "qwen3-coder-480b-a35b": {
+      "defaults": {
+        "name": "Qwen3 Coder 480B A35B",
+        "description": "Qwen coding model for software agents, repository edits, and code reasoning",
+        "maxTokens": 65536,
+        "releaseDate": "July 22, 2025"
+      }
+    },
+    "qwen3-coder-480b-a35b-instruct": {
+      "defaults": {
+        "name": "Qwen3-Coder-480B-A35B-Instruct",
+        "description": "Qwen coding model for software agents, repository edits, and code reasoning",
+        "maxTokens": 65536,
+        "strengths": [
+          "coding",
+          "analysis",
+          "reasoning",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "July 22, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "qwen3-coder-480b-a35b-instruct-turbo": {
+      "defaults": {
+        "name": "Qwen3 Coder 480B A35B Instruct Turbo",
+        "description": "Qwen coding model for software agents, repository edits, and code reasoning",
+        "maxTokens": 66536,
+        "strengths": [
+          "coding",
+          "analysis",
+          "instruction",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 4,
+        "releaseDate": "July 22, 2025"
+      }
+    },
+    "qwen3-coder-next": {
+      "defaults": {
+        "name": "Qwen3 Coder Next",
+        "description": "Open-weight Qwen coding model for agents, repository edits, and multi-turn tool use",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "knowledgeCutoffDate": "September 2025",
+        "releaseDate": "February 3, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    }
+  }
+}

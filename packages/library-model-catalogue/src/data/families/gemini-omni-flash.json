@@ -1,0 +1,140 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 131072,
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The gemini omni flash family includes models that produce text, video.",
+  "models": {
+    "gemini-omni-1-1-flash": {
+      "defaults": {
+        "name": "Gemini Omni 1.1 Flash",
+        "description": "Omni-modal model for text, vision, audio, and multimodal agent tasks",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text",
+            "video"
+          ]
+        },
+        "releaseDate": "August 27, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gemini-omni-1-2-flash": {
+      "defaults": {
+        "name": "Gemini Omni 1.2 Flash",
+        "description": "Omni-modal model for text, vision, audio, and multimodal agent tasks",
+        "releaseDate": "November 5, 2026"
+      }
+    },
+    "gemini-omni-flash-preview": {
+      "defaults": {
+        "name": "Gemini Omni Flash Preview",
+        "description": "Video generation and editing model for fast, conversational text- and image-to-video workflows",
+        "releaseDate": "June 30, 2026"
+      }
+    },
+    "google-gemini-omni-1-1-flash": {
+      "defaults": {
+        "name": "Google: Gemini Omni 1.1 Flash",
+        "description": "Gemini Omni 1.1 Flash is Google's native multimodal video generation and editing model, the generally available successor to Gemini Omni Flash Preview. It is suited for text-to-video, image-to-video, first and...",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "video"
+          ]
+        },
+        "releaseDate": "August 27, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "google-gemini-omni-1-2-flash": {
+      "defaults": {
+        "name": "Google: Gemini Omni 1.2 Flash",
+        "description": "Gemini Omni 1.2 Flash is Google's native multimodal video generation and editing model, the successor to Gemini Omni 1.1 Flash. It generates clips up to 15 seconds long with native...",
+        "maxTokens": 65536,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text",
+            "video"
+          ]
+        },
+        "releaseDate": "November 5, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "google-gemini-omni-flash-preview": {
+      "defaults": {
+        "name": "Google: Gemini Omni Flash Preview",
+        "description": "Gemini Omni Flash (Preview) is a multimodal model designed for video, image, and text tasks. It is optimized for video generation, offering video output alongside text responses in a single model.",
+        "contextWindow": 1000000,
+        "maxTokens": 57920,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf",
+            "video"
+          ],
+          "output": [
+            "text",
+            "video"
+          ]
+        },
+        "releaseDate": "June 30, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    }
+  }
+}

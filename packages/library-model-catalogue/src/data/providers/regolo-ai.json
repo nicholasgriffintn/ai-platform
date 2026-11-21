@@ -36,7 +36,7 @@
       ]
     },
     "apertus-70b": {
-      "model": "regolo-ai/apertus-70b/apertus-70b",
+      "model": "apertus/apertus-70b",
       "matchingModel": "apertus-70b",
       "overrides": {
         "lastUpdated": "September 2, 2025",
@@ -65,7 +65,7 @@
       }
     },
     "deepseek-ocr-2": {
-      "model": "deepseek/deepseek-ocr-2",
+      "model": "deepseek-ocr/deepseek-ocr-2",
       "matchingModel": "deepseek-ocr-2",
       "overrides": {
         "lastUpdated": "January 27, 2026",
@@ -147,12 +147,10 @@
       }
     },
     "qwen-image": {
-      "model": "qwen/qwen-image",
+      "model": "qwen-image/qwen-image",
       "matchingModel": "qwen-image",
       "overrides": {
         "name": "Qwen-Image",
-        "openWeights": false,
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 8192,
         "maxTokens": 4096,
         "modalities": {
@@ -174,13 +172,10 @@
         "costPer1kOutputTokens": 0.002,
         "supportsToolCalls": false,
         "supportsAttachments": false
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "qwen3-embedding-8b": {
-      "model": "qwen/qwen3-embedding-8b",
+      "model": "qwen-embedding/qwen3-embedding-8b",
       "matchingModel": "qwen3-embedding-8b",
       "overrides": {
         "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
@@ -191,13 +186,10 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "qwen3-reranker-4b": {
-      "model": "qwen/qwen3-reranker-4b",
+      "model": "qwen-reranker/qwen3-reranker-4b",
       "matchingModel": "qwen3-reranker-4b",
       "overrides": {
         "lastUpdated": "February 1, 2026",
@@ -206,10 +198,7 @@
         "supportsToolCalls": false,
         "supportsAttachments": false,
         "supportsTemperature": false
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "qwen3.5-122b": {
       "model": "qwen/qwen3-5-122b",

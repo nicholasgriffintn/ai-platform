@@ -1,0 +1,42 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 16, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "Tencent's lower-cost Hy4 tier for everyday agent and productivity tasks, with image understanding and a 1M-token context window.",
+  "models": {
+    "hy4-flash": {
+      "defaults": {
+        "name": "Hy4 flash",
+        "description": "Tencent's lower-cost Hy4 tier for everyday agent and productivity tasks, with image understanding and a 1M-token context window.",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "supportsResponseFormat": true
+      }
+    },
+    "tencent-hy4-flash": {
+      "defaults": {
+        "description": "Tencent's lower-cost Hy4 tier for everyday agent and productivity tasks, with image understanding and a 1M-token context window.",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

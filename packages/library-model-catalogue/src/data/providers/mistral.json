@@ -277,7 +277,7 @@
       }
     },
     "voxtral-small": {
-      "model": "voxtral/voxtral-small-latest",
+      "model": "voxtral-small/voxtral-small-latest",
       "matchingModel": "voxtral-small-latest",
       "overrides": {
         "lastUpdated": "July 15, 2025",
@@ -287,14 +287,19 @@
       }
     },
     "voxtral-mini": {
-      "model": "voxtral/voxtral-mini-latest",
+      "model": "voxtral-transcribe/voxtral-mini-latest",
       "matchingModel": "voxtral-mini-latest",
       "overrides": {
         "lastUpdated": "February 4, 2026",
         "supportsToolCalls": false,
         "supportsAudio": true,
         "supportsTemperature": false
-      }
+      },
+      "unset": [
+        "strengths",
+        "contextComplexity",
+        "reliability"
+      ]
     },
     "voxtral-mini-transcribe-realtime": {
       "model": "mistral/voxtral-mini-transcribe-realtime-2602/voxtral-mini-transcribe-realtime",
@@ -356,7 +361,7 @@
       ]
     },
     "voxtral-mini-tts-latest": {
-      "model": "voxtral/voxtral-mini-tts-latest",
+      "model": "voxtral-tts/voxtral-mini-tts-latest",
       "matchingModel": "voxtral-mini-tts-latest",
       "overrides": {
         "lastUpdated": "March 23, 2026",

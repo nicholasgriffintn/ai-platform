@@ -1,0 +1,75 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "guardrails"
+      ]
+    },
+    "releaseDate": "October 29, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+  "models": {
+    "gpt-oss-safeguard-120b": {
+      "defaults": {
+        "name": "GPT OSS Safeguard 120B",
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+        "contextWindow": 128000
+      }
+    },
+    "gpt-oss-safeguard-20b": {
+      "defaults": {
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows"
+      }
+    },
+    "openai-gpt-oss-safeguard-120b": {
+      "defaults": {
+        "name": "OpenAI: GPT OSS Safeguard 120B",
+        "description": "GPT OSS Safeguard 120B is OpenAI’s open-weight safety model for content moderation and guardrail enforcement. It helps teams evaluate content against custom safety policies and build scalable, adaptable protections for production AI applications.",
+        "contextWindow": 128000,
+        "maxTokens": 16000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "June 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "safety-gpt-oss-20b": {
+      "defaults": {
+        "name": "Safety GPT OSS 20B",
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+        "contextWindow": 131072,
+        "maxTokens": 65536
+      }
+    }
+  }
+}

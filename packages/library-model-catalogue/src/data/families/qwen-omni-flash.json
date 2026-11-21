@@ -1,0 +1,85 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 131072,
+    "releaseDate": "September 17, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "Qwen omni model for text, vision, audio, and multimodal agent tasks",
+  "models": {
+    "qwen-3-8-omni-flash": {
+      "defaults": {
+        "name": "Qwen 3.8 Omni Flash",
+        "description": "Qwen omni model for text, vision, audio, and multimodal agent tasks",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3-8-omni-flash": {
+      "defaults": {
+        "name": "Qwen3.8 Omni Flash",
+        "description": "Qwen omni model for text, vision, audio, and multimodal agent tasks",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        }
+      }
+    },
+    "qwen3-omni-flash": {
+      "defaults": {
+        "name": "Qwen3-Omni Flash",
+        "description": "Qwen omni model for text, vision, audio, and multimodal agent tasks",
+        "contextWindow": 65536,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "September 15, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

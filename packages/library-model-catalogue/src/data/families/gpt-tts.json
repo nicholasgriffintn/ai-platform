@@ -1,0 +1,70 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "strengths": [
+      "audio"
+    ],
+    "reliability": 3,
+    "releaseDate": "November 6, 2023",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The gpt tts family includes models that produce audio.",
+  "models": {
+    "tts-1": {
+      "defaults": {
+        "name": "TTS-1",
+        "description": "Text-to-speech model optimized for low latency",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1086,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 10
+            }
+          ]
+        }
+      }
+    },
+    "tts-1-hd": {
+      "defaults": {
+        "name": "TTS-1 HD",
+        "description": "Text-to-speech model optimized for audio quality",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1109,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 11
+            }
+          ]
+        }
+      }
+    }
+  }
+}

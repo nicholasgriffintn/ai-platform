@@ -1,0 +1,105 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use",
+      "coding"
+    ],
+    "contextComplexity": 5,
+    "reliability": 1,
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The deepseek pro family includes models that produce text.",
+  "models": {
+    "deepseek-v4-pro": {
+      "defaults": {
+        "name": "DeepSeek V4 Pro",
+        "description": "Open MoE flagship with million-token context for coding and long agent runs",
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "April 24, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 23.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "deepseek-v4-pro-0813": {
+      "defaults": {
+        "name": "DeepSeek V4 Pro 0813",
+        "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
+        "releaseDate": "August 13, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 20.8,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "deepseek-v4-pro-0813-eu": {
+      "defaults": {
+        "name": "DeepSeek V4 Pro 0813 (EU)",
+        "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
+        "contextWindow": 1048576,
+        "maxTokens": 65536,
+        "contextComplexity": 4,
+        "releaseDate": "August 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 20.8,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "deepseek-v4-pro-eu": {
+      "defaults": {
+        "name": "DeepSeek V4 Pro (EU)",
+        "description": "Open MoE flagship with million-token context for coding and long agent runs",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "April 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 23.1,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    }
+  }
+}

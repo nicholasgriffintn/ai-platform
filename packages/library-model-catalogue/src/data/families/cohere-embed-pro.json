@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 128000,
+    "maxTokens": 2048,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 30, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The cohere embed pro family includes models that produce text.",
+  "models": {
+    "embed-5-pro": {
+      "defaults": {
+        "name": "Embed 5 Pro",
+        "description": "Cohere's most capable multimodal embedding model for text, images, and mixed documents"
+      }
+    }
+  }
+}

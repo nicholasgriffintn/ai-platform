@@ -29,33 +29,11 @@
       "model": "kimi-k3/kimi-k3",
       "matchingModel": "k3",
       "overrides": {
-        "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "document",
-          "tool_use",
-          "coding"
-        ],
         "speed": 2,
         "isFeatured": true,
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0,
-        "costPer1kOutputTokens": 0,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
+        "costPer1kOutputTokens": 0
       }
     },
     "k3-256k": {

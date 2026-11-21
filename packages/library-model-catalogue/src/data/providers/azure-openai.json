@@ -203,7 +203,6 @@
       "matchingModel": "cohere-command-a",
       "overrides": {
         "contextWindow": 131072,
-        "maxTokens": 8192,
         "speed": 3,
         "knowledgeCutoffDate": "June 1, 2024",
         "lastUpdated": "March 13, 2025",
@@ -227,7 +226,6 @@
       "model": "command-r/command-r",
       "matchingModel": "cohere-command-r-08-2024",
       "overrides": {
-        "name": "Command R",
         "lastUpdated": "August 30, 2024",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
@@ -361,7 +359,7 @@
       "matchingModel": "gpt-5",
       "overrides": {
         "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00125,
         "costPer1kOutputTokens": 0.01,
@@ -434,7 +432,7 @@
       "matchingModel": "gpt-5-mini",
       "overrides": {
         "description": "Compact GPT model for low-latency assistance and high-volume workloads",
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "August 7, 2025",
         "costPer1kInputTokens": 0.00025,
         "costPer1kOutputTokens": 0.002,
@@ -476,11 +474,7 @@
         "costPer1kInputTokens": 0.015,
         "costPer1kOutputTokens": 0.12,
         "supportsTemperature": false
-      },
-      "unset": [
-        "strengths",
-        "artificialAnalysis"
-      ]
+      }
     },
     "openai/gpt-5.1": {
       "model": "gpt/gpt-5-1",
@@ -597,11 +591,19 @@
       ]
     },
     "openai/gpt-5.1-codex-mini": {
-      "model": "gpt-codex/gpt-5-1-codex-mini",
+      "model": "gpt-codex-mini/gpt-5-1-codex-mini",
       "matchingModel": "gpt-5.1-codex-mini",
       "overrides": {
         "name": "GPT-5.1 Codex Mini",
-        "description": "Coding-optimized GPT model for repository edits, reviews, and agentic software work",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "tool_use",
@@ -766,7 +768,6 @@
       "model": "kimi-thinking/kimi-k2-thinking",
       "matchingModel": "kimi-k2-thinking",
       "overrides": {
-        "maxTokens": 262144,
         "speed": 4,
         "lastUpdated": "December 2, 2025",
         "costPer1kInputTokens": 0.0006,
@@ -775,16 +776,25 @@
       }
     },
     "monshot/kimi-k2.5": {
-      "model": "kimi-k2/kimi-k2-5",
+      "model": "kimi/kimi-k2-5",
       "matchingModel": "kimi-k2.5",
       "overrides": {
         "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "tool_use",
           "document"
         ],
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003,
@@ -1100,6 +1110,7 @@
       "matchingModel": "phi-4",
       "overrides": {
         "name": "Phi-4",
+        "contextWindow": 128000,
         "speed": 2,
         "releaseDate": "December 11, 2024",
         "lastUpdated": "December 11, 2024",
@@ -1111,7 +1122,7 @@
       }
     },
     "microsoft/phi-4-mini": {
-      "model": "phi/phi-4-mini",
+      "model": "phi-mini/phi-4-mini",
       "matchingModel": "phi-4-mini",
       "overrides": {
         "speed": 3,
@@ -1123,7 +1134,7 @@
       }
     },
     "microsoft/phi-4-mini-reasoning": {
-      "model": "phi/phi-4-mini-reasoning",
+      "model": "phi-mini/phi-4-mini-reasoning",
       "matchingModel": "phi-4-mini-reasoning",
       "overrides": {
         "lastUpdated": "December 11, 2024",
@@ -1482,7 +1493,7 @@
       }
     },
     "kimi-k2.6": {
-      "model": "kimi-k2/kimi-k2-6",
+      "model": "kimi/kimi-k2-6",
       "matchingModel": "kimi-k2.6",
       "overrides": {
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
@@ -1531,7 +1542,7 @@
       }
     },
     "deepseek-v4-pro": {
-      "model": "deepseek-thinking/deepseek-v4-pro",
+      "model": "deepseek-pro/deepseek-v4-pro",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
         "name": "DeepSeek-V4-Pro",
@@ -1773,10 +1784,9 @@
       }
     },
     "kimi-k2.7-code": {
-      "model": "kimi-k2/kimi-k2-7-code",
+      "model": "kimi-code/kimi-k2-7-code",
       "matchingModel": "kimi-k2.7-code",
       "overrides": {
-        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",

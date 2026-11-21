@@ -1,0 +1,81 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 262144,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "September 2025",
+    "releaseDate": "August 11, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "Nemotron model for efficient reasoning, coding, and specialized AI agents",
+  "models": {
+    "nemotron-3-5-lightning-30b": {
+      "defaults": {
+        "name": "Nemotron 3.5 Lightning 30B",
+        "description": "Nemotron model for efficient reasoning, coding, and specialized AI agents",
+        "maxTokens": 131072,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 5.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "nemotron-3-5-lightning-30b-a3b": {
+      "defaults": {
+        "name": "Nemotron 3.5 Lightning 30B A3B",
+        "description": "Nemotron model for efficient reasoning, coding, and specialized AI agents",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "nemotron-lightning-3-5-30b-a3b": {
+      "defaults": {
+        "name": "nemotron-lightning-3.5-30b-a3b",
+        "openWeights": false,
+        "description": "Nemotron-Lightning-3.5-30B-A3B is a 30B-parameter Mixture-of-Experts language model (3B active) from NVIDIA's Nemotron-H family, built on a hybrid Mamba-Transformer architecture for efficient long-context inference. Like other models in the family, it responds to queries by first generating a reasoning trace and then concluding with a final response, with reasoning behavior configurable through a flag in the chat template. It includes a multi-token prediction (MTP) speculative decoding head for low-latency serving.",
+        "maxTokens": 262144,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

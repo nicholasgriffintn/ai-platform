@@ -16,26 +16,6 @@
   },
   "description": "The glm family includes models that produce text.",
   "models": {
-    "autoglm-phone-9b-multilingual": {
-      "defaults": {
-        "name": "AutoGLM Phone 9B Multilingual",
-        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
-        "contextWindow": 65536,
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "December 10, 2025",
-        "supportsToolCalls": false,
-        "supportsAttachments": true
-      }
-    },
     "glm-4-32b": {
       "defaults": {
         "name": "GLM 4 32B ",
@@ -141,46 +121,6 @@
         "releaseDate": "December 29, 2025"
       }
     },
-    "glm-4-5v": {
-      "defaults": {
-        "name": "GLM-4.5V",
-        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
-        "contextWindow": 65536,
-        "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 3,
-        "reliability": 1,
-        "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "August 11, 2025",
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
     "glm-4-6": {
       "defaults": {
         "name": "GLM 4.6",
@@ -251,8 +191,15 @@
       "defaults": {
         "name": "GLM-4.6V",
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
-        "contextWindow": 131072,
-        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -261,7 +208,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "December 8, 2025",
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -1014,16 +960,13 @@
     "glm-5-turbo": {
       "defaults": {
         "name": "GLM 5 Turbo",
-        "openWeights": false,
         "description": "Faster GLM-5 lane for coding agents that need lower latency",
         "contextWindow": 202752,
-        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "releaseDate": "March 16, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1045,7 +988,21 @@
         "openWeights": false,
         "description": "Fast GLM vision model for screenshots, documents, and multimodal agent tasks",
         "contextWindow": 202752,
-        "maxTokens": 131072,
+        "maxTokens": 202752,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 1, 2026",

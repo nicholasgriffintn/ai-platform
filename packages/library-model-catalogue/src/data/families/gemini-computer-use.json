@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 128000,
+    "maxTokens": 64000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "January 2025",
+    "releaseDate": "October 7, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The gemini computer use family includes models that produce text.",
+  "models": {
+    "gemini-2-5-computer-use-preview-10-2025": {
+      "defaults": {
+        "name": "Gemini 2.5 Computer Use Preview",
+        "description": "Specialized Gemini 2.5 model for browser-control agents that automate UI tasks"
+      }
+    }
+  }
+}

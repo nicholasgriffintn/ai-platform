@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 8192,
+    "maxTokens": 2048,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 18, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The nemotron embed family includes models that produce text.",
+  "models": {
+    "llama-nemotron-embed-vl-1b-v2": {
+      "defaults": {
+        "name": "llama-nemotron-embed-vl-1b-v2",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines"
+      }
+    }
+  }
+}

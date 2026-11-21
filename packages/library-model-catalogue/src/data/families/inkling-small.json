@@ -1,0 +1,74 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 1048576,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 5,
+    "reliability": 1,
+    "releaseDate": "November 5, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": 30.6,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
+  },
+  "description": "The inkling small family includes models that produce text.",
+  "models": {
+    "inkling-2-small": {
+      "defaults": {
+        "name": "Inkling 2 Small",
+        "description": "Multimodal MoE reasoning model (594B total, 17B active) for agentic coding, vision, and knowledge work",
+        "maxTokens": 131072
+      }
+    },
+    "inkling-small": {
+      "defaults": {
+        "name": "Inkling Small",
+        "description": "Multimodal MoE reasoning model (276B total, 12B active) for text, image, and audio",
+        "contextComplexity": 4,
+        "releaseDate": "July 30, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "thinking-machines-inkling-2-small": {
+      "defaults": {
+        "name": "Thinking Machines: Inkling 2 Small",
+        "description": "Inkling 2 Small is an open-weight multimodal mixture-of-experts reasoning model from Thinking Machines Lab, with 17B active parameters out of 594B total. It is the first model in the second...",
+        "maxTokens": 943718,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    }
+  }
+}

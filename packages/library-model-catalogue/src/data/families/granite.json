@@ -1,6 +1,7 @@
 {
   "defaults": {
     "openWeights": true,
+    "contextWindow": 131072,
     "modalities": {
       "input": [
         "text"
@@ -9,6 +10,9 @@
         "text"
       ]
     },
+    "strengths": [
+      "tool_use"
+    ],
     "contextComplexity": 4,
     "reliability": 1,
     "supportsToolCalls": true,
@@ -17,16 +21,6 @@
   },
   "description": "The granite family includes models that produce text.",
   "models": {
-    "granite-4-0-h-micro": {
-      "defaults": {
-        "name": "IBM Granite 4.0 H Micro",
-        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "contextWindow": 131000,
-        "maxTokens": 131000,
-        "releaseDate": "October 2, 2025",
-        "supportsResponseFormat": false
-      }
-    },
     "granite-4-0-micro": {
       "defaults": {
         "name": "Granite 4.0 Micro",
@@ -48,11 +42,7 @@
       "defaults": {
         "name": "Granite 4.1 8B",
         "description": "Granite 4.1 8B accepts text and produces text.",
-        "contextWindow": 131072,
         "maxTokens": 117964,
-        "strengths": [
-          "tool_use"
-        ],
         "releaseDate": "April 30, 2026",
         "supportsResponseFormat": true,
         "artificialAnalysis": {
@@ -67,10 +57,6 @@
       "defaults": {
         "name": "Granite 4.2 8B",
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
-        "contextWindow": 131072,
-        "strengths": [
-          "tool_use"
-        ],
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -103,11 +89,7 @@
       "defaults": {
         "name": "IBM: Granite 4.2 8B",
         "description": "Granite 4.2 8B is a dense reasoning model from IBM. It is suited for mathematics, code generation, multilingual dialogue, and agentic workflows that need multi-step reasoning. It supports full, low-effort,...",
-        "contextWindow": 131072,
         "maxTokens": 117964,
-        "strengths": [
-          "tool_use"
-        ],
         "releaseDate": "August 25, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {

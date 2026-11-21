@@ -21,6 +21,7 @@
   "models": {
     "command-r": {
       "defaults": {
+        "name": "Command R",
         "description": "Cohere retrieval model for long-context chat and enterprise RAG workflows",
         "strengths": [
           "tool_use"

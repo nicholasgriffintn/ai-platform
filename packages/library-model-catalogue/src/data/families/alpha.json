@@ -41,26 +41,6 @@
         }
       }
     },
-    "mancer-weaver-alpha": {
-      "defaults": {
-        "name": "Mancer: Weaver (alpha)",
-        "description": "An attempt to recreate Claude-style verbosity, but don't expect the same level of coherence or memory. Meant for use in roleplay/narrative situations.",
-        "contextWindow": 8000,
-        "maxTokens": 6000,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "knowledgeCutoffDate": "June 30, 2023",
-        "releaseDate": "August 2, 2023",
-        "supportsToolCalls": false,
-        "supportsAttachments": false
-      }
-    },
     "owl-alpha": {
       "defaults": {
         "name": "Owl Alpha",
@@ -151,26 +131,6 @@
           ]
         },
         "releaseDate": "September 16, 2026"
-      }
-    },
-    "weaver-alpha": {
-      "defaults": {
-        "name": "Weaver (alpha)",
-        "description": "General-purpose chat model for instruction following, writing, and analysis",
-        "contextWindow": 8000,
-        "maxTokens": 6000,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "knowledgeCutoffDate": "June 30, 2023",
-        "releaseDate": "August 2, 2023",
-        "supportsToolCalls": false,
-        "supportsAttachments": false
       }
     }
   }

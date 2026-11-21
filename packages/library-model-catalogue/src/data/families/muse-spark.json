@@ -1,0 +1,242 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1048576,
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "Open Llama multimodal model for image understanding and text reasoning",
+  "models": {
+    "meta-muse-spark-1-2-contributor": {
+      "defaults": {
+        "name": "Meta: Muse Spark 1.2 Contributor",
+        "description": "Muse Spark 1.2 contributor tier is a reasoning model from Meta designed for developers who want to start building at an even lower cost. It’s meaningfully cheaper than Muse Spark...",
+        "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 21, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    },
+    "meta-muse-spark-1-3-contributor": {
+      "defaults": {
+        "name": "Meta: Muse Spark 1.3 Contributor",
+        "description": "Muse Spark 1.3 Contributor is the cost-efficient contributor tier of Meta’s multimodal reasoning model for experimentation, learning, and early-stage agentic, multi-agent, and coding workflows. It is designed to track information...",
+        "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 2, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    },
+    "muse-spark-1-1": {
+      "defaults": {
+        "name": "Muse Spark 1.1",
+        "description": "Open Llama multimodal model for image understanding and text reasoning",
+        "contextComplexity": 5,
+        "reliability": 3,
+        "releaseDate": "April 8, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "muse-spark-1-2": {
+      "defaults": {
+        "name": "Muse Spark 1.2",
+        "description": "Muse Spark 1.2 is a coding-focused update to Muse Spark 1.1 with improvements in code generation, complex debugging, codebase understanding, and end-to-end developer workflows.",
+        "contextComplexity": 5,
+        "reliability": 3,
+        "releaseDate": "August 5, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "muse-spark-1-2-contributor": {
+      "defaults": {
+        "name": "Muse Spark 1.2 Contributor",
+        "description": "Open Llama multimodal model for image understanding and text reasoning",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 5, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    },
+    "muse-spark-1-3": {
+      "defaults": {
+        "name": "Muse Spark 1.3",
+        "description": "Open Llama multimodal model for image understanding and text reasoning",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "audio",
+          "video",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "releaseDate": "September 2, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 36.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "muse-spark-1-3-contributor": {
+      "defaults": {
+        "name": "Muse Spark 1.3 Contributor",
+        "description": "Open Llama multimodal model for image understanding and text reasoning",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf",
+            "audio"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 2, 2026"
+      }
+    },
+    "muse-spark-open": {
+      "defaults": {
+        "name": "Muse Spark Open",
+        "openWeights": true,
+        "description": "Open Llama multimodal model for image understanding and text reasoning",
+        "contextComplexity": 5,
+        "reliability": 1,
+        "knowledgeCutoffDate": "January 4, 2026",
+        "releaseDate": "October 15, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 24.9,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    }
+  }
+}

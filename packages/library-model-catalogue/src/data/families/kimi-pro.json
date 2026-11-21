@@ -1,0 +1,200 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 1048576,
+    "maxTokens": 1048576,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 23, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
+  "models": {
+    "kimi-k3-1-pro": {
+      "defaults": {
+        "name": "Kimi K3.1 Pro",
+        "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "artificialAnalysis": {
+          "intelligenceIndex": 46.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "kimi-k3-1-pro-eu": {
+      "defaults": {
+        "name": "Kimi K3.1 Pro (EU)",
+        "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 46.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "kimi-k3-1-pro-highspeed": {
+      "defaults": {
+        "name": "Kimi K3.1 Pro Highspeed",
+        "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "kimi-k3-1-pro-highspeed-global": {
+      "defaults": {
+        "name": "Kimi K3.1 Pro Highspeed (Global)",
+        "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "kimi-k3-1-pro-highspeed-us": {
+      "defaults": {
+        "name": "Kimi K3.1 Pro Highspeed (US)",
+        "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "moonshotai-kimi-k3-1-pro": {
+      "defaults": {
+        "name": "MoonshotAI: Kimi K3.1 Pro",
+        "description": "Kimi K3.1 Pro is Moonshot AI's flagship open-weight multimodal reasoning model and a post-trained successor to Kimi K3, with a 1M-token context window. It is built for long-horizon coding, 3D...",
+        "maxTokens": 943718,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 46.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "moonshotai-kimi-k3-1-pro-highspeed": {
+      "defaults": {
+        "name": "MoonshotAI: Kimi K3.1 Pro Highspeed",
+        "openWeights": false,
+        "description": "Kimi K3.1 Pro Highspeed is the high-speed variant of Moonshot AI’s frontier Kimi K3.1 Pro model for complex reasoning, coding, and agentic workflows, with vision, tool use, structured outputs, and long-context support.",
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    }
+  }
+}

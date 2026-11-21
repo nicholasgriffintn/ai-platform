@@ -1,0 +1,109 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "Video model for prompt-guided generation, editing, and motion workflows",
+  "models": {
+    "wan-v2-5-text-to-video-preview": {
+      "defaults": {
+        "name": "Wan v2.5 Text-to-Video Preview",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "September 24, 2025"
+      }
+    },
+    "wan-v2-6-image-to-video": {
+      "defaults": {
+        "name": "Wan v2.6 Image-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "December 16, 2025"
+      }
+    },
+    "wan-v2-6-image-to-video-flash": {
+      "defaults": {
+        "name": "Wan v2.6 Image-to-Video Flash",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "December 16, 2025"
+      }
+    },
+    "wan-v2-6-reference-to-video": {
+      "defaults": {
+        "name": "Wan v2.6 Reference-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "December 16, 2025"
+      }
+    },
+    "wan-v2-6-reference-to-video-flash": {
+      "defaults": {
+        "name": "Wan v2.6 Reference-to-Video Flash",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "December 16, 2025"
+      }
+    },
+    "wan-v2-6-text-to-video": {
+      "defaults": {
+        "name": "Wan v2.6 Text-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "December 16, 2025"
+      }
+    },
+    "wan-v2-7-reference-to-video": {
+      "defaults": {
+        "name": "Wan v2.7 Reference-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "April 7, 2026"
+      }
+    },
+    "wan-v2-7-text-to-video": {
+      "defaults": {
+        "name": "Wan v2.7 Text-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "April 7, 2026"
+      }
+    },
+    "wan-v3-0-video": {
+      "defaults": {
+        "name": "Wan v3.0 Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "August 23, 2026"
+      }
+    },
+    "wan-v3-0-video-prime": {
+      "defaults": {
+        "name": "Wan v3.0 Video Prime",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "August 28, 2026"
+      }
+    }
+  }
+}

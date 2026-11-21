@@ -1,0 +1,47 @@
+{
+  "defaults": {
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The voxtral tts family includes models that produce audio, speech.",
+  "models": {
+    "voxtral-mini-tts-latest": {
+      "defaults": {
+        "name": "Voxtral Mini TTS (latest)",
+        "openWeights": true,
+        "description": "Multilingual text-to-speech model with zero-shot voice cloning",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "speech"
+          ]
+        },
+        "strengths": [
+          "audio"
+        ],
+        "releaseDate": "March 23, 2026"
+      }
+    },
+    "voxtral-tts-3": {
+      "defaults": {
+        "name": "Voxtral TTS 3",
+        "openWeights": false,
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "audio"
+          ]
+        },
+        "releaseDate": "October 20, 2026"
+      }
+    }
+  }
+}

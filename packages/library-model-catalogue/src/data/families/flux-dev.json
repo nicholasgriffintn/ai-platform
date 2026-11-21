@@ -1,0 +1,51 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "image"
+    ],
+    "contextComplexity": 1,
+    "reliability": 1,
+    "knowledgeCutoffDate": "August 2024",
+    "releaseDate": "August 1, 2024",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_imageElo",
+          "label": "Text-to-image arena",
+          "value": 816,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 33
+        }
+      ]
+    }
+  },
+  "description": "The flux dev family includes models that produce image.",
+  "models": {
+    "flux-1-dev": {
+      "defaults": {
+        "name": "FLUX.1-dev",
+        "description": "Open-weight FLUX.1 text-to-image model for high-quality guidance-distilled generation"
+      }
+    }
+  }
+}

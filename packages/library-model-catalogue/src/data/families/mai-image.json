@@ -1,0 +1,60 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "image",
+      "creative",
+      "document"
+    ],
+    "contextComplexity": 4,
+    "reliability": 4,
+    "releaseDate": "October 13, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "low"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_imageElo",
+          "label": "Text-to-image arena",
+          "value": 1168,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 12
+        }
+      ]
+    }
+  },
+  "description": "The mai image family includes models that produce image.",
+  "models": {
+    "mai-image-2-6": {
+      "defaults": {
+        "name": "MAI-Image-2.6",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows"
+      }
+    }
+  }
+}

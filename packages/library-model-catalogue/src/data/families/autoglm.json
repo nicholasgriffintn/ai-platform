@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 65536,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 10, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The autoglm family includes models that produce text.",
+  "models": {
+    "autoglm-phone-9b-multilingual": {
+      "defaults": {
+        "name": "AutoGLM Phone 9B Multilingual",
+        "description": "GLM vision model for visual reasoning, documents, and multimodal agents"
+      }
+    }
+  }
+}

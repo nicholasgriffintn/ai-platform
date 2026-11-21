@@ -227,24 +227,6 @@
         "releaseDate": "September 10, 2026"
       }
     },
-    "deepseek-v4-1-flash-free": {
-      "defaults": {
-        "name": "DeepSeek V4.1 Flash Free",
-        "description": "October 17 update of DeepSeek V4.1 Flash with improved reasoning, coding, agentic tasks, and visual understanding",
-        "contextWindow": 200000,
-        "maxTokens": 32000,
-        "reliability": 2,
-        "releaseDate": "October 17, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
     "deepseek-v4-1-flash-spot": {
       "defaults": {
         "name": "DeepSeek V4.1 Flash Spot",

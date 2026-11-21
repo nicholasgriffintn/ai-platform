@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "knowledgeCutoffDate": "January 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false
+  },
+  "description": "Speech generation model for controllable voice, narration, and audio delivery",
+  "models": {
+    "gemini-2-5-pro-preview-tts": {
+      "defaults": {
+        "name": "Gemini 2.5 Pro Preview TTS",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 8192,
+        "releaseDate": "May 1, 2025",
+        "supportsTemperature": true
+      }
+    },
+    "gemini-2-5-pro-tts": {
+      "defaults": {
+        "name": "Gemini 2.5 Pro TTS",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 32768,
+        "releaseDate": "September 30, 2025",
+        "supportsTemperature": false
+      }
+    }
+  }
+}

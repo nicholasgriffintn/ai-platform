@@ -1,0 +1,61 @@
+{
+  "defaults": {
+    "contextWindow": 262144,
+    "maxTokens": 250000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "releaseDate": "August 6, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
+  },
+  "description": "The ling tiny family includes models that produce text.",
+  "models": {
+    "inclusionai-ling-3-0-tiny": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.0 Tiny",
+        "openWeights": false,
+        "description": "Ling 3.0 Tiny is a mixture-of-experts model from InclusionAI, with 1.3B active parameters out of 7.9B total. It is designed for responsive agents, instruction following, and multi-turn conversations, with switchable...",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ling-3-0-tiny": {
+      "defaults": {
+        "name": "Ling 3.0 Tiny",
+        "openWeights": true,
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "reliability": 1,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

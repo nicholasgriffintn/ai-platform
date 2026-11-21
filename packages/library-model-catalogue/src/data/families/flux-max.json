@@ -1,0 +1,51 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 67300,
+    "maxTokens": 67300,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "image",
+      "creative",
+      "document"
+    ],
+    "contextComplexity": 3,
+    "reliability": 2,
+    "releaseDate": "December 16, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_imageElo",
+          "label": "Text-to-image arena",
+          "value": 1021,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 10
+        }
+      ]
+    }
+  },
+  "description": "The flux max family includes models that produce image.",
+  "models": {
+    "flux-2-max": {
+      "defaults": {
+        "name": "FLUX.2 [max]",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows"
+      }
+    }
+  }
+}

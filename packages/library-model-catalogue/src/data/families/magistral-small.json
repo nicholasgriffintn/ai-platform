@@ -2,21 +2,9 @@
   "defaults": {
     "openWeights": true,
     "contextWindow": 128000,
-    "maxTokens": 128000,
-    "modalities": {
-      "input": [
-        "text"
-      ],
-      "output": [
-        "text"
-      ]
-    },
     "contextComplexity": 4,
     "reliability": 1,
-    "knowledgeCutoffDate": "June 2025",
-    "releaseDate": "March 17, 2025",
     "supportsToolCalls": true,
-    "supportsAttachments": false,
     "supportsTemperature": true,
     "reasoningConfig": {
       "supportedEffortLevels": [
@@ -37,7 +25,43 @@
     "magistral-small": {
       "defaults": {
         "name": "Magistral Small",
-        "description": "Mistral reasoning model for transparent analysis, math, and complex decisions"
+        "description": "Mistral reasoning model for transparent analysis, math, and complex decisions",
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "June 2025",
+        "releaseDate": "March 17, 2025",
+        "supportsAttachments": false
+      }
+    },
+    "magistral-small-1-2": {
+      "defaults": {
+        "name": "Magistral Small 1.2",
+        "description": "Open multimodal reasoning model for transparent analysis of text and images",
+        "maxTokens": 40000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "tool_use",
+          "document"
+        ],
+        "releaseDate": "September 18, 2025",
+        "supportsResponseFormat": true,
+        "supportsAttachments": true
       }
     }
   }

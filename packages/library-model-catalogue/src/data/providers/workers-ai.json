@@ -126,10 +126,8 @@
         "speed": 4
       },
       "unset": [
-        "maxTokens",
-        "supportsToolCalls",
-        "supportsTemperature",
-        "supportsAttachments"
+        "supportsAttachments",
+        "supportsTemperature"
       ]
     },
     "flux-2-dev": {
@@ -141,10 +139,8 @@
         "inputFormat": "multipart"
       },
       "unset": [
-        "maxTokens",
-        "supportsToolCalls",
-        "supportsTemperature",
-        "supportsAttachments"
+        "supportsAttachments",
+        "supportsTemperature"
       ]
     },
     "@cf/black-forest-labs/flux-2-klein-4b": {
@@ -156,10 +152,8 @@
         "inputFormat": "multipart"
       },
       "unset": [
-        "maxTokens",
-        "supportsToolCalls",
-        "supportsTemperature",
-        "supportsAttachments"
+        "supportsAttachments",
+        "supportsTemperature"
       ]
     },
     "@cf/black-forest-labs/flux-2-klein-9b": {
@@ -170,10 +164,8 @@
         "inputFormat": "multipart"
       },
       "unset": [
-        "maxTokens",
-        "supportsToolCalls",
-        "supportsTemperature",
-        "supportsAttachments"
+        "supportsAttachments",
+        "supportsTemperature"
       ]
     },
     "stable-diffusion-1.5-img2img": {
@@ -315,7 +307,7 @@
       }
     },
     "qwen2.5-coder-32b": {
-      "model": "qwen/qwen2-5-coder-32b-instruct",
+      "model": "qwen-coder/qwen2-5-coder-32b-instruct",
       "matchingModel": "@cf/qwen/qwen2.5-coder-32b-instruct",
       "overrides": {
         "name": "Qwen 2.5 Coder 32B Instruct",
@@ -323,19 +315,21 @@
         "strengths": [
           "coding"
         ],
+        "contextComplexity": 3,
         "speed": 3,
         "lastUpdated": "November 12, 2024",
         "costPer1kInputTokens": 0.00066,
         "costPer1kOutputTokens": 0.001
-      }
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "@cf/meta/llama-guard-3-8b": {
-      "model": "llama/llama-guard-3-8b",
+      "model": "llama-guard/llama-guard-3-8b",
       "matchingModel": "@cf/meta/llama-guard-3-8b",
       "overrides": {
         "isFree": true,
-        "knowledgeCutoffDate": "December 2023",
-        "releaseDate": "July 23, 2024",
         "lastUpdated": "July 23, 2024",
         "costPer1kInputTokens": 0.000484,
         "costPer1kOutputTokens": 0.00003
@@ -431,7 +425,6 @@
         "replacementModel": "@cf/qwen/qwen3-embedding-0.6b"
       },
       "unset": [
-        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature"
       ]
@@ -446,7 +439,7 @@
       }
     },
     "@cf/aisingapore/gemma-sea-lion-v4-27b-it": {
-      "model": "gemma/gemma-sea-lion-v4-27b-it",
+      "model": "sea-lion/gemma-sea-lion-v4-27b-it",
       "matchingModel": "@cf/aisingapore/gemma-sea-lion-v4-27b-it",
       "overrides": {
         "lastUpdated": "September 23, 2025",
@@ -493,17 +486,13 @@
       }
     },
     "@cf/ibm-granite/granite-4.0-h-micro": {
-      "model": "granite/granite-4-0-h-micro",
+      "model": "granite-micro/granite-4-0-h-micro",
       "matchingModel": "@cf/ibm-granite/granite-4.0-h-micro",
       "overrides": {
         "lastUpdated": "October 2, 2025",
         "costPer1kInputTokens": 0.000017,
         "costPer1kOutputTokens": 0.000112
-      },
-      "unset": [
-        "contextComplexity",
-        "reliability"
-      ]
+      }
     },
     "@cf/meta/llama-3.2-11b-vision-instruct": {
       "model": "llama/llama-3-2-11b-vision-instruct",
@@ -627,9 +616,6 @@
       "model": "qwen/qwen3-embedding-0-6b",
       "matchingModel": "@cf/qwen/qwen3-embedding-0.6b",
       "overrides": {
-        "contextWindow": 128000,
-        "maxTokens": 16384,
-        "releaseDate": "November 14, 2025",
         "lastUpdated": "November 14, 2025",
         "costPer1kInputTokens": 0.000012,
         "costPer1kOutputTokens": 0
@@ -765,7 +751,7 @@
       }
     },
     "@cf/thinkingmachines/inkling-2-small": {
-      "model": "kling/inkling-2-small",
+      "model": "inkling/inkling-2-small",
       "matchingModel": "@cf/thinkingmachines/inkling-2-small",
       "overrides": {
         "speed": 4,

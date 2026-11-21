@@ -1,0 +1,20 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 256000,
+    "maxTokens": 128000,
+    "releaseDate": "February 14, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The seed pro family groups related models and their shared configuration.",
+  "models": {
+    "seed-2-0-pro": {
+      "defaults": {
+        "name": "Seed 2.0 Pro",
+        "description": "Flagship ByteDance Seed 2.0 model for complex multimodal reasoning and long-horizon agent workflows"
+      }
+    }
+  }
+}

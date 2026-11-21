@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "supportsToolCalls": false,
+    "supportsTemperature": false
+  },
+  "description": "The gemini embedding family includes models that produce embedding.",
+  "models": {
+    "gemini-embedding-001": {
+      "defaults": {
+        "name": "Gemini Embedding 001",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "contextWindow": 2048,
+        "maxTokens": 1,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "embedding"
+          ]
+        },
+        "knowledgeCutoffDate": "May 2025",
+        "releaseDate": "May 20, 2025",
+        "supportsAttachments": false
+      }
+    },
+    "gemini-embedding-2": {
+      "defaults": {
+        "name": "Gemini Embedding 2",
+        "description": "Multimodal embedding model mapping text, images, video, audio, and PDFs into a unified embedding space",
+        "contextWindow": 8192,
+        "knowledgeCutoffDate": "November 2025",
+        "releaseDate": "April 22, 2026"
+      }
+    }
+  }
+}

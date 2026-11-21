@@ -173,7 +173,7 @@
         "openWeights": false,
         "description": "This model always redirects to the latest model in the DeepSeek V4 Flash family.",
         "contextWindow": 1048576,
-        "maxTokens": 384000,
+        "maxTokens": 131072,
         "releaseDate": "August 1, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -185,27 +185,6 @@
           ],
           "defaultEffort": "none"
         }
-      }
-    },
-    "deepseek-ocr-2": {
-      "defaults": {
-        "name": "DeepSeek OCR 2",
-        "openWeights": true,
-        "description": "High-accuracy OCR model for extracting text from documents, screenshots, receipts, and natural scenes",
-        "contextWindow": 4000,
-        "maxTokens": 4000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "January 27, 2026",
-        "supportsToolCalls": false,
-        "supportsAttachments": true
       }
     },
     "deepseek-pro-latest": {
@@ -847,7 +826,7 @@
         "openWeights": false,
         "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
         "contextWindow": 1048576,
-        "maxTokens": 384000,
+        "maxTokens": 131072,
         "releaseDate": "August 1, 2026",
         "supportsResponseFormat": true,
         "reasoningConfig": {
@@ -858,29 +837,6 @@
             "max"
           ],
           "defaultEffort": "low"
-        }
-      }
-    },
-    "deepseek-v4-pro-0813": {
-      "defaults": {
-        "name": "DeepSeek V4 Pro 0813",
-        "openWeights": true,
-        "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
-        "contextWindow": 1000000,
-        "maxTokens": 393216,
-        "strengths": [
-          "coding",
-          "tool_use"
-        ],
-        "contextComplexity": 5,
-        "reliability": 1,
-        "releaseDate": "October 20, 2026",
-        "supportsResponseFormat": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": 20.8,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
         }
       }
     },

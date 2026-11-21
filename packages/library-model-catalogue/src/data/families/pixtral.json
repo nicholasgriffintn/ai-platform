@@ -1,7 +1,8 @@
 {
   "defaults": {
-    "openWeights": false,
+    "openWeights": true,
     "contextWindow": 128000,
+    "maxTokens": 128000,
     "modalities": {
       "input": [
         "text",
@@ -11,32 +12,16 @@
         "text"
       ]
     },
-    "strengths": [
-      "vision",
-      "document",
-      "tool_use"
-    ],
-    "reliability": 1,
-    "knowledgeCutoffDate": "November 2024",
-    "releaseDate": "April 8, 2025",
     "supportsToolCalls": true,
     "supportsAttachments": true,
-    "supportsTemperature": true,
-    "artificialAnalysis": {
-      "intelligenceIndex": null,
-      "codingIndex": null,
-      "agenticIndex": null,
-      "intelligenceIndexVersion": 5
-    }
+    "supportsTemperature": true
   },
   "description": "The pixtral family includes models that produce text.",
   "models": {
     "pixtral-12b": {
       "defaults": {
         "name": "Pixtral 12B",
-        "openWeights": true,
         "description": "Mistral vision-language model for image understanding and multimodal chat",
-        "maxTokens": 128000,
         "knowledgeCutoffDate": "September 2024",
         "releaseDate": "September 1, 2024"
       }
@@ -44,34 +29,22 @@
     "pixtral-large": {
       "defaults": {
         "name": "Pixtral Large",
-        "openWeights": true,
         "description": "Pixtral Large accepts text, image and produces text.",
-        "maxTokens": 128000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
-        "releaseDate": "November 1, 2024"
-      }
-    },
-    "pixtral-large-25-02": {
-      "defaults": {
-        "description": "Mistral vision-language model for image understanding and multimodal chat"
-      }
-    },
-    "pixtral-large-25-02-eu": {
-      "defaults": {
-        "name": "Pixtral Large (25.02) (EU)",
-        "description": "Mistral vision-language model for image understanding and multimodal chat",
-        "maxTokens": 8192,
-        "contextComplexity": 3,
-        "supportsResponseFormat": false
-      }
-    },
-    "pixtral-large-25-02-us": {
-      "defaults": {
-        "name": "Pixtral Large (25.02) (US)",
-        "description": "Mistral vision-language model for image understanding and multimodal chat",
-        "maxTokens": 8192,
-        "contextComplexity": 3,
-        "supportsResponseFormat": false
+        "reliability": 1,
+        "knowledgeCutoffDate": "November 2024",
+        "releaseDate": "November 1, 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     }
   }

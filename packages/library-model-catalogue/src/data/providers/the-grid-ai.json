@@ -148,7 +148,10 @@
         "isFeatured": true,
         "lastUpdated": "July 6, 2026",
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "glm-latest": {
       "model": "glm/glm-latest",
@@ -173,10 +176,6 @@
       "model": "minimax/minimax-latest",
       "matchingModel": "minimax-latest",
       "overrides": {
-        "openWeights": false,
-        "description": "Lab latest market for MiniMax supply. You contract for the latest qualifying route, not a specific model.",
-        "contextWindow": 1000000,
-        "releaseDate": "July 6, 2026",
         "lastUpdated": "July 6, 2026"
       }
     },
@@ -184,7 +183,6 @@
       "model": "kimi/kimi-latest",
       "matchingModel": "kimi-latest",
       "overrides": {
-        "name": "Kimi Latest",
         "description": "Lab latest market for Kimi supply. You contract for the latest qualifying route, not a specific model.",
         "releaseDate": "July 6, 2026",
         "lastUpdated": "July 6, 2026",

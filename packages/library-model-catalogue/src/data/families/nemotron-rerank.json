@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 10240,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "December 18, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The nemotron rerank family includes models that produce text.",
+  "models": {
+    "llama-nemotron-rerank-vl-1b-v2": {
+      "defaults": {
+        "name": "llama-nemotron-rerank-vl-1b-v2",
+        "description": "Reranking model for improving retrieval quality in search and recommendation systems"
+      }
+    }
+  }
+}

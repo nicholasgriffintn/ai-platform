@@ -1,0 +1,104 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 8192,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "knowledgeCutoffDate": "January 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false
+  },
+  "description": "The gemini tts flash family includes models that produce audio.",
+  "models": {
+    "gemini-2-5-flash-preview-tts": {
+      "defaults": {
+        "name": "Gemini 2.5 Flash Preview TTS",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "releaseDate": "May 1, 2025",
+        "supportsTemperature": true
+      }
+    },
+    "gemini-2-5-flash-tts": {
+      "defaults": {
+        "name": "Gemini 2.5 Flash TTS",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 32768,
+        "strengths": [
+          "audio"
+        ],
+        "contextComplexity": 2,
+        "reliability": 3,
+        "releaseDate": "September 30, 2025",
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1072,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 11
+            }
+          ]
+        }
+      }
+    },
+    "gemini-3-1-flash-tts-preview": {
+      "defaults": {
+        "name": "Gemini 3.1 Flash TTS Preview",
+        "description": "Low-latency speech generation with steerable prompts and expressive audio tags",
+        "releaseDate": "April 15, 2026",
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemini-3-8-flash-tts": {
+      "defaults": {
+        "name": "Gemini 3.8 Flash TTS",
+        "description": "Flagship text-to-speech model for expressive, studio-grade voices and long-form multi-speaker audio",
+        "strengths": [
+          "audio",
+          "creative"
+        ],
+        "contextComplexity": 2,
+        "reliability": 5,
+        "releaseDate": "September 22, 2026",
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1282,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 13
+            }
+          ]
+        }
+      }
+    }
+  }
+}

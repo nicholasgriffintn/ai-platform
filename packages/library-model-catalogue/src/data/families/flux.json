@@ -1,6 +1,5 @@
 {
   "defaults": {
-    "maxTokens": 0,
     "modalities": {
       "input": [
         "text"
@@ -9,9 +8,7 @@
         "image"
       ]
     },
-    "reliability": 1,
-    "supportsToolCalls": false,
-    "supportsTemperature": false
+    "supportsAttachments": false
   },
   "description": "Image model for prompt-driven generation, editing, and visual design workflows",
   "models": {
@@ -24,6 +21,7 @@
           "image"
         ],
         "contextComplexity": 3,
+        "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -89,6 +87,7 @@
           "vision"
         ],
         "contextComplexity": 4,
+        "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -126,6 +125,7 @@
           "vision"
         ],
         "contextComplexity": 4,
+        "reliability": 1,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -150,40 +150,7 @@
         "description": "Black Forest Labs' flagship text-to-image model with excellent quality, prompt adherence, and 6x faster generation.",
         "strengths": [
           "creative"
-        ],
-        "supportsAttachments": false
-      }
-    },
-    "flux-1-dev": {
-      "defaults": {
-        "name": "FLUX.1-dev",
-        "openWeights": true,
-        "description": "Open-weight FLUX.1 text-to-image model for high-quality guidance-distilled generation",
-        "contextWindow": 0,
-        "strengths": [
-          "image"
-        ],
-        "contextComplexity": 1,
-        "knowledgeCutoffDate": "August 2024",
-        "releaseDate": "August 1, 2024",
-        "supportsResponseFormat": true,
-        "supportsAttachments": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 816,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 33
-            }
-          ]
-        }
+        ]
       }
     },
     "flux-1-fill-pro": {
@@ -192,144 +159,11 @@
         "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
+        "maxTokens": 0,
         "releaseDate": "October 1, 2024",
-        "supportsAttachments": true
-      }
-    },
-    "flux-1-kontext-dev": {
-      "defaults": {
-        "name": "FLUX.1-Kontext-dev",
-        "openWeights": true,
-        "description": "Open-weight FLUX.1 Kontext model for instruction-based image editing",
-        "contextWindow": 0,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "image"
-          ]
-        },
-        "strengths": [
-          "image",
-          "vision",
-          "document"
-        ],
-        "contextComplexity": 4,
-        "releaseDate": "May 29, 2025",
-        "supportsResponseFormat": true,
+        "supportsToolCalls": false,
         "supportsAttachments": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "image_editingElo",
-              "label": "Image-editing arena",
-              "value": 883,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 19
-            }
-          ]
-        }
-      }
-    },
-    "flux-1-kontext-max": {
-      "defaults": {
-        "name": "FLUX.1 Kontext Max",
-        "openWeights": false,
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 512,
-        "strengths": [
-          "image",
-          "document"
-        ],
-        "contextComplexity": 3,
-        "releaseDate": "May 29, 2025",
-        "supportsAttachments": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 931,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 12
-            }
-          ]
-        }
-      }
-    },
-    "flux-1-kontext-pro": {
-      "defaults": {
-        "name": "FLUX.1 Kontext Pro",
-        "openWeights": false,
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 512,
-        "strengths": [
-          "image",
-          "document"
-        ],
-        "contextComplexity": 3,
-        "releaseDate": "May 29, 2025",
-        "supportsAttachments": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 925,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 16
-            }
-          ]
-        }
-      }
-    },
-    "flux-1-schnell": {
-      "defaults": {
-        "name": "FLUX.1-schnell",
-        "openWeights": true,
-        "description": "Fast few-step FLUX.1 text-to-image model under Apache 2.0",
-        "contextWindow": 0,
-        "strengths": [
-          "image"
-        ],
-        "contextComplexity": 1,
-        "knowledgeCutoffDate": "July 2024",
-        "releaseDate": "August 1, 2024",
-        "supportsResponseFormat": false,
-        "supportsAttachments": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 743,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 19
-            }
-          ]
-        }
+        "supportsTemperature": false
       }
     },
     "flux-2-dev": {
@@ -341,7 +175,6 @@
           "image"
         ],
         "reliability": 2,
-        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -364,8 +197,6 @@
       "defaults": {
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "reliability": 2,
-        "releaseDate": "November 25, 2025",
-        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -388,11 +219,28 @@
       "defaults": {
         "name": "FLUX.2 Klein 4B",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 0,
-        "contextComplexity": 4,
+        "contextWindow": 40960,
+        "maxTokens": 40960,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "image"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
         "knowledgeCutoffDate": "June 2025",
-        "releaseDate": "January 15, 2026",
-        "supportsAttachments": true,
+        "releaseDate": "January 14, 2026",
+        "supportsToolCalls": false,
+        "supportsTemperature": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -411,44 +259,10 @@
         }
       }
     },
-    "flux-2-klein-9b": {
-      "defaults": {
-        "name": "FLUX.2 [klein] 9B",
-        "openWeights": false,
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 0,
-        "strengths": [
-          "image",
-          "document"
-        ],
-        "contextComplexity": 4,
-        "releaseDate": "January 15, 2026",
-        "supportsAttachments": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 931,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 10
-            }
-          ]
-        }
-      }
-    },
     "flux-2-max": {
       "defaults": {
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextComplexity": 3,
         "reliability": 2,
-        "releaseDate": "December 16, 2025",
-        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -470,10 +284,7 @@
     "flux-2-pro": {
       "defaults": {
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextComplexity": 3,
         "reliability": 2,
-        "releaseDate": "November 25, 2025",
-        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -492,52 +303,13 @@
         }
       }
     },
-    "flux-3": {
-      "defaults": {
-        "name": "Flux 3",
-        "openWeights": false,
-        "description": "Video model for prompt-guided generation, editing, and motion workflows",
-        "contextWindow": 0,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "video"
-          ]
-        },
-        "strengths": [
-          "video",
-          "document"
-        ],
-        "contextComplexity": 4,
-        "reliability": 3,
-        "releaseDate": "August 4, 2026",
-        "supportsAttachments": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_videoElo",
-              "label": "Text-to-video arena",
-              "value": 1095,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 16
-            }
-          ]
-        }
-      }
-    },
     "flux-3-image": {
       "defaults": {
         "name": "FLUX 3 Image",
         "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 0,
+        "maxTokens": 0,
         "strengths": [
           "image",
           "document"
@@ -545,7 +317,9 @@
         "contextComplexity": 4,
         "reliability": 3,
         "releaseDate": "October 5, 2026",
+        "supportsToolCalls": false,
         "supportsAttachments": true,
+        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -564,46 +338,16 @@
         }
       }
     },
-    "flux-3-image-klein": {
-      "defaults": {
-        "name": "FLUX 3 Image Klein",
-        "openWeights": false,
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 0,
-        "strengths": [
-          "image",
-          "document"
-        ],
-        "contextComplexity": 4,
-        "reliability": 2,
-        "releaseDate": "October 15, 2026",
-        "supportsAttachments": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 1041,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 11
-            }
-          ]
-        }
-      }
-    },
     "flux-schnell": {
       "defaults": {
         "name": "Flux Schnell",
         "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
+        "maxTokens": 0,
         "releaseDate": "August 2, 2024",
-        "supportsAttachments": false
+        "supportsToolCalls": false,
+        "supportsTemperature": false
       }
     },
     "flux1-1-pro": {
@@ -612,12 +356,15 @@
         "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
+        "maxTokens": 0,
         "strengths": [
           "image"
         ],
         "contextComplexity": 1,
+        "reliability": 1,
         "releaseDate": "October 2, 2024",
-        "supportsAttachments": false,
+        "supportsToolCalls": false,
+        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -642,12 +389,15 @@
         "openWeights": false,
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "contextWindow": 512,
+        "maxTokens": 0,
         "strengths": [
           "image"
         ],
         "contextComplexity": 1,
+        "reliability": 1,
         "releaseDate": "November 1, 2024",
-        "supportsAttachments": false,
+        "supportsToolCalls": false,
+        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,

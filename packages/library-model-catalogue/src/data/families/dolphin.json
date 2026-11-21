@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 128000,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "April 30, 2024",
+    "releaseDate": "July 9, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The dolphin family includes models that produce text.",
+  "models": {
+    "uncensored": {
+      "defaults": {
+        "name": "Uncensored",
+        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows"
+      }
+    },
+    "venice-uncensored": {
+      "defaults": {
+        "name": "Venice: Uncensored",
+        "description": "Venice Uncensored Dolphin Mistral 24B Venice Edition is a fine-tuned variant of Mistral-Small-24B-Instruct-2501, developed by dphn.ai in collaboration with Venice.ai. This model is designed as an “uncensored” instruct-tuned LLM, preserving..."
+      }
+    }
+  }
+}

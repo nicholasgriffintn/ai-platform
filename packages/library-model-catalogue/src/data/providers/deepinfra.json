@@ -32,11 +32,12 @@
         "supportsAttachments": false
       },
       "unset": [
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
     "Qwen/Qwen3-Coder-480B-A35B-Instruct-Turbo": {
-      "model": "qwen/qwen3-coder-480b-a35b-instruct-turbo",
+      "model": "qwen-coder/qwen3-coder-480b-a35b-instruct-turbo",
       "matchingModel": "Qwen/Qwen3-Coder-480B-A35B-Instruct-Turbo",
       "overrides": {
         "speed": 5,
@@ -50,6 +51,7 @@
       "model": "qwen/qwen3-coder-480b-a35b-instruct",
       "matchingModel": "Qwen/Qwen3-Coder-480B-A35B-Instruct",
       "overrides": {
+        "contextWindow": 262144,
         "maxTokens": 66536,
         "strengths": [
           "coding",
@@ -62,6 +64,7 @@
         "deprecated": true,
         "deprecationMessage": "Qwen3 Coder 480B A35B Instruct is no longer offered by DeepInfra. Use Qwen3 Coder 480B A35B Instruct Turbo instead.",
         "replacementModel": "Qwen/Qwen3-Coder-480B-A35B-Instruct-Turbo",
+        "knowledgeCutoffDate": "April 2025",
         "releaseDate": "July 23, 2025",
         "lastUpdated": "July 23, 2025",
         "costPer1kInputTokens": 0.0004,
@@ -130,11 +133,12 @@
       ]
     },
     "deepseek-ai/DeepSeek-R1-0528": {
-      "model": "deepseek-thinking/deepseek-r1-0528",
+      "model": "deepseek-r/deepseek-r1-0528",
       "matchingModel": "deepseek-ai/DeepSeek-R1-0528",
       "overrides": {
         "name": "DeepSeek-R1-0528",
         "maxTokens": 64000,
+        "contextComplexity": 4,
         "speed": 2,
         "lastUpdated": "May 28, 2025",
         "costPer1kInputTokens": 0.0005,
@@ -159,7 +163,6 @@
       "model": "minimax/minimax-m2",
       "matchingModel": "MiniMaxAI/MiniMax-M2",
       "overrides": {
-        "name": "MiniMax M2",
         "contextWindow": 262144,
         "maxTokens": 32768,
         "speed": 4,
@@ -174,7 +177,6 @@
         "supportsAttachments": false
       },
       "unset": [
-        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -182,7 +184,6 @@
       "model": "minimax/minimax-m2-1",
       "matchingModel": "MiniMaxAI/MiniMax-M2.1",
       "overrides": {
-        "name": "MiniMax M2.1",
         "contextWindow": 196608,
         "maxTokens": 196608,
         "speed": 3,
@@ -196,7 +197,6 @@
         "supportsAttachments": false
       },
       "unset": [
-        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -215,16 +215,10 @@
         "lastUpdated": "November 7, 2025",
         "costPer1kInputTokens": 0.00047,
         "costPer1kOutputTokens": 0.002,
-        "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": false
       },
       "unset": [
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -293,7 +287,7 @@
       }
     },
     "deepseek-ai/DeepSeek-V4-Pro": {
-      "model": "deepseek-thinking/deepseek-v4-pro",
+      "model": "deepseek-pro/deepseek-v4-pro",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro",
       "overrides": {
         "contextWindow": 1048576,
@@ -362,8 +356,8 @@
         "supportsAttachments": false
       },
       "unset": [
-        "openWeights",
         "supportsTemperature",
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -379,8 +373,8 @@
         "supportsAttachments": false
       },
       "unset": [
-        "openWeights",
         "supportsTemperature",
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -396,8 +390,8 @@
         "supportsAttachments": false
       },
       "unset": [
-        "openWeights",
         "supportsTemperature",
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -413,8 +407,8 @@
         "supportsAttachments": false
       },
       "unset": [
-        "openWeights",
         "supportsTemperature",
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -440,7 +434,7 @@
       }
     },
     "moonshotai/Kimi-K2.6": {
-      "model": "kimi-k2/kimi-k2-6",
+      "model": "kimi/kimi-k2-6",
       "matchingModel": "moonshotai/Kimi-K2.6",
       "overrides": {
         "maxTokens": 16384,
@@ -565,15 +559,6 @@
       "overrides": {
         "contextWindow": 204800,
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 3,
         "deprecated": true,
         "deprecationMessage": "GLM-4.6V is no longer offered by DeepInfra. Use Gemma 4 26B instead.",
@@ -584,8 +569,8 @@
         "costPer1kOutputTokens": 0.0009
       },
       "unset": [
-        "openWeights",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "openWeights"
       ]
     },
     "zai-org/GLM-5.2": {
@@ -611,7 +596,7 @@
       }
     },
     "MiniMaxAI/MiniMax-M3": {
-      "model": "minimax/minimax-m3",
+      "model": "minimax-m/minimax-m3",
       "matchingModel": "MiniMaxAI/MiniMax-M3",
       "overrides": {
         "contextWindow": 524288,
@@ -724,7 +709,7 @@
       }
     },
     "Qwen/Qwen3.7-Max": {
-      "model": "qwen/qwen3-7-max",
+      "model": "qwen-max/qwen3-7-max",
       "matchingModel": "Qwen/Qwen3.7-Max",
       "overrides": {
         "contextWindow": 256000,
@@ -740,7 +725,7 @@
       ]
     },
     "moonshotai/Kimi-K3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "moonshotai/Kimi-K3",
       "overrides": {
         "speed": 2,
@@ -759,7 +744,7 @@
       }
     },
     "thinkingmachines/Inkling-Small": {
-      "model": "ling/inkling-small",
+      "model": "inkling-small/inkling-small",
       "matchingModel": "thinkingmachines/Inkling-Small",
       "overrides": {
         "contextWindow": 524288,
@@ -794,7 +779,7 @@
       }
     },
     "Qwen/Qwen3.8-Max": {
-      "model": "qwen/qwen3-8-max",
+      "model": "qwen-max/qwen3-8-max",
       "matchingModel": "Qwen/Qwen3.8-Max",
       "overrides": {
         "contextWindow": 256000,
@@ -815,6 +800,7 @@
           "tool_use",
           "coding"
         ],
+        "contextComplexity": 4,
         "speed": 2,
         "lastUpdated": "August 3, 2026",
         "costPer1kInputTokens": 0.00165,
@@ -860,7 +846,7 @@
       }
     },
     "ByteDance/Seed-2.0-code": {
-      "model": "seed/seed-2-0-code",
+      "model": "seed-code/seed-2-0-code",
       "matchingModel": "ByteDance/Seed-2.0-code",
       "overrides": {
         "modalities": {
@@ -887,7 +873,7 @@
       }
     },
     "ByteDance/Seed-2.0-mini": {
-      "model": "seed/seed-2-0-mini",
+      "model": "seed-mini/seed-2-0-mini",
       "matchingModel": "ByteDance/Seed-2.0-mini",
       "overrides": {
         "contextWindow": 256000,
@@ -914,7 +900,7 @@
       }
     },
     "ByteDance/Seed-2.0-pro": {
-      "model": "seed/seed-2-0-pro",
+      "model": "seed-pro/seed-2-0-pro",
       "matchingModel": "ByteDance/Seed-2.0-pro",
       "overrides": {
         "modalities": {
@@ -943,7 +929,7 @@
       "model": "qwen/qwen3-30b-a3b",
       "matchingModel": "Qwen/Qwen3-30B-A3B",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 28, 2025",
         "costPer1kInputTokens": 0.00012,
         "costPer1kOutputTokens": 0.0005,
@@ -951,7 +937,7 @@
       }
     },
     "Qwen/Qwen3-VL-235B-A22B-Instruct": {
-      "model": "qwen/qwen3-vl-235b-a22b-instruct",
+      "model": "qwen-vl/qwen3-vl-235b-a22b-instruct",
       "matchingModel": "Qwen/Qwen3-VL-235B-A22B-Instruct",
       "overrides": {
         "speed": 2,
@@ -1095,7 +1081,7 @@
       }
     },
     "Qwen/Qwen3.8-Flash": {
-      "model": "qwen/qwen3-8-flash",
+      "model": "qwen-flash/qwen3-8-flash",
       "matchingModel": "Qwen/Qwen3.8-Flash",
       "overrides": {
         "lastUpdated": "August 26, 2026",
@@ -1104,7 +1090,7 @@
       }
     },
     "XiaomiMiMo/MiMo-V2.6-Flash": {
-      "model": "mimo/mimo-v2-6-flash",
+      "model": "mimo-flash/mimo-v2-6-flash",
       "matchingModel": "XiaomiMiMo/MiMo-V2.6-Flash",
       "overrides": {
         "modalities": {
@@ -1126,7 +1112,7 @@
       }
     },
     "XiaomiMiMo/MiMo-V2.6-Pro": {
-      "model": "mimo/mimo-v2-6-pro",
+      "model": "mimo-pro/mimo-v2-6-pro",
       "matchingModel": "XiaomiMiMo/MiMo-V2.6-Pro",
       "overrides": {
         "modalities": {
@@ -1148,7 +1134,7 @@
       }
     },
     "tencent/Hy4-preview": {
-      "model": "Hy/hy4-preview",
+      "model": "hy/hy4-preview",
       "matchingModel": "tencent/Hy4-preview",
       "overrides": {
         "isFeatured": true,
@@ -1156,10 +1142,13 @@
         "costPer1kInputTokens": 0.000834,
         "costPer1kOutputTokens": 0.002501,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "contextComplexity"
+      ]
     },
     "Qwen/Qwen3-VL-30B-A3B-Instruct": {
-      "model": "qwen/qwen3-vl-30b-a3b-instruct",
+      "model": "qwen-vl/qwen3-vl-30b-a3b-instruct",
       "matchingModel": "Qwen/Qwen3-VL-30B-A3B-Instruct",
       "overrides": {
         "maxTokens": 32768,
@@ -1193,7 +1182,7 @@
       }
     },
     "meta-llama/Llama-Guard-4-12B": {
-      "model": "llama/llama-guard-4-12b",
+      "model": "llama-guard/llama-guard-4-12b",
       "matchingModel": "meta-llama/Llama-Guard-4-12B",
       "overrides": {
         "maxTokens": 163840,
@@ -1250,11 +1239,9 @@
       "model": "ling/ling-3-1-flash",
       "matchingModel": "inclusionAI/Ling-3.1-flash",
       "overrides": {
-        "openWeights": false,
         "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Ling 3.1 Flash is no longer offered by DeepInfra.",
-        "releaseDate": "November 7, 2026",
         "lastUpdated": "November 7, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0009,
@@ -1266,29 +1253,15 @@
       "model": "muse/muse-glimmer-30b",
       "matchingModel": "meta-models/Muse-Glimmer-30B",
       "overrides": {
-        "openWeights": false,
-        "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "November 7, 2026",
         "lastUpdated": "November 7, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
         "supportsResponseFormat": false,
         "supportsAttachments": false
-      },
-      "unset": [
-        "contextComplexity"
-      ]
+      }
     },
     "moonshotai/Kimi-K3.1-Pro": {
-      "model": "kimi-k3/kimi-k3-1-pro",
+      "model": "kimi-pro/kimi-k3-1-pro",
       "matchingModel": "moonshotai/Kimi-K3.1-Pro",
       "overrides": {
         "maxTokens": 943718,
@@ -1346,27 +1319,16 @@
         "costPer1kOutputTokens": 0.00016,
         "supportsResponseFormat": false,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "reasoningConfig"
+      ]
     },
     "nvidia/NVIDIA-Nemotron-3.5-Super-VL": {
       "model": "nemotron/nemotron-3-5-super-vl",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3.5-Super-VL",
       "overrides": {
-        "openWeights": false,
-        "contextWindow": 262144,
-        "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "contextComplexity": 4,
         "speed": 5,
-        "releaseDate": "November 7, 2026",
         "lastUpdated": "November 7, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0005,
@@ -1374,10 +1336,9 @@
       }
     },
     "Qwen/Qwen4-Max": {
-      "model": "qwen/qwen4-max",
+      "model": "qwen-max/qwen4-max",
       "matchingModel": "Qwen/Qwen4-Max",
       "overrides": {
-        "maxTokens": 262144,
         "speed": 3,
         "lastUpdated": "November 16, 2026",
         "costPer1kInputTokens": 0.001413,
@@ -1385,7 +1346,7 @@
       }
     },
     "thinkingmachines/Inkling-2-Small": {
-      "model": "ling/inkling-2-small",
+      "model": "inkling-small/inkling-2-small",
       "matchingModel": "thinkingmachines/Inkling-2-Small",
       "overrides": {
         "speed": 4,

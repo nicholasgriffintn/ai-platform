@@ -1,0 +1,74 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "image",
+      "creative",
+      "document"
+    ],
+    "contextComplexity": 4,
+    "reliability": 2,
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+  "models": {
+    "seedream-4-0": {
+      "defaults": {
+        "name": "Seedream 4.0",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "releaseDate": "September 9, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1031,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 9
+            }
+          ]
+        }
+      }
+    },
+    "seedream-4-5": {
+      "defaults": {
+        "name": "Seedream 4.5",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "releaseDate": "December 3, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1030,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 11
+            }
+          ]
+        }
+      }
+    }
+  }
+}

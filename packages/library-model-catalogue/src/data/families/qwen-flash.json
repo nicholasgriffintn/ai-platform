@@ -1,0 +1,302 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+  "models": {
+    "qwen-3-5-flash": {
+      "defaults": {
+        "name": "Qwen 3.5 Flash",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen-3-7-flash": {
+      "defaults": {
+        "name": "Qwen 3.7 Flash",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 991000,
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 15, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen-3-8-flash": {
+      "defaults": {
+        "name": "Qwen 3.8 Flash",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 991000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "August 26, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "xhigh"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "qwen-flash": {
+      "defaults": {
+        "name": "Qwen Flash",
+        "description": "Efficient Qwen model for fast chat, extraction, and high-volume workloads",
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "July 28, 2025",
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen-qwen-3-5-flash": {
+      "defaults": {
+        "name": "Qwen: Qwen 3.5 Flash",
+        "description": "The Qwen3.5 native vision-language Flash models are built on a hybrid architecture that integrates a linear attention mechanism with a sparse mixture-of-experts model, achieving higher inference efficiency. Compared to the 3 series, these models deliver a leap forward in performance for both pure text and multimodal tasks, offering fast response times while balancing inference speed and overall performance.",
+        "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "February 23, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen-qwen3-5-flash": {
+      "defaults": {
+        "name": "Qwen: Qwen3.5-Flash",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "maxTokens": 65536,
+        "releaseDate": "February 25, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3-5-flash": {
+      "defaults": {
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "maxTokens": 65536,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3-6-flash": {
+      "defaults": {
+        "name": "Qwen3.6 Flash",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "maxTokens": 65536,
+        "releaseDate": "April 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3-7-flash": {
+      "defaults": {
+        "name": "Qwen3.7 Flash",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "releaseDate": "July 15, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3-8-flash": {
+      "defaults": {
+        "name": "Qwen3.8 Flash",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "maxTokens": 131072,
+        "releaseDate": "August 26, 2026"
+      }
+    },
+    "qwen3-8-flash-next": {
+      "defaults": {
+        "name": "Qwen3.8 Flash Next",
+        "openWeights": true,
+        "description": "Open-weight experimental preview of the Qwen4 architecture: hybrid-attention MoE (125B total, 6B active) with vision encoder for coding, agent tasks, and image and video understanding",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "August 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 28.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "qwen3-8-flash-next-eu": {
+      "defaults": {
+        "name": "Qwen3.8 Flash Next (EU)",
+        "openWeights": true,
+        "description": "Open-weight experimental preview of the Qwen4 architecture: hybrid-attention MoE (125B total, 6B active) with vision encoder for coding, agent tasks, and image and video understanding",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "August 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 28.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    }
+  }
+}

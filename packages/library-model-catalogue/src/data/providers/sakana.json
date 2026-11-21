@@ -23,7 +23,7 @@
       }
     },
     "fugu-ultra": {
-      "model": "fugu/fugu-ultra",
+      "model": "fugu-ultra/fugu-ultra",
       "matchingModel": "fugu-ultra",
       "overrides": {
         "maxTokens": 1000000,

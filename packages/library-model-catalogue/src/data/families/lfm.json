@@ -1,0 +1,91 @@
+{
+  "defaults": {
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 3,
+    "reliability": 1,
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The lfm family includes models that produce text.",
+  "models": {
+    "lfm2-5-24b-a2b": {
+      "defaults": {
+        "name": "LFM2.5-24B-A2B",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 128000,
+        "releaseDate": "October 13, 2026"
+      }
+    },
+    "lfm3-1-7b": {
+      "defaults": {
+        "name": "LFM3-1.7B",
+        "openWeights": true,
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 262144,
+        "strengths": [
+          "tool_use"
+        ],
+        "releaseDate": "November 6, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "liquidai-lfm2-5-24b-a2b": {
+      "defaults": {
+        "name": "LiquidAI: LFM2.5-24B-A2B",
+        "openWeights": false,
+        "description": "LFM2.5-24B-A2B is a mixture-of-experts reasoning model from Liquid AI with 24B total and 2.45B active parameters. It always reasons before answering and is built for agents that call tools. Liquid...",
+        "contextWindow": 128000,
+        "releaseDate": "October 13, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "liquidai-lfm3-1-7b": {
+      "defaults": {
+        "name": "LiquidAI: LFM3-1.7B",
+        "openWeights": false,
+        "description": "A compact 1.7B-parameter text model with a 256K-token context, post-trained for agents, tool calling, and structured outputs. It reasons before it answers. Prompts and outputs may be retained and used...",
+        "contextWindow": 262144,
+        "releaseDate": "November 6, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    }
+  }
+}

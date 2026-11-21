@@ -1,0 +1,20 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 256000,
+    "maxTokens": 131072,
+    "releaseDate": "February 14, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The seed code family groups related models and their shared configuration.",
+  "models": {
+    "seed-2-0-code": {
+      "defaults": {
+        "name": "Seed 2.0 Code",
+        "description": "ByteDance Seed coding model for multimodal software engineering and long-running agents"
+      }
+    }
+  }
+}

@@ -1,0 +1,210 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 4,
+    "reliability": 1,
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
+  },
+  "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+  "models": {
+    "qwen-qwen2-5-vl-72b-instruct": {
+      "defaults": {
+        "name": "Qwen: Qwen2.5 VL 72B Instruct",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 128000,
+        "maxTokens": 115200,
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "January 26, 2025",
+        "supportsToolCalls": false
+      }
+    },
+    "qwen-qwen3-vl-8b-instruct": {
+      "defaults": {
+        "name": "Qwen: Qwen3 VL 8B Instruct (retires Oct 9)",
+        "openWeights": false,
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 262144,
+        "maxTokens": 235929,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "releaseDate": "October 14, 2025"
+      }
+    },
+    "qwen-vl-ocr": {
+      "defaults": {
+        "name": "Qwen-VL OCR",
+        "openWeights": false,
+        "description": "OCR model for extracting structured text from documents and screenshots",
+        "contextWindow": 34096,
+        "maxTokens": 4096,
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "October 28, 2024",
+        "supportsToolCalls": false
+      }
+    },
+    "qwen2-5-vl-72b-instruct": {
+      "defaults": {
+        "name": "Qwen2.5 VL 72B Instruct",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "knowledgeCutoffDate": "April 2024",
+        "releaseDate": "January 26, 2025",
+        "supportsToolCalls": false
+      }
+    },
+    "qwen3-vl-235b-a22b": {
+      "defaults": {
+        "name": "Qwen3 VL 235B A22B",
+        "description": "Qwen3 VL 235B A22B is a 235B-parameter MoE vision-language flagship model (≈22B active) designed for frontier-level multimodal understanding across text, images, documents, and long videos.",
+        "contextWindow": 256000,
+        "maxTokens": 32768,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "March 31, 2025",
+        "releaseDate": "September 23, 2025",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3-vl-235b-a22b-instruct": {
+      "defaults": {
+        "name": "Qwen3 VL 235B A22B Instruct",
+        "description": "Qwen vision-language instruct model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "March 31, 2025",
+        "releaseDate": "September 23, 2025"
+      }
+    },
+    "qwen3-vl-235b-a22b-thinking": {
+      "defaults": {
+        "name": "Qwen3 VL 235B A22B Thinking",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "knowledgeCutoffDate": "March 31, 2025",
+        "releaseDate": "September 23, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "qwen3-vl-30b-a3b": {
+      "defaults": {
+        "name": "Qwen3-VL 30B-A3B",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "strengths": [
+          "vision",
+          "tool_use",
+          "document"
+        ],
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "April 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "qwen3-vl-30b-a3b-instruct": {
+      "defaults": {
+        "name": "Qwen3 VL 30B A3B Instruct",
+        "description": "Open vision-language MoE model for image and video understanding, documents, and visual agents",
+        "contextWindow": 262144,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "March 31, 2025",
+        "releaseDate": "October 4, 2025"
+      }
+    },
+    "qwen3-vl-8b-instruct": {
+      "defaults": {
+        "name": "Qwen3 VL 8B Instruct",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 262144,
+        "maxTokens": 235929,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "releaseDate": "October 14, 2025"
+      }
+    },
+    "qwen3-vl-instruct": {
+      "defaults": {
+        "name": "Qwen3 VL Instruct",
+        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "knowledgeCutoffDate": "April 2025",
+        "releaseDate": "September 23, 2025"
+      }
+    }
+  }
+}
