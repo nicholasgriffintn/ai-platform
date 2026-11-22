@@ -8,6 +8,7 @@ export * from "./response-style.js";
 export * from "./teammate-computers.js";
 export * from "./agent-modes.js";
 export * from "./tool-effects.js";
+export * from "./tool-use-evals.js";
 export * from "./reactions.js";
 export * from "./tool-receipts.js";
 export * from "./analytics.js";

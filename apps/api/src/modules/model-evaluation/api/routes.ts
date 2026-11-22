@@ -14,6 +14,8 @@ import {
   registryRunParamsSchema,
   registrySuiteParamsSchema,
   registryWorkspaceParamsSchema,
+  regradeEvalRunRequestSchema,
+  regradeEvalRunResponseSchema,
   routineSuccessListResponseSchema,
   startEvalRunsRequestSchema,
 } from "@ngriffin_uk/polychat-schemas";
@@ -37,6 +39,7 @@ import {
   readEvalCaseResults,
   startEvalRuns,
 } from "~/modules/model-evaluation/application/suites";
+import { regradeEvalRun } from "~/modules/model-evaluation/application/tool-use/regrade";
 
 const app = new Hono();
 const tags = ["model-evaluation"];
@@ -166,6 +169,19 @@ addRoute(app, "get", `${base}/eval_runs/:run_id/results`, {
   responses: { 200: { description: "Case results", schema: evalCaseResultsResponseSchema } },
   handler: ({ serviceContext, params }) =>
     readEvalCaseResults(serviceContext, params.workspace_id, params.run_id),
+});
+
+addRoute(app, "post", `${base}/eval_runs/:run_id/regrade`, {
+  auth: true,
+  tags,
+  summary: "Regrade a tool-use run against its suite's current expectations",
+  description:
+    "Re-scores the stored samples without calling the model again. Pass a baseline run of the same suite to list the cases that passed there and fail now.",
+  paramSchema: registryRunParamsSchema,
+  bodySchema: regradeEvalRunRequestSchema,
+  responses: { 200: { description: "Regraded run", schema: regradeEvalRunResponseSchema } },
+  handler: ({ serviceContext, params, body }) =>
+    regradeEvalRun(serviceContext, params.workspace_id, params.run_id, body),
 });
 
 export default app;

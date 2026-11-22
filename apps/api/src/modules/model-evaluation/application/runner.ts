@@ -33,12 +33,14 @@ import {
   writeEvalResults,
   type EvalJudge,
 } from "./run-results";
+import { runToolUseCase } from "./tool-use/case-runner";
 
 export { readEvalResults } from "./run-results";
 
 const logger = getLogger({ prefix: "modules/model-evaluation/runner" });
 
 const CASES_PER_TASK = 20;
+const TOOL_USE_CASES_PER_TASK = 4;
 const DEPLOYMENT_READINESS_ATTEMPTS = 18;
 const DEPLOYMENT_READINESS_DELAY_MS = 10 * 60 * 1000;
 
@@ -54,6 +56,10 @@ async function runCase(
   const started = Date.now();
 
   try {
+    if (suite.suite_kind === "tool_use") {
+      return await runToolUseCase({ env, user: judge.user, route, item });
+    }
+
     const completion = await completeWorkspaceRoute(
       env,
       repositories,
@@ -74,6 +80,7 @@ async function runCase(
     );
   } catch (error) {
     return failedCaseResult(
+      suite,
       graders,
       item,
       getErrorMessage(error, "Unknown error"),
@@ -180,7 +187,10 @@ export async function executeEvalRun(
     const judge = await resolveEvaluationJudge(env, repositories, suite, run);
     const graders = await repositories.get(ModelGraderRepository).listByIds(suite.grader_ids);
     const previous = data.offset > 0 ? await readEvalResults(bucket, run.id) : [];
-    const batch = cases.slice(data.offset, data.offset + CASES_PER_TASK);
+    const batch = cases.slice(
+      data.offset,
+      data.offset + (suite.suite_kind === "tool_use" ? TOOL_USE_CASES_PER_TASK : CASES_PER_TASK),
+    );
     const fresh: EvalCaseResult[] = [];
 
     for (const item of batch) {

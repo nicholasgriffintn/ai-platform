@@ -143,7 +143,13 @@ export async function executeBatchedEvalRun(
     results.push(
       typeof result?.text === "string"
         ? await gradeCaseOutput(env, repositories, suite, graders, item, result.text, 0, judge)
-        : failedCaseResult(graders, item, result?.error ?? "The batch returned no result", 0),
+        : failedCaseResult(
+            suite,
+            graders,
+            item,
+            result?.error ?? "The batch returned no result",
+            0,
+          ),
     );
   }
 

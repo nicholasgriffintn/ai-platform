@@ -1,6 +1,7 @@
 import { isMeaningfullyLower, summariseScores } from "@ngriffin_uk/polychat-library-model-registry";
 import {
   evalCaseResultSchema,
+  TOOL_USE_EVAL_METRIC,
   type EvalCase,
   type EvalCaseResult,
   type ReasoningEffort,
@@ -67,21 +68,32 @@ export async function writeEvalResults(
   });
 }
 
+export function suiteMetrics(
+  suite: Pick<ModelEvalSuiteRecord, "suite_kind">,
+  graders: readonly ModelGraderRecord[],
+): string[] {
+  return suite.suite_kind === "tool_use"
+    ? [TOOL_USE_EVAL_METRIC]
+    : graders.map((grader) => grader.metric);
+}
+
 export function failedCaseResult(
+  suite: Pick<ModelEvalSuiteRecord, "suite_kind">,
   graders: readonly ModelGraderRecord[],
   item: EvalCase,
   error: string,
   latencyMs: number,
 ): EvalCaseResult {
+  const scoredOnFailure = suiteMetrics(
+    suite,
+    graders.filter((grader) => grader.config.kind !== "judge"),
+  );
+
   return {
     caseId: item.id,
     output: "",
     latencyMs,
-    scores: Object.fromEntries(
-      graders
-        .filter((grader) => grader.config.kind !== "judge")
-        .map((grader) => [grader.metric, 0]),
-    ),
+    scores: Object.fromEntries(scoredOnFailure.map((metric) => [metric, 0])),
     error,
   };
 }
@@ -121,20 +133,28 @@ export async function gradeCaseOutput(
   return { caseId: item.id, output, latencyMs, scores };
 }
 
+export function summariseMetrics(
+  metrics: readonly string[],
+  results: readonly EvalCaseResult[],
+): Record<string, ScoreSummary> {
+  return Object.fromEntries(
+    metrics.map((metric) => [
+      metric,
+      summariseScores(
+        results.flatMap((result) =>
+          result.scores[metric] === undefined ? [] : [result.scores[metric]],
+        ),
+      ),
+    ]),
+  );
+}
+
 function summarise(
-  graders: readonly ModelGraderRecord[],
+  metrics: readonly string[],
   results: readonly EvalCaseResult[],
   measureLatency: boolean,
 ) {
-  const scores: Record<string, ScoreSummary> = {};
-
-  for (const grader of graders) {
-    scores[grader.metric] = summariseScores(
-      results.flatMap((result) =>
-        result.scores[grader.metric] === undefined ? [] : [result.scores[grader.metric]],
-      ),
-    );
-  }
+  const scores = summariseMetrics(metrics, results);
 
   const latencies = results.filter((result) => !result.error).map((result) => result.latencyMs);
 
@@ -144,13 +164,13 @@ function summarise(
 async function recordRunEvidence(
   repositories: Repositories,
   suite: ModelEvalSuiteRecord,
-  graders: readonly ModelGraderRecord[],
+  metrics: readonly string[],
   run: ModelEvalRunRecord,
   route: ModelRouteRecord,
   scores: Record<string, ScoreSummary>,
   errors: number,
 ): Promise<void> {
-  const primaryMetric = graders[0]?.metric;
+  const primaryMetric = metrics[0];
   const primary = primaryMetric ? scores[primaryMetric] : undefined;
   const evidence: AddEvidenceInput[] = [
     {
@@ -224,10 +244,11 @@ export async function completeEvalRun(
   },
 ): Promise<void> {
   const { suite, graders, run, route, results, measureLatency } = input;
-  const { scores, latencyP95Ms } = summarise(graders, results, measureLatency);
+  const metrics = suiteMetrics(suite, graders);
+  const { scores, latencyP95Ms } = summarise(metrics, results, measureLatency);
   const errors = results.filter((result) => result.error).length;
 
   await repositories.get(ModelEvalRepository).updateRunScores(run.id, scores, latencyP95Ms);
-  await recordRunEvidence(repositories, suite, graders, run, route, scores, errors);
+  await recordRunEvidence(repositories, suite, metrics, run, route, scores, errors);
   await syncVersionReviews(repositories, route.workspace_id, run.version_id);
 }

@@ -24,5 +24,6 @@ const { dangerous } = summarisePickleScan(scanPickle(bytes));
 - **Static inspection:** `readSafetensorsHeaderLength`, `parseSafetensorsHeader`, `parseGgufHeader`, `locateZipDirectory`, `parseZipDirectory`, `scanPickle` (opcode walk, never unpickles), `assessChatTemplate`, `assessRemoteCode`, `assessCard` and `collectWeightFormats`.
 - **Datasets:** `assessPiiSample` and `countPii` (emails, phone numbers, Luhn-checked card numbers, UK NI numbers, IP addresses).
 - **Evaluation:** `scoreDeterministic`, `buildJudgePrompt`, `parseJudgeScore`, `parseEvalCaseLines`, `summariseScores` (Wilson intervals for pass/fail, normal intervals otherwise) and `isMeaningfullyLower`.
+- **Tool use:** `gradeToolUse`, `matchesToolArgs`, `findMonotoneFailure` (checks a growing trajectory can never recover from, so a sample can stop early), `resolveToolUseCaseVerdict` and `findToolUseRegressions`, also exported from `./tool-use` without the policy engine.
 - **Compute and lineage:** `estimateTrainingFlops`, `assessModificationCompute` (EU AI Act one-third threshold), `collectAncestry` and `buildMlBom` (CycloneDX 1.6).
 - **Routes:** `resolveProviderRegion` and `matchesSourceReference`.

@@ -1,5 +1,5 @@
 import type {
-  CreateEvalSuiteRequest,
+  CreateEvalSuiteInput,
   CreateGraderRequest,
   EvalCaseResult,
   EvalRun,
@@ -63,7 +63,7 @@ export async function listEvalSuites(
 
 export function createEvalSuite(
   workspaceId: string,
-  input: CreateEvalSuiteRequest,
+  input: CreateEvalSuiteInput,
 ): Promise<EvalSuite> {
   return platformRequest(workspacePath(workspaceId, "/eval_suites"), {
     method: "POST",
