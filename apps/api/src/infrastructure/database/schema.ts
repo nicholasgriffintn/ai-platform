@@ -1608,6 +1608,49 @@ export const conversationRunCommand = sqliteTable(
 
 export type ConversationRunCommandRow = typeof conversationRunCommand.$inferSelect;
 
+export const conversationRunEffect = sqliteTable(
+  "conversation_run_effect",
+  {
+    id: text().primaryKey(),
+    conversation_id: text().notNull(),
+    run_id: text()
+      .notNull()
+      .references(() => conversationRun.id, { onDelete: "cascade" }),
+    run_attempt: integer().notNull(),
+    kind: text({ enum: ["cancel_cleanup", "release_follow_up", "approval_respond"] }).notNull(),
+    actor_user_id: integer(),
+    owner_token: text(),
+    status: text({ enum: ["pending", "running", "succeeded", "failed", "cancelled"] })
+      .notNull()
+      .default("pending"),
+    attempt_count: integer().notNull().default(0),
+    available_at: text().notNull(),
+    lease_owner: text(),
+    lease_expires_at: text(),
+    last_error: text(),
+    created_at: text().notNull(),
+    updated_at: text().notNull(),
+  },
+  (table) => ({
+    runKindIdx: uniqueIndex("conversation_run_effect_run_kind_idx").on(
+      table.run_id,
+      table.run_attempt,
+      table.kind,
+    ),
+    drainIdx: index("conversation_run_effect_drain_idx").on(
+      table.conversation_id,
+      table.status,
+      table.available_at,
+    ),
+    statusUpdatedIdx: index("conversation_run_effect_status_updated_idx").on(
+      table.status,
+      table.updated_at,
+    ),
+  }),
+);
+
+export type ConversationRunEffectRow = typeof conversationRunEffect.$inferSelect;
+
 export const goal = sqliteTable(
   "goal",
   {

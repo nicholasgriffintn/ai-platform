@@ -22,7 +22,11 @@ import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
 import { ConversationRepository } from "~/modules/conversations/infrastructure/ConversationRepository";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
-import { isThreadLeaseOwnershipLostError } from "~/modules/conversations/infrastructure/coordinator/client";
+import {
+  isThreadLeaseOwnershipLostError,
+  type ThreadLease,
+} from "~/modules/conversations/infrastructure/coordinator/client";
+import { RunEffectRepository } from "~/modules/conversations/infrastructure/RunEffectRepository";
 import { DelegationRepository } from "~/modules/delegations/infrastructure/DelegationRepository";
 import { ProjectTaskRepository } from "~/modules/project-tasks/infrastructure/ProjectTaskRepository";
 import { reconcileRecipeExecutionTask } from "~/modules/recipes/application/task-reconciliation";
@@ -41,6 +45,7 @@ import { resolveChatProjectAccess } from "~/modules/workspaces/application/chatP
 import type { CoreChatOptions } from "~/types";
 
 import { buildChatRunCommandPayload } from "./command-payload";
+import { claimProcessBoundRunEffect, type ProcessBoundEffectClaim } from "./effects";
 import { releaseQueuedFollowUpAfterRun } from "./follow-up-queue";
 import { readToolInteractionId } from "./interactions";
 import { recordChatRunOperationalMetric } from "./operational-metrics";
@@ -161,6 +166,7 @@ async function buildRunCommand(
   scope: AuthorisedRunScope,
   options: CoreChatOptions,
   commandId: string,
+  executionOwnerToken?: string,
 ) {
   const interactionId = readToolInteractionId(options.options);
   const interactionRun = interactionId
@@ -194,6 +200,7 @@ async function buildRunCommand(
       : {}),
     ...(requestedRunId ? { runId: requestedRunId } : {}),
     ...(requestedRunId && interactionId ? { interactionId } : {}),
+    ...(executionOwnerToken ? { executionOwnerToken } : {}),
   };
 }
 
@@ -211,6 +218,7 @@ export class ChatRunLifecycle {
     readonly receipt: ChatRunCommandReceipt,
     private readonly env?: CoreChatOptions["env"],
     private readonly serviceContext?: ServiceContext,
+    private readonly lease?: ThreadLease,
   ) {}
 
   get run(): ChatRun {
@@ -314,6 +322,24 @@ export class ChatRunLifecycle {
     }
 
     return updated;
+  }
+
+  async claimApprovalResponse(): Promise<ProcessBoundEffectClaim> {
+    if (!this.serviceContext || !this.lease) {
+      throw new AssistantError(
+        "This approval is not bound to a live session",
+        ErrorType.CONFLICT_ERROR,
+        409,
+      );
+    }
+
+    return claimProcessBoundRunEffect({
+      repository: this.serviceContext.repositories.get(RunEffectRepository),
+      fence: this.lease,
+      runId: this.run.id,
+      runAttempt: this.run.attempt,
+      kind: "approval_respond",
+    });
   }
 
   async checkpointPartialContent(content: string): Promise<boolean> {
@@ -496,7 +522,10 @@ async function announceAcceptedRun(context: ServiceContext, run: ChatRun): Promi
   }
 }
 
-export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLifecycle | null> {
+export async function acceptChatRun(
+  options: CoreChatOptions,
+  lease?: ThreadLease,
+): Promise<ChatRunLifecycle | null> {
   const scope = await authoriseRunScope(options);
 
   if (!scope) {
@@ -506,7 +535,7 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
   const commandId = options.command_id ?? generateId();
   const receipt = await scope.context.repositories
     .get(ConversationRunRepository)
-    .acceptCommand(await buildRunCommand(scope, options, commandId));
+    .acceptCommand(await buildRunCommand(scope, options, commandId, lease?.ownerToken));
 
   if (receipt.duplicate) {
     recordChatRunOperationalMetric(scope.context.env, {
@@ -566,5 +595,6 @@ export async function acceptChatRun(options: CoreChatOptions): Promise<ChatRunLi
     receipt,
     scope.context.env,
     scope.context,
+    lease,
   );
 }

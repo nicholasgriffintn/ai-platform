@@ -78,7 +78,10 @@ function decision(callId: string, resolution: "approved" | "rejected") {
   };
 }
 
-function resolve(interactions: ReturnType<typeof decision>[]) {
+function resolve(
+  interactions: ReturnType<typeof decision>[],
+  claimApproval = vi.fn(async () => ({ succeed: vi.fn(), fail: vi.fn() })),
+) {
   const update = vi.fn();
   const request: IRequest = {
     env: {} as unknown as IEnv,
@@ -96,6 +99,7 @@ function resolve(interactions: ReturnType<typeof decision>[]) {
 
   return {
     update,
+    claimApproval,
     result: resolveApprovedToolInteraction({
       conversationId: "conversation-1",
       conversationManager: { update } as unknown as ConversationManager,
@@ -103,6 +107,7 @@ function resolve(interactions: ReturnType<typeof decision>[]) {
       providerMessages: messages,
       request,
       run,
+      claimApproval,
     }),
   };
 }
@@ -138,6 +143,20 @@ describe("resolveApprovedToolInteraction", () => {
       ["tool-call-2", "The user rejected the proposed action."],
     ]);
     expect(update).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not run the approved action when the session can no longer claim it", async () => {
+    const refused = Object.assign(new Error("not live"), { statusCode: 409 });
+    const { result, update } = resolve(
+      [decision("call-1", "approved"), decision("call-2", "rejected")],
+      vi.fn(async () => {
+        throw refused;
+      }),
+    );
+
+    await expect(result).rejects.toBe(refused);
+    expect(handleToolCalls).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
   });
 
   it("refuses a partial set so the model never resumes with approvals still open", async () => {

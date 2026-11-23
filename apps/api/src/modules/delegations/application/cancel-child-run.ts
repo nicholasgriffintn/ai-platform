@@ -8,7 +8,7 @@ import { sha256Hex } from "@ngriffin_uk/polychat-utility-server/crypto";
 
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
-import { cleanupCancelledChatRun } from "~/modules/responses/application/runs/cancellation-cleanup";
+import { signalRunEffects } from "~/modules/conversations/infrastructure/coordinator/client";
 
 export async function cancelDelegationChildRun(
   context: ServiceContext,
@@ -44,8 +44,6 @@ export async function cancelDelegationChildRun(
     userId,
   });
 
-  await cleanupCancelledChatRun(context, run);
-
   if (!isTerminalChatRunStatus(receipt.run.status)) {
     await context.repositories.get(ConversationRunRepository).transition({
       runId: run.id,
@@ -54,4 +52,6 @@ export async function cancelDelegationChildRun(
       terminalReason: reason,
     });
   }
+
+  await signalRunEffects(context.env, delegation.childConversationId);
 }

@@ -10,11 +10,9 @@ import { AssistantError, ErrorType } from "@ngriffin_uk/polychat-utility-server/
 import type { ServiceContext } from "~/infrastructure/context/serviceContext";
 import { resolveTelemetryIdentity } from "~/infrastructure/telemetry";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
-import { cancelDelegationTree } from "~/modules/delegations/application/cancel-tree";
+import { signalRunEffects } from "~/modules/conversations/infrastructure/coordinator/client";
 import { recordTurnCancellationRequested } from "~/modules/responses/application/engine/streaming/continuity-telemetry";
 
-import { cleanupCancelledChatRun } from "./cancellation-cleanup";
-import { releaseQueuedFollowUpAfterRun } from "./follow-up-queue";
 import { recordChatRunOperationalMetric } from "./operational-metrics";
 import { requireChatRunAccess } from "./status";
 
@@ -76,8 +74,6 @@ export async function handleCancelChatRun(
     });
   }
 
-  await cleanupCancelledChatRun(context, run);
-
   if (!receipt.duplicate) {
     recordTurnCancellationRequested(
       {
@@ -89,8 +85,7 @@ export async function handleCancelChatRun(
     );
   }
 
-  await cancelDelegationTree(context, run.id);
-  await releaseQueuedFollowUpAfterRun(context, receipt.run);
+  await signalRunEffects(context.env, receipt.run.conversationId);
 
   return { run: receipt };
 }

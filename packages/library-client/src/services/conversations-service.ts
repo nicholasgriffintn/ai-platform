@@ -33,7 +33,7 @@ import {
   type RecordOffPlatformUsageRequest,
 } from "@ngriffin_uk/polychat-schemas";
 import { goalSchema } from "@ngriffin_uk/polychat-schemas/goals";
-import { sortCopy } from "@ngriffin_uk/polychat-utility-core";
+import { generateId, sortCopy } from "@ngriffin_uk/polychat-utility-core";
 
 import { parseCompactConversationResponse } from "../compact-conversation-response.js";
 import {
@@ -461,7 +461,7 @@ export class ConversationsService {
     const response = await fetchApiOrThrow(conversationPath(conversationId, "/queue"), {
       method: "POST",
       headers: await this.getHeaders(),
-      body: input,
+      body: { ...input, idempotency_key: input.idempotency_key ?? generateId() },
     });
 
     return queuedChatMessageSchema.parse(await returnFetchedData<unknown>(response));

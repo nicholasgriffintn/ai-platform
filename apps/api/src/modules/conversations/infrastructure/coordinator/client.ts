@@ -265,6 +265,17 @@ export async function getActiveThreadOperation(params: {
   return parsed.data.status === "running" ? parsed.data.currentOperation : null;
 }
 
+export async function signalRunEffects(
+  env: IEnv | undefined,
+  conversationId: string,
+): Promise<boolean> {
+  const outcome = await callCoordinator<unknown>(env, conversationId, "/effects/drain", {
+    conversationId,
+  });
+
+  return outcome.status === "ok";
+}
+
 export function threadBusyError(currentOperation?: ThreadOperation | null): AssistantError {
   return new AssistantError(
     currentOperation

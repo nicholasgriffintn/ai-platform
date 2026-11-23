@@ -12,6 +12,7 @@ import type { ConversationManager } from "~/modules/conversations/application/ma
 import { buildMessageParts } from "~/modules/responses/application/engine/messages/parts";
 import { APPROVAL_DECLINED_NEXT } from "~/modules/responses/application/engine/tools/approval";
 import { handleToolCalls } from "~/modules/responses/application/engine/tools/execution";
+import type { ProcessBoundEffectClaim } from "~/modules/responses/application/runs/effects";
 import { ToolCallType } from "~/types";
 import type { IRequest, Message, ToolCall } from "~/types";
 
@@ -373,6 +374,7 @@ export async function resolveApprovedToolInteraction(params: {
   providerMessages: readonly Message[];
   request: IRequest;
   run: ChatRun | null;
+  claimApproval: () => Promise<ProcessBoundEffectClaim>;
 }): Promise<ApprovedToolInteractionResult | undefined> {
   const interactions = readToolInteractions(params.request.request?.options);
 
@@ -429,7 +431,18 @@ export async function resolveApprovedToolInteraction(params: {
       resolvedAt,
     });
   });
-  const executed = await executeApprovedTools(prepared, params);
+  const claim = await params.claimApproval();
+  let executed: Map<string, Message>;
+
+  try {
+    executed = await executeApprovedTools(prepared, params);
+  } catch (error) {
+    await claim.fail(error);
+    throw error;
+  }
+
+  await claim.succeed();
+
   const toolResults = prepared.map((approval) =>
     settledToolResult(approval, executed.get(approval.toolCall.id)),
   );

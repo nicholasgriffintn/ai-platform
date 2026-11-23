@@ -4,6 +4,8 @@ import { getErrorMessage } from "@ngriffin_uk/polychat-utility-server/errors";
 
 import { createServiceContext } from "~/infrastructure/context/serviceContext";
 import { ConversationRunRepository } from "~/modules/conversations/infrastructure/ConversationRunRepository";
+import { signalRunEffects } from "~/modules/conversations/infrastructure/coordinator/client";
+import { RunEffectRepository } from "~/modules/conversations/infrastructure/RunEffectRepository";
 import type { IEnv } from "~/types";
 
 import { releaseStrandedQueuedFollowUps } from "./follow-up-queue";
@@ -34,6 +36,21 @@ export async function sweepInterruptedChatRuns(env: IEnv, now = new Date()): Pro
         error: getErrorMessage(error),
       });
     }
+  }
+
+  try {
+    const conversationIds = await context.repositories
+      .get(RunEffectRepository)
+      .listConversationsNeedingDrain({
+        staleBefore: new Date(updatedBefore),
+        limit: SWEEP_BATCH_SIZE,
+      });
+
+    for (const conversationId of conversationIds) {
+      await signalRunEffects(env, conversationId);
+    }
+  } catch (error) {
+    logger.warn("Could not resume stalled run effects", { error: getErrorMessage(error) });
   }
 
   try {

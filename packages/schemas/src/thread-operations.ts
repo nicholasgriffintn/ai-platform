@@ -59,6 +59,10 @@ export const threadLeaseOwnershipSchema = z.discriminatedUnion("owned", [
 
 export const threadLeaseReleaseSchema = z.object({ released: z.boolean() });
 
+export const threadEffectsDrainRequestSchema = z.object({
+  conversationId: z.string().min(1),
+});
+
 export type ThreadLeaseAcquisition = z.infer<typeof threadLeaseAcquisitionSchema>;
 export type ThreadLeaseRenewal = z.infer<typeof threadLeaseRenewalSchema>;
 export type ThreadLeaseOwnership = z.infer<typeof threadLeaseOwnershipSchema>;

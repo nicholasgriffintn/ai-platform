@@ -249,7 +249,7 @@ export class ChatOrchestrator {
       let result: Awaited<ReturnType<typeof this.executeRequest>>;
 
       try {
-        runLifecycle = await withConversationReadWindow(() => acceptChatRun(options));
+        runLifecycle = await withConversationReadWindow(() => acceptChatRun(options, threadLease));
 
         if (runLifecycle?.receipt.duplicate) {
           await release();
@@ -458,6 +458,7 @@ export class ChatOrchestrator {
             providerMessages: messages,
             request: toolRequestContext,
             run: runLifecycle.run,
+            claimApproval: () => runLifecycle.claimApprovalResponse(),
           })
         : undefined;
 
