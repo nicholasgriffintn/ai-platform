@@ -1,46 +1,37 @@
 {
   "defaults": {
     "openWeights": true,
-    "contextWindow": 1048576,
-    "maxTokens": 1048576,
-    "modalities": {
-      "input": [
-        "text",
-        "image"
-      ],
-      "output": [
-        "text"
-      ]
-    },
+    "maxTokens": 131072,
     "releaseDate": "July 16, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": false
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "high",
+        "max"
+      ],
+      "defaultEffort": "low"
+    }
   },
   "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
   "models": {
-    "kimi-fast-latest": {
-      "defaults": {
-        "name": "Kimi Fast Latest",
-        "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
     "kimi-k3": {
       "defaults": {
         "name": "Kimi K3",
         "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
+        "contextWindow": 1048576,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
-          "vision",
           "document",
           "tool_use",
           "coding"
@@ -52,130 +43,6 @@
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "kimi-k3-1-pro": {
-      "defaults": {
-        "name": "Kimi K3.1 Pro",
-        "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
-        "strengths": [
-          "vision",
-          "video",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 5,
-        "reliability": 2,
-        "releaseDate": "October 23, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": 46.5,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "kimi-k3-1-pro-eu": {
-      "defaults": {
-        "name": "Kimi K3.1 Pro (EU)",
-        "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
-        "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "video",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 5,
-        "reliability": 2,
-        "releaseDate": "October 23, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 46.5,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "kimi-k3-1-pro-highspeed": {
-      "defaults": {
-        "name": "Kimi K3.1 Pro Highspeed",
-        "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "October 23, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "kimi-k3-1-pro-highspeed-global": {
-      "defaults": {
-        "name": "Kimi K3.1 Pro Highspeed (Global)",
-        "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
-        "releaseDate": "October 23, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "kimi-k3-1-pro-highspeed-us": {
-      "defaults": {
-        "name": "Kimi K3.1 Pro Highspeed (US)",
-        "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
-        "releaseDate": "October 23, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
         }
       }
     },
@@ -184,245 +51,14 @@
         "name": "Kimi K3-256K",
         "description": "256K-context version of Kimi K3, reducing token consumption for shorter coding sessions",
         "contextWindow": 262144,
-        "maxTokens": 131072,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "kimi-k3-eu": {
-      "defaults": {
-        "name": "Kimi K3 (EU)",
-        "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
-        "maxTokens": 65536,
         "modalities": {
           "input": [
             "text",
-            "image",
-            "video"
+            "image"
           ],
           "output": [
             "text"
           ]
-        },
-        "strengths": [
-          "vision",
-          "video",
-          "document",
-          "tool_use",
-          "coding"
-        ],
-        "contextComplexity": 4,
-        "reliability": 4,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "kimi-k3-fast": {
-      "defaults": {
-        "name": "Kimi K3 Fast",
-        "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work"
-      }
-    },
-    "kimi-k3-global": {
-      "defaults": {
-        "name": "Kimi K3 (Global)",
-        "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
-        "maxTokens": 128000,
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use",
-          "coding"
-        ],
-        "contextComplexity": 5,
-        "reliability": 4,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "kimi-k3-tee": {
-      "defaults": {
-        "name": "Kimi K3 TEE",
-        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
-        "maxTokens": 65535,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "supportsTemperature": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "kimi-k3-us": {
-      "defaults": {
-        "name": "Kimi K3 (US)",
-        "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
-        "maxTokens": 128000,
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use",
-          "coding"
-        ],
-        "contextComplexity": 5,
-        "reliability": 4,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "kimi-latest": {
-      "defaults": {
-        "name": "Kimi Latest",
-        "description": "Multimodal Kimi model with 1M context and toggleable max-effort thinking for long-horizon agent work",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "moonshotai-kimi-k3-1-pro": {
-      "defaults": {
-        "name": "MoonshotAI: Kimi K3.1 Pro",
-        "description": "Kimi K3.1 Pro is Moonshot AI's flagship open-weight multimodal reasoning model and a post-trained successor to Kimi K3, with a 1M-token context window. It is built for long-horizon coding, 3D...",
-        "maxTokens": 943718,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "video",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 5,
-        "reliability": 2,
-        "releaseDate": "October 23, 2026",
-        "supportsTemperature": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 46.5,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "moonshotai-kimi-k3-1-pro-highspeed": {
-      "defaults": {
-        "name": "MoonshotAI: Kimi K3.1 Pro Highspeed",
-        "openWeights": false,
-        "description": "Kimi K3.1 Pro Highspeed is the high-speed variant of Moonshot AI’s frontier Kimi K3.1 Pro model for complex reasoning, coding, and agentic workflows, with vision, tool use, structured outputs, and long-context support.",
-        "releaseDate": "October 23, 2026",
-        "supportsTemperature": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "moonshotai-kimi-k3-fast": {
-      "defaults": {
-        "name": "MoonshotAI: Kimi K3 Fast",
-        "description": "Fast version of Kimi’s flagship model for long-horizon coding and end-to-end knowledge work, with a 1M-token context window.",
-        "contextWindow": 1000000,
-        "maxTokens": 1000000,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
         }
       }
     }

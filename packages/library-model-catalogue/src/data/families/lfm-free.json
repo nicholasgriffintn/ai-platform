@@ -1,0 +1,66 @@
+{
+  "defaults": {
+    "contextWindow": 262144,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "contextComplexity": 3,
+    "reliability": 1,
+    "releaseDate": "November 6, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The lfm free family includes models that produce text.",
+  "models": {
+    "lfm3-1-7b-free": {
+      "defaults": {
+        "name": "LFM3-1.7B (free)",
+        "openWeights": true,
+        "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads",
+        "strengths": [
+          "tool_use"
+        ],
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "liquidai-lfm3-1-7b-free": {
+      "defaults": {
+        "name": "LiquidAI: LFM3-1.7B (free)",
+        "openWeights": false,
+        "description": "A compact 1.7B-parameter text model with a 256K-token context, post-trained for agents, tool calling, and structured outputs. It reasons before it answers. Prompts and outputs may be retained and used...",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    }
+  }
+}

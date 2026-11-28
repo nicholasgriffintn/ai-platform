@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1000000,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "April 2025",
+    "releaseDate": "July 28, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The qwen coder flash family includes models that produce text.",
+  "models": {
+    "qwen3-coder-flash": {
+      "defaults": {
+        "name": "Qwen3 Coder Flash",
+        "description": "Qwen coding model for software agents, repository edits, and code reasoning"
+      }
+    }
+  }
+}

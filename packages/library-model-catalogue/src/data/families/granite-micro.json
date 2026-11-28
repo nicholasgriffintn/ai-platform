@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 131000,
+    "maxTokens": 131000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 2, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The granite micro family includes models that produce text.",
+  "models": {
+    "granite-4-0-h-micro": {
+      "defaults": {
+        "name": "IBM Granite 4.0 H Micro",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation"
+      }
+    }
+  }
+}

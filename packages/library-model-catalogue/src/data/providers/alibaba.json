@@ -56,7 +56,7 @@
       }
     },
     "qwen-flash": {
-      "model": "qwen/qwen-flash",
+      "model": "qwen-flash/qwen-flash",
       "matchingModel": "qwen-flash",
       "overrides": {
         "lastUpdated": "July 28, 2025",
@@ -66,7 +66,7 @@
       }
     },
     "qwen-max": {
-      "model": "qwen/qwen-max",
+      "model": "qwen-max/qwen-max",
       "matchingModel": "qwen-max",
       "overrides": {
         "lastUpdated": "January 25, 2025",
@@ -76,7 +76,7 @@
       }
     },
     "qwen-mt-plus": {
-      "model": "qwen/qwen-mt-plus",
+      "model": "qwen-mt-plus/qwen-mt-plus",
       "matchingModel": "qwen-mt-plus",
       "overrides": {
         "lastUpdated": "January 2025",
@@ -90,7 +90,7 @@
       ]
     },
     "qwen-plus": {
-      "model": "qwen/qwen-plus",
+      "model": "qwen-plus/qwen-plus",
       "matchingModel": "qwen-plus",
       "overrides": {
         "lastUpdated": "September 11, 2025",
@@ -108,7 +108,7 @@
       }
     },
     "qwen-plus-character-ja": {
-      "model": "qwen/qwen-plus-character-japanese",
+      "model": "qwen-plus/qwen-plus-character-japanese",
       "matchingModel": "qwen-plus-character-ja",
       "overrides": {
         "lastUpdated": "January 2024",
@@ -122,7 +122,7 @@
       ]
     },
     "qwen-vl-ocr": {
-      "model": "qwen/qwen-vl-ocr",
+      "model": "qwen-vl/qwen-vl-ocr",
       "matchingModel": "qwen-vl-ocr",
       "overrides": {
         "lastUpdated": "April 13, 2025",
@@ -131,7 +131,11 @@
         "supportsToolCalls": false
       },
       "unset": [
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
       ]
     },
     "qwen2-5-14b-instruct": {
@@ -199,10 +203,6 @@
       "model": "qwen/qwen2-5-vl-72b-instruct",
       "matchingModel": "qwen2-5-vl-72b-instruct",
       "overrides": {
-        "name": "Qwen2.5-VL 72B Instruct",
-        "contextWindow": 131072,
-        "maxTokens": 8192,
-        "releaseDate": "September 2024",
         "lastUpdated": "September 2024",
         "costPer1kInputTokens": 0.0028,
         "costPer1kOutputTokens": 0.0084,
@@ -226,7 +226,7 @@
       ]
     },
     "qwen3-asr-flash": {
-      "model": "qwen/qwen3-asr-flash",
+      "model": "qwen-asr-flash/qwen3-asr-flash",
       "matchingModel": "qwen3-asr-flash",
       "overrides": {
         "lastUpdated": "September 8, 2025",
@@ -240,7 +240,7 @@
       ]
     },
     "qwen3-coder-flash": {
-      "model": "qwen/qwen3-coder-flash",
+      "model": "qwen-coder-flash/qwen3-coder-flash",
       "matchingModel": "qwen3-coder-flash",
       "overrides": {
         "lastUpdated": "July 28, 2025",
@@ -250,7 +250,7 @@
       }
     },
     "qwen3-omni-flash": {
-      "model": "qwen/qwen3-omni-flash",
+      "model": "qwen-omni-flash/qwen3-omni-flash",
       "matchingModel": "qwen3-omni-flash",
       "overrides": {
         "lastUpdated": "September 15, 2025",
@@ -261,22 +261,8 @@
         "supportsResponseFormat"
       ]
     },
-    "qwen3-vl-30b-a3b": {
-      "model": "qwen/qwen3-vl-30b-a3b",
-      "matchingModel": "qwen3-vl-30b-a3b",
-      "overrides": {
-        "speed": 4,
-        "lastUpdated": "April 2025",
-        "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.0008,
-        "costPer1kReasoningTokens": 0.0024
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
-    },
     "qwen3-vl-plus": {
-      "model": "qwen/qwen3-vl-plus",
+      "model": "qwen-vl-plus/qwen3-vl-plus",
       "matchingModel": "qwen3-vl-plus",
       "overrides": {
         "lastUpdated": "September 23, 2025",
@@ -362,49 +348,6 @@
         "costPer1kOutputTokens": 0.002
       }
     },
-    "qwen3.5-397b-a17b": {
-      "model": "qwen/qwen3-5-397b-a17b",
-      "matchingModel": "qwen3.5-397b-a17b",
-      "overrides": {
-        "name": "Qwen3.5 397B-A17B",
-        "description": "Large open Qwen multimodal MoE for visual agents and long technical tasks",
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "audio",
-          "video",
-          "document",
-          "tool_use"
-        ],
-        "speed": 3,
-        "lastUpdated": "February 15, 2026",
-        "costPer1kInputTokens": 0.0006,
-        "costPer1kOutputTokens": 0.0036
-      }
-    },
-    "qwen3.5-plus": {
-      "model": "qwen/qwen3-5-plus",
-      "matchingModel": "qwen3.5-plus",
-      "overrides": {
-        "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
-        "contextWindow": 1000000,
-        "lastUpdated": "February 16, 2026",
-        "costPer1kInputTokens": 0.0004,
-        "costPer1kOutputTokens": 0.0024,
-        "costPer1kReasoningTokens": 0.0024
-      }
-    },
     "qwen3.6-27b": {
       "model": "qwen/qwen3-6-27b",
       "matchingModel": "qwen3.6-27b",
@@ -458,14 +401,14 @@
           "document",
           "tool_use"
         ],
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.000375,
         "costPer1kOutputTokens": 0.00225
       }
     },
     "qwen3.6-flash": {
-      "model": "qwen3.6/qwen3-6-flash",
+      "model": "qwen-flash/qwen3-6-flash",
       "matchingModel": "qwen3.6-flash",
       "overrides": {
         "lastUpdated": "April 27, 2026",
@@ -474,7 +417,7 @@
       }
     },
     "qwen3.6-plus": {
-      "model": "qwen/qwen3-6-plus",
+      "model": "qwen-plus/qwen3-6-plus",
       "matchingModel": "qwen3.6-plus",
       "overrides": {
         "strengths": [
@@ -490,7 +433,7 @@
       }
     },
     "qwen3.7-max": {
-      "model": "qwen/qwen3-7-max",
+      "model": "qwen-max/qwen3-7-max",
       "matchingModel": "qwen3.7-max",
       "overrides": {
         "speed": 4,
@@ -501,7 +444,7 @@
       }
     },
     "qwen3.7-plus": {
-      "model": "qwen/qwen3-7-plus",
+      "model": "qwen-plus/qwen3-7-plus",
       "matchingModel": "qwen3.7-plus",
       "overrides": {
         "strengths": [
@@ -517,27 +460,18 @@
       }
     },
     "qwen3.8-flash": {
-      "model": "qwen/qwen3-8-flash",
+      "model": "qwen-flash/qwen3-8-flash",
       "matchingModel": "qwen3.8-flash",
       "overrides": {
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.00047,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "xhigh"
-          ],
-          "defaultEffort": "low"
-        }
+        "costPer1kOutputTokens": 0.00047
       }
     },
     "qwen3.8-max": {
-      "model": "qwen/qwen3-8-max",
+      "model": "qwen-max/qwen3-8-max",
       "matchingModel": "qwen3.8-max",
       "overrides": {
-        "contextWindow": 1000000,
         "modalities": {
           "input": [
             "text",
@@ -573,7 +507,7 @@
       }
     },
     "kimi-k3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
         "speed": 2,
@@ -593,7 +527,7 @@
       }
     },
     "qwen3.5-flash": {
-      "model": "qwen/qwen3-5-flash",
+      "model": "qwen-flash/qwen3-5-flash",
       "matchingModel": "qwen3.5-flash",
       "overrides": {
         "name": "Qwen3.5 Flash",
@@ -604,7 +538,7 @@
       }
     },
     "qwen3.7-flash": {
-      "model": "qwen/qwen3-7-flash",
+      "model": "qwen-flash/qwen3-7-flash",
       "matchingModel": "qwen3.7-flash",
       "overrides": {
         "description": "Lightweight multimodal Qwen model for high-throughput text, image, and video tasks",
@@ -615,7 +549,7 @@
       }
     },
     "qwen3.8-omni-flash": {
-      "model": "qwen/qwen3-8-omni-flash",
+      "model": "qwen-omni-flash/qwen3-8-omni-flash",
       "matchingModel": "qwen3.8-omni-flash",
       "overrides": {
         "isFeatured": true,
@@ -627,6 +561,128 @@
             "none",
             "low",
             "medium",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "glm-5.3-prime": {
+      "model": "glm/glm-5-3-prime",
+      "matchingModel": "glm-5.3-prime",
+      "overrides": {
+        "name": "GLM-5.3 Prime",
+        "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
+        "releaseDate": "August 14, 2026",
+        "lastUpdated": "August 14, 2026",
+        "costPer1kInputTokens": 0.0028,
+        "costPer1kOutputTokens": 0.0088,
+        "supportsAttachments": false
+      }
+    },
+    "kimi-k3.1-pro": {
+      "model": "kimi-pro/kimi-k3-1-pro",
+      "matchingModel": "kimi-k3.1-pro",
+      "overrides": {
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 2,
+        "lastUpdated": "October 23, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "kimi-k3.1-pro-prime": {
+      "model": "kimi-pro/kimi-k3-1-pro-prime",
+      "matchingModel": "kimi-k3.1-pro-prime",
+      "overrides": {
+        "lastUpdated": "October 23, 2026",
+        "costPer1kInputTokens": 0.004,
+        "costPer1kOutputTokens": 0.02,
+        "supportsTemperature": false
+      }
+    },
+    "mindlab/macaron-v1-tall": {
+      "model": "macaron-tall/macaron-v1-tall",
+      "matchingModel": "mindlab/macaron-v1-tall",
+      "overrides": {
+        "lastUpdated": "July 21, 2026",
+        "costPer1kInputTokens": 0.00045,
+        "costPer1kOutputTokens": 0.0026,
+        "supportsAttachments": false
+      }
+    },
+    "mindlab/macaron-v1.1-coding-venti": {
+      "model": "macaron-venti/macaron-v1-1-coding-venti",
+      "matchingModel": "mindlab/macaron-v1.1-coding-venti",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.00119,
+        "costPer1kOutputTokens": 0.00374
+      }
+    },
+    "mindlab/macaron-v1.1-venti": {
+      "model": "macaron-venti/macaron-v1-1-venti",
+      "matchingModel": "mindlab/macaron-v1.1-venti",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.00119,
+        "costPer1kOutputTokens": 0.00374,
+        "supportsAttachments": false
+      }
+    },
+    "mindlab/macaron-v1.1-venti-pro": {
+      "model": "macaron-venti/macaron-v1-1-venti-pro",
+      "matchingModel": "mindlab/macaron-v1.1-venti-pro",
+      "overrides": {
+        "lastUpdated": "September 22, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "qwen4-max": {
+      "model": "qwen-max/qwen4-max",
+      "matchingModel": "qwen4-max",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "tool_use"
+        ],
+        "speed": 4,
+        "lastUpdated": "November 16, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.0045,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
             "xhigh"
           ],
           "defaultEffort": "none"

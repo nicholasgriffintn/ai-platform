@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 256000,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 26, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "General-purpose chat model for instruction following, writing, and analysis",
+  "models": {
+    "relace-apply-3": {
+      "defaults": {
+        "name": "Relace Apply 3",
+        "description": "General-purpose chat model for instruction following, writing, and analysis"
+      }
+    },
+    "relace-relace-apply-3": {
+      "defaults": {
+        "name": "Relace: Relace Apply 3",
+        "description": "General-purpose chat model for instruction following, writing, and analysis"
+      }
+    }
+  }
+}

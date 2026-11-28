@@ -15,7 +15,7 @@
   },
   "models": {
     "poolside/laguna-m.1": {
-      "model": "laguna/laguna-m-1",
+      "model": "laguna-m/laguna-m-1",
       "matchingModel": "poolside/laguna-m.1",
       "overrides": {
         "lastUpdated": "June 13, 2026",
@@ -24,10 +24,9 @@
       }
     },
     "poolside/laguna-s-2.1": {
-      "model": "laguna/laguna-s-2-1",
+      "model": "laguna-s/laguna-s-2-1",
       "matchingModel": "poolside/laguna-s-2.1",
       "overrides": {
-        "contextWindow": 1048576,
         "isFeatured": true,
         "lastUpdated": "July 21, 2026",
         "costPer1kInputTokens": 0,
@@ -35,9 +34,10 @@
       }
     },
     "poolside/laguna-xs-2.1": {
-      "model": "laguna/laguna-xs-2-1",
+      "model": "laguna-xs/laguna-xs-2-1",
       "matchingModel": "poolside/laguna-xs-2.1",
       "overrides": {
+        "maxTokens": 32768,
         "lastUpdated": "July 2, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0

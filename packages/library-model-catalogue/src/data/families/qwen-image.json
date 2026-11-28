@@ -1,0 +1,75 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "reliability": 1,
+    "supportsToolCalls": false
+  },
+  "description": "The qwen image family includes models that produce image.",
+  "models": {
+    "qwen-image": {
+      "defaults": {
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 911,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 16
+            }
+          ]
+        }
+      }
+    },
+    "qwen-image-edit": {
+      "defaults": {
+        "name": "Qwen Image Edit",
+        "description": "Image editing model with multilingual text editing and subject consistency",
+        "contextWindow": 0,
+        "maxTokens": 0,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "image"
+        ],
+        "contextComplexity": 4,
+        "releaseDate": "August 19, 2025",
+        "supportsResponseFormat": false,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "image_editingElo",
+              "label": "Image-editing arena",
+              "value": 886,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 18
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 4096,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "March 26, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The palmyra vision family includes models that produce text.",
+  "models": {
+    "palmyra-vision-7b": {
+      "defaults": {
+        "name": "Palmyra Vision 7B",
+        "description": "Writer's multimodal model for reading handwriting, charts and documents in images"
+      }
+    }
+  }
+}

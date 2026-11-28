@@ -13,6 +13,7 @@
     "knowledgeCutoffDate": "July 2024",
     "releaseDate": "July 18, 2024",
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": false,
     "supportsTemperature": true
   },
@@ -21,13 +22,13 @@
     "mistral-nemo": {
       "defaults": {
         "name": "Mistral Nemo",
-        "description": "Efficient Mistral-NVIDIA open model for multilingual chat and local deployment"
+        "description": "Efficient Mistral-NVIDIA open model for multilingual chat and local deployment",
+        "maxTokens": 128000
       }
     },
     "mistral-nemo-instruct-2407": {
       "defaults": {
-        "description": "A 12B parameter, instruct-tuned language model by Mistral AI and NVIDIA, designed for advanced instruction following, multi-turn conversations, and generating text and code across multiple languages.",
-        "supportsResponseFormat": true
+        "description": "A 12B parameter, instruct-tuned language model by Mistral AI and NVIDIA, designed for advanced instruction following, multi-turn conversations, and generating text and code across multiple languages."
       }
     },
     "mistral-nemo-instruct-2407-tee": {

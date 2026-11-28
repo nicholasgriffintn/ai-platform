@@ -27,8 +27,7 @@
         "deprecated": true
       },
       "unset": [
-        "supportsToolCalls",
-        "supportsAttachments"
+        "supportsToolCalls"
       ]
     },
     "sonic-3.6": {

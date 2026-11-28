@@ -1,0 +1,40 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1048576,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 26, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "minimal"
+    }
+  },
+  "description": "The opencode/seaglass alpha free family includes models that produce text.",
+  "models": {
+    "seaglass-alpha-free": {
+      "defaults": {
+        "name": "Seaglass Alpha Free",
+        "description": "Stealth reasoning model, free for a limited time"
+      }
+    }
+  }
+}

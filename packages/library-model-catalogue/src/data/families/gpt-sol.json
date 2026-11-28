@@ -13,11 +13,6 @@
         "text"
       ]
     },
-    "strengths": [
-      "vision",
-      "document",
-      "tool_use"
-    ],
     "contextComplexity": 5,
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
@@ -253,6 +248,11 @@
       "defaults": {
         "name": "GPT-6.1 Sol",
         "description": "Near-Astra performance for complex coding, computer use, and professional work at a lower cost.",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 3,
         "knowledgeCutoffDate": "April 30, 2026",
         "releaseDate": "September 29, 2026",
@@ -267,7 +267,7 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 54.6,
+          "intelligenceIndex": 54.7,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -278,6 +278,11 @@
       "defaults": {
         "name": "GPT-6.1 Sol (EU)",
         "description": "Near-Astra performance for complex coding, computer use, and professional work at a lower cost.",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 3,
         "knowledgeCutoffDate": "April 30, 2026",
         "releaseDate": "September 29, 2026",
@@ -292,7 +297,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 54.6,
+          "intelligenceIndex": 54.7,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -303,6 +308,11 @@
       "defaults": {
         "name": "GPT-6.1 Sol (Fast)",
         "description": "Near-Astra performance for complex coding, computer use, and professional work at a lower cost.",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 3,
         "knowledgeCutoffDate": "April 30, 2026",
         "releaseDate": "September 29, 2026",
@@ -317,7 +327,7 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 54.6,
+          "intelligenceIndex": 54.7,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -337,6 +347,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 3,
         "knowledgeCutoffDate": "April 30, 2026",
         "releaseDate": "September 29, 2026",
@@ -351,10 +366,61 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 54.6,
+          "intelligenceIndex": 54.7,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "gpt-6-1-sol-healthcare": {
+      "defaults": {
+        "name": "GPT-6.1 Sol Healthcare",
+        "description": "GPT-6.1 Sol paired with a harness tailored to clinical questions; its web search uses a dedicated index of medical sources.",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "April 30, 2026",
+        "releaseDate": "November 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gpt-6-1-sol-pro": {
+      "defaults": {
+        "name": "GPT-6.1 Sol Pro",
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 30, 2026",
+        "releaseDate": "September 29, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
         }
       }
     },
@@ -371,6 +437,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 3,
         "knowledgeCutoffDate": "April 30, 2026",
         "releaseDate": "September 29, 2026",
@@ -385,7 +456,7 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 54.6,
+          "intelligenceIndex": 54.7,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -396,6 +467,11 @@
       "defaults": {
         "name": "GPT-6.2 Sol",
         "description": "An efficient reasoning model for everyday work, multistep agentic workflows, and coding.",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 3,
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "November 17, 2026",
@@ -421,6 +497,11 @@
       "defaults": {
         "name": "GPT-6.2 Sol (EU)",
         "description": "An efficient reasoning model for everyday work, multistep agentic workflows, and coding.",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 3,
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "November 17, 2026",
@@ -446,6 +527,11 @@
       "defaults": {
         "name": "GPT-6.2 Sol (Fast)",
         "description": "An efficient reasoning model for everyday work, multistep agentic workflows, and coding.",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 3,
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "November 17, 2026",
@@ -480,6 +566,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 3,
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "November 17, 2026",
@@ -501,6 +592,57 @@
         }
       }
     },
+    "gpt-6-2-sol-healthcare": {
+      "defaults": {
+        "name": "GPT-6.2 Sol Healthcare",
+        "description": "GPT-6.2 Sol paired with a harness tailored to clinical questions; its web search uses a dedicated index of medical sources.",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "June 1, 2026",
+        "releaseDate": "November 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "gpt-6-2-sol-pro": {
+      "defaults": {
+        "name": "GPT-6.2 Sol Pro",
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "June 1, 2026",
+        "releaseDate": "November 17, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "gpt-6-2-sol-us": {
       "defaults": {
         "name": "GPT-6.2 Sol (US)",
@@ -514,6 +656,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 3,
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "November 17, 2026",
@@ -539,6 +686,11 @@
       "defaults": {
         "name": "GPT-6 Sol",
         "description": "OpenAI model for complex coding and agentic workflows",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 2,
         "knowledgeCutoffDate": "April 20, 2026",
         "releaseDate": "September 22, 2026",
@@ -555,7 +707,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 44.2,
+          "intelligenceIndex": 44.1,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -566,6 +718,11 @@
       "defaults": {
         "name": "GPT-6 Sol (EU)",
         "description": "OpenAI model for complex coding and agentic workflows",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 2,
         "knowledgeCutoffDate": "April 20, 2026",
         "releaseDate": "September 22, 2026",
@@ -581,7 +738,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 44.2,
+          "intelligenceIndex": 44.1,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -592,6 +749,11 @@
       "defaults": {
         "name": "GPT-6 Sol (Fast)",
         "description": "OpenAI model for complex coding and agentic workflows",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 2,
         "knowledgeCutoffDate": "April 20, 2026",
         "releaseDate": "September 22, 2026",
@@ -608,7 +770,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 44.2,
+          "intelligenceIndex": 44.1,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -628,6 +790,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 2,
         "knowledgeCutoffDate": "April 20, 2026",
         "releaseDate": "September 22, 2026",
@@ -644,10 +811,39 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 44.2,
+          "intelligenceIndex": 44.1,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "gpt-6-sol-pro": {
+      "defaults": {
+        "name": "GPT-6 Sol Pro",
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 20, 2026",
+        "releaseDate": "September 22, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
         }
       }
     },
@@ -664,6 +860,11 @@
             "text"
           ]
         },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 2,
         "knowledgeCutoffDate": "April 20, 2026",
         "releaseDate": "September 22, 2026",
@@ -680,7 +881,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 44.2,
+          "intelligenceIndex": 44.1,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -753,12 +954,22 @@
         }
       }
     },
-    "openai-gpt-6-2-sol-fast": {
+    "openai-gpt-6-1-sol-pro": {
       "defaults": {
-        "name": "OpenAI: GPT-6.2 Sol (Fast)",
-        "description": "GPT-6.2 Sol is OpenAI's reasoning model for text, images, and tool use. It accepts text and images, generates text, and supports a 1,050,000-token context window with up to 128,000 output tokens. Structured outputs, prompt caching, and Responses API tools such as web search and computer use support multi-step workflows.",
-        "knowledgeCutoffDate": "June 1, 2026",
-        "releaseDate": "November 17, 2026",
+        "name": "OpenAI: GPT-6.1 Sol Pro",
+        "description": "GPT-6.1 Sol Pro is the same underlying model as [GPT-6.1 Sol](https://openrouter.ai/openai/gpt-6.1-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 30, 2026",
+        "releaseDate": "September 29, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -771,10 +982,15 @@
         }
       }
     },
-    "openai-gpt-6-2-sol-new": {
+    "openai-gpt-6-2-sol": {
       "defaults": {
         "name": "OpenAI: GPT-6.2 Sol (new)",
         "description": "GPT-6.2 Sol is an upgrade to GPT-6.1 Sol from OpenAI, positioned below the flagship GPT-6.2 Astra in the GPT-6.2 series. It is an efficient, versatile model for everyday work, suited...",
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "reliability": 3,
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "November 17, 2026",
@@ -796,6 +1012,52 @@
         }
       }
     },
+    "openai-gpt-6-2-sol-fast": {
+      "defaults": {
+        "name": "OpenAI: GPT-6.2 Sol (Fast)",
+        "description": "GPT-6.2 Sol is OpenAI's reasoning model for text, images, and tool use. It accepts text and images, generates text, and supports a 1,050,000-token context window with up to 128,000 output tokens. Structured outputs, prompt caching, and Responses API tools such as web search and computer use support multi-step workflows.",
+        "knowledgeCutoffDate": "June 1, 2026",
+        "releaseDate": "November 17, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "openai-gpt-6-2-sol-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6.2 Sol Pro",
+        "description": "GPT-6.2 Sol Pro is the same underlying model as [GPT-6.2 Sol](https://openrouter.ai/openai/gpt-6.2-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "June 1, 2026",
+        "releaseDate": "November 17, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "openai-gpt-6-sol-fast": {
       "defaults": {
         "name": "OpenAI: GPT-6 Sol (Fast)",
@@ -803,6 +1065,35 @@
         "knowledgeCutoffDate": "April 20, 2026",
         "releaseDate": "September 22, 2026",
         "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "openai-gpt-6-sol-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6 Sol Pro",
+        "description": "GPT-6 Sol Pro is the same underlying model as [GPT-6 Sol](https://openrouter.ai/openai/gpt-6-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. Learn more in OpenAI's docs: https://developers.openai.com/api/docs/guides/reasoning#reasoning-mode",
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "April 20, 2026",
+        "releaseDate": "September 22, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

@@ -1,0 +1,52 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 65536,
+    "maxTokens": 32768,
+    "contextComplexity": 3,
+    "knowledgeCutoffDate": "January 2025",
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "Nano Banana Pro for higher-fidelity image generation and design-heavy edits",
+  "models": {
+    "nano-banana-pro": {
+      "defaults": {
+        "name": "Nano Banana Pro",
+        "description": "Nano Banana Pro for higher-fidelity image generation and design-heavy edits",
+        "reliability": 3,
+        "releaseDate": "May 28, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1117,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 10
+            }
+          ]
+        }
+      }
+    },
+    "nano-banana-pro-preview": {
+      "defaults": {
+        "description": "Nano Banana Pro for higher-fidelity image generation and design-heavy edits",
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
+        "releaseDate": "November 20, 2025",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": true
+      }
+    }
+  }
+}

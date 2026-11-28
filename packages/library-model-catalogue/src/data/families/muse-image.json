@@ -1,0 +1,52 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "document",
+      "image"
+    ],
+    "contextComplexity": 4,
+    "reliability": 3,
+    "releaseDate": "July 7, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_imageElo",
+          "label": "Text-to-image arena",
+          "value": 1127,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 11
+        }
+      ]
+    }
+  },
+  "description": "The muse image family includes models that produce image.",
+  "models": {
+    "muse-image-1-0": {
+      "defaults": {
+        "name": "Muse Image 1.0",
+        "description": "Agentic image generation and editing model that plans, searches and refines before rendering"
+      }
+    }
+  }
+}

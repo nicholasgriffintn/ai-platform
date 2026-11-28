@@ -1,0 +1,57 @@
+{
+  "defaults": {
+    "contextWindow": 1024000,
+    "maxTokens": 921600,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "March 31, 2025",
+    "releaseDate": "November 10, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "high"
+    }
+  },
+  "description": "The ernie free family includes models that produce text.",
+  "models": {
+    "baidu-ernie-5-5-flash-preview-free": {
+      "defaults": {
+        "name": "Baidu: ERNIE-5.5-Flash-Preview (free)",
+        "openWeights": false,
+        "description": "ERNIE 5.5 Flash Preview is the latest foundation model in the ERNIE family, with comprehensive improvements in coding, agentic capabilities, knowledge work, and deep research. It has 280 billion total..."
+      }
+    },
+    "ernie-5-5-flash-preview-free": {
+      "defaults": {
+        "name": "ERNIE-5.5-Flash-Preview (free)",
+        "openWeights": true,
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": 31.3,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    }
+  }
+}

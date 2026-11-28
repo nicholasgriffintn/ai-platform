@@ -1,0 +1,135 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 262144,
+    "knowledgeCutoffDate": "January 2025",
+    "releaseDate": "June 12, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true
+  },
+  "description": "The kimi code family includes models that produce text.",
+  "models": {
+    "kimi-k2-7-code": {
+      "defaults": {
+        "name": "Kimi K2.7 Code",
+        "description": "Coding-focused Kimi model, stronger on long-horizon repo work with less overthinking",
+        "maxTokens": 262144,
+        "contextComplexity": 4,
+        "reliability": 3,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "kimi-k2-7-code-eu": {
+      "defaults": {
+        "name": "Kimi K2.7 Code (EU)",
+        "description": "Coding-focused Kimi model, stronger on long-horizon repo work with less overthinking",
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "kimi-k2-7-code-high-speed": {
+      "defaults": {
+        "name": "Kimi K2.7 Code High Speed",
+        "description": "Lower-latency Kimi Code variant for interactive edits and coding-agent loops",
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "moonshotai-kimi-k2-7-code-high-speed": {
+      "defaults": {
+        "name": "MoonshotAI: Kimi K2.7 Code High Speed",
+        "description": "Kimi K2.7 Code HighSpeed is the high-speed version of Kimi K2.7 Code, the same model as Kimi K2.7 Code, but with an output speed of approximately 180 Tokens/s and up to 260 Tokens/s in short context scenarios, delivering a more extreme coding experience.",
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "supportsTemperature": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

@@ -1,114 +1,37 @@
 {
   "defaults": {
     "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "June 1, 2024",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
+    "supportsAttachments": false,
     "supportsTemperature": true
   },
   "description": "The command a family includes models that produce text.",
   "models": {
-    "cohere-command-a": {
-      "defaults": {
-        "name": "Cohere: Command A+",
-        "description": "Command A+ is Cohere's flagship model for enterprise agentic workflows. It accepts text and image inputs with a 192K context window, supports native tool calling with strict tool schemas, structured...",
-        "contextWindow": 192000,
-        "maxTokens": 64000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
-        "knowledgeCutoffDate": "April 1, 2025",
-        "releaseDate": "May 20, 2026",
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "high"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 6.2,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
     "command-a": {
       "defaults": {
         "name": "Command A",
         "description": "Cohere command model for multilingual enterprise agents, tools, and chat",
         "contextWindow": 256000,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
+        "maxTokens": 8192,
         "strengths": [
           "tool_use"
         ],
         "contextComplexity": 3,
         "reliability": 1,
+        "knowledgeCutoffDate": "August 31, 2024",
         "releaseDate": "March 13, 2025",
-        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "command-a-plus": {
-      "defaults": {
-        "name": "Command A Plus",
-        "description": "Cohere's stronger command model for multilingual agents and enterprise workflows",
-        "contextWindow": 128000,
-        "maxTokens": 64000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
-        "knowledgeCutoffDate": "April 1, 2025",
-        "releaseDate": "May 20, 2026",
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 6.2,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -121,17 +44,7 @@
         "description": "Cohere reasoning model for multilingual enterprise agents, tools, and complex workflows",
         "contextWindow": 256000,
         "maxTokens": 32000,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "knowledgeCutoffDate": "June 1, 2024",
         "releaseDate": "August 21, 2025",
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -147,17 +60,7 @@
         "description": "Translation model for multilingual conversion, localization, and cross-language workflows",
         "contextWindow": 8000,
         "maxTokens": 8000,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "knowledgeCutoffDate": "June 1, 2024",
-        "releaseDate": "August 28, 2025",
-        "supportsAttachments": false
+        "releaseDate": "August 28, 2025"
       }
     },
     "command-a-vision": {
@@ -175,7 +78,6 @@
             "text"
           ]
         },
-        "knowledgeCutoffDate": "June 1, 2024",
         "releaseDate": "July 31, 2025",
         "supportsToolCalls": false,
         "supportsAttachments": true

@@ -1,0 +1,51 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "image"
+    ],
+    "contextComplexity": 1,
+    "reliability": 1,
+    "knowledgeCutoffDate": "July 2024",
+    "releaseDate": "August 1, 2024",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_imageElo",
+          "label": "Text-to-image arena",
+          "value": 742,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 18
+        }
+      ]
+    }
+  },
+  "description": "The flux schnell family includes models that produce image.",
+  "models": {
+    "flux-1-schnell": {
+      "defaults": {
+        "name": "FLUX.1-schnell",
+        "description": "Fast few-step FLUX.1 text-to-image model under Apache 2.0"
+      }
+    }
+  }
+}

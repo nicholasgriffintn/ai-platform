@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+  "models": {
+    "voyage-code-2": {
+      "defaults": {
+        "name": "voyage-code-2",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "contextWindow": 16000,
+        "releaseDate": "January 1, 2024"
+      }
+    },
+    "voyage-code-3": {
+      "defaults": {
+        "name": "voyage-code-3",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "contextWindow": 32000,
+        "releaseDate": "December 4, 2024"
+      }
+    }
+  }
+}

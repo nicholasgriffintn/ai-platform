@@ -14,7 +14,6 @@
     "contextComplexity": 4,
     "reliability": 1,
     "knowledgeCutoffDate": "February 2026",
-    "releaseDate": "September 22, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
@@ -60,7 +59,15 @@
     "solar-mini-4": {
       "defaults": {
         "name": "Solar Mini 4",
-        "description": "Efficient model for low-latency assistance, extraction, and routine automation"
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "releaseDate": "September 22, 2026"
+      }
+    },
+    "solar-mini-4-5-preview": {
+      "defaults": {
+        "name": "Solar Mini 4.5 (Preview)",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "releaseDate": "November 24, 2026"
       }
     },
     "upstage-solar-mini-4": {
@@ -69,7 +76,15 @@
         "description": "Solar Mini 4 is Upstage's compact, cost-efficient language model, a 35B-parameter mixture-of-experts with 3B active parameters and a 524K context window. It is built for agentic use cases where response...",
         "strengths": [
           "tool_use"
-        ]
+        ],
+        "releaseDate": "September 22, 2026"
+      }
+    },
+    "upstage-solar-mini-4-5-preview": {
+      "defaults": {
+        "name": "Upstage: Solar Mini 4.5 (Preview)",
+        "description": "Solar Mini 4.5 is Upstage's compact language model, built on a proprietary mixture-of-experts architecture with 35B total and 3B active parameters and a 524K context window. It is a step...",
+        "releaseDate": "November 24, 2026"
       }
     }
   }

@@ -144,7 +144,16 @@
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 1000000,
         "maxTokens": 131072,
-        "reliability": 1
+        "reliability": 1,
+        "releaseDate": "October 16, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "mercury-coder-small-beta": {
@@ -170,24 +179,6 @@
             "low",
             "medium",
             "high"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "mercury-edit-2": {
-      "defaults": {
-        "name": "Mercury Edit 2",
-        "description": "Code editing dLLM for autocomplete (FIM) and next-edit suggestions",
-        "contextWindow": 32000,
-        "maxTokens": 8192,
-        "releaseDate": "March 30, 2026",
-        "supportsToolCalls": false,
-        "supportsResponseFormat": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
           ],
           "defaultEffort": "none"
         }

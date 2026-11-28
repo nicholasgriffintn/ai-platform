@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 2048,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "embedding"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The google text embedding family includes models that produce embedding.",
+  "models": {
+    "text-embedding-005": {
+      "defaults": {
+        "name": "Text Embedding 005",
+        "description": "Gecko-based text embedding model specialized in English and code tasks, producing up to 768-dimensional vectors",
+        "releaseDate": "November 18, 2024"
+      }
+    },
+    "text-multilingual-embedding-002": {
+      "defaults": {
+        "name": "Text Multilingual Embedding 002",
+        "description": "Gecko-based multilingual text embedding model producing up to 768-dimensional vectors",
+        "releaseDate": "May 14, 2024"
+      }
+    }
+  }
+}

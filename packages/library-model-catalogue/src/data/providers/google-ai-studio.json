@@ -136,46 +136,6 @@
         "openWeights"
       ]
     },
-    "gemini-2.5-flash": {
-      "model": "gemini-flash/gemini-2-5-flash",
-      "matchingModel": "gemini-2.5-flash",
-      "overrides": {
-        "description": "Fast Gemini workhorse for multimodal apps where latency and price matter",
-        "maxTokens": 65536,
-        "isFree": true,
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use",
-          "search",
-          "research",
-          "coding"
-        ],
-        "reliability": 1,
-        "speed": 5,
-        "deprecated": true,
-        "deprecationMessage": "Gemini 2.5 Flash shuts down on 1 December 2026. Use Gemini 3.5 Flash Lite instead.",
-        "replacementModel": "gemini-3.5-flash-lite",
-        "lastUpdated": "June 17, 2025",
-        "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0025,
-        "hostedToolCosts": {
-          "grounding": 0.035
-        },
-        "supportsSearchGrounding": true,
-        "supportsUrlContext": true,
-        "supportsCodeExecution": true,
-        "supportsWebFetch": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
     "gemini-2.5-flash-image-preview": {
       "model": "gemini/gemini-2-5-flash-image-preview",
       "matchingModel": "gemini-2.5-flash-image-preview",
@@ -209,7 +169,7 @@
           "research",
           "coding"
         ],
-        "lastUpdated": "June 17, 2025",
+        "lastUpdated": "July 22, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004,
         "hostedToolCosts": {
@@ -310,83 +270,6 @@
         "openWeights"
       ]
     },
-    "gemini-2.5-flash-preview-tts": {
-      "model": "gemini-flash/gemini-2-5-flash-preview-tts",
-      "matchingModel": "gemini-2.5-flash-preview-tts",
-      "overrides": {
-        "isFree": true,
-        "deprecated": true,
-        "deprecationMessage": "Gemini 2.5 Flash Preview TTS shuts down on 17 November 2026. Use Gemini 3.8 Flash TTS instead.",
-        "replacementModel": "gemini-3.8-flash-tts",
-        "lastUpdated": "May 1, 2025",
-        "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.01,
-        "supportsToolCalls": false,
-        "supportsAttachments": false,
-        "supportsAudio": true
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
-    },
-    "gemini-3.1-flash-tts-preview": {
-      "model": "gemini-flash/gemini-3-1-flash-tts-preview",
-      "matchingModel": "gemini-3.1-flash-tts-preview",
-      "overrides": {
-        "isFree": true,
-        "deprecated": true,
-        "deprecationMessage": "Gemini 3.1 Flash TTS Preview shuts down on 17 November 2026. Use Gemini 3.8 Flash TTS instead.",
-        "replacementModel": "gemini-3.8-flash-tts",
-        "lastUpdated": "April 15, 2026",
-        "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.02,
-        "supportsToolCalls": false,
-        "supportsAttachments": false,
-        "supportsAudio": true
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
-    },
-    "gemini-2.5-pro": {
-      "model": "gemini-pro/gemini-2-5-pro",
-      "matchingModel": "gemini-2.5-pro",
-      "overrides": {
-        "description": "Google's proven reasoning model for coding, math, and multimodal analysis",
-        "maxTokens": 65536,
-        "isFree": true,
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use",
-          "search",
-          "research",
-          "coding"
-        ],
-        "speed": 3,
-        "deprecated": true,
-        "deprecationMessage": "Gemini 2.5 Pro shuts down on 1 December 2026. Use Gemini 3.8 Flash instead.",
-        "replacementModel": "gemini-3.8-flash",
-        "lastUpdated": "June 17, 2025",
-        "costPer1kInputTokens": 0.00125,
-        "costPer1kOutputTokens": 0.01,
-        "hostedToolCosts": {
-          "grounding": 0.035
-        },
-        "supportsSearchGrounding": true,
-        "supportsUrlContext": true,
-        "supportsCodeExecution": true,
-        "supportsWebFetch": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "thinking"
-          ],
-          "defaultEffort": "thinking"
-        }
-      }
-    },
     "gemini-2.5-pro-preview-05-06": {
       "model": "gemini/gemini-2-5-pro-preview-05-06",
       "matchingModel": "gemini-2.5-pro-preview-05-06",
@@ -407,68 +290,24 @@
       "model": "gemini/gemini-2-5-pro-preview-06-05",
       "matchingModel": "gemini-2.5-pro-preview-06-05",
       "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio",
-            "video",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "isFree": true,
         "deprecated": true,
         "deprecationMessage": "Gemini 2.5 Pro Preview 06-05 was retired on 2 December 2025. Use Gemini 3.8 Flash instead.",
         "replacementModel": "gemini-3.8-flash",
-        "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "June 5, 2025",
         "costPer1kInputTokens": 0.00125,
-        "costPer1kOutputTokens": 0.01
+        "costPer1kOutputTokens": 0.01,
+        "supportsResponseFormat": true
       },
       "unset": [
         "openWeights"
       ]
     },
-    "gemini-2.5-pro-preview-tts": {
-      "model": "gemini-flash/gemini-2-5-pro-preview-tts",
-      "matchingModel": "gemini-2.5-pro-preview-tts",
-      "overrides": {
-        "isFree": true,
-        "deprecated": true,
-        "deprecationMessage": "Gemini 2.5 Pro Preview TTS shuts down on 17 November 2026. Use Gemini 3.8 Flash TTS instead.",
-        "replacementModel": "gemini-3.8-flash-tts",
-        "lastUpdated": "May 1, 2025",
-        "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.02,
-        "supportsToolCalls": false,
-        "supportsAttachments": false,
-        "supportsAudio": true
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
-    },
-    "gemini-embedding-001": {
-      "model": "gemini/gemini-embedding-001",
-      "matchingModel": "gemini-embedding-001",
-      "overrides": {
-        "isFree": true,
-        "lastUpdated": "May 20, 2025",
-        "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0,
-        "supportsToolCalls": false,
-        "supportsAttachments": false,
-        "supportsTemperature": false
-      }
-    },
     "gemini-flash-latest": {
       "model": "gemini-flash/gemini-flash-latest",
       "matchingModel": "gemini-flash-latest",
       "overrides": {
-        "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
+        "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
         "modalities": {
           "input": [
             "text",
@@ -482,7 +321,8 @@
           ]
         },
         "isFree": true,
-        "lastUpdated": "August 13, 2026",
+        "releaseDate": "September 2, 2026",
+        "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375,
         "supportsSearchGrounding": true,
@@ -497,10 +337,14 @@
           ],
           "defaultEffort": "high"
         }
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "artificialAnalysis"
+      ]
     },
     "gemini-3.1-flash-live-preview": {
-      "model": "gemini-flash/gemini-3-1-flash-live-preview",
+      "model": "gemini-live/gemini-3-1-flash-live-preview",
       "matchingModel": "gemini-3.1-flash-live-preview",
       "overrides": {
         "isFree": true,
@@ -513,7 +357,11 @@
         "supportsSearchGrounding": true,
         "supportsAudio": true,
         "supportsRealtimeSession": true
-      }
+      },
+      "unset": [
+        "strengths",
+        "contextComplexity"
+      ]
     },
     "gemini-3.8-live": {
       "model": "gemini/gemini-3-8-live",
@@ -543,91 +391,15 @@
       "model": "gemini-flash/nano-banana-2",
       "matchingModel": "gemini-3.1-flash-image-preview",
       "overrides": {
-        "name": "Gemini 3.1 Flash Image (Preview)",
-        "contextWindow": 65536,
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text",
-            "image"
-          ]
-        },
         "isFree": true,
-        "strengths": [
-          "vision",
-          "document",
-          "search",
-          "image",
-          "creative"
-        ],
-        "contextComplexity": 4,
         "deprecated": true,
         "deprecationMessage": "Gemini 3.1 Flash Image (Preview) was retired on 25 June 2026. Use Nano Banana 2.1 instead.",
         "replacementModel": "gemini-nano-banana-2.1",
-        "releaseDate": "February 26, 2026",
         "lastUpdated": "February 26, 2026",
         "costPer1kInputTokens": 0.0005,
         "costPer1kOutputTokens": 0.06,
         "supportsToolCalls": false,
-        "supportsSearchGrounding": true,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 1140,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 10
-            }
-          ]
-        }
-      }
-    },
-    "gemini-3.1-flash-lite": {
-      "model": "gemini-flash-lite/gemini-3-1-flash-lite",
-      "matchingModel": "gemini-3.1-flash-lite",
-      "overrides": {
-        "isFree": true,
-        "strengths": [
-          "chat",
-          "general_knowledge",
-          "summarization",
-          "analysis",
-          "multilingual",
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use",
-          "research"
-        ],
-        "speed": 4,
-        "multimodal": true,
-        "isFeatured": true,
-        "lastUpdated": "May 7, 2026",
-        "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.0015,
-        "supportsUrlContext": true,
-        "supportsWebFetch": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "minimal"
-        }
+        "supportsSearchGrounding": true
       }
     },
     "gemini-3.1-pro-preview": {
@@ -717,7 +489,10 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemma-3n-e2b-it": {
       "model": "gemma/gemma-3n-2b",
@@ -728,7 +503,10 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemma-3n-e4b-it": {
       "model": "gemma/gemma-3n-4b",
@@ -742,14 +520,16 @@
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
         "supportsToolCalls": false
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "gemma-4-26b-a4b-it": {
       "model": "gemma/gemma-4-26b-a4b-it",
       "matchingModel": "gemma-4-26b-a4b-it",
       "overrides": {
         "name": "Gemma 4 26B",
-        "maxTokens": 32768,
         "isFree": true,
         "lastUpdated": "April 2, 2026",
         "costPer1kInputTokens": 0,
@@ -785,75 +565,18 @@
         "knowledgeCutoffDate"
       ]
     },
-    "gemini-3.5-flash": {
-      "model": "gemini-flash/gemini-3-5-flash",
-      "matchingModel": "gemini-3.5-flash",
-      "overrides": {
-        "isFree": true,
-        "strengths": [
-          "coding",
-          "reasoning",
-          "analysis",
-          "math",
-          "agents",
-          "chat",
-          "multilingual",
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use",
-          "search",
-          "research"
-        ],
-        "speed": 4,
-        "multimodal": true,
-        "isFeatured": true,
-        "lastUpdated": "May 19, 2026",
-        "costPer1kInputTokens": 0.0015,
-        "costPer1kOutputTokens": 0.009,
-        "supportsSearchGrounding": true,
-        "supportsUrlContext": true,
-        "supportsCodeExecution": true,
-        "supportsWebFetch": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "medium"
-        }
-      }
-    },
     "gemini-3-pro-image-preview": {
       "model": "gemini-pro/nano-banana-pro",
       "matchingModel": "gemini-3-pro-image-preview",
       "overrides": {
-        "contextWindow": 131072,
         "isFree": true,
-        "strengths": [
-          "vision",
-          "document",
-          "image",
-          "creative"
-        ],
         "deprecated": true,
         "deprecationMessage": "Nano Banana Pro was retired on 25 June 2026. Use Nano Banana Pro instead.",
         "replacementModel": "gemini-3-pro-image",
-        "releaseDate": "November 20, 2025",
         "lastUpdated": "November 20, 2025",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.12,
-        "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsToolCalls": false
       },
       "unset": [
         "supportsResponseFormat"
@@ -897,32 +620,13 @@
       "model": "gemini/gemini-omni-flash-preview",
       "matchingModel": "gemini-omni-flash-preview",
       "overrides": {
-        "contextWindow": 131072,
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "video"
-          ]
-        },
         "deprecated": true,
         "deprecationMessage": "Gemini Omni Flash Preview was retired on 22 October 2026. Use Gemini Omni 1.2 Flash instead.",
         "replacementModel": "gemini-omni-1.2-flash",
         "lastUpdated": "June 30, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.0175,
-        "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsToolCalls": false
       }
     },
     "gemini-3.5-flash-lite": {
@@ -976,28 +680,22 @@
       }
     },
     "deep-research-max-preview-04-2026": {
-      "model": "gemini-pro/deep-research-max-preview-apr-21-2026",
+      "model": "gemini-deep-research-max/deep-research-max-preview-apr-21-2026",
       "matchingModel": "deep-research-max-preview-04-2026",
       "overrides": {
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "deep-research-preview-04-2026": {
-      "model": "gemini-pro/deep-research-preview-apr-21-2026",
+      "model": "gemini-deep-research/deep-research-preview-apr-21-2026",
       "matchingModel": "deep-research-preview-04-2026",
       "overrides": {
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "gemini-2.5-computer-use-preview-10-2025": {
       "model": "gemini-pro/gemini-2-5-computer-use-preview-10-2025",
@@ -1015,9 +713,19 @@
       ]
     },
     "gemini-3-pro-image": {
-      "model": "gemini-pro/nano-banana-pro",
+      "model": "nano-banana-pro/nano-banana-pro",
       "matchingModel": "gemini-3-pro-image",
       "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -1035,50 +743,13 @@
           ],
           "defaultEffort": "low"
         }
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
-    },
-    "gemini-3.1-flash-image": {
-      "model": "gemini-flash/nano-banana-2",
-      "matchingModel": "gemini-3.1-flash-image",
-      "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "pdf"
-          ],
-          "output": [
-            "text",
-            "image"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "video",
-          "image",
-          "creative"
-        ],
-        "isFeatured": false,
-        "lastUpdated": "May 28, 2026",
-        "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.003,
-        "supportsToolCalls": false
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "gemini-3.1-flash-lite-image": {
-      "model": "gemini-flash-lite/nano-banana-2-lite",
+      "model": "nano-banana-lite/nano-banana-2-lite",
       "matchingModel": "gemini-3.1-flash-lite-image",
       "overrides": {
         "description": "Fastest, most cost-efficient Gemini image model for high-volume 1K generation and editing",
-        "maxTokens": 4096,
         "modalities": {
           "input": [
             "text",
@@ -1108,7 +779,7 @@
       }
     },
     "gemini-3.5-live-translate-preview": {
-      "model": "gemini-pro/gemini-3-5-live-translate-preview",
+      "model": "gemini-live-translate/gemini-3-5-live-translate-preview",
       "matchingModel": "gemini-3.5-live-translate-preview",
       "overrides": {
         "lastUpdated": "June 9, 2026",
@@ -1117,10 +788,7 @@
         "supportsToolCalls": false,
         "supportsAudio": true,
         "supportsRealtimeTranslationSession": true
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
+      }
     },
     "gemini-3.5-transcribe-live": {
       "model": "gemini/gemini-3-5-transcribe-live",
@@ -1137,7 +805,7 @@
       }
     },
     "gemini-embedding-2": {
-      "model": "gemini/gemini-embedding-2",
+      "model": "gemini-embedding/gemini-embedding-2",
       "matchingModel": "gemini-embedding-2",
       "overrides": {
         "maxTokens": 1,
@@ -1172,10 +840,11 @@
       }
     },
     "lyria-3-clip-preview": {
-      "model": "lyria/lyria-3-clip-preview",
+      "model": "lyria-clip/lyria-3-clip-preview",
       "matchingModel": "lyria-3-clip-preview",
       "overrides": {
         "description": "Music generation model for short 30-second clips, loops, and previews from text or image prompts",
+        "contextWindow": 131072,
         "lastUpdated": "March 25, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1183,10 +852,11 @@
       }
     },
     "lyria-3-pro-preview": {
-      "model": "lyria/lyria-3-pro-preview",
+      "model": "lyria-pro/lyria-3-pro-preview",
       "matchingModel": "lyria-3-pro-preview",
       "overrides": {
         "description": "Music generation model for full-length songs from text or images with vocals and structure",
+        "contextWindow": 131072,
         "lastUpdated": "March 25, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -1268,32 +938,6 @@
         "supportsTemperature": false
       }
     },
-    "gemini-3.7-flash": {
-      "model": "gemini-flash/gemini-3-7-flash",
-      "matchingModel": "gemini-3.7-flash",
-      "overrides": {
-        "description": "High-efficiency Gemini model for agentic workflows, coding, and multimodal reasoning",
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use",
-          "search",
-          "research",
-          "coding"
-        ],
-        "speed": 4,
-        "isFeatured": false,
-        "lastUpdated": "August 13, 2026",
-        "costPer1kInputTokens": 0.00075,
-        "costPer1kOutputTokens": 0.00375,
-        "supportsSearchGrounding": true,
-        "supportsUrlContext": true,
-        "supportsCodeExecution": true,
-        "supportsWebFetch": true
-      }
-    },
     "gemini-3.8-flash": {
       "model": "gemini-flash/gemini-3-8-flash",
       "matchingModel": "gemini-3.8-flash",
@@ -1304,10 +948,7 @@
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375
-      },
-      "unset": [
-        "knowledgeCutoffDate"
-      ]
+      }
     },
     "gemini-4-argon": {
       "model": "gemini/gemini-4-argon",
@@ -1350,12 +991,10 @@
       "model": "gemini/gemini-3-5-transcribe",
       "matchingModel": "gemini-3.5-transcribe",
       "overrides": {
-        "releaseDate": "September 25, 2026",
         "lastUpdated": "September 25, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
         "supportsToolCalls": false,
-        "supportsResponseFormat": false,
         "supportsAttachments": false
       }
     },
@@ -1397,14 +1036,7 @@
         "lastUpdated": "November 5, 2026",
         "costPer1kInputTokens": 0.0015,
         "costPer1kOutputTokens": 0.009,
-        "supportsToolCalls": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsToolCalls": false
       }
     },
     "gemini-4-carbon": {

@@ -1,0 +1,66 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1048576,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video",
+        "pdf",
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "document",
+      "audio",
+      "video",
+      "tool_use"
+    ],
+    "contextComplexity": 5,
+    "reliability": 2,
+    "releaseDate": "October 12, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "minimal",
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "minimal"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 43.7,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
+  },
+  "description": "The muse wonder family includes models that produce text.",
+  "models": {
+    "meta-muse-wonder": {
+      "defaults": {
+        "name": "Meta: Muse Wonder",
+        "description": "Muse Wonder is a frontier reasoning model from Meta, designed for complex personal and professional agentic tasks. It accepts text, images, video, audio, and PDF documents and returns text, with...",
+        "maxTokens": 943718
+      }
+    },
+    "muse-wonder": {
+      "defaults": {
+        "name": "Muse Wonder",
+        "description": "Muse Wonder is a frontier multimodal reasoning model from Meta for personal and professional agents, long-horizon coding, and computer use. It combines Active Memory, which carries relevant context across conversations, with Active Focus, which keeps it working through blockers toward a goal.",
+        "maxTokens": 131072
+      }
+    }
+  }
+}

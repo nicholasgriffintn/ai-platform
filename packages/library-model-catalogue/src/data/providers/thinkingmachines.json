@@ -10,12 +10,12 @@
     },
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsAttachments": true,
+    "supportsAttachments": false,
     "supportsTemperature": true
   },
   "models": {
     "thinkingmachines/Inkling": {
-      "model": "ling/inkling",
+      "model": "inkling/inkling",
       "matchingModel": "thinkingmachines/Inkling",
       "overrides": {
         "description": "Multimodal MoE reasoning model (975B total, 41B active) for text, image, and audio",
@@ -38,6 +38,7 @@
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.00187,
         "costPer1kOutputTokens": 0.00468,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -54,7 +55,7 @@
       ]
     },
     "thinkingmachines/Inkling:peft:262144": {
-      "model": "ling/inkling-256k",
+      "model": "inkling/inkling-256k",
       "matchingModel": "thinkingmachines/Inkling:peft:262144",
       "overrides": {
         "name": "Inkling (256K)",
@@ -65,12 +66,12 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "reliability": 1,
         "speed": 4,
         "isFeatured": true,
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.00187,
         "costPer1kOutputTokens": 0.00468,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -102,8 +103,7 @@
         "speed": 3,
         "lastUpdated": "August 21, 2025",
         "costPer1kInputTokens": 0.001695,
-        "costPer1kOutputTokens": 0.004215,
-        "supportsAttachments": false
+        "costPer1kOutputTokens": 0.004215
       }
     },
     "deepseek-ai/DeepSeek-V4.1-Flash-1017:peft:262144": {
@@ -125,11 +125,10 @@
           "tool_use"
         ],
         "contextComplexity": 4,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "October 17, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0036,
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -158,7 +157,6 @@
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0036,
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -169,7 +167,7 @@
       }
     },
     "moonshotai/Kimi-K2.6": {
-      "model": "kimi-k2/kimi-k2-6",
+      "model": "kimi/kimi-k2-6",
       "matchingModel": "moonshotai/Kimi-K2.6",
       "overrides": {
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
@@ -189,7 +187,7 @@
       }
     },
     "moonshotai/Kimi-K2.6:peft:131072": {
-      "model": "kimi-k2/kimi-k2-6",
+      "model": "kimi/kimi-k2-6",
       "matchingModel": "moonshotai/Kimi-K2.6:peft:131072",
       "overrides": {
         "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
@@ -213,10 +211,13 @@
       "overrides": {
         "contextWindow": 65536,
         "maxTokens": 65536,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
         "lastUpdated": "December 15, 2025",
         "costPer1kInputTokens": 0.000195,
         "costPer1kOutputTokens": 0.000495,
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -233,17 +234,17 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16": {
-      "model": "nemotron/nemotron-3-super-120b-a12b",
+      "model": "nemotron-super/nemotron-3-super-120b-a12b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16",
       "overrides": {
+        "name": "Nemotron 3 Super 120B A12B",
         "contextWindow": 65536,
         "maxTokens": 65536,
         "contextComplexity": 3,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.00057,
         "costPer1kOutputTokens": 0.00144,
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -254,15 +255,15 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16:peft:262144": {
-      "model": "nemotron/nemotron-3-super-120b-a12b",
+      "model": "nemotron-super/nemotron-3-super-120b-a12b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16:peft:262144",
       "overrides": {
+        "name": "Nemotron 3 Super 120B A12B",
         "maxTokens": 262144,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.00057,
         "costPer1kOutputTokens": 0.00144,
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -273,7 +274,7 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16": {
-      "model": "nemotron/nemotron-3-ultra-550b-a55b",
+      "model": "nemotron-ultra/nemotron-3-ultra-550b-a55b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16",
       "overrides": {
         "contextWindow": 65536,
@@ -283,7 +284,6 @@
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0018,
         "costPer1kOutputTokens": 0.006225,
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -294,17 +294,15 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16:peft:262144": {
-      "model": "nemotron/nemotron-3-ultra-550b-a55b",
+      "model": "nemotron-ultra/nemotron-3-ultra-550b-a55b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16:peft:262144",
       "overrides": {
-        "contextWindow": 262144,
         "maxTokens": 262144,
         "contextComplexity": 4,
         "speed": 4,
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0018,
         "costPer1kOutputTokens": 0.006225,
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -315,66 +313,42 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16": {
-      "model": "nemotron/nemotron-3-5-lightning-30b-a3b",
+      "model": "nemotron-lightning/nemotron-3-5-lightning-30b-a3b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
       "overrides": {
-        "description": "Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads",
         "contextWindow": 65536,
         "maxTokens": 65536,
         "lastUpdated": "August 11, 2026",
         "costPer1kInputTokens": 0.000184,
-        "costPer1kOutputTokens": 0.000495,
-        "supportsAttachments": false
+        "costPer1kOutputTokens": 0.000495
       }
     },
     "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16:peft:262144": {
-      "model": "nemotron/nemotron-3-5-lightning-30b-a3b",
+      "model": "nemotron-lightning/nemotron-3-5-lightning-30b-a3b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16:peft:262144",
       "overrides": {
-        "description": "Fast NVIDIA Nemotron MoE for reliable agentic tasks across enterprise workloads",
-        "contextWindow": 262144,
-        "maxTokens": 262144,
         "lastUpdated": "August 11, 2026",
         "costPer1kInputTokens": 0.000184,
-        "costPer1kOutputTokens": 0.000495,
-        "supportsAttachments": false
+        "costPer1kOutputTokens": 0.000495
       }
     },
     "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16": {
-      "model": "nemotron/nemotron-3-5-super-vl-120b-a12b",
+      "model": "nemotron-super/nemotron-3-5-super-vl-120b-a12b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
       "overrides": {
         "contextWindow": 65536,
         "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00057,
         "costPer1kOutputTokens": 0.00144
       }
     },
     "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16:peft:262144": {
-      "model": "nemotron/nemotron-3-5-super-vl-120b-a12b",
+      "model": "nemotron-super/nemotron-3-5-super-vl-120b-a12b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16:peft:262144",
       "overrides": {
         "contextWindow": 262144,
         "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "lastUpdated": "October 15, 2026",
         "costPer1kInputTokens": 0.00057,
         "costPer1kOutputTokens": 0.00144
@@ -391,7 +365,6 @@
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00033,
         "costPer1kOutputTokens": 0.00084,
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -405,12 +378,10 @@
       "model": "gpt-oss/gpt-oss-120b",
       "matchingModel": "openai/gpt-oss-120b:peft:131072",
       "overrides": {
-        "maxTokens": 131072,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00033,
         "costPer1kOutputTokens": 0.00084,
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -431,7 +402,6 @@
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00018,
         "costPer1kOutputTokens": 0.00045,
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -448,8 +418,7 @@
         "contextWindow": 32768,
         "lastUpdated": "April 29, 2025",
         "costPer1kInputTokens": 0.000195,
-        "costPer1kOutputTokens": 0.0006,
-        "supportsAttachments": false
+        "costPer1kOutputTokens": 0.0006
       },
       "unset": [
         "supportsResponseFormat"
@@ -462,8 +431,7 @@
         "lastUpdated": "February 24, 2026",
         "costPer1kInputTokens": 0.00054,
         "costPer1kOutputTokens": 0.001335,
-        "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsToolCalls": false
       },
       "unset": [
         "supportsResponseFormat"
@@ -572,8 +540,7 @@
         "lastUpdated": "February 26, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.000807,
-        "supportsToolCalls": false,
-        "supportsAttachments": false
+        "supportsToolCalls": false
       },
       "unset": [
         "supportsResponseFormat"
@@ -602,7 +569,8 @@
         "speed": 3,
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.00186,
-        "costPer1kOutputTokens": 0.005595
+        "costPer1kOutputTokens": 0.005595,
+        "supportsAttachments": true
       }
     },
     "Qwen/Qwen3.6-35B-A3B": {
@@ -612,7 +580,16 @@
         "description": "Open multimodal Qwen MoE for local agents that need vision, audio, and code",
         "contextWindow": 65536,
         "maxTokens": 65536,
-        "speed": 4,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 3,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.001335
@@ -624,7 +601,16 @@
       "overrides": {
         "description": "Open multimodal Qwen MoE for local agents that need vision, audio, and code",
         "maxTokens": 262144,
-        "speed": 4,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "speed": 3,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.001335
@@ -636,7 +622,7 @@
       "overrides": {
         "contextWindow": 65536,
         "maxTokens": 65536,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0006975,
         "costPer1kOutputTokens": 0.005595,
@@ -654,7 +640,7 @@
       "matchingModel": "Qwen/Qwen3.8-27B:peft:262144",
       "overrides": {
         "maxTokens": 262144,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0006975,
         "costPer1kOutputTokens": 0.005595,
@@ -668,15 +654,16 @@
       }
     },
     "thinkingmachines/Inkling-Small": {
-      "model": "ling/inkling-small",
+      "model": "inkling-small/inkling-small",
       "matchingModel": "thinkingmachines/Inkling-Small",
       "overrides": {
         "contextWindow": 65536,
         "maxTokens": 65536,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.00058,
         "costPer1kOutputTokens": 0.00144,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -693,15 +680,16 @@
       ]
     },
     "thinkingmachines/Inkling-Small:peft:262144": {
-      "model": "ling/inkling-small",
+      "model": "inkling-small/inkling-small",
       "matchingModel": "thinkingmachines/Inkling-Small:peft:262144",
       "overrides": {
         "contextWindow": 262144,
         "maxTokens": 262144,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.00058,
         "costPer1kOutputTokens": 0.00144,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -718,15 +706,16 @@
       ]
     },
     "thinkingmachines/Inkling-Small:peft:262144:sampling-nvfp4": {
-      "model": "ling/inkling-small",
+      "model": "inkling-small/inkling-small",
       "matchingModel": "thinkingmachines/Inkling-Small:peft:262144:sampling-nvfp4",
       "overrides": {
         "contextWindow": 262144,
         "maxTokens": 262144,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -743,25 +732,17 @@
       ]
     },
     "thinkingmachines/Inkling:peft:262144:sampling-nvfp4": {
-      "model": "ling/inkling",
+      "model": "inkling/inkling",
       "matchingModel": "thinkingmachines/Inkling:peft:262144:sampling-nvfp4",
       "overrides": {
         "description": "Multimodal MoE reasoning model (975B total, 41B active) for text, image, and audio",
         "contextWindow": 262144,
         "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 4,
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.001,
         "costPer1kOutputTokens": 0.00405,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -800,7 +781,6 @@
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00084,
         "costPer1kOutputTokens": 0.00211,
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -821,13 +801,128 @@
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00378,
         "costPer1kOutputTokens": 0.01215,
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
             "thinking"
           ],
           "defaultEffort": "none"
+        }
+      }
+    },
+    "moonshotai/Kimi-K3.1-Pro:peft:262144": {
+      "model": "kimi-pro/kimi-k3-1-pro",
+      "matchingModel": "moonshotai/Kimi-K3.1-Pro:peft:262144",
+      "overrides": {
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "speed": 2,
+        "lastUpdated": "October 23, 2026",
+        "costPer1kInputTokens": 0.006,
+        "costPer1kOutputTokens": 0.025,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "thinkingmachines/Inkling-2-Mini": {
+      "model": "inkling-mini/inkling-2-mini",
+      "matchingModel": "thinkingmachines/Inkling-2-Mini",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "November 20, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "thinkingmachines/Inkling-2-Mini:peft:262144": {
+      "model": "inkling-mini/inkling-2-mini",
+      "matchingModel": "thinkingmachines/Inkling-2-Mini:peft:262144",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "November 20, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0005,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "thinkingmachines/Inkling-2-Small": {
+      "model": "inkling-small/inkling-2-small",
+      "matchingModel": "thinkingmachines/Inkling-2-Small",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "November 12, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.001,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "thinkingmachines/Inkling-2-Small:peft:262144": {
+      "model": "inkling-small/inkling-2-small",
+      "matchingModel": "thinkingmachines/Inkling-2-Small:peft:262144",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "November 12, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.001,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
         }
       }
     }

@@ -480,14 +480,18 @@
             "text"
           ]
         },
+        "strengths": [
+          "transcription"
+        ],
         "supportsToolCalls": false,
+        "supportsAttachments": false,
         "supportsTemperature": false
       }
     },
     "gpt-5": {
       "defaults": {
         "name": "GPT-5",
-        "description": "Original GPT-5 workhorse for reasoning, coding, writing, and tool workflows",
+        "description": "GPT model for general reasoning, writing, coding, and tool-assisted tasks",
         "contextWindow": 400000,
         "maxTokens": 128000,
         "modalities": {
@@ -532,15 +536,6 @@
         "description": "Sharper GPT-5 generation for coding, product work, and tool-assisted tasks",
         "contextWindow": 400000,
         "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "vision",
           "document",
@@ -946,37 +941,6 @@
         }
       }
     },
-    "gpt-5-4-image-2": {
-      "defaults": {
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 272000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "image",
-            "text",
-            "pdf"
-          ],
-          "output": [
-            "image",
-            "text"
-          ]
-        },
-        "releaseDate": "April 21, 2026",
-        "supportsToolCalls": false,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "gpt-5-5": {
       "defaults": {
         "name": "GPT-5.5",
@@ -1231,18 +1195,17 @@
         "maxTokens": 128000,
         "modalities": {
           "input": [
-            "image",
             "text",
+            "image",
             "pdf"
           ],
           "output": [
-            "image",
-            "text"
+            "text",
+            "image"
           ]
         },
         "knowledgeCutoffDate": "October 1, 2024",
         "releaseDate": "October 14, 2025",
-        "supportsToolCalls": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1250,247 +1213,6 @@
           ],
           "defaultEffort": "none"
         }
-      }
-    },
-    "gpt-5-image-mini": {
-      "defaults": {
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 400000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text"
-          ],
-          "output": [
-            "image",
-            "text"
-          ]
-        },
-        "releaseDate": "October 16, 2025",
-        "supportsToolCalls": false
-      }
-    },
-    "gpt-6-1-sol-pro": {
-      "defaults": {
-        "name": "GPT-6.1 Sol Pro",
-        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
-        "contextWindow": 1050000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "September 29, 2026",
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "gpt-6-1-terra-pro": {
-      "defaults": {
-        "name": "GPT-6.1 Terra Pro",
-        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
-        "contextWindow": 1050000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "October 26, 2026",
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "gpt-6-2-astra-pro": {
-      "defaults": {
-        "name": "GPT-6.2 Astra Pro",
-        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
-        "contextWindow": 1050000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "November 17, 2026",
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "gpt-6-2-sol-pro": {
-      "defaults": {
-        "name": "GPT-6.2 Sol Pro",
-        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
-        "contextWindow": 1050000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "November 17, 2026",
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "gpt-6-astra-pro": {
-      "defaults": {
-        "name": "GPT-6 Astra Pro",
-        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
-        "contextWindow": 1050000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "September 4, 2026",
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "gpt-6-luna-pro": {
-      "defaults": {
-        "name": "GPT-6 Luna Pro",
-        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
-        "contextWindow": 1050000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "September 22, 2026",
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "gpt-6-sol-pro": {
-      "defaults": {
-        "name": "GPT-6 Sol Pro",
-        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
-        "contextWindow": 1050000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "September 22, 2026",
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "gpt-audio": {
-      "defaults": {
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
-        "contextWindow": 128000,
-        "maxTokens": 16384,
-        "knowledgeCutoffDate": "October 1, 2023",
-        "releaseDate": "August 28, 2025"
       }
     },
     "gpt-audio-1-5": {
@@ -1553,7 +1275,6 @@
       "defaults": {
         "name": "GPT Chat Latest",
         "description": "Compact GPT model for low-latency assistance and high-volume workloads",
-        "contextWindow": 400000,
         "maxTokens": 128000,
         "modalities": {
           "input": [
@@ -1585,9 +1306,16 @@
             "audio"
           ]
         },
+        "strengths": [
+          "audio"
+        ],
         "contextComplexity": 4,
         "reliability": 5,
         "releaseDate": "September 10, 2026",
+        "supportsToolCalls": false,
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
+        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1726,16 +1454,17 @@
         }
       }
     },
-    "gpt-realtime-1-5": {
+    "gpt-realtime-2": {
       "defaults": {
-        "name": "GPT-Realtime-1.5",
-        "description": "Realtime speech-to-speech model for voice agents and customer support",
-        "contextWindow": 32000,
-        "maxTokens": 4096,
+        "name": "GPT Realtime 2",
+        "description": "Reasoning model for realtime voice interactions with speech-to-speech output, configurable reasoning effort, and tool use.",
+        "contextWindow": 128000,
+        "maxTokens": 32000,
         "modalities": {
           "input": [
             "text",
-            "audio"
+            "audio",
+            "image"
           ],
           "output": [
             "text",
@@ -1744,52 +1473,28 @@
         },
         "strengths": [
           "audio",
+          "chat",
+          "reasoning",
+          "vision",
           "document",
           "tool_use"
         ],
-        "contextComplexity": 3,
-        "reliability": 5,
-        "knowledgeCutoffDate": "September 30, 2024",
-        "releaseDate": "February 23, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "bbaScore",
-              "label": "Big Bench Audio",
-              "value": 0.81,
-              "min": 0,
-              "max": 1
-            },
-            {
-              "key": "fdbScore",
-              "label": "Full Duplex Bench",
-              "value": 0.96,
-              "min": 0,
-              "max": 1
-            },
-            {
-              "key": "tauVoiceScore",
-              "label": "Tau Voice",
-              "value": 0.39,
-              "min": 0,
-              "max": 1
-            }
-          ]
-        }
-      }
-    },
-    "gpt-realtime-2": {
-      "defaults": {
-        "description": "Reasoning model for realtime voice interactions with speech-to-speech output, configurable reasoning effort, and tool use.",
-        "contextWindow": 128000,
-        "maxTokens": 32000,
         "contextComplexity": 4,
         "reliability": 3,
+        "multimodal": true,
         "knowledgeCutoffDate": "September 30, 2024",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1799,7 +1504,7 @@
             {
               "key": "text_to_speechElo",
               "label": "Text-to-speech arena",
-              "value": 1072,
+              "value": 1070,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -1810,12 +1515,25 @@
     },
     "gpt-realtime-2-1": {
       "defaults": {
+        "name": "GPT-Realtime-2.1",
         "description": "Realtime speech-to-speech model with configurable reasoning, tool use, and robust voice-agent behavior",
         "contextWindow": 128000,
         "maxTokens": 32000,
+        "modalities": {
+          "input": [
+            "text",
+            "audio",
+            "image"
+          ],
+          "output": [
+            "text",
+            "audio"
+          ]
+        },
         "knowledgeCutoffDate": "September 30, 2024",
         "releaseDate": "July 6, 2026",
         "supportsResponseFormat": false,
+        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "minimal",
@@ -1921,7 +1639,7 @@
             {
               "key": "tauVoiceScore",
               "label": "Tau Voice",
-              "value": 0.15,
+              "value": 0.21,
               "min": 0,
               "max": 1
             }
@@ -2435,218 +2153,6 @@
             "high"
           ],
           "defaultEffort": "minimal"
-        }
-      }
-    },
-    "openai-gpt-6-1-sol-pro": {
-      "defaults": {
-        "name": "OpenAI: GPT-6.1 Sol Pro",
-        "description": "GPT-6.1 Sol Pro is the same underlying model as [GPT-6.1 Sol](https://openrouter.ai/openai/gpt-6.1-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
-        "contextWindow": 1050000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "September 29, 2026",
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "openai-gpt-6-1-terra-pro": {
-      "defaults": {
-        "name": "OpenAI: GPT-6.1 Terra Pro",
-        "description": "GPT-6.1 Terra Pro is the same underlying model as [GPT-6.1 Terra](https://openrouter.ai/openai/gpt-6.1-terra), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
-        "contextWindow": 1050000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "October 26, 2026",
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "openai-gpt-6-2-astra-pro": {
-      "defaults": {
-        "name": "OpenAI: GPT-6.2 Astra Pro",
-        "description": "GPT-6.2 Astra Pro is the same underlying model as [GPT-6.2 Astra](https://openrouter.ai/openai/gpt-6.2-astra), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
-        "contextWindow": 1050000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "November 17, 2026",
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "openai-gpt-6-2-sol-pro": {
-      "defaults": {
-        "name": "OpenAI: GPT-6.2 Sol Pro",
-        "description": "GPT-6.2 Sol Pro is the same underlying model as [GPT-6.2 Sol](https://openrouter.ai/openai/gpt-6.2-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
-        "contextWindow": 1050000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "November 17, 2026",
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "openai-gpt-6-astra-pro": {
-      "defaults": {
-        "name": "OpenAI: GPT-6 Astra Pro ($$$$)",
-        "description": "GPT-6 Astra Pro is the same underlying model as [GPT-6 Astra](https://openrouter.ai/openai/gpt-6-astra), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. Learn more in OpenAI's docs: https://developers.openai.com/api/docs/guides/reasoning#reasoning-mode",
-        "contextWindow": 1050000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "September 4, 2026",
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "openai-gpt-6-luna-pro": {
-      "defaults": {
-        "name": "OpenAI: GPT-6 Luna Pro",
-        "description": "GPT-6 Luna Pro is the same underlying model as [GPT-6 Luna](https://openrouter.ai/openai/gpt-6-luna), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. Learn more in OpenAI's docs: https://developers.openai.com/api/docs/guides/reasoning#reasoning-mode",
-        "contextWindow": 1050000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "September 22, 2026",
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "openai-gpt-6-sol-pro": {
-      "defaults": {
-        "name": "OpenAI: GPT-6 Sol Pro",
-        "description": "GPT-6 Sol Pro is the same underlying model as [GPT-6 Sol](https://openrouter.ai/openai/gpt-6-sol), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. Learn more in OpenAI's docs: https://developers.openai.com/api/docs/guides/reasoning#reasoning-mode",
-        "contextWindow": 1050000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "pdf",
-            "image",
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "September 22, 2026",
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
         }
       }
     },

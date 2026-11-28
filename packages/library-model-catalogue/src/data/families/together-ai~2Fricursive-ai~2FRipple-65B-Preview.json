@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 131072,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 4, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The together ai/ricursive ai/Ripple 65B Preview family includes models that produce text.",
+  "models": {
+    "ripple-65b-preview": {
+      "defaults": {
+        "name": "Ripple 65B Preview",
+        "description": "Dense 65B open-weight model pretrained from scratch on 12T tokens and post-trained for agentic coding"
+      }
+    }
+  }
+}

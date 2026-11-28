@@ -1,0 +1,67 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+  "models": {
+    "mai-transcribe-2": {
+      "defaults": {
+        "name": "MAI-Transcribe 2",
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+        "strengths": [
+          "audio",
+          "transcription",
+          "document"
+        ],
+        "contextComplexity": 4,
+        "reliability": 5,
+        "releaseDate": "September 3, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "aaWerIndex",
+              "label": "Word Error Rate",
+              "value": 0.02,
+              "min": 0,
+              "max": 1,
+              "lowerIsBetter": true
+            }
+          ]
+        }
+      }
+    },
+    "mai-transcribe-2-streaming": {
+      "defaults": {
+        "name": "MAI-Transcribe-2-Streaming",
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+        "releaseDate": "October 1, 2026"
+      }
+    }
+  }
+}

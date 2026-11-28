@@ -1,0 +1,60 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "reliability": 1,
+    "knowledgeCutoffDate": "April 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
+  },
+  "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+  "models": {
+    "glm-4-5v": {
+      "defaults": {
+        "name": "GLM-4.5V",
+        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+        "contextWindow": 65536,
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "releaseDate": "August 11, 2025"
+      }
+    },
+    "glm-4-6v": {
+      "defaults": {
+        "name": "GLM-4.6V",
+        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "contextComplexity": 4,
+        "releaseDate": "December 8, 2025"
+      }
+    }
+  }
+}

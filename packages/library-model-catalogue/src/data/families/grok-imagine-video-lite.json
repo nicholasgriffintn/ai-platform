@@ -1,0 +1,36 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1024,
+    "maxTokens": 0,
+    "reliability": 2,
+    "releaseDate": "October 1, 2026",
+    "supportsToolCalls": false,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_videoElo",
+          "label": "Text-to-video arena",
+          "value": 977,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 14
+        }
+      ]
+    }
+  },
+  "description": "The grok imagine video lite family groups related models and their shared configuration.",
+  "models": {
+    "grok-imagine-video-1-5-lite": {
+      "defaults": {
+        "name": "Grok Imagine Video 1.5 Lite",
+        "description": "Cost-efficient video model for text-to-video and image-to-video generation"
+      }
+    }
+  }
+}

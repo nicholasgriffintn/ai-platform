@@ -1,0 +1,31 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 4096,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "reranking"
+      ]
+    },
+    "strengths": [
+      "reranking"
+    ],
+    "releaseDate": "December 2, 2024",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The cohere rerank family includes models that produce reranking.",
+  "models": {
+    "cohere-rerank-3-5": {
+      "defaults": {
+        "name": "Cohere Rerank 3.5",
+        "description": "Multilingual reranker for documents and semi-structured data"
+      }
+    }
+  }
+}

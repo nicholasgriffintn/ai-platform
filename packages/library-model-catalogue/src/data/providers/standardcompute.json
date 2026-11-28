@@ -201,7 +201,7 @@
       }
     },
     "deepseek/deepseek-v4-pro": {
-      "model": "deepseek-thinking/deepseek-v4-pro",
+      "model": "deepseek-pro/deepseek-v4-pro",
       "matchingModel": "deepseek/deepseek-v4-pro",
       "overrides": {
         "contextWindow": 1000000,
@@ -258,26 +258,9 @@
           "video",
           "tool_use"
         ],
-        "reliability": 2,
         "lastUpdated": "June 17, 2025",
         "costPer1kInputTokens": 0.0003,
-        "costPer1kOutputTokens": 0.0025,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 988,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 12
-            }
-          ]
-        }
+        "costPer1kOutputTokens": 0.0025
       }
     },
     "google/gemini-2.5-pro": {
@@ -286,6 +269,18 @@
       "overrides": {
         "description": "Google's proven reasoning model for coding, math, and multimodal analysis",
         "maxTokens": 50000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "audio",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -329,13 +324,14 @@
         "description": "Google's most intelligent Flash model, engineered for long-horizon software engineering, autonomous agents, and complex enterprise workflows",
         "maxTokens": 50000,
         "speed": 3,
+        "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375
       }
     },
     "minimax/minimax-m3": {
-      "model": "minimax/minimax-m3",
+      "model": "minimax-m/minimax-m3",
       "matchingModel": "minimax/minimax-m3",
       "overrides": {
         "contextWindow": 1048576,
@@ -350,17 +346,16 @@
       "model": "mistral-large/mistral-large-4",
       "matchingModel": "mistralai/mistral-large-4-0",
       "overrides": {
-        "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "maxTokens": 50000,
         "contextComplexity": 4,
         "speed": 3,
-        "lastUpdated": "October 6, 2026",
+        "lastUpdated": "October 5, 2026",
         "costPer1kInputTokens": 0.00068,
         "costPer1kOutputTokens": 0.00209
       }
     },
     "moonshotai/kimi-k3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "moonshotai/kimi-k3",
       "overrides": {
         "maxTokens": 50000,
@@ -428,7 +423,7 @@
       "overrides": {
         "maxTokens": 50000,
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012
@@ -460,7 +455,7 @@
       }
     },
     "qwen/qwen3.7-flash": {
-      "model": "qwen/qwen3-7-flash",
+      "model": "qwen-flash/qwen3-7-flash",
       "matchingModel": "qwen/qwen3.7-flash",
       "overrides": {
         "description": "Lightweight multimodal Qwen model for high-throughput text, image, and video tasks",
@@ -471,7 +466,7 @@
       }
     },
     "qwen/qwen3.7-max": {
-      "model": "qwen/qwen3-7-max",
+      "model": "qwen-max/qwen3-7-max",
       "matchingModel": "qwen/qwen3.7-max",
       "overrides": {
         "maxTokens": 50000,
@@ -484,7 +479,7 @@
       }
     },
     "qwen/qwen3.7-plus": {
-      "model": "qwen/qwen3-7-plus",
+      "model": "qwen-plus/qwen3-7-plus",
       "matchingModel": "qwen/qwen3.7-plus",
       "overrides": {
         "maxTokens": 50000,
@@ -523,7 +518,7 @@
           "coding",
           "video"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.000425,
         "costPer1kOutputTokens": 0.00255,
@@ -539,25 +534,17 @@
       }
     },
     "qwen/qwen3.8-flash": {
-      "model": "qwen/qwen3-8-flash",
+      "model": "qwen-flash/qwen3-8-flash",
       "matchingModel": "qwen/qwen3.8-flash",
       "overrides": {
         "maxTokens": 50000,
         "lastUpdated": "August 26, 2026",
         "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.00047,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "xhigh"
-          ],
-          "defaultEffort": "low"
-        }
+        "costPer1kOutputTokens": 0.00047
       }
     },
     "qwen/qwen3.8-max-0902": {
-      "model": "qwen/qwen3-8-max-0902",
+      "model": "qwen-max/qwen3-8-max-0902",
       "matchingModel": "qwen/qwen3.8-max-0902",
       "overrides": {
         "description": "2026-09-02 upgraded snapshot of Qwen3.8 Max with stronger coding, collaborative agents, and multimodal document understanding",
@@ -582,8 +569,6 @@
       "model": "grok/grok-4-3",
       "matchingModel": "x-ai/grok-4.3",
       "overrides": {
-        "maxTokens": 30000,
-        "contextComplexity": 4,
         "speed": 2,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
@@ -613,7 +598,7 @@
       }
     },
     "xiaomi/mimo-v2.5-pro": {
-      "model": "mimo/mimo-v2-5-pro",
+      "model": "mimo-pro/mimo-v2-5-pro",
       "matchingModel": "xiaomi/mimo-v2.5-pro",
       "overrides": {
         "maxTokens": 50000,
@@ -622,11 +607,18 @@
         "lastUpdated": "April 22, 2026",
         "costPer1kInputTokens": 0.000435,
         "costPer1kOutputTokens": 0.00087,
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "xiaomi/mimo-v2.6-flash": {
-      "model": "mimo/mimo-v2-6-flash",
+      "model": "mimo-flash/mimo-v2-6-flash",
       "matchingModel": "xiaomi/mimo-v2.6-flash",
       "overrides": {
         "maxTokens": 50000,
@@ -649,7 +641,7 @@
       }
     },
     "xiaomi/mimo-v2.6-pro": {
-      "model": "mimo/mimo-v2-6-pro",
+      "model": "mimo-pro/mimo-v2-6-pro",
       "matchingModel": "xiaomi/mimo-v2.6-pro",
       "overrides": {
         "maxTokens": 50000,
@@ -665,7 +657,7 @@
           ]
         },
         "contextComplexity": 4,
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.00043,
         "costPer1kOutputTokens": 0.00087

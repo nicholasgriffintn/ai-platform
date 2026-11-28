@@ -1,0 +1,332 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The ling flash family includes models that produce text.",
+  "models": {
+    "inclusionai-ling-3-0-flash": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.0 Flash",
+        "description": "*Ling-3.0-flash* is a *124B-parameter Mixture-of-Experts (MoE) model*, with approximately *5.1B parameters activated per token*. The model is designed with *token efficiency and production-scale agentic inference* as key priorities, enabling developers...",
+        "contextWindow": 262144,
+        "maxTokens": 32768,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "releaseDate": "July 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "inclusionai-ling-3-0-flash-fin": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.0 Flash Fin",
+        "description": "Ling 3.0 Flash Fin is InclusionAI’s finance-enhanced MoE language model, combining 124 billion total parameters with approximately 5.1 billion active parameters for efficient financial reasoning. Its 256K context window, function calling, and support for complex, multi-step investment workflows make it ideal for financial research, analysis, long-horizon planning, and execution, while retaining strong capabilities in coding and mathematics.",
+        "contextWindow": 256000,
+        "maxTokens": 32000,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "releaseDate": "August 27, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "inclusionai-ling-3-0-flash-sante": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.0 Flash Sante",
+        "openWeights": false,
+        "description": "Ling-3.0-Flash-Sante is inclusionAI’s language model specialized for health and medicine, built on a Mixture-of-Experts architecture with 124 billion total parameters and approximately 5.1 billion active per token. With a 256K context window and function calling, it supports medical knowledge reasoning, evidence-based retrieval, and complex medical workflows while retaining general reasoning, coding, and agentic capabilities.",
+        "contextWindow": 256000,
+        "maxTokens": 32000,
+        "releaseDate": "September 4, 2026",
+        "supportsResponseFormat": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "inclusionai-ling-3-0-flash-vl": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.0 Flash VL",
+        "description": "Ling 3.0 Flash VL builds on Ling 3.0 Flash (124B total / 5.5B active MoE from InclusionAI), further strengthening its language capabilities while adding native visual perception and advanced visual...",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 2,
+        "releaseDate": "September 10, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "inclusionai-ling-3-1-flash": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.1 Flash (new)",
+        "description": "Ling 3.1 Flash is a hybrid reasoning mixture-of-experts model from inclusionAI, with 25B active parameters out of 560B total.",
+        "contextWindow": 1048576,
+        "maxTokens": 262144,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "releaseDate": "September 29, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 29.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "inclusionai-ling-3-2-flash": {
+      "defaults": {
+        "name": "inclusionAI: Ling 3.2 Flash",
+        "openWeights": false,
+        "description": "Ling 3.2 Flash is a hybrid reasoning model from inclusionAI that accepts text and image input, with a 1M-token context window and up to 200 images per request. Thinking can...",
+        "contextWindow": 1048576,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 5, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ling-3-0-flash": {
+      "defaults": {
+        "name": "Ling 3.0 Flash",
+        "description": "Hybrid-linear MoE reasoning model with 124B total and 5.1B active parameters for efficient agents",
+        "maxTokens": 32768,
+        "strengths": [
+          "tool_use"
+        ],
+        "releaseDate": "July 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "ling-3-0-flash-fin": {
+      "defaults": {
+        "name": "Ling 3.0 Flash Fin",
+        "description": "Finance-enhanced model for financial research, multi-step investment workflows, and long-horizon planning and execution",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "releaseDate": "August 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "ling-3-0-flash-sante": {
+      "defaults": {
+        "name": "Ling 3.0 Flash Sante",
+        "openWeights": false,
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 256000,
+        "maxTokens": 32000,
+        "releaseDate": "September 4, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ling-3-0-flash-vl": {
+      "defaults": {
+        "name": "Ling 3.0 Flash VL",
+        "description": "Native multimodal hybrid MoE model for image and video understanding, reasoning, and visual agents",
+        "contextWindow": 131072,
+        "maxTokens": 32768,
+        "contextComplexity": 4,
+        "releaseDate": "September 10, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "ling-3-1-flash": {
+      "defaults": {
+        "name": "Ling 3.1 Flash",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "maxTokens": 32768,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "releaseDate": "September 29, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 29.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "ling-3-2-flash": {
+      "defaults": {
+        "name": "Ling 3.2 Flash",
+        "openWeights": false,
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1048576,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "November 5, 2026",
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

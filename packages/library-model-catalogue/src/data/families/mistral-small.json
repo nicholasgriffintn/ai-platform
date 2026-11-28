@@ -11,6 +11,7 @@
       ]
     },
     "supportsToolCalls": true,
+    "supportsResponseFormat": true,
     "supportsAttachments": true,
     "supportsTemperature": true
   },
@@ -58,7 +59,6 @@
         ],
         "contextComplexity": 3,
         "releaseDate": "September 17, 2024",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -86,32 +86,7 @@
         "knowledgeCutoffDate": "October 31, 2023",
         "releaseDate": "January 30, 2025",
         "supportsToolCalls": false,
-        "supportsResponseFormat": true,
         "supportsAttachments": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "mistral-small-3-1": {
-      "defaults": {
-        "name": "Mistral Small 3.1",
-        "openWeights": false,
-        "description": "Efficient Mistral model for fast chat, extraction, and production assistants",
-        "contextWindow": 128000,
-        "maxTokens": 32768,
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
-        "knowledgeCutoffDate": "September 2024",
-        "releaseDate": "March 1, 2025",
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -126,8 +101,7 @@
         "contextWindow": 128000,
         "maxTokens": 102400,
         "knowledgeCutoffDate": "October 31, 2023",
-        "releaseDate": "March 17, 2025",
-        "supportsResponseFormat": true
+        "releaseDate": "March 17, 2025"
       }
     },
     "mistral-small-3-1-24b-instruct": {
@@ -174,7 +148,9 @@
     },
     "mistral-small-3-2-24b": {
       "defaults": {
+        "name": "Mistral Small 3.2 24B",
         "description": "Efficient Mistral model for fast chat, extraction, and production assistants",
+        "contextWindow": 128000,
         "maxTokens": 16384,
         "modalities": {
           "input": [
@@ -186,16 +162,14 @@
           ]
         },
         "knowledgeCutoffDate": "October 31, 2023",
-        "releaseDate": "June 20, 2025",
-        "supportsResponseFormat": true
+        "releaseDate": "June 20, 2025"
       }
     },
     "mistral-small-3-2-24b-instruct-2506": {
       "defaults": {
         "description": "Mistral-Small-3.2-24B-Instruct-2506 is a 24B parameter instruction-tuned model with enhanced long-context support (128k) and state-of-the-art vision understanding.",
         "knowledgeCutoffDate": "October 31, 2023",
-        "releaseDate": "June 20, 2025",
-        "supportsResponseFormat": true
+        "releaseDate": "June 20, 2025"
       }
     },
     "mistral-small-4": {
@@ -213,7 +187,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "March 16, 2026",
-        "supportsResponseFormat": true,
         "artificialAnalysis": {
           "intelligenceIndex": 4.3,
           "codingIndex": null,
@@ -254,7 +227,6 @@
         "reliability": 1,
         "knowledgeCutoffDate": "June 2025",
         "releaseDate": "March 16, 2026",
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

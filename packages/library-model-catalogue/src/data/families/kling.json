@@ -1,52 +1,64 @@
 {
-  "defaults": {},
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
   "description": "The kling family includes models that produce text, video.",
   "models": {
-    "inkling-2-small": {
+    "kling-v2-6-image-to-video": {
       "defaults": {
-        "name": "Inkling 2 Small",
-        "openWeights": true,
-        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 1048576,
-        "maxTokens": 1048576,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 5,
-        "reliability": 1,
-        "releaseDate": "November 9, 2026",
-        "supportsToolCalls": true,
-        "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "supportsTemperature": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 30.6,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
+        "name": "Kling v2.6 Image-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "December 3, 2025"
+      }
+    },
+    "kling-v2-6-motion-control": {
+      "defaults": {
+        "name": "Kling v2.6 Motion Control",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "December 18, 2025"
+      }
+    },
+    "kling-v2-6-text-to-video": {
+      "defaults": {
+        "name": "Kling v2.6 Text-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "December 3, 2025",
+        "supportsAttachments": false
+      }
+    },
+    "kling-v3-0-image-to-video": {
+      "defaults": {
+        "name": "Kling v3.0 Image-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "February 5, 2026"
+      }
+    },
+    "kling-v3-0-motion-control": {
+      "defaults": {
+        "name": "Kling v3.0 Motion Control",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "March 4, 2026"
+      }
+    },
+    "kling-v3-0-text-to-video": {
+      "defaults": {
+        "name": "Kling v3.0 Text-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "February 5, 2026",
+        "supportsAttachments": false
       }
     },
     "kling-video-3-0": {

@@ -112,35 +112,10 @@
         "status": "beta",
         "speed": 3,
         "isFeatured": false,
-        "lastUpdated": "October 6, 2026",
+        "lastUpdated": "October 5, 2026",
         "costPer1kInputTokens": 0.0007,
         "costPer1kOutputTokens": 0.0021,
         "supportsFim": true
-      }
-    },
-    "mistral-medium": {
-      "model": "mistral-medium/mistral-medium-latest",
-      "matchingModel": "mistral-medium-latest",
-      "overrides": {
-        "name": "Mistral Medium 3.5",
-        "maxTokens": 262144,
-        "card": "https://www.prompthub.us/models/mistral-medium",
-        "strengths": [
-          "chat",
-          "general_knowledge",
-          "analysis",
-          "creative",
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "speed": 4,
-        "multimodal": true,
-        "isFeatured": false,
-        "knowledgeCutoffDate": "May 2025",
-        "lastUpdated": "April 29, 2026",
-        "costPer1kInputTokens": 0.0015,
-        "costPer1kOutputTokens": 0.0075
       }
     },
     "codestral": {
@@ -190,7 +165,6 @@
         "lastUpdated": "March 16, 2026",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0006,
-        "supportsResponseFormat": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -201,68 +175,35 @@
       }
     },
     "ministral-14b": {
-      "model": "mistral/ministral-14b-latest/ministral-14b",
+      "model": "ministral/ministral-3-14b-latest",
       "matchingModel": "ministral-14b-latest",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
+        "lastUpdated": "December 2, 2025",
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.0002
       }
     },
     "ministral-8b": {
-      "model": "ministral/ministral-8b-latest",
+      "model": "ministral/ministral-3-8b-latest",
       "matchingModel": "ministral-8b-latest",
       "overrides": {
-        "maxTokens": 128000,
-        "strengths": [
-          "chat",
-          "general_knowledge",
-          "analysis",
-          "creative",
-          "multilingual",
-          "vision"
-        ],
-        "contextComplexity": 2,
-        "reliability": 3,
-        "speed": 3,
-        "multimodal": true,
-        "releaseDate": "October 1, 2024",
-        "lastUpdated": "October 4, 2024",
+        "speed": 4,
+        "lastUpdated": "December 2, 2025",
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.00015
       }
     },
     "ministral-3-3b": {
-      "model": "ministral/ministral-3b-latest",
+      "model": "ministral/ministral-3-3b-latest",
       "matchingModel": "ministral-3b-latest",
       "overrides": {
-        "maxTokens": 128000,
-        "strengths": [
-          "chat",
-          "general_knowledge",
-          "analysis",
-          "creative",
-          "multilingual",
-          "vision",
-          "tool_use",
-          "document"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
         "speed": 5,
-        "multimodal": true,
         "isFeatured": false,
         "deprecated": true,
-        "releaseDate": "October 1, 2024",
-        "lastUpdated": "October 4, 2024",
+        "lastUpdated": "December 2, 2025",
         "costPer1kInputTokens": 0.0001,
-        "costPer1kOutputTokens": 0.0001,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
+        "costPer1kOutputTokens": 0.0001
       }
     },
     "mistral-tiny": {
@@ -277,23 +218,13 @@
       }
     },
     "voxtral-small": {
-      "model": "voxtral/voxtral-small-latest",
+      "model": "voxtral-small/voxtral-small-latest",
       "matchingModel": "voxtral-small-latest",
       "overrides": {
         "lastUpdated": "July 15, 2025",
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0.0004,
         "supportsAudio": true
-      }
-    },
-    "voxtral-mini": {
-      "model": "voxtral/voxtral-mini-latest",
-      "matchingModel": "voxtral-mini-latest",
-      "overrides": {
-        "lastUpdated": "February 4, 2026",
-        "supportsToolCalls": false,
-        "supportsAudio": true,
-        "supportsTemperature": false
       }
     },
     "voxtral-mini-transcribe-realtime": {
@@ -355,20 +286,10 @@
         "supportsTemperature"
       ]
     },
-    "voxtral-mini-tts-latest": {
-      "model": "voxtral/voxtral-mini-tts-latest",
-      "matchingModel": "voxtral-mini-tts-latest",
-      "overrides": {
-        "lastUpdated": "March 23, 2026",
-        "supportsToolCalls": false,
-        "supportsTemperature": false
-      }
-    },
     "zai-glm-5-3": {
       "model": "glm/glm-5-3",
       "matchingModel": "zai-glm-5-3",
       "overrides": {
-        "maxTokens": 131072,
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "August 14, 2026",
@@ -417,6 +338,7 @@
       "matchingModel": "deepseek-v4-1-flash-1017",
       "overrides": {
         "name": "DeepSeek V4.1 Flash 1017",
+        "status": "beta",
         "maxTokens": 128000,
         "modalities": {
           "input": [
@@ -430,7 +352,7 @@
           "tool_use",
           "document"
         ],
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "October 17, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,

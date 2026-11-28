@@ -15,60 +15,6 @@
     "supportsTemperature": false
   },
   "models": {
-    "o3": {
-      "model": "o/o3",
-      "matchingModel": "o3",
-      "overrides": {
-        "strengths": [
-          "coding",
-          "math",
-          "reasoning",
-          "analysis",
-          "multilingual",
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "speed": 3,
-        "multimodal": true,
-        "isFeatured": false,
-        "deprecated": true,
-        "deprecationMessage": "o3 shuts down on 11 December 2026. Use GPT-5.6 Sol instead.",
-        "replacementModel": "gpt-5.6-sol",
-        "lastUpdated": "April 16, 2025",
-        "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.008,
-        "supportsParallelToolCalls": false,
-        "timeout": 1000000
-      }
-    },
-    "gpt-4o": {
-      "model": "gpt/gpt-4o",
-      "matchingModel": "gpt-4o",
-      "overrides": {
-        "card": "https://www.prompthub.us/models/gpt-4o",
-        "strengths": [
-          "analysis",
-          "chat",
-          "coding",
-          "multilingual",
-          "general_knowledge",
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "speed": 4,
-        "multimodal": true,
-        "isFeatured": false,
-        "deprecated": true,
-        "deprecationMessage": "GPT-4o shuts down on 14 January 2027. Use GPT-6 Luna instead.",
-        "replacementModel": "gpt-6-luna",
-        "lastUpdated": "August 6, 2024",
-        "costPer1kInputTokens": 0.0025,
-        "costPer1kOutputTokens": 0.01,
-        "supportsTemperature": true
-      }
-    },
     "gpt-4o-search-preview": {
       "model": "gpt/openai-gpt-4o-search-preview",
       "matchingModel": "gpt-4o-search-preview",
@@ -86,33 +32,6 @@
       "unset": [
         "openWeights"
       ]
-    },
-    "gpt-4o-mini": {
-      "model": "gpt-mini/gpt-4o-mini",
-      "matchingModel": "gpt-4o-mini",
-      "overrides": {
-        "name": "GPT-4o mini",
-        "card": "https://www.prompthub.us/models/gpt-4o-mini",
-        "strengths": [
-          "analysis",
-          "chat",
-          "coding",
-          "multilingual",
-          "general_knowledge",
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "speed": 3,
-        "isFeatured": false,
-        "deprecated": true,
-        "deprecationMessage": "GPT-4o mini shuts down on 14 January 2027. Use GPT-6 Luna instead.",
-        "replacementModel": "gpt-6-luna",
-        "lastUpdated": "July 18, 2024",
-        "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.0006,
-        "supportsTemperature": true
-      }
     },
     "gpt-4o-mini-search": {
       "model": "gpt/openai-gpt-4o-mini-search-preview",
@@ -148,254 +67,6 @@
       "unset": [
         "openWeights"
       ]
-    },
-    "gpt-4.1": {
-      "model": "gpt/gpt-4-1",
-      "matchingModel": "gpt-4.1",
-      "overrides": {
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "card": "https://www.prompthub.us/models/gpt-4-1",
-        "strengths": [
-          "coding",
-          "academic",
-          "reasoning",
-          "instruction",
-          "vision",
-          "document",
-          "tool_use",
-          "search"
-        ],
-        "speed": 4,
-        "multimodal": true,
-        "isFeatured": false,
-        "deprecated": true,
-        "deprecationMessage": "GPT-4.1 shuts down on 14 January 2027. Use GPT-6 Luna instead.",
-        "replacementModel": "gpt-6-luna",
-        "lastUpdated": "April 14, 2025",
-        "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.008,
-        "costPer1kCachedInputTokens": 0.0005,
-        "hostedToolCosts": {
-          "web_search": 0.025,
-          "file_search": 0.0025,
-          "code_interpreter": 0.03
-        },
-        "supportsSearchGrounding": true,
-        "supportsCodeExecution": true,
-        "supportsFileSearch": true,
-        "supportsMcp": true,
-        "supportsImageGenerationTool": true,
-        "supportsTemperature": true,
-        "timeout": 1000000
-      }
-    },
-    "gpt-4.1-mini": {
-      "model": "gpt-mini/gpt-4-1-mini",
-      "matchingModel": "gpt-4.1-mini",
-      "overrides": {
-        "name": "GPT-4.1 mini",
-        "card": "https://www.prompthub.us/models/gpt-4-1-mini",
-        "strengths": [
-          "coding",
-          "academic",
-          "instruction",
-          "vision",
-          "document",
-          "tool_use",
-          "search"
-        ],
-        "speed": 4,
-        "isFeatured": false,
-        "deprecated": true,
-        "deprecationMessage": "GPT-4.1 mini shuts down on 14 January 2027. Use GPT-6 Luna instead.",
-        "replacementModel": "gpt-6-luna",
-        "lastUpdated": "April 14, 2025",
-        "costPer1kInputTokens": 0.0004,
-        "costPer1kOutputTokens": 0.0016,
-        "hostedToolCosts": {
-          "web_search": 0.025,
-          "file_search": 0.0025,
-          "code_interpreter": 0.03
-        },
-        "supportsSearchGrounding": true,
-        "supportsCodeExecution": true,
-        "supportsFileSearch": true,
-        "supportsMcp": true,
-        "supportsImageGenerationTool": true,
-        "supportsTemperature": true
-      }
-    },
-    "gpt-5": {
-      "model": "gpt/gpt-5",
-      "matchingModel": "gpt-5",
-      "overrides": {
-        "card": "https://www.prompthub.us/models/gpt-5",
-        "strengths": [
-          "coding",
-          "reasoning",
-          "analysis",
-          "multilingual",
-          "creative",
-          "vision",
-          "document",
-          "tool_use",
-          "search"
-        ],
-        "speed": 2,
-        "multimodal": true,
-        "isFeatured": false,
-        "deprecated": true,
-        "deprecationMessage": "GPT-5 shuts down on 11 December 2026. Use GPT-5.6 Sol instead.",
-        "replacementModel": "gpt-5.6-sol",
-        "lastUpdated": "August 7, 2025",
-        "costPer1kInputTokens": 0.00125,
-        "costPer1kOutputTokens": 0.01,
-        "costPer1kCachedInputTokens": 0.000125,
-        "hostedToolCosts": {
-          "web_search": 0.01,
-          "file_search": 0.0025,
-          "code_interpreter": 0.03
-        },
-        "supportsSearchGrounding": true,
-        "supportsCodeExecution": true,
-        "supportsFileSearch": true,
-        "supportsMcp": true,
-        "supportsImageGenerationTool": true,
-        "supportsTopP": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "medium"
-        },
-        "verbosityConfig": {
-          "supportedVerbosityLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultVerbosity": "medium"
-        }
-      }
-    },
-    "gpt-5-mini": {
-      "model": "gpt-mini/gpt-5-mini",
-      "matchingModel": "gpt-5-mini",
-      "overrides": {
-        "card": "https://www.prompthub.us/models/gpt-5-mini",
-        "strengths": [
-          "coding",
-          "reasoning",
-          "analysis",
-          "multilingual",
-          "vision",
-          "document",
-          "tool_use",
-          "search"
-        ],
-        "speed": 3,
-        "multimodal": true,
-        "isFeatured": false,
-        "deprecated": true,
-        "deprecationMessage": "GPT-5 Mini shuts down on 11 December 2026. Use GPT-5.6 Terra instead.",
-        "replacementModel": "gpt-5.6-terra",
-        "lastUpdated": "August 7, 2025",
-        "costPer1kInputTokens": 0.00025,
-        "costPer1kOutputTokens": 0.002,
-        "hostedToolCosts": {
-          "web_search": 0.01,
-          "file_search": 0.0025,
-          "code_interpreter": 0.03
-        },
-        "supportsSearchGrounding": true,
-        "supportsCodeExecution": true,
-        "supportsFileSearch": true,
-        "supportsMcp": true,
-        "supportsImageGenerationTool": true,
-        "supportsTopP": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "medium"
-        },
-        "verbosityConfig": {
-          "supportedVerbosityLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultVerbosity": "medium"
-        }
-      }
-    },
-    "gpt-5-nano": {
-      "model": "gpt-nano/gpt-5-nano",
-      "matchingModel": "gpt-5-nano",
-      "overrides": {
-        "card": "https://www.prompthub.us/models/gpt-5-nano",
-        "strengths": [
-          "coding",
-          "chat",
-          "general_knowledge",
-          "vision",
-          "document",
-          "tool_use",
-          "search"
-        ],
-        "speed": 3,
-        "multimodal": true,
-        "isFeatured": false,
-        "deprecated": true,
-        "deprecationMessage": "GPT-5 Nano shuts down on 11 December 2026. Use GPT-5.6 Luna instead.",
-        "replacementModel": "gpt-5.6-luna",
-        "lastUpdated": "August 7, 2025",
-        "costPer1kInputTokens": 0.00005,
-        "costPer1kOutputTokens": 0.0004,
-        "hostedToolCosts": {
-          "web_search": 0.01,
-          "file_search": 0.0025,
-          "code_interpreter": 0.03
-        },
-        "supportsSearchGrounding": true,
-        "supportsCodeExecution": true,
-        "supportsFileSearch": true,
-        "supportsMcp": true,
-        "supportsImageGenerationTool": true,
-        "supportsTopP": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "medium"
-        },
-        "verbosityConfig": {
-          "supportedVerbosityLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultVerbosity": "medium"
-        }
-      }
     },
     "gpt-5.2": {
       "model": "gpt/gpt-5-2",
@@ -520,95 +191,6 @@
         }
       }
     },
-    "gpt-image-2": {
-      "model": "gpt-image/gpt-image-2",
-      "matchingModel": "gpt-image-2",
-      "overrides": {
-        "name": "gpt-image-2",
-        "strengths": [
-          "creative",
-          "vision",
-          "document",
-          "image"
-        ],
-        "speed": 3,
-        "isFeatured": true,
-        "lastUpdated": "April 21, 2026",
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.03,
-        "supportsToolCalls": false,
-        "supportsImageEdits": true,
-        "timeout": 1000000,
-        "inputSchema": {
-          "fields": [
-            {
-              "name": "prompt",
-              "type": "string",
-              "description": "Text prompt for image generation or editing.",
-              "required": true
-            },
-            {
-              "name": "size",
-              "type": "string",
-              "description": "Output size."
-            },
-            {
-              "name": "quality",
-              "type": "string",
-              "description": "Rendering quality.",
-              "enum": [
-                "low",
-                "medium",
-                "high",
-                "auto"
-              ]
-            },
-            {
-              "name": "output_format",
-              "type": "string",
-              "description": "Output image format.",
-              "enum": [
-                "png",
-                "jpeg",
-                "webp"
-              ]
-            },
-            {
-              "name": "output_compression",
-              "type": "integer",
-              "description": "Compression level for JPEG and WebP outputs."
-            },
-            {
-              "name": "background",
-              "type": "string",
-              "description": "Background handling. Transparent backgrounds are not supported.",
-              "enum": [
-                "auto",
-                "opaque"
-              ]
-            },
-            {
-              "name": "moderation",
-              "type": "string",
-              "description": "Image moderation strictness.",
-              "enum": [
-                "auto",
-                "low"
-              ]
-            },
-            {
-              "name": "n",
-              "type": "integer",
-              "description": "Number of images to generate."
-            }
-          ],
-          "reference": "https://developers.openai.com/api/docs/guides/image-generation"
-        }
-      },
-      "unset": [
-        "supportsResponseFormat"
-      ]
-    },
     "codex-mini-latest": {
       "model": "openai/codex-mini-latest/codex-mini",
       "matchingModel": "codex-mini-latest",
@@ -668,7 +250,7 @@
           "vision",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "deprecated": true,
         "deprecationMessage": "GPT-5-Codex was retired on 23 July 2026. Use GPT-5.6 Sol instead.",
         "replacementModel": "gpt-5.6-sol",
@@ -686,98 +268,6 @@
           ],
           "defaultEffort": "medium"
         },
-        "verbosityConfig": {
-          "supportedVerbosityLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultVerbosity": "medium"
-        }
-      }
-    },
-    "gpt-5-pro": {
-      "model": "gpt-pro/gpt-5-pro",
-      "matchingModel": "gpt-5-pro",
-      "overrides": {
-        "maxTokens": 272000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "deprecated": true,
-        "deprecationMessage": "GPT-5 Pro shuts down on 11 December 2026. Use GPT-5.6 Sol instead.",
-        "replacementModel": "gpt-5.6-sol",
-        "lastUpdated": "October 6, 2025",
-        "costPer1kInputTokens": 0.015,
-        "costPer1kOutputTokens": 0.12,
-        "hostedToolCosts": {
-          "web_search": 0.01,
-          "file_search": 0.0025,
-          "code_interpreter": 0.03
-        },
-        "supportsSearchGrounding": true,
-        "supportsCodeExecution": true,
-        "supportsFileSearch": true,
-        "supportsMcp": true,
-        "supportsImageGenerationTool": true,
-        "supportsToolSearch": true,
-        "supportsHostedShell": true,
-        "requiresResponsesApi": true,
-        "verbosityConfig": {
-          "supportedVerbosityLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultVerbosity": "medium"
-        }
-      },
-      "unset": [
-        "strengths",
-        "artificialAnalysis"
-      ]
-    },
-    "gpt-5.1": {
-      "model": "gpt/gpt-5-1",
-      "matchingModel": "gpt-5.1",
-      "overrides": {
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use",
-          "search",
-          "coding"
-        ],
-        "speed": 2,
-        "deprecated": true,
-        "deprecationMessage": "GPT-5.1 shuts down on 1 April 2027. Use GPT-6 Sol instead.",
-        "replacementModel": "gpt-6-sol",
-        "lastUpdated": "November 13, 2025",
-        "costPer1kInputTokens": 0.00125,
-        "costPer1kOutputTokens": 0.01,
-        "costPer1kCachedInputTokens": 0.000125,
-        "hostedToolCosts": {
-          "web_search": 0.01,
-          "file_search": 0.0025,
-          "code_interpreter": 0.03
-        },
-        "supportsSearchGrounding": true,
-        "supportsCodeExecution": true,
-        "supportsFileSearch": true,
-        "supportsMcp": true,
-        "supportsImageGenerationTool": true,
-        "supportsToolSearch": true,
-        "supportsHostedShell": true,
-        "supportsTemperature": true,
-        "samplingSupportedReasoningEfforts": [
-          "none"
-        ],
         "verbosityConfig": {
           "supportedVerbosityLevels": [
             "low",
@@ -954,58 +444,6 @@
         "artificialAnalysis"
       ]
     },
-    "gpt-5.3-codex": {
-      "model": "gpt-codex/gpt-5-3-codex",
-      "matchingModel": "gpt-5.3-codex",
-      "overrides": {
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use",
-          "search",
-          "coding"
-        ],
-        "speed": 2,
-        "deprecated": true,
-        "deprecationMessage": "GPT-5.3 Codex shuts down on 1 April 2027. Use GPT-6 Sol instead.",
-        "replacementModel": "gpt-6-sol",
-        "lastUpdated": "February 5, 2026",
-        "costPer1kInputTokens": 0.00175,
-        "costPer1kOutputTokens": 0.014,
-        "costPer1kCachedInputTokens": 0.000175,
-        "hostedToolCosts": {
-          "web_search": 0.01,
-          "file_search": 0.0025,
-          "code_interpreter": 0.03
-        },
-        "supportsSearchGrounding": true,
-        "supportsCodeExecution": true,
-        "supportsFileSearch": true,
-        "supportsMcp": true,
-        "supportsImageGenerationTool": true,
-        "supportsHostedShell": true,
-        "supportsTemperature": true,
-        "supportsTopP": false,
-        "requiresResponsesApi": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "medium"
-        },
-        "verbosityConfig": {
-          "supportedVerbosityLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultVerbosity": "medium"
-        }
-      }
-    },
     "gpt-5.3-codex-spark": {
       "model": "gpt-codex-spark/gpt-5-3-codex-spark",
       "matchingModel": "gpt-5.3-codex-spark",
@@ -1083,38 +521,6 @@
       "unset": [
         "supportsResponseFormat"
       ]
-    },
-    "o3-pro": {
-      "model": "o-pro/o3-pro",
-      "matchingModel": "o3-pro",
-      "overrides": {
-        "name": "o3-pro",
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "speed": 2,
-        "deprecated": true,
-        "deprecationMessage": "o3-pro shuts down on 11 December 2026. Use GPT-5.6 Sol instead.",
-        "replacementModel": "gpt-5.6-sol",
-        "lastUpdated": "June 10, 2025",
-        "costPer1kInputTokens": 0.02,
-        "costPer1kOutputTokens": 0.08,
-        "requiresResponsesApi": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
-      }
     },
     "o4-mini-deep-research": {
       "model": "o-mini/o4-mini-deep-research",
@@ -1209,7 +615,7 @@
           "document",
           "search"
         ],
-        "speed": 2,
+        "speed": 3,
         "multimodal": true,
         "lastUpdated": "March 5, 2026",
         "costPer1kInputTokens": 0.0025,
@@ -1294,66 +700,6 @@
         "supportsComputerUse": true,
         "supportsImageGenerationTool": true,
         "supportsToolSearch": true,
-        "supportsHostedShell": true,
-        "supportsTemperature": true,
-        "samplingSupportedReasoningEfforts": [
-          "none"
-        ],
-        "supportsPromptCaching": true,
-        "verbosityConfig": {
-          "supportedVerbosityLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultVerbosity": "medium"
-        }
-      }
-    },
-    "gpt-5.4-nano": {
-      "model": "gpt-nano/gpt-5-4-nano",
-      "matchingModel": "gpt-5.4-nano",
-      "overrides": {
-        "name": "GPT-5.4 nano",
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "chat",
-          "general_knowledge",
-          "summarization",
-          "multilingual",
-          "vision",
-          "document",
-          "tool_use",
-          "search",
-          "coding"
-        ],
-        "speed": 3,
-        "multimodal": true,
-        "deprecated": true,
-        "deprecationMessage": "GPT-5.4 nano shuts down on 1 April 2027. Use GPT-6 Luna instead.",
-        "replacementModel": "gpt-6-luna",
-        "lastUpdated": "March 17, 2026",
-        "costPer1kInputTokens": 0.0002,
-        "costPer1kOutputTokens": 0.00125,
-        "costPer1kCachedInputTokens": 0.00002,
-        "hostedToolCosts": {
-          "web_search": 0.01,
-          "file_search": 0.0025,
-          "code_interpreter": 0.03
-        },
-        "supportsSearchGrounding": true,
-        "supportsCodeExecution": true,
-        "supportsFileSearch": true,
-        "supportsMcp": true,
-        "supportsImageGenerationTool": true,
         "supportsHostedShell": true,
         "supportsTemperature": true,
         "samplingSupportedReasoningEfforts": [
@@ -1568,43 +914,12 @@
       "model": "gpt/gpt-realtime-2",
       "matchingModel": "gpt-realtime-2",
       "overrides": {
-        "name": "GPT Realtime 2",
-        "modalities": {
-          "input": [
-            "text",
-            "audio",
-            "image"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
-        "strengths": [
-          "audio",
-          "chat",
-          "reasoning",
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "speed": 4,
-        "multimodal": true,
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.024,
         "supportsResponseFormat": false,
         "supportsAudio": true,
-        "supportsRealtimeSession": true,
-        "supportsTopP": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "supportsRealtimeSession": true
       },
       "unset": [
         "openWeights"
@@ -1741,9 +1056,6 @@
       "model": "gpt/gpt-4o-transcribe",
       "matchingModel": "gpt-4o-transcribe",
       "overrides": {
-        "strengths": [
-          "transcription"
-        ],
         "hiddenFromDefaultList": true,
         "deprecated": true,
         "deprecationMessage": "GPT-4o Transcribe shuts down on 26 February 2027. Use GPT Transcribe instead.",
@@ -1760,6 +1072,7 @@
       "model": "whisper/whisper",
       "matchingModel": "whisper-1",
       "overrides": {
+        "name": "Whisper",
         "strengths": [
           "transcription"
         ],
@@ -1818,8 +1131,7 @@
         "supportsPromptCacheOptions": true
       },
       "unset": [
-        "contextComplexity",
-        "strengths"
+        "contextComplexity"
       ]
     },
     "gpt-5.6-luna": {
@@ -1961,7 +1273,7 @@
           "search",
           "coding"
         ],
-        "speed": 3,
+        "speed": 2,
         "isFeatured": false,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.002,
@@ -2101,18 +1413,6 @@
       "model": "gpt/gpt-realtime-2-1",
       "matchingModel": "gpt-realtime-2.1",
       "overrides": {
-        "name": "GPT-Realtime-2.1",
-        "modalities": {
-          "input": [
-            "text",
-            "audio",
-            "image"
-          ],
-          "output": [
-            "text",
-            "audio"
-          ]
-        },
         "lastUpdated": "July 6, 2026",
         "costPer1kInputTokens": 0.004,
         "costPer1kOutputTokens": 0.024,
@@ -2135,9 +1435,6 @@
       "model": "gpt/gpt-live-1",
       "matchingModel": "gpt-live-1",
       "overrides": {
-        "strengths": [
-          "audio"
-        ],
         "lastUpdated": "September 10, 2026",
         "costPerAudioSecond": 0.000833,
         "supportsToolCalls": false,
@@ -2196,8 +1493,7 @@
         "supportsTemperature": true
       },
       "unset": [
-        "contextComplexity",
-        "strengths"
+        "contextComplexity"
       ]
     },
     "gpt-daybreak-red-latest": {
@@ -2420,6 +1716,42 @@
       "overrides": {
         "speed": 2,
         "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "gpt-6-astra-healthcare": {
+      "model": "gpt-astra/gpt-6-astra-healthcare",
+      "matchingModel": "gpt-6-astra-healthcare",
+      "overrides": {
+        "lastUpdated": "November 24, 2026",
+        "costPer1kInputTokens": 0.01,
+        "costPer1kOutputTokens": 0.05
+      }
+    },
+    "gpt-6.1-sol-healthcare": {
+      "model": "gpt-sol/gpt-6-1-sol-healthcare",
+      "matchingModel": "gpt-6.1-sol-healthcare",
+      "overrides": {
+        "lastUpdated": "November 24, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01
+      }
+    },
+    "gpt-6.2-astra-healthcare": {
+      "model": "gpt-astra/gpt-6-2-astra-healthcare",
+      "matchingModel": "gpt-6.2-astra-healthcare",
+      "overrides": {
+        "lastUpdated": "November 24, 2026",
+        "costPer1kInputTokens": 0.008,
+        "costPer1kOutputTokens": 0.04
+      }
+    },
+    "gpt-6.2-sol-healthcare": {
+      "model": "gpt-sol/gpt-6-2-sol-healthcare",
+      "matchingModel": "gpt-6.2-sol-healthcare",
+      "overrides": {
+        "lastUpdated": "November 24, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01
       }

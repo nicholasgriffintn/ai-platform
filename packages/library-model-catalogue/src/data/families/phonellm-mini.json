@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 262140,
+    "maxTokens": 262140,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "October 15, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The phonellm mini family includes models that produce text.",
+  "models": {
+    "phonellm-mini-alpha-2": {
+      "defaults": {
+        "name": "PhoneLLM Mini Alpha 2",
+        "description": "Fast open-weights Nemotron 3 Nano fine-tune for phone voice agents with tool calling"
+      }
+    }
+  }
+}

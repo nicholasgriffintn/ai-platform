@@ -1,0 +1,196 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "maxTokens": 32768,
+    "contextComplexity": 3,
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+  "models": {
+    "gemini-nano-banana-2-1": {
+      "defaults": {
+        "name": "Gemini Nano Banana 2.1",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
+        "releaseDate": "October 6, 2026",
+        "supportsResponseFormat": false,
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "minimal"
+        }
+      }
+    },
+    "nano-banana": {
+      "defaults": {
+        "description": "Nano Banana image model for fast generation, edits, and character-consistent assets",
+        "contextWindow": 32768,
+        "maxTokens": 8192,
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
+        "reliability": 2,
+        "knowledgeCutoffDate": "June 2025",
+        "releaseDate": "October 2, 2025",
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 988,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 11
+            }
+          ]
+        }
+      }
+    },
+    "nano-banana-2": {
+      "defaults": {
+        "name": "Nano Banana 2",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 131072,
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "May 28, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1145,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 10
+            }
+          ]
+        }
+      }
+    },
+    "nano-banana-2-1": {
+      "defaults": {
+        "name": "Nano Banana 2.1",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 65536,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "image",
+          "creative"
+        ],
+        "reliability": 4,
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "October 6, 2026",
+        "supportsToolCalls": true,
+        "supportsResponseFormat": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1175,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 11
+            }
+          ]
+        }
+      }
+    },
+    "nano-banana-2-preview": {
+      "defaults": {
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 65536,
+        "strengths": [
+          "vision",
+          "document",
+          "image",
+          "creative"
+        ],
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "February 26, 2026",
+        "supportsResponseFormat": true
+      }
+    },
+    "nano-banana-gemini-2-5-flash-image": {
+      "defaults": {
+        "name": "Nano Banana (Gemini 2.5 Flash Image)",
+        "description": "Nano Banana image model for fast generation, edits, and character-consistent assets",
+        "contextWindow": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text",
+            "image"
+          ]
+        },
+        "strengths": [
+          "image",
+          "creative",
+          "document"
+        ],
+        "reliability": 2,
+        "knowledgeCutoffDate": "June 2025",
+        "releaseDate": "October 2, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 988,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 11
+            }
+          ]
+        }
+      }
+    }
+  }
+}

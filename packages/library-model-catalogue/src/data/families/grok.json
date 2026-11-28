@@ -2,7 +2,6 @@
   "defaults": {
     "openWeights": false,
     "supportsToolCalls": true,
-    "supportsAttachments": true,
     "supportsTemperature": true
   },
   "description": "The grok family includes models that produce audio, image, text, video.",
@@ -125,7 +124,8 @@
           ]
         },
         "knowledgeCutoffDate": "August 2024",
-        "releaseDate": "August 20, 2024"
+        "releaseDate": "August 20, 2024",
+        "supportsAttachments": true
       }
     },
     "grok-2-vision-1212": {
@@ -144,7 +144,8 @@
           ]
         },
         "knowledgeCutoffDate": "August 2024",
-        "releaseDate": "August 20, 2024"
+        "releaseDate": "August 20, 2024",
+        "supportsAttachments": true
       }
     },
     "grok-2-vision-latest": {
@@ -171,7 +172,8 @@
         "reliability": 4,
         "multimodal": true,
         "knowledgeCutoffDate": "August 2024",
-        "releaseDate": "August 20, 2024"
+        "releaseDate": "August 20, 2024",
+        "supportsAttachments": true
       }
     },
     "grok-3": {
@@ -461,7 +463,8 @@
     "grok-4-1-fast-non-reasoning": {
       "defaults": {
         "description": "Fast Grok model for responsive chat, reasoning, and tool-assisted work",
-        "releaseDate": "November 19, 2025"
+        "releaseDate": "November 19, 2025",
+        "supportsAttachments": true
       }
     },
     "grok-4-1-fast-reasoning": {
@@ -478,6 +481,7 @@
         "contextComplexity": 5,
         "reliability": 1,
         "releaseDate": "November 19, 2025",
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -519,6 +523,7 @@
         "knowledgeCutoffDate": "September 1, 2025",
         "releaseDate": "March 31, 2026",
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -550,7 +555,8 @@
             "text"
           ]
         },
-        "releaseDate": "March 11, 2026"
+        "releaseDate": "March 11, 2026",
+        "supportsAttachments": true
       }
     },
     "grok-4-20-beta-reasoning": {
@@ -569,14 +575,16 @@
             "text"
           ]
         },
-        "releaseDate": "March 11, 2026"
+        "releaseDate": "March 11, 2026",
+        "supportsAttachments": true
       }
     },
     "grok-4-20-multi-agent": {
       "defaults": {
         "name": "Grok 4.20 Multi-Agent",
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
-        "contextWindow": 2000000
+        "contextWindow": 2000000,
+        "supportsAttachments": true
       }
     },
     "grok-4-20-multi-agent-beta": {
@@ -597,6 +605,7 @@
           "tool_use"
         ],
         "reliability": 1,
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -609,8 +618,10 @@
       "defaults": {
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
         "contextWindow": 2000000,
+        "maxTokens": 30000,
         "reliability": 1,
         "releaseDate": "March 9, 2026",
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -631,6 +642,7 @@
         "name": "Grok 4.3",
         "description": "xAI's default Grok for chat, coding, agentic tools, and lower hallucination risk",
         "contextWindow": 1000000,
+        "maxTokens": 30000,
         "modalities": {
           "input": [
             "text",
@@ -646,10 +658,11 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 5,
+        "contextComplexity": 4,
         "reliability": 2,
         "releaseDate": "April 17, 2026",
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -684,6 +697,7 @@
         "reliability": 3,
         "releaseDate": "July 8, 2026",
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -726,6 +740,7 @@
         "knowledgeCutoffDate": "February 1, 2026",
         "releaseDate": "August 12, 2026",
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -769,6 +784,7 @@
         "knowledgeCutoffDate": "February 1, 2026",
         "releaseDate": "August 12, 2026",
         "supportsResponseFormat": false,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -812,6 +828,7 @@
         "knowledgeCutoffDate": "February 1, 2026",
         "releaseDate": "August 12, 2026",
         "supportsResponseFormat": false,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -855,6 +872,7 @@
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "September 21, 2026",
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -865,7 +883,7 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 35.5,
+          "intelligenceIndex": 35.4,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -898,6 +916,7 @@
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "September 21, 2026",
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -908,7 +927,7 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 35.5,
+          "intelligenceIndex": 35.4,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -941,6 +960,7 @@
         "knowledgeCutoffDate": "May 2026",
         "releaseDate": "September 21, 2026",
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -951,7 +971,7 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 35.5,
+          "intelligenceIndex": 35.4,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -976,6 +996,7 @@
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "September 19, 2025",
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1008,6 +1029,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "July 2025",
         "releaseDate": "September 19, 2025",
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1110,9 +1132,14 @@
             "video"
           ]
         },
+        "strengths": [
+          "video",
+          "creative"
+        ],
         "reliability": 4,
         "releaseDate": "January 28, 2026",
         "supportsToolCalls": false,
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1135,10 +1162,8 @@
       "defaults": {
         "name": "Grok Imagine Image",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "maxTokens": 0,
         "reliability": 2,
-        "releaseDate": "January 28, 2026",
-        "supportsToolCalls": false,
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1161,17 +1186,7 @@
       "defaults": {
         "name": "Grok Imagine Image 2.0",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "contextWindow": 64000,
         "maxTokens": 0,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "image"
-          ]
-        },
-        "contextComplexity": 3,
         "reliability": 4,
         "releaseDate": "August 7, 2026",
         "supportsToolCalls": false,
@@ -1185,7 +1200,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1167,
+              "value": 1168,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -1256,7 +1271,7 @@
     "grok-imagine-video": {
       "defaults": {
         "name": "Grok Imagine Video",
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "description": "Generate videos using xAI's Grok Imagine Video model",
         "modalities": {
           "input": [
             "text",
@@ -1267,7 +1282,14 @@
             "video"
           ]
         },
+        "strengths": [
+          "creative",
+          "video",
+          "vision"
+        ],
+        "contextComplexity": 4,
         "reliability": 4,
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1289,8 +1311,8 @@
     "grok-imagine-video-1-5": {
       "defaults": {
         "name": "Grok Imagine Video 1.5",
-        "description": "Video model for text-to-video, image-to-video, and reference-to-video generation with optional voice references",
-        "contextWindow": 1024,
+        "description": "Video model for image-to-video generation, editing, and extension workflows",
+        "contextWindow": 0,
         "maxTokens": 0,
         "modalities": {
           "input": [
@@ -1308,7 +1330,6 @@
         "releaseDate": "May 30, 2026",
         "supportsToolCalls": false,
         "supportsAttachments": false,
-        "supportsTemperature": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1318,35 +1339,7 @@
             {
               "key": "image_to_videoElo",
               "label": "Image-to-video arena",
-              "value": 1047,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 16
-            }
-          ]
-        }
-      }
-    },
-    "grok-imagine-video-1-5-lite": {
-      "defaults": {
-        "name": "Grok Imagine Video 1.5 Lite",
-        "description": "Cost-efficient video model for text-to-video and image-to-video generation",
-        "contextWindow": 1024,
-        "maxTokens": 0,
-        "reliability": 2,
-        "releaseDate": "October 1, 2026",
-        "supportsToolCalls": false,
-        "supportsTemperature": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_videoElo",
-              "label": "Text-to-video arena",
-              "value": 979,
+              "value": 1045,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 15
@@ -1413,6 +1406,7 @@
         },
         "releaseDate": "July 8, 2026",
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -1439,13 +1433,16 @@
           ]
         },
         "releaseDate": "March 16, 2026",
-        "supportsToolCalls": false
+        "supportsToolCalls": false,
+        "supportsAttachments": false
       }
     },
     "grok-tts": {
       "defaults": {
         "name": "Grok TTS",
         "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 0,
+        "maxTokens": 0,
         "modalities": {
           "input": [
             "text"
@@ -1483,7 +1480,8 @@
         "reliability": 3,
         "multimodal": true,
         "knowledgeCutoffDate": "August 2024",
-        "releaseDate": "November 1, 2024"
+        "releaseDate": "November 1, 2024",
+        "supportsAttachments": true
       }
     },
     "grok-voice-think-fast-1-0": {
@@ -1560,7 +1558,7 @@
         "releaseDate": "July 29, 2026"
       }
     },
-    "spacexai-grok-4-20": {
+    "spacexsi-grok-4-20": {
       "defaults": {
         "name": "SpaceXAI: Grok 4.20",
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
@@ -1585,6 +1583,7 @@
         "reliability": 1,
         "releaseDate": "March 31, 2026",
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1600,7 +1599,7 @@
         }
       }
     },
-    "spacexai-grok-4-20-beta-non-reasoning": {
+    "spacexsi-grok-4-20-beta-non-reasoning": {
       "defaults": {
         "name": "SpaceXAI: Grok 4.20 Beta Non-Reasoning",
         "description": "Grok 4.20 Beta is the newest flagship model from xAI with industry-leading speed and agentic tool calling capabilities. It combines the lowest hallucination rate on the market with strict prompt adherance, delivering consistently precise and truthful responses.",
@@ -1617,10 +1616,11 @@
           ]
         },
         "releaseDate": "March 11, 2026",
-        "supportsResponseFormat": true
+        "supportsResponseFormat": true,
+        "supportsAttachments": true
       }
     },
-    "spacexai-grok-4-20-beta-reasoning": {
+    "spacexsi-grok-4-20-beta-reasoning": {
       "defaults": {
         "name": "SpaceXAI: Grok 4.20 Beta Reasoning",
         "description": "Grok 4.20 Beta is the newest flagship model from xAI with industry-leading speed and agentic tool calling capabilities. It combines the lowest hallucination rate on the market with strict prompt adherance, delivering consistently precise and truthful responses.",
@@ -1638,6 +1638,7 @@
         },
         "releaseDate": "March 11, 2026",
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -1648,7 +1649,7 @@
         }
       }
     },
-    "spacexai-grok-4-20-multi-agent": {
+    "spacexsi-grok-4-20-multi-agent": {
       "defaults": {
         "name": "SpaceXAI: Grok 4.20 Multi-Agent",
         "description": "Grok model for agentic tool use, reasoning, coding, and live assistance",
@@ -1667,6 +1668,7 @@
         "releaseDate": "March 31, 2026",
         "supportsToolCalls": false,
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -1678,7 +1680,7 @@
         }
       }
     },
-    "spacexai-grok-4-20-multi-agent-beta": {
+    "spacexsi-grok-4-20-multi-agent-beta": {
       "defaults": {
         "name": "SpaceXAI: Grok 4.20 Multi Agent Beta",
         "description": "Multiple agents collaborate in parallel to perform deep research tasks.",
@@ -1696,6 +1698,7 @@
         },
         "releaseDate": "March 11, 2026",
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -1706,7 +1709,7 @@
         }
       }
     },
-    "spacexai-grok-4-20-non-reasoning": {
+    "spacexsi-grok-4-20-non-reasoning": {
       "defaults": {
         "name": "SpaceXAI: Grok 4.20 Non-Reasoning",
         "description": "Grok 4.20 Beta is the newest flagship model from xAI with industry-leading speed and agentic tool calling capabilities. It combines the lowest hallucination rate on the market with strict prompt adherence, delivering consistently precise and truthful responses.",
@@ -1730,6 +1733,7 @@
         "contextComplexity": 5,
         "releaseDate": "March 10, 2026",
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -1738,7 +1742,7 @@
         }
       }
     },
-    "spacexai-grok-4-20-reasoning": {
+    "spacexsi-grok-4-20-reasoning": {
       "defaults": {
         "name": "SpaceXAI: Grok 4.20 Reasoning",
         "description": "Grok 4.20 Beta is the newest flagship model from xAI with industry-leading speed and agentic tool calling capabilities. It combines the lowest hallucination rate on the market with strict prompt adherence, delivering consistently precise and truthful responses.",
@@ -1756,6 +1760,7 @@
         },
         "releaseDate": "March 10, 2026",
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -1784,6 +1789,7 @@
         },
         "releaseDate": "July 8, 2026",
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",

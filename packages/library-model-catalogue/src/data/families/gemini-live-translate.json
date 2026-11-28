@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 16384,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "audio"
+      ],
+      "output": [
+        "audio",
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "January 2025",
+    "releaseDate": "June 9, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The gemini live translate family includes models that produce audio, text.",
+  "models": {
+    "gemini-3-5-live-translate-preview": {
+      "defaults": {
+        "name": "Gemini 3.5 Live Translate Preview",
+        "description": "Low-latency audio-to-audio model for real-time speech translation across 70+ languages"
+      }
+    }
+  }
+}

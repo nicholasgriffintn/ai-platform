@@ -1,0 +1,50 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 131072,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 19, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The lingsante family includes models that produce text.",
+  "models": {
+    "inclusionai-lingsante-3-1-air-vl": {
+      "defaults": {
+        "name": "inclusionAI: LingSante 3.1 Air VL",
+        "description": "LingSante 3.1 Air VL is inclusionAI's medical vision-language model, a 124B total / 5.5B active MoE. It takes text and up to 16 images (scans, skin and meal photos, lab...",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "lingsante-3-1-air-vl": {
+      "defaults": {
+        "name": "LingSante 3.1 Air VL",
+        "description": "Open multimodal MoE model for medical imaging reports, health assessment, evidence search, and GUI agents",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 1048576,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "June 30, 2026",
+    "releaseDate": "October 5, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The beam free family includes models that produce text.",
+  "models": {
+    "beam-1-0-free": {
+      "defaults": {
+        "name": "Beam 1.0 (Free)",
+        "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": 17.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "beam-free": {
+      "defaults": {
+        "name": "Beam Free",
+        "description": "Sparse mixture-of-experts reasoning model with 23B active parameters for coding and agentic workflows"
+      }
+    },
+    "reflection-beam-1-0-free": {
+      "defaults": {
+        "name": "Reflection: Beam 1.0 (free)",
+        "openWeights": false,
+        "description": "Beam is Reflection’s reasoning model for coding and agentic workflows, combining strong coding capabilities with fast, low-latency inference.",
+        "releaseDate": "October 16, 2026"
+      }
+    }
+  }
+}

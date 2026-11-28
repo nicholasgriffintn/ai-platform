@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "releaseDate": "October 20, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The voxtral tts family includes models that produce audio.",
+  "models": {
+    "voxtral-tts-3": {
+      "defaults": {
+        "name": "Voxtral TTS 3",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery"
+      }
+    }
+  }
+}

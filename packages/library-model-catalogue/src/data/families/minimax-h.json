@@ -1,0 +1,53 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "document",
+      "video",
+      "creative"
+    ],
+    "contextComplexity": 4,
+    "reliability": 5,
+    "releaseDate": "July 31, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "image_to_videoElo",
+          "label": "Image-to-video arena",
+          "value": 1356,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 11
+        }
+      ]
+    }
+  },
+  "description": "The minimax h family includes models that produce video.",
+  "models": {
+    "minimax-h3": {
+      "defaults": {
+        "name": "MiniMax H3",
+        "description": "MiniMax general-purpose video model with multimodal references and synchronized stereo audio. Open H3-Base checkpoints; Context-IR and 2K regeneration are not included in the initial weights release."
+      }
+    }
+  }
+}

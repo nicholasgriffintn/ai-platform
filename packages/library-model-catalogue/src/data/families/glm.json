@@ -16,24 +16,21 @@
   },
   "description": "The glm family includes models that produce text.",
   "models": {
-    "autoglm-phone-9b-multilingual": {
+    "fw-glm-5-3": {
       "defaults": {
-        "name": "AutoGLM Phone 9B Multilingual",
-        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
-        "contextWindow": 65536,
-        "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
+        "name": "FW-GLM-5.3",
+        "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
+        "contextWindow": 1048576,
+        "maxTokens": 131072,
+        "releaseDate": "August 14, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
           ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "December 10, 2025",
-        "supportsToolCalls": false,
-        "supportsAttachments": true
+          "defaultEffort": "low"
+        }
       }
     },
     "glm-4-32b": {
@@ -45,6 +42,15 @@
         "knowledgeCutoffDate": "June 30, 2024",
         "releaseDate": "July 24, 2025",
         "supportsResponseFormat": false
+      }
+    },
+    "glm-4-32b-0414-128k": {
+      "defaults": {
+        "name": "GLM-4-32B-0414-128K",
+        "description": "32B GLM-4 foundation model tuned for instruction following, code generation, function calling and search-based Q&A",
+        "contextWindow": 128000,
+        "maxTokens": 16384,
+        "releaseDate": "April 14, 2025"
       }
     },
     "glm-4-5": {
@@ -141,46 +147,6 @@
         "releaseDate": "December 29, 2025"
       }
     },
-    "glm-4-5v": {
-      "defaults": {
-        "name": "GLM-4.5V",
-        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
-        "contextWindow": 65536,
-        "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 3,
-        "reliability": 1,
-        "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "August 11, 2025",
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
     "glm-4-6": {
       "defaults": {
         "name": "GLM 4.6",
@@ -251,8 +217,15 @@
       "defaults": {
         "name": "GLM-4.6V",
         "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
-        "contextWindow": 131072,
-        "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -261,7 +234,6 @@
         "contextComplexity": 4,
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
-        "releaseDate": "December 8, 2025",
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -505,6 +477,7 @@
       "defaults": {
         "name": "GLM-5.2",
         "description": "Open flagship GLM for long-horizon coding agents and million-token context work",
+        "contextWindow": 1048576,
         "strengths": [
           "coding",
           "tool_use"
@@ -749,6 +722,7 @@
         "name": "GLM-5.3",
         "description": "Flagship GLM model for long-horizon coding, agents, and complex project delivery",
         "contextWindow": 1048576,
+        "maxTokens": 131072,
         "strengths": [
           "tool_use",
           "coding"
@@ -765,7 +739,7 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 31.7,
+          "intelligenceIndex": 31.6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -794,7 +768,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 31.7,
+          "intelligenceIndex": 31.6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -826,7 +800,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 31.7,
+          "intelligenceIndex": 31.6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -896,24 +870,6 @@
         }
       }
     },
-    "glm-5-3-flashx-legal": {
-      "defaults": {
-        "name": "GLM 5.3 FlashX Legal",
-        "openWeights": false,
-        "description": "GLM vision model for visual reasoning, documents, and multimodal agents",
-        "maxTokens": 131072,
-        "releaseDate": "November 2, 2026",
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
     "glm-5-3-global": {
       "defaults": {
         "name": "GLM-5.3 (Global)",
@@ -938,7 +894,7 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 31.7,
+          "intelligenceIndex": 31.6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -947,13 +903,9 @@
     },
     "glm-5-3-prime": {
       "defaults": {
-        "name": "GLM 5.3 Prime",
-        "openWeights": false,
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
         "contextWindow": 1000000,
         "maxTokens": 131072,
-        "releaseDate": "September 23, 2026",
-        "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -988,7 +940,7 @@
           "defaultEffort": "low"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 31.7,
+          "intelligenceIndex": 31.6,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -1014,16 +966,13 @@
     "glm-5-turbo": {
       "defaults": {
         "name": "GLM 5 Turbo",
-        "openWeights": false,
         "description": "Faster GLM-5 lane for coding agents that need lower latency",
         "contextWindow": 202752,
-        "maxTokens": 131072,
         "strengths": [
           "tool_use"
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "releaseDate": "March 16, 2026",
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -1045,7 +994,21 @@
         "openWeights": false,
         "description": "Fast GLM vision model for screenshots, documents, and multimodal agent tasks",
         "contextWindow": 202752,
-        "maxTokens": 131072,
+        "maxTokens": 202752,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "April 1, 2026",
@@ -1145,35 +1108,6 @@
           ]
         },
         "releaseDate": "September 18, 2026",
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "z-ai-glm-5-3-flashx-legal": {
-      "defaults": {
-        "name": "Z.ai: GLM 5.3 FlashX Legal",
-        "openWeights": false,
-        "description": "GLM-5.3-FlashX-Legal (GLM-Legal) is Z.ai's legal-domain variant of GLM-5.3-FlashX, a native multimodal model that accepts text, image, and video input and produces text. It adds legal-domain mid-training and post-training with reinforcement...",
-        "contextWindow": 1048576,
-        "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "November 2, 2026",
         "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [

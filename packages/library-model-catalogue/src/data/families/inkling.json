@@ -1,0 +1,80 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "reliability": 1,
+    "releaseDate": "July 15, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The inkling family includes models that produce text.",
+  "models": {
+    "inkling": {
+      "defaults": {
+        "name": "Inkling",
+        "description": "Multimodal model for analyzing text, images, documents, and rich media",
+        "strengths": [
+          "vision",
+          "audio",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "artificialAnalysis": {
+          "intelligenceIndex": 12.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "inkling-2-small": {
+      "defaults": {
+        "name": "Inkling 2 Small",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "releaseDate": "November 9, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 30.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "inkling-256k": {
+      "defaults": {
+        "description": "Multimodal MoE reasoning model (975B total, 41B active) for text, image, and audio",
+        "contextWindow": 262144
+      }
+    }
+  }
+}

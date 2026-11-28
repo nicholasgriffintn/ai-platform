@@ -29,10 +29,10 @@
         {
           "key": "image_to_videoElo",
           "label": "Image-to-video arena",
-          "value": 822,
+          "value": 816,
           "min": 800,
           "max": 1400,
-          "confidenceInterval95": 19
+          "confidenceInterval95": 18
         }
       ]
     }

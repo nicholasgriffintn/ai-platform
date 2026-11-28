@@ -1,0 +1,50 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "strengths": [
+      "video",
+      "document"
+    ],
+    "contextComplexity": 4,
+    "reliability": 3,
+    "releaseDate": "August 4, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_videoElo",
+          "label": "Text-to-video arena",
+          "value": 1094,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 14
+        }
+      ]
+    }
+  },
+  "description": "The flux video family includes models that produce video.",
+  "models": {
+    "flux-3": {
+      "defaults": {
+        "name": "Flux 3",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows"
+      }
+    }
+  }
+}

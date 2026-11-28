@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 4000,
+    "maxTokens": 4000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "January 27, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The deepseek ocr family includes models that produce text.",
+  "models": {
+    "deepseek-ocr-2": {
+      "defaults": {
+        "name": "DeepSeek OCR 2",
+        "description": "High-accuracy OCR model for extracting text from documents, screenshots, receipts, and natural scenes"
+      }
+    }
+  }
+}

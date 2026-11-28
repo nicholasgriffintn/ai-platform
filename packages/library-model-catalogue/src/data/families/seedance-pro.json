@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "Video model for prompt-guided generation, editing, and motion workflows",
+  "models": {
+    "seedance-v1-0-pro": {
+      "defaults": {
+        "name": "Seedance v1.0 Pro",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "June 11, 2025"
+      }
+    },
+    "seedance-v1-0-pro-fast": {
+      "defaults": {
+        "name": "Seedance v1.0 Pro Fast",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "October 24, 2025"
+      }
+    }
+  }
+}

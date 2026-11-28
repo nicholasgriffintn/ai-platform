@@ -330,6 +330,41 @@
         }
       }
     },
+    "claude-haiku-5-5-canada": {
+      "defaults": {
+        "name": "Claude Haiku 5.5 (Canada)",
+        "description": "Fast Claude model for responsive assistance, classification, and lightweight agents",
+        "contextWindow": 1000000,
+        "maxTokens": 128000,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 2,
+        "knowledgeCutoffDate": "June 2026",
+        "releaseDate": "October 7, 2026",
+        "supportsTemperature": false,
+        "supportsTopP": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 36.5,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
     "claude-haiku-5-5-eu": {
       "defaults": {
         "name": "Claude Haiku 5.5 (EU)",

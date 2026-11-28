@@ -1,0 +1,52 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "document",
+      "video"
+    ],
+    "contextComplexity": 4,
+    "reliability": 3,
+    "releaseDate": "August 26, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_videoElo",
+          "label": "Text-to-video arena",
+          "value": 1118,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 17
+        }
+      ]
+    }
+  },
+  "description": "The minimax h max family includes models that produce video.",
+  "models": {
+    "minimax-h3-max": {
+      "defaults": {
+        "name": "MiniMax H3 Max",
+        "description": "Fast video model post-trained by fal.ai on MiniMax H3, with synchronized audio at 480p and 768p"
+      }
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 512,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "image",
+      "document"
+    ],
+    "contextComplexity": 3,
+    "reliability": 1,
+    "releaseDate": "May 29, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_imageElo",
+          "label": "Text-to-image arena",
+          "value": 927,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 16
+        }
+      ]
+    }
+  },
+  "description": "The flux kontext pro family includes models that produce image.",
+  "models": {
+    "flux-1-kontext-pro": {
+      "defaults": {
+        "name": "FLUX.1 Kontext Pro",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows"
+      }
+    }
+  }
+}

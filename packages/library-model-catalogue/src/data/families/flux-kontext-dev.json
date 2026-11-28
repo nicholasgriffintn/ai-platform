@@ -1,0 +1,53 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "image",
+      "vision",
+      "document"
+    ],
+    "contextComplexity": 4,
+    "reliability": 1,
+    "releaseDate": "May 29, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "image_editingElo",
+          "label": "Image-editing arena",
+          "value": 885,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 18
+        }
+      ]
+    }
+  },
+  "description": "The flux kontext dev family includes models that produce image.",
+  "models": {
+    "flux-1-kontext-dev": {
+      "defaults": {
+        "name": "FLUX.1-Kontext-dev",
+        "description": "Open-weight FLUX.1 Kontext model for instruction-based image editing"
+      }
+    }
+  }
+}

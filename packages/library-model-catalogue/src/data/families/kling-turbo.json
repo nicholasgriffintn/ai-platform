@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "releaseDate": "September 23, 2025",
+    "supportsToolCalls": false,
+    "supportsTemperature": false
+  },
+  "description": "Video model for prompt-guided generation, editing, and motion workflows",
+  "models": {
+    "kling-v2-5-turbo-image-to-video": {
+      "defaults": {
+        "name": "Kling v2.5 Turbo Image-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "supportsAttachments": true
+      }
+    },
+    "kling-v2-5-turbo-text-to-video": {
+      "defaults": {
+        "name": "Kling v2.5 Turbo Text-to-Video",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "supportsAttachments": false
+      }
+    }
+  }
+}

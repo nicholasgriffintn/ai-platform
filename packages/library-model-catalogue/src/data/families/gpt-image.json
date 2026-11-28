@@ -10,6 +10,58 @@
   },
   "description": "Image model for prompt-driven generation, editing, and visual design workflows",
   "models": {
+    "gpt-5-4-image-2": {
+      "defaults": {
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 272000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
+        },
+        "releaseDate": "April 21, 2026",
+        "supportsResponseFormat": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "xhigh"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gpt-5-image": {
+      "defaults": {
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 400000,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "image",
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "image",
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "October 1, 2024",
+        "releaseDate": "October 14, 2025",
+        "supportsResponseFormat": true,
+        "supportsTemperature": true
+      }
+    },
     "gpt-image-1": {
       "defaults": {
         "description": "OpenAI image model for production generation, edits, and brand-safe visual workflows",
@@ -47,7 +99,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1125,
+              "value": 1126,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11
@@ -56,44 +108,9 @@
         }
       }
     },
-    "gpt-image-1-mini": {
-      "defaults": {
-        "name": "GPT Image 1 Mini",
-        "description": "Cost-efficient GPT Image 1 variant for image generation and editing",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "image"
-          ]
-        },
-        "strengths": [
-          "image",
-          "document"
-        ],
-        "reliability": 1,
-        "releaseDate": "October 6, 2025",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 938,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 16
-            }
-          ]
-        }
-      }
-    },
     "gpt-image-2": {
       "defaults": {
+        "name": "GPT Image 2",
         "description": "Image model for prompt-driven generation, editing, and visual design workflows",
         "modalities": {
           "input": [
@@ -115,7 +132,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1192,
+              "value": 1196,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 11
@@ -148,7 +165,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1210,
+              "value": 1212,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10
@@ -172,7 +189,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1229,
+              "value": 1230,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 10
@@ -207,7 +224,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1227,
+              "value": 1226,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 12
@@ -242,7 +259,7 @@
             {
               "key": "text_to_imageElo",
               "label": "Text-to-image arena",
-              "value": 1261,
+              "value": 1264,
               "min": 800,
               "max": 1400,
               "confidenceInterval95": 14

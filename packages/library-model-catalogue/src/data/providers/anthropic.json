@@ -182,35 +182,6 @@
         "supportsCodeExecution"
       ]
     },
-    "claude-opus-4-5": {
-      "model": "claude-opus/claude-opus-4-5-latest",
-      "matchingModel": "claude-opus-4-5",
-      "overrides": {
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use",
-          "coding"
-        ],
-        "speed": 2,
-        "lastUpdated": "November 24, 2025",
-        "costPer1kInputTokens": 0.005,
-        "costPer1kOutputTokens": 0.025,
-        "costPerCodeExecutionHour": 0.05,
-        "supportsTemperature": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
-      },
-      "unset": [
-        "supportsTopP"
-      ]
-    },
     "claude-opus-4-7": {
       "model": "claude-opus/claude-opus-4-7",
       "matchingModel": "claude-opus-4-7",
@@ -260,7 +231,7 @@
           "search",
           "research"
         ],
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "March 13, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
@@ -368,7 +339,6 @@
         }
       },
       "unset": [
-        "knowledgeCutoffDate",
         "supportsCodeExecution"
       ]
     },

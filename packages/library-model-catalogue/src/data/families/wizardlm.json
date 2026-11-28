@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 65535,
+    "maxTokens": 8000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "April 15, 2024",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The wizardlm family includes models that produce text.",
+  "models": {
+    "wizardlm-2-8x22b": {
+      "defaults": {
+        "name": "WizardLM 2 8x22B",
+        "description": "Microsoft WizardLM instruction-tuned Mixtral MoE for multilingual dialogue and complex tasks"
+      }
+    }
+  }
+}

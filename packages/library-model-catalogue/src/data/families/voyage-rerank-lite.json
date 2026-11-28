@@ -1,0 +1,46 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 32000,
+    "maxTokens": 0,
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The voyage rerank lite family includes models that produce reranking, text.",
+  "models": {
+    "voyage-rerank-2-5-lite": {
+      "defaults": {
+        "name": "Voyage Rerank 2.5 Lite",
+        "description": "Instruction-following reranker optimized for latency and quality",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "reranking"
+          ]
+        },
+        "strengths": [
+          "reranking"
+        ],
+        "releaseDate": "August 11, 2025"
+      }
+    },
+    "voyage-rerank-3-lite": {
+      "defaults": {
+        "name": "Voyage Rerank 3 Lite",
+        "description": "Reranker optimized for latency and cost, successor to rerank-2.5-lite",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "September 30, 2026"
+      }
+    }
+  }
+}
