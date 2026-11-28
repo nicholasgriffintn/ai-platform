@@ -56,8 +56,8 @@
         "costPer1kOutputTokens": 0.00072
       },
       "unset": [
-        "openWeights",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "openWeights"
       ]
     },
     "deepseek-ai/DeepSeek-R1-0528": {
@@ -116,8 +116,9 @@
         "costPer1kOutputTokens": 0.00059
       },
       "unset": [
-        "knowledgeCutoffDate",
-        "supportsResponseFormat"
+        "openWeights",
+        "supportsResponseFormat",
+        "knowledgeCutoffDate"
       ]
     },
     "Qwen/Qwen3-30B-A3B": {
@@ -143,7 +144,7 @@
         "description": "High-capacity instruction-tuned Qwen3 model.",
         "maxTokens": 131072,
         "contextComplexity": 4,
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Qwen3 235B A22B Instruct 2507 is no longer offered by Chutes.",
         "knowledgeCutoffDate": "April 2025",
@@ -178,6 +179,7 @@
       "matchingModel": "Qwen/Qwen3-235B-A22B-Thinking-2507",
       "overrides": {
         "description": "Thinking-optimized Qwen3 model for complex reasoning tasks.",
+        "contextWindow": 262144,
         "maxTokens": 262144,
         "deprecated": true,
         "deprecationMessage": "Qwen3 235B A22B Thinking 2507 is no longer offered by Chutes.",
@@ -361,10 +363,7 @@
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.00027,
         "costPer1kOutputTokens": 0.00112
-      },
-      "unset": [
-        "openWeights"
-      ]
+      }
     },
     "miromind-ai/MiroThinker-v1.5-235B": {
       "model": "chutes/miromind-ai/MiroThinker-v1.5-235B/mirothinker-v1-5-235b",
@@ -402,7 +401,10 @@
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.00039,
         "costPer1kOutputTokens": 0.0019
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "moonshotai/Kimi-K2-Thinking-TEE": {
       "model": "kimi/kimi-k2-thinking-tee",
@@ -413,7 +415,10 @@
         "lastUpdated": "January 10, 2026",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.00175
-      }
+      },
+      "unset": [
+        "openWeights"
+      ]
     },
     "moonshotai/Kimi-K2.5-TEE": {
       "model": "kimi-k2/kimi-k2-5-tee",
@@ -510,7 +515,8 @@
       },
       "unset": [
         "strengths",
-        "knowledgeCutoffDate"
+        "knowledgeCutoffDate",
+        "reliability"
       ]
     },
     "openai/gpt-oss-20b": {
@@ -565,10 +571,8 @@
       "model": "qwen/qwen2-5-coder-32b-instruct",
       "matchingModel": "Qwen/Qwen2.5-Coder-32B-Instruct",
       "overrides": {
-        "maxTokens": 32768,
         "deprecated": true,
         "deprecationMessage": "Qwen2.5 Coder 32B Instruct is no longer offered by Chutes.",
-        "releaseDate": "December 29, 2025",
         "lastUpdated": "April 25, 2026",
         "costPer1kInputTokens": 0.0000272,
         "costPer1kOutputTokens": 0.0001087,
@@ -608,7 +612,7 @@
       "matchingModel": "Qwen/Qwen3-14B",
       "overrides": {
         "maxTokens": 40960,
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Qwen3 14B is no longer offered by Chutes.",
         "releaseDate": "December 29, 2025",
@@ -706,20 +710,15 @@
       "model": "qwen/qwen3-coder-next",
       "matchingModel": "Qwen/Qwen3-Coder-Next",
       "overrides": {
-        "description": "Qwen coding model for software agents, repository edits, and code reasoning",
-        "maxTokens": 65536,
         "speed": 3,
         "deprecated": true,
         "deprecationMessage": "Qwen3 Coder Next is no longer offered by Chutes.",
-        "releaseDate": "February 5, 2026",
         "lastUpdated": "February 5, 2026",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.0003
       },
       "unset": [
-        "openWeights",
-        "knowledgeCutoffDate",
-        "reasoningConfig"
+        "openWeights"
       ]
     },
     "Qwen/Qwen3-Next-80B-A3B-Instruct": {
@@ -744,6 +743,7 @@
       "model": "qwen/qwen3-vl-235b-a22b-instruct",
       "matchingModel": "Qwen/Qwen3-VL-235B-A22B-Instruct",
       "overrides": {
+        "contextWindow": 262144,
         "maxTokens": 262144,
         "strengths": [
           "vision",
@@ -758,8 +758,7 @@
         "costPer1kOutputTokens": 0.0012
       },
       "unset": [
-        "openWeights",
-        "knowledgeCutoffDate"
+        "openWeights"
       ]
     },
     "Qwen/Qwen3Guard-Gen-0.6B": {
@@ -948,16 +947,8 @@
       "matchingModel": "zai-org/GLM-4.6V",
       "overrides": {
         "name": "GLM 4.6V",
+        "contextWindow": 131072,
         "maxTokens": 65536,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "speed": 3,
         "deprecated": true,
         "deprecationMessage": "GLM 4.6V is no longer offered by Chutes.",
@@ -975,7 +966,7 @@
       "model": "glm/glm-4-7-flash",
       "matchingModel": "zai-org/GLM-4.7-Flash",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
         "deprecated": true,
         "deprecationMessage": "GLM 4.7 Flash is no longer offered by Chutes.",
         "lastUpdated": "January 27, 2026",
@@ -1030,7 +1021,7 @@
       }
     },
     "moonshotai/Kimi-K2.6-TEE": {
-      "model": "kimi-k2/kimi-k2-6-tee",
+      "model": "kimi/kimi-k2-6-tee",
       "matchingModel": "moonshotai/Kimi-K2.6-TEE",
       "overrides": {
         "lastUpdated": "April 20, 2026",
@@ -1118,7 +1109,8 @@
         "costPer1kOutputTokens": 0.00029
       },
       "unset": [
-        "reasoningConfig"
+        "reasoningConfig",
+        "artificialAnalysis"
       ]
     },
     "zai-org/GLM-5-TEE": {
@@ -1136,7 +1128,6 @@
       "model": "glm/glm-5-turbo",
       "matchingModel": "zai-org/GLM-5-Turbo",
       "overrides": {
-        "openWeights": true,
         "maxTokens": 65535,
         "deprecated": true,
         "deprecationMessage": "GLM 5 Turbo is no longer offered by Chutes.",
@@ -1206,7 +1197,7 @@
       ]
     },
     "moonshotai/Kimi-K3-TEE": {
-      "model": "kimi-k3/kimi-k3-tee",
+      "model": "kimi/kimi-k3-tee",
       "matchingModel": "moonshotai/Kimi-K3-TEE",
       "overrides": {
         "isFeatured": true,
@@ -1240,30 +1231,49 @@
       }
     },
     "deepseek-ai/DeepSeek-V4-Pro-0813": {
-      "model": "deepseek/deepseek-v4-pro-0813",
+      "model": "deepseek-pro/deepseek-v4-pro-0813",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro-0813",
       "overrides": {
+        "contextWindow": 1000000,
+        "maxTokens": 393216,
+        "strengths": [
+          "coding",
+          "tool_use"
+        ],
         "speed": 3,
+        "releaseDate": "October 20, 2026",
         "lastUpdated": "October 25, 2026",
         "costPer1kInputTokens": 0.00085,
         "costPer1kOutputTokens": 0.00265
       }
     },
     "Qwen/Qwen3.8-Max-0902": {
-      "model": "qwen3.8-max/qwen3-8-max-0902",
+      "model": "qwen-max/qwen3-8-max-0902",
       "matchingModel": "Qwen/Qwen3.8-Max-0902",
       "overrides": {
-        "lastUpdated": "October 25, 2026",
+        "description": "2026-09-02 upgraded snapshot of Qwen3.8 Max with stronger coding, collaborative agents, and multimodal document understanding",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.006,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "reasoningConfig"
+      ]
     },
     "deepseek-ai/DeepSeek-V4.1-Flash-1017": {
       "model": "deepseek/deepseek-v4-1-flash-1017",
       "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
       "overrides": {
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "October 26, 2026",
         "costPer1kInputTokens": 0.000195,
         "costPer1kOutputTokens": 0.00078,
@@ -1271,7 +1281,7 @@
       }
     },
     "moonshotai/Kimi-K2.7-Code": {
-      "model": "kimi-k2/kimi-k2-7-code",
+      "model": "kimi-code/kimi-k2-7-code",
       "matchingModel": "moonshotai/Kimi-K2.7-Code",
       "overrides": {
         "description": "Kimi coding model for software agents, refactors, and repository reasoning",
@@ -1328,7 +1338,6 @@
       "overrides": {
         "name": "GLM 5.3",
         "description": "Flagship GLM model for hybrid reasoning, coding, and agentic engineering",
-        "maxTokens": 131072,
         "speed": 3,
         "releaseDate": "October 26, 2026",
         "lastUpdated": "October 26, 2026",
@@ -1340,7 +1349,9 @@
       "model": "chutes/tencent/Hy4/hy4",
       "matchingModel": "tencent/Hy4",
       "overrides": {
-        "speed": 3,
+        "speed": 4,
+        "deprecated": true,
+        "deprecationMessage": "Hy4 is no longer offered by Chutes.",
         "lastUpdated": "November 4, 2026",
         "costPer1kInputTokens": 0.000525,
         "costPer1kOutputTokens": 0.0015625,
@@ -1355,6 +1366,41 @@
         "costPer1kInputTokens": 0.0002,
         "costPer1kOutputTokens": 0.00175,
         "supportsAttachments": true
+      }
+    },
+    "Qwen/Qwen4-Max": {
+      "model": "qwen-max/qwen4-max",
+      "matchingModel": "Qwen/Qwen4-Max",
+      "overrides": {
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use"
+        ],
+        "speed": 4,
+        "lastUpdated": "November 16, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.0045,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

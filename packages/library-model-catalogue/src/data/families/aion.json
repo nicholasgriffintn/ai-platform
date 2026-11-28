@@ -1,0 +1,143 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The aion family includes models that produce text.",
+  "models": {
+    "aion-2-0": {
+      "defaults": {
+        "name": "Aion-2.0",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 131072,
+        "releaseDate": "December 21, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "aion-3-0": {
+      "defaults": {
+        "name": "Aion-3.0",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 131072,
+        "releaseDate": "May 5, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "aion-3-5": {
+      "defaults": {
+        "name": "Aion 3.5",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 262144,
+        "releaseDate": "September 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "aion-3-5-mini": {
+      "defaults": {
+        "name": "Aion 3.5 Mini",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 262144,
+        "releaseDate": "September 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "aionlabs-aion-2-0": {
+      "defaults": {
+        "name": "AionLabs: Aion-2.0",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 131072,
+        "releaseDate": "December 21, 2025",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "aionlabs-aion-3-0": {
+      "defaults": {
+        "name": "AionLabs: Aion-3.0",
+        "description": "Aion-3.0 is a multi-model roleplaying and storytelling system from AionLabs, built on the GLM family of models. It uses a collaborative generation process in which multiple specialized models each contribute...",
+        "contextWindow": 131072,
+        "releaseDate": "May 5, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "high"
+          ],
+          "defaultEffort": "high"
+        }
+      }
+    },
+    "aionlabs-aion-3-5": {
+      "defaults": {
+        "name": "AionLabs: Aion 3.5",
+        "description": "Aion 3.5 is a multi-model roleplaying and storytelling system from AionLabs, built on the GLM family of models. It uses a collaborative generation process in which multiple specialized models each...",
+        "contextWindow": 262144,
+        "releaseDate": "September 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "aionlabs-aion-3-5-mini": {
+      "defaults": {
+        "name": "AionLabs: Aion 3.5 Mini",
+        "description": "Aion 3.5 Mini is a multi-model roleplaying and storytelling system from AionLabs, built on the GLM family of models. It is the smaller, lower-cost sibling of Aion 3.5 and uses...",
+        "contextWindow": 262144,
+        "releaseDate": "September 23, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    }
+  }
+}

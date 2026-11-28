@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 53248,
+    "maxTokens": 4096,
+    "modalities": {
+      "input": [
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "April 2024",
+    "releaseDate": "September 8, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The qwen asr flash family includes models that produce text.",
+  "models": {
+    "qwen3-asr-flash": {
+      "defaults": {
+        "name": "Qwen3-ASR Flash",
+        "description": "Speech transcription model for accurate audio-to-text and captioning workflows"
+      }
+    }
+  }
+}

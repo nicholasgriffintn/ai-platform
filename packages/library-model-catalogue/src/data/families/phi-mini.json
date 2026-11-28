@@ -1,0 +1,55 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "knowledgeCutoffDate": "October 2023",
+    "releaseDate": "December 11, 2024",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+  "models": {
+    "phi-4-mini": {
+      "defaults": {
+        "name": "Phi-4-mini",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 131072,
+        "maxTokens": 4096,
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "reliability": 1,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "phi-4-mini-reasoning": {
+      "defaults": {
+        "name": "Phi-4-mini-reasoning",
+        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
+        "contextWindow": 128000,
+        "maxTokens": 128000,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

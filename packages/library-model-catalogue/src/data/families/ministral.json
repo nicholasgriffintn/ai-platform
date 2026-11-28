@@ -59,6 +59,42 @@
         }
       }
     },
+    "ministral-3-14b-latest": {
+      "defaults": {
+        "name": "Ministral 14B",
+        "description": "Open vision-language model for efficient local deployment, instruction following, and tool use",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "creative",
+          "multilingual",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
+        "multimodal": true,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
     "ministral-3-3b": {
       "defaults": {
         "name": "Ministral 3 3B",
@@ -100,6 +136,42 @@
           "output": [
             "text"
           ]
+        }
+      }
+    },
+    "ministral-3-3b-latest": {
+      "defaults": {
+        "name": "Ministral 3B",
+        "description": "Compact open vision-language model for edge deployment, instruction following, and tool use",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "creative",
+          "multilingual",
+          "vision",
+          "tool_use",
+          "document"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
+        "multimodal": true,
+        "knowledgeCutoffDate": "October 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -145,12 +217,12 @@
         }
       }
     },
-    "ministral-3b": {
+    "ministral-3-8b-latest": {
       "defaults": {
-        "name": "Ministral 3B",
-        "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
-        "contextWindow": 128000,
-        "maxTokens": 8192,
+        "name": "Ministral 8B",
+        "description": "Compact open vision-language model for edge deployment, instruction following, and tool use",
+        "contextWindow": 262144,
+        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text"
@@ -159,16 +231,35 @@
             "text"
           ]
         },
-        "knowledgeCutoffDate": "March 2024",
-        "releaseDate": "October 22, 2024",
-        "supportsAttachments": false
+        "strengths": [
+          "chat",
+          "general_knowledge",
+          "analysis",
+          "creative",
+          "multilingual",
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 3,
+        "multimodal": true,
+        "knowledgeCutoffDate": "October 2024",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "ministral-3b-latest": {
       "defaults": {
         "name": "Ministral 3B",
+        "openWeights": false,
         "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
         "contextWindow": 131072,
+        "maxTokens": 4000,
         "modalities": {
           "input": [
             "text"
@@ -177,7 +268,8 @@
             "text"
           ]
         },
-        "knowledgeCutoffDate": "October 2024"
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "October 16, 2024"
       }
     },
     "ministral-8b-latest": {
@@ -185,6 +277,7 @@
         "name": "Ministral 8B",
         "description": "Compact Mistral model for edge, latency-sensitive, and cost-efficient workloads",
         "contextWindow": 262144,
+        "maxTokens": 4000,
         "modalities": {
           "input": [
             "text"
@@ -193,7 +286,8 @@
             "text"
           ]
         },
-        "knowledgeCutoffDate": "October 2024"
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "October 16, 2024"
       }
     },
     "mistral-ministral-14b": {
@@ -217,6 +311,7 @@
     "mistral-ministral-3b": {
       "defaults": {
         "name": "Mistral: Ministral 3B",
+        "openWeights": false,
         "description": "A compact, efficient model for on-device tasks like smart assistants and local analytics, offering low-latency performance.",
         "contextWindow": 131072,
         "maxTokens": 4000,

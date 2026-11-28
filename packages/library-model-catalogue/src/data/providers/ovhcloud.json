@@ -23,7 +23,6 @@
       "matchingModel": "gpt-oss-120b",
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
-        "maxTokens": 131072,
         "speed": 5,
         "lastUpdated": "August 5, 2025",
         "costPer1kInputTokens": 0.00009,
@@ -116,7 +115,7 @@
       }
     },
     "qwen2.5-vl-72b-instruct": {
-      "model": "qwen/qwen2-5-vl-72b-instruct",
+      "model": "qwen-vl/qwen2-5-vl-72b-instruct",
       "matchingModel": "qwen2.5-vl-72b-instruct",
       "overrides": {
         "name": "Qwen2.5-VL-72B-Instruct",
@@ -128,26 +127,25 @@
         "costPer1kOutputTokens": 0.00101,
         "supportsToolCalls": false,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "strengths",
+        "contextComplexity",
+        "reliability",
+        "artificialAnalysis"
+      ]
     },
     "qwen3-coder-30b-a3b-instruct": {
       "model": "qwen/qwen3-coder-30b-a3b-instruct",
       "matchingModel": "qwen3-coder-30b-a3b-instruct",
       "overrides": {
-        "name": "Qwen3-Coder-30B-A3B-Instruct",
-        "description": "Coding model for repository understanding, refactors, and agentic engineering tasks",
-        "maxTokens": 262144,
         "speed": 4,
         "deprecated": true,
         "deprecationMessage": "Qwen3-Coder-30B-A3B-Instruct is no longer offered by OVHcloud.",
-        "releaseDate": "October 28, 2025",
         "lastUpdated": "October 28, 2025",
         "costPer1kInputTokens": 0.00007,
         "costPer1kOutputTokens": 0.00026
-      },
-      "unset": [
-        "knowledgeCutoffDate"
-      ]
+      }
     },
     "qwen3.5-397b-a17b": {
       "model": "qwen/qwen3-5-397b-a17b",
@@ -272,14 +270,6 @@
         "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads",
         "contextWindow": 32768,
         "maxTokens": 16384,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "January 22, 2026",
         "lastUpdated": "January 22, 2026",
         "costPer1kInputTokens": 0,
@@ -297,12 +287,134 @@
         "name": "Qwen3.8-27B",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "maxTokens": 262144,
-        "speed": 2,
+        "speed": 3,
         "isFeatured": true,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00047,
         "costPer1kOutputTokens": 0.00319,
         "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-v4.1-flash-1017": {
+      "model": "deepseek-flash/deepseek-v4-1-flash-1017",
+      "matchingModel": "deepseek-v4.1-flash-1017",
+      "overrides": {
+        "name": "DeepSeek-V4.1-Flash-1017",
+        "maxTokens": 262144,
+        "speed": 5,
+        "lastUpdated": "October 17, 2026",
+        "costPer1kInputTokens": 0.00031,
+        "costPer1kOutputTokens": 0.00125,
+        "supportsAttachments": true,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "gemma-4-26b-a4b": {
+      "model": "gemma/gemma-4-26b-a4b",
+      "matchingModel": "gemma-4-26b-a4b",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "April 2, 2026",
+        "costPer1kInputTokens": 0.0001,
+        "costPer1kOutputTokens": 0.00041
+      }
+    },
+    "laguna-xs-2.1": {
+      "model": "laguna-xs/laguna-xs-2-1",
+      "matchingModel": "laguna-xs-2.1",
+      "overrides": {
+        "name": "laguna-xs-2.1",
+        "contextWindow": 131072,
+        "maxTokens": 65536,
+        "lastUpdated": "July 2, 2026",
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00012,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
+    "nemotron3-nano-30b": {
+      "model": "nemotron-nano/nemotron3-nano-30b",
+      "matchingModel": "nemotron3-nano-30b",
+      "overrides": {
+        "lastUpdated": "December 15, 2025",
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00023
+      },
+      "unset": [
+        "contextComplexity",
+        "artificialAnalysis"
+      ]
+    },
+    "nemotron3-omni-30b": {
+      "model": "nemotron-nano/nemotron3-omni-30b",
+      "matchingModel": "nemotron3-omni-30b",
+      "overrides": {
+        "lastUpdated": "April 28, 2026",
+        "costPer1kInputTokens": 0.00019,
+        "costPer1kOutputTokens": 0.00057,
+        "supportsAttachments": true
+      },
+      "unset": [
+        "contextComplexity",
+        "artificialAnalysis"
+      ]
+    },
+    "olala-v1.0-translate": {
+      "model": "ovhcloud/olala-v1.0-translate/olala-v1-0-translate",
+      "matchingModel": "olala-v1.0-translate",
+      "overrides": {
+        "lastUpdated": "November 18, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false
+      }
+    },
+    "qwen3-vl-30b-a3b": {
+      "model": "qwen/qwen3-vl-30b-a3b",
+      "matchingModel": "qwen3-vl-30b-a3b",
+      "overrides": {
+        "lastUpdated": "November 17, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.00058,
+        "supportsAttachments": true
+      }
+    },
+    "qwen3.6-35b-a3b": {
+      "model": "qwen/qwen3-6-35b-a3b",
+      "matchingModel": "qwen3.6-35b-a3b",
+      "overrides": {
+        "name": "qwen3.6-35b-a3b",
+        "description": "Open multimodal Qwen MoE for local agents that need vision, audio, and code",
+        "maxTokens": 65536,
+        "speed": 3,
+        "lastUpdated": "April 17, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.00133,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

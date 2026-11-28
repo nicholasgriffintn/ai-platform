@@ -1,0 +1,37 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 1,
+    "releaseDate": "March 16, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
+  },
+  "description": "The glm turbo family includes models that produce text.",
+  "models": {
+    "glm-5-turbo": {
+      "defaults": {
+        "description": "Faster GLM-5 lane for coding agents that need lower latency"
+      }
+    }
+  }
+}

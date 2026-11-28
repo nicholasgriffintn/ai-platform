@@ -1,0 +1,79 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "contextComplexity": 2,
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The gemini tts flash family includes models that produce audio.",
+  "models": {
+    "gemini-2-5-flash-tts": {
+      "defaults": {
+        "name": "Gemini 2.5 Flash TTS",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery",
+        "contextWindow": 32768,
+        "strengths": [
+          "audio"
+        ],
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "September 30, 2025",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1075,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 11
+            }
+          ]
+        }
+      }
+    },
+    "gemini-3-8-flash-tts": {
+      "defaults": {
+        "name": "Gemini 3.8 Flash TTS",
+        "description": "Flagship text-to-speech model for expressive, studio-grade voices and long-form multi-speaker audio",
+        "contextWindow": 8192,
+        "strengths": [
+          "audio",
+          "creative"
+        ],
+        "reliability": 5,
+        "releaseDate": "September 22, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_speechElo",
+              "label": "Text-to-speech arena",
+              "value": 1286,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 12
+            }
+          ]
+        }
+      }
+    }
+  }
+}

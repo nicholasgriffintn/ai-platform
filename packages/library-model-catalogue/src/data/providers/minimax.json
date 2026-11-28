@@ -18,7 +18,7 @@
   },
   "models": {
     "MiniMax-M3": {
-      "model": "minimax/minimax-m3",
+      "model": "minimax-m/minimax-m3",
       "matchingModel": "MiniMax-M3",
       "overrides": {
         "contextWindow": 1000000,
@@ -32,9 +32,10 @@
       }
     },
     "MiniMax-M3.1-Flash": {
-      "model": "minimax/minimax-m3-1-flash",
+      "model": "minimax-m-flash/minimax-m3-1-flash",
       "matchingModel": "MiniMax-M3.1-Flash",
       "overrides": {
+        "contextWindow": 1000000,
         "maxTokens": 524288,
         "speed": 4,
         "lastUpdated": "October 19, 2026",

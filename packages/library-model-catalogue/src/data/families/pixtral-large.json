@@ -1,0 +1,73 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 128000,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "reliability": 1,
+    "releaseDate": "April 8, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
+  },
+  "description": "Mistral vision-language model for image understanding and multimodal chat",
+  "models": {
+    "mistral-pixtral-large-2502": {
+      "defaults": {
+        "name": "Mistral: Pixtral Large 2502",
+        "description": "Pixtral Large 2502 is the February 2025 version of Mistral AI's large multimodal model, following [Pixtral Large 2411](https://openrouter.ai/mistralai/pixtral-large-2411). It accepts text and image input, including documents, charts, and natural images,...",
+        "maxTokens": 102400,
+        "supportsToolCalls": false
+      }
+    },
+    "pixtral-large-25-02": {
+      "defaults": {
+        "name": "Pixtral Large (25.02)",
+        "description": "Mistral vision-language model for image understanding and multimodal chat",
+        "contextComplexity": 4
+      }
+    },
+    "pixtral-large-25-02-eu": {
+      "defaults": {
+        "name": "Pixtral Large (25.02) (EU)",
+        "description": "Mistral vision-language model for image understanding and multimodal chat",
+        "maxTokens": 8192,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "knowledgeCutoffDate": "November 2024"
+      }
+    },
+    "pixtral-large-25-02-us": {
+      "defaults": {
+        "name": "Pixtral Large (25.02) (US)",
+        "description": "Mistral vision-language model for image understanding and multimodal chat",
+        "maxTokens": 8192,
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 3,
+        "knowledgeCutoffDate": "November 2024"
+      }
+    }
+  }
+}

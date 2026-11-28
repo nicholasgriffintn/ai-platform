@@ -18,8 +18,6 @@
       "model": "o/cohere-rerank-3-5",
       "matchingModel": "rerank-v3.5",
       "overrides": {
-        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
-        "maxTokens": 4096,
         "lastUpdated": "December 2, 2024",
         "supportsToolCalls": false,
         "supportsTemperature": false
@@ -29,8 +27,6 @@
       "model": "o/cohere-rerank-4-fast",
       "matchingModel": "rerank-v4.0-fast",
       "overrides": {
-        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
-        "maxTokens": 32000,
         "lastUpdated": "December 11, 2025",
         "costPer1kSearchUnits": 2,
         "supportsToolCalls": false,
@@ -41,8 +37,6 @@
       "model": "o/cohere-rerank-4-pro",
       "matchingModel": "rerank-v4.0-pro",
       "overrides": {
-        "description": "Reranking model for improving retrieval quality in search and recommendation systems",
-        "maxTokens": 32000,
         "lastUpdated": "December 11, 2025",
         "costPer1kSearchUnits": 2.5,
         "supportsToolCalls": false,
@@ -50,7 +44,7 @@
       }
     },
     "c4ai-aya-expanse-32b": {
-      "model": "cohere/c4ai-aya-expanse-32b/aya-expanse-32b",
+      "model": "aya/aya-expanse-32b",
       "matchingModel": "c4ai-aya-expanse-32b",
       "overrides": {
         "lastUpdated": "October 24, 2024",
@@ -71,7 +65,7 @@
       }
     },
     "c4ai-aya-vision-32b": {
-      "model": "cohere/c4ai-aya-vision-32b/aya-vision-32b",
+      "model": "aya-vision/aya-vision-32b",
       "matchingModel": "c4ai-aya-vision-32b",
       "overrides": {
         "lastUpdated": "May 14, 2025",
@@ -105,14 +99,15 @@
       }
     },
     "command-a-plus-05-2026": {
-      "model": "command-a/command-a-plus",
+      "model": "command-a-plus/command-a-plus",
       "matchingModel": "command-a-plus-05-2026",
       "overrides": {
+        "contextWindow": 128000,
         "isFree": true,
         "speed": 5,
         "lastUpdated": "June 9, 2026",
-        "costPer1kInputTokens": 0.0025,
-        "costPer1kOutputTokens": 0.01,
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
         "supportsAttachments": true
       }
     },
@@ -152,7 +147,6 @@
       "model": "command-r/command-r",
       "matchingModel": "command-r-08-2024",
       "overrides": {
-        "name": "Command R",
         "isFree": true,
         "lastUpdated": "August 30, 2024",
         "costPer1kInputTokens": 0.00015,
@@ -160,11 +154,9 @@
       }
     },
     "command-r-plus-08-2024": {
-      "model": "command-r/command-r",
+      "model": "command-r-plus/command-r",
       "matchingModel": "command-r-plus-08-2024",
       "overrides": {
-        "name": "Command R+",
-        "description": "Cohere's RAG workhorse for long-context enterprise search and tool use",
         "isFree": true,
         "lastUpdated": "August 30, 2024",
         "costPer1kInputTokens": 0.0025,
@@ -191,11 +183,11 @@
       }
     },
     "north-mini-code-1-0": {
-      "model": "north/north-mini-code",
+      "model": "north-mini/north-mini-code",
       "matchingModel": "north-mini-code-1-0",
       "overrides": {
         "isFree": true,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "June 9, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
@@ -203,35 +195,43 @@
       }
     },
     "north-small-translate-09-2026": {
-      "model": "north/north-small-translate",
+      "model": "north-small/north-small-translate",
       "matchingModel": "north-small-translate-09-2026",
       "overrides": {
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 4,
+        "reliability": 1,
         "isFeatured": true,
         "lastUpdated": "September 9, 2026",
         "costPer1kInputTokens": 0,
         "costPer1kOutputTokens": 0,
-        "supportsToolCalls": false
-      },
-      "unset": [
-        "knowledgeCutoffDate"
-      ]
+        "supportsToolCalls": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": 20.6,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 4.1
+        }
+      }
     },
     "tiny-aya-earth": {
-      "model": "cohere/tiny-aya-earth/tiny-aya-earth",
+      "model": "aya-tiny/tiny-aya-earth",
       "matchingModel": "tiny-aya-earth",
       "overrides": {
         "lastUpdated": "February 17, 2026"
       }
     },
     "tiny-aya-fire": {
-      "model": "cohere/tiny-aya-fire/tiny-aya-fire",
+      "model": "aya-tiny/tiny-aya-fire",
       "matchingModel": "tiny-aya-fire",
       "overrides": {
         "lastUpdated": "February 17, 2026"
       }
     },
     "tiny-aya-global": {
-      "model": "cohere/tiny-aya-global/tiny-aya-global",
+      "model": "aya-tiny/tiny-aya-global",
       "matchingModel": "tiny-aya-global",
       "overrides": {
         "isFeatured": true,
@@ -241,10 +241,31 @@
       }
     },
     "tiny-aya-water": {
-      "model": "cohere/tiny-aya-water/tiny-aya-water",
+      "model": "aya-tiny/tiny-aya-water",
       "matchingModel": "tiny-aya-water",
       "overrides": {
         "lastUpdated": "February 17, 2026"
+      }
+    },
+    "north-mini-code-1.0": {
+      "model": "north-mini/north-mini-code",
+      "matchingModel": "north-mini-code-1.0",
+      "overrides": {
+        "speed": 5,
+        "lastUpdated": "June 9, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "apiBaseUrl": "https://api.cohere.ai/compatibility/v1"
+      }
+    },
+    "north-small-translate-1.0": {
+      "model": "north-small/north-small-translate",
+      "matchingModel": "north-small-translate-1.0",
+      "overrides": {
+        "lastUpdated": "September 9, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0,
+        "supportsToolCalls": false
       }
     }
   }

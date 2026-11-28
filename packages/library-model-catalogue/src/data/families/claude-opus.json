@@ -124,68 +124,12 @@
         ],
         "contextComplexity": 4,
         "reliability": 1,
-        "knowledgeCutoffDate": "May 2025",
         "releaseDate": "November 24, 2025",
         "supportsTemperature": true
       }
     },
-    "claude-opus-4-5-eu": {
-      "defaults": {
-        "name": "Claude Opus 4.5 (EU)",
-        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
-        "contextWindow": 200000,
-        "maxTokens": 64000,
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
-        "knowledgeCutoffDate": "May 2025",
-        "releaseDate": "November 24, 2025",
-        "supportsTemperature": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low",
-          "thinkingApi": "budget"
-        }
-      }
-    },
-    "claude-opus-4-5-global": {
-      "defaults": {
-        "name": "Claude Opus 4.5 (Global)",
-        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
-        "contextWindow": 200000,
-        "maxTokens": 64000,
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
-        "knowledgeCutoffDate": "May 2025",
-        "releaseDate": "November 24, 2025",
-        "supportsTemperature": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low",
-          "thinkingApi": "budget"
-        }
-      }
-    },
     "claude-opus-4-5-latest": {
       "defaults": {
-        "name": "Claude Opus 4.5",
         "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
         "contextWindow": 200000,
         "maxTokens": 64000,
@@ -226,33 +170,6 @@
             "max"
           ],
           "defaultEffort": "none"
-        }
-      }
-    },
-    "claude-opus-4-5-us": {
-      "defaults": {
-        "name": "Claude Opus 4.5 (US)",
-        "description": "Flagship Claude model for deep reasoning, coding, and long-horizon agents",
-        "contextWindow": 200000,
-        "maxTokens": 64000,
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "contextComplexity": 4,
-        "reliability": 1,
-        "knowledgeCutoffDate": "May 2025",
-        "releaseDate": "November 24, 2025",
-        "supportsTemperature": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low",
-          "thinkingApi": "budget"
         }
       }
     },

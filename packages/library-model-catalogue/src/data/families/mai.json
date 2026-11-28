@@ -1,12 +1,9 @@
 {
   "defaults": {
     "openWeights": false,
-    "contextWindow": 0,
-    "maxTokens": 0,
-    "supportsToolCalls": false,
     "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
     "reasoningConfig": {
       "supportedEffortLevels": [
         "low",
@@ -18,26 +15,6 @@
   },
   "description": "The mai family includes models that produce text.",
   "models": {
-    "mai-code-1-1-flash": {
-      "defaults": {
-        "name": "MAI-Code-1.1-Flash",
-        "description": "Microsoft coding model with native vision support, optimized for fast and efficient software development",
-        "contextWindow": 256000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "August 11, 2026",
-        "supportsToolCalls": true
-      }
-    },
     "mai-code-1-flash": {
       "defaults": {
         "name": "MAI-Code-1-Flash",
@@ -54,148 +31,15 @@
         },
         "knowledgeCutoffDate": "December 2025",
         "releaseDate": "June 2, 2026",
-        "supportsToolCalls": true,
-        "supportsAttachments": false,
-        "supportsTemperature": true
-      }
-    },
-    "mai-code-2": {
-      "defaults": {
-        "name": "MAI Code 2",
-        "description": "Microsoft's larger agentic coding model for debugging, multi-file changes and repository-wide reasoning",
-        "contextWindow": 1050000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "November 17, 2026",
-        "supportsToolCalls": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "mai-code-2-flash": {
-      "defaults": {
-        "name": "MAI Code 2 Flash",
-        "description": "Microsoft's lightweight coding model for explanations, targeted edits and routine fixes at high volume",
-        "contextWindow": 1050000,
-        "maxTokens": 128000,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "November 17, 2026",
-        "supportsToolCalls": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "low"
-        }
-      }
-    },
-    "mai-image-2-6": {
-      "defaults": {
-        "name": "MAI-Image-2.6",
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "image"
-          ]
-        },
-        "strengths": [
-          "image",
-          "creative",
-          "document"
-        ],
-        "contextComplexity": 4,
-        "reliability": 4,
-        "releaseDate": "October 13, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 1168,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 12
-            }
-          ]
-        }
-      }
-    },
-    "mai-image-2-6-flash": {
-      "defaults": {
-        "name": "MAI-Image-2.6-Flash",
-        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "image"
-          ]
-        },
-        "strengths": [
-          "image",
-          "document"
-        ],
-        "contextComplexity": 4,
-        "reliability": 3,
-        "releaseDate": "October 13, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 1124,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 12
-            }
-          ]
-        }
+        "supportsToolCalls": true
       }
     },
     "mai-transcribe-1-5": {
       "defaults": {
         "name": "MAI-Transcribe-1.5",
         "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
+        "contextWindow": 0,
+        "maxTokens": 0,
         "modalities": {
           "input": [
             "audio"
@@ -211,8 +55,7 @@
         "contextComplexity": 4,
         "reliability": 4,
         "releaseDate": "June 1, 2026",
-        "supportsAttachments": false,
-        "supportsTemperature": true,
+        "supportsToolCalls": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -229,123 +72,6 @@
             }
           ]
         }
-      }
-    },
-    "mai-transcribe-2": {
-      "defaults": {
-        "name": "MAI-Transcribe 2",
-        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
-        "modalities": {
-          "input": [
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "audio",
-          "transcription",
-          "document"
-        ],
-        "contextComplexity": 4,
-        "reliability": 5,
-        "releaseDate": "September 3, 2026",
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "aaWerIndex",
-              "label": "Word Error Rate",
-              "value": 0.02,
-              "min": 0,
-              "max": 1,
-              "lowerIsBetter": true
-            }
-          ]
-        }
-      }
-    },
-    "mai-transcribe-2-streaming": {
-      "defaults": {
-        "name": "MAI-Transcribe-2-Streaming",
-        "description": "Speech transcription model for accurate audio-to-text and captioning workflows",
-        "modalities": {
-          "input": [
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "October 1, 2026"
-      }
-    },
-    "mai-voice-2": {
-      "defaults": {
-        "name": "MAI-Voice-2",
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "audio"
-          ]
-        },
-        "releaseDate": "June 2, 2026",
-        "supportsAttachments": false
-      }
-    },
-    "mai-voice-2-1": {
-      "defaults": {
-        "name": "MAI-Voice-2.1",
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "audio"
-          ]
-        },
-        "releaseDate": "October 1, 2026",
-        "supportsAttachments": false
-      }
-    },
-    "mai-voice-2-1-flash": {
-      "defaults": {
-        "name": "MAI-Voice-2.1-Flash",
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "audio"
-          ]
-        },
-        "releaseDate": "October 1, 2026",
-        "supportsAttachments": false
-      }
-    },
-    "mai-voice-2-flash": {
-      "defaults": {
-        "name": "MAI-Voice-2-Flash",
-        "description": "Speech generation model for controllable voice, narration, and audio delivery",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "audio"
-          ]
-        },
-        "releaseDate": "July 23, 2026",
-        "supportsAttachments": false
       }
     }
   }

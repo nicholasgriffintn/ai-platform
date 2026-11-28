@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 8192,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "November 18, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The ovhcloud/olala v1.0 translate family includes models that produce text.",
+  "models": {
+    "olala-v1-0-translate": {
+      "defaults": {
+        "name": "Olala-v1.0-translate",
+        "description": "Translation model for multilingual conversion, localization, and cross-language workflows"
+      }
+    }
+  }
+}

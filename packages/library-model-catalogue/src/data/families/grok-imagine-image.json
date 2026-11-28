@@ -1,0 +1,76 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "maxTokens": 0,
+    "contextComplexity": 3,
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+  "models": {
+    "grok-imagine-image": {
+      "defaults": {
+        "name": "Grok Imagine Image",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 16000,
+        "reliability": 2,
+        "releaseDate": "January 28, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1024,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 11
+            }
+          ]
+        }
+      }
+    },
+    "grok-imagine-image-2-0": {
+      "defaults": {
+        "name": "Grok Imagine Image 2.0",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "contextWindow": 64000,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "image"
+          ]
+        },
+        "strengths": [
+          "image",
+          "creative",
+          "document"
+        ],
+        "reliability": 4,
+        "releaseDate": "August 7, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1168,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 12
+            }
+          ]
+        }
+      }
+    }
+  }
+}

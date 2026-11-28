@@ -206,7 +206,7 @@
           "coding",
           "tool_use"
         ],
-        "speed": 2,
+        "speed": 3,
         "isFeatured": false,
         "deprecated": true,
         "deprecationMessage": "Grok 4 was retired on 15 May 2026. Use Grok 4.3 instead.",
@@ -503,7 +503,6 @@
         "name": "Grok 4.20 (Reasoning)",
         "description": "Reasoning Grok for document-heavy analysis and long-horizon tool use",
         "contextWindow": 1000000,
-        "maxTokens": 30000,
         "modalities": {
           "input": [
             "text",
@@ -563,7 +562,6 @@
       "matchingModel": "grok-4.3",
       "overrides": {
         "description": "xAI's Grok for chat, coding, agentic tools, and lower hallucination risk",
-        "maxTokens": 30000,
         "modalities": {
           "input": [
             "text",
@@ -573,7 +571,6 @@
             "text"
           ]
         },
-        "contextComplexity": 4,
         "speed": 2,
         "lastUpdated": "April 17, 2026",
         "costPer1kInputTokens": 0.00125,
@@ -591,10 +588,9 @@
       }
     },
     "grok-imagine-image": {
-      "model": "grok/grok-imagine-image",
+      "model": "grok-imagine-image/grok-imagine-image",
       "matchingModel": "grok-imagine-image",
       "overrides": {
-        "contextWindow": 16000,
         "modalities": {
           "input": [
             "text",
@@ -610,27 +606,16 @@
           "image",
           "creative"
         ],
-        "contextComplexity": 3,
         "lastUpdated": "January 28, 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false
       }
     },
     "grok-imagine-video": {
-      "model": "grok/grok-imagine-video",
+      "model": "grok-imagine-video/grok-imagine-video",
       "matchingModel": "grok-imagine-video",
       "overrides": {
-        "contextWindow": 1024,
-        "maxTokens": 0,
-        "strengths": [
-          "vision",
-          "video",
-          "document",
-          "creative"
-        ],
-        "contextComplexity": 3,
         "isFeatured": true,
-        "releaseDate": "January 28, 2026",
         "lastUpdated": "January 28, 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false
@@ -675,7 +660,7 @@
       }
     },
     "grok-imagine-video-1.5": {
-      "model": "grok/grok-imagine-video-1-5",
+      "model": "grok-imagine-video/grok-imagine-video-1-5",
       "matchingModel": "grok-imagine-video-1.5",
       "overrides": {
         "modalities": {
@@ -725,6 +710,7 @@
       "model": "grok/grok-imagine-image-2-0",
       "matchingModel": "grok-imagine-image-2.0",
       "overrides": {
+        "contextWindow": 64000,
         "modalities": {
           "input": [
             "text",
@@ -742,6 +728,7 @@
           "image",
           "creative"
         ],
+        "contextComplexity": 3,
         "lastUpdated": "August 7, 2026",
         "supportsToolCalls": false,
         "supportsTemperature": false
@@ -759,7 +746,7 @@
       }
     },
     "grok-imagine-video-1.5-lite": {
-      "model": "grok/grok-imagine-video-1-5-lite",
+      "model": "grok-imagine-video-lite/grok-imagine-video-1-5-lite",
       "matchingModel": "grok-imagine-video-1.5-lite",
       "overrides": {
         "modalities": {

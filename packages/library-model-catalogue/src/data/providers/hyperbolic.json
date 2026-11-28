@@ -24,8 +24,8 @@
         "costPer1kOutputTokens": 0.0007
       },
       "unset": [
-        "openWeights",
-        "supportsAttachments"
+        "supportsAttachments",
+        "openWeights"
       ]
     }
   }

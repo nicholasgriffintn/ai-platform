@@ -1,0 +1,81 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "image"
+      ]
+    },
+    "strengths": [
+      "image",
+      "creative"
+    ],
+    "reliability": 2,
+    "releaseDate": "May 14, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false,
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": null,
+      "mediaScores": [
+        {
+          "key": "text_to_imageElo",
+          "label": "Text-to-image arena",
+          "value": 987,
+          "min": 800,
+          "max": 1400,
+          "confidenceInterval95": 8
+        }
+      ]
+    }
+  },
+  "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+  "models": {
+    "recraft-v4-1-pro": {
+      "defaults": {
+        "name": "Recraft V4.1 Pro",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows"
+      }
+    },
+    "recraft-v4-1-utility-pro": {
+      "defaults": {
+        "name": "Recraft V4.1 Utility Pro",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_imageElo",
+              "label": "Text-to-image arena",
+              "value": 1021,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 9
+            }
+          ]
+        }
+      }
+    },
+    "recraft-v4-pro": {
+      "defaults": {
+        "name": "Recraft V4 Pro",
+        "description": "Image model for prompt-driven generation, editing, and visual design workflows",
+        "strengths": [
+          "image"
+        ],
+        "releaseDate": "February 17, 2026"
+      }
+    }
+  }
+}

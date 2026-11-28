@@ -1,27 +1,86 @@
 {
   "defaults": {
-    "modalities": {
-      "input": [
-        "text"
-      ],
-      "output": [
-        "text"
-      ]
-    },
+    "openWeights": true,
     "supportsToolCalls": true,
-    "supportsAttachments": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
     "supportsTemperature": true
   },
   "description": "The kimi family includes models that produce text.",
   "models": {
+    "fw-kimi-k3": {
+      "defaults": {
+        "name": "FW-Kimi-K3",
+        "description": "Multimodal Kimi model with 1M context and always-on thinking for long-horizon agent work",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 16, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
+      }
+    },
     "kimi-dev-72b-free": {
       "defaults": {
         "name": "Kimi Dev 72b (free)",
         "description": "Kimi Dev 72b (free) accepts text and produces text.",
         "contextWindow": 131072,
         "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "knowledgeCutoffDate": "June 2025",
-        "releaseDate": "June 16, 2025"
+        "releaseDate": "June 16, 2025",
+        "supportsAttachments": false
+      }
+    },
+    "kimi-fast-latest": {
+      "defaults": {
+        "name": "Kimi Fast Latest",
+        "description": "Multimodal Kimi model with 1M context and always-on thinking for long-horizon agent work",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 16, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "kimi-k2": {
@@ -30,6 +89,14 @@
         "description": "Kimi K2 is a powerful open-weights model with advanced text capabilities and tool calling support.",
         "contextWindow": 131072,
         "maxTokens": 32768,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "chat",
           "general_knowledge",
@@ -40,6 +107,34 @@
         "reliability": 1,
         "knowledgeCutoffDate": "October 2024",
         "releaseDate": "July 11, 2025",
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "kimi-k2-0711": {
+      "defaults": {
+        "description": "Kimi model for long-context chat, coding, and agentic reasoning",
+        "contextWindow": 131072,
+        "maxTokens": 98304,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 4,
+        "reliability": 1,
+        "knowledgeCutoffDate": "December 31, 2024",
+        "releaseDate": "July 11, 2025",
+        "supportsResponseFormat": false,
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -51,9 +146,42 @@
     "kimi-k2-5": {
       "defaults": {
         "name": "Kimi K2.5",
-        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
-        "contextWindow": 256000,
-        "maxTokens": 256000,
+        "description": "Earlier Kimi frontier model for long-context agents, coding, and multimodal work",
+        "contextWindow": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 4,
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "January 27, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "kimi-k2-5-eu": {
+      "defaults": {
+        "name": "Kimi K2.5 (EU)",
+        "description": "Earlier Kimi frontier model for long-context agents, coding, and multimodal work",
+        "contextWindow": 128000,
+        "maxTokens": 16000,
         "modalities": {
           "input": [
             "text",
@@ -70,15 +198,18 @@
           "document",
           "tool_use"
         ],
-        "contextComplexity": 4,
+        "contextComplexity": 3,
         "reliability": 3,
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "January 27, 2026",
-        "supportsAttachments": true,
+        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
-            "thinking"
+            "low",
+            "medium",
+            "high",
+            "max"
           ],
           "defaultEffort": "none"
         },
@@ -106,7 +237,41 @@
           ]
         },
         "knowledgeCutoffDate": "January 2025",
-        "releaseDate": "January 27, 2026"
+        "releaseDate": "January 27, 2026",
+        "supportsAttachments": false
+      }
+    },
+    "kimi-k2-6": {
+      "defaults": {
+        "name": "Kimi K2.6",
+        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
+        "contextWindow": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "contextComplexity": 4,
+        "reliability": 3,
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "April 20, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "kimi-k2-6-free": {
@@ -135,7 +300,6 @@
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "April 21, 2026",
         "supportsResponseFormat": false,
-        "supportsAttachments": true,
         "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -152,12 +316,47 @@
         }
       }
     },
+    "kimi-k2-6-tee": {
+      "defaults": {
+        "name": "Kimi K2.6 TEE",
+        "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
+        "contextWindow": 262144,
+        "maxTokens": 65535,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "January 2025",
+        "releaseDate": "April 20, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "kimi-k2-free": {
       "defaults": {
         "name": "Kimi K2 (free)",
         "description": "Kimi K2 (free) accepts text and produces text.",
         "contextWindow": 32800,
         "maxTokens": 32800,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "tool_use"
         ],
@@ -165,6 +364,7 @@
         "reliability": 1,
         "knowledgeCutoffDate": "April 2025",
         "releaseDate": "July 11, 2025",
+        "supportsAttachments": false,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -176,15 +376,35 @@
     "kimi-k2-instruct": {
       "defaults": {
         "name": "Kimi K2 Instruct",
-        "description": "Kimi K2 instruction-following model optimized for conversational AI and task completion.",
-        "knowledgeCutoffDate": "October 2024"
+        "description": "Kimi model for long-context chat, coding, and agentic reasoning",
+        "contextWindow": 131072,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "October 2024",
+        "releaseDate": "July 11, 2025",
+        "supportsAttachments": false
       }
     },
     "kimi-k2-instruct-0905": {
       "defaults": {
         "description": "Kimi K2 Instruct-0905 accepts text and produces text.",
         "contextWindow": 262144,
-        "maxTokens": 262144
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "supportsAttachments": false
       }
     },
     "kimi-k2-instruct-0905-exacto": {
@@ -193,20 +413,45 @@
         "description": "Kimi K2 Instruct 0905 (exacto) accepts text and produces text.",
         "contextWindow": 262144,
         "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "September 5, 2025"
+        "releaseDate": "September 5, 2025",
+        "supportsAttachments": false
       }
     },
     "kimi-k2-thinking": {
       "defaults": {
         "name": "Kimi K2 Thinking",
         "description": "Kimi K2 Thinking accepts text and produces text.",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "tool_use"
         ],
         "contextComplexity": 4,
         "reliability": 1,
         "releaseDate": "November 6, 2025",
+        "supportsAttachments": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -221,8 +466,16 @@
         "description": "Kimi K2 Thinking TEE accepts text and produces text.",
         "contextWindow": 262144,
         "maxTokens": 65535,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "releaseDate": "December 29, 2025",
-        "supportsResponseFormat": true
+        "supportsAttachments": false
       }
     },
     "kimi-k2-turbo": {
@@ -231,8 +484,17 @@
         "description": "Kimi K2 Turbo accepts text and produces text.",
         "contextWindow": 256000,
         "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "knowledgeCutoffDate": "August 2024",
         "releaseDate": "September 5, 2025",
+        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -242,6 +504,247 @@
           "modelOverrides": {
             "thinking": "moonshotai/kimi-k2-thinking-turbo"
           }
+        }
+      }
+    },
+    "kimi-k3": {
+      "defaults": {
+        "name": "Kimi K3",
+        "description": "Multimodal Kimi model with 1M context and always-on thinking for long-horizon agent work",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 4,
+        "releaseDate": "July 16, 2026",
+        "supportsTemperature": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "kimi-k3-eu": {
+      "defaults": {
+        "name": "Kimi K3 (EU)",
+        "description": "Multimodal Kimi model with 1M context and always-on thinking for long-horizon agent work",
+        "contextWindow": 1048576,
+        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "video",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 4,
+        "releaseDate": "July 16, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "kimi-k3-fast": {
+      "defaults": {
+        "name": "Kimi K3 Fast",
+        "description": "Multimodal Kimi model with 1M context and always-on thinking for long-horizon agent work",
+        "contextWindow": 1048576,
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 16, 2026",
+        "supportsTemperature": false
+      }
+    },
+    "kimi-k3-global": {
+      "defaults": {
+        "name": "Kimi K3 (Global)",
+        "description": "Multimodal Kimi model with 1M context and always-on thinking for long-horizon agent work",
+        "contextWindow": 1048576,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 4,
+        "releaseDate": "July 16, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "kimi-k3-india": {
+      "defaults": {
+        "name": "Kimi K3 (India)",
+        "description": "Multimodal Kimi model with 1M context and always-on thinking for long-horizon agent work",
+        "contextWindow": 1048576,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "releaseDate": "July 16, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "kimi-k3-tee": {
+      "defaults": {
+        "name": "Kimi K3 TEE",
+        "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
+        "contextWindow": 1048576,
+        "maxTokens": 65535,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "releaseDate": "July 16, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "kimi-k3-us": {
+      "defaults": {
+        "name": "Kimi K3 (US)",
+        "description": "Multimodal Kimi model with 1M context and always-on thinking for long-horizon agent work",
+        "contextWindow": 1048576,
+        "maxTokens": 128000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use",
+          "coding"
+        ],
+        "contextComplexity": 5,
+        "reliability": 4,
+        "releaseDate": "July 16, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
       }
     },
@@ -259,9 +762,37 @@
           "output": [
             "text"
           ]
+        }
+      }
+    },
+    "moonshotai-kimi-k3-fast": {
+      "defaults": {
+        "name": "MoonshotAI: Kimi K3 Fast",
+        "description": "Fast version of Kimi’s flagship model for long-horizon coding and end-to-end knowledge work, with a 1M-token context window.",
+        "contextWindow": 1000000,
+        "maxTokens": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
         },
-        "supportsResponseFormat": true,
-        "supportsAttachments": true
+        "releaseDate": "July 16, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
       }
     },
     "moonshotai-kimi-latest": {
@@ -282,8 +813,6 @@
           ]
         },
         "releaseDate": "April 27, 2026",
-        "supportsResponseFormat": true,
-        "supportsAttachments": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",

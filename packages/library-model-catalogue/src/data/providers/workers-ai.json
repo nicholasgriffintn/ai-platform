@@ -126,10 +126,8 @@
         "speed": 4
       },
       "unset": [
-        "maxTokens",
-        "supportsToolCalls",
-        "supportsTemperature",
-        "supportsAttachments"
+        "supportsAttachments",
+        "supportsTemperature"
       ]
     },
     "flux-2-dev": {
@@ -141,10 +139,8 @@
         "inputFormat": "multipart"
       },
       "unset": [
-        "maxTokens",
-        "supportsToolCalls",
-        "supportsTemperature",
-        "supportsAttachments"
+        "supportsAttachments",
+        "supportsTemperature"
       ]
     },
     "@cf/black-forest-labs/flux-2-klein-4b": {
@@ -156,10 +152,8 @@
         "inputFormat": "multipart"
       },
       "unset": [
-        "maxTokens",
-        "supportsToolCalls",
-        "supportsTemperature",
-        "supportsAttachments"
+        "supportsAttachments",
+        "supportsTemperature"
       ]
     },
     "@cf/black-forest-labs/flux-2-klein-9b": {
@@ -170,10 +164,8 @@
         "inputFormat": "multipart"
       },
       "unset": [
-        "maxTokens",
-        "supportsToolCalls",
-        "supportsTemperature",
-        "supportsAttachments"
+        "supportsAttachments",
+        "supportsTemperature"
       ]
     },
     "stable-diffusion-1.5-img2img": {
@@ -315,7 +307,7 @@
       }
     },
     "qwen2.5-coder-32b": {
-      "model": "qwen/qwen2-5-coder-32b-instruct",
+      "model": "qwen-coder/qwen2-5-coder-32b-instruct",
       "matchingModel": "@cf/qwen/qwen2.5-coder-32b-instruct",
       "overrides": {
         "name": "Qwen 2.5 Coder 32B Instruct",
@@ -323,19 +315,21 @@
         "strengths": [
           "coding"
         ],
+        "contextComplexity": 3,
         "speed": 3,
         "lastUpdated": "November 12, 2024",
         "costPer1kInputTokens": 0.00066,
         "costPer1kOutputTokens": 0.001
-      }
+      },
+      "unset": [
+        "knowledgeCutoffDate"
+      ]
     },
     "@cf/meta/llama-guard-3-8b": {
-      "model": "llama/llama-guard-3-8b",
+      "model": "llama-guard/llama-guard-3-8b",
       "matchingModel": "@cf/meta/llama-guard-3-8b",
       "overrides": {
         "isFree": true,
-        "knowledgeCutoffDate": "December 2023",
-        "releaseDate": "July 23, 2024",
         "lastUpdated": "July 23, 2024",
         "costPer1kInputTokens": 0.000484,
         "costPer1kOutputTokens": 0.00003
@@ -433,7 +427,8 @@
       "unset": [
         "supportsToolCalls",
         "supportsAttachments",
-        "supportsTemperature"
+        "supportsTemperature",
+        "supportsResponseFormat"
       ]
     },
     "@cf/ai4bharat/indictrans2-en-indic-1B": {
@@ -446,12 +441,15 @@
       }
     },
     "@cf/aisingapore/gemma-sea-lion-v4-27b-it": {
-      "model": "gemma/gemma-sea-lion-v4-27b-it",
+      "model": "sea-lion/gemma-sea-lion-v4-27b-it",
       "matchingModel": "@cf/aisingapore/gemma-sea-lion-v4-27b-it",
       "overrides": {
+        "name": "Gemma SEA-LION v4 27B IT",
+        "contextWindow": 128000,
         "lastUpdated": "September 23, 2025",
         "costPer1kInputTokens": 0.000351,
-        "costPer1kOutputTokens": 0.000555
+        "costPer1kOutputTokens": 0.000555,
+        "supportsResponseFormat": false
       }
     },
     "@cf/baai/bge-small-en-v1.5": {
@@ -493,17 +491,13 @@
       }
     },
     "@cf/ibm-granite/granite-4.0-h-micro": {
-      "model": "granite/granite-4-0-h-micro",
+      "model": "granite-micro/granite-4-0-h-micro",
       "matchingModel": "@cf/ibm-granite/granite-4.0-h-micro",
       "overrides": {
         "lastUpdated": "October 2, 2025",
         "costPer1kInputTokens": 0.000017,
         "costPer1kOutputTokens": 0.000112
-      },
-      "unset": [
-        "contextComplexity",
-        "reliability"
-      ]
+      }
     },
     "@cf/meta/llama-3.2-11b-vision-instruct": {
       "model": "llama/llama-3-2-11b-vision-instruct",
@@ -550,8 +544,6 @@
       "matchingModel": "@cf/zai-org/glm-4.7-flash",
       "overrides": {
         "name": "GLM 4.7 Flash",
-        "contextWindow": 131072,
-        "maxTokens": 131072,
         "strengths": [
           "chat",
           "instruction",
@@ -560,7 +552,7 @@
           "coding",
           "tool_use"
         ],
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "January 19, 2026",
         "costPer1kInputTokens": 0.0000605,
         "costPer1kOutputTokens": 0.0004,
@@ -627,9 +619,6 @@
       "model": "qwen/qwen3-embedding-0-6b",
       "matchingModel": "@cf/qwen/qwen3-embedding-0.6b",
       "overrides": {
-        "contextWindow": 128000,
-        "maxTokens": 16384,
-        "releaseDate": "November 14, 2025",
         "lastUpdated": "November 14, 2025",
         "costPer1kInputTokens": 0.000012,
         "costPer1kOutputTokens": 0
@@ -645,7 +634,7 @@
       "overrides": {
         "description": "Qwen vision-language model for visual reasoning, documents, and agent tasks",
         "maxTokens": 262144,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.00045,
         "costPer1kOutputTokens": 0.0032,
@@ -748,7 +737,7 @@
       "overrides": {
         "name": "Deepseek V4.1 Flash 1017",
         "maxTokens": 1048576,
-        "speed": 4,
+        "speed": 5,
         "lastUpdated": "October 17, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.0012,
@@ -765,10 +754,10 @@
       }
     },
     "@cf/thinkingmachines/inkling-2-small": {
-      "model": "kling/inkling-2-small",
+      "model": "inkling/inkling-2-small",
       "matchingModel": "@cf/thinkingmachines/inkling-2-small",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "November 9, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.001,
@@ -783,6 +772,15 @@
         "costPer1kInputTokens": 0.0001,
         "costPer1kOutputTokens": 0,
         "supportsAttachments": true
+      }
+    },
+    "@cf/daily-co/phonellm-mini-alpha-2": {
+      "model": "phonellm-mini/phonellm-mini-alpha-2",
+      "matchingModel": "@cf/daily-co/phonellm-mini-alpha-2",
+      "overrides": {
+        "lastUpdated": "October 15, 2026",
+        "costPer1kInputTokens": 0.00006,
+        "costPer1kOutputTokens": 0.00024
       }
     }
   }

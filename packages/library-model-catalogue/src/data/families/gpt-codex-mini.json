@@ -1,0 +1,42 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 400000,
+    "maxTokens": 128000,
+    "strengths": [
+      "vision",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 1,
+    "knowledgeCutoffDate": "September 30, 2024",
+    "releaseDate": "November 13, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": false,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "defaultEffort": "low"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
+  },
+  "description": "The gpt codex mini family groups related models and their shared configuration.",
+  "models": {
+    "gpt-5-1-codex-mini": {
+      "defaults": {
+        "description": "Coding-optimized GPT model for repository edits, reviews, and agentic software work"
+      }
+    }
+  }
+}

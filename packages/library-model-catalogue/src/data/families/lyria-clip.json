@@ -1,0 +1,31 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1048576,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text",
+        "audio"
+      ]
+    },
+    "releaseDate": "March 25, 2026",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The lyria clip family includes models that produce audio, text.",
+  "models": {
+    "lyria-3-clip-preview": {
+      "defaults": {
+        "name": "Lyria 3 Clip Preview",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery"
+      }
+    }
+  }
+}

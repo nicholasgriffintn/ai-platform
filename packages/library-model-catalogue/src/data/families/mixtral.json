@@ -1,7 +1,6 @@
 {
   "defaults": {
-    "contextWindow": 32768,
-    "maxTokens": 32768,
+    "openWeights": true,
     "modalities": {
       "input": [
         "text"
@@ -10,19 +9,13 @@
         "text"
       ]
     },
-    "strengths": [
-      "reasoning",
-      "analysis",
-      "multilingual",
-      "coding",
-      "tool_use"
-    ],
     "contextComplexity": 3,
     "reliability": 1,
     "knowledgeCutoffDate": "September 2023",
     "releaseDate": "December 11, 2023",
     "supportsToolCalls": true,
-    "supportsAttachments": false,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
     "supportsTemperature": true,
     "artificialAnalysis": {
       "intelligenceIndex": null,
@@ -33,10 +26,58 @@
   },
   "description": "The mixtral family includes models that produce text.",
   "models": {
+    "mixtral-8x22b-instruct": {
+      "defaults": {
+        "description": "Mistral model for multilingual chat, reasoning, and tool-assisted workflows",
+        "contextWindow": 65536,
+        "maxTokens": 52428,
+        "modalities": {
+          "input": [
+            "text",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "document",
+          "tool_use"
+        ],
+        "knowledgeCutoffDate": "January 31, 2024",
+        "releaseDate": "April 17, 2024"
+      }
+    },
     "mixtral-8x7b-instruct": {
       "defaults": {
         "name": "Mixtral 8x7B Instruct",
-        "description": "Mixtral 8x7B Instruct accepts text and produces text."
+        "description": "Mixtral 8x7B Instruct accepts text and produces text.",
+        "contextWindow": 32768,
+        "maxTokens": 32768,
+        "strengths": [
+          "reasoning",
+          "analysis",
+          "multilingual",
+          "coding",
+          "tool_use"
+        ],
+        "supportsAttachments": false
+      }
+    },
+    "mixtral-8x7b-instruct-v0-1": {
+      "defaults": {
+        "name": "Mixtral 8x7B Instruct v0.1",
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
+        "contextWindow": 32000,
+        "maxTokens": 4096,
+        "supportsToolCalls": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
       }
     }
   }

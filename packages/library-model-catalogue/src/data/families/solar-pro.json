@@ -76,6 +76,27 @@
         }
       }
     },
+    "solar-pro-4-contributor": {
+      "defaults": {
+        "name": "Solar Pro 4 Contributor",
+        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
+        "contextWindow": 524288,
+        "maxTokens": 131072,
+        "releaseDate": "November 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
     "solar-pro2": {
       "defaults": {
         "name": "solar-pro2",
@@ -171,6 +192,27 @@
           "codingIndex": 52.7,
           "agenticIndex": null,
           "intelligenceIndexVersion": 4.3
+        }
+      }
+    },
+    "upstage-solar-pro-4-contributor": {
+      "defaults": {
+        "name": "Upstage: Solar Pro 4 Contributor",
+        "description": "Solar Pro 4 Contributor is the same Solar Pro 4 model from Upstage, offered at a lower rate in exchange for allowing Upstage to use interaction data to improve its...",
+        "contextWindow": 524288,
+        "maxTokens": 131072,
+        "releaseDate": "November 24, 2026",
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
         }
       }
     }

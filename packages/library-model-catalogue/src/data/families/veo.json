@@ -39,10 +39,10 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 962,
+              "value": 957,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 16
+              "confidenceInterval95": 14
             }
           ]
         }
@@ -80,10 +80,10 @@
             {
               "key": "text_to_videoElo",
               "label": "Text-to-video arena",
-              "value": 961,
+              "value": 959,
               "min": 800,
               "max": 1400,
-              "confidenceInterval95": 16
+              "confidenceInterval95": 15
             }
           ]
         }
@@ -181,15 +181,6 @@
             }
           ]
         }
-      }
-    },
-    "veo-3-1-lite-generate": {
-      "defaults": {
-        "name": "Veo 3.1 Lite Generate",
-        "description": "Video model for prompt-guided generation, editing, and motion workflows",
-        "contextWindow": 1024,
-        "maxTokens": 0,
-        "releaseDate": "April 2, 2026"
       }
     }
   }

@@ -108,7 +108,6 @@
       "defaults": {
         "name": "Nova Pro",
         "description": "Flagship model for demanding analysis, coding, and production agent workflows",
-        "maxTokens": 10000,
         "modalities": {
           "input": [
             "text",

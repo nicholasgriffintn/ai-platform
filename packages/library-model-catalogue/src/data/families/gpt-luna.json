@@ -261,6 +261,25 @@
         }
       }
     },
+    "gpt-6-luna-pro": {
+      "defaults": {
+        "name": "GPT-6 Luna Pro",
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "May 18, 2026",
+        "releaseDate": "September 22, 2026",
+        "supportsTemperature": false
+      }
+    },
     "gpt-6-luna-us": {
       "defaults": {
         "name": "GPT-6 Luna (US)",
@@ -321,6 +340,25 @@
         "description": "GPT-6 Luna is OpenAI's efficient reasoning model for focused, high-volume tasks. It accepts text and images, generates text, and supports a 1,050,000-token context window with up to 128,000 output tokens. Configurable reasoning effort, structured outputs, prompt caching, and Responses API tools support cost-sensitive applications, coding tasks, and automated workflows.",
         "knowledgeCutoffDate": "May 18, 2026",
         "releaseDate": "September 22, 2026"
+      }
+    },
+    "openai-gpt-6-luna-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6 Luna Pro",
+        "description": "GPT-6 Luna Pro is the same underlying model as [GPT-6 Luna](https://openrouter.ai/openai/gpt-6-luna), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. Learn more in OpenAI's docs: https://developers.openai.com/api/docs/guides/reasoning#reasoning-mode",
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "May 18, 2026",
+        "releaseDate": "September 22, 2026",
+        "supportsTemperature": false
       }
     },
     "openai-gpt-luna-latest": {

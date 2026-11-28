@@ -1,0 +1,45 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 262144,
+    "releaseDate": "June 23, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The seed turbo family includes models that produce text.",
+  "models": {
+    "bytedance-seed-seed-2-1-turbo": {
+      "defaults": {
+        "name": "ByteDance Seed: Seed 2.1 Turbo",
+        "description": "Seed 2.1 Turbo is a multimodal model from ByteDance Seed for coding and long-horizon agent workflows. It is suited for end-to-end software delivery, multi-step task execution, and understanding visual and...",
+        "maxTokens": 235929,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "high"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "seed-2-1-turbo": {
+      "defaults": {
+        "name": "Seed 2.1 Turbo",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "maxTokens": 256000
+      }
+    }
+  }
+}

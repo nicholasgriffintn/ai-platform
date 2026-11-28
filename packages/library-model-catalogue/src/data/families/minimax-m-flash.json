@@ -1,0 +1,78 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 1048576,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "video",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 5,
+    "reliability": 1,
+    "releaseDate": "October 19, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "low"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": 29.1,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
+  },
+  "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
+  "models": {
+    "minimax-m3-1-flash": {
+      "defaults": {
+        "name": "MiniMax-M3.1-Flash",
+        "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth"
+      }
+    },
+    "minimax-m3-1-flash-eu": {
+      "defaults": {
+        "name": "MiniMax-M3.1-Flash (EU)",
+        "description": "Frontier multimodal coding model with 1M context window and tunable thinking depth",
+        "maxTokens": 1048576,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "minimax-minimax-m3-1-flash": {
+      "defaults": {
+        "name": "MiniMax: MiniMax M3.1 Flash",
+        "description": "MiniMax-M3.1-Flash is a multimodal model from MiniMax. Compared with M3, it delivers significant improvements across multiple benchmarks, particularly in complex agentic tasks, coding, and cybersecurity. It is built for complex,...",
+        "maxTokens": 131072
+      }
+    }
+  }
+}

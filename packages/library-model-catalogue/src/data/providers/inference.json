@@ -23,7 +23,10 @@
         "costPer1kInputTokens": 0.00015,
         "costPer1kOutputTokens": 0.0003,
         "supportsAttachments": true
-      }
+      },
+      "unset": [
+        "supportsResponseFormat"
+      ]
     },
     "meta/llama-3.2-1b-instruct": {
       "model": "llama/llama-3-2-1b-instruct",

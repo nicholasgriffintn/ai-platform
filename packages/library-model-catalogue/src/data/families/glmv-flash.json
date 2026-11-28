@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "maxTokens": 32768,
+    "releaseDate": "December 8, 2025",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The glmv flash family groups related models and their shared configuration.",
+  "models": {
+    "glm-4-6v-flash": {
+      "defaults": {
+        "name": "GLM-4.6V-Flash",
+        "description": "GLM vision model for visual reasoning, documents, and multimodal agents"
+      }
+    }
+  }
+}

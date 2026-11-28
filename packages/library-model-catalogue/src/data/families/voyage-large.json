@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 32000,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The voyage large family includes models that produce text.",
+  "models": {
+    "voyage-3-large": {
+      "defaults": {
+        "name": "voyage-3-large",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "releaseDate": "January 7, 2025"
+      }
+    },
+    "voyage-4-large": {
+      "defaults": {
+        "name": "voyage-4-large",
+        "description": "General-purpose and multilingual embedding model optimized for retrieval quality",
+        "releaseDate": "January 15, 2026"
+      }
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 0,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "video"
+      ]
+    },
+    "supportsToolCalls": false,
+    "supportsAttachments": true,
+    "supportsTemperature": false
+  },
+  "description": "The seedance family includes models that produce video.",
+  "models": {
+    "seedance-2-0": {
+      "defaults": {
+        "name": "Seedance 2.0",
+        "description": "ByteDance unified multimodal audio-video model supporting text, image, video and audio references, editing, extension and synchronized stereo sound.",
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "creative"
+        ],
+        "contextComplexity": 4,
+        "reliability": 5,
+        "releaseDate": "February 12, 2026",
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": null,
+          "mediaScores": [
+            {
+              "key": "text_to_videoElo",
+              "label": "Text-to-video arena",
+              "value": 1273,
+              "min": 800,
+              "max": 1400,
+              "confidenceInterval95": 8
+            }
+          ]
+        }
+      }
+    },
+    "seedance-2-0-fast": {
+      "defaults": {
+        "name": "Seedance 2.0 Fast",
+        "description": "Video model for prompt-guided generation, editing, and motion workflows",
+        "releaseDate": "April 14, 2026"
+      }
+    },
+    "seedance-2-5": {
+      "defaults": {
+        "name": "Seedance 2.5",
+        "description": "ByteDance multimodal audio-video model with up to 30-second single-pass generation, multi-round extension, reference inputs and timestamp-level editing.",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "video"
+          ]
+        },
+        "releaseDate": "July 31, 2026",
+        "supportsAttachments": false
+      }
+    }
+  }
+}

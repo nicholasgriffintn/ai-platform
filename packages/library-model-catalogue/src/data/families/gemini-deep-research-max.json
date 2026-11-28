@@ -1,0 +1,41 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1048576,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video",
+        "audio",
+        "pdf"
+      ],
+      "output": [
+        "text",
+        "image"
+      ]
+    },
+    "knowledgeCutoffDate": "January 2025",
+    "releaseDate": "April 21, 2026",
+    "supportsToolCalls": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The gemini deep research max family includes models that produce image, text.",
+  "models": {
+    "deep-research-max-preview-apr-21-2026": {
+      "defaults": {
+        "name": "Deep Research Max Preview",
+        "description": "Maximum-comprehensiveness agentic researcher for multi-step investigation, synthesis, and cited reports"
+      }
+    }
+  }
+}

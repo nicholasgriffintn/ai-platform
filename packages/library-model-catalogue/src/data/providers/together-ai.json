@@ -24,10 +24,10 @@
         "deprecationMessage": "Meta Llama 3.3 70B Instruct Turbo Free was removed from Together AI serverless on 13 November 2025."
       },
       "unset": [
-        "openWeights",
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature",
-        "supportsToolCalls",
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -42,10 +42,10 @@
         "costPer1kOutputTokens": 0.0012
       },
       "unset": [
-        "openWeights",
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature",
-        "supportsToolCalls",
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -60,10 +60,10 @@
         "costPer1kOutputTokens": 0.00018
       },
       "unset": [
-        "openWeights",
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature",
-        "supportsToolCalls",
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -77,10 +77,10 @@
         "deprecationMessage": "Meta Llama Vision Free was removed from Together AI serverless on 28 August 2025."
       },
       "unset": [
-        "openWeights",
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature",
-        "supportsToolCalls",
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -96,10 +96,10 @@
         "costPer1kOutputTokens": 0.0035
       },
       "unset": [
-        "openWeights",
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature",
-        "supportsToolCalls",
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -115,8 +115,8 @@
       "unset": [
         "supportsToolCalls",
         "supportsTemperature",
-        "supportsAttachments",
-        "supportsResponseFormat"
+        "supportsResponseFormat",
+        "supportsAttachments"
       ]
     },
     "llama-4-maverick-instruct": {
@@ -129,10 +129,10 @@
         "deprecationMessage": "Llama 4 Maverick Instruct was removed from Together AI serverless on 31 March 2026."
       },
       "unset": [
-        "openWeights",
+        "supportsToolCalls",
         "supportsAttachments",
         "supportsTemperature",
-        "supportsToolCalls",
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -168,7 +168,7 @@
       "model": "kimi/kimi-k2-instruct",
       "matchingModel": "moonshotai/Kimi-K2-Instruct",
       "overrides": {
-        "contextWindow": 131072,
+        "description": "Kimi K2 instruction-following model optimized for conversational AI and task completion.",
         "maxTokens": 131072,
         "deprecated": true,
         "deprecationMessage": "Kimi K2 Instruct was removed from Together AI serverless on 29 July 2026. Use Kimi K3.1 Pro instead.",
@@ -179,6 +179,7 @@
         "costPer1kOutputTokens": 0.003
       },
       "unset": [
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -197,6 +198,7 @@
         "costPer1kOutputTokens": 0.003
       },
       "unset": [
+        "openWeights",
         "supportsResponseFormat"
       ]
     },
@@ -216,19 +218,10 @@
         "costPer1kOutputTokens": 0.004
       },
       "unset": [
-        "supportsResponseFormat"
+        "openWeights",
+        "supportsResponseFormat",
+        "reasoningConfig"
       ]
-    },
-    "openai/gpt-oss-120b": {
-      "model": "gpt-oss/gpt-oss-120b",
-      "matchingModel": "openai/gpt-oss-120b",
-      "overrides": {
-        "maxTokens": 131072,
-        "speed": 5,
-        "lastUpdated": "August 5, 2025",
-        "costPer1kInputTokens": 0.00015,
-        "costPer1kOutputTokens": 0.0006
-      }
     },
     "Qwen/Qwen3-Next-80B-A3B-Instruct": {
       "model": "qwen/qwen3-next-80b-a3b-instruct",
@@ -256,7 +249,7 @@
       "overrides": {
         "contextWindow": 200000,
         "maxTokens": 200000,
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "GLM 4.6 was removed from Together AI serverless on 29 July 2026. Use zai-org/GLM-5.1 instead.",
         "knowledgeCutoffDate": "September 2025",
@@ -277,7 +270,7 @@
         "name": "GLM-4.7",
         "contextWindow": 200000,
         "maxTokens": 200000,
-        "speed": 2,
+        "speed": 3,
         "deprecated": true,
         "deprecationMessage": "GLM-4.7 was removed from Together AI serverless on 29 July 2026. Use zai-org/GLM-5.1 instead.",
         "knowledgeCutoffDate": "July 2025",
@@ -307,6 +300,7 @@
       "model": "kimi-k2/kimi-k2-6",
       "matchingModel": "moonshotai/Kimi-K2.6",
       "overrides": {
+        "contextWindow": 262144,
         "maxTokens": 131000,
         "modalities": {
           "input": [
@@ -328,14 +322,13 @@
         "speed": 2,
         "deprecated": true,
         "deprecationMessage": "Kimi K2.6 was removed from Together AI serverless on 19 August 2026.",
-        "releaseDate": "April 21, 2026",
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.0012,
         "costPer1kOutputTokens": 0.0045
       }
     },
     "Qwen/Qwen3.6-Plus": {
-      "model": "qwen/qwen3-6-plus",
+      "model": "qwen-plus/qwen3-6-plus",
       "matchingModel": "Qwen/Qwen3.6-Plus",
       "overrides": {
         "modalities": {
@@ -357,7 +350,7 @@
       }
     },
     "Qwen/Qwen3.7-Max": {
-      "model": "qwen/qwen3-7-max",
+      "model": "qwen-max/qwen3-7-max",
       "matchingModel": "Qwen/Qwen3.7-Max",
       "overrides": {
         "strengths": [
@@ -489,16 +482,7 @@
       "model": "kimi-k2/kimi-k2-7-code",
       "matchingModel": "moonshotai/Kimi-K2.7-Code",
       "overrides": {
-        "description": "Kimi coding model for software agents, refactors, and repository reasoning",
         "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "coding",
           "tool_use"
@@ -509,8 +493,7 @@
         "releaseDate": "June 14, 2026",
         "lastUpdated": "June 14, 2026",
         "costPer1kInputTokens": 0.00095,
-        "costPer1kOutputTokens": 0.004,
-        "supportsAttachments": false
+        "costPer1kOutputTokens": 0.004
       },
       "unset": [
         "knowledgeCutoffDate"
@@ -536,46 +519,8 @@
         }
       }
     },
-    "thinkingmachines/Inkling": {
-      "model": "ling/inkling",
-      "matchingModel": "thinkingmachines/Inkling",
-      "overrides": {
-        "description": "Multimodal MoE reasoning model (975B total, 41B active) for text, image, and audio",
-        "contextWindow": 524288,
-        "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "speed": 4,
-        "deprecated": true,
-        "deprecationMessage": "Inkling was removed from Together AI serverless on 6 November 2026. Use Muse Spark Open instead.",
-        "replacementModel": "meta-models/Muse-Spark-Open-816B-A42B",
-        "lastUpdated": "July 15, 2026",
-        "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.00405,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "moonshotai/Kimi-K3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "moonshotai/Kimi-K3",
       "overrides": {
         "modalities": {
@@ -657,7 +602,6 @@
       "model": "deepseek-flash/deepseek-v4-1-flash",
       "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash",
       "overrides": {
-        "maxTokens": 384000,
         "speed": 5,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
@@ -674,32 +618,10 @@
         }
       }
     },
-    "deepseek-ai/DeepSeek-V4-Pro-0813": {
-      "model": "deepseek-thinking/deepseek-v4-pro-0813",
-      "matchingModel": "deepseek-ai/DeepSeek-V4-Pro-0813",
-      "overrides": {
-        "contextWindow": 1048576,
-        "maxTokens": 384000,
-        "speed": 3,
-        "isFeatured": true,
-        "lastUpdated": "August 22, 2026",
-        "costPer1kInputTokens": 0.00132,
-        "costPer1kOutputTokens": 0.00396,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high",
-            "max"
-          ],
-          "defaultEffort": "high"
-        }
-      }
-    },
     "meta-models/Muse-Spark-Open-816B-A42B": {
-      "model": "muse/muse-spark-open",
+      "model": "muse-spark/muse-spark-open",
       "matchingModel": "meta-models/Muse-Spark-Open-816B-A42B",
       "overrides": {
-        "description": "Muse Spark Open is an 816B total / 42B active open-weight multimodal reasoning model from Meta for coding and long-horizon agentic work, with 1M-token context.",
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -733,7 +655,7 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3.5-Super-VL": {
-      "model": "nemotron/nemotron-3-5-super-vl-120b-a12b",
+      "model": "nemotron-super/nemotron-3-5-super-vl-120b-a12b",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3.5-Super-VL",
       "overrides": {
         "contextWindow": 262144,
@@ -757,7 +679,6 @@
       "model": "beam/beam-1-0-501b-a23b",
       "matchingModel": "reflection/Beam-1.0-501B-A23B",
       "overrides": {
-        "description": "Sparse mixture-of-experts reasoning model with 23B active parameters for coding and agentic workflows",
         "lastUpdated": "October 16, 2026",
         "costPer1kInputTokens": 0.0004,
         "costPer1kOutputTokens": 0.0012,
@@ -775,7 +696,7 @@
       }
     },
     "moonshotai/Kimi-K3.1-Pro": {
-      "model": "kimi-k3/kimi-k3-1-pro",
+      "model": "kimi-pro/kimi-k3-1-pro",
       "matchingModel": "moonshotai/Kimi-K3.1-Pro",
       "overrides": {
         "speed": 2,
@@ -792,6 +713,161 @@
             "max"
           ],
           "defaultEffort": "none"
+        }
+      }
+    },
+    "deepseek-ai/DeepSeek-V4.1-Flash-1017-fast": {
+      "model": "deepseek-flash/deepseek-v4-1-flash-1017-fast",
+      "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash-1017-fast",
+      "overrides": {
+        "maxTokens": 384000,
+        "lastUpdated": "October 17, 2026",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.0024
+      }
+    },
+    "elorian-labs/glimpse-1.0": {
+      "model": "glimpse/glimpse-1-0",
+      "matchingModel": "elorian-labs/glimpse-1.0",
+      "overrides": {
+        "lastUpdated": "October 16, 2026",
+        "costPer1kInputTokens": 0.0006,
+        "costPer1kOutputTokens": 0.003
+      }
+    },
+    "meta-models/Muse-Glimmer-30B": {
+      "model": "muse-glimmer/muse-glimmer-30b",
+      "matchingModel": "meta-models/Muse-Glimmer-30B",
+      "overrides": {
+        "lastUpdated": "August 10, 2026",
+        "costPer1kInputTokens": 0.00035,
+        "costPer1kOutputTokens": 0.0015
+      }
+    },
+    "MiniMaxAI/MiniMax-M3.1-Flash": {
+      "model": "minimax-m-flash/minimax-m3-1-flash",
+      "matchingModel": "MiniMaxAI/MiniMax-M3.1-Flash",
+      "overrides": {
+        "maxTokens": 512000,
+        "speed": 4,
+        "lastUpdated": "October 19, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.0006
+      }
+    },
+    "Prism-ML/Ternary-Bonsai-27B": {
+      "model": "together-ai/Prism-ML/Ternary-Bonsai-27B/ternary-bonsai-27b",
+      "matchingModel": "Prism-ML/Ternary-Bonsai-27B",
+      "overrides": {
+        "lastUpdated": "July 4, 2026",
+        "costPer1kInputTokens": 0,
+        "costPer1kOutputTokens": 0
+      }
+    },
+    "Qwen/Qwen3.7-Plus": {
+      "model": "qwen-plus/qwen3-7-plus",
+      "matchingModel": "Qwen/Qwen3.7-Plus",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "tool_use"
+        ],
+        "speed": 3,
+        "lastUpdated": "June 2, 2026",
+        "costPer1kInputTokens": 0.00032,
+        "costPer1kOutputTokens": 0.00128,
+        "supportsAttachments": false
+      },
+      "unset": [
+        "reliability"
+      ]
+    },
+    "Qwen/Qwen3.8-Flash": {
+      "model": "qwen-flash/qwen3-8-flash",
+      "matchingModel": "Qwen/Qwen3.8-Flash",
+      "overrides": {
+        "lastUpdated": "August 26, 2026",
+        "costPer1kInputTokens": 0.00015,
+        "costPer1kOutputTokens": 0.00047
+      }
+    },
+    "Qwen/Qwen4-Max": {
+      "model": "qwen-max/qwen4-max",
+      "matchingModel": "Qwen/Qwen4-Max",
+      "overrides": {
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video",
+            "pdf"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "video",
+          "tool_use"
+        ],
+        "speed": 4,
+        "lastUpdated": "November 16, 2026",
+        "costPer1kInputTokens": 0.0015,
+        "costPer1kOutputTokens": 0.0045,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "thinking"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "ricursive-ai/Ripple-65B-Preview": {
+      "model": "together-ai/ricursive-ai/Ripple-65B-Preview/ripple-65b-preview",
+      "matchingModel": "ricursive-ai/Ripple-65B-Preview",
+      "overrides": {
+        "lastUpdated": "November 4, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0006
+      }
+    },
+    "tencent/Hy4": {
+      "model": "hy/hy4",
+      "matchingModel": "tencent/Hy4",
+      "overrides": {
+        "speed": 4,
+        "lastUpdated": "November 4, 2026",
+        "costPer1kInputTokens": 0.000834,
+        "costPer1kOutputTokens": 0.002501
+      }
+    },
+    "thinkingmachines/Inkling-2-Small": {
+      "model": "inkling-small/inkling-2-small",
+      "matchingModel": "thinkingmachines/Inkling-2-Small",
+      "overrides": {
+        "speed": 3,
+        "lastUpdated": "November 12, 2026",
+        "costPer1kInputTokens": 0.0003,
+        "costPer1kOutputTokens": 0.001,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "minimal"
         }
       }
     }

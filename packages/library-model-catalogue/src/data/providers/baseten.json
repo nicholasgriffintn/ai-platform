@@ -39,8 +39,7 @@
       "model": "deepseek-flash/deepseek-v4-1-flash",
       "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash",
       "overrides": {
-        "maxTokens": 32768,
-        "contextComplexity": 4,
+        "maxTokens": 262144,
         "speed": 5,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0003,
@@ -59,6 +58,7 @@
       "model": "deepseek-flash/deepseek-v4-1-flash-fast",
       "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash-Fast",
       "overrides": {
+        "maxTokens": 131072,
         "lastUpdated": "September 10, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0024,
@@ -83,6 +83,15 @@
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
         "contextWindow": 262000,
         "maxTokens": 262000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -102,6 +111,15 @@
       "overrides": {
         "contextWindow": 262000,
         "maxTokens": 262000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -109,7 +127,6 @@
           "coding"
         ],
         "speed": 2,
-        "releaseDate": "April 21, 2026",
         "lastUpdated": "April 21, 2026",
         "costPer1kInputTokens": 0.00095,
         "costPer1kOutputTokens": 0.004
@@ -119,6 +136,7 @@
       "model": "kimi-k2/kimi-k2-7-code",
       "matchingModel": "moonshotai/Kimi-K2.7-Code",
       "overrides": {
+        "description": "Coding-focused Kimi model, stronger on long-horizon repo work with less overthinking",
         "contextWindow": 262000,
         "maxTokens": 262000,
         "modalities": {
@@ -143,7 +161,7 @@
       }
     },
     "moonshotai/Kimi-K3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "moonshotai/Kimi-K3",
       "overrides": {
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
@@ -174,7 +192,7 @@
       }
     },
     "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B": {
-      "model": "nemotron/nemotron-3-ultra",
+      "model": "nemotron-ultra/nemotron-3-ultra",
       "matchingModel": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B",
       "overrides": {
         "name": "Nemotron Ultra",
@@ -209,64 +227,20 @@
       "model": "ling/inkling",
       "matchingModel": "thinkingmachines/inkling",
       "overrides": {
-        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 1048576,
-        "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
         "speed": 4,
         "lastUpdated": "July 15, 2026",
         "costPer1kInputTokens": 0.001,
-        "costPer1kOutputTokens": 0.00405,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.00405
       }
     },
     "thinkingmachines/inkling-small": {
       "model": "ling/inkling-small",
       "matchingModel": "thinkingmachines/inkling-small",
       "overrides": {
-        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
-        "contextWindow": 1048576,
-        "maxTokens": 32768,
-        "speed": 3,
+        "speed": 4,
         "lastUpdated": "July 30, 2026",
         "costPer1kInputTokens": 0.0005,
-        "costPer1kOutputTokens": 0.0012,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "costPer1kOutputTokens": 0.0012
       }
     },
     "zai-org/GLM-4.7": {
@@ -275,7 +249,7 @@
       "overrides": {
         "contextWindow": 200000,
         "maxTokens": 200000,
-        "speed": 2,
+        "speed": 3,
         "lastUpdated": "December 22, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0022,
@@ -317,7 +291,6 @@
       "matchingModel": "zai-org/GLM-5.2",
       "overrides": {
         "name": "GLM 5.2",
-        "contextWindow": 1048576,
         "maxTokens": 262144,
         "modalities": {
           "input": [
@@ -456,10 +429,9 @@
       }
     },
     "deepseek-ai/DeepSeek-V4-Pro-0813": {
-      "model": "deepseek-thinking/deepseek-v4-pro-0813",
+      "model": "deepseek-pro/deepseek-v4-pro-0813",
       "matchingModel": "deepseek-ai/DeepSeek-V4-Pro-0813",
       "overrides": {
-        "description": "Flagship DeepSeek model for coding, reasoning, and agentic work",
         "contextWindow": 1048576,
         "maxTokens": 262144,
         "speed": 3,
@@ -482,9 +454,31 @@
       "model": "deepseek-flash/deepseek-v4-1-flash-1017-fast",
       "matchingModel": "deepseek-ai/DeepSeek-V4.1-Flash-1017-Fast",
       "overrides": {
+        "description": "Fast DeepSeek model for efficient chat, coding help, and agent loops",
+        "maxTokens": 262144,
         "lastUpdated": "October 17, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0024,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    },
+    "moonshotai/Kimi-K3.1-Pro": {
+      "model": "kimi-pro/kimi-k3-1-pro",
+      "matchingModel": "moonshotai/Kimi-K3.1-Pro",
+      "overrides": {
+        "speed": 2,
+        "lastUpdated": "October 23, 2026",
+        "costPer1kInputTokens": 0.002,
+        "costPer1kOutputTokens": 0.01,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -497,22 +491,66 @@
         }
       }
     },
-    "moonshotai/Kimi-K3.1-Pro": {
-      "model": "kimi-k3/kimi-k3-1-pro",
-      "matchingModel": "moonshotai/Kimi-K3.1-Pro",
+    "meta-models/muse-spark-open": {
+      "model": "muse-spark/muse-spark-open",
+      "matchingModel": "meta-models/muse-spark-open",
       "overrides": {
-        "maxTokens": 262144,
-        "speed": 2,
-        "lastUpdated": "October 23, 2026",
-        "costPer1kInputTokens": 0.002,
-        "costPer1kOutputTokens": 0.01,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
           ],
-          "defaultEffort": "none"
-        }
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 5,
+        "lastUpdated": "October 15, 2026",
+        "costPer1kInputTokens": 0.00125,
+        "costPer1kOutputTokens": 0.00425
+      }
+    },
+    "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B": {
+      "model": "nemotron-super/nemotron-3-5-super-vl",
+      "matchingModel": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B",
+      "overrides": {
+        "description": "NVIDIA vision-language reasoning model for text, image, and video understanding and agentic tool use",
+        "maxTokens": 1048576,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "strengths": [
+          "vision",
+          "document",
+          "tool_use"
+        ],
+        "speed": 5,
+        "lastUpdated": "October 15, 2026",
+        "costPer1kInputTokens": 0.0002,
+        "costPer1kOutputTokens": 0.0005
+      }
+    },
+    "reflection/Beam-1.0": {
+      "model": "beam/beam",
+      "matchingModel": "reflection/Beam-1.0",
+      "overrides": {
+        "speed": 5,
+        "lastUpdated": "October 16, 2026",
+        "costPer1kInputTokens": 0.0004,
+        "costPer1kOutputTokens": 0.0012,
+        "supportsAttachments": false
       }
     }
   }

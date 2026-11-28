@@ -59,7 +59,7 @@
       ]
     },
     "deepseek-v4-pro": {
-      "model": "deepseek-thinking/deepseek-v4-pro",
+      "model": "deepseek-pro/deepseek-v4-pro",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
         "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",

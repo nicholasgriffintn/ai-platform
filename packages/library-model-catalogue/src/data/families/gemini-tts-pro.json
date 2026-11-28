@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 32768,
+    "maxTokens": 16384,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "audio"
+      ]
+    },
+    "knowledgeCutoffDate": "January 2025",
+    "releaseDate": "September 30, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The gemini tts pro family includes models that produce audio.",
+  "models": {
+    "gemini-2-5-pro-tts": {
+      "defaults": {
+        "name": "Gemini 2.5 Pro TTS",
+        "description": "Speech generation model for controllable voice, narration, and audio delivery"
+      }
+    }
+  }
+}

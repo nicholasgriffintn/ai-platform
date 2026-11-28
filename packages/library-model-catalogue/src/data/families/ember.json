@@ -1,0 +1,46 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 1048576,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 22, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The ember family includes models that produce text.",
+  "models": {
+    "ember-1": {
+      "defaults": {
+        "name": "Ember-1",
+        "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
+        "maxTokens": 131072
+      }
+    },
+    "fireworks-ember-1": {
+      "defaults": {
+        "name": "Fireworks: Ember-1",
+        "description": "Ember-1 is a specialized reasoning model from Fireworks Research, built on [Kimi K3](https://openrouter.ai/moonshotai/kimi-k3). It is designed to make every token go further: it produces shorter reasoning traces, using roughly 40%...",
+        "maxTokens": 943718,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "none",
+            "low",
+            "high",
+            "max"
+          ],
+          "defaultEffort": "none"
+        }
+      }
+    }
+  }
+}

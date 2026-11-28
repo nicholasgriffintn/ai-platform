@@ -1,0 +1,31 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 32768,
+    "maxTokens": 8192,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "reranking"
+      ]
+    },
+    "strengths": [
+      "reranking"
+    ],
+    "releaseDate": "February 1, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The qwen reranker family includes models that produce reranking.",
+  "models": {
+    "qwen3-reranker-4b": {
+      "defaults": {
+        "name": "Qwen3-Reranker-4B",
+        "description": "Reranking model for improving retrieval quality in search and recommendation systems"
+      }
+    }
+  }
+}

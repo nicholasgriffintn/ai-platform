@@ -2,6 +2,7 @@
   "defaults": {
     "openWeights": false,
     "contextWindow": 1024000,
+    "maxTokens": 131072,
     "modalities": {
       "input": [
         "text"
@@ -15,37 +16,23 @@
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": false,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "low",
+        "high",
+        "max"
+      ],
+      "defaultEffort": "none"
+    }
   },
   "description": "The ernie family includes models that produce text.",
   "models": {
-    "baidu-ernie-5-5-flash-preview-free": {
-      "defaults": {
-        "name": "Baidu: ERNIE-5.5-Flash-Preview (free)",
-        "description": "ERNIE 5.5 Flash Preview is the latest foundation model in the ERNIE family, with comprehensive improvements in coding, agentic capabilities, knowledge work, and deep research. It has 280 billion total...",
-        "maxTokens": 921600,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high"
-          ],
-          "defaultEffort": "high"
-        }
-      }
-    },
     "baidu-ernie-light-dt-1-0": {
       "defaults": {
         "name": "Baidu: ERNIE-Light-DT-1.0",
-        "description": "ERNIE-Light-DT-1.0 is based on open-source GLM models and includes research findings from Baidu Search's Lightning large model. It features Baidu Sparse Attention (BSA), a unique sparse attention mechanism developed by...",
-        "maxTokens": 131072,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "description": "ERNIE-Light-DT-1.0 is based on open-source GLM models and includes research findings from Baidu Search's Lightning large model. It features Baidu Sparse Attention (BSA), a unique sparse attention mechanism developed by..."
       }
     },
     "ernie-4-5-vl-424b-a47b": {
@@ -77,34 +64,10 @@
         }
       }
     },
-    "ernie-5-5-flash-preview-free": {
-      "defaults": {
-        "name": "ERNIE-5.5-Flash-Preview (free)",
-        "openWeights": true,
-        "description": "Flagship model for demanding analysis, coding, and production agent workflows",
-        "maxTokens": 921600,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "high"
-          ],
-          "defaultEffort": "high"
-        }
-      }
-    },
     "ernie-light-dt-1-0": {
       "defaults": {
         "name": "ERNIE-Light-DT-1.0",
-        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
-        "maxTokens": 131072,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "high",
-            "max"
-          ],
-          "defaultEffort": "none"
-        }
+        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
       }
     }
   }

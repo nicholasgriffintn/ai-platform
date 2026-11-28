@@ -1,19 +1,9 @@
 {
   "defaults": {
     "openWeights": true,
-    "modalities": {
-      "input": [
-        "text",
-        "image"
-      ],
-      "output": [
-        "text"
-      ]
-    },
     "contextComplexity": 4,
     "reliability": 1,
     "supportsToolCalls": true,
-    "supportsAttachments": true,
     "supportsTemperature": true,
     "reasoningConfig": {
       "supportedEffortLevels": [
@@ -22,12 +12,6 @@
         "high"
       ],
       "defaultEffort": "low"
-    },
-    "artificialAnalysis": {
-      "intelligenceIndex": null,
-      "codingIndex": null,
-      "agenticIndex": null,
-      "intelligenceIndexVersion": 5
     }
   },
   "description": "The step family includes models that produce text.",
@@ -53,29 +37,12 @@
         "releaseDate": "January 29, 2026",
         "supportsResponseFormat": false,
         "supportsAttachments": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
         }
-      }
-    },
-    "step-3-7-flash": {
-      "defaults": {
-        "name": "Step 3.7 Flash",
-        "description": "Newer StepFun flash model for faster agents, coding, and multimodal prompts",
-        "contextWindow": 256000,
-        "maxTokens": 256000,
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "reliability": 2,
-        "knowledgeCutoffDate": "March 1, 2026",
-        "releaseDate": "May 29, 2026"
       }
     },
     "step-5-preview": {
@@ -83,15 +50,25 @@
         "name": "Step 5 Preview",
         "description": "StepFun flash model for efficient multimodal reasoning, coding, and tool use",
         "contextWindow": 1000000,
-        "maxTokens": 1000000,
+        "modalities": {
+          "input": [
+            "text",
+            "image",
+            "video"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
-          "document"
+          "video",
+          "document",
+          "tool_use"
         ],
-        "contextComplexity": 5,
         "releaseDate": "September 16, 2026",
-        "supportsToolCalls": false,
         "supportsResponseFormat": true,
+        "supportsAttachments": true,
         "artificialAnalysis": {
           "intelligenceIndex": 28.5,
           "codingIndex": null,
@@ -119,7 +96,13 @@
         ],
         "knowledgeCutoffDate": "January 2025",
         "releaseDate": "January 29, 2026",
-        "supportsAttachments": false
+        "supportsAttachments": false,
+        "artificialAnalysis": {
+          "intelligenceIndex": null,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
       }
     },
     "stepfun-step-5-preview-free": {
@@ -129,8 +112,18 @@
         "description": "Step 5 Preview is StepFun's flagship model for agentic work, with strong capabilities in software engineering, professional knowledge work, and finance. It natively supports text, image, and video input with a 1M-token context window and up to 64K output tokens. The model supports tool calling, structured outputs, and selectable reasoning levels (low/medium/high) for long-context research, coding, and multi-step workflows.",
         "contextWindow": 1000000,
         "maxTokens": 64000,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "releaseDate": "August 26, 2025",
-        "supportsResponseFormat": false
+        "supportsResponseFormat": false,
+        "supportsAttachments": true
       }
     }
   }

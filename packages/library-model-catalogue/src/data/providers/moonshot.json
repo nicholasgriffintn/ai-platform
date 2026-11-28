@@ -13,8 +13,8 @@
     },
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
-    "supportsAttachments": true,
-    "supportsTemperature": false
+    "supportsAttachments": false,
+    "supportsTemperature": true
   },
   "models": {
     "kimi-k2-thinking": {
@@ -36,8 +36,6 @@
         "lastUpdated": "November 6, 2025",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.0025,
-        "supportsAttachments": false,
-        "supportsTemperature": true,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -51,7 +49,7 @@
       "model": "kimi-k2/kimi-k2-5",
       "matchingModel": "kimi-k2.5",
       "overrides": {
-        "maxTokens": 262144,
+        "description": "Earlier Kimi frontier model for long-context agents, coding, and multimodal work",
         "modalities": {
           "input": [
             "text"
@@ -70,33 +68,28 @@
         "deprecated": true,
         "deprecationMessage": "Kimi K2.5 is being retired by the end of December 2026. Use Kimi K3 instead.",
         "replacementModel": "kimi-k3",
+        "knowledgeCutoffDate": "January 2025",
         "releaseDate": "January 2026",
         "lastUpdated": "January 2026",
         "costPer1kInputTokens": 0.0006,
-        "costPer1kOutputTokens": 0.003
+        "costPer1kOutputTokens": 0.003,
+        "supportsAttachments": true,
+        "supportsTemperature": false
       }
     },
     "kimi-k2-0711-preview": {
       "model": "kimi-k2/kimi-k2-0711",
       "matchingModel": "kimi-k2-0711-preview",
       "overrides": {
-        "maxTokens": 16384,
         "deprecated": true,
         "deprecationMessage": "Kimi K2 0711 is being retired by the end of December 2026. Use Kimi K3 instead.",
         "replacementModel": "kimi-k3",
-        "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "July 14, 2025",
         "lastUpdated": "July 14, 2025",
         "costPer1kInputTokens": 0.0006,
-        "costPer1kOutputTokens": 0.0025,
-        "supportsAttachments": false,
-        "supportsTemperature": true
+        "costPer1kOutputTokens": 0.0025
       },
       "unset": [
-        "supportsResponseFormat",
-        "contextComplexity",
-        "reliability",
-        "artificialAnalysis"
+        "supportsResponseFormat"
       ]
     },
     "kimi-k2-0905-preview": {
@@ -109,9 +102,7 @@
         "replacementModel": "kimi-k3",
         "lastUpdated": "September 5, 2025",
         "costPer1kInputTokens": 0.0006,
-        "costPer1kOutputTokens": 0.0025,
-        "supportsAttachments": false,
-        "supportsTemperature": true
+        "costPer1kOutputTokens": 0.0025
       },
       "unset": [
         "supportsResponseFormat"
@@ -126,9 +117,7 @@
         "replacementModel": "kimi-k3",
         "lastUpdated": "November 6, 2025",
         "costPer1kInputTokens": 0.00115,
-        "costPer1kOutputTokens": 0.008,
-        "supportsAttachments": false,
-        "supportsTemperature": true
+        "costPer1kOutputTokens": 0.008
       },
       "unset": [
         "supportsResponseFormat"
@@ -143,83 +132,14 @@
         "replacementModel": "kimi-k3",
         "lastUpdated": "September 5, 2025",
         "costPer1kInputTokens": 0.0024,
-        "costPer1kOutputTokens": 0.01,
-        "supportsAttachments": false,
-        "supportsTemperature": true
+        "costPer1kOutputTokens": 0.01
       },
       "unset": [
         "supportsResponseFormat"
       ]
     },
-    "kimi-k2.6": {
-      "model": "kimi-k2/kimi-k2-6",
-      "matchingModel": "kimi-k2.6",
-      "overrides": {
-        "description": "Multimodal Kimi workhorse for agent loops, coding tasks, and visual context",
-        "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "video",
-          "document",
-          "tool_use",
-          "coding"
-        ],
-        "speed": 2,
-        "lastUpdated": "April 20, 2026",
-        "costPer1kInputTokens": 0.00095,
-        "costPer1kOutputTokens": 0.004
-      }
-    },
-    "kimi-k2.7-code": {
-      "model": "kimi-k2/kimi-k2-7-code",
-      "matchingModel": "kimi-k2.7-code",
-      "overrides": {
-        "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "video",
-          "document",
-          "tool_use",
-          "coding"
-        ],
-        "speed": 3,
-        "isFeatured": true,
-        "lastUpdated": "June 12, 2026",
-        "costPer1kInputTokens": 0.00095,
-        "costPer1kOutputTokens": 0.004
-      }
-    },
-    "kimi-k2.7-code-highspeed": {
-      "model": "kimi-k2/kimi-k2-7-code-highspeed",
-      "matchingModel": "kimi-k2.7-code-highspeed",
-      "overrides": {
-        "lastUpdated": "June 12, 2026",
-        "costPer1kInputTokens": 0.0019,
-        "costPer1kOutputTokens": 0.008
-      }
-    },
     "kimi-k3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
         "modalities": {
@@ -244,6 +164,8 @@
         "lastUpdated": "July 16, 2026",
         "costPer1kInputTokens": 0.003,
         "costPer1kOutputTokens": 0.015,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -255,7 +177,7 @@
       }
     },
     "kimi-k3.1-pro": {
-      "model": "kimi-k3/kimi-k3-1-pro",
+      "model": "kimi-pro/kimi-k3-1-pro",
       "matchingModel": "kimi-k3.1-pro",
       "overrides": {
         "modalities": {
@@ -272,6 +194,8 @@
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.01,
+        "supportsAttachments": true,
+        "supportsTemperature": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "low",
@@ -283,12 +207,15 @@
       }
     },
     "kimi-k3.1-pro-highspeed": {
-      "model": "kimi-k3/kimi-k3-1-pro-highspeed",
+      "model": "kimi-pro/kimi-k3-1-pro-highspeed",
       "matchingModel": "kimi-k3.1-pro-highspeed",
       "overrides": {
+        "description": "Multimodal Kimi model with a 1M-token context window and always-on reasoning, for coding, 3D creation and financial research",
         "lastUpdated": "October 23, 2026",
         "costPer1kInputTokens": 0.004,
-        "costPer1kOutputTokens": 0.02
+        "costPer1kOutputTokens": 0.02,
+        "supportsAttachments": true,
+        "supportsTemperature": false
       }
     }
   }

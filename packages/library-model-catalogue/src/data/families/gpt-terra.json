@@ -46,7 +46,7 @@
         "reliability": 1,
         "releaseDate": "July 9, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 32.3,
+          "intelligenceIndex": 32.2,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -70,7 +70,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 32.3,
+          "intelligenceIndex": 32.2,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -84,7 +84,7 @@
         "reliability": 1,
         "releaseDate": "July 9, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 32.3,
+          "intelligenceIndex": 32.2,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -98,7 +98,7 @@
         "reliability": 1,
         "releaseDate": "July 9, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 32.3,
+          "intelligenceIndex": 32.2,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -112,7 +112,7 @@
         "reliability": 1,
         "releaseDate": "July 9, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 32.3,
+          "intelligenceIndex": 32.2,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -134,7 +134,7 @@
         "reliability": 1,
         "releaseDate": "July 9, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 32.3,
+          "intelligenceIndex": 32.2,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -149,7 +149,7 @@
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "October 26, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 51.3,
+          "intelligenceIndex": 51.4,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -174,7 +174,7 @@
           "defaultEffort": "none"
         },
         "artificialAnalysis": {
-          "intelligenceIndex": 51.3,
+          "intelligenceIndex": 51.4,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -189,7 +189,7 @@
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "October 26, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 51.3,
+          "intelligenceIndex": 51.4,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -213,10 +213,39 @@
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "October 26, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 51.3,
+          "intelligenceIndex": 51.4,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "gpt-6-1-terra-pro": {
+      "defaults": {
+        "name": "GPT-6.1 Terra Pro",
+        "description": "Frontier GPT model for professional reasoning, coding, and multimodal work",
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "June 1, 2026",
+        "releaseDate": "October 26, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
         }
       }
     },
@@ -237,7 +266,7 @@
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "October 26, 2026",
         "artificialAnalysis": {
-          "intelligenceIndex": 51.3,
+          "intelligenceIndex": 51.4,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -279,7 +308,7 @@
         "releaseDate": "October 26, 2026",
         "supportsTemperature": false,
         "artificialAnalysis": {
-          "intelligenceIndex": 51.3,
+          "intelligenceIndex": 51.4,
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
@@ -292,6 +321,35 @@
         "description": "GPT-6.1 Terra is OpenAI’s model for visual reasoning, precise computer use, and natural writing. It accepts text and images and generates text, with configurable reasoning effort, structured outputs, tool calling through the Responses API, and implicit and explicit prompt caching.",
         "knowledgeCutoffDate": "June 1, 2026",
         "releaseDate": "October 26, 2026"
+      }
+    },
+    "openai-gpt-6-1-terra-pro": {
+      "defaults": {
+        "name": "OpenAI: GPT-6.1 Terra Pro",
+        "description": "GPT-6.1 Terra Pro is the same underlying model as [GPT-6.1 Terra](https://openrouter.ai/openai/gpt-6.1-terra), served with `reasoning.mode` set to `pro` for higher-quality responses on complex tasks. **Cost note:** pro mode spends far more...",
+        "modalities": {
+          "input": [
+            "pdf",
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "June 1, 2026",
+        "releaseDate": "October 26, 2026",
+        "supportsTemperature": false,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "low"
+        }
       }
     },
     "openai-gpt-terra-latest": {

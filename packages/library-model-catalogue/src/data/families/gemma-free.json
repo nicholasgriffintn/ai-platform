@@ -1,0 +1,65 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 262144,
+    "maxTokens": 32768,
+    "modalities": {
+      "input": [
+        "image",
+        "text",
+        "video"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "video",
+      "document",
+      "tool_use"
+    ],
+    "contextComplexity": 4,
+    "reliability": 1,
+    "knowledgeCutoffDate": "January 2025",
+    "releaseDate": "April 2, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    }
+  },
+  "description": "The gemma free family includes models that produce text.",
+  "models": {
+    "gemma-4-26b-a4b-free": {
+      "defaults": {
+        "name": "Gemma 4 26B A4B  (free)",
+        "description": "Open Gemma instruction model for efficient chat and self-hosted deployments",
+        "artificialAnalysis": {
+          "intelligenceIndex": 4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
+    "gemma-4-31b-free": {
+      "defaults": {
+        "name": "Gemma 4 31B (free)",
+        "description": "Largest Gemma 4 instruction model for open, self-hosted chat and reasoning",
+        "artificialAnalysis": {
+          "intelligenceIndex": 4.4,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    }
+  }
+}

@@ -20,7 +20,6 @@
       "matchingModel": "gpt-oss:120b",
       "overrides": {
         "description": "Open-weight GPT model for self-hosted reasoning and instruction-following workloads",
-        "maxTokens": 131072,
         "strengths": [
           "reasoning",
           "coding",
@@ -80,7 +79,7 @@
       ]
     },
     "deepseek-v4-pro": {
-      "model": "deepseek-thinking/deepseek-v4-pro",
+      "model": "deepseek-pro/deepseek-v4-pro",
       "matchingModel": "deepseek-v4-pro",
       "overrides": {
         "name": "deepseek-v4-pro",
@@ -189,7 +188,15 @@
       "overrides": {
         "name": "kimi-k2.5",
         "description": "Kimi multimodal agent model for visual understanding, coding, and planning",
-        "maxTokens": 262144,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
         "strengths": [
           "vision",
           "document",
@@ -198,18 +205,18 @@
         "speed": 3,
         "deprecated": true,
         "deprecationMessage": "kimi-k2.5 is no longer offered by Ollama Cloud.",
+        "releaseDate": "January 27, 2026",
         "lastUpdated": "January 27, 2026",
         "costPer1kInputTokens": 0.0006,
         "costPer1kOutputTokens": 0.003
       },
       "unset": [
-        "knowledgeCutoffDate",
         "supportsResponseFormat",
         "supportsTemperature"
       ]
     },
     "kimi-k2.6": {
-      "model": "kimi-k2/kimi-k2-6",
+      "model": "kimi/kimi-k2-6",
       "matchingModel": "kimi-k2.6",
       "overrides": {
         "name": "kimi-k2.6",
@@ -227,11 +234,10 @@
       }
     },
     "kimi-k2.7-code": {
-      "model": "kimi-k2/kimi-k2-7-code",
+      "model": "kimi-code/kimi-k2-7-code",
       "matchingModel": "kimi-k2.7-code",
       "overrides": {
         "name": "kimi-k2.7-code",
-        "maxTokens": 262144,
         "modalities": {
           "input": [
             "text",
@@ -255,7 +261,7 @@
       }
     },
     "kimi-k3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "kimi-k3",
       "overrides": {
         "name": "kimi-k3",
@@ -279,7 +285,7 @@
       "matchingModel": "minimax-m2.5",
       "overrides": {
         "name": "minimax-m2.5",
-        "description": "MiniMax model for chat, coding, office work, and agentic tasks",
+        "openWeights": true,
         "contextWindow": 204800,
         "maxTokens": 131072,
         "speed": 3,
@@ -297,7 +303,7 @@
       ]
     },
     "minimax-m2.7": {
-      "model": "minimax/minimax-m2-7",
+      "model": "minimax-m/minimax-m2-7",
       "matchingModel": "minimax-m2.7",
       "overrides": {
         "name": "minimax-m2.7",
@@ -310,7 +316,7 @@
       }
     },
     "minimax-m3": {
-      "model": "minimax/minimax-m3",
+      "model": "minimax-m/minimax-m3",
       "matchingModel": "minimax-m3",
       "overrides": {
         "name": "minimax-m3",
@@ -347,22 +353,23 @@
       ]
     },
     "nemotron-3-nano:30b": {
-      "model": "nemotron/nemotron-3-nano-30b",
+      "model": "nemotron-nano/nemotron-3-nano-30b",
       "matchingModel": "nemotron-3-nano:30b",
       "overrides": {
         "lastUpdated": "December 15, 2025",
         "costPer1kInputTokens": 0.00006,
         "costPer1kOutputTokens": 0.00024,
         "supportsAttachments": false
-      }
+      },
+      "unset": [
+        "contextComplexity",
+        "artificialAnalysis"
+      ]
     },
     "nemotron-3-super": {
-      "model": "nemotron/nemotron-3-super",
+      "model": "nemotron-super/nemotron-3-super",
       "matchingModel": "nemotron-3-super",
       "overrides": {
-        "name": "nemotron-3-super",
-        "maxTokens": 65536,
-        "knowledgeCutoffDate": "June 2025",
         "lastUpdated": "March 11, 2026",
         "costPer1kInputTokens": 0.000015,
         "costPer1kOutputTokens": 0.0006,
@@ -370,11 +377,10 @@
       }
     },
     "nemotron-3-ultra": {
-      "model": "nemotron/nemotron-3-ultra",
+      "model": "nemotron-ultra/nemotron-3-ultra",
       "matchingModel": "nemotron-3-ultra",
       "overrides": {
         "name": "nemotron-3-ultra",
-        "contextWindow": 262144,
         "maxTokens": 128000,
         "lastUpdated": "June 4, 2026",
         "costPer1kInputTokens": 0.0001,
@@ -414,7 +420,6 @@
       "model": "glm/glm-5-3",
       "matchingModel": "glm-5.3",
       "overrides": {
-        "maxTokens": 131072,
         "speed": 3,
         "isFeatured": true,
         "lastUpdated": "August 14, 2026",
@@ -427,7 +432,6 @@
       "model": "deepseek-flash/deepseek-v4-1-flash",
       "matchingModel": "deepseek-v4.1-flash",
       "overrides": {
-        "maxTokens": 384000,
         "speed": 5,
         "isFeatured": true,
         "lastUpdated": "September 10, 2026",
@@ -447,10 +451,9 @@
       "model": "mistral-large/mistral-large-4",
       "matchingModel": "mistral-large-4",
       "overrides": {
-        "description": "Mistral's 1T-parameter multimodal MoE for reasoning, coding, and agentic work",
         "speed": 3,
         "isFeatured": true,
-        "lastUpdated": "October 6, 2026",
+        "lastUpdated": "October 5, 2026",
         "costPer1kInputTokens": 0.00068,
         "costPer1kOutputTokens": 0.00209
       }
@@ -459,15 +462,15 @@
       "model": "beam/beam-1-0-501b-a23b",
       "matchingModel": "beam",
       "overrides": {
-        "description": "Sparse mixture-of-experts reasoning model with 23B active parameters for coding and agentic workflows",
         "lastUpdated": "October 16, 2026",
         "supportsAttachments": false
       }
     },
     "minimax-m3.1-flash": {
-      "model": "minimax/minimax-m3-1-flash",
+      "model": "minimax-m-flash/minimax-m3-1-flash",
       "matchingModel": "minimax-m3.1-flash",
       "overrides": {
+        "contextWindow": 1000000,
         "maxTokens": 512000,
         "speed": 4,
         "lastUpdated": "October 19, 2026",
@@ -476,11 +479,9 @@
       }
     },
     "muse-spark-open": {
-      "model": "muse/muse-spark-open",
+      "model": "muse-spark/muse-spark-open",
       "matchingModel": "muse-spark-open",
       "overrides": {
-        "description": "Muse Spark Open is an 816B total / 42B active open-weight multimodal reasoning model from Meta for coding and long-horizon agentic work, with 1M-token context.",
-        "maxTokens": 131072,
         "modalities": {
           "input": [
             "text",
@@ -511,7 +512,7 @@
       }
     },
     "mimo-v2.6-flash": {
-      "model": "mimo/mimo-v2-6-flash",
+      "model": "mimo-flash/mimo-v2-6-flash",
       "matchingModel": "mimo-v2.6-flash",
       "overrides": {
         "modalities": {
@@ -530,7 +531,7 @@
       }
     },
     "mimo-v2.6-pro": {
-      "model": "mimo/mimo-v2-6-pro",
+      "model": "mimo-pro/mimo-v2-6-pro",
       "matchingModel": "mimo-v2.6-pro",
       "overrides": {
         "modalities": {
@@ -542,14 +543,14 @@
             "text"
           ]
         },
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "September 22, 2026",
         "costPer1kInputTokens": 0.000435,
         "costPer1kOutputTokens": 0.00087
       }
     },
     "kimi-k3.1-pro": {
-      "model": "kimi-k3/kimi-k3-1-pro",
+      "model": "kimi-pro/kimi-k3-1-pro",
       "matchingModel": "kimi-k3.1-pro",
       "overrides": {
         "modalities": {
@@ -579,10 +580,10 @@
       }
     },
     "inkling-2-small": {
-      "model": "ling/inkling-2-small",
+      "model": "inkling-small/inkling-2-small",
       "matchingModel": "inkling-2-small",
       "overrides": {
-        "speed": 4,
+        "speed": 3,
         "lastUpdated": "November 12, 2026",
         "costPer1kInputTokens": 0.0003,
         "costPer1kOutputTokens": 0.001,
@@ -596,6 +597,22 @@
           "defaultEffort": "low"
         }
       }
+    },
+    "hy4": {
+      "model": "hy/hy4",
+      "matchingModel": "hy4",
+      "overrides": {
+        "name": "hy4",
+        "lastUpdated": "November 4, 2026",
+        "costPer1kInputTokens": 0.000834,
+        "costPer1kOutputTokens": 0.002501
+      },
+      "unset": [
+        "contextComplexity",
+        "artificialAnalysis",
+        "strengths",
+        "reliability"
+      ]
     }
   }
 }

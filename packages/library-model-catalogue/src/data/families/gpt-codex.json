@@ -76,20 +76,7 @@
     "gpt-5-1-codex-mini": {
       "defaults": {
         "description": "GPT-5.1 Codex Mini is a lightweight version of GPT-5.1 Codex, optimized for faster performance and lower resource usage.",
-        "strengths": [
-          "vision",
-          "document",
-          "tool_use"
-        ],
-        "releaseDate": "November 13, 2025",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "low"
-        }
+        "releaseDate": "November 13, 2025"
       }
     },
     "gpt-5-2-chat": {
@@ -149,7 +136,6 @@
     },
     "gpt-5-3-codex": {
       "defaults": {
-        "name": "GPT-5.3 Codex",
         "description": "Coding-optimized GPT model for repository edits, reviews, and agentic software work",
         "modalities": {
           "input": [
@@ -167,8 +153,7 @@
           "tool_use"
         ],
         "knowledgeCutoffDate": "August 31, 2025",
-        "releaseDate": "February 5, 2026",
-        "supportsTemperature": true
+        "releaseDate": "February 5, 2026"
       }
     },
     "gpt-5-3-codex-fast": {

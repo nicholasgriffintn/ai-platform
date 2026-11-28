@@ -1,0 +1,39 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 262144,
+    "maxTokens": 65536,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "July 21, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": false,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "The macaron tall family includes models that produce text.",
+  "models": {
+    "macaron-v1-tall": {
+      "defaults": {
+        "name": "Macaron V1 Tall",
+        "description": "Qwen3.6-based Mixture-of-LoRA model with specialists for chat, personal agents, coding, and generative UI"
+      }
+    }
+  }
+}

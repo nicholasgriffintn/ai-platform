@@ -2,507 +2,54 @@
   "defaults": {
     "openWeights": false,
     "contextWindow": 1048576,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image",
+        "video",
+        "pdf",
+        "audio"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "strengths": [
+      "vision",
+      "document",
+      "audio",
+      "video",
+      "tool_use",
+      "coding"
+    ],
     "contextComplexity": 5,
+    "reliability": 3,
+    "releaseDate": "August 5, 2026",
     "supportsToolCalls": true,
     "supportsResponseFormat": true,
     "supportsAttachments": true,
-    "supportsTemperature": true
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "none",
+        "thinking"
+      ],
+      "defaultEffort": "none"
+    },
+    "artificialAnalysis": {
+      "intelligenceIndex": null,
+      "codingIndex": null,
+      "agenticIndex": null,
+      "intelligenceIndexVersion": 5
+    }
   },
   "description": "Open Llama multimodal model for image understanding and text reasoning",
   "models": {
-    "meta-muse-ember": {
-      "defaults": {
-        "name": "Meta: Muse Ember",
-        "description": "Muse Ember is the smallest and most efficient model from Meta that’s designed for complex reasoning execution and the work agents repeat all day: tool calls, coding agent subtasks, routing,...",
-        "maxTokens": 943718,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "pdf",
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use"
-        ],
-        "reliability": 2,
-        "releaseDate": "November 9, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "minimal"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 36,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "meta-muse-spark-1-2-contributor": {
-      "defaults": {
-        "name": "Meta: Muse Spark 1.2 Contributor",
-        "description": "Muse Spark 1.2 contributor tier is a reasoning model from Meta designed for developers who want to start building at an even lower cost. It’s meaningfully cheaper than Muse Spark...",
-        "maxTokens": 943718,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "August 21, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "minimal"
-        }
-      }
-    },
-    "meta-muse-spark-1-3-contributor": {
-      "defaults": {
-        "name": "Meta: Muse Spark 1.3 Contributor",
-        "description": "Muse Spark 1.3 Contributor is the cost-efficient contributor tier of Meta’s multimodal reasoning model for experimentation, learning, and early-stage agentic, multi-agent, and coding workflows. It is designed to track information...",
-        "maxTokens": 943718,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "September 2, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "minimal"
-        }
-      }
-    },
-    "meta-muse-wonder": {
-      "defaults": {
-        "name": "Meta: Muse Wonder",
-        "description": "Muse Wonder is a frontier reasoning model from Meta, designed for complex personal and professional agentic tasks. It accepts text, images, video, audio, and PDF documents and returns text, with...",
-        "maxTokens": 943718,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "pdf",
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use"
-        ],
-        "reliability": 2,
-        "releaseDate": "October 12, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "minimal"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 43.6,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "muse-ember": {
-      "defaults": {
-        "name": "Muse Ember",
-        "description": "Open Llama multimodal model for image understanding and text reasoning",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "pdf",
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use"
-        ],
-        "reliability": 2,
-        "releaseDate": "November 9, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "minimal"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 36,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "muse-ember-1-0": {
-      "defaults": {
-        "name": "Muse Ember 1.0",
-        "description": "Reasoning model from Meta with text, image, video and PDF input and tool use",
-        "maxTokens": 270000,
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "pdf"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "November 9, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "minimal"
-        }
-      }
-    },
-    "muse-glimmer-30b": {
-      "defaults": {
-        "name": "Muse Glimmer 30B",
-        "openWeights": true,
-        "description": "Muse Glimmer is a 30-billion-parameter open-weight multimodal model from Meta Superintelligence Labs, distilled from Muse Spark for always-on local agents, tool use, coding, and image understanding.",
-        "contextWindow": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "knowledgeCutoffDate": "January 4, 2026",
-        "releaseDate": "August 10, 2026"
-      }
-    },
-    "muse-image-1-0": {
-      "defaults": {
-        "name": "Muse Image 1.0",
-        "description": "Agentic image generation and editing model that plans, searches and refines before rendering",
-        "contextWindow": 0,
-        "maxTokens": 0,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "image"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "image"
-        ],
-        "contextComplexity": 4,
-        "reliability": 3,
-        "releaseDate": "July 7, 2026",
-        "supportsToolCalls": false,
-        "supportsTemperature": false,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": null,
-          "mediaScores": [
-            {
-              "key": "text_to_imageElo",
-              "label": "Text-to-image arena",
-              "value": 1126,
-              "min": 800,
-              "max": 1400,
-              "confidenceInterval95": 11
-            }
-          ]
-        }
-      }
-    },
-    "muse-spark-1-1": {
-      "defaults": {
-        "name": "Muse Spark 1.1",
-        "description": "Open Llama multimodal model for image understanding and text reasoning",
-        "reliability": 3,
-        "releaseDate": "April 8, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "minimal"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
     "muse-spark-1-2": {
       "defaults": {
         "name": "Muse Spark 1.2",
-        "description": "Muse Spark 1.2 is a coding-focused update to Muse Spark 1.1 with improvements in code generation, complex debugging, codebase understanding, and end-to-end developer workflows.",
-        "reliability": 3,
-        "releaseDate": "August 5, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "minimal"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "muse-spark-1-2-contributor": {
-      "defaults": {
-        "name": "Muse Spark 1.2 Contributor",
-        "description": "Open Llama multimodal model for image understanding and text reasoning",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "pdf",
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "August 5, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "minimal"
-        }
-      }
-    },
-    "muse-spark-1-3": {
-      "defaults": {
-        "name": "Muse Spark 1.3",
-        "description": "Open Llama multimodal model for image understanding and text reasoning",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "pdf",
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use",
-          "coding"
-        ],
-        "reliability": 2,
-        "releaseDate": "September 2, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "minimal"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 36.6,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "muse-spark-1-3-contributor": {
-      "defaults": {
-        "name": "Muse Spark 1.3 Contributor",
-        "description": "Open Llama multimodal model for image understanding and text reasoning",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "pdf",
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "September 2, 2026"
-      }
-    },
-    "muse-spark-open": {
-      "defaults": {
-        "name": "Muse Spark Open",
-        "openWeights": true,
-        "description": "Open Llama multimodal model for image understanding and text reasoning",
-        "reliability": 1,
-        "knowledgeCutoffDate": "January 4, 2026",
-        "releaseDate": "October 15, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "low",
-            "medium",
-            "high",
-            "xhigh"
-          ],
-          "defaultEffort": "low"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 24.9,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "muse-wonder": {
-      "defaults": {
-        "name": "Muse Wonder",
-        "description": "Open Llama multimodal model for image understanding and text reasoning",
-        "modalities": {
-          "input": [
-            "text",
-            "image",
-            "video",
-            "pdf",
-            "audio"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "strengths": [
-          "vision",
-          "document",
-          "audio",
-          "video",
-          "tool_use"
-        ],
-        "reliability": 2,
-        "releaseDate": "October 12, 2026",
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "minimal",
-            "low",
-            "medium",
-            "high",
-            "xhigh",
-            "max"
-          ],
-          "defaultEffort": "minimal"
-        },
-        "artificialAnalysis": {
-          "intelligenceIndex": 43.6,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
+        "description": "Muse Spark 1.2 is a coding-focused update to Muse Spark 1.1 with improvements in code generation, complex debugging, codebase understanding, and end-to-end developer workflows."
       }
     }
   }

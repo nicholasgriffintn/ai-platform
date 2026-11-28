@@ -30,6 +30,34 @@
   },
   "description": "The beam family includes models that produce text.",
   "models": {
+    "beam": {
+      "defaults": {
+        "name": "Beam",
+        "description": "Sparse mixture-of-experts reasoning model with 23B active parameters for coding and agentic workflows",
+        "strengths": [
+          "tool_use"
+        ],
+        "contextComplexity": 5,
+        "reliability": 1,
+        "reasoningConfig": {
+          "supportedEffortLevels": [
+            "minimal",
+            "low",
+            "medium",
+            "high",
+            "xhigh",
+            "max"
+          ],
+          "defaultEffort": "minimal"
+        },
+        "artificialAnalysis": {
+          "intelligenceIndex": 17.7,
+          "codingIndex": null,
+          "agenticIndex": null,
+          "intelligenceIndexVersion": 5
+        }
+      }
+    },
     "beam-1-0": {
       "defaults": {
         "name": "Beam 1.0",
@@ -50,29 +78,6 @@
     "beam-1-0-501b-a23b": {
       "defaults": {
         "name": "Beam 1.0 501B A23B",
-        "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use"
-      }
-    },
-    "beam-1-0-free": {
-      "defaults": {
-        "name": "Beam 1.0 (Free)",
-        "description": "Free provider route for experiments, demos, and cost-sensitive chat workloads",
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 5,
-        "reliability": 1,
-        "artificialAnalysis": {
-          "intelligenceIndex": 17.7,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "beam-free": {
-      "defaults": {
-        "name": "Beam Free",
         "description": "Sparse mixture-of-experts reasoning model with 23B active parameters for coding and agentic workflows"
       }
     },
@@ -80,14 +85,6 @@
       "defaults": {
         "name": "Reflection: Beam 1.0 501B A23B",
         "description": "Beam 1.0 is Reflection's open-weight reasoning model for coding and long-horizon agentic workflows. It uses a sparse mixture-of-experts architecture with 501B total and 23B active parameters per token, and a..."
-      }
-    },
-    "reflection-beam-1-0-free": {
-      "defaults": {
-        "name": "Reflection: Beam 1.0 (free)",
-        "openWeights": false,
-        "description": "Beam is Reflection’s reasoning model for coding and agentic workflows, combining strong coding capabilities with fast, low-latency inference.",
-        "releaseDate": "October 16, 2026"
       }
     }
   }

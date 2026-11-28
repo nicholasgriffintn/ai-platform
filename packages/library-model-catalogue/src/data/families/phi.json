@@ -1,8 +1,6 @@
 {
   "defaults": {
     "openWeights": true,
-    "contextWindow": 128000,
-    "maxTokens": 4096,
     "modalities": {
       "input": [
         "text"
@@ -41,6 +39,8 @@
       "defaults": {
         "name": "Phi-3.5-mini-instruct",
         "description": "Phi-3.5-mini-instruct accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
         "releaseDate": "August 20, 2024"
       }
     },
@@ -48,6 +48,8 @@
       "defaults": {
         "name": "Phi-3.5-MoE-instruct",
         "description": "Phi-3.5-MoE-instruct accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
         "releaseDate": "August 20, 2024"
       }
     },
@@ -55,6 +57,8 @@
       "defaults": {
         "name": "Phi-3-medium-instruct (128k)",
         "description": "Phi-3-medium-instruct (128k) accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
         "releaseDate": "April 23, 2024"
       }
     },
@@ -71,6 +75,8 @@
       "defaults": {
         "name": "Phi-3-mini-instruct (128k)",
         "description": "Phi-3-mini-instruct (128k) accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
         "releaseDate": "April 23, 2024"
       }
     },
@@ -87,6 +93,8 @@
       "defaults": {
         "name": "Phi-3-small-instruct (128k)",
         "description": "Phi-3-small-instruct (128k) accepts text and produces text.",
+        "contextWindow": 128000,
+        "maxTokens": 4096,
         "releaseDate": "April 23, 2024"
       }
     },
@@ -102,27 +110,9 @@
     "phi-4": {
       "defaults": {
         "description": "Open-weight instruction model for adaptable chat and self-hosted production workloads",
+        "contextWindow": 16384,
         "contextComplexity": 2,
         "reliability": 1,
-        "artificialAnalysis": {
-          "intelligenceIndex": null,
-          "codingIndex": null,
-          "agenticIndex": null,
-          "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "phi-4-mini": {
-      "defaults": {
-        "name": "Phi-4-mini",
-        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "strengths": [
-          "tool_use"
-        ],
-        "contextComplexity": 3,
-        "reliability": 1,
-        "releaseDate": "December 11, 2024",
-        "supportsToolCalls": true,
         "artificialAnalysis": {
           "intelligenceIndex": null,
           "codingIndex": null,
@@ -135,6 +125,7 @@
       "defaults": {
         "name": "Phi 4 Mini Instruct",
         "description": "Phi-4-mini-instruct accepts text and produces text.",
+        "contextWindow": 128000,
         "maxTokens": 128000,
         "contextComplexity": 4,
         "reliability": 1,
@@ -148,25 +139,12 @@
         }
       }
     },
-    "phi-4-mini-reasoning": {
-      "defaults": {
-        "name": "Phi-4-mini-reasoning",
-        "description": "Efficient model for low-latency assistance, extraction, and routine automation",
-        "releaseDate": "December 11, 2024",
-        "supportsToolCalls": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
     "phi-4-multimodal": {
       "defaults": {
         "name": "Phi-4-multimodal",
         "description": "Multimodal model for analyzing text, images, documents, and rich media",
+        "contextWindow": 131072,
+        "maxTokens": 4096,
         "modalities": {
           "input": [
             "text",
@@ -198,7 +176,8 @@
       "defaults": {
         "name": "Phi-4-reasoning",
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
-        "contextWindow": 32000,
+        "contextWindow": 32768,
+        "maxTokens": 32768,
         "releaseDate": "December 11, 2024",
         "reasoningConfig": {
           "supportedEffortLevels": [
@@ -214,6 +193,7 @@
         "name": "Phi-4-reasoning-plus",
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
         "contextWindow": 32000,
+        "maxTokens": 4096,
         "releaseDate": "December 11, 2024",
         "reasoningConfig": {
           "supportedEffortLevels": [

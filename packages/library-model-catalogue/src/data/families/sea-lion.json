@@ -1,0 +1,26 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "maxTokens": 128000,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 23, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": true
+  },
+  "description": "The sea lion family includes models that produce text.",
+  "models": {
+    "gemma-sea-lion-v4-27b-it": {
+      "defaults": {
+        "description": "Gemma 3 27B tuned by AI Singapore for Southeast Asian languages and instruction following"
+      }
+    }
+  }
+}

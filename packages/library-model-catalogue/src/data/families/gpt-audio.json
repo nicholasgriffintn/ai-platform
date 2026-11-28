@@ -1,0 +1,21 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 128000,
+    "maxTokens": 16384,
+    "knowledgeCutoffDate": "October 1, 2023",
+    "releaseDate": "August 28, 2025",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "The gpt audio family groups related models and their shared configuration.",
+  "models": {
+    "gpt-audio": {
+      "defaults": {
+        "description": "Speech generation model for controllable voice, narration, and audio delivery"
+      }
+    }
+  }
+}

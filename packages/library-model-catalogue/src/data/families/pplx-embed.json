@@ -1,0 +1,34 @@
+{
+  "defaults": {
+    "openWeights": false,
+    "contextWindow": 32000,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "February 26, 2026",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+  "models": {
+    "embed-v1-0-6b": {
+      "defaults": {
+        "name": "Embed v1 0.6b",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines"
+      }
+    },
+    "embed-v1-4b": {
+      "defaults": {
+        "name": "Embed v1 4b",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines"
+      }
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 1048576,
+    "maxTokens": 131072,
+    "modalities": {
+      "input": [
+        "text",
+        "image"
+      ],
+      "output": [
+        "text"
+      ]
+    },
+    "releaseDate": "September 22, 2026",
+    "supportsToolCalls": true,
+    "supportsResponseFormat": true,
+    "supportsAttachments": true,
+    "supportsTemperature": true,
+    "reasoningConfig": {
+      "supportedEffortLevels": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "defaultEffort": "low"
+    }
+  },
+  "description": "GLM-5.3-based Mixture-of-LoRA model with specialists for chat, personal agents, coding, and generative UI",
+  "models": {
+    "macaron-v1-1-coding-venti": {
+      "defaults": {
+        "name": "Macaron V1.1 Coding Venti",
+        "description": "GLM-5.3-based Mixture-of-LoRA model with specialists for chat, personal agents, coding, and generative UI"
+      }
+    },
+    "macaron-v1-1-venti": {
+      "defaults": {
+        "name": "Macaron V1.1 Venti",
+        "description": "GLM-5.3-based Mixture-of-LoRA model with specialists for chat, personal agents, coding, and generative UI",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "supportsAttachments": false
+      }
+    },
+    "macaron-v1-1-venti-pro": {
+      "defaults": {
+        "name": "Macaron V1.1 Venti Pro",
+        "description": "GLM-5.3-based Mixture-of-LoRA model with specialists for chat, personal agents, coding, and generative UI"
+      }
+    }
+  }
+}

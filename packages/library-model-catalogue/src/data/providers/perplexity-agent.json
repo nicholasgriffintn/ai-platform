@@ -208,6 +208,7 @@
           ]
         },
         "speed": 3,
+        "knowledgeCutoffDate": "January 2025",
         "lastUpdated": "September 2, 2026",
         "costPer1kInputTokens": 0.00075,
         "costPer1kOutputTokens": 0.00375
@@ -299,7 +300,7 @@
       "model": "gpt-terra/gpt-5-6-terra",
       "matchingModel": "openai/gpt-5.6-terra",
       "overrides": {
-        "speed": 3,
+        "speed": 2,
         "lastUpdated": "July 9, 2026",
         "costPer1kInputTokens": 0.002,
         "costPer1kOutputTokens": 0.012,
@@ -378,9 +379,10 @@
       }
     },
     "perplexity/deepseek-v4-pro-0813": {
-      "model": "deepseek-thinking/deepseek-v4-pro-0813",
+      "model": "deepseek-pro/deepseek-v4-pro-0813",
       "matchingModel": "perplexity/deepseek-v4-pro-0813",
       "overrides": {
+        "description": "DeepSeek V4 Pro snapshot with million-token context and support for thinking and non-thinking modes",
         "contextWindow": 1000000,
         "maxTokens": 384000,
         "speed": 3,
@@ -403,7 +405,6 @@
       "matchingModel": "perplexity/glm-5.3",
       "overrides": {
         "contextWindow": 1000000,
-        "maxTokens": 131072,
         "speed": 3,
         "lastUpdated": "August 14, 2026",
         "costPer1kInputTokens": 0.0014,
@@ -438,7 +439,7 @@
       }
     },
     "perplexity/kimi-k3": {
-      "model": "kimi-k3/kimi-k3",
+      "model": "kimi/kimi-k3",
       "matchingModel": "perplexity/kimi-k3",
       "overrides": {
         "speed": 2,
@@ -460,7 +461,7 @@
       }
     },
     "perplexity/nemotron-3.5-super-120b-a12b": {
-      "model": "nemotron/nemotron-3-5-super-120b-a12b",
+      "model": "nemotron-super/nemotron-3-5-super-120b-a12b",
       "matchingModel": "perplexity/nemotron-3.5-super-120b-a12b",
       "overrides": {
         "lastUpdated": "October 15, 2026",

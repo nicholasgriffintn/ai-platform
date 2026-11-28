@@ -1,0 +1,67 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 163840,
+    "releaseDate": "April 29, 2025",
+    "supportsToolCalls": false,
+    "supportsResponseFormat": false,
+    "supportsAttachments": true,
+    "supportsTemperature": true
+  },
+  "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+  "models": {
+    "llama-guard-3-8b": {
+      "defaults": {
+        "name": "Llama Guard 3 8B",
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+        "contextWindow": 131072,
+        "maxTokens": 131072,
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "guardrails"
+          ]
+        },
+        "knowledgeCutoffDate": "December 2023",
+        "releaseDate": "July 23, 2024",
+        "supportsAttachments": false
+      }
+    },
+    "llama-guard-4-12b": {
+      "defaults": {
+        "name": "Llama Guard 4 12B",
+        "description": "Multimodal Llama 4-based safety classifier for moderating prompts and responses",
+        "maxTokens": 163840,
+        "modalities": {
+          "input": [
+            "text",
+            "image"
+          ],
+          "output": [
+            "text"
+          ]
+        },
+        "knowledgeCutoffDate": "August 31, 2024",
+        "supportsResponseFormat": true
+      }
+    },
+    "meta-llama-guard-4-12b": {
+      "defaults": {
+        "name": "Meta: Llama Guard 4 12B",
+        "description": "Safety model for policy screening, moderation, and risk-aware routing workflows",
+        "maxTokens": 16384,
+        "modalities": {
+          "input": [
+            "image",
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,30 +1,34 @@
 {
   "defaults": {
     "openWeights": false,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "text"
+      ]
+    },
     "supportsToolCalls": true,
+    "supportsAttachments": false,
     "supportsTemperature": true
   },
   "description": "The longcat family includes models that produce text.",
   "models": {
     "longcat-2-0": {
       "defaults": {
+        "name": "LongCat 2.0",
         "openWeights": true,
         "description": "Reasoning model for deliberate analysis, multi-step problem solving, and tool use",
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
+        "contextWindow": 1048756,
+        "maxTokens": 262144,
         "strengths": [
           "tool_use"
         ],
         "contextComplexity": 5,
         "reliability": 2,
         "releaseDate": "June 30, 2026",
-        "supportsAttachments": false,
+        "supportsResponseFormat": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -42,7 +46,6 @@
     },
     "longcat-2-5": {
       "defaults": {
-        "name": "LongCat 2.5",
         "description": "Multimodal reasoning model for visual analysis, planning, and tool use",
         "contextWindow": 1048576,
         "maxTokens": 131072,
@@ -56,44 +59,8 @@
           ]
         },
         "releaseDate": "November 2, 2026",
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "low",
-            "medium",
-            "high"
-          ],
-          "defaultEffort": "none"
-        }
-      }
-    },
-    "longcat-2-5-free": {
-      "defaults": {
-        "name": "LongCat 2.5 Free",
-        "description": "Meituan's multimodal reasoning model for long-horizon coding and agent tasks, with visual understanding and a 1M-token context window",
-        "contextWindow": 1000000,
-        "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "November 2, 2026",
         "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "supportsTemperature": false,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "thinking"
-          ],
-          "defaultEffort": "none"
-        }
+        "supportsAttachments": true
       }
     },
     "longcat-2-5-preview": {
@@ -129,17 +96,8 @@
         "description": "LongCat Flash Chat accepts text and produces text.",
         "contextWindow": 128000,
         "maxTokens": 100000,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "knowledgeCutoffDate": "October 2024",
-        "releaseDate": "September 1, 2025",
-        "supportsAttachments": false
+        "releaseDate": "September 1, 2025"
       }
     },
     "longcat-flash-thinking-2601": {
@@ -148,17 +106,8 @@
         "description": "LongCat Flash Thinking 2601 accepts text and produces text.",
         "contextWindow": 32768,
         "maxTokens": 32768,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "releaseDate": "January 15, 2026",
         "supportsToolCalls": false,
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -175,14 +124,6 @@
         "description": "LongCat 2.0 is a sparse mixture-of-experts language model from Meituan, with 48B active parameters out of 1.6T total. It is suited for coding, repository-level changes, long-horizon problem solving, and agentic...",
         "contextWindow": 1048756,
         "maxTokens": 262144,
-        "modalities": {
-          "input": [
-            "text"
-          ],
-          "output": [
-            "text"
-          ]
-        },
         "strengths": [
           "tool_use"
         ],
@@ -190,7 +131,6 @@
         "reliability": 2,
         "releaseDate": "June 30, 2026",
         "supportsResponseFormat": false,
-        "supportsAttachments": false,
         "reasoningConfig": {
           "supportedEffortLevels": [
             "none",
@@ -203,33 +143,6 @@
           "codingIndex": null,
           "agenticIndex": null,
           "intelligenceIndexVersion": 5
-        }
-      }
-    },
-    "meituan-longcat-2-5": {
-      "defaults": {
-        "name": "Meituan: LongCat 2.5",
-        "description": "LongCat 2.5 is Meituan’s native multimodal model for coding and long-running agent workflows. It combines visual understanding with multi-step reasoning and tool use to work across complex codebases and full-project development. Its 1M-token context window supports tasks involving large documents, codebases, and text and image inputs.",
-        "contextWindow": 1048576,
-        "maxTokens": 131072,
-        "modalities": {
-          "input": [
-            "text",
-            "image"
-          ],
-          "output": [
-            "text"
-          ]
-        },
-        "releaseDate": "November 2, 2026",
-        "supportsResponseFormat": true,
-        "supportsAttachments": true,
-        "reasoningConfig": {
-          "supportedEffortLevels": [
-            "none",
-            "high"
-          ],
-          "defaultEffort": "none"
         }
       }
     }

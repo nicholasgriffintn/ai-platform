@@ -1,0 +1,62 @@
+{
+  "defaults": {
+    "openWeights": true,
+    "contextWindow": 32768,
+    "maxTokens": 0,
+    "modalities": {
+      "input": [
+        "text"
+      ],
+      "output": [
+        "embedding"
+      ]
+    },
+    "releaseDate": "June 5, 2025",
+    "supportsToolCalls": false,
+    "supportsAttachments": false,
+    "supportsTemperature": false
+  },
+  "description": "The qwen embedding family includes models that produce embedding, text.",
+  "models": {
+    "qwen-3-embedding-4b": {
+      "defaults": {
+        "name": "Qwen 3 Embedding 4B",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "knowledgeCutoffDate": "December 2024"
+      }
+    },
+    "qwen-3-embedding-8b": {
+      "defaults": {
+        "name": "Qwen 3 Embedding 8B",
+        "description": "Embedding model for semantic search, retrieval, clustering, and ranking pipelines",
+        "knowledgeCutoffDate": "December 2024"
+      }
+    },
+    "qwen3-embedding-0-6b": {
+      "defaults": {
+        "name": "Qwen3 Embedding 0.6B",
+        "description": "Compact multilingual text embedding model for retrieval, code search, classification, and clustering"
+      }
+    },
+    "qwen3-embedding-4b": {
+      "defaults": {
+        "name": "Qwen3 Embedding 4B",
+        "description": "Multilingual text embedding model for retrieval, code search, classification, and clustering"
+      }
+    },
+    "qwen3-embedding-8b": {
+      "defaults": {
+        "name": "Qwen3-Embedding-8B",
+        "description": "Multilingual text embedding model for retrieval, code search, classification, and clustering",
+        "modalities": {
+          "input": [
+            "text"
+          ],
+          "output": [
+            "text"
+          ]
+        }
+      }
+    }
+  }
+}
